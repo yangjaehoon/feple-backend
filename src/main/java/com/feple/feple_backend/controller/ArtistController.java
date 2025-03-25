@@ -4,6 +4,7 @@ import com.feple.feple_backend.dto.artist.ArtistResponseDto;
 import com.feple.feple_backend.service.ArtistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,4 +21,9 @@ public class ArtistController {
     public List<ArtistResponseDto> getArtists(){
         return artistService.getAllArtists();
     };
+
+    @GetMapping("/{id}")
+    public ArtistResponseDto getArtistById(@PathVariable Long id){
+        return artistService.getArtistById(id);
+    }
 }
