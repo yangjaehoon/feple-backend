@@ -1,5 +1,6 @@
 package com.feple.feple_backend.dto.festival;
 
+import com.feple.feple_backend.dto.artist.ArtistResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,15 +17,6 @@ public class FestvialResponseDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private String posterUrl;
-    private List<ArtistDto> artists;
+    private List<ArtistResponseDto> artists;
 
-    @Getter
-    @Builder
-    public static class ArtistDto {
-        private Long id;
-        private String name;
-        private String genre;
-        private String profileImageUrl;
-
-    }
 }
