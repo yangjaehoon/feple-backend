@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Builder
-public class FestvialResponseDto {
+public class FestivalResponseDto {
     private Long id;
     private String title;
     private String description;
