@@ -17,6 +17,9 @@ public class Artist {
     private String genre;
     private String profileImageUrl;
 
+    @Column(nullable = false)
+    private int likeCount = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "festival_id")
     private Festival festival;

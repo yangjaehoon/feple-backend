@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
 public class Festival {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,4 +27,17 @@ public class Festival {
 
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Artist> artists = new ArrayList<>();
+
+    @Builder
+    public Festival(String title, String description, String location,
+                    LocalDate startDate, LocalDate endDate, String posterUrl,
+                    List<Artist> artists) {
+        this.title = title;
+        this.description = description;
+        this.location = location;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.posterUrl = posterUrl;
+        this.artists = (artists != null) ? artists : new ArrayList<>();
+    }
 }
