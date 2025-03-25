@@ -24,4 +24,6 @@ public class ArtistService {
                         .build())
                         .collect(Collectors.toList());
     }
+
+
 }
