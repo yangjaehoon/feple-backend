@@ -4,7 +4,11 @@ import com.feple.feple_backend.domain.festival.Artist;
 import com.feple.feple_backend.domain.festival.Festival;
 import com.feple.feple_backend.dto.festival.FestivalRequestDto;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class FestivalService {
 
     private final FestivalRepository festivalRepository;
