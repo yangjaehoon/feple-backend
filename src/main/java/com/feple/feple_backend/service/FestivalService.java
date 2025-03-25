@@ -51,7 +51,8 @@ public class FestivalService {
                         .title(festival.getTitle())
                         .description(festival.getDescription())
                         .location(festival.getLocation())
-                        .startDate(festival.getEndDate())
+                        .startDate(festival.getStartDate())
+                        .endDate(festival.getEndDate())
                         .posterUrl(festival.getPosterUrl())
                         .artists(
                                 festival.getArtists().stream()

@@ -11,4 +11,6 @@ public class ArtistResponseDto {
     private String name;
     private String genre;
     private String profileImageUrl;
+    private int likeCount;
 }
+
