@@ -3,6 +3,7 @@ package com.feple.feple_backend.service;
 import com.feple.feple_backend.domain.festival.Artist;
 import com.feple.feple_backend.domain.festival.Festival;
 import com.feple.feple_backend.dto.festival.FestivalRequestDto;
+import com.feple.feple_backend.repository.FestivalRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
