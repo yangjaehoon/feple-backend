@@ -1,6 +1,6 @@
 package com.feple.feple_backend.service;
 
-import com.feple.feple_backend.domain.festival.Artist;
+import com.feple.feple_backend.domain.artist.Artist;
 import com.feple.feple_backend.domain.festival.Festival;
 import com.feple.feple_backend.dto.artist.ArtistResponseDto;
 import com.feple.feple_backend.dto.festival.FestivalRequestDto;

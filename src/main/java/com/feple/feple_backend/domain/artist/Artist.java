@@ -1,5 +1,6 @@
-package com.feple.feple_backend.domain.festival;
+package com.feple.feple_backend.domain.artist;
 
+import com.feple.feple_backend.domain.festival.Festival;
 import jakarta.persistence.*;
 import lombok.*;
 
