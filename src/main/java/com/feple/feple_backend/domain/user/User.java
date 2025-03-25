@@ -3,7 +3,6 @@ package com.feple.feple_backend.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.security.AuthProvider;
 
 @Entity
 @Getter
