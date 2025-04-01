@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 public class Post {
 
-    @Id @GeneratedValue(Strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
