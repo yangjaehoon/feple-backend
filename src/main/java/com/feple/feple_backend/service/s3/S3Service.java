@@ -41,7 +41,6 @@ public class S3Service {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(filename)
-                .acl(ObjectCannedACL.PUBLIC_READ)
                 .build();
 
         s3Client.putObject(request, software.amazon.awssdk.core.sync.RequestBody.fromInputStream(
