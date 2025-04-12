@@ -11,17 +11,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (POST 테스트 편하게)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // 모든 요청 허용
                 )
-                .headers(headers -> headers
-                        .disable() // 전체 헤더 설정 비활성화 (frameOptions 포함)
-                )
-                .formLogin(login -> login
-                        .permitAll()
-                );
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(form -> form.disable());
 
         return http.build();
     }

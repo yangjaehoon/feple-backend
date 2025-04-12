@@ -3,6 +3,7 @@ package com.feple.feple_backend.service;
 import com.feple.feple_backend.domain.post.BoardType;
 import com.feple.feple_backend.domain.post.Post;
 import com.feple.feple_backend.dto.post.PostRequestDto;
+import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,10 @@ public class PostService {
         return postRepository.save(post).getId();
     }
 
-    public List<Post> getPostsByBoardType(BoardType boardType) {
-        return postRepository.findByBoardType(boardType);
+    public List<PostResponseDto> getPostsByBoardType(BoardType boardType) {
+        List<Post> posts = postRepository.findByBoardType(boardType);
+        return posts.stream()
+                .map(PostResponseDto::from)
+                .toList();
     }
 }
