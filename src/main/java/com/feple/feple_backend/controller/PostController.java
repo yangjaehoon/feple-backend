@@ -29,4 +29,15 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostsByBoardType(BoardType.FREE));
     }
 
+    @PostMapping("/mate")
+    public ResponseEntity<Long> createMatePost(@RequestBody PostRequestDto dto) {
+        dto.setBoardType(BoardType.MATE);
+        return ResponseEntity.ok(postService.createPost(dto));
+    }
+
+    @GetMapping("/mate")
+    public ResponseEntity<List<PostResponseDto>> getMatePosts() {
+        return ResponseEntity.ok(postService.getPostsByBoardType(BoardType.MATE));
+    }
+
 }
