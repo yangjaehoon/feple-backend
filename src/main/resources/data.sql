@@ -39,3 +39,12 @@ VALUES ('첫 글입니다!', '안녕하세요, FEPLE 자유 게시판에 오신 
        ('먹거리 추천 부탁!', '페스티벌 현장에서 맛있는 음식 추천해 주세요.', 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 'FREE'),
        ('의외로 조용한 부스 추천', '사람 적은 쉴 곳 있으면 알려주세요.', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 'FREE'),
        ('캠핑 자리 꿀팁', '좋은 위치 선점하려면 언제부터 가야 하나요?', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 'FREE');
+
+-- 동행 게시판 더미 데이터
+INSERT INTO post (title, content, board_type, like_count, created_at, updated_at, user_id)
+VALUES
+    ('같이 서울재즈페스티벌 가실 분?', '혼자 가기 좀 그래서 동행 구해요! 티켓 있어요.', 'MATE', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+    ('2025 부산 락페 동행해요~', '락페 처음인데 같이 가실 분 환영합니다!', 'MATE', 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
+    ('전주 벚꽃 축제 동행 구해요', '혼자는 심심해서요 ㅠㅠ 같이 산책하실 분!', 'MATE', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+    ('서울숲 재즈 거리축제', '일정 맞는 분 같이 다녀오면 좋을 것 같아요', 'MATE', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3),
+    ('서울 EDM 페스티벌 동행', '혼자보다 같이 즐기면 좋잖아요?', 'MATE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2);
