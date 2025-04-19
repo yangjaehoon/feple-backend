@@ -1,27 +1,26 @@
 package com.feple.feple_backend.dto.user;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class KakaoUserResponse {
-
     private Long id;
-    private KakaoAccount kakaoAccount;
+    private KakaoAccount kakao_account;
 
-    @Getter
-    @Setter
+    @Data
     public static class KakaoAccount {
         private Profile profile;
         private String email;
+        private String name;
+        private String age_range;
+        private String birthday;
+        private String gender;
 
-        @Getter
-        @Setter
+        @Data
         public static class Profile {
             private String nickname;
-            private String profileImgUrl;
+            private String profile_image_url;
+            private String thumbnail_image_url;
         }
-
     }
 }
