@@ -34,6 +34,17 @@ public class UserService {
                 });
     }
 
+    public Long createUser(UserRequestDto dto) {
+        User user = User.builder()
+                .email(dto.getEmail())
+                .nickname(dto.getNickname())
+                .oauthId(dto.getOauthId())
+                .provider(dto.getProvider())
+                .profileImageUrl(dto.getProfileImageUrl())
+                .build();
+        return userRepository.save(user).getId();
+    }
+
     public UserResponseDto getUser(Long id) {
         return userRepository.findById(id)
                 .map(UserResponseDto::from)
