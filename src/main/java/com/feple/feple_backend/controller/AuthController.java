@@ -20,7 +20,7 @@ public class AuthController {
     private final KakaoAuthService kakaoAuthService;
     private final UserService userService;
 
-    @PostMapping("/token")
+    @PostMapping("/kakao")
     public ResponseEntity<?> kakaoLogin(@RequestHeader("Authorization") String bearerToken) {
         String accessToken = bearerToken.replace("Bearer ", "");
 
