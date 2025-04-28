@@ -26,7 +26,8 @@ public class UserService {
 
         String oauthId = kakaoUser.getId().toString();
         String email   = Optional.ofNullable(account.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
+                //.orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
+                .orElse(null);
 //        String nickname = Optional.ofNullable(account.getProfile())
 //                .map(KakaoUserResponse.KakaoAccount.Profile::getNickname)
 //                .orElse("KakaoUser");

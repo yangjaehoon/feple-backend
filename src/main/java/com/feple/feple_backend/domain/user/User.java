@@ -26,6 +26,7 @@ public class User {
 
     private String profileImageUrl;
 
+    @Column(nullable = true)
     private String email;
 
 }
