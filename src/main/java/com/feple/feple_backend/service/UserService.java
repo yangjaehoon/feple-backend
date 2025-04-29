@@ -8,7 +8,6 @@ import com.feple.feple_backend.dto.user.UserResponseDto;
 import com.feple.feple_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,9 +24,8 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("카카오 계정 정보가 없습니다."));
 
         String oauthId = kakaoUser.getId().toString();
-        String email   = Optional.ofNullable(account.getEmail())
-                //.orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
-                .orElse(null);
+        //.orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
+        String email   = account.getEmail();
 //        String nickname = Optional.ofNullable(account.getProfile())
 //                .map(KakaoUserResponse.KakaoAccount.Profile::getNickname)
 //                .orElse("KakaoUser");
