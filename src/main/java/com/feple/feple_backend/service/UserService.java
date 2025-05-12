@@ -9,6 +9,7 @@ import com.feple.feple_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -62,6 +63,15 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(UserResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    public UserResponseDto updateNickname(Long id, String nickname) {
+        User user = userRepository.findById(id)
+                .orElseThrow(()->
+                        new NoSuchElementException("해당 사용자를 찾을 수 없습니다. id="+id)
+                );
+        user.changeNickname(nickname);
+        return UserResponseDto.from(user);
     }
 
     public void deleteUser(Long id) {

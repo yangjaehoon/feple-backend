@@ -29,4 +29,8 @@ public class User {
     @Column(nullable = true)
     private String email;
 
+    public void changeNickname(String newNickname) {
+        this.nickname = newNickname;
+    }
+
 }
