@@ -1,7 +1,11 @@
 package com.feple.feple_backend.domain.user;
 
+import com.feple.feple_backend.domain.comment.Comment;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -32,5 +36,8 @@ public class User {
     public void changeNickname(String newNickname) {
         this.nickname = newNickname;
     }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
 }

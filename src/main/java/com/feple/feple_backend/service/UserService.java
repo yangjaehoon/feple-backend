@@ -6,6 +6,7 @@ import com.feple.feple_backend.dto.user.KakaoUserResponse;
 import com.feple.feple_backend.dto.user.UserRequestDto;
 import com.feple.feple_backend.dto.user.UserResponseDto;
 import com.feple.feple_backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -65,6 +66,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public UserResponseDto updateNickname(Long id, String nickname) {
         User user = userRepository.findById(id)
                 .orElseThrow(()->
