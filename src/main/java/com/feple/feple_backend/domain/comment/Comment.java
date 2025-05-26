@@ -29,4 +29,9 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    public Comment(String content, Post post, User user) {
+        this.content = content;
+        this.post = post;
+        this.user = user;
+    }
 }
