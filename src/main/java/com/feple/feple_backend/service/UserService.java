@@ -28,15 +28,18 @@ public class UserService {
         String oauthId = kakaoUser.getId().toString();
         //.orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
         String email   = account.getEmail();
-//        String nickname = Optional.ofNullable(account.getProfile())
-//                .map(KakaoUserResponse.KakaoAccount.Profile::getNickname)
-//                .orElse("KakaoUser");
+
+        String nickname = Optional.ofNullable(account.getProfile())
+                //.map(KakaoUserResponse.KakaoAccount.profile::getNickname)
+                .map(KakaoUserResponse.Profile::getNickname)
+                .filter(n -> !n.isBlank())
+                .orElse("KakaoUser");
 
         return userRepository.findByOauthId(oauthId)
                 .orElseGet(() -> userRepository.save(User.builder()
                         .oauthId(oauthId)
                         .email(email)
-                        //.nickname(nickname)
+                        .nickname(nickname)
                         .provider(AuthProvider.KAKAO)
                         .profileImageUrl(account.getProfile().getProfile_image_url())
                         .build()

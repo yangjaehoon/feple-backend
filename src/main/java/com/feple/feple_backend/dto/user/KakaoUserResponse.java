@@ -2,11 +2,11 @@ package com.feple.feple_backend.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.Getter;
 
 @Data
 public class KakaoUserResponse {
     private Long id;
-    //private KakaoAccount kakao_account;
 
     @JsonProperty("kakao_account")
     private KakaoAccount kakaoAccount;
@@ -25,6 +25,7 @@ public class KakaoUserResponse {
         private Profile profile;
         /** 성별 */
         private String gender;
+
     }
 
     @Data
@@ -35,5 +36,7 @@ public class KakaoUserResponse {
         private String profile_image_url;
         /** 기본 이미지 여부 */
         private Boolean is_default_image;
+
+        private String nickname;
     }
 }
