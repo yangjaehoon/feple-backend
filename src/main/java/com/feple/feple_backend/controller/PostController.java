@@ -1,11 +1,10 @@
 package com.feple.feple_backend.controller;
 
 import com.feple.feple_backend.domain.post.BoardType;
-import com.feple.feple_backend.domain.post.Post;
-import com.feple.feple_backend.domain.user.User;
+import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.dto.post.PostRequestDto;
 import com.feple.feple_backend.dto.post.PostResponseDto;
-import com.feple.feple_backend.repository.UserRepository;
+import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

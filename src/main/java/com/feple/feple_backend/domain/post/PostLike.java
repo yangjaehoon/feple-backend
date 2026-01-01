@@ -1,6 +1,6 @@
 package com.feple.feple_backend.domain.post;
 
-import com.feple.feple_backend.domain.user.User;
+import com.feple.feple_backend.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 

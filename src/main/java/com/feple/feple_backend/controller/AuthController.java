@@ -1,9 +1,9 @@
 package com.feple.feple_backend.controller;
-import com.feple.feple_backend.domain.user.User;
-import com.feple.feple_backend.dto.user.KakaoUserResponse;
-import com.feple.feple_backend.dto.user.UserResponseDto;
+import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.dto.KakaoUserResponse;
+import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.service.KakaoAuthService;
-import com.feple.feple_backend.service.UserService;
+import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

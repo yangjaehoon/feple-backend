@@ -1,8 +1,8 @@
 package com.feple.feple_backend.service;
 
-import com.feple.feple_backend.domain.artist.Artist;
-import com.feple.feple_backend.dto.artist.ArtistResponseDto;
-import com.feple.feple_backend.repository.ArtistRepository;
+import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.repository.ArtistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -3,10 +3,11 @@ package com.feple.feple_backend.repository;
 
 import com.feple.feple_backend.domain.comment.Comment;
 import com.feple.feple_backend.domain.post.Post;
-import com.feple.feple_backend.domain.user.User;
+import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.dto.comment.CommentResponseDto;
 import com.feple.feple_backend.dto.comment.CreateCommentDto;
 import com.feple.feple_backend.service.CommentService;
+import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

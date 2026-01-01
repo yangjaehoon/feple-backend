@@ -1,6 +1,6 @@
 package com.feple.feple_backend.service;
 
-import com.feple.feple_backend.dto.user.KakaoUserResponse;
+import com.feple.feple_backend.user.dto.KakaoUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;

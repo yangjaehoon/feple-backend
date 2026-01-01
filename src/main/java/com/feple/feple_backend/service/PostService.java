@@ -2,7 +2,7 @@ package com.feple.feple_backend.service;
 
 import com.feple.feple_backend.domain.post.BoardType;
 import com.feple.feple_backend.domain.post.Post;
-import com.feple.feple_backend.domain.user.User;
+import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.dto.post.PostRequestDto;
 import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.repository.PostRepository;

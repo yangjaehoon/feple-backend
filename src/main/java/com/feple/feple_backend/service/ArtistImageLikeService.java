@@ -1,11 +1,11 @@
 package com.feple.feple_backend.service;
 
-import com.feple.feple_backend.domain.artist.ArtistImage;
-import com.feple.feple_backend.domain.artist.ArtistImageLike;
-import com.feple.feple_backend.domain.user.User;
+import com.feple.feple_backend.artist.domain.ArtistImage;
+import com.feple.feple_backend.artist.domain.ArtistImageLike;
+import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.repository.ArtistImageLikeRepository;
 import com.feple.feple_backend.repository.ArtistImageRepository;
-import com.feple.feple_backend.repository.UserRepository;
+import com.feple.feple_backend.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
