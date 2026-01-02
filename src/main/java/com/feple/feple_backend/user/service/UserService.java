@@ -6,7 +6,9 @@ import com.feple.feple_backend.user.dto.KakaoUserResponse;
 import com.feple.feple_backend.user.dto.UserRequestDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
@@ -57,12 +60,14 @@ public class UserService {
         return userRepository.save(user).getId();
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDto getUser(Long id) {
         return userRepository.findById(id)
                 .map(UserResponseDto::from)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
     }
 
+    @Transactional(readOnly = true)
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(UserResponseDto::from)
