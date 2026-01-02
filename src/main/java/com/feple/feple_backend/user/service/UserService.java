@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class UserService {
 
         String oauthId = kakaoUser.getId().toString();
         //.orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
-        String email   = account.getEmail();
+        String email = account.getEmail();
 
         String nickname = Optional.ofNullable(account.getProfile())
                 //.map(KakaoUserResponse.KakaoAccount.profile::getNickname)
@@ -62,9 +63,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponseDto getUser(Long id) {
-        return userRepository.findById(id)
-                .map(UserResponseDto::from)
-                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        return UserResponseDto.from(user);
     }
 
     @Transactional(readOnly = true)
@@ -77,8 +78,8 @@ public class UserService {
     @Transactional
     public UserResponseDto updateNickname(Long id, String nickname) {
         User user = userRepository.findById(id)
-                .orElseThrow(()->
-                        new NoSuchElementException("해당 사용자를 찾을 수 없습니다. id="+id)
+                .orElseThrow(() ->
+                        new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id)
                 );
         user.changeNickname(nickname);
         return UserResponseDto.from(user);
