@@ -33,7 +33,7 @@ public class FestivalService {
             dto.getArtists().forEach(artistDto -> {
                 Artist artist = Artist.builder()
                         .name(artistDto.getName())
-                        .genre(artistDto.getName())
+                        .genre(artistDto.getGenre())
                         .profileImageUrl(artistDto.getProfileImageUrl())
                         .festival(festival)
                         .build();
@@ -59,7 +59,7 @@ public class FestivalService {
                                         .map(artist -> ArtistResponseDto.builder()
                                                 .id(artist.getId())
                                                 .name(artist.getName())
-                                                .genre(artist.getName())
+                                                .genre(artist.getGenre())
                                                 .profileImageUrl(artist.getProfileImageUrl())
                                                 .build())
                                         .toList()
