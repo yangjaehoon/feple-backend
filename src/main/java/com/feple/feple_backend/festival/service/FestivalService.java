@@ -5,6 +5,7 @@ import com.feple.feple_backend.festival.domain.Festival;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
+import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,9 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
-    public List<FestivalDetailResponseDto> getAllFestivals() {
+    public List<FestivalResponseDto> getAllFestivals() {
         return festivalRepository.findAll().stream()
-                .map(festival -> FestivalDetailResponseDto.builder()
+                .map(festival -> FestivalResponseDto.builder()
                         .id(festival.getId())
                         .title(festival.getTitle())
                         .description(festival.getDescription())
@@ -54,16 +55,6 @@ public class FestivalService {
                         .startDate(festival.getStartDate())
                         .endDate(festival.getEndDate())
                         .posterUrl(festival.getPosterUrl())
-                        .artists(
-                                festival.getArtists().stream()
-                                        .map(artist -> ArtistResponseDto.builder()
-                                                .id(artist.getId())
-                                                .name(artist.getName())
-                                                .genre(artist.getGenre())
-                                                .profileImageUrl(artist.getProfileImageUrl())
-                                                .build())
-                                        .toList()
-                        )
                         .build()
                 )
                 .toList();
