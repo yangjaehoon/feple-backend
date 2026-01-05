@@ -1,5 +1,6 @@
 package com.feple.feple_backend.festival.controller;
 
+import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -17,14 +18,20 @@ public class FestivalController {
     private final FestivalService festivalService;
 
     @PostMapping
-    public ResponseEntity<Void> createFestival(@RequestBody FestivalRequestDto dto) {
-        festivalService.createFestival(dto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Long> createFestival(@RequestBody FestivalRequestDto dto) {
+        Long id = festivalService.createFestival(dto);
+        return ResponseEntity.ok(id);
     }
 
     @GetMapping
     public ResponseEntity<List<FestivalResponseDto>> getAllFestivals() {
         List<FestivalResponseDto> festivals = festivalService.getAllFestivals();
         return ResponseEntity.ok(festivals);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FestivalDetailResponseDto> getFestival(@PathVariable Long id) {
+        FestivalDetailResponseDto detail = festivalService.getFestivalDetail(id);
+        return ResponseEntity.ok(detail);
     }
 }
