@@ -14,7 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FestivalResponseDto {
+//페스티벌 상세 페이지에 들어가는 내용
+public class FestivalDetailResponseDto {
     private Long id;
     private String title;
     private String description;
@@ -24,8 +25,8 @@ public class FestivalResponseDto {
     private String posterUrl;
     private List<ArtistResponseDto> artists;
 
-    public static FestivalResponseDto from(Festival festival) {
-        return FestivalResponseDto.builder()
+    public static FestivalDetailResponseDto from(Festival festival) {
+        return FestivalDetailResponseDto.builder()
                 .id(festival.getId())
                 .title(festival.getTitle())
                 .description(festival.getDescription())
@@ -33,6 +34,11 @@ public class FestivalResponseDto {
                 .startDate(festival.getStartDate())
                 .endDate(festival.getEndDate())
                 .posterUrl(festival.getPosterUrl())
+                .artists(
+                        festival.getArtists().stream()
+                                .map(ArtistResponseDto::from)
+                                .toList()
+                )
                 .build();
     }
 
