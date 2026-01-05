@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 @RequiredArgsConstructor
 public class FestivalService {
@@ -20,7 +22,7 @@ public class FestivalService {
     private final FestivalRepository festivalRepository;
 
     @Transactional
-    public void createFestival(FestivalRequestDto dto) {
+    public Long createFestival(FestivalRequestDto dto) {
         Festival festival = Festival.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
@@ -41,22 +43,22 @@ public class FestivalService {
                 festival.getArtists().add(artist);
             });
         }
-        festivalRepository.save(festival);
+        Festival saved = festivalRepository.save(festival);
+        return saved.getId();
     }
 
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getAllFestivals() {
         return festivalRepository.findAll().stream()
-                .map(festival -> FestivalResponseDto.builder()
-                        .id(festival.getId())
-                        .title(festival.getTitle())
-                        .description(festival.getDescription())
-                        .location(festival.getLocation())
-                        .startDate(festival.getStartDate())
-                        .endDate(festival.getEndDate())
-                        .posterUrl(festival.getPosterUrl())
-                        .build()
-                )
+                .map(FestivalResponseDto::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public FestivalDetailResponseDto getFestivalDetail(Long id) {
+        Festival festival = festivalRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+
+        return FestivalDetailResponseDto.from(festival);
     }
 }
