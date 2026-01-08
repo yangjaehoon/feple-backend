@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>페스티벌 등록</title>
+</head>
+<body>
+<h1>페스티벌 등록</h1>
+
+<!-- 성공 메시지 -->
+<div th:if="${param.success}">
+    <p style="color: green;">등록이 완료되었습니다.</p>
+</div>
+
+<form th:action="@{/admin/festivals/new}" th:object="${festival}" method="post">
+    <div>
+        <label>제목</label>
+        <input type="text" th:field="*{title}" />
+    </div>
+
+    <div>
+        <label>설명</label>
+        <textarea th:field="*{description}"></textarea>
+    </div>
+
+    <div>
+        <label>장소</label>
+        <input type="text" th:field="*{location}" />
+    </div>
+
+    <div>
+        <label>시작일</label>
+        <input type="date" th:field="*{startDate}" />
+    </div>
+
+    <div>
+        <label>종료일</label>
+        <input type="date" th:field="*{endDate}" />
+    </div>
+
+    <div>
+        <label>포스터 URL</label>
+        <input type="text" th:field="*{posterUrl}" />
+    </div>
+
+    <button type="submit">등록</button>
+</form>
+
+</body>
+</html>
