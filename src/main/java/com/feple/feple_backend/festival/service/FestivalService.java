@@ -61,4 +61,25 @@ public class FestivalService {
 
         return FestivalDetailResponseDto.from(festival);
     }
+
+    @Transactional(readOnly = true)
+    public FestivalResponseDto getFestival(Long id) {
+        Festival festival = festivalRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+
+        return FestivalResponseDto.from(festival);
+    }
+
+    @Transactional
+    public void updateFestival(Long id, FestivalRequestDto dto) {
+        Festival festival = festivalRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+        
+        festival.setTitle(dto.getTitle());
+        festival.setDescription(dto.getDescription());
+        festival.setLocation(dto.getLocation());
+        festival.setStartDate(dto.getStartDate());
+        festival.setEndDate(dto.getEndDate());
+        festival.setPosterUrl(dto.getPosterUrl());
+    }
 }
