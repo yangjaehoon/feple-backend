@@ -1,15 +1,13 @@
 package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
