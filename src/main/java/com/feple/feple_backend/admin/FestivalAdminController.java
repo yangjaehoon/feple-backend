@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/festivals")
@@ -29,5 +31,12 @@ public class FestivalAdminController {
         return "redirect:/admin/festivals/new?success";
     }
 
+    //목록 페이지
+    @GetMapping
+    public String listFestivals(Model model) {
+        List<FestivalResponseDto> festivals = festivalService.getAllFestivals();
+        model.addAttribute("festivals",festivals);
+        return "admin/festival-list";
+    }
 
 }
