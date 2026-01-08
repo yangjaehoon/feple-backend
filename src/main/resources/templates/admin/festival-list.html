@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>페스티벌 목록</title>
+</head>
+<body>
+<h1>페스티벌 목록</h1>
+
+<a th:href="@{/admin/festivals/new}">새 페스티벌 등록</a>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>ID</th>
+        <th>제목</th>
+        <th>장소</th>
+        <th>기간</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="festival, stat : ${festivals}">
+        <td th:text="${stat.count}">1</td>
+        <td th:text="${festival.id}">1</td>
+        <td th:text="${festival.title}">제목</td>
+        <td th:text="${festival.location}">장소</td>
+        <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}">기간</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
