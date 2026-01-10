@@ -58,7 +58,7 @@ public class FestivalAdminController {
 
     @PostMapping("/{id}/edit")
     public String updateFestival(FestivalRequestDto dto, @PathVariable Long id){
-        festivalService.updateFestvial(id, dto);
+        festivalService.updateFestival(id, dto);
         return "redirect:/admin/festivals";
     }
 
