@@ -39,8 +39,10 @@
     </div>
 
     <div>
-        <label>포스터 URL</label>
-        <input type="text" th:field="*{posterUrl}" />
+        <!-- <label>포스터 URL</label>
+        # <input type="text" th:field="*{posterUrl}" /> -->
+        <label>포스터 등록</label>
+        <input type="file" name="posterFile" accept="image/*" />
     </div>
 
     <button type="submit">등록</button>
