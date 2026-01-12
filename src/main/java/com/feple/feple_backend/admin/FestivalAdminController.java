@@ -3,14 +3,14 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -19,6 +19,7 @@ import java.util.List;
 public class FestivalAdminController {
 
     private final FestivalService festivalService;
+    private final FileStorageService fileStorageService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -27,9 +28,20 @@ public class FestivalAdminController {
     }
 
     @PostMapping("/new")
-    public String createFestival(FestivalRequestDto dto){
+    public String createFestival(
+            @ModelAttribute FestivalRequestDto dto,
+            @RequestParam("posterFile")MultipartFile posterFile
+    ) throws IOException
+    {
+        String posterUrl = fileStorageService.storeFile(posterFile, dto.getStartDate());
+
+        if (posterUrl != null) {
+            dto.setPosterUrl(posterUrl);
+        }
+
         festivalService.createFestival(dto);
-        return "redirect:/admin/festivals/new?success";
+        return "redirect:/admin/festivals";
+
     }
 
     //목록 페이지
