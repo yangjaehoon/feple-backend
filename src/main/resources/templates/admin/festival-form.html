@@ -12,10 +12,13 @@
     <p style="color: green;">등록이 완료되었습니다.</p>
 </div>
 
-<form th:action="@{/admin/festivals/new}" th:object="${festival}" method="post">
+<form th:action="@{/admin/festivals/new}"
+      th:object="${festival}"
+      method="post"
+      enctype="multipart/form-data">
     <div>
         <label>제목</label>
-        <input type="text" th:field="*{title}" />
+        <input type="text" th:field="*{title}"/>
     </div>
 
     <div>
@@ -25,24 +28,24 @@
 
     <div>
         <label>장소</label>
-        <input type="text" th:field="*{location}" />
+        <input type="text" th:field="*{location}"/>
     </div>
 
     <div>
         <label>시작일</label>
-        <input type="date" th:field="*{startDate}" />
+        <input type="date" th:field="*{startDate}"/>
     </div>
 
     <div>
         <label>종료일</label>
-        <input type="date" th:field="*{endDate}" />
+        <input type="date" th:field="*{endDate}"/>
     </div>
 
     <div>
         <!-- <label>포스터 URL</label>
         # <input type="text" th:field="*{posterUrl}" /> -->
         <label>포스터 등록</label>
-        <input type="file" name="posterFile" accept="image/*" />
+        <input type="file" name="posterFile" accept="image/*"/>
     </div>
 
     <button type="submit">등록</button>
