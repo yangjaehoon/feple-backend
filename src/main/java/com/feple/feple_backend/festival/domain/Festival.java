@@ -1,6 +1,7 @@
 package com.feple.feple_backend.festival.domain;
 
 import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artistfestival.domain.ArtistFestival;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,18 +30,6 @@ public class Festival {
     private String posterUrl;
 
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Artist> artists = new ArrayList<>();
+    private List<ArtistFestival> artistFestivals = new ArrayList<>();
 
-    @Builder
-    public Festival(String title, String description, String location,
-                    LocalDate startDate, LocalDate endDate, String posterUrl,
-                    List<Artist> artists) {
-        this.title = title;
-        this.description = description;
-        this.location = location;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.posterUrl = posterUrl;
-        this.artists = (artists != null) ? artists : new ArrayList<>();
-    }
 }
