@@ -7,6 +7,7 @@ import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,17 +33,6 @@ public class FestivalService {
                 .posterUrl(dto.getPosterUrl())
                 .build();
 
-        if (dto.getArtists() != null) {
-            dto.getArtists().forEach(artistDto -> {
-                Artist artist = Artist.builder()
-                        .name(artistDto.getName())
-                        .genre(artistDto.getGenre())
-                        .profileImageUrl(artistDto.getProfileImageUrl())
-                        .festival(festival)
-                        .build();
-                festival.getArtists().add(artist);
-            });
-        }
         Festival saved = festivalRepository.save(festival);
         return saved.getId();
     }
