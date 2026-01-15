@@ -1,7 +1,7 @@
 package com.feple.feple_backend.artist.controller;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

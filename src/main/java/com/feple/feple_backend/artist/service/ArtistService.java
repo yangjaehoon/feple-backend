@@ -1,4 +1,4 @@
-package com.feple.feple_backend.service;
+package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.domain.Artist;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
