@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,18 +13,23 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ArtistService {
+
     private final ArtistRepository artistRepository;
+
+    public Long createArtist(ArtistRequestDto dto){
+        Artist artist = Artist.builder()
+                .name(dto.getName())
+                .genre(dto.getGenre())
+                .profileImageUrl(dto.getProfileImageUrl())
+                .build();
+
+        return artistRepository.save(artist).getId();
+    }
 
     public List<ArtistResponseDto> getAllArtists() {
         return artistRepository.findAll().stream()
-                .map(artist -> ArtistResponseDto.builder()
-                        .id(artist.getId())
-                        .name(artist.getName())
-                        .genre(artist.getGenre())
-                        .profileImageUrl(artist.getProfileImageUrl())
-                        .likeCount(artist.getLikeCount())
-                        .build())
-                .collect(Collectors.toList());
+                .map(ArtistResponseDto::from)
+                .toList();
     }
 
     public ArtistResponseDto getArtistById(Long id) {
