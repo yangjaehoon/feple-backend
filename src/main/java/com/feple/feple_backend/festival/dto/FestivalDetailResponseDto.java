@@ -34,11 +34,7 @@ public class FestivalDetailResponseDto {
                 .startDate(festival.getStartDate())
                 .endDate(festival.getEndDate())
                 .posterUrl(festival.getPosterUrl())
-                .artists(
-                        festival.getArtists().stream()
-                                .map(ArtistResponseDto::from)
-                                .toList()
-                )
+
                 .build();
     }
 

@@ -20,7 +20,7 @@ public class ArtistAdminController {
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("artist", new ArtistRequestDto());
-        return "admin/artists-form";
+        return "admin/artist-form";
     }
 
     @PostMapping("/new")
