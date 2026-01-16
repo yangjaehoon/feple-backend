@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>아티스트 목록</title>
+</head>
+<body>
+<h1>아티스트 목록</h1>
+
+
+<a th:href="@{/admin}">홈으로</a>
+
+<a th:href="@{/admin/artists/new}">아티스트 등록</a>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>이름</th>
+        <th>장르</th>
+        <th>프로필 이미지</th>
+        <th>좋아요 수</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="artist : ${artists}">
+        <td th:text="${artist.id}">1</td>
+        <td th:text="${artist.name}">이름</td>
+        <td th:text="${artist.genre}">장르</td>
+        <td>
+            <img th:if="${artist.profileImageUrl != null}"
+                 th:src="${artist.profileImageUrl}"
+                 alt="profile" width="80" />
+        </td>
+        <td th:text="${artist.likeCount}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
