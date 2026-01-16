@@ -5,6 +5,9 @@ import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,5 +46,11 @@ public class ArtistService {
                 .profileImageUrl(artist.getProfileImageUrl())
                 .likeCount(artist.getLikeCount())
                 .build();
+    }
+
+    public Page<ArtistResponseDto> getArtistsPage(int page, int size) {
+        Page<Artist> result = artistRepository
+                .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
+        return result.map(ArtistResponseDto::from);
     }
 }

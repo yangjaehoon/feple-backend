@@ -1,0 +1,83 @@
+<h2>페스티벌 목록</h2>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>제목</th>
+        <th>장소</th>
+        <th>기간</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="festival : ${festivalPage.content}">
+        <td th:text="${festival.id}">1</td>
+        <td th:text="${festival.title}">제목</td>
+        <td th:text="${festival.location}">장소</td>
+        <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}">
+            2026-01-01 ~ 2026-01-02
+        </td>
+    </tr>
+    <tr th:if="${festivalPage.totalElements == 0}">
+        <td colspan="4">등록된 페스티벌이 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 페스티벌 페이지 네비게이션 -->
+<div>
+    <span th:if="${festivalPage.hasPrevious()}">
+        <a th:href="@{/admin(festivalPage=${festivalPage.number - 1}, artistPage=${artistPage.number})}">
+            이전
+        </a>
+    </span>
+
+    <span th:text="${festivalPage.number + 1}">1</span>
+    /
+    <span th:text="${festivalPage.totalPages}">1</span>
+
+    <span th:if="${festivalPage.hasNext()}">
+        <a th:href="@{/admin(festivalPage=${festivalPage.number + 1}, artistPage=${artistPage.number})}">
+            다음
+        </a>
+    </span>
+</div>
+
+<h2>아티스트 목록</h2>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>이름</th>
+        <th>장르</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="artist : ${artistPage.content}">
+        <td th:text="${artist.id}">1</td>
+        <td th:text="${artist.name}">이름</td>
+        <td th:text="${artist.genre}">장르</td>
+    </tr>
+    <tr th:if="${artistPage.totalElements == 0}">
+        <td colspan="3">등록된 아티스트가 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 아티스트 페이지 네비게이션 -->
+<div>
+    <span th:if="${artistPage.hasPrevious()}">
+        <a th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number - 1})}">
+            이전
+        </a>
+    </span>
+
+    <span th:text="${artistPage.number + 1}">1</span>
+    /
+    <span th:text="${artistPage.totalPages}">1</span>
+
+    <span th:if="${artistPage.hasNext()}">
+        <a th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number + 1})}">
+            다음
+        </a>
+    </span>
+</div>

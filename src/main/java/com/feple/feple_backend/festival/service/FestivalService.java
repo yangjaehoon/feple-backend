@@ -9,6 +9,9 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,4 +83,12 @@ public class FestivalService {
 
         festivalRepository.delete(festival);
     }
+
+    @Transactional
+    public Page<FestivalResponseDto> getFestivalsPage(int page, int size) {
+        Page<Festival> result = festivalRepository
+                .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")));
+        return result.map(FestivalResponseDto::from);
+    }
+
 }
