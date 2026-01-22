@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>아티스트 추가</title></head>
+<body>
+<h2 th:text="${festival.title} + ' - 아티스트 추가'"></h2>
+
+<form th:action="@{/admin/festivals/{id}/artists(id=${festival.id})}"
+      th:object="${request}" method="post">
+
+    <div>
+        <label>아티스트</label>
+        <select th:field="*{artistId}" required>
+            <option value="">선택</option>
+            <option th:each="artist : ${artists}"
+                    th:value="${artist.id}"
+                    th:text="${artist.name} + ' (' + ${artist.genre} + ')'"></option>
+        </select>
+    </div>
+
+    <div>
+        <label>라인업 순서</label>
+        <input type="number" th:field="*{lineupOrder}" />
+    </div>
+
+    <div>
+        <label>스테이지</label>
+        <input type="text" th:field="*{stageName}" />
+    </div>
+
+    <button type="submit">추가</button>
+    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}">취소</a>
+</form>
+</body>
+</html>

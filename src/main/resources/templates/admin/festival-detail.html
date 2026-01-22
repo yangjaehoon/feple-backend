@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="${festival.title}">페스티벌 상세</title></head>
+<body>
+<h1 th:text="${festival.title}">페스티벌</h1>
+
+<!-- 페스티벌 기본 정보 -->
+<p><strong>기간:</strong> <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span></p>
+
+<!-- 참여 아티스트 리스트 -->
+<h3>참여 아티스트</h3>
+<div id="artist-list">로딩 중...</div>
+
+<!-- 추가 버튼 -->
+<a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}"
+   class="btn btn-primary">아티스트 추가</a>
+</body>
+</html>
