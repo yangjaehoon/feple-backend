@@ -1,5 +1,10 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -20,6 +25,9 @@ public class FestivalAdminController {
 
     private final FestivalService festivalService;
     private final FileStorageService fileStorageService;
+
+    private final ArtistRepository artistRepository;
+    private final ArtistFestivalService artistFestivalService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -78,6 +86,44 @@ public class FestivalAdminController {
     public String deleteFestival(@PathVariable Long id){
         festivalService.deleteFestival(id);
         return "redirect:/admin/festivals";
+    }
+
+    //참여 아티스트 관리 페이지
+    @GetMapping("/{id}")
+    public String festivalDetail(@PathVariable Long id, Model model) {
+        FestivalResponseDto festival = festivalService.getFestival(id);
+        List<Artist> allArtists = artistRepository.findAll();
+
+        model.addAttribute("festival", festival);
+        model.addAttribute("allArtists", allArtists);
+        return "admin/festival-detail";  // 새 템플릿
+    }
+
+    @GetMapping("/{id}/artists/new")
+    public String addArtistForm(@PathVariable Long id, Model model) {
+        FestivalResponseDto festival = festivalService.getFestival(id);
+        List<Artist> allArtists = artistRepository.findAll();
+
+        model.addAttribute("festival", festival);
+        model.addAttribute("artists", allArtists);
+        model.addAttribute("request", new ArtistFestivalCreateRequest());
+        return "admin/festival-artist-form";  // 기존 스타일과 맞춤
+    }
+
+    @PostMapping("/{id}/artists")
+    public String addArtistToFestival(
+            @PathVariable Long id,
+            ArtistFestivalCreateRequest request) {
+
+        artistFestivalService.addArtistToFestival(id, request);
+        return "redirect:/admin/festivals/" + id;
+    }
+
+    @GetMapping("/{id}/artists/list")
+    @ResponseBody
+    public List<ArtistFestivalResponse> getFestivalArtists(@PathVariable Long id) {
+        // REST 서비스 재사용
+        return artistFestivalService.getArtistFestivals(id);
     }
 
 
