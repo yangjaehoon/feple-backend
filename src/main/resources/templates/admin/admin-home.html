@@ -37,7 +37,10 @@
     <tbody>
     <tr th:each="festival : ${festivalPage.content}">
         <td th:text="${festival.id}">1</td>
-        <td th:text="${festival.title}">제목</td>
+        <td>
+        <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+           th:text="${festival.title}">제목</a>
+        </td>
         <td th:text="${festival.location}">장소</td>
         <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}">
             2026-01-01 ~ 2026-01-02
