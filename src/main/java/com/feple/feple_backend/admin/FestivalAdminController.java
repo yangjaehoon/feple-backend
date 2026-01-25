@@ -122,9 +122,16 @@ public class FestivalAdminController {
     @GetMapping("/{id}/artists/list")
     @ResponseBody
     public List<ArtistFestivalResponse> getFestivalArtists(@PathVariable Long id) {
-        // REST 서비스 재사용
         return artistFestivalService.getArtistFestivals(id);
     }
 
+    @PostMapping("/{festivalId}/artists/{artistFestivalId}/delete")
+    public String removeArtistFromFestival(
+            @PathVariable Long festivalId,
+            @PathVariable Long artistFestivalId) {
+
+        artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
+        return "redirect:/admin/festivals/" + festivalId;
+    }
 
 }
