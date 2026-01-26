@@ -8,7 +8,7 @@
 <p><strong>기간:</strong> <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span></p>
 
 <!-- 참여 아티스트 리스트 -->
-<h3>참여 아티스트 (<span th:text="${festival.artistFestivals?.size() ?: 0}">0</span>명)</h3>
+<h3>참여 아티스트 (<span th:text="${participatingArtists.size() ?: 0}">0</span>명)</h3>
 <table border="1">
     <thead>
     <tr>
@@ -20,7 +20,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="af : ${festival.artistFestivals}">
+    <tr th:each="af : ${participatingArtists}">
         <td th:text="${af.lineupOrder}">1</td>
         <td th:text="${af.artist.name}">이름</td>
         <td th:text="${af.artist.genre}">장르</td>
@@ -33,7 +33,7 @@
             </form>
         </td>
     </tr>
-    <tr th:if="${festival.artistFestivals?.isEmpty() ?: true}">
+    <tr th:if="${participatingArtists.isEmpty() ?: true}">
         <td colspan="5">참여 아티스트가 없습니다.</td>
     </tr>
     </tbody>

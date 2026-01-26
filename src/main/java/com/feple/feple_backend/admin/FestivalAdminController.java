@@ -94,8 +94,14 @@ public class FestivalAdminController {
         FestivalResponseDto festival = festivalService.getFestival(id);
         List<Artist> allArtists = artistRepository.findAll();
 
+        List<ArtistFestivalResponse> participatingArtists =
+                artistFestivalService.getArtistFestivals(id);
+
         model.addAttribute("festival", festival);
         model.addAttribute("allArtists", allArtists);
+        model.addAttribute("participatingArtists", participatingArtists);  // ← 추가
+
+
         return "admin/festival-detail";  // 새 템플릿
     }
 
