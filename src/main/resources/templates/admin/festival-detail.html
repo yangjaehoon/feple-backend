@@ -8,11 +8,37 @@
 <p><strong>기간:</strong> <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span></p>
 
 <!-- 참여 아티스트 리스트 -->
-<h3>참여 아티스트</h3>
-<div id="artist-list">로딩 중...</div>
+<h3>참여 아티스트 (<span th:text="${festival.artistFestivals?.size() ?: 0}">0</span>명)</h3>
+<table border="1">
+    <thead>
+    <tr>
+        <th>순서</th>
+        <th>아티스트</th>
+        <th>장르</th>
+        <th>스테이지</th>
+        <th>삭제</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="af : ${festival.artistFestivals}">
+        <td th:text="${af.lineupOrder}">1</td>
+        <td th:text="${af.artist.name}">이름</td>
+        <td th:text="${af.artist.genre}">장르</td>
+        <td th:text="${af.stageName}">스테이지</td>
+        <!-- 삭제 버튼 -->
+        <td>
+            <form th:action="@{/admin/festivals/{fid}/artists/{aid}/delete(fid=${festival.id}, aid=${af.id})}"
+                  method="post" style="display:inline;">
+                <button type="submit" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+            </form>
+        </td>
+    </tr>
+    <tr th:if="${festival.artistFestivals?.isEmpty() ?: true}">
+        <td colspan="5">참여 아티스트가 없습니다.</td>
+    </tr>
+    </tbody>
+</table>
 
-<!-- 추가 버튼 -->
-<a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}"
-   class="btn btn-primary">아티스트 추가</a>
+<a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">아티스트 추가</a>
+<a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
 </body>
-</html>
