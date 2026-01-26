@@ -60,7 +60,6 @@ public class ArtistFestivalService {
         ArtistFestival artistFestival = artistFestivalRepository.findById(artistFestivalId)
                 .orElseThrow(() -> new IllegalArgumentException("참여 정보가 없습니다."));
 
-        // festivalId 일치하는지 보안 체크
         if (!artistFestival.getFestival().getId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
