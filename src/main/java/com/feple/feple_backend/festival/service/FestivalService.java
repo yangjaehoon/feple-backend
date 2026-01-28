@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,10 +42,9 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
-    public List<FestivalResponseDto> getAllFestivals() {
-        return festivalRepository.findAll().stream()
-                .map(FestivalResponseDto::from)
-                .toList();
+    public Page<FestivalResponseDto> getAllFestivals(Pageable pageable) {
+        return festivalRepository.findAllByOrderByStartDateDesc(pageable)
+                .map(FestivalResponseDto::from);
     }
 
     @Transactional(readOnly = true)

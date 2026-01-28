@@ -10,6 +10,10 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -54,8 +58,10 @@ public class FestivalAdminController {
 
     //목록 페이지
     @GetMapping
-    public String listFestivals(Model model) {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals();
+    public String listFestivals(
+            Model model,
+            @PageableDefault(size = 20, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<FestivalResponseDto> festivals = festivalService.getAllFestivals(pageable);
         model.addAttribute("festivals",festivals);
         return "admin/festival-list";
     }

@@ -5,6 +5,8 @@ import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,8 +26,8 @@ public class FestivalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FestivalResponseDto>> getAllFestivals() {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals();
+    public ResponseEntity<Page<FestivalResponseDto>> getAllFestivals(Pageable pageable) {
+        Page<FestivalResponseDto> festivals = festivalService.getAllFestivals(pageable);
         return ResponseEntity.ok(festivals);
     }
 
