@@ -79,7 +79,7 @@ public class FestivalAdminController {
 
         model.addAttribute("festivalId", id);
         model.addAttribute("festival", form);
-        return "admin/festival--edit-form";
+        return "admin/festival-edit-form";
     }
 
     @PostMapping("/{id}/edit")
