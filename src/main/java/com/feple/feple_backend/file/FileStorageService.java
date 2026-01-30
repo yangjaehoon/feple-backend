@@ -49,6 +49,6 @@ public class FileStorageService {
         Path target = uploadPath.resolve(savedName);
         file.transferTo(target.toFile());
 
-        return "/posters" + savedName;
+        return "/posters/" + savedName;
     }
 }
