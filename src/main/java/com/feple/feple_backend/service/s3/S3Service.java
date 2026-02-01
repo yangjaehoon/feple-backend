@@ -21,12 +21,12 @@ public class S3Service {
 
     private final S3Client s3Client;
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
 
-    public S3Service(@Value("${cloud.aws.credentials.access-key}") String accessKey,
-                     @Value("${cloud.aws.credentials.secret-key}") String secretKey,
-                     @Value("${cloud.aws.region.static}") String region) {
+    public S3Service(@Value("${spring.cloud.aws.credentials.access-key}") String accessKey,
+                     @Value("${spring.cloud.aws.credentials.secret-key}") String secretKey,
+                     @Value("${spring.cloud.aws.region.static}") String region) {
 
         this.s3Client = S3Client.builder()
                 .region(Region.of(region))
