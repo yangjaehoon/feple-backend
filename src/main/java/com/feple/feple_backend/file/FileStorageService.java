@@ -1,5 +1,6 @@
 package com.feple.feple_backend.file;
 
+import io.awspring.cloud.s3.S3Template;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,39 +17,40 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class FileStorageService {
+public class FileStorageService { // 기존 주입 코드 유지하려면 이름 그대로 쓰는 게 편함
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final S3Template s3Template;
+
+    @Value("${spring.cloud.aws.s3.bucket}")
+    private String bucket;
+
+    @Value("${spring.cloud.aws.region.static}")
+    private String region;
 
     public String storeFile(MultipartFile file, LocalDate festivalStartDate) throws IOException {
-        if(file.isEmpty()){
-            throw new IllegalArgumentException("File is empty");
-        }
-
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(uploadPath);
+        if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
 
         String yearMonth = "";
         if (festivalStartDate != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-            yearMonth = festivalStartDate.format(formatter);  // 예: 2026-07
+            yearMonth = festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
         }
 
-        String originalFilename = file.getOriginalFilename();
+        String original = file.getOriginalFilename();
         String ext = "";
-        if(originalFilename != null && originalFilename.contains(".")){
-            ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf("."));
         }
 
         String uuid = UUID.randomUUID().toString();
-        String savedName = yearMonth.isEmpty()
-                ? uuid + ext
-                : yearMonth + "_" + uuid + ext;
+        String savedName = yearMonth.isEmpty() ? uuid + ext : yearMonth + "_" + uuid + ext;
 
-        Path target = uploadPath.resolve(savedName);
-        file.transferTo(target.toFile());
+        String key = yearMonth.isEmpty()
+                ? "posters/" + savedName
+                : "posters/" + yearMonth + "/" + savedName;
 
-        return "/posters/" + savedName;
+        s3Template.upload(bucket, key, file.getInputStream());
+
+        // public URL (regional virtual-hosted-style)
+        return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
     }
 }
