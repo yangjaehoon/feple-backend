@@ -40,19 +40,17 @@ public class FestivalAdminController {
     }
 
     @PostMapping("/new")
-    public String createFestival(
-            @ModelAttribute FestivalRequestDto dto,
-            @RequestParam("posterFile")MultipartFile posterFile
-    ) throws IOException
-    {
-        String posterUrl = fileStorageService.storeFile(posterFile, dto.getStartDate());
+    public String createFestival(@ModelAttribute("festival") FestivalRequestDto dto,
+                                 @RequestParam(value = "posterFile", required = false) MultipartFile posterFile
+    ) throws IOException {
 
-        if (posterUrl != null) {
+        if (posterFile != null && !posterFile.isEmpty()) {
+            String posterUrl = fileStorageService.storeFile(posterFile, dto.getStartDate());
             dto.setPosterUrl(posterUrl);
         }
 
         festivalService.createFestival(dto);
-        return "redirect:/admin/festivals";
+        return "redirect:/admin/festivals?success";
 
     }
 
@@ -62,7 +60,7 @@ public class FestivalAdminController {
             Model model,
             @PageableDefault(size = 20, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<FestivalResponseDto> festivals = festivalService.getAllFestivals(pageable);
-        model.addAttribute("festivals",festivals);
+        model.addAttribute("festivals", festivals);
         return "admin/festival-list";
     }
 
@@ -83,13 +81,25 @@ public class FestivalAdminController {
     }
 
     @PostMapping("/{id}/edit")
-    public String updateFestival(FestivalRequestDto dto, @PathVariable Long id){
+    public String updateFestival(@PathVariable Long id,
+                                 @ModelAttribute("festival") FestivalRequestDto dto,
+                                 @RequestParam(value="posterFile", required=false) MultipartFile posterFile
+
+    )throws IOException {
+
+        String existingPosterUrl = festivalService.getFestival(id).getPosterUrl();
+        dto.setPosterUrl(existingPosterUrl);
+
+        if (posterFile != null && !posterFile.isEmpty()) {
+            String newPosterUrl = fileStorageService.storeFile(posterFile, dto.getStartDate());
+            dto.setPosterUrl(newPosterUrl);
+        }
         festivalService.updateFestival(id, dto);
         return "redirect:/admin/festivals";
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteFestival(@PathVariable Long id){
+    public String deleteFestival(@PathVariable Long id) {
         festivalService.deleteFestival(id);
         return "redirect:/admin/festivals";
     }
