@@ -1,5 +1,6 @@
 package com.feple.feple_backend.file;
 
+import io.awspring.cloud.s3.S3Resource;
 import io.awspring.cloud.s3.S3Template;
 
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +19,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class FileStorageService { // 기존 주입 코드 유지하려면 이름 그대로 쓰는 게 편함
+public class FileStorageService {
 
     private final S3Template s3Template;
 
@@ -48,9 +50,11 @@ public class FileStorageService { // 기존 주입 코드 유지하려면 이름
                 ? "posters/" + savedName
                 : "posters/" + yearMonth + "/" + savedName;
 
-        s3Template.upload(bucket, key, file.getInputStream());
+        S3Resource result;
+        try (InputStream is = file.getInputStream()) {
+            result = s3Template.upload(bucket, key, is);
+        }
 
-        // public URL (regional virtual-hosted-style)
-        return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+        return result.getURL().toString();
     }
 }
