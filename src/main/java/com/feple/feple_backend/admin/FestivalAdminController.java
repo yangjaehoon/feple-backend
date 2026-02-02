@@ -95,13 +95,13 @@ public class FestivalAdminController {
             dto.setPosterUrl(newPosterUrl);
         }
         festivalService.updateFestival(id, dto);
-        return "redirect:/admin/festivals";
+        return "redirect:/admin";
     }
 
     @PostMapping("/{id}/delete")
     public String deleteFestival(@PathVariable Long id) {
         festivalService.deleteFestival(id);
-        return "redirect:/admin/festivals";
+        return "redirect:/admin";
     }
 
     //참여 아티스트 관리 페이지
