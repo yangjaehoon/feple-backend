@@ -50,7 +50,7 @@ public class FestivalAdminController {
         }
 
         festivalService.createFestival(dto);
-        return "redirect:/admin/festivals?success";
+        return "redirect:/admin";
 
     }
 
