@@ -138,7 +138,7 @@
         <td th:text="${af.stageName}">스테이지</td>
         <!-- 삭제 버튼 -->
         <td>
-            <form th:action="@{/admin/festivals/{fid}/artists/{aid}/delete(fid=${festival.id}, aid=${af.id})}"
+            <form th:action="@{/admin/festivals/{festivalId}/artists/{artistFestivalId}/delete(festivalId=${festival.id}, artistFestivalId=${af.artistFestivalId})}"
                   method="post" style="display:inline;">
                 <button type="submit" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
             </form>

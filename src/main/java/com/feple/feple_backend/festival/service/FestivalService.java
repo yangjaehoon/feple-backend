@@ -1,6 +1,7 @@
 package com.feple.feple_backend.festival.service;
 
 import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.domain.Festival;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
@@ -25,6 +26,7 @@ import static java.util.stream.Collectors.toList;
 public class FestivalService {
 
     private final FestivalRepository festivalRepository;
+    private final ArtistFestivalRepository artistFestivalRepository;
 
     @Transactional
     public Long createFestival(FestivalRequestDto dto) {
@@ -78,6 +80,9 @@ public class FestivalService {
 
     @Transactional
     public void deleteFestival(Long id) {
+
+        artistFestivalRepository.deleteByFestivalId(id);
+
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("존해하지 않는 페스티벌입니다.id="+ id));
 
