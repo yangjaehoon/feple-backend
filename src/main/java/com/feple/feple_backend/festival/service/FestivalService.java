@@ -79,14 +79,14 @@ public class FestivalService {
     }
 
     @Transactional
-    public void deleteFestival(Long id) {
+    public void deleteFestival(Long festivalId) {
 
-        artistFestivalRepository.deleteByFestivalId(id);
+        if (!festivalRepository.existsById(festivalId)) {
+            throw new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + festivalId);
+        }
 
-        Festival festival = festivalRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("존해하지 않는 페스티벌입니다.id="+ id));
-
-        festivalRepository.delete(festival);
+        artistFestivalRepository.deleteByFestivalId(festivalId);
+        festivalRepository.deleteById(festivalId);
     }
 
     @Transactional

@@ -10,4 +10,7 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     List<ArtistFestival> findByFestivalId(Long festivalId);
 
     boolean existsByFestivalIdAndArtistId(Long festivalId, Long artistId);
+
+    long deleteByFestivalId(Long festivalId);
+
 }
