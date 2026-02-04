@@ -45,7 +45,7 @@ public class FestivalAdminController {
     ) throws IOException {
 
         if (posterFile != null && !posterFile.isEmpty()) {
-            String posterUrl = fileStorageService.storeFile(posterFile, dto.getStartDate());
+            String posterUrl = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
             dto.setPosterUrl(posterUrl);
         }
 
@@ -91,7 +91,7 @@ public class FestivalAdminController {
         dto.setPosterUrl(existingPosterUrl);
 
         if (posterFile != null && !posterFile.isEmpty()) {
-            String newPosterUrl = fileStorageService.storeFile(posterFile, dto.getStartDate());
+            String newPosterUrl = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
             dto.setPosterUrl(newPosterUrl);
         }
         festivalService.updateFestival(id, dto);

@@ -2,13 +2,14 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Controller
 @RequestMapping("/admin/artists")
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ArtistAdminController {
 
     private final ArtistService artistService;
+    private final FileStorageService fileStorageService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -24,7 +26,15 @@ public class ArtistAdminController {
     }
 
     @PostMapping("/new")
-    public String createArtist(@ModelAttribute("artist") ArtistRequestDto dto) {
+    public String createArtist(@ModelAttribute("artist") ArtistRequestDto dto,
+                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
+    ) throws IOException {
+
+        if (profileImageFile != null && !profileImageFile.isEmpty()) {
+            String url = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
+            dto.setProfileImageUrl(url);
+        }
+
         artistService.createArtist(dto);
         return "redirect:/admin/artists";
     }

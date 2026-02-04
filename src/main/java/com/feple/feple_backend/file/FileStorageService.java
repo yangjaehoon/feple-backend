@@ -10,9 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -26,16 +23,24 @@ public class FileStorageService {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
-    @Value("${spring.cloud.aws.region.static}")
-    private String region;
+    public String storeFestivalPoster(MultipartFile file, LocalDate festivalStartDate) throws IOException {
+        String yearMonth = festivalStartDate == null ? "" :
+                festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
-    public String storeFile(MultipartFile file, LocalDate festivalStartDate) throws IOException {
+        String folder = yearMonth.isEmpty() ? "posters" : "posters/" + yearMonth;
+        return storeFile(file, folder);
+    }
+
+    public String storeArtistProfile(MultipartFile file, String artistName) throws IOException {
+        String safeName = (artistName == null || artistName.isBlank())
+                ? "unknown"
+                : artistName.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
+
+        return storeFile(file, "artists/" + safeName);
+    }
+
+    private String storeFile(MultipartFile file, String folder) throws IOException {
         if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
-
-        String yearMonth = "";
-        if (festivalStartDate != null) {
-            yearMonth = festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        }
 
         String original = file.getOriginalFilename();
         String ext = "";
@@ -43,18 +48,12 @@ public class FileStorageService {
             ext = original.substring(original.lastIndexOf("."));
         }
 
-        String uuid = UUID.randomUUID().toString();
-        String savedName = yearMonth.isEmpty() ? uuid + ext : yearMonth + "_" + uuid + ext;
+        String savedName = UUID.randomUUID() + ext;
+        String key = folder + "/" + savedName;
 
-        String key = yearMonth.isEmpty()
-                ? "posters/" + savedName
-                : "posters/" + yearMonth + "/" + savedName;
-
-        S3Resource result;
         try (InputStream is = file.getInputStream()) {
-            result = s3Template.upload(bucket, key, is);
+            S3Resource result = s3Template.upload(bucket, key, is);
+            return result.getURL().toString();
         }
-
-        return result.getURL().toString();
     }
 }
