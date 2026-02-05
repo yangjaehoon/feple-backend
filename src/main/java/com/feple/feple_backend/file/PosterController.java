@@ -23,6 +23,6 @@ public class PosterController {
     public String upload(@RequestParam("file") MultipartFile file,
                          @RequestParam(value="festivalStartDate", required=false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate festivalStartDate
     ) throws IOException {
-        return fileStorageService.storeFile(file, festivalStartDate);
+        return fileStorageService.storeFestivalPoster(file, festivalStartDate);
     }
 }
