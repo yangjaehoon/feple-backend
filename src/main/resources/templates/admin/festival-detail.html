@@ -133,8 +133,8 @@
     <tbody>
     <tr th:each="af : ${participatingArtists}">
         <td th:text="${af.lineupOrder}">1</td>
-        <td th:text="${af.artist.name}">이름</td>
-        <td th:text="${af.artist.genre}">장르</td>
+        <td th:text="${af.artistName}">이름</td>
+        <td th:text="${af.artistGenre}">장르</td>
         <td th:text="${af.stageName}">스테이지</td>
         <!-- 삭제 버튼 -->
         <td>
