@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.domain.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfestival.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
@@ -135,10 +137,18 @@ public class FestivalAdminController {
     @PostMapping("/{id}/artists")
     public String addArtistToFestival(
             @PathVariable Long id,
-            ArtistFestivalCreateRequest request) {
+            ArtistFestivalCreateRequest request,
+            RedirectAttributes ra
+            ) {
 
-        artistFestivalService.addArtistToFestival(id, request);
-        return "redirect:/admin/festivals/" + id;
+        try {
+            artistFestivalService.addArtistToFestival(id, request);
+            ra.addFlashAttribute("successMessage", "아티스트가 추가되었습니다.");
+            return "redirect:/admin/festivals/" + id;
+        } catch (DuplicateArtistFestivalException e) {
+            ra.addFlashAttribute("errorMessage", "이미 이 페스티벌에 참여 중인 아티스트입니다.");
+            return "redirect:/admin/festivals/" + id + "/artists/new";
+        }
     }
 
     @GetMapping("/{id}/artists/list")
