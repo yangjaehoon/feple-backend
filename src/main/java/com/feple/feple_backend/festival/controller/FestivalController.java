@@ -26,9 +26,8 @@ public class FestivalController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<FestivalResponseDto>> getAllFestivals(Pageable pageable) {
-        Page<FestivalResponseDto> festivals = festivalService.getAllFestivals(pageable);
-        return ResponseEntity.ok(festivals);
+    public List<FestivalResponseDto> getAllFestivals() {
+        return festivalService.getAllFestivals();
     }
 
     @GetMapping("/{id}")

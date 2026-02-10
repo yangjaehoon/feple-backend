@@ -6,8 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.nio.channels.FileChannel;
+import java.util.List;
 
 public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
-    Page<Festival> findAllByOrderByStartDateDesc(Pageable pageable);
+    List<Festival> findAllByOrderByStartDateDesc();
 }

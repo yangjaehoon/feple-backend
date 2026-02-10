@@ -44,9 +44,11 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
-    public Page<FestivalResponseDto> getAllFestivals(Pageable pageable) {
-        return festivalRepository.findAllByOrderByStartDateDesc(pageable)
-                .map(FestivalResponseDto::from);
+    public List<FestivalResponseDto> getAllFestivals() {
+        return festivalRepository.findAllByOrderByStartDateDesc()
+                .stream()
+                .map(FestivalResponseDto::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
