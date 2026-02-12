@@ -20,6 +20,7 @@ public class ArtistResponseDto {
                 .name(artist.getName())
                 .genre(artist.getGenre())
                 .profileImageUrl(artist.getProfileImageUrl())
+                .followerCount(artist.getFollowerCount())
                 .build();
     }
 }
