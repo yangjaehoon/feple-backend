@@ -12,7 +12,7 @@ public class ArtistResponseDto {
     private String name;
     private String genre;
     private String profileImageUrl;
-    private int likeCount;
+    private int followerCount;
 
     public static ArtistResponseDto from(Artist artist) {
         return ArtistResponseDto.builder()

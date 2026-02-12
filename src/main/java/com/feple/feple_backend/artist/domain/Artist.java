@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Artist {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,4 +21,12 @@ public class Artist {
 
     @Column(nullable = false)
     private int followerCount = 0;
+
+    public void increaseFollowCount() {
+        this.followerCount++;
+    }
+
+    public void decreaseFollowCount() {
+        if (this.followerCount > 0) this.followerCount--;
+    }
 }
