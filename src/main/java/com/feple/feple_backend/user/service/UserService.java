@@ -3,7 +3,7 @@ package com.feple.feple_backend.user.service;
 import com.feple.feple_backend.user.domain.AuthProvider;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.KakaoUserResponse;
-import com.feple.feple_backend.user.dto.UserRequestDto;
+import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.repository.UserRepository;
 //import jakarta.transaction.Transactional;
@@ -50,7 +50,7 @@ public class UserService {
                 ));
     }
 
-    public Long createUser(UserRequestDto dto) {
+    public Long createUser(OAuthUserInfo dto) {
         User user = User.builder()
                 .email(dto.getEmail())
                 .nickname(dto.getNickname())

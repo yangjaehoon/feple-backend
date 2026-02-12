@@ -1,7 +1,7 @@
 package com.feple.feple_backend.user.controller;
 
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
-import com.feple.feple_backend.user.dto.UserRequestDto;
+import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Long> createUser(@RequestBody UserRequestDto dto) {
+    public ResponseEntity<Long> createUser(@RequestBody OAuthUserInfo dto) {
         return ResponseEntity.ok(userService.createUser(dto));
     }
 
