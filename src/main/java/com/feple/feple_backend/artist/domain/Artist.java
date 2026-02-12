@@ -19,5 +19,5 @@ public class Artist {
     private String profileImageUrl;
 
     @Column(nullable = false)
-    private int likeCount = 0;
+    private int followerCount = 0;
 }
