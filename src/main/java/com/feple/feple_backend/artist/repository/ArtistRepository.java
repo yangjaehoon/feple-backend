@@ -10,7 +10,7 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Artist a set a.followerCount = a.followerCount + 1 where a.id = :artistId")
-    int followerCount(@Param("artistId") Long artistId);
+    int incrementFollowerCount(@Param("artistId") Long artistId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
@@ -21,4 +21,5 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
             """
     )
     int decrementFollowerCount(@Param("artistId") Long artistId);
+
 }
