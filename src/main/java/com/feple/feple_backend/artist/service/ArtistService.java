@@ -44,7 +44,7 @@ public class ArtistService {
                 .name(artist.getName())
                 .genre(artist.getGenre())
                 .profileImageUrl(artist.getProfileImageUrl())
-                .follwerCount(artist.getfollwerCount())
+                .followerCount(artist.getFollowerCount())
                 .build();
     }
 
