@@ -27,13 +27,18 @@ public class ArtistAdminController {
 
     @PostMapping("/new")
     public String createArtist(@ModelAttribute("artist") ArtistRequestDto dto,
-                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
-    ) throws IOException {
+                               @RequestParam(value = "profileImageFile") MultipartFile profileImageFile,
+                               org.springframework.validation.BindingResult bindingResult
 
-        if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            String url = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
-            dto.setProfileImageUrl(url);
+                               ) throws IOException {
+
+        if (profileImageFile == null || profileImageFile.isEmpty()) {
+            bindingResult.rejectValue("profileImageUrl", "profileImageFile.required", "프로필 이미지는 필수입니다.");
+            return "admin/artist-form";
         }
+
+        String url = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
+        dto.setProfileImageUrl(url);
 
         artistService.createArtist(dto);
         return "redirect:/admin/artists";
