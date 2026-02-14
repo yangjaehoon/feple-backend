@@ -49,4 +49,11 @@ public class ArtistAdminController {
         model.addAttribute("artists", artistService.getAllArtists());
         return "admin/artists-list";
     }
+
+    @DeleteMapping("/{id}")
+    public String deleteArtist(@PathVariable Long id) {
+        artistService.deleteArtist(id);
+        return "redirect:/admin"; // 또는 "redirect:/admin/artists"
+    }
+
 }

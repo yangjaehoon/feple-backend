@@ -78,13 +78,22 @@
         <th>ID</th>
         <th>이름</th>
         <th>장르</th>
+        <th>삭제</th>
     </tr>
     </thead>
+
     <tbody>
     <tr th:each="artist : ${artistPage.content}">
         <td th:text="${artist.id}">1</td>
         <td th:text="${artist.name}">이름</td>
         <td th:text="${artist.genre}">장르</td>
+        <td>
+            <form th:action="@{/admin/artists/{id}(id=${artist.id})}"
+                  th:method="delete"
+                  onsubmit="return confirm('정말 삭제할까요?');">
+                <button type="submit">삭제</button>
+            </form>
+        </td>
     </tr>
     <tr th:if="${artistPage.totalElements == 0}">
         <td colspan="3">등록된 아티스트가 없습니다.</td>

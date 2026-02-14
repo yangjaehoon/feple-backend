@@ -9,7 +9,8 @@
 
 <form th:action="@{/admin/artists/new}"
       th:object="${artist}"
-      method="post">
+      method="post"
+      enctype="multipart/form-data">
     <div>
         <label>이름</label>
         <input type="text" th:field="*{name}" />

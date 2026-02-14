@@ -53,4 +53,8 @@ public class ArtistService {
                 .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
         return result.map(ArtistResponseDto::from);
     }
+
+    public void deleteArtist(Long id) {
+        artistRepository.deleteById(id);
+    }
 }
