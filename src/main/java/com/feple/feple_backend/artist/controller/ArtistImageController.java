@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/artist images")
+@RequestMapping("/artist-image")
 public class ArtistImageController {
     private final ArtistImageLikeService likeService;
 
