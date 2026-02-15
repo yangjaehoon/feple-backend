@@ -10,6 +10,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
+
+
   sql:
     init:
       #mode: always #h2 설정
@@ -26,5 +28,9 @@ server:
       enabled: true
       force: true
 
-#
+
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration-ms: 86400000
 

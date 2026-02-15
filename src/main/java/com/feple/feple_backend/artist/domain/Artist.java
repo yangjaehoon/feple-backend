@@ -20,6 +20,7 @@ public class Artist {
     private String profileImageUrl;
 
     @Column(nullable = false)
+    @Builder.Default
     private int followerCount = 0;
 
     public void increaseFollowCount() {

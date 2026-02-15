@@ -1,7 +1,9 @@
 package com.feple.feple_backend.artistfollow.controller;
 
+import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,12 +14,21 @@ public class ArtistFollowController {
     private final ArtistFollowService artistFollowService;
 
     @PostMapping("/{id}/follow")
-    public void follow(@PathVariable Long id, /* currentUserId */ Long userId) {
-        artistFollowService.follow(userId, id);
+    public FollowResponseDto follow(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        return artistFollowService.follow(userId, id);
     }
 
     @DeleteMapping("/{id}/follow")
-    public void unfollow(@PathVariable Long id, /* currentUserId */ Long userId) {
-        artistFollowService.unfollow(userId, id);
+    public FollowResponseDto unfollow(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        return artistFollowService.unfollow(userId, id);
+    }
+
+    @GetMapping("/{id}/follow")
+    public boolean isFollowed(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        return artistFollowService.isFollowed(userId, id);
     }
 }
