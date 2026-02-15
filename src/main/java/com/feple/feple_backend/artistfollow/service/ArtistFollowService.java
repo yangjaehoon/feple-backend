@@ -4,13 +4,16 @@ import com.feple.feple_backend.artist.domain.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfollow.domain.ArtistFollow;
 import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
+import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,19 @@ public class ArtistFollowService {
         return artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
     }
 
+    @Transactional(readOnly = true)
+    public FollowStatusDto followStatus(Long userId, Long artistId) {
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "userId is null");
+        }
+
+        boolean followed = artistFollowRepository.existsByUserIdAndArtistId(userId, artistId); // [web:569]
+
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "artist not found"));
+
+        return new FollowStatusDto(followed, artist.getFollowerCount());
+    }
 
     @Transactional
     public FollowResponseDto follow(Long userId, Long artistId) {
