@@ -42,6 +42,9 @@ public class ArtistPhoto {
     @Column(length = 500, columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    private int likecount = 0;
+
     public ArtistPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title, String description) {
         this.artistId = artistId;
         this.uploaderUserId = uploaderUserId;
