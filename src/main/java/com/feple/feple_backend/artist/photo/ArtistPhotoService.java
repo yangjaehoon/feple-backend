@@ -1,8 +1,6 @@
-package com.feple.feple_backend.artist.service;
+package com.feple.feple_backend.artist.photo;
 
-import com.feple.feple_backend.artist.entity.ArtistPhoto;
-import com.feple.feple_backend.artist.dto.ArtistPhotoResponseDto;
-import com.feple.feple_backend.artist.repository.ArtistPhotoRepository;
+import com.feple.feple_backend.artist.service.S3PresignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;

@@ -1,8 +1,5 @@
-package com.feple.feple_backend.artist.controller;
+package com.feple.feple_backend.artist.photo;
 
-import com.feple.feple_backend.artist.dto.ArtistPhotoResponseDto;
-import com.feple.feple_backend.artist.dto.RegisterPhotoRequestDto;
-import com.feple.feple_backend.artist.service.ArtistPhotoService;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

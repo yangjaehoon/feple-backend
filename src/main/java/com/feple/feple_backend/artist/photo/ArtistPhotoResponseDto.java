@@ -1,4 +1,4 @@
-package com.feple.feple_backend.artist.dto;
+package com.feple.feple_backend.artist.photo;
 
 import java.time.LocalDateTime;
 
