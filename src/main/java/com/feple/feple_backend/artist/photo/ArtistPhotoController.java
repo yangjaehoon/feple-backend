@@ -2,9 +2,12 @@ package com.feple.feple_backend.artist.photo;
 
 import com.feple.feple_backend.artist.service.S3PresignService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -35,9 +38,18 @@ public class ArtistPhotoController {
 
     @GetMapping
     public List<ArtistPhotoResponseDto> list(@PathVariable Long artistId) {
-        return artistPhotoService.list(artistId);
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return artistPhotoService.list(artistId, userId);  // *** list(artistId, userId) 호출 ***
     }
 
     public record PresignRequest(String contentType, String extension) {}
 
+    @PostMapping("/{photoId}/like")
+    public ResponseEntity<Map<String, Boolean>> toggleLike(
+            @PathVariable Long photoId,
+            @PathVariable Long artistId) {  // artistId 검증용
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean success = artistPhotoService.toggleLike(photoId, userId);
+        return ResponseEntity.ok(Map.of("success", success));
+    }
 }
