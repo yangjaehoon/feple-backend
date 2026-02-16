@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.controller;
 
 import com.feple.feple_backend.artist.dto.ArtistPhotoResponseDto;
+import com.feple.feple_backend.artist.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.service.ArtistPhotoService;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +31,9 @@ public class ArtistPhotoController {
     @PostMapping
     public ArtistPhotoResponseDto register(
             @PathVariable Long artistId,
-            @RequestBody RegisterPhotoRequest req
+            @RequestBody RegisterPhotoRequestDto req
     ) {
-        return artistPhotoService.register(artistId, req.objectKey(), req.contentType());
+        return artistPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description());
     }
 
     @GetMapping
@@ -41,8 +42,5 @@ public class ArtistPhotoController {
     }
 
     public record PresignRequest(String contentType, String extension) {}
-    public record RegisterPhotoRequest(String objectKey, String contentType) {}
-
-
 
 }

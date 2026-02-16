@@ -36,10 +36,18 @@ public class ArtistPhoto {
         this.createdAt = LocalDateTime.now();
     }
 
-    public ArtistPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType) {
+    @Column(length = 100, nullable = false)
+    private String title;
+
+    @Column(length = 500, columnDefinition = "TEXT")
+    private String description;
+
+    public ArtistPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title, String description) {
         this.artistId = artistId;
         this.uploaderUserId = uploaderUserId;
         this.s3Key = s3Key;
         this.contentType = contentType;
+        this.title = title;
+        this.description = description;
     }
 }
