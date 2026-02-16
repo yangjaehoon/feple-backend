@@ -1,0 +1,48 @@
+package com.feple.feple_backend.artist.controller;
+
+import com.feple.feple_backend.artist.dto.ArtistPhotoResponseDto;
+import com.feple.feple_backend.artist.service.ArtistPhotoService;
+import com.feple.feple_backend.artist.service.S3PresignService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/artists/{artistId}/photos")
+public class ArtistPhotoController {
+
+    private final S3PresignService s3PresignService;
+    private final ArtistPhotoService artistPhotoService;
+
+
+    @PostMapping("/presign")
+    public S3PresignService.PresignResult presign(
+            @PathVariable Long artistId,
+            @RequestBody PresignRequest req
+    ) {
+        String objectKey = "artist-photos/" + artistId + "/" + UUID.randomUUID() + "." + req.extension();
+        return s3PresignService.presignPut(objectKey, req.contentType());
+    }
+
+    @PostMapping
+    public ArtistPhotoResponseDto register(
+            @PathVariable Long artistId,
+            @RequestBody RegisterPhotoRequest req
+    ) {
+        return artistPhotoService.register(artistId, req.objectKey(), req.contentType());
+    }
+
+    @GetMapping
+    public List<ArtistPhotoResponseDto> list(@PathVariable Long artistId) {
+        return artistPhotoService.list(artistId);
+    }
+
+    public record PresignRequest(String contentType, String extension) {}
+    public record RegisterPhotoRequest(String objectKey, String contentType) {}
+
+
+
+}
