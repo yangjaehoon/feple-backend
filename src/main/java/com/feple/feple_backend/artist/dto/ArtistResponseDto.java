@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.dto;
 
-import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.entity.Artist;
 import lombok.Builder;
 import lombok.Getter;
 

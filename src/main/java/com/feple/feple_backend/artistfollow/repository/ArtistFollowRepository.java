@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artistfollow.repository;
 
-import com.feple.feple_backend.artistfollow.domain.ArtistFollow;
+import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

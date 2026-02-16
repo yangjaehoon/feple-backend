@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
@@ -11,7 +11,6 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;

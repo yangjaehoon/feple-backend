@@ -1,25 +1,19 @@
 package com.feple.feple_backend.festival.service;
 
-import com.feple.feple_backend.artist.domain.Artist;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.festival.domain.Festival;
-import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor

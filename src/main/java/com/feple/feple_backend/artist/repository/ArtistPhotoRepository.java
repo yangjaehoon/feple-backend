@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.repository;
 
-import com.feple.feple_backend.artist.domain.ArtistPhoto;
+import com.feple.feple_backend.artist.entity.ArtistPhoto;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

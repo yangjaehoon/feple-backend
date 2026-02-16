@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
-import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
@@ -11,7 +11,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

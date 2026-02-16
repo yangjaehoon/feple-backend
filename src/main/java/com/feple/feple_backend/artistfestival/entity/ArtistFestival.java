@@ -1,8 +1,8 @@
-package com.feple.feple_backend.artistfestival.domain;
+package com.feple.feple_backend.artistfestival.entity;
 
 
-import com.feple.feple_backend.artist.domain.Artist;
-import com.feple.feple_backend.festival.domain.Festival;
+import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.festival.entity.Festival;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

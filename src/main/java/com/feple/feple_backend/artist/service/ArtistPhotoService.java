@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
-import com.feple.feple_backend.artist.domain.ArtistPhoto;
+import com.feple.feple_backend.artist.entity.ArtistPhoto;
 import com.feple.feple_backend.artist.dto.ArtistPhotoResponseDto;
 import com.feple.feple_backend.artist.repository.ArtistPhotoRepository;
 import lombok.RequiredArgsConstructor;

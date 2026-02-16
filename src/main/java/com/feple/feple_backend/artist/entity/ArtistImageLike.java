@@ -1,4 +1,4 @@
-package com.feple.feple_backend.artist.domain;
+package com.feple.feple_backend.artist.entity;
 
 import com.feple.feple_backend.user.domain.User;
 import jakarta.persistence.*;

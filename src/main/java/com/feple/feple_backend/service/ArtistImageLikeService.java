@@ -1,7 +1,7 @@
 package com.feple.feple_backend.service;
 
-import com.feple.feple_backend.artist.domain.ArtistImage;
-import com.feple.feple_backend.artist.domain.ArtistImageLike;
+import com.feple.feple_backend.artist.entity.ArtistImage;
+import com.feple.feple_backend.artist.entity.ArtistImageLike;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.repository.ArtistImageLikeRepository;
 import com.feple.feple_backend.repository.ArtistImageRepository;

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.festival.dto;
 
-import com.feple.feple_backend.festival.domain.Festival;
+import com.feple.feple_backend.festival.entity.Festival;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

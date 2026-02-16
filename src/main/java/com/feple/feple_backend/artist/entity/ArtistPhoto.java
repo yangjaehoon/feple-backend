@@ -1,4 +1,4 @@
-package com.feple.feple_backend.artist.domain;
+package com.feple.feple_backend.artist.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

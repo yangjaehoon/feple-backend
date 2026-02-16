@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artistfestival.repository;
 
-import com.feple.feple_backend.artistfestival.domain.ArtistFestival;
+import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,12 +1,12 @@
 package com.feple.feple_backend.artistfestival.service;
 
-import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artistfestival.domain.ArtistFestival;
+import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.festival.domain.Festival;
+import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

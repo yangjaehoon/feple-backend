@@ -1,8 +1,8 @@
 package com.feple.feple_backend.artistfollow.service;
 
-import com.feple.feple_backend.artist.domain.Artist;
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artistfollow.domain.ArtistFollow;
+import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
 import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
