@@ -11,4 +11,6 @@ public interface ArtistPhotoLikeRepository extends JpaRepository<ArtistPhotoLike
     Optional<ArtistPhotoLike> findByArtistPhotoIdAndUserId(Long artistPhotoId, Long userId);
 
     long countByArtistPhotoId(Long artistPhotoId);
+
+    long deleteByArtistPhotoIdAndUserId(Long artistPhotoId, Long userId);
 }

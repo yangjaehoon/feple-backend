@@ -9,6 +9,5 @@ public interface ArtistPhotoRepository extends JpaRepository<ArtistPhoto, Long> 
 
     List<ArtistPhoto> findByArtistIdOrderByLikecountDescCreatedAtDesc(Long artistId);
 
-    ArtistPhoto findByIdAndArtistId(Long id, Long artistId);  // 또는 그냥 findById 사용
-
+    ArtistPhoto findByIdAndArtistId(Long id, Long artistId);
 }

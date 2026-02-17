@@ -3,6 +3,7 @@ package com.feple.feple_backend.artist.photo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -52,5 +53,12 @@ public class ArtistPhoto {
         this.contentType = contentType;
         this.title = title;
         this.description = description;
+    }
+
+    public void setLikecount(int i) {
+        if (this.likecount > 0)
+            this.likecount--;
+        else
+            this.likecount++;
     }
 }
