@@ -33,10 +33,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+        System.out.println("JWT FILTER path=" + request.getRequestURI());
+        System.out.println("JWT FILTER Authorization=" + auth);
+
         if (auth != null && auth.startsWith("Bearer ")) {
             String token = auth.substring(7);
             try {
                 Long userId = jwtProvider.parseUserId(token);
+                System.out.println("JWT FILTER parsed userId=" + userId);
 
                 var authentication = new UsernamePasswordAuthenticationToken(
                         userId,  // principal
@@ -45,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
+                System.out.println("JWT FILTER parse failed: " + e.getClass() + " / " + e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }

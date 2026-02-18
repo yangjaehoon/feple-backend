@@ -26,13 +26,20 @@ public class ArtistPhotoService {
             String contentType,
             String title,
             String description) {
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("principal class = " + auth.getPrincipal().getClass());
+        System.out.println("principal value = " + auth.getPrincipal());
+        System.out.println("name = " + auth.getName());
+        System.out.println("authorities = " + auth.getAuthorities());
+
         String prefix = "artist-photos/" + artistId + "/";
         if (objectKey == null || !objectKey.startsWith(prefix)) {
             throw new IllegalArgumentException("Invalid objectKey");
         }
 
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long userId = (Long) principal;
+        String principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        Long userId = Long.parseLong(principal);
 
         ArtistPhoto saved = artistPhotoRepository.save(
                 new ArtistPhoto(artistId, userId, objectKey, contentType, title, description)

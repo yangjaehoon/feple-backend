@@ -7,6 +7,7 @@ import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.repository.UserRepository;
 //import jakarta.transaction.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -88,5 +89,15 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
+    public Long currentUserId() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new IllegalStateException("Not authenticated");
+        }
+        String principal = auth.getPrincipal().toString();
+        return Long.parseLong(principal);
+    }
+
 
 }

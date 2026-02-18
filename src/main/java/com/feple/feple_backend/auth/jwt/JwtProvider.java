@@ -31,6 +31,33 @@ public class JwtProvider {
                 .compact();
     }
 
+    public boolean isRefreshToken(String token) {
+        try {
+            String sub = Jwts.parser()
+                    .verifyWith(key())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getSubject();
+            return "refresh".equals(sub);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String createRefreshToken(Long userId) {
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + props.refreshTokenExpirationMs());
+
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .issuedAt(now)
+                .expiration(exp)
+                .signWith(key())
+                .compact();
+    }
+
+
     public Long parseUserId(String token) {
         String sub = Jwts.parser()
                 .verifyWith(key())

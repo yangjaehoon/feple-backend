@@ -1,11 +1,13 @@
 package com.feple.feple_backend.user.controller;
 
+import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +40,13 @@ public class UserController {
             @RequestBody UpdateNicknameDto dto) {
         UserResponseDto updated = userService.updateNickname(id, dto.getNickname());
         return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/users/me")
+    public ResponseEntity<UserResponseDto> getCurrentUser(Authentication auth) {
+        Long userId = userService.currentUserId();
+        UserResponseDto userDto = userService.getUser(userId);
+        return ResponseEntity.ok(userDto);
     }
 
 
