@@ -70,6 +70,8 @@ public class SecurityConfig {
                         .requestMatchers("/festivals/**").permitAll()
                         .requestMatchers("/artists/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/posts/**").permitAll()
+                        .requestMatchers("/comments/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(hb -> hb.disable())

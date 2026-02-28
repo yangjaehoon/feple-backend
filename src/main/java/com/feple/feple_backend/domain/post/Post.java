@@ -54,6 +54,14 @@ public class Post {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) this.likeCount--;
+    }
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 }

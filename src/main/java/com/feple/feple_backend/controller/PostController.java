@@ -46,4 +46,16 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostsByBoardType(BoardType.MATE));
     }
 
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<Boolean> toggleLike(@PathVariable Long postId, @RequestParam Long userId) {
+        boolean liked = postService.toggleLike(postId, userId);
+        return ResponseEntity.ok(liked);
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+        postService.deletePost(postId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
