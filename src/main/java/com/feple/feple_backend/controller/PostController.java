@@ -36,9 +36,13 @@ public class PostController {
     }
 
     @PostMapping("/mate")
-    public ResponseEntity<Long> createMatePost(@RequestBody PostRequestDto dto, User user) {
+    public ResponseEntity<Long> createMatePost(@RequestBody PostRequestDto dto) {
         dto.setBoardType(BoardType.MATE);
-        return ResponseEntity.ok(postService.createPost(dto, user));
+
+        User author = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + dto.getUserId()));
+
+        return ResponseEntity.ok(postService.createPost(dto, author));
     }
 
     @GetMapping("/mate")
