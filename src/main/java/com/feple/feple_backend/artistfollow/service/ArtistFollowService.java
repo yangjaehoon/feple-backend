@@ -44,6 +44,9 @@ public class ArtistFollowService {
 
     @Transactional
     public FollowResponseDto follow(Long userId, Long artistId) {
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -71,6 +74,9 @@ public class ArtistFollowService {
 
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
         artistFollowRepository.findByUserIdAndArtistId(userId, artistId)
                 .ifPresent(follow -> {
                     artistFollowRepository.delete(follow);
