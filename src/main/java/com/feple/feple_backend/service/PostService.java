@@ -1,5 +1,7 @@
 package com.feple.feple_backend.service;
 
+import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.domain.post.BoardType;
 import com.feple.feple_backend.domain.post.Post;
 import com.feple.feple_backend.domain.post.PostLike;
@@ -25,6 +27,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
+    private final ArtistRepository artistRepository;
 
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
@@ -73,5 +76,35 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId) {
         postRepository.deleteById(postId);
+    }
+
+    public List<PostResponseDto> getPostsByArtistId(Long artistId) {
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new RuntimeException("해당 아티스트가 없습니다: " + artistId));
+        List<Post> posts = postRepository.findByArtist(artist);
+        return posts.stream()
+                .map(PostResponseDto::from)
+                .toList();
+    }
+
+    @Transactional
+    public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new RuntimeException("해당 아티스트가 없습니다: " + artistId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + userId));
+
+        Post post = Post.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .boardType(null)
+                .likeCount(0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .user(user)
+                .artist(artist)
+                .build();
+
+        return postRepository.save(post).getId();
     }
 }

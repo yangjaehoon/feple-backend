@@ -56,4 +56,16 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/artist/{artistId}")
+    public ResponseEntity<List<PostResponseDto>> getArtistPosts(@PathVariable Long artistId) {
+        return ResponseEntity.ok(postService.getPostsByArtistId(artistId));
+    }
+
+    @PostMapping("/artist/{artistId}")
+    public ResponseEntity<Long> createArtistPost(@PathVariable Long artistId,
+                                                  @Valid @RequestBody PostRequestDto dto,
+                                                  @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.createArtistPost(artistId, dto, userId));
+    }
+
 }

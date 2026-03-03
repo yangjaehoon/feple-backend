@@ -18,6 +18,7 @@ public class PostResponseDto {
     private BoardType boardType;
     private int likeCount;
     private String nickname;
+    private Long artistId;
 
     public static PostResponseDto from(Post post) {
         return PostResponseDto.builder()
@@ -27,6 +28,7 @@ public class PostResponseDto {
                 .boardType(post.getBoardType())
                 .likeCount(post.getLikeCount())
                 .nickname(post.getUser().getNickname())  // Lazy 로딩 주의
+                .artistId(post.getArtist() != null ? post.getArtist().getId() : null)
                 .build();
     }
 }

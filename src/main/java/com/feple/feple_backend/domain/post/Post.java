@@ -1,5 +1,6 @@
 package com.feple.feple_backend.domain.post;
 
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.domain.comment.Comment;
 import com.feple.feple_backend.user.domain.User;
 import jakarta.persistence.*;
@@ -39,7 +40,10 @@ public class Post {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Builder
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist_id", nullable = true)
+    private Artist artist;
+
     private Post(String title, String content, User user) {
         this.title = title;
         this.content = content;
