@@ -12,11 +12,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class FileStorageService {
+
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
+    private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
     private final S3Template s3Template;
 
@@ -40,12 +44,20 @@ public class FileStorageService {
     }
 
     private String storeFile(MultipartFile file, String folder) throws IOException {
-        if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
+        if (file.isEmpty()) throw new IllegalArgumentException("파일이 비어있습니다.");
+
+        if (file.getSize() > MAX_FILE_SIZE_BYTES) {
+            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
+        }
 
         String original = file.getOriginalFilename();
         String ext = "";
         if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf("."));
+            ext = original.substring(original.lastIndexOf(".")).toLowerCase();
+        }
+
+        if (!ALLOWED_EXTENSIONS.contains(ext)) {
+            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (jpg, jpeg, png, gif, webp만 가능)");
         }
 
         String savedName = UUID.randomUUID() + ext;

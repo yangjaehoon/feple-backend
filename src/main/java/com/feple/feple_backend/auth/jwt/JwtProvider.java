@@ -25,6 +25,7 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .claim("type", "access")
                 .issuedAt(now)
                 .expiration(exp)
                 .signWith(key())
@@ -33,13 +34,13 @@ public class JwtProvider {
 
     public boolean isRefreshToken(String token) {
         try {
-            String sub = Jwts.parser()
+            String type = Jwts.parser()
                     .verifyWith(key())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload()
-                    .getSubject();
-            return "refresh".equals(sub);
+                    .get("type", String.class);
+            return "refresh".equals(type);
         } catch (Exception e) {
             return false;
         }
@@ -51,6 +52,7 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(exp)
                 .signWith(key())

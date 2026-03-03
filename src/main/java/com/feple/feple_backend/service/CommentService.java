@@ -6,7 +6,7 @@ import com.feple.feple_backend.dto.comment.CommentResponseDto;
 import java.util.List;
 
 public interface CommentService {
-    CommentResponseDto createComment(CreateCommentDto dto);
+    CommentResponseDto createComment(CreateCommentDto dto, Long userId);
     List<CommentResponseDto> getCommentsByPost(Long postId);
     void deleteComment(Long commentId);
 }

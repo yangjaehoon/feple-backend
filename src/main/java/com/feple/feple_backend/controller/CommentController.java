@@ -3,8 +3,10 @@ package com.feple.feple_backend.controller;
 import com.feple.feple_backend.dto.comment.CommentResponseDto;
 import com.feple.feple_backend.dto.comment.CreateCommentDto;
 import com.feple.feple_backend.service.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,8 +18,9 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<CommentResponseDto> create(@RequestBody CreateCommentDto dto) {
-        return ResponseEntity.ok(commentService.createComment(dto));
+    public ResponseEntity<CommentResponseDto> create(@Valid @RequestBody CreateCommentDto dto,
+                                                     @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(commentService.createComment(dto, userId));
     }
 
     @GetMapping("/post/{PostId}")

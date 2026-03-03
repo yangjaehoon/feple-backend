@@ -27,9 +27,9 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Long createPost(PostRequestDto dto) {
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + dto.getUserId()));
+    public Long createPost(PostRequestDto dto, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + userId));
 
         Post post = Post.builder()
                 .title(dto.getTitle())

@@ -23,10 +23,10 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
 
     @Override
-    public CommentResponseDto createComment(CreateCommentDto dto) {
+    public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
         Post post = postRepository.findById(dto.getPostId())
                 .orElseThrow(() -> new IllegalArgumentException("post not found"));
-        User user = userRepository.findById(dto.getUserId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         Comment comment = new Comment(dto.getContent(), post, user);

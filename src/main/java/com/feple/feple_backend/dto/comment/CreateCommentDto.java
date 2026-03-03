@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateCommentDto {
     private Long postId;
-    private Long userId;
+    @jakarta.validation.constraints.NotBlank(message = "내용을 입력해주세요.")
     private String content;
 }
 

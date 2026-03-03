@@ -36,7 +36,8 @@ public class AuthController {
                 .map(userService::registerOrLogin)
                 .map(user -> new AuthResponseDto(
                         UserResponseDto.from(user),
-                        jwtProvider.createAccessToken(user.getId())
+                        jwtProvider.createAccessToken(user.getId()),
+                        jwtProvider.createRefreshToken(user.getId())
                 ));
     }
 
@@ -51,6 +52,7 @@ public class AuthController {
         UserResponseDto userDto = userService.getUser(userId);
 
         String newAccessToken = jwtProvider.createAccessToken(userId);
-        return ResponseEntity.ok(new AuthResponseDto(userDto, newAccessToken));
+        String newRefreshToken = jwtProvider.createRefreshToken(userId);
+        return ResponseEntity.ok(new AuthResponseDto(userDto, newAccessToken, newRefreshToken));
     }
 }

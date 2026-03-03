@@ -35,10 +35,10 @@ package com.feple.feple_backend.config;
 
 // import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // 이 import도 제거
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -54,12 +54,6 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
 
-
-    @PostConstruct
-    public void init() {
-        System.out.println("### SecurityConfig LOADED ###");
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -67,11 +61,10 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/festivals/**").permitAll()
-                        .requestMatchers("/artists/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/posts/**").permitAll()
-                        .requestMatchers("/comments/**").permitAll()
+                        // 조회는 비로그인 허용, 쓰기/삭제는 인증 필요
+                        .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
+                                "/posts/**", "/comments/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(hb -> hb.disable())

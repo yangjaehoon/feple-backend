@@ -4,8 +4,10 @@ import com.feple.feple_backend.domain.post.BoardType;
 import com.feple.feple_backend.dto.post.PostRequestDto;
 import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +20,10 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("/free")
-    public ResponseEntity<Long> createFreePost(@RequestBody PostRequestDto dto) {
+    public ResponseEntity<Long> createFreePost(@Valid @RequestBody PostRequestDto dto,
+                                               @AuthenticationPrincipal Long userId) {
         dto.setBoardType(BoardType.FREE);
-        return ResponseEntity.ok(postService.createPost(dto));
+        return ResponseEntity.ok(postService.createPost(dto, userId));
     }
 
     @GetMapping("/free")
@@ -29,9 +32,10 @@ public class PostController {
     }
 
     @PostMapping("/mate")
-    public ResponseEntity<Long> createMatePost(@RequestBody PostRequestDto dto) {
+    public ResponseEntity<Long> createMatePost(@Valid @RequestBody PostRequestDto dto,
+                                               @AuthenticationPrincipal Long userId) {
         dto.setBoardType(BoardType.MATE);
-        return ResponseEntity.ok(postService.createPost(dto));
+        return ResponseEntity.ok(postService.createPost(dto, userId));
     }
 
     @GetMapping("/mate")
@@ -40,7 +44,8 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<Boolean> toggleLike(@PathVariable Long postId, @RequestParam Long userId) {
+    public ResponseEntity<Boolean> toggleLike(@PathVariable Long postId,
+                                              @AuthenticationPrincipal Long userId) {
         boolean liked = postService.toggleLike(postId, userId);
         return ResponseEntity.ok(liked);
     }

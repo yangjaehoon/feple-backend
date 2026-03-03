@@ -8,8 +8,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class PostRequestDto {
-    private Long userId;
+    @jakarta.validation.constraints.NotBlank(message = "제목을 입력해주세요.")
     private String title;
+    @jakarta.validation.constraints.NotBlank(message = "내용을 입력해주세요.")
     private String content;
     @Setter
     private BoardType boardType;
