@@ -1,6 +1,7 @@
 package com.feple.feple_backend.user.controller;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.dto.comment.MyCommentResponseDto;
 import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.user.domain.User;
@@ -57,6 +58,11 @@ public class UserController {
     @GetMapping("/{id}/following")
     public ResponseEntity<List<ArtistResponseDto>> getFollowedArtists(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getFollowedArtists(id));
+    }
+
+    @GetMapping("/{id}/liked-festivals")
+    public ResponseEntity<List<FestivalResponseDto>> getLikedFestivals(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getLikedFestivals(id));
     }
 
     @GetMapping("/{id}/stats")
