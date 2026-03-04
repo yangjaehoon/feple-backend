@@ -13,6 +13,7 @@ import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.repository.PostLikeRepository;
 import com.feple.feple_backend.repository.PostRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +60,13 @@ public class PostService {
     public boolean isLikedByUser(Long postId, Long userId) {
         if (userId == null) return false;
         return postLikeRepository.existsByUserIdAndPostId(userId, postId);
+    }
+
+    public List<PostResponseDto> getHotPosts() {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        return postRepository.findHotPosts(oneWeekAgo, PageRequest.of(0, 4)).stream()
+                .map(PostResponseDto::from)
+                .toList();
     }
 
     public List<PostResponseDto> getPostsByBoardType(BoardType boardType) {
