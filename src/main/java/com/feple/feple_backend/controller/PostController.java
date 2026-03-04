@@ -37,6 +37,11 @@ public class PostController {
         return ResponseEntity.ok(postService.createPost(dto, userId));
     }
 
+    @GetMapping("/hot")
+    public ResponseEntity<List<PostResponseDto>> getHotPosts() {
+        return ResponseEntity.ok(postService.getHotPosts());
+    }
+
     @GetMapping("/free")
     public ResponseEntity<List<PostResponseDto>> getFreePosts() {
         return ResponseEntity.ok(postService.getPostsByBoardType(BoardType.FREE));
