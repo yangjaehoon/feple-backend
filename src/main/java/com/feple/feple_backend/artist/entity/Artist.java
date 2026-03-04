@@ -15,7 +15,10 @@ public class Artist {
     private Long id;
 
     private String name;
-    private String genre;
+
+    @Enumerated(EnumType.STRING)
+    private ArtistGenre genre;
+
     private String profileImageUrl;
 
     @Column(nullable = false)

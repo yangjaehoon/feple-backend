@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.dto;
 
+import com.feple.feple_backend.artist.entity.ArtistGenre;
 import lombok.*;
 
 @Getter
@@ -10,7 +11,7 @@ import lombok.*;
 public class ArtistRequestDto {
     private Long id;
     private String name;
-    private String genre;
+    private ArtistGenre genre;
     private String profileImageUrl;
     private int followerCount;
 }

@@ -18,7 +18,7 @@ public class ArtistResponseDto {
         return ArtistResponseDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
-                .genre(artist.getGenre())
+                .genre(artist.getGenre() != null ? artist.getGenre().getDisplayName() : null)
                 .profileImageUrl(artist.getProfileImageUrl())
                 .followerCount(artist.getFollowerCount())
                 .build();

@@ -73,7 +73,7 @@ public class ArtistFestivalService {
                 .artistFestivalId(af.getId())
                 .artistId(af.getArtist().getId())
                 .artistName(af.getArtist().getName())
-                .artistGenre(af.getArtist().getGenre())
+                .artistGenre(af.getArtist().getGenre() != null ? af.getArtist().getGenre().getDisplayName() : null)
                 .profileImageUrl(af.getArtist().getProfileImageUrl())
                 .lineupOrder(af.getLineupOrder())
                 .stageName(af.getStageName())
