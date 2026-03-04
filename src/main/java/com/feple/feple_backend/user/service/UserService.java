@@ -1,10 +1,13 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.repository.CommentRepository;
+import com.feple.feple_backend.repository.PostRepository;
 import com.feple.feple_backend.user.domain.AuthProvider;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.KakaoUserResponse;
 import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
+import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.repository.UserRepository;
 //import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +27,8 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     public User registerOrLogin(KakaoUserResponse kakaoUser) {
         // kakao_account 가 없으면 예외
@@ -88,6 +93,15 @@ public class UserService {
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public UserStatsDto getUserStats(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        long postCount = postRepository.countByUser(user);
+        long commentCount = commentRepository.countByUser(user);
+        return new UserStatsDto(postCount, commentCount);
     }
 
     public Long currentUserId() {

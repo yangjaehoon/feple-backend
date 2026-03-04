@@ -4,6 +4,7 @@ import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
+import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,11 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
+
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<UserStatsDto> getUserStats(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserStats(id));
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
