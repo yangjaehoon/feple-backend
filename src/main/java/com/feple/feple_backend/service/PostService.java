@@ -3,6 +3,8 @@ package com.feple.feple_backend.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.domain.post.BoardType;
+import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.domain.post.Post;
 import com.feple.feple_backend.domain.post.PostLike;
 import com.feple.feple_backend.user.domain.User;
@@ -28,6 +30,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
+    private final FestivalRepository festivalRepository;
 
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
@@ -103,6 +106,36 @@ public class PostService {
                 .updatedAt(LocalDateTime.now())
                 .user(user)
                 .artist(artist)
+                .build();
+
+        return postRepository.save(post).getId();
+    }
+
+    public List<PostResponseDto> getPostsByFestivalId(Long festivalId) {
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> new RuntimeException("해당 페스티벌이 없습니다: " + festivalId));
+        List<Post> posts = postRepository.findByFestival(festival);
+        return posts.stream()
+                .map(PostResponseDto::from)
+                .toList();
+    }
+
+    @Transactional
+    public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> new RuntimeException("해당 페스티벌이 없습니다: " + festivalId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + userId));
+
+        Post post = Post.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .boardType(null)
+                .likeCount(0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .user(user)
+                .festival(festival)
                 .build();
 
         return postRepository.save(post).getId();

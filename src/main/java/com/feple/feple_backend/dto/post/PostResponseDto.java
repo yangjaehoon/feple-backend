@@ -19,6 +19,7 @@ public class PostResponseDto {
     private int likeCount;
     private String nickname;
     private Long artistId;
+    private Long festivalId;
 
     public static PostResponseDto from(Post post) {
         return PostResponseDto.builder()
@@ -29,6 +30,7 @@ public class PostResponseDto {
                 .likeCount(post.getLikeCount())
                 .nickname(post.getUser().getNickname())  // Lazy 로딩 주의
                 .artistId(post.getArtist() != null ? post.getArtist().getId() : null)
+                .festivalId(post.getFestival() != null ? post.getFestival().getId() : null)
                 .build();
     }
 }

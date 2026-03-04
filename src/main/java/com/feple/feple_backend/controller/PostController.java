@@ -68,4 +68,16 @@ public class PostController {
         return ResponseEntity.ok(postService.createArtistPost(artistId, dto, userId));
     }
 
+    @GetMapping("/festival/{festivalId}")
+    public ResponseEntity<List<PostResponseDto>> getFestivalPosts(@PathVariable Long festivalId) {
+        return ResponseEntity.ok(postService.getPostsByFestivalId(festivalId));
+    }
+
+    @PostMapping("/festival/{festivalId}")
+    public ResponseEntity<Long> createFestivalPost(@PathVariable Long festivalId,
+                                                    @Valid @RequestBody PostRequestDto dto,
+                                                    @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.createFestivalPost(festivalId, dto, userId));
+    }
+
 }
