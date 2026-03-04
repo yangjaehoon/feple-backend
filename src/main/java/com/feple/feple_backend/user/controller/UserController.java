@@ -1,5 +1,7 @@
 package com.feple.feple_backend.user.controller;
 
+import com.feple.feple_backend.dto.comment.MyCommentResponseDto;
+import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.OAuthUserInfo;
@@ -54,6 +56,16 @@ public class UserController {
     @GetMapping("/{id}/stats")
     public ResponseEntity<UserStatsDto> getUserStats(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserStats(id));
+    }
+
+    @GetMapping("/{id}/posts")
+    public ResponseEntity<List<PostResponseDto>> getMyPosts(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getMyPosts(id));
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<List<MyCommentResponseDto>> getMyComments(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getMyComments(id));
     }
 
     @DeleteMapping("/{id}")

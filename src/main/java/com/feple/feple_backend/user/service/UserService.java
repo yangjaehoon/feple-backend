@@ -1,5 +1,7 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.dto.comment.MyCommentResponseDto;
+import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.repository.CommentRepository;
 import com.feple.feple_backend.repository.PostRepository;
 import com.feple.feple_backend.user.domain.AuthProvider;
@@ -93,6 +95,24 @@ public class UserService {
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getMyPosts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        return postRepository.findByUser(user).stream()
+                .map(PostResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MyCommentResponseDto> getMyComments(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        return commentRepository.findByUser(user).stream()
+                .map(MyCommentResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
