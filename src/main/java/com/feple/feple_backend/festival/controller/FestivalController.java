@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,5 +35,17 @@ public class FestivalController {
     public ResponseEntity<FestivalDetailResponseDto> getFestival(@PathVariable Long id) {
         FestivalDetailResponseDto detail = festivalService.getFestivalDetail(id);
         return ResponseEntity.ok(detail);
+    }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Boolean> toggleLike(@PathVariable Long id,
+                                              @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(festivalService.toggleLike(id, userId));
+    }
+
+    @GetMapping("/{id}/liked")
+    public ResponseEntity<Boolean> isLiked(@PathVariable Long id,
+                                           @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(festivalService.isLiked(id, userId));
     }
 }
