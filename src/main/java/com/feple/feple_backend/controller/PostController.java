@@ -19,6 +19,17 @@ public class PostController {
 
     private final PostService postService;
 
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getPost(postId));
+    }
+
+    @GetMapping("/{postId}/liked")
+    public ResponseEntity<Boolean> isLiked(@PathVariable Long postId,
+                                           @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.isLikedByUser(postId, userId));
+    }
+
     @PostMapping("/free")
     public ResponseEntity<Long> createFreePost(@Valid @RequestBody PostRequestDto dto,
                                                @AuthenticationPrincipal Long userId) {

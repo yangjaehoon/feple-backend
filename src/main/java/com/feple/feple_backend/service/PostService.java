@@ -50,6 +50,17 @@ public class PostService {
         return postRepository.save(post).getId();
     }
 
+    public PostResponseDto getPost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + postId));
+        return PostResponseDto.from(post);
+    }
+
+    public boolean isLikedByUser(Long postId, Long userId) {
+        if (userId == null) return false;
+        return postLikeRepository.existsByUserIdAndPostId(userId, postId);
+    }
+
     public List<PostResponseDto> getPostsByBoardType(BoardType boardType) {
         List<Post> posts = postRepository.findByBoardType(boardType);
         return posts.stream()
