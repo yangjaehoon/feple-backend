@@ -17,8 +17,13 @@
     </div>
 
     <div>
-        <label>장르</label>
-        <input type="text" th:field="*{genre}" />
+        <label>카테고리</label>
+        <select th:field="*{genre}" required>
+            <option value="">선택</option>
+            <option th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
+                    th:value="${g}"
+                    th:text="${g.displayName}"></option>
+        </select>
     </div>
 
     <div>
