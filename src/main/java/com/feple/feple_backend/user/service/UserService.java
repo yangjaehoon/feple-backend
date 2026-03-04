@@ -1,5 +1,7 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.dto.comment.MyCommentResponseDto;
 import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.repository.CommentRepository;
@@ -31,6 +33,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final ArtistFollowRepository artistFollowRepository;
 
     public User registerOrLogin(KakaoUserResponse kakaoUser) {
         // kakao_account 가 없으면 예외
@@ -112,6 +115,13 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
         return commentRepository.findByUser(user).stream()
                 .map(MyCommentResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ArtistResponseDto> getFollowedArtists(Long userId) {
+        return artistFollowRepository.findByUserId(userId).stream()
+                .map(follow -> ArtistResponseDto.from(follow.getArtist()))
                 .collect(Collectors.toList());
     }
 
