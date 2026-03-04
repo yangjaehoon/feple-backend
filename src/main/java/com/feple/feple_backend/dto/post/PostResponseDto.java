@@ -17,6 +17,7 @@ public class PostResponseDto {
     private String content;
     private BoardType boardType;
     private int likeCount;
+    private int commentCount;
     private String nickname;
     private Long artistId;
     private Long festivalId;
@@ -28,6 +29,7 @@ public class PostResponseDto {
                 .content(post.getContent())
                 .boardType(post.getBoardType())
                 .likeCount(post.getLikeCount())
+                .commentCount(post.getComments().size())
                 .nickname(post.getUser().getNickname())  // Lazy 로딩 주의
                 .artistId(post.getArtist() != null ? post.getArtist().getId() : null)
                 .festivalId(post.getFestival() != null ? post.getFestival().getId() : null)
