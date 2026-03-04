@@ -35,6 +35,7 @@ public class CommentServiceImpl implements CommentService {
                 saved.getId(),
                 post.getId(),
                 user.getId(),
+                user.getNickname(),
                 saved.getContent(),
                 saved.getCreatedAt()
         );
@@ -49,6 +50,7 @@ public class CommentServiceImpl implements CommentService {
                         c.getId(),
                         c.getPost().getId(),
                         c.getUser().getId(),
+                        c.getUser().getNickname(),
                         c.getContent(),
                         c.getCreatedAt()
                 ))
