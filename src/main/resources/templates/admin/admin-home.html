@@ -144,17 +144,26 @@
                     <table>
                         <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>이름</th>
-                            <th>장르</th>
-                            <th>관리</th>
+                            <th>아티스트</th>
+                            <th style="width:140px;">관리</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="artist : ${artistPage.content}">
-                            <td class="td-id" th:text="${artist.id}"></td>
-                            <td style="font-weight:600;" th:text="${artist.name}"></td>
-                            <td><span class="badge badge-genre" th:text="${artist.genre}"></span></td>
+                            <td>
+                                <div class="avatar-cell">
+                                    <div th:if="${artist.profileImageUrl == null}"
+                                         style="width:34px; height:34px; border-radius:50%; background:var(--purple-50); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🎤</div>
+                                    <img th:if="${artist.profileImageUrl != null}"
+                                         th:src="${artist.profileImageUrl}" class="avatar" alt=""/>
+                                    <div>
+                                        <div class="cell-primary" th:text="${artist.name}"></div>
+                                        <div class="cell-secondary" style="margin-top:3px;">
+                                            <span class="badge badge-genre" th:text="${artist.genre}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
                             <td>
                                 <div style="display:flex; gap:6px; align-items:center;">
                                     <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
@@ -168,7 +177,7 @@
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${artistPage.totalElements == 0}">
-                            <td colspan="4">등록된 아티스트가 없습니다.</td>
+                            <td colspan="2">등록된 아티스트가 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

@@ -64,12 +64,9 @@
                                 <input type="checkbox" id="select-all" title="전체 선택"
                                        style="cursor:pointer; width:15px; height:15px;"/>
                             </th>
-                            <th>ID</th>
-                            <th>프로필</th>
-                            <th>닉네임</th>
-                            <th>이메일</th>
-                            <th>상세</th>
-                            <th>삭제</th>
+                            <th>회원</th>
+                            <th style="width:80px;">상세</th>
+                            <th style="width:80px;">삭제</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -79,17 +76,19 @@
                                        form="bulk-form" class="row-check"
                                        style="cursor:pointer; width:15px; height:15px;"/>
                             </td>
-                            <td class="td-id" th:text="${user.id}"></td>
                             <td>
-                                <img th:if="${user.profileImageUrl != null}"
-                                     th:src="${user.profileImageUrl}"
-                                     style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border);"
-                                     alt="profile"/>
-                                <div th:if="${user.profileImageUrl == null}"
-                                     style="width:34px; height:34px; border-radius:50%; background:var(--primary-50); display:flex; align-items:center; justify-content:center; font-size:16px;">👤</div>
+                                <div class="avatar-cell">
+                                    <img th:if="${user.profileImageUrl != null}"
+                                         th:src="${user.profileImageUrl}"
+                                         class="avatar" alt="profile"/>
+                                    <div th:if="${user.profileImageUrl == null}"
+                                         style="width:38px; height:38px; border-radius:50%; background:var(--primary-50); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">👤</div>
+                                    <div>
+                                        <div class="cell-primary" th:text="${user.nickname}"></div>
+                                        <div class="cell-secondary" th:text="${user.email}"></div>
+                                    </div>
+                                </div>
                             </td>
-                            <td style="font-weight:600;" th:text="${user.nickname}"></td>
-                            <td style="color:var(--muted); font-size:13px;" th:text="${user.email}"></td>
                             <td>
                                 <a th:href="@{/admin/users/{id}(id=${user.id})}"
                                    class="btn btn-secondary btn-sm">상세</a>
@@ -104,7 +103,7 @@
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${users.totalElements == 0}">
-                            <td colspan="7">회원이 없습니다.</td>
+                            <td colspan="4">회원이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

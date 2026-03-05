@@ -89,8 +89,8 @@ body {
   font-family: 'Inter', 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 13.5px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -317,7 +317,7 @@ thead th {
   color: var(--muted);
   font-size: 10.5px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .7px;
-  padding: 10px 16px;
+  padding: 11px 20px;
   text-align: left;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
@@ -327,7 +327,7 @@ tbody tr { border-bottom: 1px solid #F1F5F9; transition: background .1s; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: #F5F7FF; }
 
-tbody td { padding: 12px 16px; vertical-align: middle; color: var(--text-2); }
+tbody td { padding: 15px 20px; vertical-align: middle; color: var(--text-2); }
 
 tbody td a {
   color: var(--primary); text-decoration: none; font-weight: 600;
@@ -355,7 +355,13 @@ tbody td a:hover { color: var(--primary-600); text-decoration: underline; }
 /* ============================================================
    AVATAR
    ============================================================ */
-.avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+
+/* ── Stacked cell helpers ── */
+.cell-primary   { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.cell-secondary { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.cell-row       { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.avatar-cell    { display: flex; align-items: center; gap: 12px; }
 
 /* ============================================================
    BUTTONS

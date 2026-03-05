@@ -49,26 +49,32 @@
                     <table>
                         <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>프로필</th>
-                            <th>이름</th>
-                            <th>장르</th>
-                            <th>팔로워</th>
-                            <th>관리</th>
+                            <th>아티스트</th>
+                            <th style="width:100px;">팔로워</th>
+                            <th style="width:140px;">관리</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="artist : ${artists}">
-                            <td class="td-id" th:text="${artist.id}"></td>
                             <td>
-                                <img th:if="${artist.profileImageUrl != null}"
-                                     th:src="${artist.profileImageUrl}"
-                                     alt="profile"
-                                     class="avatar"/>
+                                <div class="avatar-cell">
+                                    <img th:if="${artist.profileImageUrl != null}"
+                                         th:src="${artist.profileImageUrl}"
+                                         class="avatar" alt="profile"/>
+                                    <div th:if="${artist.profileImageUrl == null}"
+                                         style="width:38px; height:38px; border-radius:50%; background:var(--purple-50); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎤</div>
+                                    <div>
+                                        <div class="cell-primary" th:text="${artist.name}"></div>
+                                        <div class="cell-secondary" style="margin-top:4px;">
+                                            <span class="badge badge-genre" th:text="${artist.genre}"></span>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
-                            <td style="font-weight:600;" th:text="${artist.name}"></td>
-                            <td><span class="badge badge-genre" th:text="${artist.genre}"></span></td>
-                            <td th:text="${artist.followerCount}" style="color:var(--muted);"></td>
+                            <td>
+                                <div class="cell-primary" th:text="${artist.followerCount}"></div>
+                                <div class="cell-secondary">팔로워</div>
+                            </td>
                             <td>
                                 <div style="display:flex; gap:6px; align-items:center;">
                                     <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
@@ -82,7 +88,7 @@
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${#lists.isEmpty(artists)}">
-                            <td colspan="6">등록된 아티스트가 없습니다.</td>
+                            <td colspan="3">등록된 아티스트가 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

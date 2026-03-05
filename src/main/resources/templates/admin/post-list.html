@@ -92,14 +92,10 @@
                                 <input type="checkbox" id="select-all" title="전체 선택"
                                        style="cursor:pointer; width:15px; height:15px;"/>
                             </th>
-                            <th>ID</th>
-                            <th>제목</th>
-                            <th>게시판</th>
-                            <th>작성자</th>
-                            <th>좋아요</th>
-                            <th>댓글</th>
-                            <th>작성일</th>
-                            <th>삭제</th>
+                            <th style="width:48px;">ID</th>
+                            <th>게시글</th>
+                            <th style="width:80px;">반응</th>
+                            <th style="width:80px;">삭제</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -113,18 +109,20 @@
                             <td>
                                 <a th:href="@{/admin/posts/{id}(id=${post.id})}"
                                    th:text="${post.title}"
-                                   style="max-width:320px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                                   style="font-size:14px; font-weight:600; max-width:420px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                                <div class="cell-secondary cell-row" style="margin-top:5px;">
+                                    <span class="badge"
+                                          th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
+                                          th:text="${post.boardDisplayName}"></span>
+                                    <span th:text="${post.nickname}"></span>
+                                    <span>·</span>
+                                    <span th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></span>
+                                </div>
                             </td>
                             <td>
-                                <span class="badge"
-                                      th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
-                                      th:text="${post.boardDisplayName}"></span>
+                                <div class="cell-primary">❤ <span th:text="${post.likeCount}"></span></div>
+                                <div class="cell-secondary">💬 <span th:text="${post.commentCount}"></span></div>
                             </td>
-                            <td th:text="${post.nickname}" style="color:var(--muted);"></td>
-                            <td th:text="${post.likeCount}" style="color:var(--muted);"></td>
-                            <td th:text="${post.commentCount}" style="color:var(--muted);"></td>
-                            <td style="color:var(--muted); white-space:nowrap; font-size:12.5px;"
-                                th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></td>
                             <td>
                                 <form th:action="@{/admin/posts/{id}/delete(id=${post.id})}" method="post">
                                     <input type="hidden" name="filter" th:value="${filter}"/>
@@ -136,7 +134,7 @@
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${posts.totalElements == 0}">
-                            <td colspan="9">게시글이 없습니다.</td>
+                            <td colspan="5">게시글이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>
