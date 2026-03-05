@@ -24,6 +24,12 @@ public class Artist {
     @Builder.Default
     private int followerCount = 0;
 
+    public void update(String name, ArtistGenre genre, String profileImageUrl) {
+        this.name = name;
+        this.genre = genre;
+        this.profileImageUrl = profileImageUrl;
+    }
+
     public void increaseFollowCount() {
         this.followerCount++;
     }

@@ -53,6 +53,28 @@ public class ArtistService {
         return result.map(ArtistResponseDto::from);
     }
 
+    public ArtistRequestDto getArtistForEdit(Long id) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        return ArtistRequestDto.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .genre(artist.getGenre())
+                .profileImageUrl(artist.getProfileImageUrl())
+                .followerCount(artist.getFollowerCount())
+                .build();
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void updateArtist(Long id, ArtistRequestDto dto) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        String imageUrl = dto.getProfileImageUrl() != null
+                ? dto.getProfileImageUrl()
+                : artist.getProfileImageUrl();
+        artist.update(dto.getName(), dto.getGenre(), imageUrl);
+    }
+
     public void deleteArtist(Long id) {
         artistRepository.deleteById(id);
     }

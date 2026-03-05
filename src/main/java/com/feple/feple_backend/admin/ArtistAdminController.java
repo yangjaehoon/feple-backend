@@ -50,6 +50,26 @@ public class ArtistAdminController {
         return "admin/artists-list";
     }
 
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        model.addAttribute("artistId", id);
+        model.addAttribute("artist", artistService.getArtistForEdit(id));
+        return "admin/artist-edit-form";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String updateArtist(@PathVariable Long id,
+                               @ModelAttribute("artist") ArtistRequestDto dto,
+                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
+    ) throws IOException {
+        if (profileImageFile != null && !profileImageFile.isEmpty()) {
+            String url = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
+            dto.setProfileImageUrl(url);
+        }
+        artistService.updateArtist(id, dto);
+        return "redirect:/admin/artists";
+    }
+
     @PostMapping("/{id}/delete")
     public String deleteArtist(@PathVariable Long id) {
         artistService.deleteArtist(id);
