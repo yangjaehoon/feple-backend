@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 게시글 상세</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+
+    <div th:insert="~{admin/fragments :: sidebar('posts')}"></div>
+
+    <div class="main-area">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title" th:text="${post.title}">게시글 제목</div>
+                <div class="breadcrumb">
+                    <a th:href="@{/admin}">대시보드</a>
+                    <span class="bc-sep">›</span>
+                    <a th:href="@{/admin/posts}">게시글</a>
+                    <span class="bc-sep">›</span>
+                    <span>상세</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <!-- 게시글 본문 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📄 게시글</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="badge"
+                              th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
+                              th:text="${post.boardDisplayName}"></span>
+                        <form th:action="@{/admin/posts/{id}/delete(id=${post.id})}" method="post">
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">삭제</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- 메타 정보 -->
+                    <div style="display:flex; gap:24px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+                        <div>
+                            <div class="meta-label">작성자</div>
+                            <div class="meta-value" th:text="${post.nickname}"></div>
+                        </div>
+                        <div>
+                            <div class="meta-label">작성일</div>
+                            <div class="meta-value"
+                                 th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></div>
+                        </div>
+                        <div>
+                            <div class="meta-label">좋아요</div>
+                            <div class="meta-value" th:text="${post.likeCount}"></div>
+                        </div>
+                        <div>
+                            <div class="meta-label">댓글</div>
+                            <div class="meta-value" th:text="${post.commentCount}"></div>
+                        </div>
+                    </div>
+
+                    <!-- 제목 -->
+                    <div style="font-size:18px; font-weight:700; color:var(--text); margin-bottom:16px;"
+                         th:text="${post.title}"></div>
+
+                    <!-- 본문 -->
+                    <div style="font-size:14px; color:var(--text-2); line-height:1.8; white-space:pre-wrap;"
+                         th:text="${post.content}"></div>
+                </div>
+            </div>
+
+            <!-- 댓글 목록 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        💬 댓글
+                        <span class="card-count" th:text="${#lists.size(comments)}"></span>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>작성자</th>
+                            <th>내용</th>
+                            <th>작성일</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="comment : ${comments}">
+                            <td class="td-id" th:text="${comment.id}"></td>
+                            <td style="font-weight:600; white-space:nowrap;" th:text="${comment.nickname}"></td>
+                            <td style="max-width:480px;">
+                                <span th:text="${comment.content}"
+                                      style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                            </td>
+                            <td style="color:var(--muted); white-space:nowrap; font-size:12.5px;"
+                                th:text="${#temporals.format(comment.createdAt, 'MM-dd HH:mm')}"></td>
+                            <td>
+                                <form th:action="@{/admin/posts/comments/{id}/delete(id=${comment.id})}" method="post">
+                                    <input type="hidden" name="postId" th:value="${post.id}"/>
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('이 댓글을 삭제할까요?')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${#lists.isEmpty(comments)}">
+                            <td colspan="5">댓글이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="margin-top:8px;">
+                <a th:href="@{/admin/posts}" class="btn btn-secondary">← 목록으로</a>
+            </div>
+
+        </main>
+    </div>
+</div>
+</body>
+</html>
