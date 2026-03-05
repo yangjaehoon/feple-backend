@@ -3,157 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <title>Feple Admin — 게시글 관리</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
-<div class="layout">
-
-    <div th:insert="~{admin/fragments :: sidebar('posts')}"></div>
-
-    <div class="main-area">
-        <header class="topbar">
-            <div class="topbar-left">
-                <div class="topbar-title">게시글 관리</div>
-                <div class="breadcrumb">
-                    <a th:href="@{/admin}">대시보드</a>
-                    <span class="bc-sep">›</span>
-                    <span>게시글</span>
-                </div>
+<div th:insert="~{admin/fragments :: topbar}"></div>
+<div th:insert="~{admin/fragments :: sidebar('posts')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">게시글 관리</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>게시글</span>
             </div>
-        </header>
+        </div>
+    </div>
+    <div class="content-area">
 
-        <main class="content">
+        <div th:if="${successMessage}"
+             style="padding:12px 16px; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; color:#2e7d32; margin-bottom:16px;"
+             th:text="${successMessage}"></div>
 
-            <div th:if="${successMessage}"
-                 style="padding:12px 16px; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; color:#2e7d32; margin-bottom:16px;"
-                 th:text="${successMessage}"></div>
+        <!-- 일괄 삭제 폼 (테이블 바깥) -->
+        <form id="bulk-form" th:action="@{/admin/posts/bulk-delete}" method="post">
+            <input type="hidden" name="filter" th:value="${filter}"/>
+            <input type="hidden" name="page" th:value="${posts.number}"/>
+        </form>
 
-            <!-- 일괄 삭제 폼 (테이블 바깥) -->
-            <form id="bulk-form" th:action="@{/admin/posts/bulk-delete}" method="post">
-                <input type="hidden" name="filter" th:value="${filter}"/>
-                <input type="hidden" name="page" th:value="${posts.number}"/>
-            </form>
+        <div class="card">
+            <!-- 필터 탭 -->
+            <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
+                <a th:href="@{/admin/posts(filter='', page=0)}"
+                   style="padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent;"
+                   th:style="${filter == '' or filter == null}
+                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
+                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                    전체
+                    <span class="card-count" th:text="${posts.totalElements}"></span>
+                </a>
+                <a th:href="@{/admin/posts(filter='FREE', page=0)}"
+                   th:style="${filter == 'FREE'}
+                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
+                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                    자유게시판
+                </a>
+                <a th:href="@{/admin/posts(filter='MATE', page=0)}"
+                   th:style="${filter == 'MATE'}
+                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
+                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                    동행게시판
+                </a>
+            </div>
 
-            <div class="card">
-                <!-- 필터 탭 -->
-                <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
-                    <a th:href="@{/admin/posts(filter='', page=0)}"
-                       style="padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent;"
-                       th:style="${filter == '' or filter == null}
-                           ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                           : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
-                        전체
-                        <span class="card-count" th:text="${posts.totalElements}"></span>
-                    </a>
-                    <a th:href="@{/admin/posts(filter='FREE', page=0)}"
-                       th:style="${filter == 'FREE'}
-                           ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                           : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
-                        자유게시판
-                    </a>
-                    <a th:href="@{/admin/posts(filter='MATE', page=0)}"
-                       th:style="${filter == 'MATE'}
-                           ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                           : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
-                        동행게시판
-                    </a>
-                </div>
+            <!-- 검색 바 -->
+            <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
+                <form th:action="@{/admin/posts}" method="get"
+                      style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="filter" th:value="${filter}"/>
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           placeholder="제목 검색..."
+                           style="flex:1; max-width:320px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                       th:href="@{/admin/posts(filter=${filter}, page=0)}"
+                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                </form>
+            </div>
 
-                <!-- 검색 바 -->
-                <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
-                    <form th:action="@{/admin/posts}" method="get"
-                          style="display:flex; gap:8px; align-items:center;">
-                        <input type="hidden" name="filter" th:value="${filter}"/>
-                        <input type="text" name="keyword" th:value="${keyword}"
-                               placeholder="제목 검색..."
-                               style="flex:1; max-width:320px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
-                        <button type="submit" class="btn btn-secondary btn-sm">검색</button>
-                        <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                           th:href="@{/admin/posts(filter=${filter}, page=0)}"
-                           class="btn btn-secondary btn-sm">✕ 초기화</a>
-                    </form>
-                </div>
+            <!-- 일괄 삭제 액션 바 -->
+            <div style="padding:10px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                <button type="submit" form="bulk-form"
+                        class="btn btn-danger btn-sm"
+                        onclick="return checkBulkSelection() && confirm('선택한 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">
+                    선택 삭제
+                </button>
+                <span id="select-count" style="font-size:12.5px; color:var(--muted);">0개 선택됨</span>
+            </div>
 
-                <!-- 일괄 삭제 액션 바 -->
-                <div style="padding:10px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
-                    <button type="submit" form="bulk-form"
-                            class="btn btn-danger btn-sm"
-                            onclick="return checkBulkSelection() && confirm('선택한 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">
-                        선택 삭제
-                    </button>
-                    <span id="select-count" style="font-size:12.5px; color:var(--muted);">0개 선택됨</span>
-                </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:36px;">
+                            <input type="checkbox" id="select-all" title="전체 선택"
+                                   style="cursor:pointer; width:15px; height:15px;"/>
+                        </th>
+                        <th style="width:48px;">ID</th>
+                        <th>게시글</th>
+                        <th style="width:80px;">반응</th>
+                        <th style="width:80px;">삭제</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="post : ${posts.content}">
+                        <td>
+                            <input type="checkbox" name="ids" th:value="${post.id}"
+                                   form="bulk-form" class="row-check"
+                                   style="cursor:pointer; width:15px; height:15px;"/>
+                        </td>
+                        <td class="td-id" th:text="${post.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${post.id})}"
+                               th:text="${post.title}"
+                               style="font-size:14px; font-weight:600; max-width:420px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                            <div class="cell-secondary cell-row" style="margin-top:5px;">
+                                <span class="badge"
+                                      th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
+                                      th:text="${post.boardDisplayName}"></span>
+                                <span th:text="${post.nickname}"></span>
+                                <span>·</span>
+                                <span th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-primary">❤ <span th:text="${post.likeCount}"></span></div>
+                            <div class="cell-secondary">💬 <span th:text="${post.commentCount}"></span></div>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/posts/{id}/delete(id=${post.id})}" method="post">
+                                <input type="hidden" name="filter" th:value="${filter}"/>
+                                <input type="hidden" name="page" th:value="${posts.number}"/>
+                                <button type="submit"
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirm('이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${posts.totalElements == 0}">
+                        <td colspan="5">게시글이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th style="width:36px;">
-                                <input type="checkbox" id="select-all" title="전체 선택"
-                                       style="cursor:pointer; width:15px; height:15px;"/>
-                            </th>
-                            <th style="width:48px;">ID</th>
-                            <th>게시글</th>
-                            <th style="width:80px;">반응</th>
-                            <th style="width:80px;">삭제</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="post : ${posts.content}">
-                            <td>
-                                <input type="checkbox" name="ids" th:value="${post.id}"
-                                       form="bulk-form" class="row-check"
-                                       style="cursor:pointer; width:15px; height:15px;"/>
-                            </td>
-                            <td class="td-id" th:text="${post.id}"></td>
-                            <td>
-                                <a th:href="@{/admin/posts/{id}(id=${post.id})}"
-                                   th:text="${post.title}"
-                                   style="font-size:14px; font-weight:600; max-width:420px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
-                                <div class="cell-secondary cell-row" style="margin-top:5px;">
-                                    <span class="badge"
-                                          th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
-                                          th:text="${post.boardDisplayName}"></span>
-                                    <span th:text="${post.nickname}"></span>
-                                    <span>·</span>
-                                    <span th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="cell-primary">❤ <span th:text="${post.likeCount}"></span></div>
-                                <div class="cell-secondary">💬 <span th:text="${post.commentCount}"></span></div>
-                            </td>
-                            <td>
-                                <form th:action="@{/admin/posts/{id}/delete(id=${post.id})}" method="post">
-                                    <input type="hidden" name="filter" th:value="${filter}"/>
-                                    <input type="hidden" name="page" th:value="${posts.number}"/>
-                                    <button type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="return confirm('이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">삭제</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr class="empty-row" th:if="${posts.totalElements == 0}">
-                            <td colspan="5">게시글이 없습니다.</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="table-footer">
+            <div class="table-footer">
+                <span class="page-info"
+                      th:text="'총 ' + ${posts.totalElements} + '개'"></span>
+                <div class="pagination" style="margin-left:auto;">
+                    <a th:if="${posts.hasPrevious()}"
+                       th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number - 1})}">← 이전</a>
                     <span class="page-info"
-                          th:text="'총 ' + ${posts.totalElements} + '개'"></span>
-                    <div class="pagination" style="margin-left:auto;">
-                        <a th:if="${posts.hasPrevious()}"
-                           th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number - 1})}">← 이전</a>
-                        <span class="page-info"
-                              th:text="${posts.number + 1} + ' / ' + ${posts.totalPages}"></span>
-                        <a th:if="${posts.hasNext()}"
-                           th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number + 1})}">다음 →</a>
-                    </div>
+                          th:text="${posts.number + 1} + ' / ' + ${posts.totalPages}"></span>
+                    <a th:if="${posts.hasNext()}"
+                       th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number + 1})}">다음 →</a>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 </div>
 <script>
@@ -179,5 +176,6 @@ if (selectAll) {
 }
 document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateCount));
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

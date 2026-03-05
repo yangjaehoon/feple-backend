@@ -2,26 +2,27 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!-- Sidebar fragment. Usage: th:insert="~{admin/fragments :: sidebar('home')}" -->
-<aside th:fragment="sidebar(active)" class="sidebar">
-    <div class="sb-brand">
-        <a class="sb-brand-link" th:href="@{/admin}">
-            <div class="sb-logo-mark">🎪</div>
-            <div>
-                <div class="sb-brand-name">Feple</div>
-                <div class="sb-brand-sub">Admin Panel</div>
-            </div>
-        </a>
-    </div>
+<!-- ── Topbar Fragment ── -->
+<nav th:fragment="topbar" class="topbar-global">
+    <a class="topbar-brand" th:href="@{/admin}">
+        <div class="topbar-logo">🎪</div>
+        <div class="topbar-name">fe<span>ple</span></div>
+    </a>
+    <span class="topbar-badge">Admin</span>
+    <div style="flex:1;"></div>
+    <div class="topbar-avatar">👤</div>
+</nav>
 
+<!-- ── Sidebar Fragment ── -->
+<aside th:fragment="sidebar(active)" class="sidebar">
     <nav class="sb-nav">
+
         <div class="sb-section-label">개요</div>
 
         <a th:href="@{/admin}"
            class="sb-link"
            th:classappend="${active == 'home'} ? ' active'">
-            <span class="sb-link-icon">📊</span>
-            대시보드
+            <span class="sb-icon">📊</span>대시보드
         </a>
 
         <div class="sb-section-label">콘텐츠</div>
@@ -29,22 +30,19 @@
         <a th:href="@{/admin/festivals}"
            class="sb-link"
            th:classappend="${active == 'festivals'} ? ' active'">
-            <span class="sb-link-icon">🎵</span>
-            페스티벌
+            <span class="sb-icon">🎵</span>페스티벌
         </a>
 
         <a th:href="@{/admin/artists}"
            class="sb-link"
            th:classappend="${active == 'artists'} ? ' active'">
-            <span class="sb-link-icon">🎤</span>
-            아티스트
+            <span class="sb-icon">🎤</span>아티스트
         </a>
 
         <a th:href="@{/admin/posts}"
            class="sb-link"
            th:classappend="${active == 'posts'} ? ' active'">
-            <span class="sb-link-icon">📝</span>
-            게시글
+            <span class="sb-icon">📝</span>게시글
         </a>
 
         <div class="sb-section-label">관리</div>
@@ -52,11 +50,10 @@
         <a th:href="@{/admin/users}"
            class="sb-link"
            th:classappend="${active == 'users'} ? ' active'">
-            <span class="sb-link-icon">👤</span>
-            회원 관리
+            <span class="sb-icon">👤</span>회원 관리
         </a>
-    </nav>
 
+    </nav>
     <div class="sb-footer">Feple Admin v1.0</div>
 </aside>
 
