@@ -75,6 +75,11 @@ public class ArtistService {
         artist.update(dto.getName(), dto.getGenre(), imageUrl);
     }
 
+    public List<ArtistResponseDto> getTopArtists(int limit) {
+        return artistRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "followerCount")))
+                .getContent().stream().map(ArtistResponseDto::from).toList();
+    }
+
     @org.springframework.transaction.annotation.Transactional
     public void updateArtistPhoto(Long id, String imageUrl) {
         Artist artist = artistRepository.findById(id)

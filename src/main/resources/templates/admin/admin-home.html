@@ -55,6 +55,13 @@
                         <div class="stat-label">총 회원</div>
                     </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-purple">🔥</div>
+                    <div>
+                        <div class="stat-value" th:text="${recentPostCount}">0</div>
+                        <div class="stat-label">최근 7일 게시글</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Quick actions -->
@@ -174,6 +181,84 @@
                            th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number + 1})}">다음 →</a>
                     </div>
                 </div>
+            </div>
+
+            <!-- 2-column row: HOT 게시글 + 인기 아티스트 -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+                <!-- HOT 게시글 TOP 5 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🔥 HOT 게시글 (7일)</div>
+                        <a class="btn btn-secondary btn-sm" th:href="@{/admin/posts}">전체보기</a>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>제목</th>
+                                <th>❤</th>
+                                <th>💬</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="post, stat : ${hotPosts}">
+                                <td class="td-id" th:text="${stat.count}"></td>
+                                <td>
+                                    <a th:href="@{/admin/posts/{id}(id=${post.id})}"
+                                       th:text="${post.title}"
+                                       style="max-width:200px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                                </td>
+                                <td style="color:var(--muted);" th:text="${post.likeCount}"></td>
+                                <td style="color:var(--muted);" th:text="${post.commentCount}"></td>
+                            </tr>
+                            <tr class="empty-row" th:if="${#lists.isEmpty(hotPosts)}">
+                                <td colspan="4">최근 7일 게시글이 없습니다.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 인기 아티스트 TOP 5 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">⭐ 인기 아티스트 TOP 5</div>
+                        <a class="btn btn-secondary btn-sm" th:href="@{/admin/artists}">전체보기</a>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>프로필</th>
+                                <th>이름</th>
+                                <th>팔로워</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="artist, stat : ${topArtists}">
+                                <td class="td-id" th:text="${stat.count}"></td>
+                                <td>
+                                    <img th:if="${artist.profileImageUrl != null}"
+                                         th:src="${artist.profileImageUrl}"
+                                         style="width:30px; height:30px; border-radius:50%; object-fit:cover;"
+                                         alt=""/>
+                                    <span th:if="${artist.profileImageUrl == null}"
+                                          style="font-size:20px;">🎤</span>
+                                </td>
+                                <td style="font-weight:600;" th:text="${artist.name}"></td>
+                                <td style="color:var(--muted);" th:text="${artist.followerCount}"></td>
+                            </tr>
+                            <tr class="empty-row" th:if="${#lists.isEmpty(topArtists)}">
+                                <td colspan="4">아티스트가 없습니다.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
 
         </main>

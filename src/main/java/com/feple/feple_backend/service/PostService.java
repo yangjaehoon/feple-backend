@@ -115,6 +115,15 @@ public class PostService {
         return postRepository.count();
     }
 
+    public long countRecentPosts(int days) {
+        return postRepository.countByCreatedAtAfter(LocalDateTime.now().minusDays(days));
+    }
+
+    public List<PostResponseDto> getAdminHotPosts(int limit) {
+        return postRepository.findHotPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, limit))
+                .stream().map(PostResponseDto::from).toList();
+    }
+
     @Transactional
     public void deletePost(Long postId) {
         postLikeRepository.deleteByPostId(postId);

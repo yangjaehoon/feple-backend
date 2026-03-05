@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,6 +24,7 @@ public class PostResponseDto {
     private Long artistId;
     private Long festivalId;
     private String boardDisplayName;
+    private LocalDateTime createdAt;
 
     public static PostResponseDto from(Post post) {
         String boardDisplayName;
@@ -48,6 +51,7 @@ public class PostResponseDto {
                 .artistId(post.getArtist() != null ? post.getArtist().getId() : null)
                 .festivalId(post.getFestival() != null ? post.getFestival().getId() : null)
                 .boardDisplayName(boardDisplayName)
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }
