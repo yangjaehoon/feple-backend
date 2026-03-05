@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ public class AdminHomeController {
 
     private final FestivalService festivalService;
     private final ArtistService artistService;
+    private final PostService postService;
 
     @GetMapping
     public String adminHome(@RequestParam(defaultValue = "0") int festivalPage,
@@ -32,6 +34,7 @@ public class AdminHomeController {
 
         model.addAttribute("festivalPage", festivals);
         model.addAttribute("artistPage", artists);
+        model.addAttribute("totalPosts", postService.getTotalPostCount());
 
         return "admin/admin-home";
     }

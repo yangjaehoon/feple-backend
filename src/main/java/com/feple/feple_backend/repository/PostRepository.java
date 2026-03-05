@@ -22,4 +22,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.createdAt >= :since ORDER BY p.likeCount DESC")
     List<Post> findHotPosts(@Param("since") LocalDateTime since, Pageable pageable);
+
+    org.springframework.data.domain.Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    org.springframework.data.domain.Page<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType, Pageable pageable);
 }

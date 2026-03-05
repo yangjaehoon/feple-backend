@@ -13,7 +13,9 @@ import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.repository.PostLikeRepository;
 import com.feple.feple_backend.repository.PostRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,8 +97,27 @@ public class PostService {
         }
     }
 
+    public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter) {
+        PageRequest pageable = PageRequest.of(page, size);
+        if ("FREE".equals(filter)) {
+            return postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable)
+                    .map(PostResponseDto::from);
+        }
+        if ("MATE".equals(filter)) {
+            return postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable)
+                    .map(PostResponseDto::from);
+        }
+        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .map(PostResponseDto::from);
+    }
+
+    public long getTotalPostCount() {
+        return postRepository.count();
+    }
+
     @Transactional
     public void deletePost(Long postId) {
+        postLikeRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
 
