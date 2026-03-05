@@ -2,11 +2,13 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.domain.post.Post;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.dto.comment.MyCommentResponseDto;
 import com.feple.feple_backend.dto.post.PostResponseDto;
 import com.feple.feple_backend.repository.CommentRepository;
+import com.feple.feple_backend.repository.PostLikeRepository;
 import com.feple.feple_backend.repository.PostRepository;
 import com.feple.feple_backend.user.domain.AuthProvider;
 import com.feple.feple_backend.user.domain.User;
@@ -22,6 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -35,6 +41,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final PostLikeRepository postLikeRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalLikeRepository festivalLikeRepository;
 
@@ -101,6 +108,40 @@ public class UserService {
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserResponseDto> getUsersPage(int page, int size) {
+        return userRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
+                .map(UserResponseDto::from);
+    }
+
+    @Transactional
+    public void adminDeleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+
+        // 1. 사용자의 댓글 삭제 (JPA 영속성 컨텍스트에서 REMOVED 상태로 전환)
+        commentRepository.deleteAll(commentRepository.findByUser(user));
+
+        // 2. 사용자 게시글의 좋아요 삭제
+        List<Post> userPosts = postRepository.findByUser(user);
+        for (Post post : userPosts) {
+            postLikeRepository.deleteByPostId(post.getId());
+        }
+
+        // 3. 사용자가 누른 좋아요 삭제
+        postLikeRepository.deleteByUser(user);
+
+        // 4. 사용자 게시글 삭제 (cascade: 다른 사용자의 댓글도 삭제)
+        postRepository.deleteAll(userPosts);
+
+        // 5. 페스티벌 좋아요, 아티스트 팔로우 삭제
+        festivalLikeRepository.deleteAll(festivalLikeRepository.findByUserId(id));
+        artistFollowRepository.deleteAll(artistFollowRepository.findByUserId(id));
+
+        // 6. 사용자 삭제
+        userRepository.delete(user);
     }
 
     @Transactional(readOnly = true)

@@ -294,6 +294,7 @@ body {
 .stat-icon-pink   { background: var(--pink-bg); }
 .stat-icon-mint   { background: var(--mint-bg); }
 .stat-icon-purple { background: var(--purple-bg); }
+.stat-icon-orange { background: #fff3e0; }
 
 .stat-value {
   font-size: 28px;

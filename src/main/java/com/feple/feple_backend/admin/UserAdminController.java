@@ -1,0 +1,57 @@
+package com.feple.feple_backend.admin;
+
+import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.dto.post.PostResponseDto;
+import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.user.dto.UserResponseDto;
+import com.feple.feple_backend.user.dto.UserStatsDto;
+import com.feple.feple_backend.user.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Controller
+@RequestMapping("/admin/users")
+@RequiredArgsConstructor
+public class UserAdminController {
+
+    private final UserService userService;
+
+    @GetMapping
+    public String listUsers(@RequestParam(defaultValue = "0") int page, Model model) {
+        Page<UserResponseDto> users = userService.getUsersPage(page, 20);
+        model.addAttribute("users", users);
+        return "admin/user-list";
+    }
+
+    @GetMapping("/{id}")
+    public String userDetail(@PathVariable Long id, Model model) {
+        UserResponseDto user = userService.getUser(id);
+        UserStatsDto stats = userService.getUserStats(id);
+        List<PostResponseDto> recentPosts = userService.getMyPosts(id).stream()
+                .limit(10)
+                .collect(Collectors.toList());
+        List<FestivalResponseDto> likedFestivals = userService.getLikedFestivals(id);
+        List<ArtistResponseDto> followedArtists = userService.getFollowedArtists(id);
+
+        model.addAttribute("user", user);
+        model.addAttribute("stats", stats);
+        model.addAttribute("recentPosts", recentPosts);
+        model.addAttribute("likedFestivals", likedFestivals);
+        model.addAttribute("followedArtists", followedArtists);
+        return "admin/user-detail";
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deleteUser(@PathVariable Long id, RedirectAttributes ra) {
+        userService.adminDeleteUser(id);
+        ra.addFlashAttribute("successMessage", "회원이 삭제되었습니다.");
+        return "redirect:/admin/users";
+    }
+}

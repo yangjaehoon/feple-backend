@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 회원 관리</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+
+    <div th:insert="~{admin/fragments :: sidebar('users')}"></div>
+
+    <div class="main-area">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title">회원 관리</div>
+                <div class="breadcrumb">
+                    <a th:href="@{/admin}">대시보드</a>
+                    <span class="bc-sep">›</span>
+                    <span>회원</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <div th:if="${successMessage}"
+                 style="padding:12px 16px; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; color:#2e7d32; margin-bottom:16px;"
+                 th:text="${successMessage}"></div>
+
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>프로필</th>
+                            <th>닉네임</th>
+                            <th>이메일</th>
+                            <th>상세</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="user : ${users.content}">
+                            <td class="td-id" th:text="${user.id}"></td>
+                            <td>
+                                <img th:if="${user.profileImageUrl != null}"
+                                     th:src="${user.profileImageUrl}"
+                                     style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border);"
+                                     alt="profile"/>
+                                <div th:if="${user.profileImageUrl == null}"
+                                     style="width:34px; height:34px; border-radius:50%; background:var(--primary-50); display:flex; align-items:center; justify-content:center; font-size:16px;">👤</div>
+                            </td>
+                            <td style="font-weight:600;" th:text="${user.nickname}"></td>
+                            <td style="color:var(--muted); font-size:13px;" th:text="${user.email}"></td>
+                            <td>
+                                <a th:href="@{/admin/users/{id}(id=${user.id})}"
+                                   class="btn btn-secondary btn-sm">상세</a>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
+                                    <input type="hidden" name="page" th:value="${users.number}"/>
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('이 회원을 삭제할까요? 게시글과 댓글도 모두 삭제됩니다.')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${users.totalElements == 0}">
+                            <td colspan="6">회원이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <span class="page-info"
+                          th:text="'총 ' + ${users.totalElements} + '명'"></span>
+                    <div class="pagination" style="margin-left:auto;">
+                        <a th:if="${users.hasPrevious()}"
+                           th:href="@{/admin/users(page=${users.number - 1})}">← 이전</a>
+                        <span class="page-info"
+                              th:text="${users.number + 1} + ' / ' + ${users.totalPages}"></span>
+                        <a th:if="${users.hasNext()}"
+                           th:href="@{/admin/users(page=${users.number + 1})}">다음 →</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>
