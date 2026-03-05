@@ -2,126 +2,164 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Feple 관리자</title>
+    <title>Feple Admin — 대시보드</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
+<div class="layout">
 
-<nav class="navbar">
-    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
-    <div class="navbar-links">
-        <a th:href="@{/admin}">홈</a>
-        <a th:href="@{/admin/festivals}">페스티벌</a>
-        <a th:href="@{/admin/artists}">아티스트</a>
-    </div>
-</nav>
+    <!-- Sidebar -->
+    <div th:insert="~{admin/fragments :: sidebar('home')}"></div>
 
-<div class="container">
-    <p class="page-title">관리자 홈</p>
-
-    <!-- 빠른 작업 -->
-    <div class="quick-grid">
-        <a class="quick-card" th:href="@{/admin/festivals/new}">
-            <div class="quick-icon icon-festival">🎵</div>
-            <div>
-                <div class="quick-label">페스티벌 추가</div>
-                <div class="quick-desc">새 페스티벌을 등록합니다</div>
+    <!-- Main -->
+    <div class="main-area">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title">대시보드</div>
             </div>
-        </a>
-        <a class="quick-card" th:href="@{/admin/artists/new}">
-            <div class="quick-icon icon-artist">🎤</div>
-            <div>
-                <div class="quick-label">아티스트 추가</div>
-                <div class="quick-desc">새 아티스트를 등록합니다</div>
+            <div class="topbar-actions">
+                <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌</a>
+                <a class="btn btn-secondary" th:href="@{/admin/artists/new}">+ 아티스트</a>
             </div>
-        </a>
-    </div>
+        </header>
 
-    <!-- 페스티벌 목록 -->
-    <div class="card">
-        <div class="action-bar">
-            <p class="section-title">페스티벌 목록</p>
-            <a class="btn btn-primary btn-sm" th:href="@{/admin/festivals/new}" style="margin-left:auto;">+ 등록</a>
-        </div>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>제목</th>
-                <th>장소</th>
-                <th>기간</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="festival : ${festivalPage.content}">
-                <td th:text="${festival.id}"></td>
-                <td>
-                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
-                       th:text="${festival.title}"></a>
-                </td>
-                <td th:text="${festival.location}"></td>
-                <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></td>
-            </tr>
-            <tr class="empty-row" th:if="${festivalPage.totalElements == 0}">
-                <td colspan="4">등록된 페스티벌이 없습니다.</td>
-            </tr>
-            </tbody>
-        </table>
+        <main class="content">
 
-        <div class="pagination">
-            <a th:if="${festivalPage.hasPrevious()}"
-               th:href="@{/admin(festivalPage=${festivalPage.number - 1}, artistPage=${artistPage.number})}">← 이전</a>
-            <span class="page-info"
-                  th:text="${festivalPage.number + 1} + ' / ' + ${festivalPage.totalPages}"></span>
-            <a th:if="${festivalPage.hasNext()}"
-               th:href="@{/admin(festivalPage=${festivalPage.number + 1}, artistPage=${artistPage.number})}">다음 →</a>
-        </div>
-    </div>
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-blue">🎵</div>
+                    <div>
+                        <div class="stat-value" th:text="${festivalPage.totalElements}">0</div>
+                        <div class="stat-label">총 페스티벌</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-pink">🎤</div>
+                    <div>
+                        <div class="stat-value" th:text="${artistPage.totalElements}">0</div>
+                        <div class="stat-label">총 아티스트</div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- 아티스트 목록 -->
-    <div class="card">
-        <div class="action-bar">
-            <p class="section-title">아티스트 목록</p>
-            <a class="btn btn-primary btn-sm" th:href="@{/admin/artists/new}" style="margin-left:auto;">+ 등록</a>
-        </div>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>이름</th>
-                <th>장르</th>
-                <th>삭제</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="artist : ${artistPage.content}">
-                <td th:text="${artist.id}"></td>
-                <td th:text="${artist.name}"></td>
-                <td><span class="badge badge-genre" th:text="${artist.genre}"></span></td>
-                <td>
-                    <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}"
-                          method="post"
-                          onsubmit="return confirm('정말 삭제할까요?');">
-                        <button type="submit" class="btn btn-danger btn-sm">삭제</button>
-                    </form>
-                </td>
-            </tr>
-            <tr class="empty-row" th:if="${artistPage.totalElements == 0}">
-                <td colspan="4">등록된 아티스트가 없습니다.</td>
-            </tr>
-            </tbody>
-        </table>
+            <!-- Quick actions -->
+            <div class="quick-grid">
+                <a class="quick-card" th:href="@{/admin/festivals/new}">
+                    <div class="quick-icon icon-festival">🎵</div>
+                    <div>
+                        <div class="quick-label">페스티벌 추가</div>
+                        <div class="quick-desc">새 페스티벌을 등록합니다</div>
+                    </div>
+                </a>
+                <a class="quick-card" th:href="@{/admin/artists/new}">
+                    <div class="quick-icon icon-artist">🎤</div>
+                    <div>
+                        <div class="quick-label">아티스트 추가</div>
+                        <div class="quick-desc">새 아티스트를 등록합니다</div>
+                    </div>
+                </a>
+            </div>
 
-        <div class="pagination">
-            <a th:if="${artistPage.hasPrevious()}"
-               th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number - 1})}">← 이전</a>
-            <span class="page-info"
-                  th:text="${artistPage.number + 1} + ' / ' + ${artistPage.totalPages}"></span>
-            <a th:if="${artistPage.hasNext()}"
-               th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number + 1})}">다음 →</a>
-        </div>
+            <!-- Festival table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        페스티벌 목록
+                        <span class="card-count" th:text="${festivalPage.totalElements}"></span>
+                    </div>
+                    <a class="btn btn-primary btn-sm" th:href="@{/admin/festivals/new}">+ 등록</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>제목</th>
+                            <th>장소</th>
+                            <th>기간</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="festival : ${festivalPage.content}">
+                            <td class="td-id" th:text="${festival.id}"></td>
+                            <td>
+                                <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                   th:text="${festival.title}"></a>
+                            </td>
+                            <td th:text="${festival.location}"></td>
+                            <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></td>
+                        </tr>
+                        <tr class="empty-row" th:if="${festivalPage.totalElements == 0}">
+                            <td colspan="4">등록된 페스티벌이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <div class="pagination">
+                        <a th:if="${festivalPage.hasPrevious()}"
+                           th:href="@{/admin(festivalPage=${festivalPage.number - 1}, artistPage=${artistPage.number})}">← 이전</a>
+                        <span class="page-info"
+                              th:text="${festivalPage.number + 1} + ' / ' + ${festivalPage.totalPages}"></span>
+                        <a th:if="${festivalPage.hasNext()}"
+                           th:href="@{/admin(festivalPage=${festivalPage.number + 1}, artistPage=${artistPage.number})}">다음 →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Artist table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        아티스트 목록
+                        <span class="card-count" th:text="${artistPage.totalElements}"></span>
+                    </div>
+                    <a class="btn btn-primary btn-sm" th:href="@{/admin/artists/new}">+ 등록</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>이름</th>
+                            <th>장르</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="artist : ${artistPage.content}">
+                            <td class="td-id" th:text="${artist.id}"></td>
+                            <td style="font-weight:600;" th:text="${artist.name}"></td>
+                            <td><span class="badge badge-genre" th:text="${artist.genre}"></span></td>
+                            <td>
+                                <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('정말 삭제할까요?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${artistPage.totalElements == 0}">
+                            <td colspan="4">등록된 아티스트가 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <div class="pagination">
+                        <a th:if="${artistPage.hasPrevious()}"
+                           th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number - 1})}">← 이전</a>
+                        <span class="page-info"
+                              th:text="${artistPage.number + 1} + ' / ' + ${artistPage.totalPages}"></span>
+                        <a th:if="${artistPage.hasNext()}"
+                           th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number + 1})}">다음 →</a>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 </div>
-
 </body>
 </html>

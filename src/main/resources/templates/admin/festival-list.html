@@ -2,56 +2,66 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>페스티벌 목록</title>
+    <title>Feple Admin — 페스티벌 목록</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
+<div class="layout">
 
-<nav class="navbar">
-    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
-    <div class="navbar-links">
-        <a th:href="@{/admin}">홈</a>
-        <a th:href="@{/admin/festivals}">페스티벌</a>
-        <a th:href="@{/admin/artists}">아티스트</a>
-    </div>
-</nav>
+    <div th:insert="~{admin/fragments :: sidebar('festivals')}"></div>
 
-<div class="container">
-    <p class="page-title">페스티벌 목록</p>
+    <div class="main-area">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title">페스티벌 목록</div>
+                <div class="breadcrumb">
+                    <a th:href="@{/admin}">대시보드</a>
+                    <span class="bc-sep">›</span>
+                    <span>페스티벌</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌 등록</a>
+            </div>
+        </header>
 
-    <div class="card">
-        <div class="action-bar">
-            <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌 등록</a>
-        </div>
-
-        <table>
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>ID</th>
-                <th>제목</th>
-                <th>장소</th>
-                <th>기간</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="festival, stat : ${festivals}">
-                <td th:text="${stat.count}" style="color:var(--muted);"></td>
-                <td th:text="${festival.id}"></td>
-                <td>
-                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
-                       th:text="${festival.title}"></a>
-                </td>
-                <td th:text="${festival.location}"></td>
-                <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></td>
-            </tr>
-            <tr class="empty-row" th:if="${#lists.isEmpty(festivals)}">
-                <td colspan="5">등록된 페스티벌이 없습니다.</td>
-            </tr>
-            </tbody>
-        </table>
+        <main class="content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">전체 페스티벌</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>ID</th>
+                            <th>제목</th>
+                            <th>장소</th>
+                            <th>기간</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="festival, stat : ${festivals}">
+                            <td class="td-id" th:text="${stat.count}"></td>
+                            <td class="td-id" th:text="${festival.id}"></td>
+                            <td>
+                                <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                   th:text="${festival.title}"></a>
+                            </td>
+                            <td th:text="${festival.location}" style="color:var(--muted);"></td>
+                            <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"
+                                style="color:var(--muted); white-space:nowrap;"></td>
+                        </tr>
+                        <tr class="empty-row" th:if="${#lists.isEmpty(festivals)}">
+                            <td colspan="5">등록된 페스티벌이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 </div>
-
 </body>
 </html>

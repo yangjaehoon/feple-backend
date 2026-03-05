@@ -2,97 +2,123 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${festival.title}">페스티벌 상세</title>
+    <title th:text="'Feple Admin — ' + ${festival.title}">페스티벌 상세</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
+<div class="layout">
 
-<nav class="navbar">
-    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
-    <div class="navbar-links">
-        <a th:href="@{/admin}">홈</a>
-        <a th:href="@{/admin/festivals}">페스티벌</a>
-        <a th:href="@{/admin/artists}">아티스트</a>
-    </div>
-</nav>
+    <div th:insert="~{admin/fragments :: sidebar('festivals')}"></div>
 
-<div class="container">
-    <p class="page-title" th:text="${festival.title}">페스티벌</p>
+    <div class="main-area">
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title" th:text="${festival.title}">페스티벌</div>
+                <div class="breadcrumb">
+                    <a th:href="@{/admin}">대시보드</a>
+                    <span class="bc-sep">›</span>
+                    <a th:href="@{/admin/festivals}">페스티벌</a>
+                    <span class="bc-sep">›</span>
+                    <span th:text="${festival.title}"></span>
+                </div>
+            </div>
+        </header>
 
-    <!-- 기본 정보 -->
-    <div class="card">
-        <div class="festival-header">
-            <img class="poster-img"
-                 th:if="${festival.posterUrl != null and !#strings.isEmpty(festival.posterUrl)}"
-                 th:src="${festival.posterUrl}"
-                 th:alt="${festival.title} + ' 포스터'"/>
-            <div class="no-poster"
-                 th:if="${festival.posterUrl == null or #strings.isEmpty(festival.posterUrl)}">
-                포스터 없음
+        <main class="content">
+
+            <!-- 기본 정보 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🎵 페스티벌 정보</div>
+                </div>
+                <div class="card-body">
+                    <div class="festival-info">
+                        <img class="poster-img"
+                             th:if="${festival.posterUrl != null and !#strings.isEmpty(festival.posterUrl)}"
+                             th:src="${festival.posterUrl}"
+                             th:alt="${festival.title}"/>
+                        <div class="no-poster"
+                             th:if="${festival.posterUrl == null or #strings.isEmpty(festival.posterUrl)}">
+                            <span style="font-size:28px;">🖼️</span>
+                            <span>포스터 없음</span>
+                        </div>
+
+                        <div class="meta-list">
+                            <div class="meta-item">
+                                <div class="meta-label">기간</div>
+                                <div class="meta-value"
+                                     th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">장소</div>
+                                <div class="meta-value" th:text="${festival.location}"></div>
+                            </div>
+                            <div class="meta-item" th:if="${festival.description != null}">
+                                <div class="meta-label">설명</div>
+                                <div class="meta-value" th:text="${festival.description}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-actions">
+                        <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-warning">✏ 수정</a>
+                        <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
+                        <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
+                        <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
+                              method="post"
+                              onsubmit="return confirm('이 페스티벌을 삭제할까요?');">
+                            <button type="submit" class="btn btn-danger">삭제</button>
+                        </form>
+                    </div>
+                </div>
             </div>
 
-            <div class="festival-meta">
-                <p><strong>기간</strong><br/>
-                    <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span></p>
-                <p><strong>장소</strong><br/>
-                    <span th:text="${festival.location}"></span></p>
-                <p><strong>설명</strong><br/>
-                    <span th:text="${festival.description}"></span></p>
+            <!-- 참여 아티스트 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        참여 아티스트
+                        <span class="card-count" th:text="${participatingArtists.size() ?: 0}"></span>
+                    </div>
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}">+ 추가</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>순서</th>
+                            <th>아티스트</th>
+                            <th>장르</th>
+                            <th>스테이지</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="af : ${participatingArtists}">
+                            <td><span class="badge badge-order" th:text="${af.lineupOrder}"></span></td>
+                            <td style="font-weight:600;" th:text="${af.artistName}"></td>
+                            <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
+                            <td th:text="${af.stageName}" style="color:var(--muted);"></td>
+                            <td>
+                                <form th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
+                                      method="post">
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
+                            <td colspan="5">참여 아티스트가 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <div class="actions">
-            <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-warning">수정</a>
-            <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
-            <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
-            <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
-                  method="post"
-                  onsubmit="return confirm('이 페스티벌을 삭제할까요?');">
-                <button type="submit" class="btn btn-danger">페스티벌 삭제</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- 참여 아티스트 -->
-    <div class="card">
-        <p class="section-title">
-            참여 아티스트
-            <span class="badge badge-primary"
-                  th:text="${participatingArtists.size() ?: 0}"></span>
-        </p>
-
-        <table>
-            <thead>
-            <tr>
-                <th>순서</th>
-                <th>아티스트</th>
-                <th>장르</th>
-                <th>스테이지</th>
-                <th>삭제</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="af : ${participatingArtists}">
-                <td th:text="${af.lineupOrder}"></td>
-                <td th:text="${af.artistName}"></td>
-                <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
-                <td th:text="${af.stageName}"></td>
-                <td>
-                    <form th:action="@{/admin/festivals/{festivalId}/artists/{artistFestivalId}/delete(festivalId=${festival.id}, artistFestivalId=${af.artistFestivalId})}"
-                          method="post">
-                        <button type="submit"
-                                class="btn btn-danger btn-sm"
-                                onclick="return confirm('삭제하시겠습니까?')">삭제</button>
-                    </form>
-                </td>
-            </tr>
-            <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
-                <td colspan="5">참여 아티스트가 없습니다.</td>
-            </tr>
-            </tbody>
-        </table>
+        </main>
     </div>
 </div>
-
 </body>
 </html>

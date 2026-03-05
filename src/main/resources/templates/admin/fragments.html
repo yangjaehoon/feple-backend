@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Sidebar fragment. Usage: th:insert="~{admin/fragments :: sidebar('home')}" -->
+<aside th:fragment="sidebar(active)" class="sidebar">
+    <div class="sb-brand">
+        <a class="sb-brand-link" th:href="@{/admin}">
+            <div class="sb-logo-mark">🎪</div>
+            <div>
+                <div class="sb-brand-name">Feple</div>
+                <div class="sb-brand-sub">Admin Panel</div>
+            </div>
+        </a>
+    </div>
+
+    <nav class="sb-nav">
+        <div class="sb-section-label">메뉴</div>
+
+        <a th:href="@{/admin}"
+           class="sb-link"
+           th:classappend="${active == 'home'} ? ' active'">
+            <span class="sb-link-icon">🏠</span>
+            대시보드
+        </a>
+
+        <a th:href="@{/admin/festivals}"
+           class="sb-link"
+           th:classappend="${active == 'festivals'} ? ' active'">
+            <span class="sb-link-icon">🎵</span>
+            페스티벌
+        </a>
+
+        <a th:href="@{/admin/artists}"
+           class="sb-link"
+           th:classappend="${active == 'artists'} ? ' active'">
+            <span class="sb-link-icon">🎤</span>
+            아티스트
+        </a>
+    </nav>
+
+    <div class="sb-footer">Feple Admin v1.0</div>
+</aside>
+
+</body>
+</html>
