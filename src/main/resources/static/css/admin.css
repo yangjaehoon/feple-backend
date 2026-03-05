@@ -323,7 +323,7 @@ thead th {
   white-space: nowrap;
 }
 
-tbody tr { border-bottom: 1px solid #F1F5F9; transition: background .1s; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: #F5F7FF; }
 
