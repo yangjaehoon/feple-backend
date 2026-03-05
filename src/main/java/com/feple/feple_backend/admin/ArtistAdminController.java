@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 
@@ -48,6 +49,27 @@ public class ArtistAdminController {
     public String listArtists(Model model) {
         model.addAttribute("artists", artistService.getAllArtists());
         return "admin/artists-list";
+    }
+
+    @GetMapping("/photos")
+    public String photoManagement(Model model) {
+        model.addAttribute("artists", artistService.getAllArtists());
+        return "admin/artist-photos";
+    }
+
+    @PostMapping("/{id}/photo")
+    public String updatePhoto(@PathVariable Long id,
+                              @RequestParam("profileImageFile") MultipartFile file,
+                              RedirectAttributes ra) throws IOException {
+        try {
+            String artistName = artistService.getArtistById(id).getName();
+            String url = fileStorageService.storeArtistProfile(file, artistName);
+            artistService.updateArtistPhoto(id, url);
+            ra.addFlashAttribute("successMessage", "사진이 업데이트되었습니다.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "사진 업로드 실패: " + e.getMessage());
+        }
+        return "redirect:/admin/artists/photos";
     }
 
     @GetMapping("/{id}/edit")

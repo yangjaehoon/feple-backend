@@ -75,6 +75,13 @@ public class ArtistService {
         artist.update(dto.getName(), dto.getGenre(), imageUrl);
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public void updateArtistPhoto(Long id, String imageUrl) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        artist.update(artist.getName(), artist.getGenre(), imageUrl);
+    }
+
     public void deleteArtist(Long id) {
         artistRepository.deleteById(id);
     }
