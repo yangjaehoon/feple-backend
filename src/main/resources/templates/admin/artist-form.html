@@ -3,35 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <title>아티스트 등록</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
-<h1>아티스트 등록</h1>
 
-<form th:action="@{/admin/artists/new}"
-      th:object="${artist}"
-      method="post"
-      enctype="multipart/form-data">
-    <div>
-        <label>이름</label>
-        <input type="text" th:field="*{name}" />
+<nav class="navbar">
+    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
+    <div class="navbar-links">
+        <a th:href="@{/admin}">홈</a>
+        <a th:href="@{/admin/festivals}">페스티벌</a>
+        <a th:href="@{/admin/artists}">아티스트</a>
     </div>
+</nav>
 
-    <div>
-        <label>카테고리</label>
-        <select th:field="*{genre}" required>
-            <option value="">선택</option>
-            <option th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
-                    th:value="${g}"
-                    th:text="${g.displayName}"></option>
-        </select>
+<div class="container">
+    <p class="page-title">아티스트 등록</p>
+
+    <div class="card">
+        <form th:action="@{/admin/artists/new}"
+              th:object="${artist}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" th:field="*{name}" placeholder="아티스트 이름을 입력하세요" required/>
+                </div>
+
+                <div class="form-group">
+                    <label>카테고리</label>
+                    <select th:field="*{genre}" required>
+                        <option value="">선택하세요</option>
+                        <option th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
+                                th:value="${g}"
+                                th:text="${g.displayName}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>프로필 이미지</label>
+                    <input type="file" name="profileImageFile" accept="image/*" required/>
+                </div>
+            </div>
+
+            <div class="actions" style="margin-top:28px;">
+                <button type="submit" class="btn btn-primary">등록</button>
+                <a th:href="@{/admin/artists}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div>
-        <label>프로필 이미지</label>
-        <input type="file" name="profileImageFile" accept="image/*" required />
-    </div>
-
-    <button type="submit">등록</button>
-</form>
 </body>
 </html>

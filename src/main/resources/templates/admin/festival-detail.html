@@ -1,164 +1,98 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title th:text="${festival.title}">페스티벌 상세</title>
-    <style>
-        .festival-header {
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-        }
-
-        .poster {
-            width: 220px;
-            height: auto;
-            border: 1px solid #ddd;
-        }
-
-        .meta p {
-            margin: 6px 0;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 14px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: background-color .15s ease, border-color .15s ease, transform .05s ease;
-            margin-right: 8px;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn:focus {
-            outline: 2px solid #111;
-            outline-offset: 2px;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-warning {
-            background: #f59e0b;
-            color: #111;
-        }
-
-        .btn-warning:hover {
-            background: #d97706;
-        }
-
-        .btn-secondary {
-            background: #6b7280;
-            color: #fff;
-        }
-
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: #fff;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-weight: 700;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .actions {
-            margin-top: 16px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
 
-<h1 th:text="${festival.title}">페스티벌</h1>
+<nav class="navbar">
+    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
+    <div class="navbar-links">
+        <a th:href="@{/admin}">홈</a>
+        <a th:href="@{/admin/festivals}">페스티벌</a>
+        <a th:href="@{/admin/artists}">아티스트</a>
+    </div>
+</nav>
 
-<div class="festival-header">
-    <!-- 포스터 -->
-    <div>
-        <img class="poster"
-             th:if="${festival.posterUrl != null and !#strings.isEmpty(festival.posterUrl)}"
-             th:src="${festival.posterUrl}"
-             th:alt="${festival.title} + ' 포스터'"/>
-        <div th:if="${festival.posterUrl == null or #strings.isEmpty(festival.posterUrl)}">
-            포스터 이미지가 없습니다.
+<div class="container">
+    <p class="page-title" th:text="${festival.title}">페스티벌</p>
+
+    <!-- 기본 정보 -->
+    <div class="card">
+        <div class="festival-header">
+            <img class="poster-img"
+                 th:if="${festival.posterUrl != null and !#strings.isEmpty(festival.posterUrl)}"
+                 th:src="${festival.posterUrl}"
+                 th:alt="${festival.title} + ' 포스터'"/>
+            <div class="no-poster"
+                 th:if="${festival.posterUrl == null or #strings.isEmpty(festival.posterUrl)}">
+                포스터 없음
+            </div>
+
+            <div class="festival-meta">
+                <p><strong>기간</strong><br/>
+                    <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span></p>
+                <p><strong>장소</strong><br/>
+                    <span th:text="${festival.location}"></span></p>
+                <p><strong>설명</strong><br/>
+                    <span th:text="${festival.description}"></span></p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-warning">수정</a>
+            <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
+            <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
+            <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
+                  method="post"
+                  onsubmit="return confirm('이 페스티벌을 삭제할까요?');">
+                <button type="submit" class="btn btn-danger">페스티벌 삭제</button>
+            </form>
         </div>
     </div>
-    <!-- 페스티벌 기본 정보 -->
-    <div class="meta">
-        <p><strong>기간:</strong>
-            <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span>
+
+    <!-- 참여 아티스트 -->
+    <div class="card">
+        <p class="section-title">
+            참여 아티스트
+            <span class="badge badge-primary"
+                  th:text="${participatingArtists.size() ?: 0}"></span>
         </p>
-        <p><strong>장소:</strong> <span th:text="${festival.location}">장소</span></p>
-        <p><strong>설명:</strong> <span th:text="${festival.description}">설명</span></p>
+
+        <table>
+            <thead>
+            <tr>
+                <th>순서</th>
+                <th>아티스트</th>
+                <th>장르</th>
+                <th>스테이지</th>
+                <th>삭제</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="af : ${participatingArtists}">
+                <td th:text="${af.lineupOrder}"></td>
+                <td th:text="${af.artistName}"></td>
+                <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
+                <td th:text="${af.stageName}"></td>
+                <td>
+                    <form th:action="@{/admin/festivals/{festivalId}/artists/{artistFestivalId}/delete(festivalId=${festival.id}, artistFestivalId=${af.artistFestivalId})}"
+                          method="post">
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                    </form>
+                </td>
+            </tr>
+            <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
+                <td colspan="5">참여 아티스트가 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<!-- 참여 아티스트 리스트 -->
-<h3>참여 아티스트 (<span th:text="${participatingArtists.size() ?: 0}">0</span>명)</h3>
-<table border="1">
-    <thead>
-    <tr>
-        <th>순서</th>
-        <th>아티스트</th>
-        <th>장르</th>
-        <th>스테이지</th>
-        <th>삭제</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="af : ${participatingArtists}">
-        <td th:text="${af.lineupOrder}">1</td>
-        <td th:text="${af.artistName}">이름</td>
-        <td th:text="${af.artistGenre}">장르</td>
-        <td th:text="${af.stageName}">스테이지</td>
-        <!-- 삭제 버튼 -->
-        <td>
-            <form th:action="@{/admin/festivals/{festivalId}/artists/{artistFestivalId}/delete(festivalId=${festival.id}, artistFestivalId=${af.artistFestivalId})}"
-                  method="post" style="display:inline;">
-                <button type="submit" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
-            </form>
-        </td>
-    </tr>
-    <tr th:if="${participatingArtists.isEmpty() ?: true}">
-        <td colspan="5">참여 아티스트가 없습니다.</td>
-    </tr>
-    </tbody>
-</table>
-
-<div class="actions">
-    <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-warning">수정</a>
-    <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">아티스트 추가</a>
-    <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
-    <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
-          method="post"
-          style="display:inline;"
-          onsubmit="return confirm('이 페스티벌을 삭제할까요?');">
-        <button type="submit" class="btn btn-danger">페스티벌 삭제</button>
-    </form>
-</div>
 </body>
+</html>

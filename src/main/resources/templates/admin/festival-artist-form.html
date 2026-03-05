@@ -1,34 +1,62 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>아티스트 추가</title></head>
+<head>
+    <meta charset="UTF-8">
+    <title>아티스트 추가</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
 <body>
-<h2 th:text="${festival.title} + ' - 아티스트 추가'"></h2>
 
-<form th:action="@{/admin/festivals/{id}/artists(id=${festival.id})}"
-      th:object="${request}" method="post">
-
-    <div>
-        <label>아티스트</label>
-        <select th:field="*{artistId}" required>
-            <option value="">선택</option>
-            <option th:each="artist : ${artists}"
-                    th:value="${artist.id}"
-                    th:text="${artist.name} + ' (' + ${artist.genre} + ')'"></option>
-        </select>
+<nav class="navbar">
+    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
+    <div class="navbar-links">
+        <a th:href="@{/admin}">홈</a>
+        <a th:href="@{/admin/festivals}">페스티벌</a>
+        <a th:href="@{/admin/artists}">아티스트</a>
     </div>
+</nav>
 
-    <div>
-        <label>라인업 순서</label>
-        <input type="number" th:field="*{lineupOrder}" />
+<div class="container">
+    <p class="page-title">
+        아티스트 추가
+        <span style="font-weight:400; color:var(--muted);"
+              th:text="'— ' + ${festival.title}"></span>
+    </p>
+
+    <div class="card">
+        <form th:action="@{/admin/festivals/{id}/artists(id=${festival.id})}"
+              th:object="${request}"
+              method="post">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>아티스트</label>
+                    <select th:field="*{artistId}" required>
+                        <option value="">선택하세요</option>
+                        <option th:each="artist : ${artists}"
+                                th:value="${artist.id}"
+                                th:text="${artist.name} + ' (' + ${artist.genre} + ')'"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>라인업 순서</label>
+                    <input type="number" th:field="*{lineupOrder}" placeholder="예: 1" min="1"/>
+                </div>
+
+                <div class="form-group">
+                    <label>스테이지</label>
+                    <input type="text" th:field="*{stageName}" placeholder="예: 메인 스테이지"/>
+                </div>
+            </div>
+
+            <div class="actions" style="margin-top:28px;">
+                <button type="submit" class="btn btn-primary">추가</button>
+                <a th:href="@{/admin/festivals/{id}(id=${festival.id})}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div>
-        <label>스테이지</label>
-        <input type="text" th:field="*{stageName}" />
-    </div>
-
-    <button type="submit">추가</button>
-    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}">취소</a>
-</form>
 </body>
 </html>

@@ -3,67 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <title>페스티벌 수정</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
-<h1>페스티벌 수정</h1>
 
-<form th:action="@{/admin/festivals/{id}/edit(id=${festivalId})}"
-      th:object="${festival}"
-      method="post"
-      enctype="multipart/form-data">
-
-    <div>
-        <label>제목</label>
-        <input type="text" th:field="*{title}"/>
+<nav class="navbar">
+    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
+    <div class="navbar-links">
+        <a th:href="@{/admin}">홈</a>
+        <a th:href="@{/admin/festivals}">페스티벌</a>
+        <a th:href="@{/admin/artists}">아티스트</a>
     </div>
+</nav>
 
-    <div>
-        <label>설명</label>
-        <textarea th:field="*{description}"></textarea>
+<div class="container">
+    <p class="page-title">페스티벌 수정</p>
+
+    <div class="card">
+        <form th:action="@{/admin/festivals/{id}/edit(id=${festivalId})}"
+              th:object="${festival}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>제목</label>
+                    <input type="text" th:field="*{title}" required/>
+                </div>
+
+                <div class="form-group">
+                    <label>설명</label>
+                    <textarea th:field="*{description}"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>장소</label>
+                    <input type="text" th:field="*{location}" required/>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div class="form-group">
+                        <label>시작일</label>
+                        <input type="date" th:field="*{startDate}" required/>
+                    </div>
+                    <div class="form-group">
+                        <label>종료일</label>
+                        <input type="date" th:field="*{endDate}" required/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>현재 포스터</label>
+                    <div th:if="*{posterUrl}">
+                        <img th:src="${festival.posterUrl}"
+                             alt="poster"
+                             class="poster-preview"/>
+                        <p style="margin-top:6px;">
+                            <a th:href="${festival.posterUrl}" target="_blank"
+                               style="color:var(--primary-dark); font-size:13px;">원본 보기 →</a>
+                        </p>
+                    </div>
+                    <p th:if="!*{posterUrl}" class="hint">등록된 포스터가 없습니다.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>포스터 변경</label>
+                    <input type="file" name="posterFile" accept="image/*"/>
+                    <span class="hint">선택하지 않으면 기존 포스터가 유지됩니다.</span>
+                </div>
+            </div>
+
+            <div class="actions" style="margin-top:28px;">
+                <button type="submit" class="btn btn-primary">수정 저장</button>
+                <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록으로</a>
+            </div>
+        </form>
     </div>
-
-    <div>
-        <label>장소</label>
-        <input type="text" th:field="*{location}"/>
-    </div>
-
-    <div>
-        <label>시작일</label>
-        <input type="date" th:field="*{startDate}"/>
-    </div>
-
-    <div>
-        <label>종료일</label>
-        <input type="date" th:field="*{endDate}"/>
-    </div>
-
-    <div>
-        <label>현재 포스터</label><br/>
-        <div th:if="*{posterUrl}">
-            <img th:src="@{${festival.posterUrl}}"
-                 alt="poster"
-                 style="max-width: 240px; height: auto; border: 1px solid #ddd;"/>
-            <p>
-                <a th:href="${festival.posterUrl}" target="_blank">원본 보기</a>
-            </p>
-        </div>
-        <div th:if="!*{posterUrl}">
-            <p>등록된 포스터가 없습니다.</p>
-        </div>
-    </div>
-
-    <div>
-        <label>포스터 변경</label>
-        <input type="file" name="posterFile" accept="image/*"/>
-        <p>파일을 선택하지 않으면 기존 포스터가 유지됩니다.</p>
-    </div>
-
-    <button type="submit">수정 저장</button>
-</form>
-
-<p>
-    <a th:href="@{/admin/festivals}">목록으로</a>
-</p>
+</div>
 
 </body>
 </html>

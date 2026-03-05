@@ -3,45 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <title>아티스트 목록</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
-<h1>아티스트 목록</h1>
 
+<nav class="navbar">
+    <a class="navbar-brand" th:href="@{/admin}">🎪 Feple Admin</a>
+    <div class="navbar-links">
+        <a th:href="@{/admin}">홈</a>
+        <a th:href="@{/admin/festivals}">페스티벌</a>
+        <a th:href="@{/admin/artists}">아티스트</a>
+    </div>
+</nav>
 
-<a th:href="@{/admin}">홈으로</a>
+<div class="container">
+    <p class="page-title">아티스트 목록</p>
 
-<a th:href="@{/admin/artists/new}">아티스트 등록</a>
+    <div class="card">
+        <div class="action-bar">
+            <a class="btn btn-primary" th:href="@{/admin/artists/new}">+ 아티스트 등록</a>
+        </div>
 
-<table border="1">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>이름</th>
-        <th>장르</th>
-        <th>프로필 이미지</th>
-        <th>팔로워 수</th>
-        <th>삭제</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="artist : ${artists}">
-        <td th:text="${artist.id}">1</td>
-        <td th:text="${artist.name}">이름</td>
-        <td th:text="${artist.genre}">장르</td>
-        <td>
-            <img th:if="${artist.profileImageUrl != null}"
-                 th:src="${artist.profileImageUrl}"
-                 alt="profile" width="80" />
-        </td>
-        <td th:text="${artist.followerCount}">0</td>
-        <td>
-            <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
-                <button type="submit" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>이름</th>
+                <th>장르</th>
+                <th>프로필 이미지</th>
+                <th>팔로워</th>
+                <th>삭제</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="artist : ${artists}">
+                <td th:text="${artist.id}"></td>
+                <td th:text="${artist.name}"></td>
+                <td><span class="badge badge-genre" th:text="${artist.genre}"></span></td>
+                <td>
+                    <img th:if="${artist.profileImageUrl != null}"
+                         th:src="${artist.profileImageUrl}"
+                         alt="profile"
+                         style="width:48px; height:48px; border-radius:50%; object-fit:cover;"/>
+                </td>
+                <td th:text="${artist.followerCount}"></td>
+                <td>
+                    <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
+                        <button type="submit"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                    </form>
+                </td>
+            </tr>
+            <tr class="empty-row" th:if="${#lists.isEmpty(artists)}">
+                <td colspan="6">등록된 아티스트가 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 </body>
 </html>
