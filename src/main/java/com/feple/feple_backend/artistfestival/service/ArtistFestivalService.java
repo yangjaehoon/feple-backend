@@ -24,10 +24,8 @@ public class ArtistFestivalService {
     private final ArtistRepository artistRepository;
 
     public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId) {
-        List<ArtistFestival> artistFestivals =
-                artistFestivalRepository.findByFestivalId(festivalId);
-
-        return artistFestivals.stream()
+        return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId)
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -53,6 +51,17 @@ public class ArtistFestivalService {
 
         ArtistFestival saved = artistFestivalRepository.save(artistFestival);
         return saved.getId();
+    }
+
+    @Transactional
+    public void updateArtistFestival(Long festivalId, Long artistFestivalId,
+                                     Integer lineupOrder, String stageName) {
+        ArtistFestival af = artistFestivalRepository.findById(artistFestivalId)
+                .orElseThrow(() -> new IllegalArgumentException("참여 정보가 없습니다."));
+        if (!af.getFestival().getId().equals(festivalId)) {
+            throw new IllegalArgumentException("잘못된 페스티벌입니다.");
+        }
+        af.updateLineup(lineupOrder, stageName);
     }
 
     @Transactional

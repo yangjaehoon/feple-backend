@@ -156,6 +156,17 @@ public class FestivalAdminController {
         return artistFestivalService.getArtistFestivals(id);
     }
 
+    @PostMapping("/{festivalId}/artists/{artistFestivalId}/edit")
+    public String updateLineup(@PathVariable Long festivalId,
+                               @PathVariable Long artistFestivalId,
+                               @RequestParam(required = false) Integer lineupOrder,
+                               @RequestParam(required = false) String stageName,
+                               RedirectAttributes ra) {
+        artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, lineupOrder, stageName);
+        ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
+        return "redirect:/admin/festivals/" + festivalId;
+    }
+
     @PostMapping("/{festivalId}/artists/{artistFestivalId}/delete")
     public String removeArtistFromFestival(
             @PathVariable Long festivalId,

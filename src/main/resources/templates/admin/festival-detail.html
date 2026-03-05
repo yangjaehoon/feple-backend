@@ -96,6 +96,14 @@
                     <a class="btn btn-primary btn-sm"
                        th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}">+ 추가</a>
                 </div>
+
+                <!-- 행별 편집 폼 (테이블 바깥에 위치 - HTML5 form 속성으로 연결) -->
+                <div th:each="af : ${participatingArtists}" style="display:none;">
+                    <form th:id="|edit-form-${af.artistFestivalId}|"
+                          th:action="@{/admin/festivals/{fId}/artists/{afId}/edit(fId=${festival.id}, afId=${af.artistFestivalId})}"
+                          method="post"></form>
+                </div>
+
                 <div class="table-wrap">
                     <table>
                         <thead>
@@ -103,16 +111,33 @@
                             <th>순서</th>
                             <th>아티스트</th>
                             <th>장르</th>
-                            <th>스테이지</th>
+                            <th>스테이지명</th>
+                            <th>저장</th>
                             <th>삭제</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="af : ${participatingArtists}">
-                            <td><span class="badge badge-order" th:text="${af.lineupOrder}"></span></td>
+                            <td>
+                                <input type="number" name="lineupOrder"
+                                       th:value="${af.lineupOrder}"
+                                       th:attr="form=|edit-form-${af.artistFestivalId}|"
+                                       style="width:55px; padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:13px; text-align:center;"/>
+                            </td>
                             <td style="font-weight:600;" th:text="${af.artistName}"></td>
                             <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
-                            <td th:text="${af.stageName}" style="color:var(--muted);"></td>
+                            <td>
+                                <input type="text" name="stageName"
+                                       th:value="${af.stageName}"
+                                       th:attr="form=|edit-form-${af.artistFestivalId}|"
+                                       placeholder="스테이지명"
+                                       style="width:130px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:13px;"/>
+                            </td>
+                            <td>
+                                <button type="submit"
+                                        th:attr="form=|edit-form-${af.artistFestivalId}|"
+                                        class="btn btn-warning btn-sm">저장</button>
+                            </td>
                             <td>
                                 <form th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
                                       method="post">
@@ -123,7 +148,7 @@
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
-                            <td colspan="5">참여 아티스트가 없습니다.</td>
+                            <td colspan="6">참여 아티스트가 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

@@ -36,4 +36,9 @@ public class ArtistFestival {
         this.lineupOrder = lineupOrder;
         this.stageName = stageName;
     }
+
+    public void updateLineup(Integer lineupOrder, String stageName) {
+        this.lineupOrder = lineupOrder;
+        this.stageName = stageName;
+    }
 }

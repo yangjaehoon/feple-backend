@@ -8,6 +8,7 @@ import java.util.List;
 public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, Long> {
 
     List<ArtistFestival> findByFestivalId(Long festivalId);
+    List<ArtistFestival> findByFestivalIdOrderByLineupOrderAsc(Long festivalId);
 
     boolean existsByFestivalIdAndArtistId(Long festivalId, Long artistId);
 
