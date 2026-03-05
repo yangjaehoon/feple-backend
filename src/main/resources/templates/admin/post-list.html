@@ -23,6 +23,17 @@
         </header>
 
         <main class="content">
+
+            <div th:if="${successMessage}"
+                 style="padding:12px 16px; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; color:#2e7d32; margin-bottom:16px;"
+                 th:text="${successMessage}"></div>
+
+            <!-- 일괄 삭제 폼 (테이블 바깥) -->
+            <form id="bulk-form" th:action="@{/admin/posts/bulk-delete}" method="post">
+                <input type="hidden" name="filter" th:value="${filter}"/>
+                <input type="hidden" name="page" th:value="${posts.number}"/>
+            </form>
+
             <div class="card">
                 <!-- 필터 탭 -->
                 <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
@@ -63,10 +74,24 @@
                     </form>
                 </div>
 
+                <!-- 일괄 삭제 액션 바 -->
+                <div style="padding:10px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                    <button type="submit" form="bulk-form"
+                            class="btn btn-danger btn-sm"
+                            onclick="return checkBulkSelection() && confirm('선택한 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">
+                        선택 삭제
+                    </button>
+                    <span id="select-count" style="font-size:12.5px; color:var(--muted);">0개 선택됨</span>
+                </div>
+
                 <div class="table-wrap">
                     <table>
                         <thead>
                         <tr>
+                            <th style="width:36px;">
+                                <input type="checkbox" id="select-all" title="전체 선택"
+                                       style="cursor:pointer; width:15px; height:15px;"/>
+                            </th>
                             <th>ID</th>
                             <th>제목</th>
                             <th>게시판</th>
@@ -79,6 +104,11 @@
                         </thead>
                         <tbody>
                         <tr th:each="post : ${posts.content}">
+                            <td>
+                                <input type="checkbox" name="ids" th:value="${post.id}"
+                                       form="bulk-form" class="row-check"
+                                       style="cursor:pointer; width:15px; height:15px;"/>
+                            </td>
                             <td class="td-id" th:text="${post.id}"></td>
                             <td>
                                 <a th:href="@{/admin/posts/{id}(id=${post.id})}"
@@ -106,7 +136,7 @@
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${posts.totalElements == 0}">
-                            <td colspan="8">게시글이 없습니다.</td>
+                            <td colspan="9">게시글이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>
@@ -128,5 +158,28 @@
         </main>
     </div>
 </div>
+<script>
+const selectAll = document.getElementById('select-all');
+const countLabel = document.getElementById('select-count');
+
+function updateCount() {
+    const checked = document.querySelectorAll('.row-check:checked').length;
+    countLabel.textContent = checked + '개 선택됨';
+}
+
+function checkBulkSelection() {
+    const checked = document.querySelectorAll('.row-check:checked').length;
+    if (checked === 0) { alert('삭제할 게시글을 선택해주세요.'); return false; }
+    return true;
+}
+
+if (selectAll) {
+    selectAll.addEventListener('change', () => {
+        document.querySelectorAll('.row-check').forEach(cb => cb.checked = selectAll.checked);
+        updateCount();
+    });
+}
+document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateCount));
+</script>
 </body>
 </html>

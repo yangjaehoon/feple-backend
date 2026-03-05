@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,16 @@ public class UserAdminController {
         model.addAttribute("likedFestivals", likedFestivals);
         model.addAttribute("followedArtists", followedArtists);
         return "admin/user-detail";
+    }
+
+    @PostMapping("/bulk-delete")
+    public String bulkDeleteUsers(@RequestParam(required = false) List<Long> ids,
+                                  RedirectAttributes ra) {
+        if (ids != null && !ids.isEmpty()) {
+            userService.bulkDeleteUsers(ids);
+            ra.addFlashAttribute("successMessage", ids.size() + "명 회원이 삭제되었습니다.");
+        }
+        return "redirect:/admin/users";
     }
 
     @PostMapping("/{id}/delete")

@@ -121,6 +121,13 @@ public class UserService {
     }
 
     @Transactional
+    public void bulkDeleteUsers(List<Long> ids) {
+        for (Long id : ids) {
+            adminDeleteUser(id);
+        }
+    }
+
+    @Transactional
     public void adminDeleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));

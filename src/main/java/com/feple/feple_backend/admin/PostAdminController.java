@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/posts")
@@ -33,6 +36,18 @@ public class PostAdminController {
         model.addAttribute("post", postService.getPost(id));
         model.addAttribute("comments", commentService.getCommentsByPost(id));
         return "admin/post-detail";
+    }
+
+    @PostMapping("/bulk-delete")
+    public String bulkDeletePosts(@RequestParam(required = false) List<Long> ids,
+                                  @RequestParam(defaultValue = "") String filter,
+                                  @RequestParam(defaultValue = "0") int page,
+                                  RedirectAttributes ra) {
+        if (ids != null && !ids.isEmpty()) {
+            postService.bulkDeletePosts(ids);
+            ra.addFlashAttribute("successMessage", ids.size() + "개 게시글이 삭제되었습니다.");
+        }
+        return "redirect:/admin/posts?filter=" + filter + "&page=" + page;
     }
 
     @PostMapping("/{id}/delete")

@@ -135,6 +135,13 @@ public class PostService {
         postRepository.deleteById(postId);
     }
 
+    @Transactional
+    public void bulkDeletePosts(List<Long> ids) {
+        for (Long id : ids) {
+            deletePost(id);
+        }
+    }
+
     public List<PostResponseDto> getPostsByArtistId(Long artistId) {
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new RuntimeException("해당 아티스트가 없습니다: " + artistId));
