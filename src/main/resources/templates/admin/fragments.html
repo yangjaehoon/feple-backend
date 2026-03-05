@@ -15,14 +15,16 @@
     </div>
 
     <nav class="sb-nav">
-        <div class="sb-section-label">메뉴</div>
+        <div class="sb-section-label">개요</div>
 
         <a th:href="@{/admin}"
            class="sb-link"
            th:classappend="${active == 'home'} ? ' active'">
-            <span class="sb-link-icon">🏠</span>
+            <span class="sb-link-icon">📊</span>
             대시보드
         </a>
+
+        <div class="sb-section-label">콘텐츠</div>
 
         <a th:href="@{/admin/festivals}"
            class="sb-link"
@@ -42,8 +44,10 @@
            class="sb-link"
            th:classappend="${active == 'posts'} ? ' active'">
             <span class="sb-link-icon">📝</span>
-            게시글 관리
+            게시글
         </a>
+
+        <div class="sb-section-label">관리</div>
 
         <a th:href="@{/admin/users}"
            class="sb-link"
