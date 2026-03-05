@@ -50,10 +50,10 @@ public class ArtistAdminController {
         return "admin/artists-list";
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     public String deleteArtist(@PathVariable Long id) {
         artistService.deleteArtist(id);
-        return "redirect:/admin"; // 또는 "redirect:/admin/artists"
+        return "redirect:/admin/artists";
     }
 
 }
