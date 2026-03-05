@@ -16,7 +16,6 @@ public class Artist {
 
     private String name;
 
-    @Enumerated(EnumType.STRING)
     private ArtistGenre genre;
 
     private String profileImageUrl;
