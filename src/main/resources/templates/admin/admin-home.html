@@ -99,6 +99,7 @@
                             <th>제목</th>
                             <th>장소</th>
                             <th>기간</th>
+                            <th>❤</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -110,9 +111,10 @@
                             </td>
                             <td th:text="${festival.location}"></td>
                             <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></td>
+                            <td style="color:var(--muted);" th:text="${festival.likeCount}"></td>
                         </tr>
                         <tr class="empty-row" th:if="${festivalPage.totalElements == 0}">
-                            <td colspan="4">등록된 페스티벌이 없습니다.</td>
+                            <td colspan="5">등록된 페스티벌이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

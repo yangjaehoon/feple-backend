@@ -60,6 +60,12 @@
                                 <div class="meta-label">장소</div>
                                 <div class="meta-value" th:text="${festival.location}"></div>
                             </div>
+                            <div class="meta-item">
+                                <div class="meta-label">좋아요</div>
+                                <div class="meta-value" style="color:var(--primary);">
+                                    ❤ <span th:text="${festival.likeCount}">0</span>
+                                </div>
+                            </div>
                             <div class="meta-item" th:if="${festival.description != null}">
                                 <div class="meta-label">설명</div>
                                 <div class="meta-value" th:text="${festival.description}"></div>

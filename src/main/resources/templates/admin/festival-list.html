@@ -39,6 +39,7 @@
                             <th>제목</th>
                             <th>장소</th>
                             <th>기간</th>
+                            <th>❤ 좋아요</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -52,9 +53,15 @@
                             <td th:text="${festival.location}" style="color:var(--muted);"></td>
                             <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"
                                 style="color:var(--muted); white-space:nowrap;"></td>
+                            <td>
+                                <span class="badge badge-primary"
+                                      th:text="'❤ ' + ${festival.likeCount}"
+                                      th:if="${festival.likeCount > 0}"></span>
+                                <span style="color:var(--muted);" th:if="${festival.likeCount == 0}">0</span>
+                            </td>
                         </tr>
                         <tr class="empty-row" th:if="${#lists.isEmpty(festivals)}">
-                            <td colspan="5">등록된 페스티벌이 없습니다.</td>
+                            <td colspan="6">등록된 페스티벌이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

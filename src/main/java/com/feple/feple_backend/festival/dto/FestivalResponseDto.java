@@ -21,6 +21,7 @@ public class FestivalResponseDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private String posterUrl;
+    private int likeCount;
 
     public static FestivalResponseDto from(Festival festival) {
         return FestivalResponseDto.builder()
@@ -31,6 +32,7 @@ public class FestivalResponseDto {
                 .startDate(festival.getStartDate())
                 .endDate(festival.getEndDate())
                 .posterUrl(festival.getPosterUrl())
+                .likeCount(festival.getLikeCount())
                 .build();
     }
 }
