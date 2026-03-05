@@ -28,4 +28,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     org.springframework.data.domain.Page<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType, Pageable pageable);
 
     long countByCreatedAtAfter(LocalDateTime since);
+
+    org.springframework.data.domain.Page<Post> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title, Pageable pageable);
+
+    org.springframework.data.domain.Page<Post> findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType boardType, String title, Pageable pageable);
 }

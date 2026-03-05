@@ -24,9 +24,12 @@ public class UserAdminController {
     private final UserService userService;
 
     @GetMapping
-    public String listUsers(@RequestParam(defaultValue = "0") int page, Model model) {
-        Page<UserResponseDto> users = userService.getUsersPage(page, 20);
+    public String listUsers(@RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "") String keyword,
+                            Model model) {
+        Page<UserResponseDto> users = userService.getUsersPage(page, 20, keyword);
         model.addAttribute("users", users);
+        model.addAttribute("keyword", keyword);
         return "admin/user-list";
     }
 

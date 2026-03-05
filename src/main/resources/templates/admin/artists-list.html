@@ -31,6 +31,20 @@
                 <div class="card-header">
                     <div class="card-title">전체 아티스트</div>
                 </div>
+                <!-- 검색 바 -->
+                <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
+                    <form th:action="@{/admin/artists}" method="get"
+                          style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" name="keyword" th:value="${keyword}"
+                               placeholder="아티스트 이름 검색..."
+                               style="flex:1; max-width:280px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                        <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                        <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                           th:href="@{/admin/artists}"
+                           class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    </form>
+                </div>
+
                 <div class="table-wrap">
                     <table>
                         <thead>

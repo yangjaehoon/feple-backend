@@ -16,10 +16,12 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     @Query(
             """
                     update Artist a
-                    set a.followerCount = case when a.followerCount > 0 then a.followerCount - 1 else 0 end 
+                    set a.followerCount = case when a.followerCount > 0 then a.followerCount - 1 else 0 end
                     where a.id = :artistId
             """
     )
     int decrementFollowerCount(@Param("artistId") Long artistId);
+
+    java.util.List<Artist> findByNameContainingIgnoreCaseOrderByNameAsc(String name);
 
 }

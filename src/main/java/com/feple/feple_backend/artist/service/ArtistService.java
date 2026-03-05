@@ -34,6 +34,12 @@ public class ArtistService {
                 .toList();
     }
 
+    public List<ArtistResponseDto> searchArtists(String keyword) {
+        return artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream()
+                .map(ArtistResponseDto::from)
+                .toList();
+    }
+
     public ArtistResponseDto getArtistById(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));

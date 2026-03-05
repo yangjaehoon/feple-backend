@@ -97,18 +97,23 @@ public class PostService {
         }
     }
 
-    public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter) {
+    public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword) {
         PageRequest pageable = PageRequest.of(page, size);
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
         if ("FREE".equals(filter)) {
-            return postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable)
-                    .map(PostResponseDto::from);
+            return hasKeyword
+                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.FREE, keyword, pageable).map(PostResponseDto::from)
+                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable).map(PostResponseDto::from);
         }
         if ("MATE".equals(filter)) {
-            return postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable)
-                    .map(PostResponseDto::from);
+            return hasKeyword
+                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.MATE, keyword, pageable).map(PostResponseDto::from)
+                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable).map(PostResponseDto::from);
         }
-        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
-                .map(PostResponseDto::from);
+        return hasKeyword
+                ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable).map(PostResponseDto::from)
+                : postRepository.findAllByOrderByCreatedAtDesc(pageable).map(PostResponseDto::from);
     }
 
     public long getTotalPostCount() {

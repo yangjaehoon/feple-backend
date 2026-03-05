@@ -29,6 +29,20 @@
                  th:text="${successMessage}"></div>
 
             <div class="card">
+                <!-- 검색 바 -->
+                <div style="padding:14px 22px; border-bottom:1px solid var(--border);">
+                    <form th:action="@{/admin/users}" method="get"
+                          style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" name="keyword" th:value="${keyword}"
+                               placeholder="닉네임 또는 이메일 검색..."
+                               style="flex:1; max-width:320px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                        <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                        <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                           th:href="@{/admin/users(page=0)}"
+                           class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    </form>
+                </div>
+
                 <div class="table-wrap">
                     <table>
                         <thead>
@@ -79,11 +93,11 @@
                           th:text="'총 ' + ${users.totalElements} + '명'"></span>
                     <div class="pagination" style="margin-left:auto;">
                         <a th:if="${users.hasPrevious()}"
-                           th:href="@{/admin/users(page=${users.number - 1})}">← 이전</a>
+                           th:href="@{/admin/users(keyword=${keyword}, page=${users.number - 1})}">← 이전</a>
                         <span class="page-info"
                               th:text="${users.number + 1} + ' / ' + ${users.totalPages}"></span>
                         <a th:if="${users.hasNext()}"
-                           th:href="@{/admin/users(page=${users.number + 1})}">다음 →</a>
+                           th:href="@{/admin/users(keyword=${keyword}, page=${users.number + 1})}">다음 →</a>
                     </div>
                 </div>
             </div>

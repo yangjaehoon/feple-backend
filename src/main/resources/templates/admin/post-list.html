@@ -48,6 +48,21 @@
                     </a>
                 </div>
 
+                <!-- 검색 바 -->
+                <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
+                    <form th:action="@{/admin/posts}" method="get"
+                          style="display:flex; gap:8px; align-items:center;">
+                        <input type="hidden" name="filter" th:value="${filter}"/>
+                        <input type="text" name="keyword" th:value="${keyword}"
+                               placeholder="제목 검색..."
+                               style="flex:1; max-width:320px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                        <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                        <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                           th:href="@{/admin/posts(filter=${filter}, page=0)}"
+                           class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    </form>
+                </div>
+
                 <div class="table-wrap">
                     <table>
                         <thead>
@@ -102,11 +117,11 @@
                           th:text="'총 ' + ${posts.totalElements} + '개'"></span>
                     <div class="pagination" style="margin-left:auto;">
                         <a th:if="${posts.hasPrevious()}"
-                           th:href="@{/admin/posts(filter=${filter}, page=${posts.number - 1})}">← 이전</a>
+                           th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number - 1})}">← 이전</a>
                         <span class="page-info"
                               th:text="${posts.number + 1} + ' / ' + ${posts.totalPages}"></span>
                         <a th:if="${posts.hasNext()}"
-                           th:href="@{/admin/posts(filter=${filter}, page=${posts.number + 1})}">다음 →</a>
+                           th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number + 1})}">다음 →</a>
                     </div>
                 </div>
             </div>

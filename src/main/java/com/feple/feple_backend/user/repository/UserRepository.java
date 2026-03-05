@@ -14,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByProviderAndOauthId(AuthProvider provider, String oauthId);
 
+    org.springframework.data.domain.Page<User> findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(String nickname, String email, org.springframework.data.domain.Pageable pageable);
+
 }

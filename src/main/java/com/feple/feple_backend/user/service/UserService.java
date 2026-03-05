@@ -111,9 +111,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserResponseDto> getUsersPage(int page, int size) {
-        return userRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")))
-                .map(UserResponseDto::from);
+    public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        if (keyword != null && !keyword.isBlank()) {
+            return userRepository.findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, pageable)
+                    .map(UserResponseDto::from);
+        }
+        return userRepository.findAll(pageable).map(UserResponseDto::from);
     }
 
     @Transactional
