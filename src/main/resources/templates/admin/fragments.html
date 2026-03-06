@@ -4,17 +4,37 @@
 
 <!-- ── Topbar Fragment ── -->
 <nav th:fragment="topbar" class="topbar-global">
-    <a class="topbar-brand" th:href="@{/admin}">
-        <div class="topbar-logo">🎪</div>
-        <div class="topbar-name">fe<span>ple</span></div>
-    </a>
-    <span class="topbar-badge">Admin</span>
-    <div style="flex:1;"></div>
-    <div class="topbar-avatar">👤</div>
+    <div class="topbar-project">
+        <span class="topbar-project-dot"></span>
+        Feple Admin
+    </div>
+    <div class="topbar-actions">
+        <div class="topbar-icon-btn" title="알림">🔔</div>
+        <div class="topbar-icon-btn" title="관리자">👩‍💼</div>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit" class="topbar-logout-btn">로그아웃</button>
+        </form>
+    </div>
 </nav>
 
 <!-- ── Sidebar Fragment ── -->
 <aside th:fragment="sidebar(active)" class="sidebar">
+
+    <!-- 로고 -->
+    <div class="sb-logo-section">
+        <div class="sb-logo-icon">🎪</div>
+        <div class="sb-logo-name">fe<span>ple</span></div>
+        <span class="sb-logo-tag">Admin</span>
+    </div>
+
+    <!-- 프로젝트 셀렉터 -->
+    <div class="sb-project">
+        <select class="sb-project-sel">
+            <option>🎉 Feple 프로젝트</option>
+        </select>
+    </div>
+
+    <!-- 내비게이션 -->
     <nav class="sb-nav">
 
         <div class="sb-section-label">개요</div>
@@ -43,6 +63,7 @@
            class="sb-link"
            th:classappend="${active == 'posts'} ? ' active'">
             <span class="sb-icon">📝</span>게시글
+            <span class="sb-badge sb-badge-red">NEW</span>
         </a>
 
         <div class="sb-section-label">관리</div>
@@ -54,7 +75,7 @@
         </a>
 
     </nav>
-    <div class="sb-footer">Feple Admin v1.0</div>
+    <div class="sb-footer">Feple Admin v1.0 ✨</div>
 </aside>
 
 </body>

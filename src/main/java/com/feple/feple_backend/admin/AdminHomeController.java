@@ -41,6 +41,7 @@ public class AdminHomeController {
         model.addAttribute("recentPostCount", postService.countRecentPosts(7));
         model.addAttribute("hotPosts", postService.getAdminHotPosts(5));
         model.addAttribute("topArtists", artistService.getTopArtists(5));
+        model.addAttribute("recentUsers", userRepository.findTop5ByOrderByIdDesc());
 
         return "admin/admin-home";
     }

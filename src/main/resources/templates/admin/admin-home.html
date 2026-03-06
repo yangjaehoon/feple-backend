@@ -13,263 +13,353 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">대시보드</h1>
+            <div class="breadcrumb">
+                <span>Feple Admin</span>
+                <span class="bc-sep">›</span>
+                <span>대시보드</span>
+            </div>
         </div>
         <div class="page-actions">
             <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌</a>
             <a class="btn btn-secondary" th:href="@{/admin/artists/new}">+ 아티스트</a>
         </div>
     </div>
+
     <div class="content-area">
+        <div class="db-grid">
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-blue">🎵</div>
-                <div>
-                    <div class="stat-value" th:text="${festivalPage.totalElements}">0</div>
-                    <div class="stat-label">총 페스티벌</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-pink">🎤</div>
-                <div>
-                    <div class="stat-value" th:text="${artistPage.totalElements}">0</div>
-                    <div class="stat-label">총 아티스트</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-mint">📝</div>
-                <div>
-                    <div class="stat-value" th:text="${totalPosts}">0</div>
-                    <div class="stat-label">총 게시글</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-orange">👤</div>
-                <div>
-                    <div class="stat-value" th:text="${totalUsers}">0</div>
-                    <div class="stat-label">총 회원</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon stat-icon-purple">🔥</div>
-                <div>
-                    <div class="stat-value" th:text="${recentPostCount}">0</div>
-                    <div class="stat-label">최근 7일 게시글</div>
-                </div>
-            </div>
-        </div>
+            <!-- ═══════════════════════════════════════════
+                 열 1 (넓음): 방문 트렌드 + 최근 가입 회원
+                 ═══════════════════════════════════════════ -->
+            <div class="db-col">
 
-        <!-- Quick actions -->
-        <div class="quick-grid">
-            <a class="quick-card" th:href="@{/admin/festivals/new}">
-                <div class="quick-icon icon-festival">🎵</div>
-                <div>
-                    <div class="quick-label">페스티벌 추가</div>
-                    <div class="quick-desc">새 페스티벌을 등록합니다</div>
+                <!-- 방문 트렌드 차트 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">📈 방문 트렌드 (최근 7일)</span>
+                        <span class="card-count">Chart.js</span>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="visitChart"></canvas>
+                    </div>
                 </div>
-            </a>
-            <a class="quick-card" th:href="@{/admin/artists/new}">
-                <div class="quick-icon icon-artist">🎤</div>
-                <div>
-                    <div class="quick-label">아티스트 추가</div>
-                    <div class="quick-desc">새 아티스트를 등록합니다</div>
-                </div>
-            </a>
-        </div>
 
-        <!-- Festival table -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    페스티벌 목록
-                    <span class="card-count" th:text="${festivalPage.totalElements}"></span>
-                </div>
-                <a class="btn btn-primary btn-sm" th:href="@{/admin/festivals/new}">+ 등록</a>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>제목</th>
-                        <th>장소</th>
-                        <th>기간</th>
-                        <th>❤</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="festival : ${festivalPage.content}">
-                        <td class="td-id" th:text="${festival.id}"></td>
-                        <td>
-                            <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
-                               th:text="${festival.title}"></a>
-                        </td>
-                        <td th:text="${festival.location}"></td>
-                        <td th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></td>
-                        <td style="color:var(--muted);" th:text="${festival.likeCount}"></td>
-                    </tr>
-                    <tr class="empty-row" th:if="${festivalPage.totalElements == 0}">
-                        <td colspan="5">등록된 페스티벌이 없습니다.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-footer">
-                <div class="pagination">
-                    <a th:if="${festivalPage.hasPrevious()}"
-                       th:href="@{/admin(festivalPage=${festivalPage.number - 1}, artistPage=${artistPage.number})}">← 이전</a>
-                    <span class="page-info"
-                          th:text="${festivalPage.number + 1} + ' / ' + ${festivalPage.totalPages}"></span>
-                    <a th:if="${festivalPage.hasNext()}"
-                       th:href="@{/admin(festivalPage=${festivalPage.number + 1}, artistPage=${artistPage.number})}">다음 →</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Artist table -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    아티스트 목록
-                    <span class="card-count" th:text="${artistPage.totalElements}"></span>
-                </div>
-                <a class="btn btn-primary btn-sm" th:href="@{/admin/artists/new}">+ 등록</a>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>아티스트</th>
-                        <th style="width:140px;">관리</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="artist : ${artistPage.content}">
-                        <td>
-                            <div class="avatar-cell">
-                                <div th:if="${artist.profileImageUrl == null}"
-                                     style="width:34px; height:34px; border-radius:50%; background:var(--purple-50); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🎤</div>
-                                <img th:if="${artist.profileImageUrl != null}"
-                                     th:src="${artist.profileImageUrl}" class="avatar" alt=""/>
-                                <div>
-                                    <div class="cell-primary" th:text="${artist.name}"></div>
-                                    <div class="cell-secondary" style="margin-top:3px;">
-                                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
-                                    </div>
-                                </div>
+                <!-- 최근 가입 회원 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">👥 최근 가입 회원</span>
+                        <a class="btn btn-secondary btn-sm" th:href="@{/admin/users}">전체보기</a>
+                    </div>
+                    <div class="member-list">
+                        <div th:each="user : ${recentUsers}" class="member-item">
+                            <img th:if="${user.profileImageUrl != null}"
+                                 th:src="${user.profileImageUrl}"
+                                 class="member-av" alt=""/>
+                            <div th:if="${user.profileImageUrl == null}"
+                                 class="member-av">👤</div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div class="member-name" th:text="${user.nickname ?: '(닉네임 없음)'}"></div>
+                                <div class="member-email" th:text="${user.email ?: '-'}"></div>
                             </div>
-                        </td>
-                        <td>
-                            <div style="display:flex; gap:6px; align-items:center;">
-                                <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
-                                   class="btn btn-warning btn-sm">수정</a>
-                                <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}"
-                                      method="post"
-                                      onsubmit="return confirm('정말 삭제할까요?');">
-                                    <button type="submit" class="btn btn-danger btn-sm">삭제</button>
-                                </form>
+                            <span class="member-date">신규</span>
+                        </div>
+                        <div th:if="${#lists.isEmpty(recentUsers)}"
+                             style="padding:28px 18px; text-align:center; color:var(--muted); font-size:13px;">
+                            가입한 회원이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════
+                 열 2 (중간): 현황 요약 + 일별 지표 + 활동 피드
+                 ═══════════════════════════════════════════ -->
+            <div class="db-col">
+
+                <!-- 현황 요약 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">📊 현황 요약</span>
+                    </div>
+                    <div class="stats-summary">
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">🎵</span>페스티벌</span>
+                            <span class="sum-val" th:text="${festivalPage.totalElements}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">🎤</span>아티스트</span>
+                            <span class="sum-val" th:text="${artistPage.totalElements}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">📝</span>총 게시글</span>
+                            <span class="sum-val" th:text="${totalPosts}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">👤</span>총 회원</span>
+                            <span class="sum-val" th:text="${totalUsers}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">🔥</span>최근 7일 게시글</span>
+                            <span class="sum-val" th:text="${recentPostCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 일별 지표 테이블 (샘플) -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">📅 일별 지표</span>
+                        <span class="card-count" id="metrics-range"></span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <thead>
+                            <tr style="background:#F4F9FD;">
+                                <th style="padding:9px 12px; color:var(--muted); font-weight:700; text-align:left; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;">날짜</th>
+                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">PV</th>
+                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">UV</th>
+                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">가입</th>
+                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">게시글</th>
+                            </tr>
+                            </thead>
+                            <tbody id="metrics-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- HOT 게시글 활동 피드 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">🔥 HOT 게시글 (7일)</span>
+                        <a class="btn btn-secondary btn-sm" th:href="@{/admin/posts}">전체보기</a>
+                    </div>
+                    <div class="activity-list">
+                        <div th:each="post, stat : ${hotPosts}" class="act-item">
+                            <div th:classappend="${stat.index % 3 == 0} ? 'red' : (${stat.index % 3 == 1} ? 'green' : 'yellow')"
+                                 class="act-dot"></div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div class="act-type">HOT 게시글 #<span th:text="${stat.count}"></span></div>
+                                <a class="act-title"
+                                   th:href="@{/admin/posts/{id}(id=${post.id})}"
+                                   th:text="${post.title}"></a>
                             </div>
-                        </td>
-                    </tr>
-                    <tr class="empty-row" th:if="${artistPage.totalElements == 0}">
-                        <td colspan="2">등록된 아티스트가 없습니다.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-footer">
-                <div class="pagination">
-                    <a th:if="${artistPage.hasPrevious()}"
-                       th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number - 1})}">← 이전</a>
-                    <span class="page-info"
-                          th:text="${artistPage.number + 1} + ' / ' + ${artistPage.totalPages}"></span>
-                    <a th:if="${artistPage.hasNext()}"
-                       th:href="@{/admin(festivalPage=${festivalPage.number}, artistPage=${artistPage.number + 1})}">다음 →</a>
+                            <div class="act-meta">
+                                ❤ <span th:text="${post.likeCount}"></span>
+                                &nbsp;💬 <span th:text="${post.commentCount}"></span>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(hotPosts)}" class="act-empty">
+                            최근 7일 게시글이 없습니다.
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- 2-column row: HOT 게시글 + 인기 아티스트 -->
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-
-            <!-- HOT 게시글 TOP 5 -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">🔥 HOT 게시글 (7일)</div>
-                    <a class="btn btn-secondary btn-sm" th:href="@{/admin/posts}">전체보기</a>
-                </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>제목</th>
-                            <th>❤</th>
-                            <th>💬</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="post, stat : ${hotPosts}">
-                            <td class="td-id" th:text="${stat.count}"></td>
-                            <td>
-                                <a th:href="@{/admin/posts/{id}(id=${post.id})}"
-                                   th:text="${post.title}"
-                                   style="max-width:200px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
-                            </td>
-                            <td style="color:var(--muted);" th:text="${post.likeCount}"></td>
-                            <td style="color:var(--muted);" th:text="${post.commentCount}"></td>
-                        </tr>
-                        <tr class="empty-row" th:if="${#lists.isEmpty(hotPosts)}">
-                            <td colspan="4">최근 7일 게시글이 없습니다.</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
 
-            <!-- 인기 아티스트 TOP 5 -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">⭐ 인기 아티스트 TOP 5</div>
-                    <a class="btn btn-secondary btn-sm" th:href="@{/admin/artists}">전체보기</a>
+            <!-- ═══════════════════════════════════════════
+                 열 3 (좁음): 관리자 프로필 + 서비스 현황 + 메모
+                 ═══════════════════════════════════════════ -->
+            <div class="db-col">
+
+                <!-- 관리자 프로필 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">👩‍💼 관리자</span>
+                    </div>
+                    <div class="profile-body">
+                        <div class="profile-av-xl">👩‍💼</div>
+                        <div class="profile-name">Feple Admin</div>
+                        <div class="profile-email">admin@feple.com</div>
+                        <span class="profile-tag">⭐ 최고 관리자</span>
+                        <div style="margin-top:14px; display:flex; gap:8px;">
+                            <a class="btn btn-secondary btn-sm" th:href="@{/admin/users}">회원 관리</a>
+                            <a class="btn btn-primary btn-sm" th:href="@{/admin/festivals/new}">+ 페스티벌</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>프로필</th>
-                            <th>이름</th>
-                            <th>팔로워</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="artist, stat : ${topArtists}">
-                            <td class="td-id" th:text="${stat.count}"></td>
-                            <td>
-                                <img th:if="${artist.profileImageUrl != null}"
-                                     th:src="${artist.profileImageUrl}"
-                                     style="width:30px; height:30px; border-radius:50%; object-fit:cover;"
-                                     alt=""/>
-                                <span th:if="${artist.profileImageUrl == null}"
-                                      style="font-size:20px;">🎤</span>
-                            </td>
-                            <td style="font-weight:600;" th:text="${artist.name}"></td>
-                            <td style="color:var(--muted);" th:text="${artist.followerCount}"></td>
-                        </tr>
-                        <tr class="empty-row" th:if="${#lists.isEmpty(topArtists)}">
-                            <td colspan="4">아티스트가 없습니다.</td>
-                        </tr>
-                        </tbody>
-                    </table>
+
+                <!-- 서비스 현황 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">⚙️ 서비스 현황</span>
+                    </div>
+                    <div class="srv-list">
+                        <div class="srv-item">
+                            <div class="srv-icon">🎵</div>
+                            <span class="srv-label">페스티벌</span>
+                            <span class="srv-count" th:text="${festivalPage.totalElements}">0</span>
+                        </div>
+                        <div class="srv-item">
+                            <div class="srv-icon">🎤</div>
+                            <span class="srv-label">아티스트</span>
+                            <span class="srv-count" th:text="${artistPage.totalElements}">0</span>
+                        </div>
+                        <div class="srv-item">
+                            <div class="srv-icon">📝</div>
+                            <span class="srv-label">게시글</span>
+                            <span class="srv-count" th:text="${totalPosts}">0</span>
+                        </div>
+                        <div class="srv-item">
+                            <div class="srv-icon">👤</div>
+                            <span class="srv-label">회원</span>
+                            <span class="srv-count" th:text="${totalUsers}">0</span>
+                        </div>
+                        <div class="srv-item">
+                            <div class="srv-icon">🔥</div>
+                            <span class="srv-label">7일 게시글</span>
+                            <span class="srv-count" th:text="${recentPostCount}">0</span>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- 메모 위젯 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">📝 메모</span>
+                        <button class="btn btn-secondary btn-sm" onclick="clearAllMemos()">전체 삭제</button>
+                    </div>
+                    <div class="memo-body">
+                        <textarea class="memo-textarea" id="memo-input"
+                                  placeholder="메모를 입력하세요..."></textarea>
+                        <div class="memo-btns">
+                            <button class="btn btn-primary btn-sm" onclick="addMemo()">저장</button>
+                        </div>
+                        <div class="memo-saved" id="memo-saved"></div>
+                    </div>
+                </div>
+
             </div>
+        </div><!-- /db-grid -->
+    </div><!-- /content-area -->
+</div><!-- /main-content -->
 
-        </div>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
-    </div>
-</div>
+<script>
+/* ── 방문 트렌드 차트 ── */
+(function () {
+    const labels = [];
+    const pvData  = [210, 185, 260, 310, 195, 340, 280];
+    const uvData  = [120,  95, 145, 180, 110, 200, 165];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        labels.push((d.getMonth() + 1) + '/' + d.getDate());
+    }
+    new Chart(document.getElementById('visitChart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: '페이지뷰',
+                    data: pvData,
+                    borderColor: '#5BC0EB',
+                    backgroundColor: 'rgba(91,192,235,.10)',
+                    pointBackgroundColor: '#5BC0EB',
+                    pointRadius: 4, pointHoverRadius: 6,
+                    tension: 0.38, fill: true, borderWidth: 2.5
+                },
+                {
+                    label: '방문자',
+                    data: uvData,
+                    borderColor: '#A78BFA',
+                    backgroundColor: 'transparent',
+                    pointBackgroundColor: '#A78BFA',
+                    pointRadius: 3, pointHoverRadius: 5,
+                    tension: 0.38, fill: false, borderWidth: 2,
+                    borderDash: [4, 3]
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, position: 'top',
+                    labels: { font: { size: 11, family: 'Nunito' }, boxWidth: 12, padding: 10 } }
+            },
+            scales: {
+                x: { grid: { color: '#E4EDF3' }, ticks: { font: { size: 11 }, color: '#A0AEC0' } },
+                y: { grid: { color: '#E4EDF3' }, ticks: { font: { size: 11 }, color: '#A0AEC0' }, beginAtZero: true }
+            }
+        }
+    });
+})();
+
+/* ── 일별 지표 테이블 (샘플 데이터) ── */
+(function () {
+    const tbody = document.getElementById('metrics-tbody');
+    const range = document.getElementById('metrics-range');
+    const rows = [];
+    const pvBase  = [210, 185, 260, 310, 195, 340, 280];
+    const uvBase  = [120,  95, 145, 180, 110, 200, 165];
+    const sigBase = [  3,   1,   5,   4,   2,   7,   3];
+    const postBase= [  8,   5,  11,   9,   4,  14,  10];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const label = (d.getMonth() + 1) + '/' + d.getDate();
+        const idx = 6 - i;
+        rows.push(`<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 12px; color:var(--text-2); font-size:12px;">${label}</td>
+            <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--text); font-size:12px;">${pvBase[idx]}</td>
+            <td style="padding:8px 10px; text-align:right; color:var(--text-2); font-size:12px;">${uvBase[idx]}</td>
+            <td style="padding:8px 10px; text-align:right; color:var(--success); font-weight:700; font-size:12px;">+${sigBase[idx]}</td>
+            <td style="padding:8px 10px; text-align:right; color:var(--primary-dk); font-weight:700; font-size:12px;">${postBase[idx]}</td>
+        </tr>`);
+    }
+    tbody.innerHTML = rows.join('');
+    const start = (() => { const d = new Date(); d.setDate(d.getDate()-6); return (d.getMonth()+1)+'/'+ d.getDate(); })();
+    const end   = (() => { const d = new Date(); return (d.getMonth()+1)+'/'+ d.getDate(); })();
+    range.textContent = start + ' ~ ' + end;
+})();
+
+/* ── 메모 위젯 (localStorage) ── */
+const MEMO_KEY = 'feple_admin_memos';
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function renderMemos() {
+    const memos = JSON.parse(localStorage.getItem(MEMO_KEY) || '[]');
+    const saved = document.getElementById('memo-saved');
+    if (!memos.length) { saved.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">저장된 메모가 없습니다.</div>'; return; }
+    saved.innerHTML = memos.map(m =>
+        `<div class="memo-chip">
+            <span class="memo-chip-text">${escHtml(m.text)}</span>
+            <button class="memo-chip-del" onclick="deleteMemo(${m.id})" title="삭제">×</button>
+        </div>`
+    ).join('');
+}
+function addMemo() {
+    const input = document.getElementById('memo-input');
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    const memos = JSON.parse(localStorage.getItem(MEMO_KEY) || '[]');
+    memos.unshift({ id: Date.now(), text });
+    localStorage.setItem(MEMO_KEY, JSON.stringify(memos));
+    input.value = '';
+    renderMemos();
+}
+function deleteMemo(id) {
+    const memos = JSON.parse(localStorage.getItem(MEMO_KEY) || '[]').filter(m => m.id !== id);
+    localStorage.setItem(MEMO_KEY, JSON.stringify(memos));
+    renderMemos();
+}
+function clearAllMemos() {
+    if (!confirm('메모를 모두 삭제할까요?')) return;
+    localStorage.removeItem(MEMO_KEY);
+    renderMemos();
+}
+/* Enter 키로 저장 */
+document.getElementById('memo-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) addMemo();
+});
+renderMemos();
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -16,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     org.springframework.data.domain.Page<User> findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(String nickname, String email, org.springframework.data.domain.Pageable pageable);
 
+    java.util.List<User> findTop5ByOrderByIdDesc();
+
 }
