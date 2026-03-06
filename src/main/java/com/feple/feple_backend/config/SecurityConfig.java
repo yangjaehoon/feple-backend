@@ -52,26 +52,28 @@ import com.feple.feple_backend.auth.jwt.JwtProvider;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtProvider jwtProvider;
+        private final JwtProvider jwtProvider;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/admin/**").permitAll()
-                        // 조회는 비로그인 허용, 쓰기/삭제는 인증 필요
-                        .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
-                                "/posts/**", "/comments/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .httpBasic(hb -> hb.disable())
-                .formLogin(fl -> fl.disable())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/auth/**").permitAll()
+                                                .requestMatchers("/actuator/health").permitAll()
+                                                .requestMatchers("/admin/**").permitAll()
+                                                .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
+                                                // 조회는 비로그인 허용, 쓰기/삭제는 인증 필요
+                                                .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
+                                                                "/posts/**", "/comments/**")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .httpBasic(hb -> hb.disable())
+                                .formLogin(fl -> fl.disable())
+                                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
+                                                UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 }
