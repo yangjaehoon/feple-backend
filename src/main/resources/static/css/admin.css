@@ -58,47 +58,67 @@ body {
 }
 
 /* ============================================================
-   TOPBAR  (fixed · full-width)
+   NAVBAR  (fixed · full-width · 가로 통합 네비게이션)
    ============================================================ */
-.topbar-global {
+.navbar-global {
   height: var(--topbar-h);
   background: var(--surface);
   border-bottom: 1.5px solid var(--border);
   box-shadow: 0 2px 14px rgba(91,192,235,.10);
   position: fixed;
-  top: 0; left: var(--sb-w); right: 0;
+  top: 0; left: 0; right: 0;
   z-index: 1030;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  gap: 12px;
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 0;
 }
-.topbar-brand {
-  display: flex; align-items: center; gap: 10px;
-  text-decoration: none; flex-shrink: 0;
+.nb-brand {
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none; flex-shrink: 0; padding-right: 16px;
 }
-.topbar-logo {
-  width: 36px; height: 36px;
+.nb-logo {
+  width: 34px; height: 34px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
   border-radius: var(--r-sm);
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px;
-  box-shadow: 0 4px 12px rgba(91,192,235,.35);
+  font-size: 16px; box-shadow: 0 4px 12px rgba(91,192,235,.35);
 }
-.topbar-name { font-size: 17px; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
-.topbar-name span { color: var(--primary); }
-.topbar-badge {
-  font-size: 11px; font-weight: 700;
+.nb-name { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
+.nb-name span { color: var(--primary); }
+.nb-tag {
+  font-size: 9px; font-weight: 700;
   background: var(--accent); color: #5a4800;
-  padding: 3px 10px; border-radius: 20px; letter-spacing: .3px; flex-shrink: 0;
+  padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
 }
-.topbar-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--primary-lt); border: 2px solid var(--primary-soft);
+.nb-divider { width: 1px; height: 24px; background: var(--border); margin: 0 14px; flex-shrink: 0; }
+.nb-nav { display: flex; align-items: center; gap: 2px; }
+.nb-link {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 13px; border-radius: 10px;
+  color: var(--text-2); text-decoration: none;
+  font-size: 13px; font-weight: 600;
+  transition: background .14s, color .14s; white-space: nowrap;
+}
+.nb-link:hover { background: var(--primary-lt); color: var(--primary-dk); }
+.nb-active {
+  background: var(--primary) !important; color: #fff !important;
+  box-shadow: 0 4px 14px rgba(91,192,235,.35);
+}
+.nb-actions { display: flex; align-items: center; gap: 8px; }
+.nb-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--primary-lt); border: 1.5px solid var(--primary-soft);
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px; cursor: pointer; transition: border-color .15s;
+  font-size: 15px; cursor: pointer; transition: border-color .15s;
 }
-.topbar-avatar:hover { border-color: var(--primary); }
+.nb-avatar:hover { border-color: var(--primary); }
+.nb-logout {
+  display: inline-flex; align-items: center;
+  padding: 6px 14px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text-2); font-size: 12.5px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all .14s;
+}
+.nb-logout:hover { background: var(--danger-lt); border-color: #FFD0DE; color: var(--danger); }
 
 /* ============================================================
    SIDEBAR  (fixed left)
@@ -145,7 +165,7 @@ body {
    MAIN CONTENT
    ============================================================ */
 .main-content {
-  margin-left: var(--sb-w);
+  margin-left: 0;
   padding-top: var(--topbar-h);
   min-height: 100vh; background: var(--bg);
 }

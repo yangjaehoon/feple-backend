@@ -2,81 +2,52 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!-- ── Topbar Fragment ── -->
-<nav th:fragment="topbar" class="topbar-global">
-    <div class="topbar-project">
-        <span class="topbar-project-dot"></span>
-        Feple Admin
-    </div>
-    <div class="topbar-actions">
-        <div class="topbar-icon-btn" title="알림">🔔</div>
-        <div class="topbar-icon-btn" title="관리자">👩‍💼</div>
+<!-- ── 통합 가로 네비게이션 바 ── -->
+<header th:fragment="navbar(active)" class="navbar-global">
+
+    <!-- 브랜드 로고 -->
+    <a class="nb-brand" th:href="@{/admin}">
+        <div class="nb-logo">🎪</div>
+        <div class="nb-name">fe<span>ple</span></div>
+        <span class="nb-tag">Admin</span>
+    </a>
+
+    <div class="nb-divider"></div>
+
+    <!-- 네비게이션 링크 -->
+    <nav class="nb-nav">
+        <a th:href="@{/admin}" class="nb-link"
+           th:classappend="${active == 'home'} ? ' nb-active'">
+            📊 대시보드
+        </a>
+        <a th:href="@{/admin/festivals}" class="nb-link"
+           th:classappend="${active == 'festivals'} ? ' nb-active'">
+            🎵 페스티벌
+        </a>
+        <a th:href="@{/admin/artists}" class="nb-link"
+           th:classappend="${active == 'artists'} ? ' nb-active'">
+            🎤 아티스트
+        </a>
+        <a th:href="@{/admin/posts}" class="nb-link"
+           th:classappend="${active == 'posts'} ? ' nb-active'">
+            📝 게시글
+        </a>
+        <a th:href="@{/admin/users}" class="nb-link"
+           th:classappend="${active == 'users'} ? ' nb-active'">
+            👤 회원 관리
+        </a>
+    </nav>
+
+    <div style="flex:1;"></div>
+
+    <!-- 우측 액션 -->
+    <div class="nb-actions">
+        <div class="nb-avatar" title="관리자">👩‍💼</div>
         <form th:action="@{/logout}" method="post" style="margin:0;">
-            <button type="submit" class="topbar-logout-btn">로그아웃</button>
+            <button type="submit" class="nb-logout">로그아웃</button>
         </form>
     </div>
-</nav>
-
-<!-- ── Sidebar Fragment ── -->
-<aside th:fragment="sidebar(active)" class="sidebar">
-
-    <!-- 로고 -->
-    <div class="sb-logo-section">
-        <div class="sb-logo-icon">🎪</div>
-        <div class="sb-logo-name">fe<span>ple</span></div>
-        <span class="sb-logo-tag">Admin</span>
-    </div>
-
-    <!-- 프로젝트 셀렉터 -->
-    <div class="sb-project">
-        <select class="sb-project-sel">
-            <option>🎉 Feple 프로젝트</option>
-        </select>
-    </div>
-
-    <!-- 내비게이션 -->
-    <nav class="sb-nav">
-
-        <div class="sb-section-label">개요</div>
-
-        <a th:href="@{/admin}"
-           class="sb-link"
-           th:classappend="${active == 'home'} ? ' active'">
-            <span class="sb-icon">📊</span>대시보드
-        </a>
-
-        <div class="sb-section-label">콘텐츠</div>
-
-        <a th:href="@{/admin/festivals}"
-           class="sb-link"
-           th:classappend="${active == 'festivals'} ? ' active'">
-            <span class="sb-icon">🎵</span>페스티벌
-        </a>
-
-        <a th:href="@{/admin/artists}"
-           class="sb-link"
-           th:classappend="${active == 'artists'} ? ' active'">
-            <span class="sb-icon">🎤</span>아티스트
-        </a>
-
-        <a th:href="@{/admin/posts}"
-           class="sb-link"
-           th:classappend="${active == 'posts'} ? ' active'">
-            <span class="sb-icon">📝</span>게시글
-            <span class="sb-badge sb-badge-red">NEW</span>
-        </a>
-
-        <div class="sb-section-label">관리</div>
-
-        <a th:href="@{/admin/users}"
-           class="sb-link"
-           th:classappend="${active == 'users'} ? ' active'">
-            <span class="sb-icon">👤</span>회원 관리
-        </a>
-
-    </nav>
-    <div class="sb-footer">Feple Admin v1.0 ✨</div>
-</aside>
+</header>
 
 </body>
 </html>
