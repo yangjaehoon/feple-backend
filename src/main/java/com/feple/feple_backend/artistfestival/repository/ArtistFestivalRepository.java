@@ -9,6 +9,7 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
 
     List<ArtistFestival> findByFestivalId(Long festivalId);
     List<ArtistFestival> findByFestivalIdOrderByLineupOrderAsc(Long festivalId);
+    List<ArtistFestival> findByArtistIdOrderByFestivalStartDateAsc(Long artistId);
 
     boolean existsByFestivalIdAndArtistId(Long festivalId, Long artistId);
 

@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponse;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -22,6 +23,36 @@ public class ArtistFestivalService {
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FestivalRepository festivalRepository;
     private final ArtistRepository artistRepository;
+
+    public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
+        return artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId)
+                .stream()
+                .map(af -> {
+                    Festival festival = af.getFestival();
+                    List<ArtistScheduleResponse.CoArtistInfo> coArtists =
+                            artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festival.getId())
+                                    .stream()
+                                    .filter(other -> !other.getArtist().getId().equals(artistId))
+                                    .map(other -> ArtistScheduleResponse.CoArtistInfo.builder()
+                                            .artistId(other.getArtist().getId())
+                                            .artistName(other.getArtist().getName())
+                                            .profileImageUrl(other.getArtist().getProfileImageUrl())
+                                            .build())
+                                    .toList();
+                    return ArtistScheduleResponse.builder()
+                            .festivalId(festival.getId())
+                            .title(festival.getTitle())
+                            .description(festival.getDescription())
+                            .location(festival.getLocation())
+                            .startDate(festival.getStartDate())
+                            .endDate(festival.getEndDate())
+                            .posterUrl(festival.getPosterUrl())
+                            .eventType(festival.getEventType())
+                            .coArtists(coArtists)
+                            .build();
+                })
+                .toList();
+    }
 
     public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId) {
         return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId)

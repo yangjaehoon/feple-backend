@@ -32,6 +32,10 @@ public class Festival {
     @Builder.Default
     private int likeCount = 0;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private EventType eventType = EventType.FESTIVAL;
+
     @Builder.Default
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArtistFestival> artistFestivals = new ArrayList<>();
