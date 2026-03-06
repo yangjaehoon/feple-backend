@@ -21,6 +21,7 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -51,24 +52,31 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("카카오 계정 정보가 없습니다."));
 
         String oauthId = kakaoUser.getId().toString();
-        //.orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
+        // .orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
         String email = account.getEmail();
 
         String nickname = Optional.ofNullable(account.getProfile())
-                //.map(KakaoUserResponse.KakaoAccount.profile::getNickname)
+                // .map(KakaoUserResponse.KakaoAccount.profile::getNickname)
                 .map(KakaoUserResponse.Profile::getNickname)
                 .filter(n -> !n.isBlank())
                 .orElse("KakaoUser");
 
-        return userRepository.findByOauthId(oauthId)
-                .orElseGet(() -> userRepository.save(User.builder()
-                        .oauthId(oauthId)
-                        .email(email)
-                        .nickname(nickname)
-                        .provider(AuthProvider.KAKAO)
-                        .profileImageUrl(account.getProfile().getProfile_image_url())
-                        .build()
-                ));
+        Optional<User> existingUser = userRepository.findByOauthId(oauthId);
+        if (existingUser.isPresent()) {
+            return existingUser.get();
+        }
+
+        User newUser = User.builder()
+                .oauthId(oauthId)
+                .email(email)
+                .nickname(nickname)
+                .provider(AuthProvider.KAKAO)
+                .profileImageUrl(account.getProfile().getProfile_image_url())
+                .build();
+
+        @SuppressWarnings("null")
+        User savedUser = userRepository.save(newUser);
+        return savedUser;
     }
 
     public Long createUser(OAuthUserInfo dto) {
@@ -83,7 +91,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto getUser(Long id) {
+    public UserResponseDto getUser(@NonNull Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
         return UserResponseDto.from(user);
@@ -97,16 +105,14 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto updateNickname(Long id, String nickname) {
+    public UserResponseDto updateNickname(@NonNull Long id, String nickname) {
         User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id)
-                );
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
         user.changeNickname(nickname);
         return UserResponseDto.from(user);
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(@NonNull Long id) {
         userRepository.deleteById(id);
     }
 
@@ -114,7 +120,8 @@ public class UserService {
     public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         if (keyword != null && !keyword.isBlank()) {
-            return userRepository.findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, pageable)
+            return userRepository
+                    .findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, pageable)
                     .map(UserResponseDto::from);
         }
         return userRepository.findAll(pageable).map(UserResponseDto::from);
@@ -128,7 +135,7 @@ public class UserService {
     }
 
     @Transactional
-    public void adminDeleteUser(Long id) {
+    public void adminDeleteUser(@NonNull Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
 
@@ -156,7 +163,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getMyPosts(Long userId) {
+    public List<PostResponseDto> getMyPosts(@NonNull Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
         return postRepository.findByUser(user).stream()
@@ -165,7 +172,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<MyCommentResponseDto> getMyComments(Long userId) {
+    public List<MyCommentResponseDto> getMyComments(@NonNull Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
         return commentRepository.findByUser(user).stream()
@@ -174,21 +181,21 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<FestivalResponseDto> getLikedFestivals(Long userId) {
+    public List<FestivalResponseDto> getLikedFestivals(@NonNull Long userId) {
         return festivalLikeRepository.findByUserId(userId).stream()
                 .map(like -> FestivalResponseDto.from(like.getFestival()))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<ArtistResponseDto> getFollowedArtists(Long userId) {
+    public List<ArtistResponseDto> getFollowedArtists(@NonNull Long userId) {
         return artistFollowRepository.findByUserId(userId).stream()
                 .map(follow -> ArtistResponseDto.from(follow.getArtist()))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public UserStatsDto getUserStats(Long userId) {
+    public UserStatsDto getUserStats(@NonNull Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
         long postCount = postRepository.countByUser(user);
@@ -204,6 +211,5 @@ public class UserService {
         String principal = auth.getPrincipal().toString();
         return Long.parseLong(principal);
     }
-
 
 }

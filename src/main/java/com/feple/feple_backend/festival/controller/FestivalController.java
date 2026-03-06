@@ -5,8 +5,6 @@ import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -39,13 +37,13 @@ public class FestivalController {
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Boolean> toggleLike(@PathVariable Long id,
-                                              @AuthenticationPrincipal Long userId) {
+            @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(festivalService.toggleLike(id, userId));
     }
 
     @GetMapping("/{id}/liked")
     public ResponseEntity<Boolean> isLiked(@PathVariable Long id,
-                                           @AuthenticationPrincipal Long userId) {
+            @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(festivalService.isLiked(id, userId));
     }
 }

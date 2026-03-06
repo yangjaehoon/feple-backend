@@ -29,12 +29,19 @@ public class Festival {
     private LocalDate endDate;
     private String posterUrl;
 
+    @Builder.Default
     private int likeCount = 0;
 
+    @Builder.Default
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArtistFestival> artistFestivals = new ArrayList<>();
 
-    public void incrementLikeCount() { this.likeCount++; }
-    public void decrementLikeCount() { this.likeCount = Math.max(0, this.likeCount - 1); }
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        this.likeCount = Math.max(0, this.likeCount - 1);
+    }
 
 }

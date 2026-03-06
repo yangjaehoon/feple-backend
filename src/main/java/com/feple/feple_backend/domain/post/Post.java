@@ -18,7 +18,8 @@ import java.util.List;
 @Builder
 public class Post {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
@@ -68,9 +69,11 @@ public class Post {
     }
 
     public void decrementLikeCount() {
-        if (this.likeCount > 0) this.likeCount--;
+        if (this.likeCount > 0)
+            this.likeCount--;
     }
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 }

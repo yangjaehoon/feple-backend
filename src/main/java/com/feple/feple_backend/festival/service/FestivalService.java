@@ -39,6 +39,7 @@ public class FestivalService {
                 .posterUrl(dto.getPosterUrl())
                 .build();
 
+        @SuppressWarnings("null")
         Festival saved = festivalRepository.save(festival);
         return saved.getId();
     }
@@ -53,6 +54,7 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
+        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
@@ -61,6 +63,7 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public FestivalResponseDto getFestival(Long id) {
+        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
@@ -69,6 +72,7 @@ public class FestivalService {
 
     @Transactional
     public void updateFestival(Long id, FestivalRequestDto dto) {
+        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
@@ -82,8 +86,10 @@ public class FestivalService {
 
     @Transactional
     public boolean toggleLike(Long festivalId, Long userId) {
+        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다."));
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 

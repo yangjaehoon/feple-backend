@@ -4,7 +4,6 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.dto.comment.MyCommentResponseDto;
 import com.feple.feple_backend.dto.post.PostResponseDto;
-import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -53,7 +52,6 @@ public class UserController {
         UserResponseDto userDto = userService.getUser(userId);
         return ResponseEntity.ok(userDto);
     }
-
 
     @GetMapping("/{id}/following")
     public ResponseEntity<List<ArtistResponseDto>> getFollowedArtists(@PathVariable Long id) {

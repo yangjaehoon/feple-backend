@@ -3,7 +3,6 @@ package com.feple.feple_backend.artist.photo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -46,7 +45,8 @@ public class ArtistPhoto {
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private int likecount = 0;
 
-    public ArtistPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title, String description) {
+    public ArtistPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title,
+            String description) {
         this.artistId = artistId;
         this.uploaderUserId = uploaderUserId;
         this.s3Key = s3Key;
