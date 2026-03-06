@@ -1,4 +1,4 @@
-package com.feple.feple_backend.artist.entity;
+package com.feple.feple_backend.artist.photo.like;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "artist_photo_likes", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"artist_photo_id", "user_id"})
+        @UniqueConstraint(columnNames = { "artist_photo_id", "user_id" })
 })
 public class ArtistPhotoLike {
 
