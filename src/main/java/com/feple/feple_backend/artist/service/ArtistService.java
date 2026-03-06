@@ -29,7 +29,7 @@ public class ArtistService {
     }
 
     public List<ArtistResponseDto> getAllArtists() {
-        return artistRepository.findAll().stream()
+        return artistRepository.findAllByOrderByWeeklyScoreDescIdAsc().stream()
                 .map(ArtistResponseDto::from)
                 .toList();
     }

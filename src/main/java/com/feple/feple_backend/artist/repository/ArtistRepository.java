@@ -24,4 +24,6 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     java.util.List<Artist> findByNameContainingIgnoreCaseOrderByNameAsc(String name);
 
+    java.util.List<Artist> findAllByOrderByWeeklyScoreDescIdAsc();
+
 }
