@@ -21,6 +21,7 @@ public class PostResponseDto {
     private int likeCount;
     private int commentCount;
     private String nickname;
+    private String profileImageUrl;
     private Long artistId;
     private Long festivalId;
     private String boardDisplayName;
@@ -48,6 +49,7 @@ public class PostResponseDto {
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getComments().size())
                 .nickname(post.getUser().getNickname())
+                .profileImageUrl(post.getUser().getProfileImageUrl())
                 .artistId(post.getArtist() != null ? post.getArtist().getId() : null)
                 .festivalId(post.getFestival() != null ? post.getFestival().getId() : null)
                 .boardDisplayName(boardDisplayName)
