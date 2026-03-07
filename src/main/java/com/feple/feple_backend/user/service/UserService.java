@@ -85,7 +85,7 @@ public class UserService {
 
     @Transactional
     public User registerLocal(RegisterRequest req) {
-        if (userRepository.findByProviderAndOauthId(AuthProvider.LOCAL, req.getEmail()).isPresent()) {
+        if (userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
         String nickname = (req.getNickname() != null && !req.getNickname().isBlank())
@@ -95,7 +95,7 @@ public class UserService {
                 .email(req.getEmail())
                 .nickname(nickname)
                 .oauthId(req.getEmail())
-                .provider(AuthProvider.LOCAL)
+                .provider(AuthProvider.EMAIL)
                 .password(passwordEncoder.encode(req.getPassword()))
                 .build();
         return userRepository.save(user);
@@ -103,7 +103,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User loginLocal(LocalLoginRequest req) {
-        User user = userRepository.findByProviderAndOauthId(AuthProvider.LOCAL, req.getEmail())
+        User user = userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
