@@ -48,7 +48,11 @@ public class ArtistService {
         return switch (sort == null ? "" : sort) {
             case "name" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
                     .map(ArtistResponseDto::from).toList();
+            case "name_desc" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "name")).stream()
+                    .map(ArtistResponseDto::from).toList();
             case "followers" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "followerCount")).stream()
+                    .map(ArtistResponseDto::from).toList();
+            case "followers_asc" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "followerCount")).stream()
                     .map(ArtistResponseDto::from).toList();
             default -> artistRepository.findAllByOrderByWeeklyScoreDescIdAsc().stream()
                     .map(ArtistResponseDto::from).toList();
