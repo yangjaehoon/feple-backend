@@ -1,7 +1,9 @@
 package com.feple.feple_backend.auth.controller;
 
 import com.feple.feple_backend.auth.dto.AuthResponseDto;
+import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RefreshRequest;
+import com.feple.feple_backend.auth.dto.RegisterRequest;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.user.domain.User;
@@ -39,6 +41,26 @@ public class AuthController {
                         jwtProvider.createAccessToken(user.getId()),
                         jwtProvider.createRefreshToken(user.getId())
                 ));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterRequest req) {
+        User user = userService.registerLocal(req);
+        return ResponseEntity.ok(new AuthResponseDto(
+                UserResponseDto.from(user),
+                jwtProvider.createAccessToken(user.getId()),
+                jwtProvider.createRefreshToken(user.getId())
+        ));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDto> login(@RequestBody LocalLoginRequest req) {
+        User user = userService.loginLocal(req);
+        return ResponseEntity.ok(new AuthResponseDto(
+                UserResponseDto.from(user),
+                jwtProvider.createAccessToken(user.getId()),
+                jwtProvider.createRefreshToken(user.getId())
+        ));
     }
 
     @PostMapping("/refresh")

@@ -12,11 +12,14 @@ import com.feple.feple_backend.repository.PostLikeRepository;
 import com.feple.feple_backend.repository.PostRepository;
 import com.feple.feple_backend.user.domain.AuthProvider;
 import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.auth.dto.LocalLoginRequest;
+import com.feple.feple_backend.auth.dto.RegisterRequest;
 import com.feple.feple_backend.user.dto.KakaoUserResponse;
 import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 //import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +48,7 @@ public class UserService {
     private final PostLikeRepository postLikeRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalLikeRepository festivalLikeRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public User registerOrLogin(KakaoUserResponse kakaoUser) {
         // kakao_account 가 없으면 예외
@@ -77,6 +81,34 @@ public class UserService {
         @SuppressWarnings("null")
         User savedUser = userRepository.save(newUser);
         return savedUser;
+    }
+
+    @Transactional
+    public User registerLocal(RegisterRequest req) {
+        if (userRepository.findByProviderAndOauthId(AuthProvider.LOCAL, req.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+        String nickname = (req.getNickname() != null && !req.getNickname().isBlank())
+                ? req.getNickname()
+                : req.getEmail().split("@")[0];
+        User user = User.builder()
+                .email(req.getEmail())
+                .nickname(nickname)
+                .oauthId(req.getEmail())
+                .provider(AuthProvider.LOCAL)
+                .password(passwordEncoder.encode(req.getPassword()))
+                .build();
+        return userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public User loginLocal(LocalLoginRequest req) {
+        User user = userRepository.findByProviderAndOauthId(AuthProvider.LOCAL, req.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+        return user;
     }
 
     public Long createUser(OAuthUserInfo dto) {
