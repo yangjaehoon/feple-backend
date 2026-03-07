@@ -136,7 +136,7 @@ public class UserService {
     public UserResponseDto getUser(@NonNull Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
-        return UserResponseDto.from(user);
+        return toUserDto(user);
     }
 
     @Transactional(readOnly = true)
@@ -243,6 +243,19 @@ public class UserService {
         long postCount = postRepository.countByUser(user);
         long commentCount = commentRepository.countByUser(user);
         return new UserStatsDto(postCount, commentCount);
+    }
+
+    /** profileImageUrl이 null인 경우 앱 기본 이미지로 대체하여 반환 */
+    public UserResponseDto toUserDto(User user) {
+        String imageUrl = (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isBlank())
+                ? user.getProfileImageUrl()
+                : defaultProfileImage;
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .profileImageUrl(imageUrl)
+                .build();
     }
 
     public Long currentUserId() {

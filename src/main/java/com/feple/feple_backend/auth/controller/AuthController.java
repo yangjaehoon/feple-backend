@@ -37,7 +37,7 @@ public class AuthController {
         return kakaoApiClient.getMe(kakaoAccessToken)
                 .map(userService::registerOrLogin)
                 .map(user -> new AuthResponseDto(
-                        UserResponseDto.from(user),
+                        userService.toUserDto(user),
                         jwtProvider.createAccessToken(user.getId()),
                         jwtProvider.createRefreshToken(user.getId())
                 ));
@@ -47,7 +47,7 @@ public class AuthController {
     public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterRequest req) {
         User user = userService.registerLocal(req);
         return ResponseEntity.ok(new AuthResponseDto(
-                UserResponseDto.from(user),
+                userService.toUserDto(user),
                 jwtProvider.createAccessToken(user.getId()),
                 jwtProvider.createRefreshToken(user.getId())
         ));
@@ -57,7 +57,7 @@ public class AuthController {
     public ResponseEntity<AuthResponseDto> login(@RequestBody LocalLoginRequest req) {
         User user = userService.loginLocal(req);
         return ResponseEntity.ok(new AuthResponseDto(
-                UserResponseDto.from(user),
+                userService.toUserDto(user),
                 jwtProvider.createAccessToken(user.getId()),
                 jwtProvider.createRefreshToken(user.getId())
         ));
