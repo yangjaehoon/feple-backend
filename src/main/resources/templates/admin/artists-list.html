@@ -51,12 +51,12 @@
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='name')}"
                                th:style="${sort == 'name'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
                                                            : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                이름순 ↑
+                                ↑
                             </a>
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc')}"
                                th:style="${sort == 'name_desc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
                                                                 : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                역순 ↓
+                                ↓
                             </a>
                         </th>
                         <th style="width:160px;">
@@ -64,12 +64,12 @@
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers')}"
                                th:style="${sort == 'followers'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
                                                                 : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                많은순 ↓
+                                ↓
                             </a>
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc')}"
                                th:style="${sort == 'followers_asc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
                                                                     : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                적은순 ↑
+                                ↑
                             </a>
                         </th>
                         <th style="width:140px;">관리</th>
