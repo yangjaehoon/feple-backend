@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
@@ -41,6 +42,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class UserService {
+
+    @Value("${app.default-profile-image}")
+    private String defaultProfileImage;
 
     private final UserRepository userRepository;
     private final PostRepository postRepository;
@@ -70,12 +74,17 @@ public class UserService {
             return existingUser.get();
         }
 
+        String kakaoImageUrl = Optional.ofNullable(account.getProfile())
+                .map(KakaoUserResponse.Profile::getProfile_image_url)
+                .filter(url -> !url.isBlank())
+                .orElse(defaultProfileImage);
+
         User newUser = User.builder()
                 .oauthId(oauthId)
                 .email(email)
                 .nickname(nickname)
                 .provider(AuthProvider.KAKAO)
-                .profileImageUrl(account.getProfile().getProfile_image_url())
+                .profileImageUrl(kakaoImageUrl)
                 .build();
 
         @SuppressWarnings("null")
@@ -97,6 +106,7 @@ public class UserService {
                 .oauthId(req.getEmail())
                 .provider(AuthProvider.EMAIL)
                 .password(passwordEncoder.encode(req.getPassword()))
+                .profileImageUrl(defaultProfileImage)
                 .build();
         return userRepository.save(user);
     }
