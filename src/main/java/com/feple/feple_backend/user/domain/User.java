@@ -31,7 +31,6 @@ public class User {
     private String oauthId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "provider", columnDefinition = "varchar(20)")
     private AuthProvider provider;
 
     private String profileImageUrl;
