@@ -46,11 +46,12 @@ public class ArtistAdminController {
     }
 
     @GetMapping
-    public String listArtists(@RequestParam(defaultValue = "") String keyword, Model model) {
-        model.addAttribute("artists", keyword.isBlank()
-                ? artistService.getAllArtists()
-                : artistService.searchArtists(keyword));
+    public String listArtists(@RequestParam(defaultValue = "") String keyword,
+                              @RequestParam(defaultValue = "") String sort,
+                              Model model) {
+        model.addAttribute("artists", artistService.getAdminArtistList(sort, keyword));
         model.addAttribute("keyword", keyword);
+        model.addAttribute("sort", sort);
         return "admin/artists-list";
     }
 

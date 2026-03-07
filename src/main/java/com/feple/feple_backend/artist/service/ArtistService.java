@@ -40,6 +40,21 @@ public class ArtistService {
                 .toList();
     }
 
+    public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword) {
+        if (keyword != null && !keyword.isBlank()) {
+            return artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream()
+                    .map(ArtistResponseDto::from).toList();
+        }
+        return switch (sort == null ? "" : sort) {
+            case "name" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+                    .map(ArtistResponseDto::from).toList();
+            case "followers" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "followerCount")).stream()
+                    .map(ArtistResponseDto::from).toList();
+            default -> artistRepository.findAllByOrderByWeeklyScoreDescIdAsc().stream()
+                    .map(ArtistResponseDto::from).toList();
+        };
+    }
+
     public ArtistResponseDto getArtistById(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));

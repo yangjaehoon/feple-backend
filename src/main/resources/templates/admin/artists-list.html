@@ -46,8 +46,22 @@
                 <table>
                     <thead>
                     <tr>
-                        <th>아티스트</th>
-                        <th style="width:100px;">팔로워</th>
+                        <th>
+                            아티스트
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name')}"
+                               th:style="${sort == 'name'} ? 'margin-left:6px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple-600); color:#fff; text-decoration:none; font-weight:600;'
+                                                           : 'margin-left:6px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-secondary); text-decoration:none;'">
+                                이름순 ↑
+                            </a>
+                        </th>
+                        <th style="width:130px;">
+                            팔로워
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers')}"
+                               th:style="${sort == 'followers'} ? 'margin-left:6px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple-600); color:#fff; text-decoration:none; font-weight:600;'
+                                                                : 'margin-left:6px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-secondary); text-decoration:none;'">
+                                많은순 ↓
+                            </a>
+                        </th>
                         <th style="width:140px;">관리</th>
                     </tr>
                     </thead>
