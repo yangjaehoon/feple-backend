@@ -27,6 +27,7 @@ public class FileStorageService {
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
     private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int ARTIST_PROFILE_MAX_PX = 400;
+    private static final int FESTIVAL_POSTER_MAX_PX = 720;
 
     private final S3Template s3Template;
 
@@ -34,11 +35,20 @@ public class FileStorageService {
     private String bucket;
 
     public String storeFestivalPoster(MultipartFile file, LocalDate festivalStartDate) throws IOException {
+        validateFile(file);
+
         String yearMonth = festivalStartDate == null ? ""
                 : festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-
         String folder = yearMonth.isEmpty() ? "posters" : "posters/" + yearMonth;
-        return storeFile(file, folder);
+
+        byte[] resized = resizeToJpeg(file.getInputStream(), FESTIVAL_POSTER_MAX_PX);
+        String key = folder + "/" + UUID.randomUUID() + ".jpg";
+
+        try (InputStream is = new ByteArrayInputStream(resized)) {
+            @SuppressWarnings("null")
+            S3Resource result = s3Template.upload(bucket, key, is);
+            return result.getURL().toString();
+        }
     }
 
     public String storeArtistProfile(MultipartFile file, String artistName) throws IOException {
