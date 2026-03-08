@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -44,6 +45,13 @@ public class UserController {
             @RequestBody UpdateNicknameDto dto) {
         UserResponseDto updated = userService.updateNickname(id, dto.getNickname());
         return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/{id}/profile-image")
+    public ResponseEntity<UserResponseDto> updateProfileImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) throws java.io.IOException {
+        return ResponseEntity.ok(userService.updateProfileImage(id, file));
     }
 
     @GetMapping("/me")

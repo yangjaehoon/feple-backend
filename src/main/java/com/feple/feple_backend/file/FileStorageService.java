@@ -51,6 +51,23 @@ public class FileStorageService {
         }
     }
 
+    public String storeUserProfile(MultipartFile file, String nickname) throws IOException {
+        validateFile(file);
+
+        String safeName = (nickname == null || nickname.isBlank())
+                ? "unknown"
+                : nickname.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
+
+        byte[] resized = resizeToJpeg(file.getInputStream(), ARTIST_PROFILE_MAX_PX);
+        String key = "user-profiles/" + safeName + "/" + UUID.randomUUID() + ".jpg";
+
+        try (InputStream is = new ByteArrayInputStream(resized)) {
+            @SuppressWarnings("null")
+            S3Resource result = s3Template.upload(bucket, key, is);
+            return result.getURL().toString();
+        }
+    }
+
     public String storeArtistProfile(MultipartFile file, String artistName) throws IOException {
         validateFile(file);
 

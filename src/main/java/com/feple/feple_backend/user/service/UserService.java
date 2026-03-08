@@ -24,10 +24,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.feple.feple_backend.file.FileStorageService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -53,6 +55,7 @@ public class UserService {
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalLikeRepository festivalLikeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileStorageService fileStorageService;
 
     public User registerOrLogin(KakaoUserResponse kakaoUser) {
         // kakao_account 가 없으면 예외
@@ -151,7 +154,16 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
         user.changeNickname(nickname);
-        return UserResponseDto.from(user);
+        return toUserDto(user);
+    }
+
+    @Transactional
+    public UserResponseDto updateProfileImage(@NonNull Long id, MultipartFile file) throws java.io.IOException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        String url = fileStorageService.storeUserProfile(file, user.getNickname());
+        user.changeProfileImage(url);
+        return toUserDto(user);
     }
 
     public void deleteUser(@NonNull Long id) {

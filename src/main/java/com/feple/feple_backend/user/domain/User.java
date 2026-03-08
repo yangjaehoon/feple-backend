@@ -45,6 +45,10 @@ public class User {
         this.nickname = newNickname;
     }
 
+    public void changeProfileImage(String imageUrl) {
+        this.profileImageUrl = imageUrl;
+    }
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Comment> comments = new ArrayList<>();
