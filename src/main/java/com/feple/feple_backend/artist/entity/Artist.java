@@ -20,7 +20,8 @@ public class Artist {
 
     private ArtistGenre genre;
 
-    private String profileImageUrl;
+    //private String profileImageUrl;
+    private String profileImageKey;
 
     @Column(nullable = false)
     @Builder.Default
@@ -39,7 +40,8 @@ public class Artist {
     public void update(String name, ArtistGenre genre, String profileImageUrl) {
         this.name = name;
         this.genre = genre;
-        this.profileImageUrl = profileImageUrl;
+        //this.profileImageUrl = profileImageUrl;
+        this.profileImageKey = profileImageUrl;
     }
 
     public void increaseFollowCount() {

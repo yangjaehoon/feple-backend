@@ -36,17 +36,18 @@ public class S3Service {
     }
 
     public String upload(MultipartFile file, String folder) throws IOException {
-        String filename = createFileName(file.getOriginalFilename(), folder);
+        //String filename = createFileName(file.getOriginalFilename(), folder);
+        String key = createFileName(file.getOriginalFilename(), folder);
 
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(filename)
+                .key(key)
                 .build();
 
         s3Client.putObject(request, software.amazon.awssdk.core.sync.RequestBody.fromInputStream(
                 file.getInputStream(), file.getSize()));
 
-        return "https://" + bucketName + ".s3.amazonaws.com/" + filename;
+        return key;
     }
 
     private String createFileName(String originalName, String folder) {
