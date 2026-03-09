@@ -34,6 +34,11 @@ public class FileStorageService {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
+    public String buildUrl(String key) {
+        if (key == null) return null;
+        return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
+    }
+
     public String storeFestivalPoster(MultipartFile file, LocalDate festivalStartDate) throws IOException {
         validateFile(file);
 
@@ -45,9 +50,8 @@ public class FileStorageService {
         String key = folder + "/" + UUID.randomUUID() + ".jpg";
 
         try (InputStream is = new ByteArrayInputStream(resized)) {
-            @SuppressWarnings("null")
-            S3Resource result = s3Template.upload(bucket, key, is);
-            return result.getURL().toString();
+            s3Template.upload(bucket, key, is);
+            return key;
         }
     }
 
@@ -62,9 +66,8 @@ public class FileStorageService {
         String key = "user-profiles/" + safeName + "/" + UUID.randomUUID() + ".jpg";
 
         try (InputStream is = new ByteArrayInputStream(resized)) {
-            @SuppressWarnings("null")
-            S3Resource result = s3Template.upload(bucket, key, is);
-            return result.getURL().toString();
+            s3Template.upload(bucket, key, is);
+            return key;
         }
     }
 
@@ -79,9 +82,8 @@ public class FileStorageService {
         String key = "artists/" + safeName + "/" + UUID.randomUUID() + ".jpg";
 
         try (InputStream is = new ByteArrayInputStream(resized)) {
-            @SuppressWarnings("null")
-            S3Resource result = s3Template.upload(bucket, key, is);
-            return result.getURL().toString();
+            s3Template.upload(bucket, key, is);
+            return key;
         }
     }
 
@@ -96,9 +98,8 @@ public class FileStorageService {
         String key = folder + "/" + UUID.randomUUID() + ext;
 
         try (InputStream is = file.getInputStream()) {
-            @SuppressWarnings("null")
-            S3Resource result = s3Template.upload(bucket, key, is);
-            return result.getURL().toString();
+            s3Template.upload(bucket, key, is);
+            return key;
         }
     }
 

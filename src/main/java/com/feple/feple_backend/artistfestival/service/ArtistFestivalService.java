@@ -9,6 +9,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponse;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class ArtistFestivalService {
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FestivalRepository festivalRepository;
     private final ArtistRepository artistRepository;
+    private final FileStorageService fileStorageService;
 
     public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
         return artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId)
@@ -36,7 +38,7 @@ public class ArtistFestivalService {
                                     .map(other -> ArtistScheduleResponse.CoArtistInfo.builder()
                                             .artistId(other.getArtist().getId())
                                             .artistName(other.getArtist().getName())
-                                            .profileImageUrl(other.getArtist().getProfileImageUrl())
+                                            .profileImageUrl(fileStorageService.buildUrl(other.getArtist().getProfileImageKey()))
                                             .build())
                                     .toList();
                     return ArtistScheduleResponse.builder()
@@ -46,7 +48,7 @@ public class ArtistFestivalService {
                             .location(festival.getLocation())
                             .startDate(festival.getStartDate())
                             .endDate(festival.getEndDate())
-                            .posterUrl(festival.getPosterUrl())
+                            .posterUrl(fileStorageService.buildUrl(festival.getPosterKey()))
                             .eventType(festival.getEventType())
                             .coArtists(coArtists)
                             .build();
@@ -114,7 +116,7 @@ public class ArtistFestivalService {
                 .artistId(af.getArtist().getId())
                 .artistName(af.getArtist().getName())
                 .artistGenre(af.getArtist().getGenre() != null ? af.getArtist().getGenre().getDisplayName() : null)
-                .profileImageUrl(af.getArtist().getProfileImageUrl())
+                .profileImageUrl(fileStorageService.buildUrl(af.getArtist().getProfileImageKey()))
                 .lineupOrder(af.getLineupOrder())
                 .stageName(af.getStageName())
                 .build();

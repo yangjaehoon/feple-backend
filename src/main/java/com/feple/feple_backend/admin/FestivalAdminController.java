@@ -88,12 +88,9 @@ public class FestivalAdminController {
 
     )throws IOException {
 
-        String existingPosterUrl = festivalService.getFestival(id).getPosterUrl();
-        dto.setPosterUrl(existingPosterUrl);
-
         if (posterFile != null && !posterFile.isEmpty()) {
-            String newPosterUrl = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
-            dto.setPosterUrl(newPosterUrl);
+            String newPosterKey = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
+            dto.setPosterUrl(newPosterKey);
         }
         festivalService.updateFestival(id, dto);
         return "redirect:/admin";

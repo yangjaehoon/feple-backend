@@ -26,6 +26,10 @@ public class FestivalDetailResponseDto {
     private List<ArtistResponseDto> artists;
 
     public static FestivalDetailResponseDto from(Festival festival) {
+        return from(festival, festival.getPosterKey());
+    }
+
+    public static FestivalDetailResponseDto from(Festival festival, String posterUrl) {
         return FestivalDetailResponseDto.builder()
                 .id(festival.getId())
                 .title(festival.getTitle())
@@ -33,8 +37,7 @@ public class FestivalDetailResponseDto {
                 .location(festival.getLocation())
                 .startDate(festival.getStartDate())
                 .endDate(festival.getEndDate())
-                .posterUrl(festival.getPosterUrl())
-
+                .posterUrl(posterUrl)
                 .build();
     }
 

@@ -145,7 +145,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(UserResponseDto::from)
+                .map(this::toUserDto)
                 .collect(Collectors.toList());
     }
 
@@ -176,9 +176,9 @@ public class UserService {
         if (keyword != null && !keyword.isBlank()) {
             return userRepository
                     .findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, pageable)
-                    .map(UserResponseDto::from);
+                    .map(this::toUserDto);
         }
-        return userRepository.findAll(pageable).map(UserResponseDto::from);
+        return userRepository.findAll(pageable).map(this::toUserDto);
     }
 
     @Transactional
@@ -237,14 +237,18 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getLikedFestivals(@NonNull Long userId) {
         return festivalLikeRepository.findByUserId(userId).stream()
-                .map(like -> FestivalResponseDto.from(like.getFestival()))
+                .map(like -> FestivalResponseDto.from(
+                        like.getFestival(),
+                        fileStorageService.buildUrl(like.getFestival().getPosterKey())))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getFollowedArtists(@NonNull Long userId) {
         return artistFollowRepository.findByUserId(userId).stream()
-                .map(follow -> ArtistResponseDto.from(follow.getArtist()))
+                .map(follow -> ArtistResponseDto.from(
+                        follow.getArtist(),
+                        fileStorageService.buildUrl(follow.getArtist().getProfileImageKey())))
                 .collect(Collectors.toList());
     }
 
@@ -257,11 +261,17 @@ public class UserService {
         return new UserStatsDto(postCount, commentCount);
     }
 
-    /** profileImageUrl이 null인 경우 앱 기본 이미지로 대체하여 반환 */
+    /** profileImageUrl이 null이면 기본 이미지, S3 key면 전체 URL로 변환하여 반환 */
     public UserResponseDto toUserDto(User user) {
-        String imageUrl = (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isBlank())
-                ? user.getProfileImageUrl()
-                : defaultProfileImage;
+        String raw = user.getProfileImageUrl();
+        String imageUrl;
+        if (raw == null || raw.isBlank()) {
+            imageUrl = defaultProfileImage;
+        } else if (raw.startsWith("http")) {
+            imageUrl = raw;
+        } else {
+            imageUrl = fileStorageService.buildUrl(raw);
+        }
         return UserResponseDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())

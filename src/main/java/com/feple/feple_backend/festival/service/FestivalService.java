@@ -8,6 +8,7 @@ import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.file.FileStorageService;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,11 @@ public class FestivalService {
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FestivalLikeRepository festivalLikeRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
+
+    private FestivalResponseDto toDto(Festival festival) {
+        return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
+    }
 
     @Transactional
     public Long createFestival(FestivalRequestDto dto) {
@@ -36,7 +42,7 @@ public class FestivalService {
                 .location(dto.getLocation())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
-                .posterUrl(dto.getPosterUrl())
+                .posterKey(dto.getPosterUrl())
                 .build();
 
         @SuppressWarnings("null")
@@ -48,7 +54,7 @@ public class FestivalService {
     public List<FestivalResponseDto> getAllFestivals() {
         return festivalRepository.findAllByOrderByStartDateDesc()
                 .stream()
-                .map(FestivalResponseDto::from)
+                .map(this::toDto)
                 .toList();
     }
 
@@ -58,7 +64,7 @@ public class FestivalService {
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
-        return FestivalDetailResponseDto.from(festival);
+        return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
     }
 
     @Transactional(readOnly = true)
@@ -67,7 +73,7 @@ public class FestivalService {
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
-        return FestivalResponseDto.from(festival);
+        return toDto(festival);
     }
 
     @Transactional
@@ -81,7 +87,9 @@ public class FestivalService {
         festival.setLocation(dto.getLocation());
         festival.setStartDate(dto.getStartDate());
         festival.setEndDate(dto.getEndDate());
-        festival.setPosterUrl(dto.getPosterUrl());
+        if (dto.getPosterUrl() != null) {
+            festival.setPosterKey(dto.getPosterUrl());
+        }
     }
 
     @Transactional
@@ -126,7 +134,7 @@ public class FestivalService {
     public Page<FestivalResponseDto> getFestivalsPage(int page, int size) {
         Page<Festival> result = festivalRepository
                 .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")));
-        return result.map(FestivalResponseDto::from);
+        return result.map(this::toDto);
     }
 
 }
