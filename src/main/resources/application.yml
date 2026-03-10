@@ -38,6 +38,3 @@ app:
     bucket: feple2603
     prefix: artist-photos
     presign-minutes: 10
-  #default-profile-image: http://43.201.114.28:8080/img/feple_logo.png
-  default-profile-image: http://43.201.9.18:8080/img/feple_logo.png
-
