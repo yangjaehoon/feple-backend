@@ -265,7 +265,7 @@ public class UserService {
     public UserResponseDto toUserDto(User user) {
         String raw = user.getProfileImageUrl();
         String imageUrl;
-        if (raw == null || raw.isBlank() || raw.equals(defaultProfileImage)) {
+        if (raw == null || raw.isBlank() || raw.contains("/img/feple_logo.png")) {
             imageUrl = null;
         } else if (raw.startsWith("http")) {
             imageUrl = raw;
