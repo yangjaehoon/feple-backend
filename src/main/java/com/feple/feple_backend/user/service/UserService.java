@@ -80,7 +80,7 @@ public class UserService {
         String kakaoImageUrl = Optional.ofNullable(account.getProfile())
                 .map(KakaoUserResponse.Profile::getProfile_image_url)
                 .filter(url -> !url.isBlank())
-                .orElse(defaultProfileImage);
+                .orElse(null);
 
         User newUser = User.builder()
                 .oauthId(oauthId)
@@ -109,7 +109,7 @@ public class UserService {
                 .oauthId(req.getEmail())
                 .provider(AuthProvider.EMAIL)
                 .password(passwordEncoder.encode(req.getPassword()))
-                .profileImageUrl(defaultProfileImage)
+                .profileImageUrl(null)
                 .build();
         return userRepository.save(user);
     }
@@ -261,12 +261,12 @@ public class UserService {
         return new UserStatsDto(postCount, commentCount);
     }
 
-    /** profileImageUrl이 null이면 기본 이미지, S3 key면 전체 URL로 변환하여 반환 */
+    /** null/빈값/기본이미지 → null 반환, S3 key → 전체 URL 변환 */
     public UserResponseDto toUserDto(User user) {
         String raw = user.getProfileImageUrl();
         String imageUrl;
-        if (raw == null || raw.isBlank()) {
-            imageUrl = defaultProfileImage;
+        if (raw == null || raw.isBlank() || raw.equals(defaultProfileImage)) {
+            imageUrl = null;
         } else if (raw.startsWith("http")) {
             imageUrl = raw;
         } else {
