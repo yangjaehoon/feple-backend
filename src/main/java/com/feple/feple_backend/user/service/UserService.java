@@ -167,7 +167,7 @@ public class UserService {
     }
 
     public void deleteUser(@NonNull Long id) {
-        userRepository.deleteById(id);
+        adminDeleteUser(id);
     }
 
     @Transactional(readOnly = true)
