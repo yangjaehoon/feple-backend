@@ -45,9 +45,6 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
 
-    @Value("${app.default-profile-image}")
-    private String defaultProfileImage;
-
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
