@@ -106,7 +106,7 @@ public class FestivalAdminController {
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(id);
-        List<Artist> allArtists = artistRepository.findAll();
+        List<Artist> allArtists = artistRepository.findAll(Sort.by("name"));
 
         List<ArtistFestivalResponse> participatingArtists =
                 artistFestivalService.getArtistFestivals(id);
@@ -122,7 +122,7 @@ public class FestivalAdminController {
     @GetMapping("/{id}/artists/new")
     public String addArtistForm(@PathVariable Long id, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(id);
-        List<Artist> allArtists = artistRepository.findAll();
+        List<Artist> allArtists = artistRepository.findAll(Sort.by("name"));
 
         model.addAttribute("festival", festival);
         model.addAttribute("artists", allArtists);
