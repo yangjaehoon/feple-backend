@@ -2,6 +2,7 @@ package com.feple.feple_backend.artistfestival.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfestival.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
@@ -72,7 +73,7 @@ public class ArtistFestivalService {
                 .orElseThrow(() -> new IllegalArgumentException("Artist not found: " + request.getArtistId()));
 
         if (artistFestivalRepository.existsByFestivalIdAndArtistId(festivalId, request.getArtistId())) {
-            throw new IllegalStateException("이미 이 페스티벌에 참여 중인 아티스트입니다.");
+            throw new DuplicateArtistFestivalException();
         }
 
         ArtistFestival artistFestival = ArtistFestival.builder()
