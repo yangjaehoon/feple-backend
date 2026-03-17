@@ -146,18 +146,34 @@ public class FestivalAdminController {
     @PostMapping("/{id}/artists")
     public String addArtistToFestival(
             @PathVariable Long id,
-            ArtistFestivalCreateRequest request,
-            RedirectAttributes ra
-            ) {
+            @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
+            RedirectAttributes ra) {
 
-        try {
-            artistFestivalService.addArtistToFestival(id, request);
-            ra.addFlashAttribute("successMessage", "아티스트가 추가되었습니다.");
-            return "redirect:/admin/festivals/" + id;
-        } catch (DuplicateArtistFestivalException e) {
-            ra.addFlashAttribute("errorMessage", "이미 이 페스티벌에 참여 중인 아티스트입니다.");
+        if (artistIds == null || artistIds.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "아티스트를 한 명 이상 선택해주세요.");
             return "redirect:/admin/festivals/" + id + "/artists/new";
         }
+
+        int added = 0, duplicates = 0;
+        for (Long artistId : artistIds) {
+            try {
+                ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
+                req.setArtistId(artistId);
+                artistFestivalService.addArtistToFestival(id, req);
+                added++;
+            } catch (DuplicateArtistFestivalException ignored) {
+                duplicates++;
+            }
+        }
+
+        if (added == 0) {
+            ra.addFlashAttribute("errorMessage", "선택한 아티스트가 이미 모두 참여 중입니다.");
+        } else if (duplicates > 0) {
+            ra.addFlashAttribute("successMessage", added + "명 추가 완료. " + duplicates + "명은 이미 참여 중이었습니다.");
+        } else {
+            ra.addFlashAttribute("successMessage", added + "명의 아티스트가 추가되었습니다.");
+        }
+        return "redirect:/admin/festivals/" + id;
     }
 
     @GetMapping("/{id}/artists/list")
