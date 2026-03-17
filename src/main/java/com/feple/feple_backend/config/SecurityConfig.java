@@ -73,6 +73,9 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
                                 .httpBasic(hb -> hb.disable())
                                 .formLogin(fl -> fl.disable())
+                                .exceptionHandling(ex -> ex
+                                                .authenticationEntryPoint((req, res, e) ->
+                                                                res.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
                                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
                                                 UsernamePasswordAuthenticationFilter.class);
 
