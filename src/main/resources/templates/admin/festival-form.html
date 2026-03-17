@@ -66,6 +66,24 @@
                             <label>포스터 이미지</label>
                             <input type="file" name="posterFile" accept="image/*"/>
                         </div>
+
+                        <div class="form-group">
+                            <label>참여 아티스트 <span style="font-weight:400; color:var(--muted); font-size:12px;">(선택사항)</span></label>
+                            <input type="text" id="artistSearch" placeholder="아티스트 검색..."
+                                   oninput="filterArtists(this.value)"
+                                   style="margin-bottom:8px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; width:100%; font-size:13px;"/>
+                            <div id="artistList"
+                                 style="max-height:220px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px 0;">
+                                <div th:each="artist : ${allArtists}"
+                                     class="artist-item"
+                                     th:data-name="${#strings.toLowerCase(artist.name)}">
+                                    <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; cursor:pointer; font-size:13px;">
+                                        <input type="checkbox" name="artistIds" th:value="${artist.id}" style="width:15px; height:15px; accent-color:var(--primary); flex-shrink:0;"/>
+                                        <span th:text="${artist.name} + (${artist.genre} != null ? ' (' + ${artist.genre.displayName} + ')' : '')"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-actions">
@@ -78,5 +96,13 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function filterArtists(query) {
+        const q = query.toLowerCase();
+        document.querySelectorAll('#artistList .artist-item').forEach(item => {
+            item.style.display = item.dataset.name.includes(q) ? '' : 'none';
+        });
+    }
+</script>
 </body>
 </html>

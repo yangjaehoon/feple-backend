@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 @Controller
 @RequiredArgsConstructor
@@ -37,12 +38,14 @@ public class FestivalAdminController {
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("festival", new FestivalRequestDto());
+        model.addAttribute("allArtists", artistRepository.findAll(Sort.by("name")));
         return "admin/festival-form";
     }
 
     @PostMapping("/new")
     public String createFestival(@ModelAttribute("festival") FestivalRequestDto dto,
-                                 @RequestParam(value = "posterFile", required = false) MultipartFile posterFile
+                                 @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
+                                 @RequestParam(value = "artistIds", required = false) List<Long> artistIds
     ) throws IOException {
 
         if (posterFile != null && !posterFile.isEmpty()) {
@@ -50,9 +53,19 @@ public class FestivalAdminController {
             dto.setPosterUrl(posterUrl);
         }
 
-        festivalService.createFestival(dto);
-        return "redirect:/admin";
+        Long festivalId = festivalService.createFestival(dto);
 
+        if (artistIds != null) {
+            for (Long artistId : artistIds) {
+                try {
+                    ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
+                    req.setArtistId(artistId);
+                    artistFestivalService.addArtistToFestival(festivalId, req);
+                } catch (DuplicateArtistFestivalException ignored) {}
+            }
+        }
+
+        return "redirect:/admin";
     }
 
     //목록 페이지
