@@ -55,6 +55,11 @@ public class ArtistPhoto {
         this.description = description;
     }
 
+    public void updateTitleAndDescription(String title, String description) {
+        if (title != null && !title.isBlank()) this.title = title;
+        if (description != null) this.description = description;
+    }
+
     public void setLikecount(int i) {
         if (this.likecount > 0)
             this.likecount--;

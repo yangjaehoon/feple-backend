@@ -70,6 +70,30 @@ public class ArtistPhotoService {
     }
 
     @Transactional
+    public void delete(Long photoId, Long userId) {
+        ArtistPhoto photo = artistPhotoRepository.findById(photoId)
+                .orElseThrow(() -> new IllegalArgumentException("Photo not found: " + photoId));
+        if (!photo.getUploaderUserId().equals(userId)) {
+            throw new IllegalArgumentException("Not authorized");
+        }
+        artistPhotoRepository.delete(photo);
+    }
+
+    @Transactional
+    public ArtistPhotoResponseDto update(Long photoId, Long userId, String title, String description) {
+        ArtistPhoto photo = artistPhotoRepository.findById(photoId)
+                .orElseThrow(() -> new IllegalArgumentException("Photo not found: " + photoId));
+        if (!photo.getUploaderUserId().equals(userId)) {
+            throw new IllegalArgumentException("Not authorized");
+        }
+        photo.updateTitleAndDescription(title, description);
+        String url = s3PresignService.presignGetUrl(photo.getS3Key());
+        return new ArtistPhotoResponseDto(
+                photo.getId(), url, photo.getUploaderUserId(), photo.getCreatedAt(),
+                photo.getTitle(), photo.getDescription(), photo.getLikecount(), false);
+    }
+
+    @Transactional
     public boolean toggleLike(Long photoId, Long userId) {
         ArtistPhoto photo = artistPhotoRepository.findById(photoId)
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found"));

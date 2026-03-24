@@ -44,6 +44,24 @@ public class ArtistPhotoController {
 
     public record PresignRequest(String contentType, String extension) {}
 
+    @DeleteMapping("/{photoId}")
+    public ResponseEntity<Void> deletePhoto(
+            @PathVariable Long artistId,
+            @PathVariable Long photoId) {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        artistPhotoService.delete(photoId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{photoId}")
+    public ArtistPhotoResponseDto updatePhoto(
+            @PathVariable Long artistId,
+            @PathVariable Long photoId,
+            @RequestBody UpdatePhotoRequestDto req) {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return artistPhotoService.update(photoId, userId, req.title(), req.description());
+    }
+
     @PostMapping("/{photoId}/like")
     public ResponseEntity<Map<String, Boolean>> toggleLike(
             @PathVariable Long photoId,
