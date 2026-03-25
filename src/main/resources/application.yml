@@ -38,3 +38,6 @@ app:
     bucket: feple2603
     prefix: artist-photos
     presign-minutes: 10
+
+file:
+  upload-dir: uploads/posters
