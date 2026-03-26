@@ -3,6 +3,7 @@ package com.feple.feple_backend.artist.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -46,23 +47,31 @@ public class ArtistService {
                 .toList();
     }
 
-    public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword) {
+    public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre) {
+        List<ArtistResponseDto> result;
         if (keyword != null && !keyword.isBlank()) {
-            return artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream()
+            result = artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream()
                     .map(this::toDto).toList();
+        } else {
+            result = switch (sort == null ? "" : sort) {
+                case "name" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+                        .map(this::toDto).toList();
+                case "name_desc" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "name")).stream()
+                        .map(this::toDto).toList();
+                case "followers" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "followerCount")).stream()
+                        .map(this::toDto).toList();
+                case "followers_asc" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "followerCount")).stream()
+                        .map(this::toDto).toList();
+                default -> artistRepository.findAllByOrderByWeeklyScoreDescIdAsc().stream()
+                        .map(this::toDto).toList();
+            };
         }
-        return switch (sort == null ? "" : sort) {
-            case "name" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
-                    .map(this::toDto).toList();
-            case "name_desc" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "name")).stream()
-                    .map(this::toDto).toList();
-            case "followers" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "followerCount")).stream()
-                    .map(this::toDto).toList();
-            case "followers_asc" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "followerCount")).stream()
-                    .map(this::toDto).toList();
-            default -> artistRepository.findAllByOrderByWeeklyScoreDescIdAsc().stream()
-                    .map(this::toDto).toList();
-        };
+        if (genre != null) {
+            result = result.stream()
+                    .filter(a -> genre.getDisplayName().equals(a.getGenre()))
+                    .toList();
+        }
+        return result;
     }
 
     public ArtistResponseDto getArtistById(Long id) {

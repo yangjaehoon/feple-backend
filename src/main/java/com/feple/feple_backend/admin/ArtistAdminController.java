@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
+import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -48,10 +49,13 @@ public class ArtistAdminController {
     @GetMapping
     public String listArtists(@RequestParam(defaultValue = "") String keyword,
                               @RequestParam(defaultValue = "") String sort,
+                              @RequestParam(required = false) ArtistGenre genre,
                               Model model) {
-        model.addAttribute("artists", artistService.getAdminArtistList(sort, keyword));
+        model.addAttribute("artists", artistService.getAdminArtistList(sort, keyword, genre));
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
+        model.addAttribute("genre", genre);
+        model.addAttribute("allGenres", ArtistGenre.values());
         return "admin/artists-list";
     }
 

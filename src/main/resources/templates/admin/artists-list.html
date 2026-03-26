@@ -26,18 +26,40 @@
     <div class="content-area">
         <div class="card">
             <div class="card-header">
-                <div class="card-title">전체 아티스트</div>
+                <div class="card-title">
+                    전체 아티스트
+                    <span th:if="${genre != null}"
+                          style="font-size:12px; font-weight:500; color:var(--primary); margin-left:6px;"
+                          th:text="'— ' + ${genre.displayName}"></span>
+                </div>
             </div>
+
+            <!-- 장르 필터 버튼 -->
+            <div style="padding:12px 22px 0; display:flex; flex-wrap:wrap; gap:8px;">
+                <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort})}"
+                   th:style="${genre == null} ? 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; background:var(--primary); color:#fff;'
+                                             : 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; background:var(--border); color:var(--text-2);'">
+                    전체
+                </a>
+                <a th:each="g : ${allGenres}"
+                   th:href="@{/admin/artists(keyword=${keyword}, sort=${sort}, genre=${g.name()})}"
+                   th:text="${g.displayName}"
+                   th:style="${genre == g} ? 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; background:var(--primary); color:#fff;'
+                                          : 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; background:var(--border); color:var(--text-2);'">
+                </a>
+            </div>
+
             <!-- 검색 바 -->
             <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
                 <form th:action="@{/admin/artists}" method="get"
                       style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="genre" th:if="${genre != null}" th:value="${genre.name()}"/>
                     <input type="text" name="keyword" th:value="${keyword}"
                            placeholder="아티스트 이름 검색..."
                            style="flex:1; max-width:280px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
                     <button type="submit" class="btn btn-secondary btn-sm">검색</button>
                     <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                       th:href="@{/admin/artists}"
+                       th:href="@{/admin/artists(genre=${genre?.name()})}"
                        class="btn btn-secondary btn-sm">✕ 초기화</a>
                 </form>
             </div>
