@@ -8,6 +8,8 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.file.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,8 @@ public class FestivalAdminController {
     public String showCreateForm(Model model) {
         model.addAttribute("festival", new FestivalRequestDto());
         model.addAttribute("allArtists", artistRepository.findAll(Sort.by("name")));
+        model.addAttribute("allRegions", Region.values());
+        model.addAttribute("allGenres", Genre.values());
         return "admin/festival-form";
     }
 

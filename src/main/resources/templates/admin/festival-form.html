@@ -68,6 +68,25 @@
                         </div>
 
                         <div class="form-group">
+                            <label>지역</label>
+                            <select th:field="*{region}" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                                <option value="">선택 안 함</option>
+                                <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>장르 <span style="font-weight:400; color:var(--muted); font-size:12px;">(복수 선택 가능)</span></label>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                                <label th:each="g : ${allGenres}"
+                                       style="display:flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;">
+                                    <input type="checkbox" name="genres" th:value="${g}" style="accent-color:var(--primary);"/>
+                                    <span th:text="${g}"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
                             <label>참여 아티스트 <span style="font-weight:400; color:var(--muted); font-size:12px;">(선택사항)</span></label>
                             <input type="text" id="artistSearch" placeholder="아티스트 검색..."
                                    oninput="filterArtists(this.value)"
