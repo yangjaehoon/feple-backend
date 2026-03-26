@@ -152,6 +152,88 @@
             </div>
         </div>
 
+        <!-- 타임테이블 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🕐 타임테이블
+                    <span class="card-count" th:text="${timetableEntries.size() ?: 0}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <!-- 추가 폼 -->
+                <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                      method="post"
+                      style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:20px;">
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">날짜</label>
+                        <input type="date" name="festivalDate"
+                               th:min="${festival.startDate}" th:max="${festival.endDate}"
+                               th:value="${festival.startDate}"
+                               required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">스테이지</label>
+                        <input type="text" name="stageName" placeholder="Main / Sub1 ..." required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">아티스트명</label>
+                        <input type="text" name="artistName" placeholder="아티스트 이름" required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">시작</label>
+                        <input type="time" name="startTime" required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종료</label>
+                        <input type="time" name="endTime" required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
+                </form>
+
+                <!-- 목록 테이블 -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>스테이지</th>
+                            <th>아티스트</th>
+                            <th>시작</th>
+                            <th>종료</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="entry : ${timetableEntries}">
+                            <td th:text="${entry.festivalDate}"></td>
+                            <td><span class="badge badge-genre" th:text="${entry.stageName}"></span></td>
+                            <td style="font-weight:600;" th:text="${entry.artistName}"></td>
+                            <td th:text="${entry.startTime}"></td>
+                            <td th:text="${entry.endTime}"></td>
+                            <td>
+                                <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
+                                      method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${timetableEntries.isEmpty()}">
+                            <td colspan="6">등록된 타임테이블이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

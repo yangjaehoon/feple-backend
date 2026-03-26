@@ -12,6 +12,8 @@ import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.file.FileStorageService;
+import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
+import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,9 +35,9 @@ public class FestivalAdminController {
 
     private final FestivalService festivalService;
     private final FileStorageService fileStorageService;
-
     private final ArtistRepository artistRepository;
     private final ArtistFestivalService artistFestivalService;
+    private final TimetableService timetableService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -151,10 +153,10 @@ public class FestivalAdminController {
 
         model.addAttribute("festival", festival);
         model.addAttribute("allArtists", allArtists);
-        model.addAttribute("participatingArtists", participatingArtists);  // ← 추가
+        model.addAttribute("participatingArtists", participatingArtists);
+        model.addAttribute("timetableEntries", timetableService.getEntries(id));
 
-
-        return "admin/festival-detail";  // 새 템플릿
+        return "admin/festival-detail";
     }
 
     @GetMapping("/{id}/artists/new")
@@ -198,6 +200,25 @@ public class FestivalAdminController {
         } else {
             ra.addFlashAttribute("successMessage", added + "명의 아티스트가 추가되었습니다.");
         }
+        return "redirect:/admin/festivals/" + id;
+    }
+
+    // ── 타임테이블 ─────────────────────────────────────────────────────────────
+    @PostMapping("/{id}/timetable")
+    public String createTimetableEntry(@PathVariable Long id,
+                                       @ModelAttribute TimetableEntryRequest req,
+                                       RedirectAttributes ra) {
+        timetableService.createEntry(id, req);
+        ra.addFlashAttribute("successMessage", "타임테이블 항목이 추가되었습니다.");
+        return "redirect:/admin/festivals/" + id;
+    }
+
+    @PostMapping("/{id}/timetable/{entryId}/delete")
+    public String deleteTimetableEntry(@PathVariable Long id,
+                                       @PathVariable Long entryId,
+                                       RedirectAttributes ra) {
+        timetableService.deleteEntry(entryId);
+        ra.addFlashAttribute("successMessage", "항목이 삭제되었습니다.");
         return "redirect:/admin/festivals/" + id;
     }
 
