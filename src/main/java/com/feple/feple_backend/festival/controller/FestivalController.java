@@ -3,6 +3,8 @@ package com.feple.feple_backend.festival.controller;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,10 @@ public class FestivalController {
     }
 
     @GetMapping
-    public List<FestivalResponseDto> getAllFestivals() {
-        return festivalService.getAllFestivals();
+    public List<FestivalResponseDto> getAllFestivals(
+            @RequestParam(required = false) List<Genre> genres,
+            @RequestParam(required = false) List<Region> regions) {
+        return festivalService.getAllFestivals(genres, regions);
     }
 
     @GetMapping("/{id}")

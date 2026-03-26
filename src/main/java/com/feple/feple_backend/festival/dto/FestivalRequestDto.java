@@ -1,6 +1,8 @@
 package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
+import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.festival.entity.Region;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -25,4 +27,6 @@ public class FestivalRequestDto {
 
     private List<ArtistRequestDto> artists;
 
+    private List<Genre> genres;
+    private Region region;
 }

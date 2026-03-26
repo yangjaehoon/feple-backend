@@ -1,12 +1,15 @@
 package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.festival.entity.Region;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -22,6 +25,8 @@ public class FestivalResponseDto {
     private LocalDate endDate;
     private String posterUrl;
     private int likeCount;
+    private List<Genre> genres;
+    private Region region;
 
     public static FestivalResponseDto from(Festival festival) {
         return from(festival, festival.getPosterKey());
@@ -37,6 +42,8 @@ public class FestivalResponseDto {
                 .endDate(festival.getEndDate())
                 .posterUrl(posterUrl)
                 .likeCount(festival.getLikeCount())
+                .genres(festival.getGenres())
+                .region(festival.getRegion())
                 .build();
     }
 }

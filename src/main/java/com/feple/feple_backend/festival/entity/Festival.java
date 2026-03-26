@@ -37,6 +37,15 @@ public class Festival {
     @Builder.Default
     private EventType eventType = EventType.FESTIVAL;
 
+    @ElementCollection(targetClass = Genre.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "festival_genres", joinColumns = @JoinColumn(name = "festival_id"))
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private List<Genre> genres = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private Region region;
+
     @Builder.Default
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArtistFestival> artistFestivals = new ArrayList<>();

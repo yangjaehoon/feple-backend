@@ -3,6 +3,8 @@ package com.feple.feple_backend.festival.service;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalLike;
+import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -43,6 +46,8 @@ public class FestivalService {
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
                 .posterKey(dto.getPosterUrl())
+                .genres(dto.getGenres() != null ? dto.getGenres() : new java.util.ArrayList<>())
+                .region(dto.getRegion())
                 .build();
 
         @SuppressWarnings("null")
@@ -51,9 +56,11 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
-    public List<FestivalResponseDto> getAllFestivals() {
+    public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions) {
         return festivalRepository.findAllByOrderByStartDateDesc()
                 .stream()
+                .filter(f -> genres == null || genres.isEmpty() || !Collections.disjoint(f.getGenres(), genres))
+                .filter(f -> regions == null || regions.isEmpty() || regions.contains(f.getRegion()))
                 .map(this::toDto)
                 .toList();
     }
@@ -89,6 +96,12 @@ public class FestivalService {
         festival.setEndDate(dto.getEndDate());
         if (dto.getPosterUrl() != null) {
             festival.setPosterKey(dto.getPosterUrl());
+        }
+        if (dto.getGenres() != null) {
+            festival.setGenres(dto.getGenres());
+        }
+        if (dto.getRegion() != null) {
+            festival.setRegion(dto.getRegion());
         }
     }
 
