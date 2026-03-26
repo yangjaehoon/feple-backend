@@ -25,6 +25,10 @@
 
         <div th:if="${param.success}" class="alert alert-success">✓ 등록이 완료되었습니다.</div>
 
+        <div th:if="${errors}" style="background:#fff1f1; border:1px solid #f5c6c6; border-radius:10px; padding:14px 18px; margin-bottom:16px; max-width:640px;">
+            <p th:each="err : ${errors}" style="margin:0 0 4px; color:#c0392b; font-size:13px;">⚠ <span th:text="${err}"></span></p>
+        </div>
+
         <div class="card" style="max-width:640px;">
             <div class="card-header">
                 <div class="card-title">🎵 새 페스티벌</div>
@@ -43,7 +47,7 @@
 
                         <div class="form-group">
                             <label>설명</label>
-                            <textarea th:field="*{description}" placeholder="페스티벌 설명을 입력하세요"></textarea>
+                            <textarea th:field="*{description}" placeholder="페스티벌 설명을 입력하세요" required></textarea>
                         </div>
 
                         <div class="form-group">
@@ -64,7 +68,8 @@
 
                         <div class="form-group">
                             <label>포스터 이미지</label>
-                            <input type="file" name="posterFile" accept="image/*"/>
+                            <input type="file" name="posterFile" accept=".jpg,.jpeg,.png,.gif"/>
+                            <span style="font-size:11px; color:var(--muted); margin-top:4px; display:block;">jpg, jpeg, png, gif만 지원합니다.</span>
                         </div>
 
                         <div class="form-group">

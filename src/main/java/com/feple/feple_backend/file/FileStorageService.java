@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileStorageService {
 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif");
     private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int ARTIST_PROFILE_MAX_PX = 400;
     private static final int FESTIVAL_POSTER_MAX_PX = 720;
@@ -116,7 +116,7 @@ public class FileStorageService {
                 : "";
 
         if (!ALLOWED_EXTENSIONS.contains(ext))
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (jpg, jpeg, png, gif, webp만 가능)");
+            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. jpg, jpeg, png, gif 파일만 업로드할 수 있습니다.");
     }
 
     /** 이미지를 maxPx × maxPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */

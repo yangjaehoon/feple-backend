@@ -49,12 +49,28 @@ public class FestivalAdminController {
     @PostMapping("/new")
     public String createFestival(@ModelAttribute("festival") FestivalRequestDto dto,
                                  @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
-                                 @RequestParam(value = "artistIds", required = false) List<Long> artistIds
-    ) throws IOException {
+                                 @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
+                                 Model model) throws IOException {
+
+        List<String> errors = new ArrayList<>();
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) errors.add("제목을 입력해주세요.");
+        if (dto.getDescription() == null || dto.getDescription().isBlank()) errors.add("설명을 입력해주세요.");
 
         if (posterFile != null && !posterFile.isEmpty()) {
-            String posterUrl = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
-            dto.setPosterUrl(posterUrl);
+            try {
+                String posterUrl = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
+                dto.setPosterUrl(posterUrl);
+            } catch (IllegalArgumentException e) {
+                errors.add(e.getMessage());
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            model.addAttribute("errors", errors);
+            model.addAttribute("allArtists", artistRepository.findAll(Sort.by("name")));
+            model.addAttribute("allRegions", Region.values());
+            model.addAttribute("allGenres", Genre.values());
+            return "admin/festival-form";
         }
 
         Long festivalId = festivalService.createFestival(dto);
