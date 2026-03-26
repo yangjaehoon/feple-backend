@@ -71,7 +71,7 @@
                             <label>지역</label>
                             <select th:field="*{region}" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
                                 <option value="">선택 안 함</option>
-                                <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r}"></option>
+                                <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r.displayName}"></option>
                             </select>
                         </div>
 
@@ -81,7 +81,7 @@
                                 <label th:each="g : ${allGenres}"
                                        style="display:flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;">
                                     <input type="checkbox" name="genres" th:value="${g}" style="accent-color:var(--primary);"/>
-                                    <span th:text="${g}"></span>
+                                    <span th:text="${g.displayName}"></span>
                                 </label>
                             </div>
                         </div>

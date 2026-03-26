@@ -61,20 +61,41 @@
 
                         <div class="form-group">
                             <label>현재 포스터</label>
-                            <div th:if="*{posterUrl}">
-                                <img th:src="${festival.posterUrl}" alt="poster" class="poster-preview"/>
+                            <div th:if="${currentPosterUrl}">
+                                <img th:src="${currentPosterUrl}" alt="poster" class="poster-preview"/>
                                 <p style="margin-top:6px;">
-                                    <a th:href="${festival.posterUrl}" target="_blank"
+                                    <a th:href="${currentPosterUrl}" target="_blank"
                                        style="font-size:12px; color:var(--primary-600);">원본 보기 →</a>
                                 </p>
                             </div>
-                            <p th:if="!*{posterUrl}" class="hint">등록된 포스터가 없습니다.</p>
+                            <p th:unless="${currentPosterUrl}" class="hint">등록된 포스터가 없습니다.</p>
                         </div>
 
                         <div class="form-group">
                             <label>포스터 변경</label>
                             <input type="file" name="posterFile" accept="image/*"/>
                             <span class="hint">선택하지 않으면 기존 포스터가 유지됩니다.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>지역</label>
+                            <select th:field="*{region}" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                                <option value="">선택 안 함</option>
+                                <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r.displayName}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>장르 <span style="font-weight:400; color:var(--muted); font-size:12px;">(복수 선택 가능)</span></label>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                                <label th:each="g : ${allGenres}"
+                                       style="display:flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;">
+                                    <input type="checkbox" name="genres" th:value="${g}"
+                                           th:checked="${festival.genres != null and festival.genres.contains(g)}"
+                                           style="accent-color:var(--primary);"/>
+                                    <span th:text="${g.displayName}"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 

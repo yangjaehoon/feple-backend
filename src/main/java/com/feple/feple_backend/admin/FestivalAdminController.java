@@ -92,9 +92,14 @@ public class FestivalAdminController {
         form.setStartDate(festival.getStartDate());
         form.setEndDate(festival.getEndDate());
         form.setPosterUrl(festival.getPosterUrl());
+        form.setRegion(festival.getRegion());
+        form.setGenres(festival.getGenres());
 
         model.addAttribute("festivalId", id);
         model.addAttribute("festival", form);
+        model.addAttribute("currentPosterUrl", festival.getPosterUrl());
+        model.addAttribute("allRegions", Region.values());
+        model.addAttribute("allGenres", Genre.values());
         return "admin/festival-edit-form";
     }
 
