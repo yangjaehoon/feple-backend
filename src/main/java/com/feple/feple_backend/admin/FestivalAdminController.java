@@ -73,7 +73,7 @@ public class FestivalAdminController {
     public String listFestivals(
             Model model,
             @PageableDefault(size = 20, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable) {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals();
+        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null);
         model.addAttribute("festivals", festivals);
         return "admin/festival-list";
     }
