@@ -8,27 +8,17 @@
     <style>
         .stage-tag {
             display: inline-flex; align-items: center; gap: 6px;
-            background: #f0f4ff; border: 2px solid #c7d5ff;
+            background: #f0f4ff; border: 1px solid #c7d5ff;
             border-radius: 20px; padding: 4px 12px 4px 14px;
             font-size: 13px; font-weight: 600; color: #3b5bdb;
-            margin: 4px 4px 4px 0; cursor: pointer; user-select: none;
-            transition: all 0.15s;
+            margin: 4px 4px 4px 0;
         }
-        .stage-tag:hover { background: #e0e8ff; }
-        .stage-tag.selected { background: #3b5bdb; color: #fff; border-color: #3b5bdb; }
-        .stage-tag.selected button { color: rgba(255,255,255,0.7); }
         .stage-tag form { margin: 0; }
         .stage-tag button {
             background: none; border: none; padding: 0; line-height: 1;
             color: #aaa; font-size: 14px; cursor: pointer;
         }
         .stage-tag button:hover { color: #e53e3e; }
-        .selected-stage-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: #3b5bdb; color: #fff; border-radius: 8px;
-            padding: 6px 14px; font-size: 13px; font-weight: 700;
-        }
-        .no-stage-hint { font-size: 12px; color: var(--muted); padding: 6px 0; }
         .stage-add-inline {
             display: flex; align-items: center; gap: 8px; margin-top: 10px;
         }
@@ -211,21 +201,15 @@
 
                 <!-- ── 스테이지 관리 영역 ── -->
                 <div style="background:#f8f9ff; border:1px solid #dde3ff; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
-                    <div style="font-size:13px; font-weight:700; color:#3b5bdb; margin-bottom:6px;">
-                        📋 스테이지 목록
-                        <span style="font-size:11px; font-weight:400; color:#7a8fc4; margin-left:6px;">클릭하여 선택</span>
-                    </div>
+                    <div style="font-size:13px; font-weight:700; color:#3b5bdb; margin-bottom:6px;">📋 스테이지 목록</div>
                     <div th:if="${stages.isEmpty()}" class="stage-empty">등록된 스테이지가 없습니다. 아래에서 추가해주세요.</div>
                     <div th:if="${!stages.isEmpty()}">
-                        <span th:each="s : ${stages}"
-                              class="stage-tag"
-                              th:attr="data-name=${s.name}"
-                              onclick="selectStage(this)">
+                        <span th:each="s : ${stages}" class="stage-tag">
                             <span th:text="${s.name}"></span>
                             <form th:action="@{/admin/festivals/{id}/stages/{sid}/delete(id=${festival.id}, sid=${s.id})}"
                                   method="post"
-                                  onsubmit="event.stopPropagation(); return confirm('스테이지를 삭제할까요?')">
-                                <button type="submit" title="삭제" onclick="event.stopPropagation()">✕</button>
+                                  onsubmit="return confirm('스테이지를 삭제할까요?')">
+                                <button type="submit" title="삭제">✕</button>
                             </form>
                         </span>
                     </div>
@@ -237,21 +221,12 @@
                 </div>
 
                 <!-- 타임테이블 추가 폼 -->
-                <form id="timetable-form"
-                      th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                       method="post"
-                      onsubmit="return validateTimetableForm()"
                       style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:20px;">
 
-                    <!-- 선택된 스테이지 (숨김 필드 + 표시용) -->
-                    <input type="hidden" name="stageName" id="selectedStageName"/>
+                    <input type="hidden" name="stageName" id="autoStageName"/>
 
-                    <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">
-                            스테이지
-                        </label>
-                        <div id="selectedStageDisplay" class="no-stage-hint">← 위에서 스테이지를 클릭하세요</div>
-                    </div>
                     <div>
                         <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">날짜</label>
                         <input type="date" name="festivalDate"
@@ -262,18 +237,25 @@
                     <div>
                         <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">아티스트</label>
                         <th:block th:if="${!participatingArtists.isEmpty()}">
-                            <select name="artistName" required
+                            <select name="artistName" id="artistSelect" required onchange="onArtistChange(this)"
                                     style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
                                 <option value="" disabled selected>아티스트 선택</option>
                                 <option th:each="af : ${participatingArtists}"
                                         th:value="${af.artistName}"
-                                        th:text="${af.artistName}"></option>
+                                        th:text="${af.artistName}"
+                                        th:attr="data-stage=${af.stageName}"></option>
                             </select>
                         </th:block>
                         <th:block th:if="${participatingArtists.isEmpty()}">
                             <input type="text" disabled placeholder="참여 아티스트를 먼저 추가하세요"
                                    style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f5f5f5;"/>
                         </th:block>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">스테이지 (자동)</label>
+                        <div id="stagePreview" style="padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f8f9ff; color:var(--muted); min-height:36px;">
+                            아티스트 선택 시 자동 입력
+                        </div>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                         <div>
@@ -331,24 +313,20 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function selectStage(el) {
-    // 기존 선택 해제
-    document.querySelectorAll('.stage-tag').forEach(t => t.classList.remove('selected'));
-    el.classList.add('selected');
-
-    const name = el.getAttribute('data-name');
-    document.getElementById('selectedStageName').value = name;
-
-    const display = document.getElementById('selectedStageDisplay');
-    display.innerHTML = '<span class="selected-stage-badge">🎪 ' + name + '</span>';
-}
-
-function validateTimetableForm() {
-    if (!document.getElementById('selectedStageName').value) {
-        alert('스테이지를 선택해주세요. 위의 스테이지 목록에서 클릭하세요.');
-        return false;
+function onArtistChange(select) {
+    const opt = select.options[select.selectedIndex];
+    const stage = opt.getAttribute('data-stage') || '';
+    document.getElementById('autoStageName').value = stage;
+    const preview = document.getElementById('stagePreview');
+    if (stage) {
+        preview.textContent = stage;
+        preview.style.color = '#3b5bdb';
+        preview.style.fontWeight = '600';
+    } else {
+        preview.textContent = '스테이지 미지정';
+        preview.style.color = 'var(--muted)';
+        preview.style.fontWeight = 'normal';
     }
-    return true;
 }
 </script>
 </body>
