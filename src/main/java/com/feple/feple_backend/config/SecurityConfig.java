@@ -71,6 +71,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/actuator/health").permitAll()
                                                 .requestMatchers("/admin/**").permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                                                 // 조회는 비로그인 허용, 쓰기/삭제는 인증 필요
                                                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                                                                 "/posts/**", "/comments/**")
