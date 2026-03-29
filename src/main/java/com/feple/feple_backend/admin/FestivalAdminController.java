@@ -211,8 +211,12 @@ public class FestivalAdminController {
     public String createTimetableEntry(@PathVariable Long id,
                                        @ModelAttribute TimetableEntryRequest req,
                                        RedirectAttributes ra) {
-        timetableService.createEntry(id, req);
-        ra.addFlashAttribute("successMessage", "타임테이블 항목이 추가되었습니다.");
+        try {
+            timetableService.createEntry(id, req);
+            ra.addFlashAttribute("successMessage", "타임테이블 항목이 추가되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/admin/festivals/" + id;
     }
 

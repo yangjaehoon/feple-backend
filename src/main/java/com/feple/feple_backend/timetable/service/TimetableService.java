@@ -31,6 +31,9 @@ public class TimetableService {
     public TimetableEntryResponse createEntry(Long festivalId, TimetableEntryRequest req) {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new IllegalArgumentException("페스티벌을 찾을 수 없습니다."));
+        if (!req.getStartTime().isBefore(req.getEndTime())) {
+            throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
+        }
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)
                 .stageName(req.getStageName().trim())
