@@ -278,4 +278,16 @@ public class FestivalAdminController {
         return "redirect:/admin/festivals/" + id;
     }
 
+    @PostMapping("/{id}/stages/{stageId}/up")
+    public String moveStageUp(@PathVariable Long id, @PathVariable Long stageId) {
+        stageService.moveUp(id, stageId);
+        return "redirect:/admin/festivals/" + id;
+    }
+
+    @PostMapping("/{id}/stages/{stageId}/down")
+    public String moveStageDown(@PathVariable Long id, @PathVariable Long stageId) {
+        stageService.moveDown(id, stageId);
+        return "redirect:/admin/festivals/" + id;
+    }
+
 }

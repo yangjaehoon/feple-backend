@@ -7,6 +7,7 @@ import lombok.*;
 @Entity
 @Table(name = "stage")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -22,4 +23,7 @@ public class Stage {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private int displayOrder;
 }
