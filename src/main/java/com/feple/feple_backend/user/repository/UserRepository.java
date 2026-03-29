@@ -18,4 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     java.util.List<User> findTop5ByOrderByIdDesc();
 
+    boolean existsByNickname(String nickname);
+
+    boolean existsByNicknameAndIdNot(String nickname, Long id);
 }

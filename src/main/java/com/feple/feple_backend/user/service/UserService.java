@@ -97,18 +97,29 @@ public class UserService {
         if (userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
-        String nickname = (req.getNickname() != null && !req.getNickname().isBlank())
-                ? req.getNickname()
-                : req.getEmail().split("@")[0];
+        validateNickname(req.getNickname(), null);
+        if (userRepository.existsByNickname(req.getNickname())) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
         User user = User.builder()
                 .email(req.getEmail())
-                .nickname(nickname)
+                .nickname(req.getNickname().trim())
                 .oauthId(req.getEmail())
                 .provider(AuthProvider.EMAIL)
                 .password(passwordEncoder.encode(req.getPassword()))
                 .profileImageUrl(null)
                 .build();
         return userRepository.save(user);
+    }
+
+    private void validateNickname(String nickname, Long excludeUserId) {
+        if (nickname == null || nickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임을 입력해주세요.");
+        }
+        String trimmed = nickname.trim();
+        if (trimmed.length() < 2 || trimmed.length() > 8) {
+            throw new IllegalArgumentException("닉네임은 2자 이상 8자 이하로 입력해주세요.");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -148,9 +159,13 @@ public class UserService {
 
     @Transactional
     public UserResponseDto updateNickname(@NonNull Long id, String nickname) {
+        validateNickname(nickname, id);
+        if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
-        user.changeNickname(nickname);
+        user.changeNickname(nickname.trim());
         return toUserDto(user);
     }
 
