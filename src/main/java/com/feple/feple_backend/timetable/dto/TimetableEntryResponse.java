@@ -9,15 +9,17 @@ import lombok.Getter;
 public class TimetableEntryResponse {
     private Long id;
     private String stageName;
+    private int stageOrder;
     private String artistName;
     private String festivalDate;
     private String startTime;
     private String endTime;
 
-    public static TimetableEntryResponse from(TimetableEntry e) {
+    public static TimetableEntryResponse from(TimetableEntry e, int stageOrder) {
         return TimetableEntryResponse.builder()
                 .id(e.getId())
                 .stageName(e.getStageName())
+                .stageOrder(stageOrder)
                 .artistName(e.getArtistName())
                 .festivalDate(e.getFestivalDate().toString())
                 .startTime(e.getStartTime().toString())

@@ -2,6 +2,7 @@ package com.feple.feple_backend.timetable.service;
 
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
@@ -10,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,12 +22,27 @@ public class TimetableService {
 
     private final TimetableRepository timetableRepository;
     private final FestivalRepository festivalRepository;
+    private final StageRepository stageRepository;
 
     public List<TimetableEntryResponse> getEntries(Long festivalId) {
+        // 스테이지명 → displayOrder 매핑
+        Map<String, Integer> stageOrderMap = stageRepository
+                .findByFestivalIdOrderByDisplayOrder(festivalId)
+                .stream()
+                .collect(Collectors.toMap(s -> s.getName(), s -> s.getDisplayOrder(),
+                        (a, b) -> a)); // 동명 스테이지는 첫 번째 값 사용
+
         return timetableRepository
                 .findByFestivalIdOrderByFestivalDateAscStartTimeAsc(festivalId)
                 .stream()
-                .map(TimetableEntryResponse::from)
+                .map(e -> {
+                    int order = stageOrderMap.getOrDefault(e.getStageName(), Integer.MAX_VALUE);
+                    return TimetableEntryResponse.from(e, order);
+                })
+                .sorted(Comparator
+                        .comparing(TimetableEntryResponse::getFestivalDate)
+                        .thenComparingInt(TimetableEntryResponse::getStageOrder)
+                        .thenComparing(TimetableEntryResponse::getStartTime))
                 .toList();
     }
 
@@ -42,7 +61,11 @@ public class TimetableService {
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .build();
-        return TimetableEntryResponse.from(timetableRepository.save(entry));
+        TimetableEntry saved = timetableRepository.save(entry);
+        int order = stageRepository.findByFestivalIdOrderByDisplayOrder(festivalId)
+                .stream().filter(s -> s.getName().equals(saved.getStageName()))
+                .mapToInt(s -> s.getDisplayOrder()).findFirst().orElse(Integer.MAX_VALUE);
+        return TimetableEntryResponse.from(saved, order);
     }
 
     @Transactional
