@@ -258,16 +258,24 @@
                             아티스트 선택 시 자동 입력
                         </div>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <div>
-                            <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">시작</label>
-                            <input type="time" name="startTime" id="startTime" required
-                                   style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    <div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                            <div>
+                                <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">시작</label>
+                                <input type="time" name="startTime" id="startTime" required
+                                       oninput="clearTimeError()"
+                                       style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                            </div>
+                            <div>
+                                <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종료</label>
+                                <input type="time" name="endTime" id="endTime" required
+                                       oninput="clearTimeError()"
+                                       style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                            </div>
                         </div>
-                        <div>
-                            <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종료</label>
-                            <input type="time" name="endTime" id="endTime" required
-                                   style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                        <div id="timeError"
+                             style="display:none; margin-top:5px; font-size:12px; color:#e53e3e; font-weight:500;">
+                            ⚠ 종료 시간은 시작 시간보다 늦어야 합니다.
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
@@ -329,11 +337,21 @@ function validateTimetable(form) {
     const start = form.querySelector('#startTime').value;
     const end = form.querySelector('#endTime').value;
     if (start && end && start >= end) {
-        alert('종료 시간은 시작 시간보다 늦어야 합니다.');
-        form.querySelector('#endTime').focus();
+        const err = document.getElementById('timeError');
+        err.style.display = 'block';
+        document.getElementById('startTime').style.borderColor = '#e53e3e';
+        document.getElementById('endTime').style.borderColor = '#e53e3e';
+        document.getElementById('endTime').focus();
         return false;
     }
     return true;
+}
+
+function clearTimeError() {
+    const err = document.getElementById('timeError');
+    if (err) err.style.display = 'none';
+    document.getElementById('startTime').style.borderColor = '';
+    document.getElementById('endTime').style.borderColor = '';
 }
 
 function onArtistChange(select) {
