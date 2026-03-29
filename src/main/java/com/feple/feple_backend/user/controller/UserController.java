@@ -29,6 +29,13 @@ public class UserController {
         return ResponseEntity.ok(userService.createUser(dto));
     }
 
+    @GetMapping("/check-nickname")
+    public ResponseEntity<java.util.Map<String, Object>> checkNickname(
+            @RequestParam String nickname,
+            @RequestParam(required = false) Long excludeUserId) {
+        return ResponseEntity.ok(userService.checkNicknameAvailable(nickname, excludeUserId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUser(id));

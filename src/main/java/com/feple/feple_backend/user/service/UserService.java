@@ -123,6 +123,22 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.Map<String, Object> checkNicknameAvailable(String nickname, Long excludeUserId) {
+        try {
+            validateNickname(nickname, excludeUserId);
+        } catch (IllegalArgumentException e) {
+            return java.util.Map.of("available", false, "message", e.getMessage());
+        }
+        boolean taken = excludeUserId != null
+                ? userRepository.existsByNicknameAndIdNot(nickname.trim(), excludeUserId)
+                : userRepository.existsByNickname(nickname.trim());
+        if (taken) {
+            return java.util.Map.of("available", false, "message", "이미 사용 중인 닉네임입니다.");
+        }
+        return java.util.Map.of("available", true, "message", "사용 가능한 닉네임입니다.");
+    }
+
+    @Transactional(readOnly = true)
     public User loginLocal(LocalLoginRequest req) {
         User user = userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
