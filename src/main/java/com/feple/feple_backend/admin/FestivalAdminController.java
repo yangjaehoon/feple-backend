@@ -14,6 +14,7 @@ import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.file.FileStorageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.service.TimetableService;
+import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,6 +39,7 @@ public class FestivalAdminController {
     private final ArtistRepository artistRepository;
     private final ArtistFestivalService artistFestivalService;
     private final TimetableService timetableService;
+    private final StageService stageService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -155,6 +157,7 @@ public class FestivalAdminController {
         model.addAttribute("allArtists", allArtists);
         model.addAttribute("participatingArtists", participatingArtists);
         model.addAttribute("timetableEntries", timetableService.getEntries(id));
+        model.addAttribute("stages", stageService.getStages(id));
 
         return "admin/festival-detail";
     }
@@ -246,6 +249,29 @@ public class FestivalAdminController {
 
         artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
         return "redirect:/admin/festivals/" + festivalId;
+    }
+
+    // ── 스테이지 관리 ──────────────────────────────────────────────────────────
+    @PostMapping("/{id}/stages")
+    public String createStage(@PathVariable Long id,
+                              @RequestParam String name,
+                              RedirectAttributes ra) {
+        try {
+            stageService.createStage(id, name);
+            ra.addFlashAttribute("successMessage", "스테이지가 추가되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/festivals/" + id;
+    }
+
+    @PostMapping("/{id}/stages/{stageId}/delete")
+    public String deleteStage(@PathVariable Long id,
+                              @PathVariable Long stageId,
+                              RedirectAttributes ra) {
+        stageService.deleteStage(stageId);
+        ra.addFlashAttribute("successMessage", "스테이지가 삭제되었습니다.");
+        return "redirect:/admin/festivals/" + id;
     }
 
 }
