@@ -35,7 +35,7 @@ jwt:
 
 app:
   s3:
-    bucket: feple2603
+    bucket: feple2604
     prefix: artist-photos
     presign-minutes: 10
 
