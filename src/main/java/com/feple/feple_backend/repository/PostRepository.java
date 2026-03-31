@@ -15,8 +15,11 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByBoardType(BoardType boardType);
+    List<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType);
     List<Post> findByArtist(Artist artist);
+    List<Post> findByArtistOrderByCreatedAtDesc(Artist artist);
     List<Post> findByFestival(Festival festival);
+    List<Post> findByFestivalOrderByCreatedAtDesc(Festival festival);
     List<Post> findByUser(User user);
     long countByUser(User user);
 

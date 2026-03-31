@@ -72,7 +72,7 @@ public class PostService {
     }
 
     public List<PostResponseDto> getPostsByBoardType(BoardType boardType) {
-        List<Post> posts = postRepository.findByBoardType(boardType);
+        List<Post> posts = postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType);
         return posts.stream()
                 .map(PostResponseDto::from)
                 .toList();
@@ -145,7 +145,7 @@ public class PostService {
     public List<PostResponseDto> getPostsByArtistId(Long artistId) {
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new RuntimeException("해당 아티스트가 없습니다: " + artistId));
-        List<Post> posts = postRepository.findByArtist(artist);
+        List<Post> posts = postRepository.findByArtistOrderByCreatedAtDesc(artist);
         return posts.stream()
                 .map(PostResponseDto::from)
                 .toList();
@@ -175,7 +175,7 @@ public class PostService {
     public List<PostResponseDto> getPostsByFestivalId(Long festivalId) {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new RuntimeException("해당 페스티벌이 없습니다: " + festivalId));
-        List<Post> posts = postRepository.findByFestival(festival);
+        List<Post> posts = postRepository.findByFestivalOrderByCreatedAtDesc(festival);
         return posts.stream()
                 .map(PostResponseDto::from)
                 .toList();
