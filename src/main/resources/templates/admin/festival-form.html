@@ -54,10 +54,10 @@
 
                         <div class="form-group">
                             <label>장소</label>
-                            <input type="text" th:field="*{location}" id="locationInput" placeholder="행사 장소 (지도에서 선택하거나 직접 입력)" required/>
+                            <input type="text" id="locationInput" name="location" th:value="*{location}" placeholder="행사 장소 (지도에서 선택하거나 직접 입력)" required/>
                             <span class="field-error" style="display:none; color:#e74c3c; font-size:12px; margin-top:4px;">장소를 입력해주세요.</span>
-                            <input type="hidden" th:field="*{latitude}" id="latInput"/>
-                            <input type="hidden" th:field="*{longitude}" id="lngInput"/>
+                            <input type="hidden" id="latInput" name="latitude" th:value="*{latitude}"/>
+                            <input type="hidden" id="lngInput" name="longitude" th:value="*{longitude}"/>
                             <div style="margin-top:8px;">
                                 <div style="display:flex; gap:8px; margin-bottom:8px;">
                                     <input type="text" id="addrSearch" placeholder="주소 또는 장소명 검색..."

@@ -45,9 +45,9 @@
 
                         <div class="form-group">
                             <label>장소</label>
-                            <input type="text" th:field="*{location}" id="locationInput" required/>
-                            <input type="hidden" th:field="*{latitude}" id="latInput"/>
-                            <input type="hidden" th:field="*{longitude}" id="lngInput"/>
+                            <input type="text" id="locationInput" name="location" th:value="*{location}" required/>
+                            <input type="hidden" id="latInput" name="latitude" th:value="*{latitude}"/>
+                            <input type="hidden" id="lngInput" name="longitude" th:value="*{longitude}"/>
                             <div style="margin-top:8px;">
                                 <div style="display:flex; gap:8px; margin-bottom:8px;">
                                     <input type="text" id="addrSearch" placeholder="주소 또는 장소명 검색..."
