@@ -27,6 +27,8 @@ public class FestivalResponseDto {
     private int likeCount;
     private List<Genre> genres;
     private Region region;
+    private Double latitude;
+    private Double longitude;
 
     public static FestivalResponseDto from(Festival festival) {
         return from(festival, festival.getPosterKey());
@@ -44,6 +46,8 @@ public class FestivalResponseDto {
                 .likeCount(festival.getLikeCount())
                 .genres(festival.getGenres())
                 .region(festival.getRegion())
+                .latitude(festival.getLatitude())
+                .longitude(festival.getLongitude())
                 .build();
     }
 }

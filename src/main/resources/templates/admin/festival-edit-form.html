@@ -45,7 +45,19 @@
 
                         <div class="form-group">
                             <label>장소</label>
-                            <input type="text" th:field="*{location}" required/>
+                            <input type="text" th:field="*{location}" id="locationInput" required/>
+                            <input type="hidden" th:field="*{latitude}" id="latInput"/>
+                            <input type="hidden" th:field="*{longitude}" id="lngInput"/>
+                            <div style="margin-top:8px;">
+                                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                                    <input type="text" id="addrSearch" placeholder="주소 또는 장소명 검색..."
+                                           style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                                    <button type="button" onclick="searchAddress()"
+                                            style="padding:8px 14px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-size:13px; cursor:pointer;">검색</button>
+                                </div>
+                                <div id="kakaoMap" style="width:100%; height:300px; border-radius:10px; border:1px solid var(--border);"></div>
+                                <p style="font-size:11px; color:var(--muted); margin-top:4px;">지도를 클릭하거나 주소를 검색하면 위치가 자동으로 설정됩니다.</p>
+                            </div>
                         </div>
 
                         <div class="form-row-2">
@@ -109,5 +121,76 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=75c165c144f335e61cfa19338c13ad2a&libraries=services"></script>
+<script th:inline="javascript">
+    let map, marker, geocoder;
+    const initLat = /*[[${festival.latitude}]]*/ null;
+    const initLng = /*[[${festival.longitude}]]*/ null;
+
+    kakao.maps.load(function () {
+        const defaultLat = (initLat != null) ? initLat : 37.5665;
+        const defaultLng = (initLng != null) ? initLng : 126.9780;
+        const container = document.getElementById('kakaoMap');
+        const options = {
+            center: new kakao.maps.LatLng(defaultLat, defaultLng),
+            level: 5
+        };
+        map = new kakao.maps.Map(container, options);
+        geocoder = new kakao.maps.services.Geocoder();
+        marker = new kakao.maps.Marker({ position: options.center, map: (initLat != null) ? map : null });
+
+        kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+            const latlng = mouseEvent.latLng;
+            placeMarker(latlng.getLat(), latlng.getLng());
+            geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function (result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    const addr = result[0].road_address
+                        ? result[0].road_address.address_name
+                        : result[0].address.address_name;
+                    document.getElementById('locationInput').value = addr;
+                }
+            });
+        });
+    });
+
+    function placeMarker(lat, lng) {
+        const pos = new kakao.maps.LatLng(lat, lng);
+        marker.setPosition(pos);
+        marker.setMap(map);
+        map.setCenter(pos);
+        document.getElementById('latInput').value = lat;
+        document.getElementById('lngInput').value = lng;
+    }
+
+    function searchAddress() {
+        const keyword = document.getElementById('addrSearch').value.trim();
+        if (!keyword) return;
+        const ps = new kakao.maps.services.Places();
+        ps.keywordSearch(keyword, function (data, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                const place = data[0];
+                const lat = parseFloat(place.y);
+                const lng = parseFloat(place.x);
+                placeMarker(lat, lng);
+                document.getElementById('locationInput').value = place.place_name;
+            } else {
+                geocoder.addressSearch(keyword, function (result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        const lat = parseFloat(result[0].y);
+                        const lng = parseFloat(result[0].x);
+                        placeMarker(lat, lng);
+                        document.getElementById('locationInput').value = result[0].address_name;
+                    } else {
+                        alert('검색 결과가 없습니다.');
+                    }
+                });
+            }
+        });
+    }
+
+    document.getElementById('addrSearch').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); searchAddress(); }
+    });
+</script>
 </body>
 </html>

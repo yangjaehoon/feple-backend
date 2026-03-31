@@ -48,6 +48,8 @@ public class FestivalService {
                 .posterKey(dto.getPosterUrl())
                 .genres(dto.getGenres() != null ? dto.getGenres() : new java.util.ArrayList<>())
                 .region(dto.getRegion())
+                .latitude(dto.getLatitude())
+                .longitude(dto.getLongitude())
                 .build();
 
         @SuppressWarnings("null")
@@ -102,6 +104,12 @@ public class FestivalService {
         }
         if (dto.getRegion() != null) {
             festival.setRegion(dto.getRegion());
+        }
+        if (dto.getLatitude() != null) {
+            festival.setLatitude(dto.getLatitude());
+        }
+        if (dto.getLongitude() != null) {
+            festival.setLongitude(dto.getLongitude());
         }
     }
 

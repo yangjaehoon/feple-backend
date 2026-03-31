@@ -46,6 +46,9 @@ public class Festival {
     @Enumerated(EnumType.STRING)
     private Region region;
 
+    private Double latitude;
+    private Double longitude;
+
     @Builder.Default
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArtistFestival> artistFestivals = new ArrayList<>();

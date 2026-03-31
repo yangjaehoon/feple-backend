@@ -23,6 +23,8 @@ public class FestivalDetailResponseDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private String posterUrl;
+    private Double latitude;
+    private Double longitude;
     private List<ArtistResponseDto> artists;
 
     public static FestivalDetailResponseDto from(Festival festival) {
@@ -38,6 +40,8 @@ public class FestivalDetailResponseDto {
                 .startDate(festival.getStartDate())
                 .endDate(festival.getEndDate())
                 .posterUrl(posterUrl)
+                .latitude(festival.getLatitude())
+                .longitude(festival.getLongitude())
                 .build();
     }
 

@@ -29,4 +29,6 @@ public class FestivalRequestDto {
 
     private List<Genre> genres;
     private Region region;
+    private Double latitude;
+    private Double longitude;
 }

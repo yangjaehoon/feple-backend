@@ -114,6 +114,8 @@ public class FestivalAdminController {
         form.setPosterUrl(festival.getPosterUrl());
         form.setRegion(festival.getRegion());
         form.setGenres(festival.getGenres());
+        form.setLatitude(festival.getLatitude());
+        form.setLongitude(festival.getLongitude());
 
         model.addAttribute("festivalId", id);
         model.addAttribute("festival", form);
