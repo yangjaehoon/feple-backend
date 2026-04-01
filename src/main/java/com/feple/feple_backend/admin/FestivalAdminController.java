@@ -19,6 +19,7 @@ import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -44,6 +45,9 @@ public class FestivalAdminController {
     private final TimetableService timetableService;
     private final StageService stageService;
     private final BoothService boothService;
+
+    @Value("${app.google.maps.key:}")
+    private String googleMapsKey;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -166,6 +170,7 @@ public class FestivalAdminController {
         model.addAttribute("stages", stageService.getStages(id));
         model.addAttribute("booths", boothService.getBooths(id));
         model.addAttribute("allBoothTypes", BoothType.values());
+        model.addAttribute("googleMapsKey", googleMapsKey);
 
         return "admin/festival-detail";
     }

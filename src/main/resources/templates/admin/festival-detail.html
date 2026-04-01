@@ -494,7 +494,7 @@
         });
     }
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAugneKDgJ5pg-sSMH80a2Pz4NgLnMS48k&callback=initBoothMap" async defer></script>
+<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&callback=initBoothMap'}" async defer></script>
 <script>
 function validateTimetable(form) {
     const start = form.querySelector('#startTime').value;
