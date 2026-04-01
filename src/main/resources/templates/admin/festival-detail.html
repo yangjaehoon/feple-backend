@@ -454,6 +454,8 @@
             streetViewControl: false
         });
 
+        const squarePath = 'M -9,-9 9,-9 9,9 -9,9 z';
+
         // 기존 부스 마커 표시
         existingBooths.forEach(function(booth) {
             const marker = new google.maps.Marker({
@@ -461,12 +463,12 @@
                 map: boothMap,
                 title: booth.name,
                 icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 10,
+                    path: squarePath,
                     fillColor: markerColors[booth.boothType] || '#FF0000',
                     fillOpacity: 1,
                     strokeColor: '#fff',
-                    strokeWeight: 2
+                    strokeWeight: 2,
+                    scale: 1
                 }
             });
             const infoWindow = new google.maps.InfoWindow({
@@ -487,7 +489,7 @@
             selectedMarker = new google.maps.Marker({
                 position: e.latLng,
                 map: boothMap,
-                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#3b5bdb', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 }
+                icon: { path: squarePath, fillColor: '#3b5bdb', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2, scale: 1 }
             });
         });
     }
