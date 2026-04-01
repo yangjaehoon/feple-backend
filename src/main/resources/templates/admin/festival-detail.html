@@ -352,9 +352,135 @@
             </div>
         </div>
 
+        <!-- 부스 관리 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🏪 부스 관리
+                    <span class="card-count" th:text="${booths.size() ?: 0}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">지도를 클릭하면 해당 위치에 부스를 등록할 수 있습니다.</p>
+
+                <!-- 부스 추가 폼 -->
+                <form th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
+                      style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:14px;">
+                    <input type="hidden" id="boothLat" name="latitude"/>
+                    <input type="hidden" id="boothLng" name="longitude"/>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">부스명</label>
+                        <input type="text" name="name" placeholder="예: 맥주존 A" required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종류</label>
+                        <select name="boothType" required
+                                style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                            <option value="" disabled selected>선택</option>
+                            <option th:each="bt : ${allBoothTypes}" th:value="${bt}" th:text="${bt.displayName}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">설명 (선택)</label>
+                        <input type="text" name="description" placeholder="간단한 설명"
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
+                </form>
+
+                <!-- 지도 -->
+                <div id="boothMap" style="width:100%; height:360px; border-radius:12px; border:1px solid var(--border); margin-bottom:16px;"></div>
+                <p id="boothPosLabel" style="font-size:12px; color:var(--muted); margin-bottom:16px;">지도를 클릭하여 부스 위치를 선택하세요.</p>
+
+                <!-- 부스 목록 -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>종류</th>
+                            <th>부스명</th>
+                            <th>설명</th>
+                            <th>위치</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="booth : ${booths}">
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${booth.boothType.name() == 'FOOD'} ? 'badge-food' : (${booth.boothType.name() == 'BEER'} ? 'badge-beer' : 'badge-event')"
+                                      th:text="${booth.boothTypeName}"
+                                      style="padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600;"></span>
+                            </td>
+                            <td style="font-weight:600;" th:text="${booth.name}"></td>
+                            <td style="color:var(--muted); font-size:13px;" th:text="${booth.description ?: '-'}"></td>
+                            <td style="font-size:12px; color:var(--muted);" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
+                            <td>
+                                <form th:action="@{/admin/festivals/{fId}/booths/{bId}/delete(fId=${festival.id},bId=${booth.id})}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${booths.isEmpty()}">
+                            <td colspan="5">등록된 부스가 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=75c165c144f335e61cfa19338c13ad2a&libraries=services&autoload=false"></script>
+<script th:inline="javascript">
+    const festivalLat = /*[[${festival.latitude}]]*/ null;
+    const festivalLng = /*[[${festival.longitude}]]*/ null;
+    const existingBooths = /*[[${booths}]]*/ [];
+
+    kakao.maps.load(function () {
+        const centerLat = festivalLat != null ? festivalLat : 37.5665;
+        const centerLng = festivalLng != null ? festivalLng : 126.9780;
+
+        const map = new kakao.maps.Map(document.getElementById('boothMap'), {
+            center: new kakao.maps.LatLng(centerLat, centerLng),
+            level: 4
+        });
+
+        // 기존 부스 마커 표시
+        const colors = { FOOD: '#ff7043', BEER: '#ffa000', EVENT: '#7b1fa2' };
+        existingBooths.forEach(function(booth) {
+            const marker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(booth.latitude, booth.longitude),
+                map: map
+            });
+            const infowindow = new kakao.maps.InfoWindow({
+                content: '<div style="padding:6px 10px; font-size:12px; font-weight:600;">' + booth.boothTypeName + ' · ' + booth.name + '</div>'
+            });
+            kakao.maps.event.addListener(marker, 'click', function() {
+                infowindow.open(map, marker);
+            });
+        });
+
+        // 클릭으로 새 부스 위치 선택
+        let selectedMarker = null;
+        kakao.maps.event.addListener(map, 'click', function(e) {
+            const lat = e.latLng.getLat();
+            const lng = e.latLng.getLng();
+            document.getElementById('boothLat').value = lat;
+            document.getElementById('boothLng').value = lng;
+            document.getElementById('boothPosLabel').textContent = '선택된 위치: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+            document.getElementById('boothPosLabel').style.color = '#3b5bdb';
+            if (selectedMarker) selectedMarker.setMap(null);
+            selectedMarker = new kakao.maps.Marker({
+                position: e.latLng,
+                map: map
+            });
+        });
+    });
+</script>
 <script>
 function validateTimetable(form) {
     const start = form.querySelector('#startTime').value;

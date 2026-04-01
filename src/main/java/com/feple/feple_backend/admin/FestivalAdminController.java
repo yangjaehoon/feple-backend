@@ -3,6 +3,9 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.DuplicateArtistFestivalException;
+import com.feple.feple_backend.booth.dto.BoothRequestDto;
+import com.feple.feple_backend.booth.entity.BoothType;
+import com.feple.feple_backend.booth.service.BoothService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -40,6 +43,7 @@ public class FestivalAdminController {
     private final ArtistFestivalService artistFestivalService;
     private final TimetableService timetableService;
     private final StageService stageService;
+    private final BoothService boothService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -160,6 +164,8 @@ public class FestivalAdminController {
         model.addAttribute("participatingArtists", participatingArtists);
         model.addAttribute("timetableEntries", timetableService.getEntries(id));
         model.addAttribute("stages", stageService.getStages(id));
+        model.addAttribute("booths", boothService.getBooths(id));
+        model.addAttribute("allBoothTypes", BoothType.values());
 
         return "admin/festival-detail";
     }
@@ -289,6 +295,29 @@ public class FestivalAdminController {
     @PostMapping("/{id}/stages/{stageId}/down")
     public String moveStageDown(@PathVariable Long id, @PathVariable Long stageId) {
         stageService.moveDown(id, stageId);
+        return "redirect:/admin/festivals/" + id;
+    }
+
+    // ── 부스 관리 ──────────────────────────────────────────────────────────────
+    @PostMapping("/{id}/booths")
+    public String createBooth(@PathVariable Long id,
+                              @ModelAttribute BoothRequestDto dto,
+                              RedirectAttributes ra) {
+        if (dto.getLatitude() == null || dto.getLongitude() == null) {
+            ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
+            return "redirect:/admin/festivals/" + id;
+        }
+        boothService.createBooth(id, dto);
+        ra.addFlashAttribute("successMessage", "부스가 추가되었습니다.");
+        return "redirect:/admin/festivals/" + id;
+    }
+
+    @PostMapping("/{id}/booths/{boothId}/delete")
+    public String deleteBooth(@PathVariable Long id,
+                              @PathVariable Long boothId,
+                              RedirectAttributes ra) {
+        boothService.deleteBooth(boothId);
+        ra.addFlashAttribute("successMessage", "부스가 삭제되었습니다.");
         return "redirect:/admin/festivals/" + id;
     }
 
