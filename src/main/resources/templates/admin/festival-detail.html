@@ -434,53 +434,65 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=75c165c144f335e61cfa19338c13ad2a&libraries=services&autoload=false"></script>
 <script th:inline="javascript">
     const festivalLat = /*[[${festival.latitude}]]*/ null;
     const festivalLng = /*[[${festival.longitude}]]*/ null;
     const existingBooths = /*[[${booths}]]*/ [];
+</script>
+<script>
+    let boothMap, selectedMarker;
+    const markerColors = { FOOD: '#FF7043', BEER: '#FFA000', EVENT: '#7B1FA2' };
 
-    kakao.maps.load(function () {
+    function initBoothMap() {
         const centerLat = festivalLat != null ? festivalLat : 37.5665;
         const centerLng = festivalLng != null ? festivalLng : 126.9780;
 
-        const map = new kakao.maps.Map(document.getElementById('boothMap'), {
-            center: new kakao.maps.LatLng(centerLat, centerLng),
-            level: 4
+        boothMap = new google.maps.Map(document.getElementById('boothMap'), {
+            center: { lat: centerLat, lng: centerLng },
+            zoom: 18,
+            mapTypeControl: false,
+            streetViewControl: false
         });
 
         // 기존 부스 마커 표시
-        const colors = { FOOD: '#ff7043', BEER: '#ffa000', EVENT: '#7b1fa2' };
         existingBooths.forEach(function(booth) {
-            const marker = new kakao.maps.Marker({
-                position: new kakao.maps.LatLng(booth.latitude, booth.longitude),
-                map: map
+            const marker = new google.maps.Marker({
+                position: { lat: booth.latitude, lng: booth.longitude },
+                map: boothMap,
+                title: booth.name,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: markerColors[booth.boothType] || '#FF0000',
+                    fillOpacity: 1,
+                    strokeColor: '#fff',
+                    strokeWeight: 2
+                }
             });
-            const infowindow = new kakao.maps.InfoWindow({
+            const infoWindow = new google.maps.InfoWindow({
                 content: '<div style="padding:6px 10px; font-size:12px; font-weight:600;">' + booth.boothTypeName + ' · ' + booth.name + '</div>'
             });
-            kakao.maps.event.addListener(marker, 'click', function() {
-                infowindow.open(map, marker);
-            });
+            marker.addListener('click', function() { infoWindow.open(boothMap, marker); });
         });
 
         // 클릭으로 새 부스 위치 선택
-        let selectedMarker = null;
-        kakao.maps.event.addListener(map, 'click', function(e) {
-            const lat = e.latLng.getLat();
-            const lng = e.latLng.getLng();
+        boothMap.addListener('click', function(e) {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
             document.getElementById('boothLat').value = lat;
             document.getElementById('boothLng').value = lng;
             document.getElementById('boothPosLabel').textContent = '선택된 위치: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
             document.getElementById('boothPosLabel').style.color = '#3b5bdb';
             if (selectedMarker) selectedMarker.setMap(null);
-            selectedMarker = new kakao.maps.Marker({
+            selectedMarker = new google.maps.Marker({
                 position: e.latLng,
-                map: map
+                map: boothMap,
+                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#3b5bdb', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 }
             });
         });
-    });
+    }
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAugneKDgJ5pg-sSMH80a2Pz4NgLnMS48k&callback=initBoothMap" async defer></script>
 <script>
 function validateTimetable(form) {
     const start = form.querySelector('#startTime').value;
