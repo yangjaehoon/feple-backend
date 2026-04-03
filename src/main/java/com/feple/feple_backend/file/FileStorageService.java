@@ -87,6 +87,16 @@ public class FileStorageService {
         }
     }
 
+    public String storeBoothImage(MultipartFile file) throws IOException {
+        validateFile(file);
+        byte[] resized = resizeToJpeg(file.getInputStream(), 300);
+        String key = "booths/" + UUID.randomUUID() + ".jpg";
+        try (InputStream is = new ByteArrayInputStream(resized)) {
+            s3Template.upload(bucket, key, is);
+            return key;
+        }
+    }
+
     private String storeFile(MultipartFile file, String folder) throws IOException {
         validateFile(file);
 

@@ -307,10 +307,15 @@ public class FestivalAdminController {
     @PostMapping("/{id}/booths")
     public String createBooth(@PathVariable Long id,
                               @ModelAttribute BoothRequestDto dto,
-                              RedirectAttributes ra) {
+                              @RequestParam(value = "boothImageFile", required = false) MultipartFile boothImageFile,
+                              RedirectAttributes ra) throws IOException {
         if (dto.getLatitude() == null || dto.getLongitude() == null) {
             ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
             return "redirect:/admin/festivals/" + id;
+        }
+        if (boothImageFile != null && !boothImageFile.isEmpty()) {
+            String key = fileStorageService.storeBoothImage(boothImageFile);
+            dto.setImageUrl(fileStorageService.buildUrl(key));
         }
         boothService.createBooth(id, dto);
         ra.addFlashAttribute("successMessage", "부스가 추가되었습니다.");

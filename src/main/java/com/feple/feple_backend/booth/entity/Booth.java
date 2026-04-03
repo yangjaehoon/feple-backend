@@ -35,4 +35,6 @@ public class Booth {
     private Double longitude;
 
     private String description;
+
+    private String imageUrl;
 }

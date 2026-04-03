@@ -365,7 +365,8 @@
 
                 <!-- 부스 추가 폼 -->
                 <form th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
-                      style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:14px;">
+                      enctype="multipart/form-data"
+                      style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:14px;">
                     <input type="hidden" id="boothLat" name="latitude"/>
                     <input type="hidden" id="boothLng" name="longitude"/>
                     <div>
@@ -385,6 +386,11 @@
                         <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">설명 (선택)</label>
                         <input type="text" name="description" placeholder="간단한 설명"
                                style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">이미지 (선택)</label>
+                        <input type="file" name="boothImageFile" accept="image/*"
+                               style="width:100%; padding:5px 0; font-size:12px;"/>
                     </div>
                     <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
                 </form>
@@ -452,17 +458,29 @@
         card.style.cssText = [
             'background:' + color,
             'color:#fff',
-            'padding:5px 10px',
             'border-radius:8px',
             'font-size:12px',
             'font-weight:700',
-            'white-space:nowrap',
             'box-shadow:0 2px 8px rgba(0,0,0,0.35)',
             'border:2px solid rgba(255,255,255,0.75)',
             'cursor:pointer',
-            'user-select:none'
+            'user-select:none',
+            'overflow:hidden',
+            'min-width:70px',
+            'text-align:center'
         ].join(';');
-        card.textContent = icon + ' ' + booth.name;
+
+        if (booth.imageUrl) {
+            const img = document.createElement('img');
+            img.src = booth.imageUrl;
+            img.style.cssText = 'width:70px;height:60px;object-fit:cover;display:block;';
+            card.appendChild(img);
+        }
+
+        const label = document.createElement('div');
+        label.style.padding = '4px 8px';
+        label.textContent = icon + ' ' + booth.name;
+        card.appendChild(label);
 
         const tail = document.createElement('div');
         tail.style.cssText = [

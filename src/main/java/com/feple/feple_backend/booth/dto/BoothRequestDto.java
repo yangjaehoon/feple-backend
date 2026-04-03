@@ -14,4 +14,5 @@ public class BoothRequestDto {
     private Double latitude;
     private Double longitude;
     private String description;
+    private String imageUrl;
 }

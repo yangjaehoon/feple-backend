@@ -16,6 +16,7 @@ public class BoothResponseDto {
     private Double latitude;
     private Double longitude;
     private String description;
+    private String imageUrl;
 
     public static BoothResponseDto from(Booth booth) {
         return BoothResponseDto.builder()
@@ -26,6 +27,7 @@ public class BoothResponseDto {
                 .latitude(booth.getLatitude())
                 .longitude(booth.getLongitude())
                 .description(booth.getDescription())
+                .imageUrl(booth.getImageUrl())
                 .build();
     }
 }

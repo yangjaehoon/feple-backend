@@ -38,6 +38,7 @@ public class BoothService {
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .description(dto.getDescription())
+                .imageUrl(dto.getImageUrl())
                 .build();
         return boothRepository.save(booth).getId();
     }
