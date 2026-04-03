@@ -314,8 +314,13 @@ public class FestivalAdminController {
             return "redirect:/admin/festivals/" + id;
         }
         if (boothImageFile != null && !boothImageFile.isEmpty()) {
-            String key = fileStorageService.storeBoothImage(boothImageFile);
-            dto.setImageUrl(fileStorageService.buildUrl(key));
+            try {
+                String key = fileStorageService.storeBoothImage(boothImageFile);
+                dto.setImageUrl(fileStorageService.buildUrl(key));
+            } catch (Exception e) {
+                ra.addFlashAttribute("errorMessage", "이미지 업로드 실패: " + e.getMessage());
+                return "redirect:/admin/festivals/" + id;
+            }
         }
         boothService.createBooth(id, dto);
         ra.addFlashAttribute("successMessage", "부스가 추가되었습니다.");
