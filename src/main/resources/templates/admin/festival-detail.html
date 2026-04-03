@@ -442,6 +442,57 @@
 <script>
     let boothMap, selectedMarker;
     const markerColors = { FOOD: '#FF7043', BEER: '#FFA000', EVENT: '#7B1FA2' };
+    const boothIcons  = { FOOD: '🍽', BEER: '🍺', EVENT: '🎉' };
+
+    function createBoothEl(booth) {
+        const color = markerColors[booth.boothType] || '#555';
+        const icon  = boothIcons[booth.boothType]  || '📍';
+
+        const card = document.createElement('div');
+        card.style.cssText = [
+            'background:' + color,
+            'color:#fff',
+            'padding:5px 10px',
+            'border-radius:8px',
+            'font-size:12px',
+            'font-weight:700',
+            'white-space:nowrap',
+            'box-shadow:0 2px 8px rgba(0,0,0,0.35)',
+            'border:2px solid rgba(255,255,255,0.75)',
+            'cursor:pointer',
+            'user-select:none'
+        ].join(';');
+        card.textContent = icon + ' ' + booth.name;
+
+        const tail = document.createElement('div');
+        tail.style.cssText = [
+            'width:0',
+            'height:0',
+            'border-left:6px solid transparent',
+            'border-right:6px solid transparent',
+            'border-top:8px solid ' + color,
+            'margin:0 auto'
+        ].join(';');
+
+        const wrapper = document.createElement('div');
+        wrapper.style.textAlign = 'center';
+        wrapper.appendChild(card);
+        wrapper.appendChild(tail);
+        return wrapper;
+    }
+
+    function createSelectedEl() {
+        const el = document.createElement('div');
+        el.style.cssText = [
+            'width:16px',
+            'height:16px',
+            'background:#3b5bdb',
+            'border:3px solid #fff',
+            'border-radius:50%',
+            'box-shadow:0 2px 6px rgba(0,0,0,0.4)'
+        ].join(';');
+        return el;
+    }
 
     function initBoothMap() {
         const centerLat = festivalLat != null ? festivalLat : 37.5665;
@@ -451,30 +502,28 @@
             center: { lat: centerLat, lng: centerLng },
             zoom: 18,
             mapTypeControl: false,
-            streetViewControl: false
+            streetViewControl: false,
+            mapId: 'DEMO_MAP_ID'
         });
-
-        const squarePath = 'M -9,-9 9,-9 9,9 -9,9 z';
 
         // 기존 부스 마커 표시
         existingBooths.forEach(function(booth) {
-            const marker = new google.maps.Marker({
+            const marker = new google.maps.marker.AdvancedMarkerElement({
                 position: { lat: booth.latitude, lng: booth.longitude },
                 map: boothMap,
                 title: booth.name,
-                icon: {
-                    path: squarePath,
-                    fillColor: markerColors[booth.boothType] || '#FF0000',
-                    fillOpacity: 1,
-                    strokeColor: '#fff',
-                    strokeWeight: 2,
-                    scale: 1
-                }
+                content: createBoothEl(booth)
             });
+            const descHtml = booth.description
+                ? '<br><span style="font-weight:400;font-size:12px;color:#555;">' + booth.description + '</span>'
+                : '';
             const infoWindow = new google.maps.InfoWindow({
-                content: '<div style="padding:6px 10px; font-size:12px; font-weight:600;">' + booth.boothTypeName + ' · ' + booth.name + '</div>'
+                content: '<div style="padding:8px 12px;font-size:13px;font-weight:600;">'
+                    + booth.boothTypeName + ' · ' + booth.name + descHtml + '</div>'
             });
-            marker.addListener('click', function() { infoWindow.open(boothMap, marker); });
+            marker.addListener('click', function() {
+                infoWindow.open({ anchor: marker, map: boothMap });
+            });
         });
 
         // 클릭으로 새 부스 위치 선택
@@ -485,16 +534,16 @@
             document.getElementById('boothLng').value = lng;
             document.getElementById('boothPosLabel').textContent = '선택된 위치: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
             document.getElementById('boothPosLabel').style.color = '#3b5bdb';
-            if (selectedMarker) selectedMarker.setMap(null);
-            selectedMarker = new google.maps.Marker({
+            if (selectedMarker) selectedMarker.map = null;
+            selectedMarker = new google.maps.marker.AdvancedMarkerElement({
                 position: e.latLng,
                 map: boothMap,
-                icon: { path: squarePath, fillColor: '#3b5bdb', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2, scale: 1 }
+                content: createSelectedEl()
             });
         });
     }
 </script>
-<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&callback=initBoothMap'}" async defer></script>
+<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap'}" async defer></script>
 <script>
 function validateTimetable(form) {
     const start = form.querySelector('#startTime').value;
