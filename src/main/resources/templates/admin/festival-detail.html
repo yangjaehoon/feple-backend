@@ -390,8 +390,10 @@
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">이미지 (선택)</label>
-                        <input type="file" name="boothImageFile" accept="image/*"
+                        <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
+                               onchange="validateBoothImage(this)"
                                style="width:100%; padding:5px 0; font-size:12px;"/>
+                        <span id="boothImageError" style="display:none; font-size:11px; color:#e53e3e; font-weight:600; margin-top:3px; display:none;"></span>
                     </div>
                     <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
                 </form>
@@ -569,7 +571,35 @@
 </script>
 <script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap'}" async defer></script>
 <script>
+function validateBoothImage(input) {
+    const errEl = document.getElementById('boothImageError');
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif'];
+    const maxBytes = 10 * 1024 * 1024;
+    if (!input.files || !input.files[0]) { errEl.style.display = 'none'; return true; }
+    const file = input.files[0];
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!allowed.includes(ext)) {
+        errEl.textContent = '⚠ jpg, jpeg, png, gif 파일만 업로드할 수 있습니다.';
+        errEl.style.display = 'block';
+        input.value = '';
+        return false;
+    }
+    if (file.size > maxBytes) {
+        errEl.textContent = '⚠ 파일 크기는 10MB를 초과할 수 없습니다.';
+        errEl.style.display = 'block';
+        input.value = '';
+        return false;
+    }
+    errEl.style.display = 'none';
+    return true;
+}
+
 function validateBoothPos() {
+    const imageInput = document.getElementById('boothImageFile');
+    if (imageInput && imageInput.files && imageInput.files[0] && !validateBoothImage(imageInput)) {
+        imageInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
     if (!document.getElementById('boothLat').value) {
         const label = document.getElementById('boothPosLabel');
         label.textContent = '⚠ 지도를 클릭하여 부스 위치를 먼저 선택해주세요.';
