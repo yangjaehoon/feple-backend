@@ -366,6 +366,7 @@
                 <!-- 부스 추가 폼 -->
                 <form th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
                       enctype="multipart/form-data"
+                      onsubmit="return validateBoothPos()"
                       style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:14px;">
                     <input type="hidden" id="boothLat" name="latitude"/>
                     <input type="hidden" id="boothLng" name="longitude"/>
@@ -396,7 +397,9 @@
                 </form>
 
                 <!-- 지도 -->
-                <div id="boothMap" style="width:100%; aspect-ratio:1/1; border-radius:12px; border:1px solid var(--border); margin-bottom:16px;"></div>
+                <div id="boothMapWrap" style="border-radius:12px; border:1px solid var(--border); margin-bottom:8px; overflow:hidden;">
+                    <div id="boothMap" style="width:100%; aspect-ratio:1/1;"></div>
+                </div>
                 <p id="boothPosLabel" style="font-size:12px; color:var(--muted); margin-bottom:16px;">지도를 클릭하여 부스 위치를 선택하세요.</p>
 
                 <!-- 부스 목록 -->
@@ -550,8 +553,11 @@
             const lng = e.latLng.lng();
             document.getElementById('boothLat').value = lat;
             document.getElementById('boothLng').value = lng;
-            document.getElementById('boothPosLabel').textContent = '선택된 위치: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
-            document.getElementById('boothPosLabel').style.color = '#3b5bdb';
+            const label = document.getElementById('boothPosLabel');
+            label.textContent = '선택된 위치: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+            label.style.color = '#3b5bdb';
+            label.style.fontWeight = 'normal';
+            document.getElementById('boothMapWrap').style.borderColor = 'var(--border)';
             if (selectedMarker) selectedMarker.map = null;
             selectedMarker = new google.maps.marker.AdvancedMarkerElement({
                 position: e.latLng,
@@ -563,6 +569,19 @@
 </script>
 <script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap'}" async defer></script>
 <script>
+function validateBoothPos() {
+    if (!document.getElementById('boothLat').value) {
+        const label = document.getElementById('boothPosLabel');
+        label.textContent = '⚠ 지도를 클릭하여 부스 위치를 먼저 선택해주세요.';
+        label.style.color = '#e53e3e';
+        label.style.fontWeight = '600';
+        document.getElementById('boothMapWrap').style.borderColor = '#e53e3e';
+        document.getElementById('boothMapWrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    return true;
+}
+
 function validateTimetable(form) {
     const start = form.querySelector('#startTime').value;
     const end = form.querySelector('#endTime').value;
