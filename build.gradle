@@ -54,6 +54,7 @@ dependencies {
 	implementation 'com.bucket4j:bucket4j-core:8.10.1'
 
 	implementation platform("software.amazon.awssdk:bom:2.25.1")
+	implementation "software.amazon.awssdk:sesv2"
 
 }
 

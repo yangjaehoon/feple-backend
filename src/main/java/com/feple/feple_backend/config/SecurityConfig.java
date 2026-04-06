@@ -74,6 +74,7 @@ public class SecurityConfig {
                                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/auth/**").permitAll()
+                                                .requestMatchers("/reset-password", "/reset-password/**").permitAll()
                                                 .requestMatchers("/actuator/health").permitAll()
                                                 .requestMatchers("/admin/**").permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()

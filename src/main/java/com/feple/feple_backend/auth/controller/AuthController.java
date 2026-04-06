@@ -1,12 +1,14 @@
 package com.feple.feple_backend.auth.controller;
 
 import com.feple.feple_backend.auth.dto.AuthResponseDto;
+import com.feple.feple_backend.auth.dto.ForgotPasswordRequest;
 import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RefreshRequest;
 import com.feple.feple_backend.auth.dto.RegisterRequest;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
+import com.feple.feple_backend.auth.service.PasswordResetService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -31,6 +33,7 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final LoginRateLimiter loginRateLimiter;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/kakao")
     public Mono<AuthResponseDto> kakaoLogin(
@@ -89,6 +92,16 @@ public class AuthController {
 
         UserResponseDto userDto = userService.getUser(userId);
         return ResponseEntity.ok(new AuthResponseDto(userDto, newAccessToken, newRefreshToken));
+    }
+
+    /**
+     * 비밀번호 재설정 이메일 발송.
+     * 가입된 이메일이 없어도 동일한 응답 반환 (이메일 열거 공격 방지).
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        passwordResetService.requestReset(req.getEmail());
+        return ResponseEntity.ok(Map.of("message", "가입된 이메일로 비밀번호 재설정 링크를 발송했습니다."));
     }
 
     @PostMapping("/logout")
