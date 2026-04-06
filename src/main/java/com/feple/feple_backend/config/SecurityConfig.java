@@ -1,50 +1,19 @@
-//package com.feple.feple_backend.config;
-//
-//import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-//import org.springframework.security.web.SecurityFilterChain;
-//
-//import static org.springframework.security.config.Customizer.withDefaults;
-//
-//@Configuration
-//public class SecurityConfig {
-//
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (POST 테스트 편하게)
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(PathRequest.toH2Console()).permitAll()
-//
-//                        .anyRequest().permitAll() // 모든 요청 허용
-//                )
-//                .httpBasic(httpBasic -> httpBasic.disable())
-//                .formLogin(form -> form.disable())
-//                .headers(headers -> headers
-//                        // 프레임 안에 H2 콘솔이 뜰 수 있도록 Frame-Options 비활성화
-//                        .frameOptions(frame -> frame.disable())
-//                ).httpBasic(withDefaults());
-//
-//        return http.build();
-//    }
-//}
-
 package com.feple.feple_backend.config;
-
-// import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // 이 import도 제거
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -61,54 +30,94 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final JwtProvider jwtProvider;
+    private final JwtProvider jwtProvider;
 
-        @Value("${app.cors.allowed-origins:http://localhost:8080}")
-        private String allowedOrigins;
+    @Value("${app.cors.allowed-origins:http://localhost:8080}")
+    private String allowedOrigins;
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http
-                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                                .csrf(csrf -> csrf.disable())
-                                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/auth/**").permitAll()
-                                                .requestMatchers("/actuator/health").permitAll()
-                                                .requestMatchers("/admin/**").permitAll()
-                                                .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
-                                                // 조회는 비로그인 허용, 쓰기/삭제는 인증 필요
-                                                .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
-                                                                "/posts/**", "/comments/**")
-                                                .permitAll()
-                                                .anyRequest().authenticated())
-                                .httpBasic(hb -> hb.disable())
-                                .formLogin(fl -> fl.disable())
-                                .exceptionHandling(ex -> ex
-                                                .authenticationEntryPoint((req, res, e) ->
-                                                                res.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
-                                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
-                                                UsernamePasswordAuthenticationFilter.class);
+    @Value("${app.admin.username:admin}")
+    private String adminUsername;
 
-                return http.build();
-        }
+    @Value("${app.admin.password}")
+    private String adminPassword;
 
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
-                CorsConfiguration config = new CorsConfiguration();
-                List<String> origins = Arrays.asList(allowedOrigins.split(","));
-                config.setAllowedOriginPatterns(origins);
-                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-                config.setAllowedHeaders(List.of("*"));
-                config.setAllowCredentials(true);
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", config);
-                return source;
-        }
+    // ── 1. 관리자 페이지용 FilterChain (세션 기반 폼 로그인, CSRF 활성화) ──
+    @Bean
+    @Order(1)
+    public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
+                .anyRequest().hasRole("ADMIN"))
+            .formLogin(form -> form
+                .loginPage("/admin/login")
+                .loginProcessingUrl("/admin/login")
+                .defaultSuccessUrl("/admin/festivals", true)
+                .failureUrl("/admin/login?error=true")
+                .permitAll())
+            .logout(logout -> logout
+                .logoutUrl("/admin/logout")
+                .logoutSuccessUrl("/admin/login?logout=true")
+                .permitAll())
+            .sessionManagement(sm -> sm
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .maximumSessions(5));
 
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
-        }
+        return http.build();
+    }
+
+    // ── 2. API용 FilterChain (JWT Stateless) ──
+    @Bean
+    @Order(2)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
+                .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
+                    "/posts/**", "/comments/**").permitAll()
+                .anyRequest().authenticated())
+            .httpBasic(hb -> hb.disable())
+            .formLogin(fl -> fl.disable())
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((req, res, e) ->
+                    res.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
+            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
+                UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public UserDetailsService adminUserDetailsService(PasswordEncoder encoder) {
+        var admin = User.builder()
+            .username(adminUsername)
+            .password(encoder.encode(adminPassword))
+            .roles("ADMIN")
+            .build();
+        return new InMemoryUserDetailsManager(admin);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        config.setAllowedOriginPatterns(origins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
