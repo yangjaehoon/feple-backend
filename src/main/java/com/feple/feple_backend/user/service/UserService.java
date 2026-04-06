@@ -93,6 +93,35 @@ public class UserService {
     }
 
     @Transactional
+    public User registerOrLoginFirebase(String uid, String email, String displayName) {
+        return userRepository.findByProviderAndOauthId(AuthProvider.FIREBASE, uid)
+                .orElseGet(() -> {
+                    // 닉네임: displayName 있으면 사용, 없으면 uid 앞 8자리
+                    String base = (displayName != null && !displayName.isBlank())
+                            ? displayName : "User" + uid.substring(0, Math.min(uid.length(), 8));
+                    String nickname = uniqueNickname(base.trim());
+                    User user = User.builder()
+                            .email(email)
+                            .nickname(nickname)
+                            .oauthId(uid)
+                            .provider(AuthProvider.FIREBASE)
+                            .build();
+                    return userRepository.save(user);
+                });
+    }
+
+    private String uniqueNickname(String base) {
+        if (base.length() > 8) base = base.substring(0, 8);
+        if (!userRepository.existsByNickname(base)) return base;
+        // 중복이면 숫자 suffix 추가
+        for (int i = 2; i <= 999; i++) {
+            String candidate = base.substring(0, Math.min(base.length(), 6)) + i;
+            if (!userRepository.existsByNickname(candidate)) return candidate;
+        }
+        return base + System.currentTimeMillis() % 10000;
+    }
+
+    @Transactional
     public User registerLocal(RegisterRequest req) {
         if (userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");

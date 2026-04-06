@@ -42,9 +42,8 @@ app:
       key: ${GOOGLE_MAPS_KEY:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
-  base-url: ${APP_BASE_URL:http://localhost:8080}
-  mail:
-    from: ${MAIL_FROM:noreply@feple.com}
+  firebase:
+    credentials: ${FIREBASE_CREDENTIALS:}
 
 file:
   upload-dir: uploads/posters

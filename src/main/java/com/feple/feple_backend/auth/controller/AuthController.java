@@ -1,14 +1,15 @@
 package com.feple.feple_backend.auth.controller;
 
 import com.feple.feple_backend.auth.dto.AuthResponseDto;
-import com.feple.feple_backend.auth.dto.ForgotPasswordRequest;
+import com.feple.feple_backend.auth.dto.FirebaseLoginRequest;
 import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RefreshRequest;
 import com.feple.feple_backend.auth.dto.RegisterRequest;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
-import com.feple.feple_backend.auth.service.PasswordResetService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -33,7 +34,6 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final LoginRateLimiter loginRateLimiter;
-    private final PasswordResetService passwordResetService;
 
     @PostMapping("/kakao")
     public Mono<AuthResponseDto> kakaoLogin(
@@ -51,6 +51,25 @@ public class AuthController {
                     refreshTokenService.save(user.getId(), refreshToken);
                     return new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken);
                 });
+    }
+
+    /** Firebase ID 토큰 검증 후 앱 JWT 발급 (이메일/비밀번호 Firebase 로그인) */
+    @PostMapping("/firebase")
+    public ResponseEntity<AuthResponseDto> firebaseLogin(@Valid @RequestBody FirebaseLoginRequest req) {
+        try {
+            FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(req.getIdToken());
+            String uid = decoded.getUid();
+            String email = decoded.getEmail();
+            String name = decoded.getName();
+
+            User user = userService.registerOrLoginFirebase(uid, email, name);
+            String accessToken = jwtProvider.createAccessToken(user.getId());
+            String refreshToken = jwtProvider.createRefreshToken(user.getId());
+            refreshTokenService.save(user.getId(), refreshToken);
+            return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Firebase 인증 실패: " + e.getMessage());
+        }
     }
 
     @PostMapping("/register")
@@ -92,16 +111,6 @@ public class AuthController {
 
         UserResponseDto userDto = userService.getUser(userId);
         return ResponseEntity.ok(new AuthResponseDto(userDto, newAccessToken, newRefreshToken));
-    }
-
-    /**
-     * 비밀번호 재설정 이메일 발송.
-     * 가입된 이메일이 없어도 동일한 응답 반환 (이메일 열거 공격 방지).
-     */
-    @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
-        passwordResetService.requestReset(req.getEmail());
-        return ResponseEntity.ok(Map.of("message", "가입된 이메일로 비밀번호 재설정 링크를 발송했습니다."));
     }
 
     @PostMapping("/logout")
