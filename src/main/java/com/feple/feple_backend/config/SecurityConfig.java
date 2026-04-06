@@ -36,6 +36,7 @@ package com.feple.feple_backend.config;
 // import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // 이 import도 제거
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -51,6 +52,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
+
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -59,6 +62,9 @@ import java.util.List;
 public class SecurityConfig {
 
         private final JwtProvider jwtProvider;
+
+        @Value("${app.cors.allowed-origins:http://localhost:8080}")
+        private String allowedOrigins;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -91,7 +97,8 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOriginPatterns(List.of("*"));
+                List<String> origins = Arrays.asList(allowedOrigins.split(","));
+                config.setAllowedOriginPatterns(origins);
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
                 config.setAllowCredentials(true);
