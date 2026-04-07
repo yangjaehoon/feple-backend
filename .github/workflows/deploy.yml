@@ -19,9 +19,11 @@ jobs:
           distribution: 'temurin'
 
       - name: Create application-local.yaml
+        env:
+          APPLICATION_LOCAL_YAML: ${{ secrets.APPLICATION_LOCAL_YAML }}
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.APPLICATION_LOCAL_YAML }}" > src/main/resources/application-local.yaml
+          printf '%s' "$APPLICATION_LOCAL_YAML" > src/main/resources/application-local.yaml
 
       - name: Build with Gradle
         run: ./gradlew bootJar -x test
