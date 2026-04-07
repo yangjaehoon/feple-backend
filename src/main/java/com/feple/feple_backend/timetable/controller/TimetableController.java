@@ -21,18 +21,4 @@ public class TimetableController {
         return ResponseEntity.ok(timetableService.getEntries(festivalId));
     }
 
-    @PostMapping
-    public ResponseEntity<TimetableEntryResponse> createEntry(
-            @PathVariable Long festivalId,
-            @RequestBody TimetableEntryRequest req) {
-        return ResponseEntity.ok(timetableService.createEntry(festivalId, req));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEntry(
-            @PathVariable Long festivalId,
-            @PathVariable Long id) {
-        timetableService.deleteEntry(id);
-        return ResponseEntity.noContent().build();
-    }
 }

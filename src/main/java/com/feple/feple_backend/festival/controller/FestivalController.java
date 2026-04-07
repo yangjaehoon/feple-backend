@@ -20,12 +20,6 @@ public class FestivalController {
 
     private final FestivalService festivalService;
 
-    @PostMapping
-    public ResponseEntity<Long> createFestival(@RequestBody FestivalRequestDto dto) {
-        Long id = festivalService.createFestival(dto);
-        return ResponseEntity.ok(id);
-    }
-
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
             @RequestParam(required = false) List<Genre> genres,

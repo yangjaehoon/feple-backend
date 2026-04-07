@@ -36,8 +36,10 @@ public class AuthController {
 
     @PostMapping("/kakao")
     public Mono<AuthResponseDto> kakaoLogin(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+            HttpServletRequest httpRequest
     ) {
+        loginRateLimiter.check(getClientIp(httpRequest));
         String kakaoAccessToken = authorization.startsWith("Bearer ")
                 ? authorization.substring(7)
                 : authorization;
@@ -71,7 +73,7 @@ public class AuthController {
             refreshTokenService.save(user.getId(), refreshToken);
             return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Firebase 인증 실패: " + e.getMessage());
+            throw new IllegalArgumentException("인증에 실패했습니다. 다시 로그인해주세요.");
         }
     }
 
@@ -91,7 +93,9 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponseDto> refresh(@RequestBody RefreshRequest req) {
+    public ResponseEntity<AuthResponseDto> refresh(@RequestBody RefreshRequest req,
+                                                   HttpServletRequest httpRequest) {
+        loginRateLimiter.check(getClientIp(httpRequest));
         if (!jwtProvider.isRefreshToken(req.getRefreshToken())) {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
