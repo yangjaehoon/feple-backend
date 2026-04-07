@@ -60,13 +60,19 @@ public class JwtProvider {
     }
 
 
+    /** access 토큰인 경우에만 userId 반환, 아니면 예외 */
     public Long parseUserId(String token) {
-        String sub = Jwts.parser()
+        var payload = Jwts.parser()
                 .verifyWith(key())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
-        return Long.valueOf(sub);
+                .getPayload();
+
+        String type = payload.get("type", String.class);
+        if (!"access".equals(type)) {
+            throw new IllegalArgumentException("액세스 토큰이 아닙니다.");
+        }
+
+        return Long.valueOf(payload.getSubject());
     }
 }

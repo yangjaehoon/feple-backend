@@ -8,12 +8,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/artists/{artistId}/photos")
 public class ArtistPhotoController {
+
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/gif", "image/webp"
+    );
 
     private final S3PresignService s3PresignService;
     private final ArtistPhotoService artistPhotoService;
@@ -24,7 +30,14 @@ public class ArtistPhotoController {
             @PathVariable Long artistId,
             @RequestBody PresignRequest req
     ) {
-        String objectKey = "artist-photos/" + artistId + "/" + UUID.randomUUID() + "." + req.extension();
+        String ext = req.extension() == null ? "" : req.extension().toLowerCase();
+        if (!ALLOWED_EXTENSIONS.contains(ext)) {
+            throw new IllegalArgumentException("허용되지 않는 파일 확장자입니다. (jpg, jpeg, png, gif, webp 만 가능)");
+        }
+        if (!ALLOWED_CONTENT_TYPES.contains(req.contentType())) {
+            throw new IllegalArgumentException("허용되지 않는 Content-Type입니다.");
+        }
+        String objectKey = "artist-photos/" + artistId + "/" + UUID.randomUUID() + "." + ext;
         return s3PresignService.presignPut(objectKey, req.contentType());
     }
 
