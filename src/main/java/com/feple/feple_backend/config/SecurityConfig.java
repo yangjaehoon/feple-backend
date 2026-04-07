@@ -1,5 +1,6 @@
 package com.feple.feple_backend.config;
 
+import com.feple.feple_backend.admin.AdminLoginFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
+    private final AdminLoginFailureHandler adminLoginFailureHandler;
 
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
@@ -54,7 +56,7 @@ public class SecurityConfig {
                 .loginPage("/admin/login")
                 .loginProcessingUrl("/admin/login")
                 .defaultSuccessUrl("/admin/festivals", true)
-                .failureUrl("/admin/login?error=true")
+                .failureHandler(adminLoginFailureHandler)
                 .permitAll())
             .logout(logout -> logout
                 .logoutUrl("/admin/logout")

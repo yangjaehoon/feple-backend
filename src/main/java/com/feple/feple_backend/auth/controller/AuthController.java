@@ -4,7 +4,6 @@ import com.feple.feple_backend.auth.dto.AuthResponseDto;
 import com.feple.feple_backend.auth.dto.FirebaseLoginRequest;
 import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RefreshRequest;
-import com.feple.feple_backend.auth.dto.RegisterRequest;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
@@ -55,7 +54,11 @@ public class AuthController {
 
     /** Firebase ID 토큰 검증 후 앱 JWT 발급 (이메일/비밀번호 Firebase 로그인) */
     @PostMapping("/firebase")
-    public ResponseEntity<AuthResponseDto> firebaseLogin(@Valid @RequestBody FirebaseLoginRequest req) {
+    public ResponseEntity<AuthResponseDto> firebaseLogin(
+            @Valid @RequestBody FirebaseLoginRequest req,
+            HttpServletRequest httpRequest
+    ) {
+        loginRateLimiter.check(getClientIp(httpRequest));
         try {
             FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(req.getIdToken());
             String uid = decoded.getUid();
@@ -70,15 +73,6 @@ public class AuthController {
         } catch (Exception e) {
             throw new IllegalArgumentException("Firebase 인증 실패: " + e.getMessage());
         }
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponseDto> register(@Valid @RequestBody RegisterRequest req) {
-        User user = userService.registerLocal(req);
-        String accessToken = jwtProvider.createAccessToken(user.getId());
-        String refreshToken = jwtProvider.createRefreshToken(user.getId());
-        refreshTokenService.save(user.getId(), refreshToken);
-        return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
     }
 
     @PostMapping("/login")
