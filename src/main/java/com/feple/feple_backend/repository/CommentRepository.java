@@ -2,6 +2,8 @@ package com.feple.feple_backend.repository;
 
 import com.feple.feple_backend.domain.comment.Comment;
 import com.feple.feple_backend.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,7 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostIdOrderByCreatedAtAsc(Long postId);
+    Page<Comment> findByPostIdOrderByCreatedAtAsc(Long postId, Pageable pageable);
     List<Comment> findByUser(User user);
     long countByUser(User user);
 

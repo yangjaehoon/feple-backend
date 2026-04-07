@@ -9,6 +9,7 @@ import com.feple.feple_backend.dto.comment.CreateCommentDto;
 import com.feple.feple_backend.service.CommentService;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +46,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPost(Long postId) {
-        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId)
+        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, 200))
                 .stream()
-                .map(c-> new CommentResponseDto(
+                .map(c -> new CommentResponseDto(
                         c.getId(),
                         c.getPost().getId(),
                         c.getUser().getId(),

@@ -70,7 +70,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}/liked-festivals")
-    public ResponseEntity<List<FestivalResponseDto>> getLikedFestivals(@PathVariable Long id) {
+    public ResponseEntity<List<FestivalResponseDto>> getLikedFestivals(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        if (!id.equals(userId)) throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
         return ResponseEntity.ok(userService.getLikedFestivals(id));
     }
 
@@ -80,12 +83,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}/posts")
-    public ResponseEntity<List<PostResponseDto>> getMyPosts(@PathVariable Long id) {
+    public ResponseEntity<List<PostResponseDto>> getMyPosts(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        if (!id.equals(userId)) throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
         return ResponseEntity.ok(userService.getMyPosts(id));
     }
 
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<MyCommentResponseDto>> getMyComments(@PathVariable Long id) {
+    public ResponseEntity<List<MyCommentResponseDto>> getMyComments(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        if (!id.equals(userId)) throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
         return ResponseEntity.ok(userService.getMyComments(id));
     }
 

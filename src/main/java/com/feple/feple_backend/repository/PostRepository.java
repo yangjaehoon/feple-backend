@@ -18,8 +18,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType);
     List<Post> findByArtist(Artist artist);
     List<Post> findByArtistOrderByCreatedAtDesc(Artist artist);
+    org.springframework.data.domain.Page<Post> findByArtistOrderByCreatedAtDesc(Artist artist, Pageable pageable);
     List<Post> findByFestival(Festival festival);
     List<Post> findByFestivalOrderByCreatedAtDesc(Festival festival);
+    org.springframework.data.domain.Page<Post> findByFestivalOrderByCreatedAtDesc(Festival festival, Pageable pageable);
     List<Post> findByUser(User user);
     long countByUser(User user);
 

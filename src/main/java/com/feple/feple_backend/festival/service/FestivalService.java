@@ -63,6 +63,7 @@ public class FestivalService {
                 .stream()
                 .filter(f -> genres == null || genres.isEmpty() || !Collections.disjoint(f.getGenres(), genres))
                 .filter(f -> regions == null || regions.isEmpty() || regions.contains(f.getRegion()))
+                .limit(200)
                 .map(this::toDto)
                 .toList();
     }

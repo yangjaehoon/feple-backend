@@ -36,7 +36,9 @@ public class ArtistService {
     }
 
     public List<ArtistResponseDto> getAllArtists() {
-        return artistRepository.findAllByOrderByWeeklyScoreDescIdAsc().stream()
+        return artistRepository.findAll(PageRequest.of(0, 200,
+                        Sort.by(Sort.Direction.DESC, "weeklyScore").and(Sort.by(Sort.Direction.ASC, "id"))))
+                .stream()
                 .map(this::toDto)
                 .toList();
     }
