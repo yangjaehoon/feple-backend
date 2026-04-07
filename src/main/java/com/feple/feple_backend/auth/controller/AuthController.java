@@ -63,11 +63,16 @@ public class AuthController {
         loginRateLimiter.check(getClientIp(httpRequest));
         try {
             FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(req.getIdToken());
+
+            // 이메일 인증 확인
+            Boolean emailVerified = (Boolean) decoded.getClaims().get("email_verified");
+            if (emailVerified == null || !emailVerified) {
+                throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
+            }
+
             String uid = decoded.getUid();
             String email = decoded.getEmail();
-            // 회원가입 시 Flutter 앱이 닉네임을 직접 전달 (토큰 갱신 없이 안전하게 사용)
-            String name = (req.getNickname() != null && !req.getNickname().isBlank())
-                    ? req.getNickname() : decoded.getName();
+            String name = decoded.getName();
 
             User user = userService.registerOrLoginFirebase(uid, email, name);
             String accessToken = jwtProvider.createAccessToken(user.getId());
