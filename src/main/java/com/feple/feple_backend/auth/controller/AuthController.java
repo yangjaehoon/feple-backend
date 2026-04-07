@@ -65,7 +65,9 @@ public class AuthController {
             FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(req.getIdToken());
             String uid = decoded.getUid();
             String email = decoded.getEmail();
-            String name = decoded.getName();
+            // 회원가입 시 Flutter 앱이 닉네임을 직접 전달 (토큰 갱신 없이 안전하게 사용)
+            String name = (req.getNickname() != null && !req.getNickname().isBlank())
+                    ? req.getNickname() : decoded.getName();
 
             User user = userService.registerOrLoginFirebase(uid, email, name);
             String accessToken = jwtProvider.createAccessToken(user.getId());
