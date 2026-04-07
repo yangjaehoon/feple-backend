@@ -3,6 +3,8 @@ package com.feple.feple_backend.global.exception;
 import com.feple.feple_backend.auth.ratelimit.TooManyRequestsException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +17,8 @@ import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // 리소스를 차지 못했을 때 (사용자 없음)
     @ExceptionHandler(NoSuchElementException.class)
@@ -74,14 +78,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(body);
     }
 
-    // 그 외 에러
+    // 그 외 에러 - 내부 메시지 노출 금지, 서버 로그에만 기록
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("error", "Internal Server Error");
-        body.put("message", ex.getMessage());
+        body.put("message", "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }

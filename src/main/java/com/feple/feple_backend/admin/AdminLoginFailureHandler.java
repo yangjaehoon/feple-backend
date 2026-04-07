@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,16 +12,19 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
- * 관리자 로그인 실패 횟수를 IP 기준으로 제한한다.
+ * 관리자 로그인 실패 횟수를 실제 TCP 연결 IP 기준으로 제한한다.
  * 10분 동안 최대 5회 실패 허용, 초과 시 429 응답.
  */
 @Component
 public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final Cache<String, Bucket> cache = Caffeine.newBuilder()
+            .expireAfterAccess(15, TimeUnit.MINUTES)
+            .maximumSize(5_000)
+            .build();
 
     public AdminLoginFailureHandler() {
         setDefaultFailureUrl("/admin/login?error=true");
@@ -29,8 +34,8 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, jakarta.servlet.ServletException {
-        String ip = getClientIp(request);
-        Bucket bucket = buckets.computeIfAbsent(ip, k -> Bucket.builder()
+        String ip = request.getRemoteAddr();
+        Bucket bucket = cache.get(ip, k -> Bucket.builder()
                 .addLimit(Bandwidth.builder()
                         .capacity(5)
                         .refillGreedy(5, Duration.ofMinutes(10))
@@ -43,11 +48,5 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
         }
 
         super.onAuthenticationFailure(request, response, exception);
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isBlank()) return request.getRemoteAddr();
-        return ip.split(",")[0].trim();
     }
 }

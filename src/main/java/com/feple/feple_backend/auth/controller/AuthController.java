@@ -120,12 +120,7 @@ public class AuthController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isBlank()) {
-            ip = request.getRemoteAddr();
-        } else {
-            ip = ip.split(",")[0].trim(); // 프록시 체인에서 첫 번째 IP
-        }
-        return ip;
+        // X-Forwarded-For는 클라이언트가 위조 가능하므로 실제 TCP 연결 IP를 사용
+        return request.getRemoteAddr();
     }
 }

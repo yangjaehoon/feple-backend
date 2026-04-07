@@ -52,6 +52,7 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
 	implementation 'com.bucket4j:bucket4j-core:8.10.1'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
 
 	implementation platform("software.amazon.awssdk:bom:2.25.1")
 	implementation 'com.google.firebase:firebase-admin:9.3.0'
