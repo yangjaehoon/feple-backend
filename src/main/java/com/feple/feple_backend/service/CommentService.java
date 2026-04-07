@@ -9,4 +9,5 @@ public interface CommentService {
     CommentResponseDto createComment(CreateCommentDto dto, Long userId);
     List<CommentResponseDto> getCommentsByPost(Long postId);
     void deleteComment(Long commentId);
+    void deleteOwnComment(Long commentId, Long requestUserId);
 }

@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.access.AccessDeniedException;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -129,6 +131,19 @@ public class PostService {
                 .stream().map(PostResponseDto::from).toList();
     }
 
+    /** 일반 유저용 - 본인 게시글만 삭제 가능 */
+    @Transactional
+    public void deleteOwnPost(Long postId, Long requestUserId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + postId));
+        if (!post.getUser().getId().equals(requestUserId)) {
+            throw new AccessDeniedException("본인의 게시글만 삭제할 수 있습니다.");
+        }
+        postLikeRepository.deleteByPostId(postId);
+        postRepository.deleteById(postId);
+    }
+
+    /** 관리자용 - 소유권 검사 없이 삭제 */
     @Transactional
     public void deletePost(Long postId) {
         postLikeRepository.deleteByPostId(postId);

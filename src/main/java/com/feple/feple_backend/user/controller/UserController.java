@@ -11,7 +11,9 @@ import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,11 +25,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-
-    @PostMapping
-    public ResponseEntity<Long> createUser(@RequestBody OAuthUserInfo dto) {
-        return ResponseEntity.ok(userService.createUser(dto));
-    }
 
     @GetMapping("/check-nickname")
     public ResponseEntity<java.util.Map<String, Object>> checkNickname(
@@ -41,15 +38,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getUser(id));
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable Long id,
-            @RequestBody UpdateNicknameDto dto) {
+            @RequestBody UpdateNicknameDto dto,
+            @AuthenticationPrincipal Long userId) {
+        if (!id.equals(userId)) throw new AccessDeniedException("본인 정보만 수정할 수 있습니다.");
         UserResponseDto updated = userService.updateNickname(id, dto.getNickname());
         return ResponseEntity.ok(updated);
     }
@@ -57,7 +51,9 @@ public class UserController {
     @PostMapping("/{id}/profile-image")
     public ResponseEntity<UserResponseDto> updateProfileImage(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) throws java.io.IOException {
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal Long userId) throws java.io.IOException {
+        if (!id.equals(userId)) throw new AccessDeniedException("본인 정보만 수정할 수 있습니다.");
         return ResponseEntity.ok(userService.updateProfileImage(id, file));
     }
 
@@ -94,7 +90,9 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id,
+                                           @AuthenticationPrincipal Long userId) {
+        if (!id.equals(userId)) throw new AccessDeniedException("본인 계정만 삭제할 수 있습니다.");
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }

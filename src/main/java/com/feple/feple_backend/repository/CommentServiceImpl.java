@@ -9,6 +9,7 @@ import com.feple.feple_backend.dto.comment.CreateCommentDto;
 import com.feple.feple_backend.service.CommentService;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -59,6 +60,16 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteComment(Long commentId){
+        commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    public void deleteOwnComment(Long commentId, Long requestUserId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+        if (!comment.getUser().getId().equals(requestUserId)) {
+            throw new AccessDeniedException("본인의 댓글만 삭제할 수 있습니다.");
+        }
         commentRepository.deleteById(commentId);
     }
 }
