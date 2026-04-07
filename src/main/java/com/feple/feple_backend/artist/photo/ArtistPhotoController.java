@@ -3,7 +3,7 @@ package com.feple.feple_backend.artist.photo;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +24,6 @@ public class ArtistPhotoController {
     private final S3PresignService s3PresignService;
     private final ArtistPhotoService artistPhotoService;
 
-
     @PostMapping("/presign")
     public S3PresignService.PresignResult presign(
             @PathVariable Long artistId,
@@ -44,15 +43,19 @@ public class ArtistPhotoController {
     @PostMapping
     public ArtistPhotoResponseDto register(
             @PathVariable Long artistId,
-            @RequestBody RegisterPhotoRequestDto req
+            @RequestBody RegisterPhotoRequestDto req,
+            @AuthenticationPrincipal Long userId
     ) {
-        return artistPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description());
+        return artistPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), userId);
     }
 
+    /** 비인증 사용자도 사진 목록 조회 가능 (좋아요 여부는 false로 반환) */
     @GetMapping
-    public List<ArtistPhotoResponseDto> list(@PathVariable Long artistId) {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return artistPhotoService.list(artistId, userId);  // *** list(artistId, userId) 호출 ***
+    public List<ArtistPhotoResponseDto> list(
+            @PathVariable Long artistId,
+            @AuthenticationPrincipal Long userId
+    ) {
+        return artistPhotoService.list(artistId, userId);
     }
 
     public record PresignRequest(String contentType, String extension) {}
@@ -60,8 +63,8 @@ public class ArtistPhotoController {
     @DeleteMapping("/{photoId}")
     public ResponseEntity<Void> deletePhoto(
             @PathVariable Long artistId,
-            @PathVariable Long photoId) {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            @PathVariable Long photoId,
+            @AuthenticationPrincipal Long userId) {
         artistPhotoService.delete(photoId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -70,16 +73,16 @@ public class ArtistPhotoController {
     public ArtistPhotoResponseDto updatePhoto(
             @PathVariable Long artistId,
             @PathVariable Long photoId,
-            @RequestBody UpdatePhotoRequestDto req) {
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            @RequestBody UpdatePhotoRequestDto req,
+            @AuthenticationPrincipal Long userId) {
         return artistPhotoService.update(photoId, userId, req.title(), req.description());
     }
 
     @PostMapping("/{photoId}/like")
     public ResponseEntity<Map<String, Boolean>> toggleLike(
             @PathVariable Long photoId,
-            @PathVariable Long artistId) {  // artistId 검증용
-        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            @PathVariable Long artistId,
+            @AuthenticationPrincipal Long userId) {
         boolean success = artistPhotoService.toggleLike(photoId, userId);
         return ResponseEntity.ok(Map.of("success", success));
     }

@@ -4,7 +4,6 @@ import com.feple.feple_backend.artist.photo.like.ArtistPhotoLike;
 import com.feple.feple_backend.artist.photo.like.ArtistPhotoLikeRepository;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,15 +22,13 @@ public class ArtistPhotoService {
             String objectKey,
             String contentType,
             String title,
-            String description) {
+            String description,
+            Long userId) {
 
         String prefix = "artist-photos/" + artistId + "/";
         if (objectKey == null || !objectKey.startsWith(prefix)) {
             throw new IllegalArgumentException("Invalid objectKey");
         }
-
-        String principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        Long userId = Long.parseLong(principal);
 
         ArtistPhoto saved = artistPhotoRepository.save(
                 new ArtistPhoto(artistId, userId, objectKey, contentType, title, description));

@@ -49,6 +49,12 @@ public class SecurityConfig {
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                    "default-src 'self'; script-src 'self' 'unsafe-inline' https://maps.googleapis.com; " +
+                    "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
+                    "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com"))
+                .frameOptions(frame -> frame.deny()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
                 .anyRequest().hasRole("ADMIN"))
@@ -74,6 +80,10 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
+            .headers(headers -> headers
+                .contentTypeOptions(ct -> {})          // X-Content-Type-Options: nosniff
+                .frameOptions(frame -> frame.deny())   // X-Frame-Options: DENY
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'")))
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

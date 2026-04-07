@@ -331,7 +331,6 @@ public class UserService {
         }
         return UserResponseDto.builder()
                 .id(user.getId())
-                .email(user.getEmail())
                 .nickname(user.getNickname())
                 .profileImageUrl(imageUrl)
                 .build();
