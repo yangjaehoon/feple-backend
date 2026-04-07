@@ -40,7 +40,7 @@ public class FirebaseConfig {
                             new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))))
                     .build();
             FirebaseApp.initializeApp(options);
-            log.info("[Firebase] 초기화 완료 (project: feple-31f3f)");
+            log.info("[Firebase] 초기화 완료 (project: feple-99591)");
         } catch (Exception e) {
             log.error("[Firebase] 초기화 실패: {}", e.getMessage());
         }
