@@ -124,6 +124,17 @@ public class ArtistService {
         artist.update(artist.getName(), artist.getNameEn(), artist.getGenre(), imageKey);
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public void batchUpdateNameEn(List<Long> ids, List<String> nameEns) {
+        for (int i = 0; i < ids.size(); i++) {
+            Artist artist = artistRepository.findById(ids.get(i)).orElse(null);
+            if (artist != null) {
+                String nameEn = (i < nameEns.size()) ? nameEns.get(i).trim() : "";
+                artist.update(artist.getName(), nameEn.isEmpty() ? null : nameEn, artist.getGenre(), artist.getProfileImageKey());
+            }
+        }
+    }
+
     public void deleteArtist(Long id) {
         artistRepository.deleteById(id);
     }

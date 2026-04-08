@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/artists")
@@ -97,6 +98,15 @@ public class ArtistAdminController {
             dto.setProfileImageUrl(url);
         }
         artistService.updateArtist(id, dto);
+        return "redirect:/admin/artists";
+    }
+
+    @PostMapping("/batch-name-en")
+    public String batchUpdateNameEn(@RequestParam("artistIds") List<Long> artistIds,
+                                    @RequestParam("nameEns") List<String> nameEns,
+                                    RedirectAttributes ra) {
+        artistService.batchUpdateNameEn(artistIds, nameEns);
+        ra.addFlashAttribute("successMessage", "영어 이름이 저장되었습니다.");
         return "redirect:/admin/artists";
     }
 
