@@ -120,86 +120,78 @@
         </div>
 
         <!-- 참여 아티스트 -->
-        <div class="card">
+        <div id="artists" class="card">
             <div class="card-header">
                 <div class="card-title">
                     참여 아티스트
                     <span class="card-count" th:text="${participatingArtists.size() ?: 0}"></span>
                 </div>
-                <a class="btn btn-primary btn-sm"
-                   th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}">+ 추가</a>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button type="submit" form="batch-edit-form" class="btn btn-warning btn-sm"
+                            th:if="${!participatingArtists.isEmpty()}">💾 저장</button>
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}">+ 추가</a>
+                </div>
             </div>
 
-            <!-- 행별 편집 폼 (테이블 바깥, HTML5 form 속성으로 연결) -->
-            <div th:each="af : ${participatingArtists}" style="display:none;">
-                <form th:id="|edit-form-${af.artistFestivalId}|"
-                      th:action="@{/admin/festivals/{fId}/artists/{afId}/edit(fId=${festival.id}, afId=${af.artistFestivalId})}"
-                      method="post"></form>
-            </div>
-
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>순서</th>
-                        <th>아티스트</th>
-                        <th>장르</th>
-                        <th>스테이지</th>
-                        <th>저장</th>
-                        <th>삭제</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="af : ${participatingArtists}">
-                        <td>
-                            <input type="number" name="lineupOrder"
-                                   th:value="${af.lineupOrder}"
-                                   th:attr="form=|edit-form-${af.artistFestivalId}|"
-                                   style="width:55px; padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:13px; text-align:center;"/>
-                        </td>
-                        <td style="font-weight:600;" th:text="${af.artistName}"></td>
-                        <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
-                        <td>
-                            <th:block th:if="${!stages.isEmpty()}">
-                                <select name="stageName" class="stage-select"
-                                        th:attr="form=|edit-form-${af.artistFestivalId}|">
-                                    <option value="">— 미지정 —</option>
-                                    <option th:each="s : ${stages}"
-                                            th:value="${s.name}"
-                                            th:text="${s.name}"
-                                            th:selected="${s.name == af.stageName}"></option>
-                                </select>
-                            </th:block>
-                            <th:block th:if="${stages.isEmpty()}">
-                                <span style="font-size:12px; color:var(--muted);">스테이지 없음</span>
-                                <input type="hidden" name="stageName"
-                                       th:value="${af.stageName}"
-                                       th:attr="form=|edit-form-${af.artistFestivalId}|"/>
-                            </th:block>
-                        </td>
-                        <td>
-                            <button type="submit"
-                                    th:attr="form=|edit-form-${af.artistFestivalId}|"
-                                    class="btn btn-warning btn-sm">저장</button>
-                        </td>
-                        <td>
-                            <form th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
-                                  method="post">
-                                <button type="submit" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('삭제하시겠습니까?')">삭제</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
-                        <td colspan="6">참여 아티스트가 없습니다.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            <form id="batch-edit-form"
+                  th:action="@{/admin/festivals/{id}/artists/batch-edit(id=${festival.id})}"
+                  method="post">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>순서</th>
+                            <th>아티스트</th>
+                            <th>장르</th>
+                            <th>스테이지</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="af : ${participatingArtistsByName}">
+                            <td>
+                                <input type="hidden" name="afIds" th:value="${af.artistFestivalId}"/>
+                                <input type="number" name="lineupOrders"
+                                       th:value="${af.lineupOrder}"
+                                       style="width:55px; padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:13px; text-align:center;"/>
+                            </td>
+                            <td style="font-weight:600;" th:text="${af.artistName}"></td>
+                            <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
+                            <td>
+                                <th:block th:if="${!stages.isEmpty()}">
+                                    <select name="stageNames" class="stage-select">
+                                        <option value="">— 미지정 —</option>
+                                        <option th:each="s : ${stages}"
+                                                th:value="${s.name}"
+                                                th:text="${s.name}"
+                                                th:selected="${s.name == af.stageName}"></option>
+                                    </select>
+                                </th:block>
+                                <th:block th:if="${stages.isEmpty()}">
+                                    <span style="font-size:12px; color:var(--muted);">스테이지 없음</span>
+                                    <input type="hidden" name="stageNames" th:value="${af.stageName}"/>
+                                </th:block>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
+                                      method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
+                            <td colspan="5">참여 아티스트가 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
         </div>
 
         <!-- 타임테이블 -->
-        <div class="card">
+        <div id="timetable" class="card">
             <div class="card-header">
                 <div class="card-title">
                     🕐 타임테이블
@@ -260,17 +252,17 @@
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">아티스트</label>
-                        <th:block th:if="${!participatingArtists.isEmpty()}">
+                        <th:block th:if="${!participatingArtistsByName.isEmpty()}">
                             <select name="artistName" id="artistSelect" required onchange="onArtistChange(this)"
                                     style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
                                 <option value="" disabled selected>아티스트 선택</option>
-                                <option th:each="af : ${participatingArtists}"
+                                <option th:each="af : ${participatingArtistsByName}"
                                         th:value="${af.artistName}"
                                         th:text="${af.artistName}"
                                         th:attr="data-stage=${af.stageName}"></option>
                             </select>
                         </th:block>
-                        <th:block th:if="${participatingArtists.isEmpty()}">
+                        <th:block th:if="${participatingArtistsByName.isEmpty()}">
                             <input type="text" disabled placeholder="참여 아티스트를 먼저 추가하세요"
                                    style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f5f5f5;"/>
                         </th:block>
@@ -353,7 +345,7 @@
         </div>
 
         <!-- 부스 관리 -->
-        <div class="card">
+        <div id="booths" class="card">
             <div class="card-header">
                 <div class="card-title">
                     🏪 부스 관리

@@ -163,9 +163,14 @@ public class FestivalAdminController {
         List<ArtistFestivalResponse> participatingArtists =
                 artistFestivalService.getArtistFestivals(id);
 
+        List<ArtistFestivalResponse> participatingArtistsByName = participatingArtists.stream()
+                .sorted(java.util.Comparator.comparing(ArtistFestivalResponse::getArtistName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
         model.addAttribute("festival", festival);
         model.addAttribute("allArtists", allArtists);
         model.addAttribute("participatingArtists", participatingArtists);
+        model.addAttribute("participatingArtistsByName", participatingArtistsByName);
         model.addAttribute("timetableEntries", timetableService.getEntries(id));
         model.addAttribute("stages", stageService.getStages(id));
         model.addAttribute("booths", boothService.getBooths(id));
@@ -230,7 +235,7 @@ public class FestivalAdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#timetable";
     }
 
     @PostMapping("/{id}/timetable/{entryId}/delete")
@@ -239,7 +244,7 @@ public class FestivalAdminController {
                                        RedirectAttributes ra) {
         timetableService.deleteEntry(entryId);
         ra.addFlashAttribute("successMessage", "항목이 삭제되었습니다.");
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#timetable";
     }
 
     @GetMapping("/{id}/artists/list")
@@ -256,7 +261,22 @@ public class FestivalAdminController {
                                RedirectAttributes ra) {
         artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, lineupOrder, stageName);
         ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
-        return "redirect:/admin/festivals/" + festivalId;
+        return "redirect:/admin/festivals/" + festivalId + "#artists";
+    }
+
+    @PostMapping("/{festivalId}/artists/batch-edit")
+    public String batchUpdateLineup(@PathVariable Long festivalId,
+                                    @RequestParam("afIds") List<Long> afIds,
+                                    @RequestParam("lineupOrders") List<Integer> lineupOrders,
+                                    @RequestParam("stageNames") List<String> stageNames,
+                                    RedirectAttributes ra) {
+        for (int i = 0; i < afIds.size(); i++) {
+            String stage = (i < stageNames.size()) ? stageNames.get(i) : null;
+            Integer order = (i < lineupOrders.size()) ? lineupOrders.get(i) : null;
+            artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), order, stage);
+        }
+        ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
+        return "redirect:/admin/festivals/" + festivalId + "#artists";
     }
 
     @PostMapping("/{festivalId}/artists/{artistFestivalId}/delete")
@@ -265,7 +285,7 @@ public class FestivalAdminController {
             @PathVariable Long artistFestivalId) {
 
         artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
-        return "redirect:/admin/festivals/" + festivalId;
+        return "redirect:/admin/festivals/" + festivalId + "#artists";
     }
 
     // ── 스테이지 관리 ──────────────────────────────────────────────────────────
@@ -279,7 +299,7 @@ public class FestivalAdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#timetable";
     }
 
     @PostMapping("/{id}/stages/{stageId}/delete")
@@ -288,19 +308,19 @@ public class FestivalAdminController {
                               RedirectAttributes ra) {
         stageService.deleteStage(stageId);
         ra.addFlashAttribute("successMessage", "스테이지가 삭제되었습니다.");
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#timetable";
     }
 
     @PostMapping("/{id}/stages/{stageId}/up")
     public String moveStageUp(@PathVariable Long id, @PathVariable Long stageId) {
         stageService.moveUp(id, stageId);
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#timetable";
     }
 
     @PostMapping("/{id}/stages/{stageId}/down")
     public String moveStageDown(@PathVariable Long id, @PathVariable Long stageId) {
         stageService.moveDown(id, stageId);
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#timetable";
     }
 
     // ── 부스 관리 ──────────────────────────────────────────────────────────────
@@ -311,7 +331,7 @@ public class FestivalAdminController {
                               RedirectAttributes ra) throws IOException {
         if (dto.getLatitude() == null || dto.getLongitude() == null) {
             ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
-            return "redirect:/admin/festivals/" + id;
+            return "redirect:/admin/festivals/" + id + "#booths";
         }
         if (boothImageFile != null && !boothImageFile.isEmpty()) {
             try {
@@ -319,12 +339,12 @@ public class FestivalAdminController {
                 dto.setImageUrl(fileStorageService.buildUrl(key));
             } catch (Exception e) {
                 ra.addFlashAttribute("errorMessage", "이미지 업로드 실패: " + e.getMessage());
-                return "redirect:/admin/festivals/" + id;
+                return "redirect:/admin/festivals/" + id + "#booths";
             }
         }
         boothService.createBooth(id, dto);
         ra.addFlashAttribute("successMessage", "부스가 추가되었습니다.");
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#booths";
     }
 
     @PostMapping("/{id}/booths/{boothId}/delete")
@@ -333,7 +353,7 @@ public class FestivalAdminController {
                               RedirectAttributes ra) {
         boothService.deleteBooth(boothId);
         ra.addFlashAttribute("successMessage", "부스가 삭제되었습니다.");
-        return "redirect:/admin/festivals/" + id;
+        return "redirect:/admin/festivals/" + id + "#booths";
     }
 
 }

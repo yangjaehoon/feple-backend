@@ -11,6 +11,7 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.FileStorageService;
+import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class ArtistFestivalService {
     private final FestivalRepository festivalRepository;
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
+    private final TimetableRepository timetableRepository;
 
     public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
         return artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId)
@@ -95,7 +97,16 @@ public class ArtistFestivalService {
         if (!af.getFestival().getId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
+
+        // 스테이지가 변경되면 해당 아티스트의 타임테이블 스테이지도 함께 업데이트
+        String oldStage = af.getStageName();
         af.updateLineup(lineupOrder, stageName);
+
+        if (stageName != null && !stageName.equals(oldStage)) {
+            String artistName = af.getArtist().getName();
+            timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
+                    .forEach(entry -> entry.setStageName(stageName));
+        }
     }
 
     @Transactional
