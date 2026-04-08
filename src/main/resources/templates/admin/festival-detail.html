@@ -9,13 +9,12 @@
         .stage-row {
             display: flex; align-items: center; gap: 8px;
             padding: 6px 8px; border-radius: 8px;
-            background: #fff; border: 1px solid #e2e8f0;
-            margin-bottom: 6px;
+            background: #fff; margin-bottom: 6px;
         }
         .stage-row:last-child { margin-bottom: 0; }
         .stage-order-num {
             width: 22px; height: 22px; border-radius: 50%;
-            background: #3b5bdb; color: #fff;
+            color: #fff;
             display: flex; align-items: center; justify-content: center;
             font-size: 11px; font-weight: 700; flex-shrink: 0;
         }
@@ -205,7 +204,7 @@
                     <div style="font-size:13px; font-weight:700; color:#3b5bdb; margin-bottom:6px;">📋 스테이지 목록</div>
                     <div th:if="${stages.isEmpty()}" class="stage-empty">등록된 스테이지가 없습니다. 아래에서 추가해주세요.</div>
                     <div th:if="${!stages.isEmpty()}" style="margin-bottom:10px;">
-                        <div th:each="s, stat : ${stages}" class="stage-row">
+                        <div th:each="s, stat : ${stages}" class="stage-row" th:data-stage="${s.name}">
                             <div class="stage-order-num" th:text="${stat.index + 1}"></div>
                             <span class="stage-name" th:text="${s.name}"></span>
                             <!-- 위로 -->
@@ -295,6 +294,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
                 </form>
+                <div th:if="${timetableSuccess}" class="alert alert-success" style="margin-bottom:16px;" th:text="${timetableSuccess}"></div>
 
                 <!-- 목록 테이블 -->
                 <div class="table-wrap">
@@ -319,7 +319,7 @@
                             </tr>
                             <!-- 항목 행 -->
                             <tr>
-                                <td><span class="badge badge-genre" th:text="${entry.stageName}"></span></td>
+                                <td><span class="badge badge-stage" th:data-stage="${entry.stageName}" th:text="${entry.stageName}"></span></td>
                                 <td style="font-size:13px; white-space:nowrap;">
                                     <span style="font-weight:700; color:#2d3748;" th:text="${entry.startTime}"></span>
                                     <span style="color:var(--muted); margin:0 4px;">~</span>
@@ -624,6 +624,43 @@ function clearTimeError() {
     document.getElementById('startTime').style.borderColor = '';
     document.getElementById('endTime').style.borderColor = '';
 }
+
+// ── 스테이지 색상 ──
+const stageColors = [
+    { bg: '#3b5bdb', light: '#eef2ff', border: '#c5d0fa' },
+    { bg: '#e8590c', light: '#fff4e6', border: '#ffc9a0' },
+    { bg: '#2b8a3e', light: '#ebfbee', border: '#b2f2bb' },
+    { bg: '#be4bdb', light: '#f8f0fc', border: '#e599f7' },
+    { bg: '#1098ad', light: '#e6fcf5', border: '#96f2d7' },
+    { bg: '#f59f00', light: '#fff9db', border: '#ffe066' },
+    { bg: '#d6336c', light: '#fff0f6', border: '#fcc2d7' },
+    { bg: '#495057', light: '#f1f3f5', border: '#ced4da' },
+];
+(function applyStageColors() {
+    const stageMap = {};
+    document.querySelectorAll('.stage-row[data-stage]').forEach(function(row, i) {
+        const name = row.getAttribute('data-stage');
+        const c = stageColors[i % stageColors.length];
+        stageMap[name] = c;
+        row.style.borderLeft = '4px solid ' + c.bg;
+        row.style.background = c.light;
+        row.style.borderColor = c.border;
+        row.style.borderLeftColor = c.bg;
+        row.querySelector('.stage-order-num').style.background = c.bg;
+    });
+    document.querySelectorAll('.badge-stage[data-stage]').forEach(function(badge) {
+        const name = badge.getAttribute('data-stage');
+        const c = stageMap[name];
+        if (c) {
+            badge.style.background = c.bg;
+            badge.style.color = '#fff';
+            badge.style.padding = '3px 10px';
+            badge.style.borderRadius = '20px';
+            badge.style.fontSize = '12px';
+            badge.style.fontWeight = '600';
+        }
+    });
+})();
 
 function onArtistChange(select) {
     const opt = select.options[select.selectedIndex];
