@@ -20,8 +20,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -59,10 +62,26 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions) {
-        return festivalRepository.findAllByOrderByStartDateDesc()
-                .stream()
+        LocalDate today = LocalDate.now();
+
+        List<Festival> all = festivalRepository.findAll().stream()
                 .filter(f -> genres == null || genres.isEmpty() || !Collections.disjoint(f.getGenres(), genres))
                 .filter(f -> regions == null || regions.isEmpty() || regions.contains(f.getRegion()))
+                .toList();
+
+        // 진행 중 또는 예정: 시작일 오름차순 (가까운 날짜가 위)
+        List<Festival> upcoming = all.stream()
+                .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
+                .sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+
+        // 종료: 시작일 내림차순 (최근 종료가 위)
+        List<Festival> ended = all.stream()
+                .filter(f -> f.getEndDate() != null && f.getEndDate().isBefore(today))
+                .sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+
+        return Stream.concat(upcoming.stream(), ended.stream())
                 .limit(200)
                 .map(this::toDto)
                 .toList();
