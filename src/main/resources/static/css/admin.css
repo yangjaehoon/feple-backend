@@ -377,6 +377,26 @@ tbody td a:hover { text-decoration: underline; color: var(--primary); }
   background: var(--purple-lt) !important; color: #6D28D9 !important;
   border-color: #DDD6FE !important;
 }
+.badge-genre-band {
+  background: #dbeafe !important; color: #1e40af !important;
+  border-color: #93c5fd !important;
+}
+.badge-genre-hiphop {
+  background: #fef3c7 !important; color: #92400e !important;
+  border-color: #fcd34d !important;
+}
+.badge-genre-indie {
+  background: #d1fae5 !important; color: #065f46 !important;
+  border-color: #6ee7b7 !important;
+}
+.badge-genre-ballad {
+  background: #fce7f3 !important; color: #9d174d !important;
+  border-color: #f9a8d4 !important;
+}
+.badge-genre-rnb {
+  background: #ede9fe !important; color: #5b21b6 !important;
+  border-color: #c4b5fd !important;
+}
 .badge-order {
   background: var(--accent-lt) !important; color: #7a6000 !important;
   border-color: #f5e48a !important; font-family: monospace;
