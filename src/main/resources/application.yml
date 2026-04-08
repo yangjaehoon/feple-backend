@@ -23,6 +23,8 @@ spring:
 server:
   port: 8080
   servlet:
+    session:
+      timeout: 24h
     encoding:
       charset: UTF-8
       enabled: true
