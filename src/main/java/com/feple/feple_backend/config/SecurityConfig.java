@@ -51,7 +51,7 @@ public class SecurityConfig {
             .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
-                    "default-src 'self'; script-src 'self' 'unsafe-inline' '*.daumcdn.net' '*.kakao.com' https://maps.googleapis.com https://dapi.kakao.com http://dapi.kakao.com https://t1.daumcdn.net http://t1.daumcdn.net https://s1.daumcdn.net http://s1.daumcdn.net; " +
+                    "default-src 'self'; script-src 'self' 'unsafe-inline' https://dapi.kakao.com http://dapi.kakao.com https://t1.daumcdn.net http://t1.daumcdn.net https://s1.daumcdn.net http://s1.daumcdn.net https://maps.googleapis.com; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' data: https://fonts.gstatic.com; " +
                     "img-src 'self' data: https: http:; " +
