@@ -19,7 +19,6 @@
             </div>
         </div>
         <div class="page-actions">
-            <button type="submit" form="batch-name-en-form" class="btn btn-warning">💾 영어 이름 저장</button>
             <a class="btn btn-secondary" th:href="@{/admin/artists/photos}">🖼 사진 관리</a>
             <a class="btn btn-primary" th:href="@{/admin/artists/new}">+ 아티스트 등록</a>
         </div>
@@ -66,7 +65,6 @@
                 </form>
             </div>
 
-            <form id="batch-name-en-form" th:action="@{/admin/artists/batch-name-en}" method="post">
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -118,12 +116,8 @@
                                 </div>
                             </div>
                         </td>
-                        <td>
-                            <input type="hidden" name="artistIds" th:value="${artist.id}"/>
-                            <input type="text" name="nameEns" th:value="${artist.nameEn}"
-                                   placeholder="English Name"
-                                   style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:13px;"/>
-                        </td>
+                        <td style="font-size:13px; color:var(--muted);"
+                            th:text="${artist.nameEn != null and !artist.nameEn.isEmpty()} ? ${artist.nameEn} : '-'"></td>
                         <td>
                             <div class="cell-primary" th:text="${artist.followerCount}"></div>
                             <div class="cell-secondary">팔로워</div>
@@ -146,7 +140,6 @@
                     </tbody>
                 </table>
             </div>
-            </form>
         </div>
     </div>
 </div>
