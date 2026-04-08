@@ -30,8 +30,8 @@ server:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration-ms: 1800000      # 30분
-  refresh-token-expiration-ms: 604800000   # 7일
+  access-token-expiration-ms: 7200000       # 2시간
+  refresh-token-expiration-ms: 2592000000  # 30일
 
 app:
   s3:
