@@ -10,6 +10,7 @@ public class ArtistResponseDto {
 
     private Long id;
     private String name;
+    private String nameEn;
     private String genre;
     private String profileImageUrl;
     private int followerCount;
@@ -22,6 +23,7 @@ public class ArtistResponseDto {
         return ArtistResponseDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
+                .nameEn(artist.getNameEn())
                 .genre(artist.getGenre() != null ? artist.getGenre().getDisplayName() : null)
                 .profileImageUrl(imageUrl)
                 .followerCount(artist.getFollowerCount())

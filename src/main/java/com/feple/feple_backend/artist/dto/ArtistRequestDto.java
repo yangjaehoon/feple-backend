@@ -11,6 +11,7 @@ import lombok.*;
 public class ArtistRequestDto {
     private Long id;
     private String name;
+    private String nameEn;
     private ArtistGenre genre;
     private String profileImageUrl;
     private int followerCount;

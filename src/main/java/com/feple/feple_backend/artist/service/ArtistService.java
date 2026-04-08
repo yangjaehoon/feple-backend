@@ -28,6 +28,7 @@ public class ArtistService {
     public Long createArtist(ArtistRequestDto dto){
         Artist artist = Artist.builder()
                 .name(dto.getName())
+                .nameEn(dto.getNameEn())
                 .genre(dto.getGenre())
                 .profileImageKey(dto.getProfileImageUrl())
                 .build();
@@ -94,6 +95,7 @@ public class ArtistService {
         return ArtistRequestDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
+                .nameEn(artist.getNameEn())
                 .genre(artist.getGenre())
                 .profileImageUrl(fileStorageService.buildUrl(artist.getProfileImageKey()))
                 .followerCount(artist.getFollowerCount())
@@ -107,7 +109,7 @@ public class ArtistService {
         String imageKey = dto.getProfileImageUrl() != null
                 ? dto.getProfileImageUrl()
                 : artist.getProfileImageKey();
-        artist.update(dto.getName(), dto.getGenre(), imageKey);
+        artist.update(dto.getName(), dto.getNameEn(), dto.getGenre(), imageKey);
     }
 
     public List<ArtistResponseDto> getTopArtists(int limit) {
@@ -119,7 +121,7 @@ public class ArtistService {
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
-        artist.update(artist.getName(), artist.getGenre(), imageKey);
+        artist.update(artist.getName(), artist.getNameEn(), artist.getGenre(), imageKey);
     }
 
     public void deleteArtist(Long id) {
