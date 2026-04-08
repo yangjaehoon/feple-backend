@@ -1,7 +1,6 @@
 package com.feple.feple_backend.festival.controller;
 
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
-import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;

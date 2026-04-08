@@ -51,9 +51,11 @@ public class SecurityConfig {
             .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
-                    "default-src 'self'; script-src 'self' 'unsafe-inline' https://maps.googleapis.com; " +
-                    "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
-                    "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com"))
+                    "default-src 'self'; script-src 'self' 'unsafe-inline' '*.daumcdn.net' '*.kakao.com' https://maps.googleapis.com https://dapi.kakao.com http://dapi.kakao.com https://t1.daumcdn.net http://t1.daumcdn.net https://s1.daumcdn.net http://s1.daumcdn.net; " +
+                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                    "font-src 'self' data: https://fonts.gstatic.com; " +
+                    "img-src 'self' data: https: http:; " +
+                    "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com http://dapi.kakao.com"))
                 .frameOptions(frame -> frame.deny()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
@@ -91,6 +93,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
+                .requestMatchers("/favicon.ico", "/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**").permitAll()
                 .anyRequest().authenticated())

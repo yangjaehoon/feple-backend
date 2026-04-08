@@ -13,7 +13,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,8 +25,8 @@ public class UserAdminController {
 
     @GetMapping
     public String listUsers(@RequestParam(defaultValue = "0") int page,
-                            @RequestParam(defaultValue = "") String keyword,
-                            Model model) {
+            @RequestParam(defaultValue = "") String keyword,
+            Model model) {
         Page<UserResponseDto> users = userService.getUsersPage(page, 20, keyword);
         model.addAttribute("users", users);
         model.addAttribute("keyword", keyword);
@@ -54,7 +53,7 @@ public class UserAdminController {
 
     @PostMapping("/bulk-delete")
     public String bulkDeleteUsers(@RequestParam(required = false) List<Long> ids,
-                                  RedirectAttributes ra) {
+            RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
             userService.bulkDeleteUsers(ids);
             ra.addFlashAttribute("successMessage", ids.size() + "명 회원이 삭제되었습니다.");

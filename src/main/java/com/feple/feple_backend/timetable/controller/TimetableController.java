@@ -1,6 +1,5 @@
 package com.feple.feple_backend.timetable.controller;
 
-import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;

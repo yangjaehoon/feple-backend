@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.feple.feple_backend.file.FileStorageService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -98,7 +97,8 @@ public class UserService {
                 .orElseGet(() -> {
                     // 닉네임: displayName 있으면 사용, 없으면 uid 앞 8자리
                     String base = (displayName != null && !displayName.isBlank())
-                            ? displayName : "User" + uid.substring(0, Math.min(uid.length(), 8));
+                            ? displayName
+                            : "User" + uid.substring(0, Math.min(uid.length(), 8));
                     String nickname = uniqueNickname(base.trim());
                     User user = User.builder()
                             .email(email)
@@ -111,12 +111,15 @@ public class UserService {
     }
 
     private String uniqueNickname(String base) {
-        if (base.length() > 8) base = base.substring(0, 8);
-        if (!userRepository.existsByNickname(base)) return base;
+        if (base.length() > 8)
+            base = base.substring(0, 8);
+        if (!userRepository.existsByNickname(base))
+            return base;
         // 중복이면 숫자 suffix 추가
         for (int i = 2; i <= 999; i++) {
             String candidate = base.substring(0, Math.min(base.length(), 6)) + i;
-            if (!userRepository.existsByNickname(candidate)) return candidate;
+            if (!userRepository.existsByNickname(candidate))
+                return candidate;
         }
         return base + System.currentTimeMillis() % 10000;
     }
@@ -141,8 +144,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    private static final java.util.regex.Pattern NICKNAME_PATTERN =
-            java.util.regex.Pattern.compile("^[가-힣a-zA-Z0-9_]+$");
+    private static final java.util.regex.Pattern NICKNAME_PATTERN = java.util.regex.Pattern
+            .compile("^[가-힣a-zA-Z0-9_]+$");
 
     private void validateNickname(String nickname, Long excludeUserId) {
         if (nickname == null || nickname.isBlank()) {

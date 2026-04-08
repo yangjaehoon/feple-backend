@@ -1,6 +1,5 @@
 package com.feple.feple_backend.file;
 
-import io.awspring.cloud.s3.S3Resource;
 import io.awspring.cloud.s3.S3Template;
 
 import lombok.RequiredArgsConstructor;
@@ -35,7 +34,8 @@ public class FileStorageService {
     private String bucket;
 
     public String buildUrl(String key) {
-        if (key == null) return null;
+        if (key == null)
+            return null;
         return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
     }
 
@@ -132,7 +132,8 @@ public class FileStorageService {
     /** 이미지를 maxPx × maxPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
     private byte[] resizeToJpeg(InputStream inputStream, int maxPx) throws IOException {
         BufferedImage src = ImageIO.read(inputStream);
-        if (src == null) throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+        if (src == null)
+            throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
 
         int w = src.getWidth(), h = src.getHeight();
         if (w > maxPx || h > maxPx) {

@@ -15,7 +15,6 @@ import com.feple.feple_backend.repository.PostRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +61,8 @@ public class PostService {
     }
 
     public boolean isLikedByUser(Long postId, Long userId) {
-        if (userId == null) return false;
+        if (userId == null)
+            return false;
         return postLikeRepository.existsByUserIdAndPostId(userId, postId);
     }
 
@@ -104,16 +104,21 @@ public class PostService {
 
         if ("FREE".equals(filter)) {
             return hasKeyword
-                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.FREE, keyword, pageable).map(PostResponseDto::from)
-                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable).map(PostResponseDto::from);
+                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.FREE,
+                            keyword, pageable).map(PostResponseDto::from)
+                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable)
+                            .map(PostResponseDto::from);
         }
         if ("MATE".equals(filter)) {
             return hasKeyword
-                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.MATE, keyword, pageable).map(PostResponseDto::from)
-                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable).map(PostResponseDto::from);
+                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.MATE,
+                            keyword, pageable).map(PostResponseDto::from)
+                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable)
+                            .map(PostResponseDto::from);
         }
         return hasKeyword
-                ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable).map(PostResponseDto::from)
+                ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable)
+                        .map(PostResponseDto::from)
                 : postRepository.findAllByOrderByCreatedAtDesc(pageable).map(PostResponseDto::from);
     }
 
