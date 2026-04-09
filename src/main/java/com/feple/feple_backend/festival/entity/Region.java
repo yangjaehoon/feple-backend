@@ -2,6 +2,10 @@ package com.feple.feple_backend.festival.entity;
 
 public enum Region {
     SEOUL("서울"),
+    BUSAN("부산"),
+    DAEGU("대구"),
+    DAEJEON("대전"),
+    GWANGJU("광주"),
     GYEONGGI("경기도"),
     GANGWON("강원도"),
     CHUNGBUK("충청북도"),
