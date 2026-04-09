@@ -3,7 +3,6 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.DuplicateArtistFestivalException;
-import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.booth.service.BoothService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
@@ -15,7 +14,6 @@ import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.file.FileStorageService;
-import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +25,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
@@ -100,7 +97,6 @@ public class FestivalAdminController {
         return "redirect:/admin";
     }
 
-    //목록 페이지
     @GetMapping
     public String listFestivals(
             Model model,
@@ -137,9 +133,7 @@ public class FestivalAdminController {
     public String updateFestival(@PathVariable Long id,
                                  @ModelAttribute("festival") FestivalRequestDto dto,
                                  @RequestParam(value="posterFile", required=false) MultipartFile posterFile
-
-    )throws IOException {
-
+    ) throws IOException {
         if (posterFile != null && !posterFile.isEmpty()) {
             String newPosterKey = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
             dto.setPosterUrl(newPosterKey);
@@ -154,7 +148,7 @@ public class FestivalAdminController {
         return "redirect:/admin";
     }
 
-    //참여 아티스트 관리 페이지
+    /** 페스티벌 상세: 모든 하위 리소스(아티스트/스테이지/타임테이블/부스) 데이터 집계 */
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(id);
@@ -179,181 +173,4 @@ public class FestivalAdminController {
 
         return "admin/festival-detail";
     }
-
-    @GetMapping("/{id}/artists/new")
-    public String addArtistForm(@PathVariable Long id, Model model) {
-        FestivalResponseDto festival = festivalService.getFestival(id);
-        List<Artist> allArtists = artistRepository.findAll(Sort.by("name"));
-
-        model.addAttribute("festival", festival);
-        model.addAttribute("artists", allArtists);
-        model.addAttribute("request", new ArtistFestivalCreateRequest());
-        return "admin/festival-artist-form";  // 기존 스타일과 맞춤
-    }
-
-    @PostMapping("/{id}/artists")
-    public String addArtistToFestival(
-            @PathVariable Long id,
-            @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
-            RedirectAttributes ra) {
-
-        if (artistIds == null || artistIds.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", "아티스트를 한 명 이상 선택해주세요.");
-            return "redirect:/admin/festivals/" + id + "/artists/new";
-        }
-
-        int added = 0, duplicates = 0;
-        for (Long artistId : artistIds) {
-            try {
-                ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
-                req.setArtistId(artistId);
-                artistFestivalService.addArtistToFestival(id, req);
-                added++;
-            } catch (DuplicateArtistFestivalException ignored) {
-                duplicates++;
-            }
-        }
-
-        if (added == 0) {
-            ra.addFlashAttribute("errorMessage", "선택한 아티스트가 이미 모두 참여 중입니다.");
-        } else if (duplicates > 0) {
-            ra.addFlashAttribute("successMessage", added + "명 추가 완료. " + duplicates + "명은 이미 참여 중이었습니다.");
-        } else {
-            ra.addFlashAttribute("successMessage", added + "명의 아티스트가 추가되었습니다.");
-        }
-        return "redirect:/admin/festivals/" + id;
-    }
-
-    // ── 타임테이블 ─────────────────────────────────────────────────────────────
-    @PostMapping("/{id}/timetable")
-    public String createTimetableEntry(@PathVariable Long id,
-                                       @ModelAttribute TimetableEntryRequest req,
-                                       RedirectAttributes ra) {
-        try {
-            timetableService.createEntry(id, req);
-            ra.addFlashAttribute("timetableSuccess", "타임테이블 항목이 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/admin/festivals/" + id + "#timetable";
-    }
-
-    @PostMapping("/{id}/timetable/{entryId}/delete")
-    public String deleteTimetableEntry(@PathVariable Long id,
-                                       @PathVariable Long entryId,
-                                       RedirectAttributes ra) {
-        timetableService.deleteEntry(entryId);
-        ra.addFlashAttribute("successMessage", "항목이 삭제되었습니다.");
-        return "redirect:/admin/festivals/" + id + "#timetable";
-    }
-
-    @GetMapping("/{id}/artists/list")
-    @ResponseBody
-    public List<ArtistFestivalResponse> getFestivalArtists(@PathVariable Long id) {
-        return artistFestivalService.getArtistFestivals(id);
-    }
-
-    @PostMapping("/{festivalId}/artists/{artistFestivalId}/edit")
-    public String updateLineup(@PathVariable Long festivalId,
-                               @PathVariable Long artistFestivalId,
-                               @RequestParam(required = false) Integer lineupOrder,
-                               @RequestParam(required = false) String stageName,
-                               RedirectAttributes ra) {
-        artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, lineupOrder, stageName);
-        ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
-        return "redirect:/admin/festivals/" + festivalId + "#artists";
-    }
-
-    @PostMapping("/{festivalId}/artists/batch-edit")
-    public String batchUpdateLineup(@PathVariable Long festivalId,
-                                    @RequestParam("afIds") List<Long> afIds,
-                                    @RequestParam("lineupOrders") List<Integer> lineupOrders,
-                                    @RequestParam("stageNames") List<String> stageNames,
-                                    RedirectAttributes ra) {
-        for (int i = 0; i < afIds.size(); i++) {
-            String stage = (i < stageNames.size()) ? stageNames.get(i) : null;
-            Integer order = (i < lineupOrders.size()) ? lineupOrders.get(i) : null;
-            artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), order, stage);
-        }
-        ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
-        return "redirect:/admin/festivals/" + festivalId + "#artists";
-    }
-
-    @PostMapping("/{festivalId}/artists/{artistFestivalId}/delete")
-    public String removeArtistFromFestival(
-            @PathVariable Long festivalId,
-            @PathVariable Long artistFestivalId) {
-
-        artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
-        return "redirect:/admin/festivals/" + festivalId + "#artists";
-    }
-
-    // ── 스테이지 관리 ──────────────────────────────────────────────────────────
-    @PostMapping("/{id}/stages")
-    public String createStage(@PathVariable Long id,
-                              @RequestParam String name,
-                              RedirectAttributes ra) {
-        try {
-            stageService.createStage(id, name);
-            ra.addFlashAttribute("successMessage", "스테이지가 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/admin/festivals/" + id + "#timetable";
-    }
-
-    @PostMapping("/{id}/stages/{stageId}/delete")
-    public String deleteStage(@PathVariable Long id,
-                              @PathVariable Long stageId,
-                              RedirectAttributes ra) {
-        stageService.deleteStage(stageId);
-        ra.addFlashAttribute("successMessage", "스테이지가 삭제되었습니다.");
-        return "redirect:/admin/festivals/" + id + "#timetable";
-    }
-
-    @PostMapping("/{id}/stages/{stageId}/up")
-    public String moveStageUp(@PathVariable Long id, @PathVariable Long stageId) {
-        stageService.moveUp(id, stageId);
-        return "redirect:/admin/festivals/" + id + "#timetable";
-    }
-
-    @PostMapping("/{id}/stages/{stageId}/down")
-    public String moveStageDown(@PathVariable Long id, @PathVariable Long stageId) {
-        stageService.moveDown(id, stageId);
-        return "redirect:/admin/festivals/" + id + "#timetable";
-    }
-
-    // ── 부스 관리 ──────────────────────────────────────────────────────────────
-    @PostMapping("/{id}/booths")
-    public String createBooth(@PathVariable Long id,
-                              @ModelAttribute BoothRequestDto dto,
-                              @RequestParam(value = "boothImageFile", required = false) MultipartFile boothImageFile,
-                              RedirectAttributes ra) throws IOException {
-        if (dto.getLatitude() == null || dto.getLongitude() == null) {
-            ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
-            return "redirect:/admin/festivals/" + id + "#booths";
-        }
-        if (boothImageFile != null && !boothImageFile.isEmpty()) {
-            try {
-                String key = fileStorageService.storeBoothImage(boothImageFile);
-                dto.setImageUrl(fileStorageService.buildUrl(key));
-            } catch (Exception e) {
-                ra.addFlashAttribute("errorMessage", "이미지 업로드 실패: " + e.getMessage());
-                return "redirect:/admin/festivals/" + id + "#booths";
-            }
-        }
-        boothService.createBooth(id, dto);
-        ra.addFlashAttribute("successMessage", "부스가 추가되었습니다.");
-        return "redirect:/admin/festivals/" + id + "#booths";
-    }
-
-    @PostMapping("/{id}/booths/{boothId}/delete")
-    public String deleteBooth(@PathVariable Long id,
-                              @PathVariable Long boothId,
-                              RedirectAttributes ra) {
-        boothService.deleteBooth(boothId);
-        ra.addFlashAttribute("successMessage", "부스가 삭제되었습니다.");
-        return "redirect:/admin/festivals/" + id + "#booths";
-    }
-
 }

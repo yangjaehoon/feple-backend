@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.controller;
 
-import com.feple.feple_backend.service.ArtistImageLikeService;
+import com.feple.feple_backend.artist.service.ArtistImageLikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

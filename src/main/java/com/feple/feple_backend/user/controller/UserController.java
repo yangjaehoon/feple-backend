@@ -2,8 +2,8 @@ package com.feple.feple_backend.user.controller;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.dto.comment.MyCommentResponseDto;
-import com.feple.feple_backend.dto.post.PostResponseDto;
+import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
+import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;

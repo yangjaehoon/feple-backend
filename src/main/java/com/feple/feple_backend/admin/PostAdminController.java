@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.service.CommentService;
-import com.feple.feple_backend.service.PostService;
+import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
