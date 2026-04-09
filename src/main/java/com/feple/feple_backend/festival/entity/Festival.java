@@ -44,6 +44,7 @@ public class Festival {
     private List<Genre> genres = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private Region region;
 
     private Double latitude;
