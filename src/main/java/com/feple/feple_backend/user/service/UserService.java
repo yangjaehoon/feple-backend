@@ -10,17 +10,10 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
-import com.feple.feple_backend.user.domain.AuthProvider;
 import com.feple.feple_backend.user.domain.User;
-import com.feple.feple_backend.auth.dto.LocalLoginRequest;
-import com.feple.feple_backend.auth.dto.RegisterRequest;
-import com.feple.feple_backend.user.dto.KakaoUserResponse;
-import com.feple.feple_backend.user.dto.OAuthUserInfo;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-//import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +29,6 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,99 +42,7 @@ public class UserService {
     private final PostLikeRepository postLikeRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalLikeRepository festivalLikeRepository;
-    private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageService;
-
-    public User registerOrLogin(KakaoUserResponse kakaoUser) {
-        // kakao_account 가 없으면 예외
-        var account = Optional.ofNullable(kakaoUser.getKakaoAccount())
-                .orElseThrow(() -> new IllegalArgumentException("카카오 계정 정보가 없습니다."));
-
-        String oauthId = kakaoUser.getId().toString();
-        // .orElseThrow(() -> new IllegalArgumentException("이메일 정보가 없습니다."));
-        String email = account.getEmail();
-
-        String nickname = Optional.ofNullable(account.getProfile())
-                // .map(KakaoUserResponse.KakaoAccount.profile::getNickname)
-                .map(KakaoUserResponse.Profile::getNickname)
-                .filter(n -> !n.isBlank())
-                .orElse("KakaoUser");
-
-        Optional<User> existingUser = userRepository.findByOauthId(oauthId);
-        if (existingUser.isPresent()) {
-            return existingUser.get();
-        }
-
-        String kakaoImageUrl = Optional.ofNullable(account.getProfile())
-                .map(KakaoUserResponse.Profile::getProfile_image_url)
-                .filter(url -> !url.isBlank())
-                .orElse(null);
-
-        User newUser = User.builder()
-                .oauthId(oauthId)
-                .email(email)
-                .nickname(nickname)
-                .provider(AuthProvider.KAKAO)
-                .profileImageUrl(kakaoImageUrl)
-                .build();
-
-        @SuppressWarnings("null")
-        User savedUser = userRepository.save(newUser);
-        return savedUser;
-    }
-
-    @Transactional
-    public User registerOrLoginFirebase(String uid, String email, String displayName) {
-        return userRepository.findByProviderAndOauthId(AuthProvider.FIREBASE, uid)
-                .orElseGet(() -> {
-                    // 닉네임: displayName 있으면 사용, 없으면 uid 앞 8자리
-                    String base = (displayName != null && !displayName.isBlank())
-                            ? displayName
-                            : "User" + uid.substring(0, Math.min(uid.length(), 8));
-                    String nickname = uniqueNickname(base.trim());
-                    User user = User.builder()
-                            .email(email)
-                            .nickname(nickname)
-                            .oauthId(uid)
-                            .provider(AuthProvider.FIREBASE)
-                            .build();
-                    return userRepository.save(user);
-                });
-    }
-
-    private String uniqueNickname(String base) {
-        if (base.length() > 8)
-            base = base.substring(0, 8);
-        if (!userRepository.existsByNickname(base))
-            return base;
-        // 중복이면 숫자 suffix 추가
-        for (int i = 2; i <= 999; i++) {
-            String candidate = base.substring(0, Math.min(base.length(), 6)) + i;
-            if (!userRepository.existsByNickname(candidate))
-                return candidate;
-        }
-        return base + System.currentTimeMillis() % 10000;
-    }
-
-    @Transactional
-    public User registerLocal(RegisterRequest req) {
-        if (userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
-        }
-        validateNickname(req.getNickname(), null);
-        if (userRepository.existsByNickname(req.getNickname())) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
-        }
-        User user = User.builder()
-                .email(req.getEmail())
-                .nickname(req.getNickname().trim())
-                .oauthId(req.getEmail())
-                .provider(AuthProvider.EMAIL)
-                .password(passwordEncoder.encode(req.getPassword()))
-                .profileImageUrl(null)
-                .build();
-        return userRepository.save(user);
-    }
 
     private static final java.util.regex.Pattern NICKNAME_PATTERN = java.util.regex.Pattern
             .compile("^[가-힣a-zA-Z0-9_]+$");
@@ -177,27 +77,6 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User loginLocal(LocalLoginRequest req) {
-        User user = userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
-        }
-        return user;
-    }
-
-    public Long createUser(OAuthUserInfo dto) {
-        User user = User.builder()
-                .email(dto.getEmail())
-                .nickname(dto.getNickname())
-                .oauthId(dto.getOauthId())
-                .provider(dto.getProvider())
-                .profileImageUrl(dto.getProfileImageUrl())
-                .build();
-        return userRepository.save(user).getId();
-    }
-
-    @Transactional(readOnly = true)
     public UserResponseDto getUser(@NonNull Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
@@ -210,13 +89,6 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
         return toAdminUserDto(user);
-    }
-
-    @Transactional(readOnly = true)
-    public List<UserResponseDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::toUserDto)
-                .collect(Collectors.toList());
     }
 
     @Transactional

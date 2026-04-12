@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -55,7 +54,6 @@ public class FestivalService {
                 .longitude(dto.getLongitude())
                 .build();
 
-        @SuppressWarnings("null")
         Festival saved = festivalRepository.save(festival);
         return saved.getId();
     }
@@ -64,10 +62,9 @@ public class FestivalService {
     public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions) {
         LocalDate today = LocalDate.now();
 
-        List<Festival> all = festivalRepository.findAll().stream()
-                .filter(f -> genres == null || genres.isEmpty() || !Collections.disjoint(f.getGenres(), genres))
-                .filter(f -> regions == null || regions.isEmpty() || regions.contains(f.getRegion()))
-                .toList();
+        List<Genre> genreFilter = (genres == null || genres.isEmpty()) ? null : genres;
+        List<Region> regionFilter = (regions == null || regions.isEmpty()) ? null : regions;
+        List<Festival> all = festivalRepository.findByFilters(genreFilter, regionFilter);
 
         // 진행 중 또는 예정: 시작일 오름차순 (가까운 날짜가 위)
         List<Festival> upcoming = all.stream()
@@ -89,7 +86,6 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
-        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
@@ -98,7 +94,6 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public FestivalResponseDto getFestival(Long id) {
-        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
@@ -107,7 +102,6 @@ public class FestivalService {
 
     @Transactional
     public void updateFestival(Long id, FestivalRequestDto dto) {
-        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
@@ -135,10 +129,8 @@ public class FestivalService {
 
     @Transactional
     public boolean toggleLike(Long festivalId, Long userId) {
-        @SuppressWarnings("null")
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다."));
-        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 

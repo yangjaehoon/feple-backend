@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseToken;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
+import com.feple.feple_backend.auth.service.AuthService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.user.domain.User;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class AuthController {
 
     private final KakaoApiClient kakaoApiClient;
+    private final AuthService authService;
     private final UserService userService;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
@@ -45,7 +47,7 @@ public class AuthController {
                 : authorization;
 
         return kakaoApiClient.getMe(kakaoAccessToken)
-                .map(userService::registerOrLogin)
+                .map(authService::registerOrLogin)
                 .map(user -> {
                     String accessToken = jwtProvider.createAccessToken(user.getId());
                     String refreshToken = jwtProvider.createRefreshToken(user.getId());
@@ -74,7 +76,7 @@ public class AuthController {
             String email = decoded.getEmail();
             String name = decoded.getName();
 
-            User user = userService.registerOrLoginFirebase(uid, email, name);
+            User user = authService.registerOrLoginFirebase(uid, email, name);
             String accessToken = jwtProvider.createAccessToken(user.getId());
             String refreshToken = jwtProvider.createRefreshToken(user.getId());
             refreshTokenService.save(user.getId(), refreshToken);
@@ -92,7 +94,7 @@ public class AuthController {
         String ip = getClientIp(httpRequest);
         loginRateLimiter.check(ip);
 
-        User user = userService.loginLocal(req);
+        User user = authService.loginLocal(req);
         String accessToken = jwtProvider.createAccessToken(user.getId());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
         refreshTokenService.save(user.getId(), refreshToken);

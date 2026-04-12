@@ -23,6 +23,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -39,24 +40,14 @@ public class PostService {
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다: " + userId));
 
-        Post post = Post.builder()
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .boardType(dto.getBoardType())
-                .likeCount(0)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .user(user)
-                .build();
-
-        return postRepository.save(post).getId();
+        return postRepository.save(buildPost(dto, user, dto.getBoardType(), null, null)).getId();
     }
 
     public PostResponseDto getPost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + postId));
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId));
         return PostResponseDto.from(post);
     }
 
@@ -82,9 +73,9 @@ public class PostService {
     @Transactional
     public boolean toggleLike(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + postId));
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId));
 
         Optional<PostLike> existing = postLikeRepository.findByUserIdAndPostId(userId, postId);
         if (existing.isPresent()) {
@@ -139,7 +130,7 @@ public class PostService {
     @Transactional
     public void deleteOwnPost(Long postId, Long requestUserId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + postId));
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId));
         if (!post.getUser().getId().equals(requestUserId)) {
             throw new AccessDeniedException("본인의 게시글만 삭제할 수 있습니다.");
         }
@@ -163,7 +154,7 @@ public class PostService {
 
     public List<PostResponseDto> getPostsByArtistId(Long artistId) {
         Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new RuntimeException("해당 아티스트가 없습니다: " + artistId));
+                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 없습니다: " + artistId));
         return postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(0, 100))
                 .map(PostResponseDto::from)
                 .toList();
@@ -172,27 +163,16 @@ public class PostService {
     @Transactional
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
         Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new RuntimeException("해당 아티스트가 없습니다: " + artistId));
+                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 없습니다: " + artistId));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다: " + userId));
 
-        Post post = Post.builder()
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .boardType(null)
-                .likeCount(0)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .user(user)
-                .artist(artist)
-                .build();
-
-        return postRepository.save(post).getId();
+        return postRepository.save(buildPost(dto, user, null, artist, null)).getId();
     }
 
     public List<PostResponseDto> getPostsByFestivalId(Long festivalId) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new RuntimeException("해당 페스티벌이 없습니다: " + festivalId));
+                .orElseThrow(() -> new NoSuchElementException("해당 페스티벌이 없습니다: " + festivalId));
         return postRepository.findByFestivalOrderByCreatedAtDesc(festival, PageRequest.of(0, 100))
                 .map(PostResponseDto::from)
                 .toList();
@@ -201,21 +181,24 @@ public class PostService {
     @Transactional
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new RuntimeException("해당 페스티벌이 없습니다: " + festivalId));
+                .orElseThrow(() -> new NoSuchElementException("해당 페스티벌이 없습니다: " + festivalId));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("해당 사용자가 없습니다: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다: " + userId));
 
-        Post post = Post.builder()
+        return postRepository.save(buildPost(dto, user, null, null, festival)).getId();
+    }
+
+    private Post buildPost(PostRequestDto dto, User user, BoardType boardType, Artist artist, Festival festival) {
+        return Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .boardType(null)
+                .boardType(boardType)
                 .likeCount(0)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .user(user)
+                .artist(artist)
                 .festival(festival)
                 .build();
-
-        return postRepository.save(post).getId();
     }
 }
