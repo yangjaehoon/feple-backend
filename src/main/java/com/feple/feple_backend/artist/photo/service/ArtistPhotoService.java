@@ -101,7 +101,6 @@ public class ArtistPhotoService {
             artistPhotoLikeRepository.save(new ArtistPhotoLike(photoId, userId));
             photo.incrementLikeCount();
         }
-        artistPhotoRepository.save(photo);
         return true;
     }
 }

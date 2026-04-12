@@ -22,7 +22,6 @@ public class Artist {
 
     private ArtistGenre genre;
 
-    //private String profileImageUrl;
     private String profileImageKey;
 
     @Column(nullable = false)
@@ -46,11 +45,4 @@ public class Artist {
         this.profileImageKey = profileImageUrl;
     }
 
-    public void increaseFollowCount() {
-        this.followerCount++;
-    }
-
-    public void decreaseFollowCount() {
-        if (this.followerCount > 0) this.followerCount--;
-    }
 }

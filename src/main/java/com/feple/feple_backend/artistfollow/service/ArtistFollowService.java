@@ -57,8 +57,8 @@ public class ArtistFollowService {
             artistRepository.incrementFollowerCount(artistId);
         }
 
-        int count = artist.getFollowerCount() + 1;
-        return new FollowResponseDto(true, count);
+        Artist updated = artistRepository.findById(artistId).orElseThrow();
+        return new FollowResponseDto(true, updated.getFollowerCount());
     }
 
     @Transactional
@@ -76,6 +76,7 @@ public class ArtistFollowService {
                     artistRepository.decrementFollowerCount(artistId);
                 });
 
-        return new FollowResponseDto(false, artist.getFollowerCount());
+        Artist updated = artistRepository.findById(artistId).orElseThrow();
+        return new FollowResponseDto(false, updated.getFollowerCount());
     }
 }

@@ -28,11 +28,6 @@ public class ArtistFollowController {
         return artistFollowService.unfollow(userId, id);
     }
 
-//    @GetMapping("/{id}/follow")
-//    public FollowStatusDto isFollowed(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
-//        return artistFollowService.followStatus(userId, id);
-//    }
-
     @GetMapping("/{id}/follow")
     public FollowStatusDto followStatus(@PathVariable Long id,
                                         @AuthenticationPrincipal Long userId) {

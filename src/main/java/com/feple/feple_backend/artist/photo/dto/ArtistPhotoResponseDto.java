@@ -9,6 +9,6 @@ public record ArtistPhotoResponseDto(
         LocalDateTime createdAt,
         String title,
         String description,
-        int likecount,
+        int likeCount,
         boolean isLiked
 ) {}

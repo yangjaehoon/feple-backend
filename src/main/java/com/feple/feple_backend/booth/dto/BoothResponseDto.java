@@ -23,7 +23,7 @@ public class BoothResponseDto {
                 .id(booth.getId())
                 .name(booth.getName())
                 .boothType(booth.getBoothType())
-                .boothTypeName(booth.getBoothType().getDisplayName())
+                .boothTypeName(booth.getBoothType() != null ? booth.getBoothType().getDisplayName() : null)
                 .latitude(booth.getLatitude())
                 .longitude(booth.getLongitude())
                 .description(booth.getDescription())

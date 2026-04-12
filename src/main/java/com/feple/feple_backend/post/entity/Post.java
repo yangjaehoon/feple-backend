@@ -74,11 +74,12 @@ public class Post {
             this.likeCount--;
     }
 
+    @Getter(AccessLevel.NONE)
     @Formula("(SELECT COUNT(*) FROM comment c WHERE c.post_id = id)")
-    private int commentCount2;
+    private int formulaCommentCount;
 
     public int getCommentCount() {
-        return commentCount2;
+        return formulaCommentCount;
     }
 
     @Builder.Default

@@ -30,7 +30,7 @@ public class ArtistAdminController {
 
     @PostMapping("/new")
     public String createArtist(@ModelAttribute("artist") ArtistRequestDto dto,
-                               @RequestParam(value = "profileImageFile") MultipartFile profileImageFile,
+                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
                                org.springframework.validation.BindingResult bindingResult
 
                                ) throws IOException {
