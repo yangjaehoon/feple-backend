@@ -35,7 +35,7 @@ public class UserAdminController {
 
     @GetMapping("/{id}")
     public String userDetail(@PathVariable Long id, Model model) {
-        UserResponseDto user = userService.getUser(id);
+        UserResponseDto user = userService.getAdminUser(id);
         UserStatsDto stats = userService.getUserStats(id);
         List<PostResponseDto> recentPosts = userService.getMyPosts(id).stream()
                 .limit(10)

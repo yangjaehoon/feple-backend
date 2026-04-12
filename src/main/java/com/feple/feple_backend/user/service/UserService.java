@@ -204,6 +204,14 @@ public class UserService {
         return toUserDto(user);
     }
 
+    /** 관리자 페이지용: email 포함 */
+    @Transactional(readOnly = true)
+    public UserResponseDto getAdminUser(@NonNull Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        return toAdminUserDto(user);
+    }
+
     @Transactional(readOnly = true)
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll().stream()
@@ -242,9 +250,9 @@ public class UserService {
         if (keyword != null && !keyword.isBlank()) {
             return userRepository
                     .findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, pageable)
-                    .map(this::toUserDto);
+                    .map(this::toAdminUserDto);
         }
-        return userRepository.findAll(pageable).map(this::toUserDto);
+        return userRepository.findAll(pageable).map(this::toAdminUserDto);
     }
 
     @Transactional
@@ -278,7 +286,10 @@ public class UserService {
         festivalLikeRepository.deleteAll(festivalLikeRepository.findByUserId(id));
         artistFollowRepository.deleteAll(artistFollowRepository.findByUserId(id));
 
-        // 6. 사용자 삭제
+        // 6. S3 프로필 이미지 삭제
+        fileStorageService.deleteFile(user.getProfileImageUrl());
+
+        // 7. 사용자 삭제
         userRepository.delete(user);
     }
 
@@ -329,20 +340,31 @@ public class UserService {
 
     /** null/빈값/기본이미지 → null 반환, S3 key → 전체 URL 변환 */
     public UserResponseDto toUserDto(User user) {
-        String raw = user.getProfileImageUrl();
-        String imageUrl;
-        if (raw == null || raw.isBlank() || raw.contains("/img/feple_logo.png")) {
-            imageUrl = null;
-        } else if (raw.startsWith("http")) {
-            imageUrl = raw;
-        } else {
-            imageUrl = fileStorageService.buildUrl(raw);
-        }
         return UserResponseDto.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
-                .profileImageUrl(imageUrl)
+                .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
                 .build();
+    }
+
+    /** 관리자 페이지용: email 포함 */
+    public UserResponseDto toAdminUserDto(User user) {
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
+                .build();
+    }
+
+    private String resolveProfileImageUrl(String raw) {
+        if (raw == null || raw.isBlank() || raw.contains("/img/feple_logo.png")) {
+            return null;
+        } else if (raw.startsWith("http")) {
+            return raw;
+        } else {
+            return fileStorageService.buildUrl(raw);
+        }
     }
 
     public Long currentUserId() {

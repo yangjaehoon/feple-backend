@@ -97,6 +97,16 @@ public class FileStorageService {
         }
     }
 
+    /** S3 오브젝트 삭제 (회원 탈퇴 시 프로필 이미지 정리용) */
+    public void deleteFile(String key) {
+        if (key == null || key.isBlank() || key.startsWith("http")) return;
+        try {
+            s3Template.deleteObject(bucket, key);
+        } catch (Exception ignored) {
+            // 이미 삭제되었거나 존재하지 않는 경우 무시
+        }
+    }
+
     private String storeFile(MultipartFile file, String folder) throws IOException {
         validateFile(file);
 

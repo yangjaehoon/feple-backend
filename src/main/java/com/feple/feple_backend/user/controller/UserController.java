@@ -66,7 +66,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}/following")
-    public ResponseEntity<List<ArtistResponseDto>> getFollowedArtists(@PathVariable Long id) {
+    public ResponseEntity<List<ArtistResponseDto>> getFollowedArtists(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        if (!id.equals(userId))
+            throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
         return ResponseEntity.ok(userService.getFollowedArtists(id));
     }
 
@@ -80,7 +84,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}/stats")
-    public ResponseEntity<UserStatsDto> getUserStats(@PathVariable Long id) {
+    public ResponseEntity<UserStatsDto> getUserStats(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        if (!id.equals(userId))
+            throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
         return ResponseEntity.ok(userService.getUserStats(id));
     }
 

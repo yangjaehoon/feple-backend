@@ -1,6 +1,5 @@
 package com.feple.feple_backend.user.dto;
 
-import com.feple.feple_backend.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,15 +8,7 @@ import lombok.Getter;
 public class UserResponseDto {
     private Long id;
     private String nickname;
-    private String email;
     private String profileImageUrl;
-
-    public static UserResponseDto from(User user) {
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .profileImageUrl(user.getProfileImageUrl())
-                .build();
-    }
+    /** 관리자 페이지에서만 사용. 공개 API 응답에는 포함하지 않음. */
+    private String email;
 }
