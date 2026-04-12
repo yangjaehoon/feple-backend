@@ -1,6 +1,6 @@
-package com.feple.feple_backend.user.dto;
+package com.feple.feple_backend.auth.dto;
 
-import com.feple.feple_backend.user.domain.AuthProvider;
+import com.feple.feple_backend.user.entity.AuthProvider;
 import lombok.Getter;
 
 @Getter

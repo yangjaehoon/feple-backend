@@ -1,4 +1,4 @@
-package com.feple.feple_backend.festival;
+package com.feple.feple_backend.festival.service;
 
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.Genre;

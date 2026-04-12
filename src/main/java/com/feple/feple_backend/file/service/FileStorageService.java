@@ -1,4 +1,4 @@
-package com.feple.feple_backend.file;
+package com.feple.feple_backend.file.service;
 
 import io.awspring.cloud.s3.S3Template;
 

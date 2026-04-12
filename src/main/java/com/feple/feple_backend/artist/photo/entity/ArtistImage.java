@@ -1,6 +1,7 @@
-package com.feple.feple_backend.artist.entity;
+package com.feple.feple_backend.artist.photo.entity;
 
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

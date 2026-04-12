@@ -1,7 +1,7 @@
 package com.feple.feple_backend.comment.repository;
 
 import com.feple.feple_backend.comment.entity.Comment;
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

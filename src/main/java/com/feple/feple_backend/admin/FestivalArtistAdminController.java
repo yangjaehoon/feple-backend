@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artistfestival.DuplicateArtistFestivalException;
+import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;

@@ -11,7 +11,7 @@ import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
 import com.feple.feple_backend.auth.service.AuthService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;

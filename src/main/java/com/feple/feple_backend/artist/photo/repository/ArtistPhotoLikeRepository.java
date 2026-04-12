@@ -1,5 +1,6 @@
-package com.feple.feple_backend.artist.photo.like;
+package com.feple.feple_backend.artist.photo.repository;
 
+import com.feple.feple_backend.artist.photo.entity.ArtistPhotoLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

@@ -3,7 +3,7 @@ package com.feple.feple_backend.comment.service;
 
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.post.entity.Post;
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
 import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.repository.CommentRepository;

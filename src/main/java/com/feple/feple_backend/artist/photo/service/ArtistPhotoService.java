@@ -1,7 +1,10 @@
-package com.feple.feple_backend.artist.photo;
+package com.feple.feple_backend.artist.photo.service;
 
-import com.feple.feple_backend.artist.photo.like.ArtistPhotoLike;
-import com.feple.feple_backend.artist.photo.like.ArtistPhotoLikeRepository;
+import com.feple.feple_backend.artist.photo.dto.ArtistPhotoResponseDto;
+import com.feple.feple_backend.artist.photo.entity.ArtistPhoto;
+import com.feple.feple_backend.artist.photo.entity.ArtistPhotoLike;
+import com.feple.feple_backend.artist.photo.repository.ArtistPhotoLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistPhotoRepository;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

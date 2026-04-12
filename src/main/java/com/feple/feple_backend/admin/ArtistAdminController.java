@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.file.FileStorageService;
+import com.feple.feple_backend.file.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
-import com.feple.feple_backend.file.FileStorageService;
+import com.feple.feple_backend.file.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;

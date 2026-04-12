@@ -1,6 +1,6 @@
 package com.feple.feple_backend.auth.kakao;
 
-import com.feple.feple_backend.user.dto.KakaoUserResponse;
+import com.feple.feple_backend.auth.dto.KakaoUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

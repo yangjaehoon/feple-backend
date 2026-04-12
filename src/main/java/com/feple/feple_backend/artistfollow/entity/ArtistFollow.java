@@ -1,7 +1,7 @@
 package com.feple.feple_backend.artistfollow.entity;
 
 import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

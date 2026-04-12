@@ -1,8 +1,8 @@
 package com.feple.feple_backend.auth.service;
 
-import com.feple.feple_backend.user.domain.AuthProvider;
-import com.feple.feple_backend.user.domain.User;
-import com.feple.feple_backend.user.dto.KakaoUserResponse;
+import com.feple.feple_backend.user.entity.AuthProvider;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.auth.dto.KakaoUserResponse;
 import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RegisterRequest;
 import com.feple.feple_backend.user.repository.UserRepository;

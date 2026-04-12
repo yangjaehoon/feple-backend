@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artistfestival.DuplicateArtistFestivalException;
+import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.booth.service.BoothService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
@@ -13,7 +13,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
-import com.feple.feple_backend.file.FileStorageService;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;

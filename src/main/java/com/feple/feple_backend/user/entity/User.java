@@ -1,4 +1,4 @@
-package com.feple.feple_backend.user.domain;
+package com.feple.feple_backend.user.entity;
 
 import com.feple.feple_backend.comment.entity.Comment;
 import jakarta.persistence.*;

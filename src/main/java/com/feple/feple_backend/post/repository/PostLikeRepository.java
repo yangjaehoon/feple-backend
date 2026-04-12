@@ -1,7 +1,7 @@
 package com.feple.feple_backend.post.repository;
 
 import com.feple.feple_backend.post.entity.PostLike;
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

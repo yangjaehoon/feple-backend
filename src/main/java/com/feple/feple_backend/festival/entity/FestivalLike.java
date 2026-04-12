@@ -1,6 +1,6 @@
 package com.feple.feple_backend.festival.entity;
 
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

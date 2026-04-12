@@ -1,4 +1,4 @@
-package com.feple.feple_backend.artistfestival;
+package com.feple.feple_backend.global.exception;
 
 public class DuplicateArtistFestivalException extends RuntimeException {
     public DuplicateArtistFestivalException() {

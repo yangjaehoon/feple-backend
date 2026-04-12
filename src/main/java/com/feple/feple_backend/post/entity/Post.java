@@ -3,7 +3,7 @@ package com.feple.feple_backend.post.entity;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.user.domain.User;
+import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

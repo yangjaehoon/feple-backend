@@ -1,10 +1,10 @@
-package com.feple.feple_backend.artist.service;
+package com.feple.feple_backend.artist.photo.service;
 
-import com.feple.feple_backend.artist.entity.ArtistImage;
-import com.feple.feple_backend.artist.entity.ArtistImageLike;
-import com.feple.feple_backend.user.domain.User;
-import com.feple.feple_backend.artist.repository.ArtistImageLikeRepository;
-import com.feple.feple_backend.artist.repository.ArtistImageRepository;
+import com.feple.feple_backend.artist.photo.entity.ArtistImage;
+import com.feple.feple_backend.artist.photo.entity.ArtistImageLike;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.artist.photo.repository.ArtistImageLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistImageRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
