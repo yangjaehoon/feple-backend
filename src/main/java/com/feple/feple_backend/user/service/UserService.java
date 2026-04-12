@@ -11,6 +11,7 @@ import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -44,26 +45,10 @@ public class UserService {
     private final FestivalLikeRepository festivalLikeRepository;
     private final FileStorageService fileStorageService;
 
-    private static final java.util.regex.Pattern NICKNAME_PATTERN = java.util.regex.Pattern
-            .compile("^[가-힣a-zA-Z0-9_]+$");
-
-    private void validateNickname(String nickname, Long excludeUserId) {
-        if (nickname == null || nickname.isBlank()) {
-            throw new IllegalArgumentException("닉네임을 입력해주세요.");
-        }
-        String trimmed = nickname.trim();
-        if (trimmed.length() < 2 || trimmed.length() > 8) {
-            throw new IllegalArgumentException("닉네임은 2자 이상 8자 이하로 입력해주세요.");
-        }
-        if (!NICKNAME_PATTERN.matcher(trimmed).matches()) {
-            throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자, 밑줄(_)만 사용할 수 있습니다.");
-        }
-    }
-
     @Transactional(readOnly = true)
     public java.util.Map<String, Object> checkNicknameAvailable(String nickname, Long excludeUserId) {
         try {
-            validateNickname(nickname, excludeUserId);
+            NicknameValidator.validate(nickname);
         } catch (IllegalArgumentException e) {
             return java.util.Map.of("available", false, "message", e.getMessage());
         }
@@ -93,7 +78,7 @@ public class UserService {
 
     @Transactional
     public UserResponseDto updateNickname(@NonNull Long id, String nickname) {
-        validateNickname(nickname, id);
+        NicknameValidator.validate(nickname);
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }

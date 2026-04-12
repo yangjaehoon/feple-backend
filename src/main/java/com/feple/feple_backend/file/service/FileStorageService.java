@@ -107,22 +107,6 @@ public class FileStorageService {
         }
     }
 
-    private String storeFile(MultipartFile file, String folder) throws IOException {
-        validateFile(file);
-
-        String original = file.getOriginalFilename();
-        String ext = (original != null && original.contains("."))
-                ? original.substring(original.lastIndexOf(".")).toLowerCase()
-                : "";
-
-        String key = folder + "/" + UUID.randomUUID() + ext;
-
-        try (InputStream is = file.getInputStream()) {
-            s3Template.upload(bucket, key, is);
-            return key;
-        }
-    }
-
     private void validateFile(MultipartFile file) {
         if (file.isEmpty())
             throw new IllegalArgumentException("파일이 비어있습니다.");

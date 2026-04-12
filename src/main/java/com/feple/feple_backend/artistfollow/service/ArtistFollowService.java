@@ -9,11 +9,10 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -31,13 +30,13 @@ public class ArtistFollowService {
     @Transactional(readOnly = true)
     public FollowStatusDto followStatus(Long userId, Long artistId) {
         if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "userId is null");
+            throw new IllegalStateException("로그인이 필요합니다.");
         }
 
-        boolean followed = artistFollowRepository.existsByUserIdAndArtistId(userId, artistId); // [web:569]
+        boolean followed = artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
 
         Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "artist not found"));
+                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
 
         return new FollowStatusDto(followed, artist.getFollowerCount());
     }
@@ -45,48 +44,38 @@ public class ArtistFollowService {
     @Transactional
     public FollowResponseDto follow(Long userId, Long artistId) {
         if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+            throw new IllegalStateException("로그인이 필요합니다.");
         }
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
 
         Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new IllegalArgumentException("Artist not found"));
+                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
 
-        boolean followed = false;
-
-        try {
+        if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
             artistRepository.incrementFollowerCount(artistId);
-            followed = true;
-        } catch (DataIntegrityViolationException e) {
-            // 이미 팔로우면 멱등: followed=false로 둘지 true로 둘지 정책인데,
-            // UX상 이미 팔로우 상태면 true로 응답하는 게 보통 더 자연스러움.
-            followed = true;
         }
 
-        int count = artistRepository.findById(artistId)
-                .orElseThrow(() -> new IllegalArgumentException("Artist not found"))
-                .getFollowerCount();
-
-        return new FollowResponseDto(followed, count);
+        int count = artist.getFollowerCount() + 1;
+        return new FollowResponseDto(true, count);
     }
 
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
         if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+            throw new IllegalStateException("로그인이 필요합니다.");
         }
+
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
+
         artistFollowRepository.findByUserIdAndArtistId(userId, artistId)
                 .ifPresent(follow -> {
                     artistFollowRepository.delete(follow);
                     artistRepository.decrementFollowerCount(artistId);
                 });
 
-        int count = artistRepository.findById(artistId)
-                .orElseThrow(() -> new IllegalArgumentException("Artist not found"))
-                .getFollowerCount();
-
-        return new FollowResponseDto(false, count);
+        return new FollowResponseDto(false, artist.getFollowerCount());
     }
 }

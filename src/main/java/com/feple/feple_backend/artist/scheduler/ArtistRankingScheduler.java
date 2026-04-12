@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -33,15 +35,31 @@ public class ArtistRankingScheduler {
     public void updateWeeklyRanking() {
         log.info("[ArtistRankingScheduler] 주간 랭킹 갱신 시작");
         LocalDateTime since = LocalDateTime.now().minusWeeks(1);
-        List<Artist> artists = artistRepository.findAll();
 
+        Map<Long, Long> postScores = new HashMap<>();
+        for (Object[] row : postRepository.countAndSumByArtistSince(since)) {
+            Long artistId = (Long) row[0];
+            long postCount = (Long) row[1];
+            long likeSum = (Long) row[2];
+            postScores.put(artistId, postCount + likeSum);
+        }
+
+        Map<Long, Long> commentScores = new HashMap<>();
+        for (Object[] row : commentRepository.countByArtistSince(since)) {
+            commentScores.put((Long) row[0], (Long) row[1]);
+        }
+
+        Map<Long, Long> followScores = new HashMap<>();
+        for (Object[] row : artistFollowRepository.countByArtistSince(since)) {
+            followScores.put((Long) row[0], (Long) row[1]);
+        }
+
+        List<Artist> artists = artistRepository.findAll();
         for (Artist artist : artists) {
-            long postLikes = postRepository.sumLikeCountByArtistAndSince(artist.getId(), since);
-            long postCount = postRepository.countByArtistAndSince(artist.getId(), since);
-            long commentCount = commentRepository.countByArtistAndSince(artist.getId(), since);
-            long followCount = artistFollowRepository.countByArtistIdAndCreatedAtAfter(artist.getId(), since);
-            int score = (int) (postLikes + postCount + commentCount + followCount);
-            artist.updateWeeklyScore(score);
+            long score = postScores.getOrDefault(artist.getId(), 0L)
+                    + commentScores.getOrDefault(artist.getId(), 0L)
+                    + followScores.getOrDefault(artist.getId(), 0L);
+            artist.updateWeeklyScore((int) score);
         }
 
         log.info("[ArtistRankingScheduler] 주간 랭킹 갱신 완료 ({}명)", artists.size());

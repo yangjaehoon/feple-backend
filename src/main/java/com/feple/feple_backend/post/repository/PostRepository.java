@@ -40,6 +40,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COUNT(p) FROM Post p WHERE p.artist.id = :artistId AND p.createdAt >= :since")
     long countByArtistAndSince(@Param("artistId") Long artistId, @Param("since") LocalDateTime since);
 
+    /** 벌크 랭킹용: [artistId, postCount, likeSum] */
+    @Query("SELECT p.artist.id, COUNT(p), COALESCE(SUM(p.likeCount), 0) " +
+           "FROM Post p WHERE p.artist IS NOT NULL AND p.createdAt >= :since " +
+           "GROUP BY p.artist.id")
+    List<Object[]> countAndSumByArtistSince(@Param("since") LocalDateTime since);
+
     org.springframework.data.domain.Page<Post> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title, Pageable pageable);
 
     org.springframework.data.domain.Page<Post> findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType boardType, String title, Pageable pageable);

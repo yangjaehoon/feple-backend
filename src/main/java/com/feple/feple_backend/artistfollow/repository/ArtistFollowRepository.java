@@ -16,4 +16,10 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
     List<ArtistFollow> findByUserId(Long userId);
 
     long countByArtistIdAndCreatedAtAfter(Long artistId, LocalDateTime since);
+
+    /** 벌크 랭킹용: [artistId, followCount] */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT af.artist.id, COUNT(af) FROM ArtistFollow af " +
+        "WHERE af.createdAt >= :since GROUP BY af.artist.id")
+    List<Object[]> countByArtistSince(@org.springframework.data.repository.query.Param("since") LocalDateTime since);
 }

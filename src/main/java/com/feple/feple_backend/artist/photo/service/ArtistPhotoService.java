@@ -44,7 +44,7 @@ public class ArtistPhotoService {
                 saved.getCreatedAt(),
                 saved.getTitle(),
                 saved.getDescription(),
-                saved.getLikecount(),
+                saved.getLikeCount(),
                 false);
     }
 
@@ -58,7 +58,7 @@ public class ArtistPhotoService {
                         p.getCreatedAt(),
                         p.getTitle(),
                         p.getDescription(),
-                        p.getLikecount(),
+                        p.getLikeCount(),
                         artistPhotoLikeRepository.existsByArtistPhotoIdAndUserId(p.getId(), currentUserId)))
                 .toList();
     }
@@ -84,7 +84,7 @@ public class ArtistPhotoService {
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
         return new ArtistPhotoResponseDto(
                 photo.getId(), url, photo.getUploaderUserId(), photo.getCreatedAt(),
-                photo.getTitle(), photo.getDescription(), photo.getLikecount(), false);
+                photo.getTitle(), photo.getDescription(), photo.getLikeCount(), false);
     }
 
     @Transactional
@@ -95,11 +95,11 @@ public class ArtistPhotoService {
         if (artistPhotoLikeRepository.existsByArtistPhotoIdAndUserId(photoId, userId)) {
             // 취소
             artistPhotoLikeRepository.deleteByArtistPhotoIdAndUserId(photoId, userId);
-            photo.setLikecount(photo.getLikecount() - 1);
+            photo.decrementLikeCount();
         } else {
             // 추가
             artistPhotoLikeRepository.save(new ArtistPhotoLike(photoId, userId));
-            photo.setLikecount(photo.getLikecount() + 1);
+            photo.incrementLikeCount();
         }
         artistPhotoRepository.save(photo);
         return true;

@@ -6,6 +6,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Formula;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -71,6 +72,13 @@ public class Post {
     public void decrementLikeCount() {
         if (this.likeCount > 0)
             this.likeCount--;
+    }
+
+    @Formula("(SELECT COUNT(*) FROM comment c WHERE c.post_id = id)")
+    private int commentCount2;
+
+    public int getCommentCount() {
+        return commentCount2;
     }
 
     @Builder.Default

@@ -47,7 +47,7 @@ public class PostResponseDto {
                 .content(post.getContent())
                 .boardType(post.getBoardType())
                 .likeCount(post.getLikeCount())
-                .commentCount(post.getComments().size())
+                .commentCount(post.getCommentCount())
                 .nickname(post.getUser().getNickname())
                 .profileImageUrl(post.getUser().getProfileImageUrl())
                 .artistId(post.getArtist() != null ? post.getArtist().getId() : null)

@@ -42,8 +42,8 @@ public class ArtistPhoto {
     @Column(length = 500, columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-    private int likecount = 0;
+    @Column(name = "likecount", nullable = false, columnDefinition = "INT DEFAULT 0")
+    private int likeCount = 0;
 
     public ArtistPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title,
             String description) {
@@ -60,10 +60,11 @@ public class ArtistPhoto {
         if (description != null) this.description = description;
     }
 
-    public void setLikecount(int i) {
-        if (this.likecount > 0)
-            this.likecount--;
-        else
-            this.likecount++;
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) this.likeCount--;
     }
 }

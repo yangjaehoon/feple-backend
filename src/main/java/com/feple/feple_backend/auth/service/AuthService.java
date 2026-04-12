@@ -6,13 +6,13 @@ import com.feple.feple_backend.auth.dto.KakaoUserResponse;
 import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RegisterRequest;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.user.NicknameValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +21,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z0-9_]+$");
 
     public User registerOrLogin(KakaoUserResponse kakaoUser) {
         var account = Optional.ofNullable(kakaoUser.getKakaoAccount())
@@ -78,9 +76,9 @@ public class AuthService {
     @Transactional
     public User registerLocal(RegisterRequest req) {
         if (userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("���미 가입된 이메일입니다.");
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
-        validateNickname(req.getNickname());
+        NicknameValidator.validate(req.getNickname());
         if (userRepository.existsByNickname(req.getNickname())) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }
@@ -103,19 +101,6 @@ public class AuthService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
         return user;
-    }
-
-    private void validateNickname(String nickname) {
-        if (nickname == null || nickname.isBlank()) {
-            throw new IllegalArgumentException("닉네임을 입력해주세요.");
-        }
-        String trimmed = nickname.trim();
-        if (trimmed.length() < 2 || trimmed.length() > 8) {
-            throw new IllegalArgumentException("닉네임은 2자 이상 8자 이하로 입력해주세요.");
-        }
-        if (!NICKNAME_PATTERN.matcher(trimmed).matches()) {
-            throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자, 밑줄(_)만 사용할 수 있습니다.");
-        }
     }
 
     private String uniqueNickname(String base) {
