@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -36,6 +38,7 @@ public class ArtistService {
         return artistRepository.save(artist).getId();
     }
 
+    @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAllArtists() {
         return artistRepository.findAll(PageRequest.of(0, 200,
                         Sort.by(Sort.Direction.DESC, "weeklyScore").and(Sort.by(Sort.Direction.ASC, "id"))))
@@ -44,12 +47,14 @@ public class ArtistService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
         return artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre) {
         List<ArtistResponseDto> result;
         if (keyword != null && !keyword.isBlank()) {
@@ -77,18 +82,21 @@ public class ArtistService {
         return result;
     }
 
+    @Transactional(readOnly = true)
     public ArtistResponseDto getArtistById(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
         return toDto(artist);
     }
 
+    @Transactional(readOnly = true)
     public Page<ArtistResponseDto> getArtistsPage(int page, int size) {
         Page<Artist> result = artistRepository
                 .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
         return result.map(this::toDto);
     }
 
+    @Transactional(readOnly = true)
     public ArtistRequestDto getArtistForEdit(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
@@ -102,7 +110,7 @@ public class ArtistService {
                 .build();
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
@@ -112,19 +120,20 @@ public class ArtistService {
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenre(), imageKey);
     }
 
+    @Transactional(readOnly = true)
     public List<ArtistResponseDto> getTopArtists(int limit) {
         return artistRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "followerCount")))
                 .getContent().stream().map(this::toDto).toList();
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
         artist.update(artist.getName(), artist.getNameEn(), artist.getGenre(), imageKey);
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void batchUpdateNameEn(List<Long> ids, List<String> nameEns) {
         for (int i = 0; i < ids.size(); i++) {
             Artist artist = artistRepository.findById(ids.get(i)).orElse(null);

@@ -80,11 +80,11 @@ public class PostService {
         Optional<PostLike> existing = postLikeRepository.findByUserIdAndPostId(userId, postId);
         if (existing.isPresent()) {
             postLikeRepository.delete(existing.get());
-            post.decrementLikeCount();
+            postRepository.decrementLikeCount(postId);
             return false; // 좋아요 취소
         } else {
             postLikeRepository.save(PostLike.builder().user(user).post(post).build());
-            post.incrementLikeCount();
+            postRepository.incrementLikeCount(postId);
             return true; // 좋아요 추가
         }
     }

@@ -5,6 +5,8 @@ import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoService;
 import com.feple.feple_backend.artist.service.S3PresignService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,7 +33,7 @@ public class ArtistPhotoController {
     @PostMapping("/presign")
     public S3PresignService.PresignResult presign(
             @PathVariable Long artistId,
-            @RequestBody PresignRequest req
+            @Valid @RequestBody PresignRequest req
     ) {
         String ext = req.extension() == null ? "" : req.extension().toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(ext)) {
@@ -47,7 +49,7 @@ public class ArtistPhotoController {
     @PostMapping
     public ArtistPhotoResponseDto register(
             @PathVariable Long artistId,
-            @RequestBody RegisterPhotoRequestDto req,
+            @Valid @RequestBody RegisterPhotoRequestDto req,
             @AuthenticationPrincipal Long userId
     ) {
         return artistPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), userId);
@@ -62,7 +64,10 @@ public class ArtistPhotoController {
         return artistPhotoService.list(artistId, userId);
     }
 
-    public record PresignRequest(String contentType, String extension) {}
+    public record PresignRequest(
+            @NotBlank(message = "Content-Type은 필수입니다.") String contentType,
+            @NotBlank(message = "파일 확장자는 필수입니다.") String extension
+    ) {}
 
     @DeleteMapping("/{photoId}")
     public ResponseEntity<Void> deletePhoto(
@@ -77,7 +82,7 @@ public class ArtistPhotoController {
     public ArtistPhotoResponseDto updatePhoto(
             @PathVariable Long artistId,
             @PathVariable Long photoId,
-            @RequestBody UpdatePhotoRequestDto req,
+            @Valid @RequestBody UpdatePhotoRequestDto req,
             @AuthenticationPrincipal Long userId) {
         return artistPhotoService.update(photoId, userId, req.title(), req.description());
     }

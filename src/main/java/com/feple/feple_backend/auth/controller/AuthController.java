@@ -102,7 +102,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponseDto> refresh(@RequestBody RefreshRequest req,
+    public ResponseEntity<AuthResponseDto> refresh(@Valid @RequestBody RefreshRequest req,
                                                    HttpServletRequest httpRequest) {
         loginRateLimiter.check(getClientIp(httpRequest));
         if (!jwtProvider.isRefreshToken(req.getRefreshToken())) {
@@ -121,7 +121,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@RequestBody RefreshRequest req) {
+    public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshRequest req) {
         if (req.getRefreshToken() != null) {
             refreshTokenService.revoke(req.getRefreshToken());
         }

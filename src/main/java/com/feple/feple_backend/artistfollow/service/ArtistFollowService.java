@@ -52,13 +52,14 @@ public class ArtistFollowService {
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
 
+        int followerCount = artist.getFollowerCount();
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
             artistRepository.incrementFollowerCount(artistId);
+            followerCount++;
         }
 
-        Artist updated = artistRepository.findById(artistId).orElseThrow();
-        return new FollowResponseDto(true, updated.getFollowerCount());
+        return new FollowResponseDto(true, followerCount);
     }
 
     @Transactional
@@ -70,13 +71,13 @@ public class ArtistFollowService {
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
 
-        artistFollowRepository.findByUserIdAndArtistId(userId, artistId)
-                .ifPresent(follow -> {
-                    artistFollowRepository.delete(follow);
-                    artistRepository.decrementFollowerCount(artistId);
-                });
+        int followerCount = artist.getFollowerCount();
+        if (artistFollowRepository.findByUserIdAndArtistId(userId, artistId).isPresent()) {
+            artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
+            artistRepository.decrementFollowerCount(artistId);
+            followerCount--;
+        }
 
-        Artist updated = artistRepository.findById(artistId).orElseThrow();
-        return new FollowResponseDto(false, updated.getFollowerCount());
+        return new FollowResponseDto(false, Math.max(followerCount, 0));
     }
 }

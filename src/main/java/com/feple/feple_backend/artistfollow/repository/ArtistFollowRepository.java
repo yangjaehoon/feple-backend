@@ -11,6 +11,8 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
 
     Optional<ArtistFollow> findByUserIdAndArtistId(Long userId, Long artistId);
 
+    void deleteByUserIdAndArtistId(Long userId, Long artistId);
+
     long countByArtistId(Long artistId);
 
     List<ArtistFollow> findByUserId(Long userId);

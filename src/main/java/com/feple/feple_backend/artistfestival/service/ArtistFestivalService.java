@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,12 +33,24 @@ public class ArtistFestivalService {
     private final TimetableRepository timetableRepository;
 
     public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
-        return artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId)
-                .stream()
+        List<ArtistFestival> myFestivals = artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId);
+
+        // 페스티벌 ID 목록을 한 번에 조회하여 N+1 방지
+        List<Long> festivalIds = myFestivals.stream()
+                .map(af -> af.getFestival().getId())
+                .toList();
+
+        Map<Long, List<ArtistFestival>> coArtistMap = festivalIds.isEmpty()
+                ? Map.of()
+                : artistFestivalRepository.findByFestivalIdInWithArtist(festivalIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(af -> af.getFestival().getId()));
+
+        return myFestivals.stream()
                 .map(af -> {
                     Festival festival = af.getFestival();
                     List<ArtistScheduleResponse.CoArtistInfo> coArtists =
-                            artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festival.getId())
+                            coArtistMap.getOrDefault(festival.getId(), List.of())
                                     .stream()
                                     .filter(other -> !other.getArtist().getId().equals(artistId))
                                     .map(other -> ArtistScheduleResponse.CoArtistInfo.builder()
@@ -69,10 +84,10 @@ public class ArtistFestivalService {
     @Transactional
     public Long addArtistToFestival(Long festivalId, ArtistFestivalCreateRequest request) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new IllegalArgumentException("Festival not found: " + festivalId));
+                .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
 
         Artist artist = artistRepository.findById(request.getArtistId())
-                .orElseThrow(() -> new IllegalArgumentException("Artist not found: " + request.getArtistId()));
+                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다."));
 
         if (artistFestivalRepository.existsByFestivalIdAndArtistId(festivalId, request.getArtistId())) {
             throw new DuplicateArtistFestivalException();

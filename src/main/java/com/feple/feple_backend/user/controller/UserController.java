@@ -8,6 +8,7 @@ import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,7 +41,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable Long id,
-            @RequestBody UpdateNicknameDto dto,
+            @Valid @RequestBody UpdateNicknameDto dto,
             @AuthenticationPrincipal Long userId) {
         if (!id.equals(userId))
             throw new AccessDeniedException("본인 정보만 수정할 수 있습니다.");
