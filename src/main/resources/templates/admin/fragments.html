@@ -36,6 +36,10 @@
            th:classappend="${active == 'users'} ? ' nb-active'">
             👤 회원 관리
         </a>
+        <a th:href="@{/admin/certifications}" class="nb-link"
+           th:classappend="${active == 'certifications'} ? ' nb-active'">
+            🏅 인증 관리
+        </a>
     </nav>
 
     <div style="flex:1;"></div>
