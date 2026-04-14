@@ -401,6 +401,10 @@ tbody td a:hover { text-decoration: underline; color: var(--primary); }
   background: var(--accent-lt) !important; color: #7a6000 !important;
   border-color: #f5e48a !important; font-family: monospace;
 }
+.badge-warning {
+  background: #fff7ed !important; color: #92400e !important;
+  border-color: #fed7aa !important;
+}
 .badge-success {
   background: var(--success-lt) !important; color: #2D9B6E !important;
   border-color: #B0EDD6 !important;
