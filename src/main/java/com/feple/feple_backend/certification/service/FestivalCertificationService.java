@@ -41,14 +41,21 @@ public class FestivalCertificationService {
         FestivalCertification cert = FestivalCertification.create(user, festival, photoKey);
         certificationRepository.save(cert);
 
+        String posterUrl = festival.getPosterKey() != null ? s3PresignService.presignGetUrl(festival.getPosterKey()) : null;
         String photoUrl = s3PresignService.presignGetUrl(photoKey);
-        return CertificationResponseDto.from(cert, photoUrl);
+        return CertificationResponseDto.from(cert, posterUrl, photoUrl);
     }
 
     @Transactional(readOnly = true)
     public List<CertificationResponseDto> getMyCertifications(Long userId) {
         return certificationRepository.findByUserId(userId).stream()
-                .map(cert -> CertificationResponseDto.from(cert, s3PresignService.presignGetUrl(cert.getPhotoKey())))
+                .map(cert -> {
+                    String posterUrl = cert.getFestival().getPosterKey() != null
+                            ? s3PresignService.presignGetUrl(cert.getFestival().getPosterKey())
+                            : null;
+                    String photoUrl = s3PresignService.presignGetUrl(cert.getPhotoKey());
+                    return CertificationResponseDto.from(cert, posterUrl, photoUrl);
+                })
                 .toList();
     }
 

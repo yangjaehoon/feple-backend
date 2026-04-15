@@ -9,17 +9,19 @@ public record CertificationResponseDto(
         Long id,
         Long festivalId,
         String festivalTitle,
+        String festivalPosterUrl,
         String photoUrl,
         CertificationStatus status,
         String rejectionMessage,
         LocalDateTime createdAt,
         LocalDateTime reviewedAt
 ) {
-    public static CertificationResponseDto from(FestivalCertification cert, String photoUrl) {
+    public static CertificationResponseDto from(FestivalCertification cert, String festivalPosterUrl, String photoUrl) {
         return new CertificationResponseDto(
                 cert.getId(),
                 cert.getFestival().getId(),
                 cert.getFestival().getTitle(),
+                festivalPosterUrl,
                 photoUrl,
                 cert.getStatus(),
                 cert.getRejectionMessage(),
