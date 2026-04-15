@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -66,19 +65,10 @@ public class FestivalService {
         List<Region> regionFilter = (regions == null || regions.isEmpty()) ? null : regions;
         List<Festival> all = festivalRepository.findByFilters(genreFilter, regionFilter);
 
-        // 진행 중 또는 예정: 시작일 오름차순 (가까운 날짜가 위)
-        List<Festival> upcoming = all.stream()
+        // 진행 중 또는 예정만 반환: 시작일 오름차순 (가까운 날짜가 위)
+        return all.stream()
                 .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
                 .sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())))
-                .toList();
-
-        // 종료: 시작일 내림차순 (최근 종료가 위)
-        List<Festival> ended = all.stream()
-                .filter(f -> f.getEndDate() != null && f.getEndDate().isBefore(today))
-                .sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())))
-                .toList();
-
-        return Stream.concat(upcoming.stream(), ended.stream())
                 .limit(200)
                 .map(this::toDto)
                 .toList();
