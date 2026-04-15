@@ -11,6 +11,7 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class ArtistFestivalService {
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
     private final TimetableRepository timetableRepository;
+    private final NotificationService notificationService;
 
     public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
         List<ArtistFestival> myFestivals = artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId);
@@ -101,6 +103,12 @@ public class ArtistFestivalService {
                 .build();
 
         ArtistFestival saved = artistFestivalRepository.save(artistFestival);
+
+        // 비동기 알림 발송 — 아티스트 팔로워들에게 새 페스티벌 알림
+        notificationService.notifyNewFestivalForArtist(
+                artist.getId(), artist.getName(),
+                festival.getId(), festival.getTitle());
+
         return saved.getId();
     }
 

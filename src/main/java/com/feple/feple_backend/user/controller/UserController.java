@@ -7,6 +7,7 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
+import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.feple.feple_backend.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final DeviceTokenService deviceTokenService;
 
     @GetMapping("/check-nickname")
     public ResponseEntity<java.util.Map<String, Object>> checkNickname(
@@ -117,6 +120,30 @@ public class UserController {
         if (!id.equals(userId))
             throw new AccessDeniedException("본인 계정만 삭제할 수 있습니다.");
         userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** FCM 디바이스 토큰 등록 */
+    @PostMapping("/device-token")
+    public ResponseEntity<Void> registerDeviceToken(
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal Long userId) {
+        String token = body.get("token");
+        String platform = body.getOrDefault("platform", "android");
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        deviceTokenService.register(userId, token, platform);
+        return ResponseEntity.ok().build();
+    }
+
+    /** FCM 디바이스 토큰 삭제 (로그아웃 시) */
+    @DeleteMapping("/device-token")
+    public ResponseEntity<Void> unregisterDeviceToken(
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal Long userId) {
+        String token = body.get("token");
+        if (token != null) deviceTokenService.unregister(userId, token);
         return ResponseEntity.noContent().build();
     }
 

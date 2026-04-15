@@ -17,6 +17,8 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
 
     List<ArtistFollow> findByUserId(Long userId);
 
+    List<ArtistFollow> findByArtistId(Long artistId);
+
     long countByArtistIdAndCreatedAtAfter(Long artistId, LocalDateTime since);
 
     /** 벌크 랭킹용: [artistId, followCount] */
