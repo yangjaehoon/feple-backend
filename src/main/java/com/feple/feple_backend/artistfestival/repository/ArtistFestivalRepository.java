@@ -12,6 +12,7 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     List<ArtistFestival> findByFestivalId(Long festivalId);
     List<ArtistFestival> findByFestivalIdOrderByLineupOrderAsc(Long festivalId);
     List<ArtistFestival> findByArtistIdOrderByFestivalStartDateAsc(Long artistId);
+    List<ArtistFestival> findByArtistIdOrderByFestivalStartDateDesc(Long artistId);
 
     @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist WHERE af.festival.id IN :festivalIds ORDER BY af.lineupOrder ASC")
     List<ArtistFestival> findByFestivalIdInWithArtist(@Param("festivalIds") List<Long> festivalIds);

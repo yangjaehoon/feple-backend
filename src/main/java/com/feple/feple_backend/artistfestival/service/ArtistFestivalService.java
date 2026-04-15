@@ -35,7 +35,7 @@ public class ArtistFestivalService {
     private final NotificationService notificationService;
 
     public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
-        List<ArtistFestival> myFestivals = artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId);
+        List<ArtistFestival> myFestivals = artistFestivalRepository.findByArtistIdOrderByFestivalStartDateDesc(artistId);
 
         // 페스티벌 ID 목록을 한 번에 조회하여 N+1 방지
         List<Long> festivalIds = myFestivals.stream()
