@@ -7,6 +7,7 @@ import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class FestivalCertificationService {
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
     private final S3PresignService s3PresignService;
+    private final NotificationService notificationService;
 
     @Transactional
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
@@ -84,11 +86,22 @@ public class FestivalCertificationService {
     public void approve(Long certId, String reviewerName) {
         FestivalCertification cert = getById(certId);
         cert.approve(reviewerName);
+        // 비동기 알림
+        notificationService.notifyCertApproved(
+                cert.getUser().getId(),
+                cert.getFestival().getTitle(),
+                cert.getFestival().getId());
     }
 
     @Transactional
     public void reject(Long certId, String rejectionMessage, String reviewerName) {
         FestivalCertification cert = getById(certId);
         cert.reject(rejectionMessage, reviewerName);
+        // 비동기 알림
+        notificationService.notifyCertRejected(
+                cert.getUser().getId(),
+                cert.getFestival().getTitle(),
+                cert.getFestival().getId(),
+                rejectionMessage);
     }
 }
