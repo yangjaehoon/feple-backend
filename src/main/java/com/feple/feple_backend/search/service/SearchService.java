@@ -13,7 +13,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -41,11 +40,9 @@ public class SearchService {
                 .map(a -> ArtistResponseDto.from(a, fileStorageService.buildUrl(a.getProfileImageKey())))
                 .toList();
 
-        LocalDate today = LocalDate.now();
         List<FestivalResponseDto> festivals = festivalRepository
                 .findByTitleKeyword(kw)
                 .stream()
-                .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
                 .limit(MAX_RESULTS)
                 .map(f -> FestivalResponseDto.from(f, fileStorageService.buildUrl(f.getPosterKey())))
                 .toList();
