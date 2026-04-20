@@ -58,14 +58,31 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
-    public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions) {
+    public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions,
+                                                     boolean includeEnded) {
         LocalDate today = LocalDate.now();
 
         List<Genre> genreFilter = (genres == null || genres.isEmpty()) ? null : genres;
         List<Region> regionFilter = (regions == null || regions.isEmpty()) ? null : regions;
         List<Festival> all = festivalRepository.findByFilters(genreFilter, regionFilter);
 
-        // 진행 중 또는 예정만 반환: 시작일 오름차순 (가까운 날짜가 위)
+        if (includeEnded) {
+            // 진행 중/예정: 시작일 오름차순, 종료: 최근 종료 순 (뒤에 붙임)
+            List<Festival> upcoming = all.stream()
+                    .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
+                    .sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .toList();
+            List<Festival> ended = all.stream()
+                    .filter(f -> f.getEndDate() != null && f.getEndDate().isBefore(today))
+                    .sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .toList();
+            return java.util.stream.Stream.concat(upcoming.stream(), ended.stream())
+                    .limit(200)
+                    .map(this::toDto)
+                    .toList();
+        }
+
+        // 검색 탭: 진행 중/예정만
         return all.stream()
                 .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
                 .sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())))

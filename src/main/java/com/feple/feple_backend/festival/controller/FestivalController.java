@@ -22,8 +22,9 @@ public class FestivalController {
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
             @RequestParam(required = false) List<Genre> genres,
-            @RequestParam(required = false) List<Region> regions) {
-        return festivalService.getAllFestivals(genres, regions);
+            @RequestParam(required = false) List<Region> regions,
+            @RequestParam(defaultValue = "false") boolean includeEnded) {
+        return festivalService.getAllFestivals(genres, regions, includeEnded);
     }
 
     @GetMapping("/{id}")
