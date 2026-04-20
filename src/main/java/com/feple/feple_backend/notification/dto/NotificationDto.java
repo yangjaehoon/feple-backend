@@ -11,7 +11,7 @@ public record NotificationDto(
         String title,
         String body,
         Long referenceId,
-        boolean isRead,
+        boolean read,
         LocalDateTime createdAt
 ) {
     public static NotificationDto from(Notification n) {
