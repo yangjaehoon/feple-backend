@@ -1,6 +1,7 @@
 package com.feple.feple_backend.comment.service;
 
 
+import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.post.entity.Post;
@@ -15,8 +16,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +30,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final FestivalCertificationRepository certificationRepository;
 
     @Override
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
@@ -45,19 +49,36 @@ public class CommentServiceImpl implements CommentService {
                     postAuthorId, user.getNickname(), post.getTitle(), post.getId());
         }
 
+        boolean certified = false;
+        if (post.getFestival() != null) {
+            certified = certificationRepository
+                    .findApprovedUserIdsByFestivalId(post.getFestival().getId())
+                    .contains(userId);
+        }
+
         return new CommentResponseDto(
                 saved.getId(),
                 post.getId(),
                 user.getId(),
                 user.getNickname(),
                 saved.getContent(),
-                saved.getCreatedAt()
+                saved.getCreatedAt(),
+                certified
         );
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다."));
+
+        Set<Long> certifiedUserIds = new HashSet<>();
+        if (post.getFestival() != null) {
+            certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(post.getFestival().getId());
+        }
+
+        final Set<Long> finalCertifiedIds = certifiedUserIds;
         return commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, 200))
                 .stream()
                 .map(c -> new CommentResponseDto(
@@ -66,7 +87,8 @@ public class CommentServiceImpl implements CommentService {
                         c.getUser().getId(),
                         c.getUser().getNickname(),
                         c.getContent(),
-                        c.getCreatedAt()
+                        c.getCreatedAt(),
+                        finalCertifiedIds.contains(c.getUser().getId())
                 ))
                 .collect(Collectors.toList());
     }

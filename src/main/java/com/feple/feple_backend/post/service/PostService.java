@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
+    private final FestivalCertificationRepository certificationRepository;
 
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
@@ -173,8 +176,9 @@ public class PostService {
     public List<PostResponseDto> getPostsByFestivalId(Long festivalId) {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new NoSuchElementException("해당 페스티벌이 없습니다: " + festivalId));
+        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
         return postRepository.findByFestivalOrderByCreatedAtDesc(festival, PageRequest.of(0, 100))
-                .map(PostResponseDto::from)
+                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUser().getId())))
                 .toList();
     }
 

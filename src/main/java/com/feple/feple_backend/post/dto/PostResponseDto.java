@@ -26,8 +26,13 @@ public class PostResponseDto {
     private Long festivalId;
     private String boardDisplayName;
     private LocalDateTime createdAt;
+    private boolean certified;
 
     public static PostResponseDto from(Post post) {
+        return from(post, false);
+    }
+
+    public static PostResponseDto from(Post post, boolean certified) {
         String boardDisplayName;
         if (post.getArtist() != null) {
             boardDisplayName = post.getArtist().getName() + " 게시판";
@@ -54,6 +59,7 @@ public class PostResponseDto {
                 .festivalId(post.getFestival() != null ? post.getFestival().getId() : null)
                 .boardDisplayName(boardDisplayName)
                 .createdAt(post.getCreatedAt())
+                .certified(certified)
                 .build();
     }
 }
