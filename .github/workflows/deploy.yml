@@ -45,7 +45,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            sudo systemctl stop feple.service || true
             sudo mv /tmp/*.jar /opt/feple/feple.jar
-            sudo systemctl restart feple.service
+            sudo systemctl start feple.service
             sleep 5
             systemctl is-active feple.service

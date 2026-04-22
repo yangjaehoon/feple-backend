@@ -4,65 +4,85 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * 크롤링 실행 시에만 브라우저를 열고, 완료 후 즉시 닫습니다.
+ * 앱 실행 중에는 메모리를 점유하지 않습니다.
+ */
 @Slf4j
 @Component
 public class PlaywrightBrowser {
 
-    private Playwright playwright;
-    private Browser browser;
+    private static final BrowserType.LaunchOptions LAUNCH_OPTIONS =
+            new BrowserType.LaunchOptions()
+                    .setHeadless(true)
+                    .setArgs(List.of(
+                            "--no-sandbox",
+                            "--disable-setuid-sandbox",
+                            "--disable-dev-shm-usage",
+                            "--disable-gpu",
+                            "--single-process"   // 메모리 절약
+                    ));
 
-    @PostConstruct
-    public void init() {
-        BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
-                .setHeadless(true)
-                .setArgs(List.of(
-                        "--no-sandbox",
-                        "--disable-setuid-sandbox",
-                        "--disable-dev-shm-usage",
-                        "--disable-gpu"
-                ));
+    /**
+     * 브라우저 세션을 열어 반환합니다. try-with-resources 또는 session.close()로 반드시 닫아야 합니다.
+     */
+    public BrowserSession openSession() {
         try {
-            // 먼저 이미 설치된 브라우저로 기동 시도
-            playwright = Playwright.create();
-            browser = playwright.chromium().launch(options);
-            log.info("[Playwright] Chromium 브라우저 초기화 완료");
+            // 미설치 시 최초 1회만 다운로드
+            ensureInstalled();
+            Playwright playwright = Playwright.create();
+            Browser browser = playwright.chromium().launch(LAUNCH_OPTIONS);
+            log.info("[Playwright] 브라우저 세션 시작");
+            return new BrowserSession(playwright, browser);
         } catch (Exception e) {
-            // 설치되지 않은 경우에만 다운로드 (최초 1회)
-            log.info("[Playwright] Chromium 미설치 — 설치 시작 (최초 1회)");
-            try {
-                com.microsoft.playwright.CLI.main(new String[]{"install", "chromium"});
-                playwright = Playwright.create();
-                browser = playwright.chromium().launch(options);
-                log.info("[Playwright] Chromium 설치 및 초기화 완료");
-            } catch (Exception ex) {
-                log.error("[Playwright] 브라우저 초기화 실패: {}", ex.getMessage());
-            }
+            throw new RuntimeException("[Playwright] 브라우저 세션 열기 실패: " + e.getMessage(), e);
         }
     }
 
-    @PreDestroy
-    public void close() {
-        if (browser != null) browser.close();
-        if (playwright != null) playwright.close();
+    private void ensureInstalled() {
+        // 이미 설치된 경우 빠르게 통과
+        try (Playwright pw = Playwright.create()) {
+            pw.chromium().executablePath();
+            return; // 성공하면 이미 설치됨
+        } catch (Exception ignored) {}
+
+        // 미설치 → 다운로드
+        log.info("[Playwright] Chromium 설치 시작 (최초 1회)");
+        try {
+            com.microsoft.playwright.CLI.main(new String[]{"install", "chromium"});
+        } catch (Exception e) {
+            log.warn("[Playwright] Chromium 설치 중 경고: {}", e.getMessage());
+        }
+        log.info("[Playwright] Chromium 설치 완료");
     }
 
-    /** 새 페이지를 열어 반환. 사용 후 반드시 page.close() 호출 */
-    public Page newPage() {
-        return browser.newPage(new Browser.NewPageOptions()
-                .setLocale("ko-KR")
-                .setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
-                              "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                              "Chrome/124.0.0.0 Safari/537.36"));
-    }
+    public static class BrowserSession implements AutoCloseable {
+        private final Playwright playwright;
+        private final Browser browser;
 
-    public boolean isReady() {
-        return browser != null && browser.isConnected();
+        BrowserSession(Playwright playwright, Browser browser) {
+            this.playwright = playwright;
+            this.browser = browser;
+        }
+
+        public Page newPage() {
+            return browser.newPage(new Browser.NewPageOptions()
+                    .setLocale("ko-KR")
+                    .setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                                  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                                  "Chrome/124.0.0.0 Safari/537.36"));
+        }
+
+        @Override
+        public void close() {
+            try { browser.close(); } catch (Exception ignored) {}
+            try { playwright.close(); } catch (Exception ignored) {}
+            log.info("[Playwright] 브라우저 세션 종료");
+        }
     }
 }

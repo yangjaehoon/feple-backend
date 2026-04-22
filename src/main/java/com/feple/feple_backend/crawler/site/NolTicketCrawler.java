@@ -38,13 +38,9 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
     @SuppressWarnings("unchecked")
     public List<CrawledFestivalData> crawl() {
         List<CrawledFestivalData> results = new ArrayList<>();
-        if (!playwrightBrowser.isReady()) {
-            log.error("[{}] Playwright 브라우저가 준비되지 않았습니다.", SITE_NAME);
-            return results;
-        }
-
-        Page page = playwrightBrowser.newPage();
-        try {
+        try (PlaywrightBrowser.BrowserSession session = playwrightBrowser.openSession()) {
+            Page page = session.newPage();
+            try {
             page.navigate(LIST_URL);
             page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
 
@@ -106,10 +102,11 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
             }
 
             log.info("[{}] {}개 항목 수집 완료", SITE_NAME, results.size());
+            } finally {
+                page.close();
+            }
         } catch (Exception e) {
             log.error("[{}] 크롤링 실패: {}", SITE_NAME, e.getMessage());
-        } finally {
-            page.close();
         }
         return results;
     }
