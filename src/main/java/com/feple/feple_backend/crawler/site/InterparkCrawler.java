@@ -12,19 +12,19 @@ import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class InterparkCrawler implements FestivalSiteCrawler {
 
-    private static final String SITE_NAME = "INTERPARK";
-    // 인터파크 → nol.interpark.com 으로 플랫폼 이전됨
-    private static final String LIST_URL = "https://nol.interpark.com/ticket";
+    private static final String SITE_NAME   = "INTERPARK";
+    private static final String LIST_URL    = "https://nol.interpark.com/ticket";
     private static final String DETAIL_BASE = "https://nol.interpark.com/ticket/goods/";
 
     private final ObjectMapper objectMapper;
@@ -52,41 +52,46 @@ public class InterparkCrawler implements FestivalSiteCrawler {
                 return results;
             }
 
-            JsonNode root = objectMapper.readTree(nextDataEl.html());
-            JsonNode pageProps = root.path("props").path("pageProps");
+            JsonNode root      = objectMapper.readTree(nextDataEl.html());
+            JsonNode fallback  = root.path("props").path("pageProps").path("fallback");
 
-            // nol.interpark.com 에서 가능한 데이터 경로들을 순서대로 시도
-            JsonNode goodsList = findGoodsList(pageProps);
-
-            if (goodsList == null || !goodsList.isArray() || goodsList.isEmpty()) {
-                log.warn("[{}] 상품 목록을 찾지 못했습니다. pageProps 키: {}", SITE_NAME, pageProps.fieldNames());
+            if (fallback.isMissingNode()) {
+                log.warn("[{}] fallback 키를 찾지 못했습니다.", SITE_NAME);
                 return results;
             }
 
-            for (JsonNode item : goodsList) {
-                try {
-                    String title     = firstText(item, "goodsName", "title", "name", "productName");
-                    String goodsCode = firstText(item, "goodsCode", "productCode", "id", "goodsId");
-                    String place     = firstText(item, "placeName", "venueName", "place", "location");
-                    String startStr  = firstText(item, "startDate", "performStartDt", "openDate", "saleStartDate");
-                    String endStr    = firstText(item, "endDate", "performEndDt", "closeDate", "saleEndDate");
-                    String imgUrl    = firstText(item, "imgUrl", "posterUrl", "imageUrl", "thumbnailUrl");
+            // fallback 은 SWR 캐시 맵: 각 값이 공연 배열일 수 있음
+            // 모든 값을 순회하며 goodsCode 필드를 가진 배열을 찾음
+            Iterator<Map.Entry<String, JsonNode>> fields = fallback.fields();
+            while (fields.hasNext()) {
+                JsonNode value = fields.next().getValue();
+                if (!value.isArray() || value.isEmpty()) continue;
+                if (!value.get(0).has("goodsCode") && !value.get(0).has("noticeId")) continue;
 
-                    if (title == null) continue;
+                for (JsonNode item : value) {
+                    try {
+                        String title     = item.path("title").asText(null);
+                        String goodsCode = item.path("goodsCode").asText(null);
+                        String place     = item.path("venueName").asText(null);
+                        String dateStr   = item.path("openDateStr").asText(null); // "2026-05-15 20:00:00"
+                        String imgUrl    = item.path("posterImageUrl").asText(null);
 
-                    String detailUrl = goodsCode != null ? DETAIL_BASE + goodsCode : LIST_URL;
+                        if (title == null || title.isBlank()) continue;
 
-                    results.add(CrawledFestivalData.builder()
-                            .title(title)
-                            .location(place)
-                            .startDate(parseDate(startStr))
-                            .endDate(parseDate(endStr))
-                            .posterImageUrl(imgUrl)
-                            .sourceUrl(detailUrl)
-                            .sourceSite(SITE_NAME)
-                            .build());
-                } catch (Exception e) {
-                    log.debug("[{}] 항목 파싱 실패: {}", SITE_NAME, e.getMessage());
+                        String detailUrl = goodsCode != null ? DETAIL_BASE + goodsCode : LIST_URL;
+
+                        results.add(CrawledFestivalData.builder()
+                                .title(title)
+                                .location(place)
+                                .startDate(parseDate(dateStr))
+                                .endDate(parseDate(dateStr)) // 오픈 공지 데이터라 단일 날짜
+                                .posterImageUrl(imgUrl)
+                                .sourceUrl(detailUrl)
+                                .sourceSite(SITE_NAME)
+                                .build());
+                    } catch (Exception e) {
+                        log.debug("[{}] 항목 파싱 실패: {}", SITE_NAME, e.getMessage());
+                    }
                 }
             }
 
@@ -97,42 +102,11 @@ public class InterparkCrawler implements FestivalSiteCrawler {
         return results;
     }
 
-    private JsonNode findGoodsList(JsonNode pageProps) {
-        // 경로 후보들을 순서대로 탐색
-        String[][] paths = {
-            {"genreData", "goodsList"},
-            {"rankingList"},
-            {"goodsList"},
-            {"productList"},
-            {"data", "goodsList"},
-            {"data", "list"},
-            {"serverData", "list"},
-            {"initialData", "goodsList"},
-        };
-        for (String[] path : paths) {
-            JsonNode node = pageProps;
-            for (String key : path) node = node.path(key);
-            if (node.isArray() && !node.isEmpty()) return node;
-        }
-        return null;
-    }
-
-    private String firstText(JsonNode item, String... keys) {
-        for (String key : keys) {
-            JsonNode node = item.path(key);
-            if (!node.isMissingNode() && !node.isNull() && !node.asText("").isBlank())
-                return node.asText();
-        }
-        return null;
-    }
-
     private LocalDate parseDate(String raw) {
         if (raw == null || raw.isBlank()) return null;
-        String cleaned = raw.replaceAll("[^0-9]", "");
-        if (cleaned.length() == 8) {
-            try { return LocalDate.parse(cleaned, DateTimeFormatter.ofPattern("yyyyMMdd")); }
-            catch (DateTimeParseException ignored) {}
-        }
+        // "2026-05-15 20:00:00" 또는 "2026-05-15T20:00:00"
+        try { return LocalDate.parse(raw.substring(0, 10)); }
+        catch (DateTimeParseException ignored) {}
         return null;
     }
 }

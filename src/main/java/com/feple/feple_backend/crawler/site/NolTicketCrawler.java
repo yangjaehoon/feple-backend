@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -24,12 +25,16 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class NolTicketCrawler implements FestivalSiteCrawler {
 
-    private static final String SITE_NAME = "NOLTICKET";
-    // 놀티켓 = 야놀자의 공연/전시 플랫폼 nol.yanolja.com
-    private static final String BASE_URL  = "https://nol.yanolja.com";
-    private static final String LIST_URL  = "https://nol.yanolja.com/concert";
-    private static final Pattern DATE_PATTERN =
-            Pattern.compile("(\\d{4})[./-](\\d{1,2})[./-](\\d{1,2})");
+    private static final String SITE_NAME  = "NOLTICKET";
+    private static final String BASE_URL   = "https://nol.yanolja.com";
+    private static final String LIST_URL   = "https://nol.yanolja.com";
+    // self.__next_f.push([숫자,"...JSON..."])
+    private static final Pattern PUSH_PATTERN =
+            Pattern.compile("self\\.__next_f\\.push\\(\\[\\d+,\"(.+?)\"\\]\\)\\s*;?",
+                    Pattern.DOTALL);
+    // "2026.5.30 ~ 5.31" 또는 "2026.3.24 ~ 6.7"
+    private static final Pattern FEATURES_DATE =
+            Pattern.compile("(\\d{4})\\.(\\d{1,2})\\.(\\d{1,2}).*?(?:(\\d{4})\\.)?(\\d{1,2})\\.(\\d{1,2})");
 
     private final ObjectMapper objectMapper;
 
@@ -46,118 +51,127 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
                                "Chrome/124.0.0.0 Safari/537.36")
                     .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                     .header("Accept-Language", "ko-KR,ko;q=0.9")
-                    .header("Referer", BASE_URL)
                     .timeout(20_000)
                     .get();
 
-            // nol.yanolja.com 은 Next.js 앱
-            Element nextDataEl = doc.selectFirst("script#__NEXT_DATA__");
-            if (nextDataEl == null) {
-                log.warn("[{}] __NEXT_DATA__ 스크립트를 찾지 못했습니다.", SITE_NAME);
-                return results;
-            }
+            // Next.js 스트리밍 방식: self.__next_f.push() 스크립트 태그들을 파싱
+            Elements scripts = doc.select("script");
+            int found = 0;
+            for (Element script : scripts) {
+                String src = script.html();
+                if (!src.contains("self.__next_f.push")) continue;
 
-            JsonNode root = objectMapper.readTree(nextDataEl.html());
-            JsonNode pageProps = root.path("props").path("pageProps");
-
-            JsonNode list = findList(pageProps);
-            if (list == null || !list.isArray() || list.isEmpty()) {
-                log.warn("[{}] 상품 목록을 찾지 못했습니다. pageProps 키: {}", SITE_NAME, pageProps.fieldNames());
-                return results;
-            }
-
-            for (JsonNode item : list) {
-                try {
-                    String title    = firstText(item, "title", "goodsName", "productName", "name");
-                    String place    = firstText(item, "venueName", "placeName", "place", "location");
-                    String startStr = firstText(item, "startAt", "startDate", "performStartDt", "openDate");
-                    String endStr   = firstText(item, "endAt", "endDate", "performEndDt", "closeDate");
-                    String imgUrl   = firstText(item, "thumbnailUrl", "imageUrl", "posterUrl", "imgUrl");
-                    String id       = firstText(item, "id", "goodsCode", "productId", "concertId");
-
-                    if (title == null) continue;
-
-                    String detailUrl = id != null ? BASE_URL + "/concert/" + id : LIST_URL;
-
-                    results.add(CrawledFestivalData.builder()
-                            .title(title)
-                            .location(place)
-                            .startDate(parseDateFlex(startStr))
-                            .endDate(parseDateFlex(endStr))
-                            .posterImageUrl(imgUrl)
-                            .sourceUrl(detailUrl)
-                            .sourceSite(SITE_NAME)
-                            .build());
-                } catch (Exception e) {
-                    log.debug("[{}] 항목 파싱 실패: {}", SITE_NAME, e.getMessage());
+                Matcher m = PUSH_PATTERN.matcher(src);
+                while (m.find()) {
+                    String escaped = m.group(1);
+                    try {
+                        // 이스케이프된 JSON 문자열을 파싱
+                        String json = objectMapper.readValue("\"" + escaped + "\"", String.class);
+                        List<CrawledFestivalData> extracted = extractFromRscChunk(json);
+                        results.addAll(extracted);
+                        found += extracted.size();
+                    } catch (Exception ignored) {}
                 }
             }
 
-            log.info("[{}] {}개 항목 수집 완료", SITE_NAME, results.size());
+            log.info("[{}] {}개 항목 수집 완료", SITE_NAME, found);
         } catch (Exception e) {
             log.error("[{}] 크롤링 실패: {}", SITE_NAME, e.getMessage());
         }
         return results;
     }
 
-    private JsonNode findList(JsonNode pageProps) {
-        String[][] paths = {
-            {"list"},
-            {"concertList"},
-            {"data", "list"},
-            {"serverData", "list"},
-            {"initialData", "list"},
-            {"goodsList"},
-            {"productList"},
-            {"items"},
-        };
-        for (String[] path : paths) {
-            JsonNode n = pageProps;
-            for (String k : path) n = n.path(k);
-            if (n.isArray() && !n.isEmpty()) return n;
-        }
-        return null;
+    /**
+     * RSC 청크 JSON에서 items 배열을 찾아 CrawledFestivalData 리스트로 변환
+     */
+    private List<CrawledFestivalData> extractFromRscChunk(String chunk) {
+        List<CrawledFestivalData> results = new ArrayList<>();
+        try {
+            JsonNode root = objectMapper.readTree(chunk);
+            findItemsRecursive(root, results, 0);
+        } catch (Exception ignored) {}
+        return results;
     }
 
-    private String firstText(JsonNode item, String... keys) {
-        for (String k : keys) {
-            JsonNode n = item.path(k);
-            if (!n.isMissingNode() && !n.isNull() && !n.asText("").isBlank()) return n.asText();
+    private void findItemsRecursive(JsonNode node, List<CrawledFestivalData> results, int depth) {
+        if (depth > 8 || node == null) return;
+
+        if (node.isArray() && !node.isEmpty()) {
+            JsonNode first = node.get(0);
+            // id, title, location, features 필드를 가진 배열이면 공연 목록으로 판단
+            if (first.has("id") && first.has("title") && first.has("features")) {
+                for (JsonNode item : node) {
+                    try {
+                        String id       = item.path("id").asText(null);
+                        String title    = item.path("title").asText(null);
+                        String location = item.path("location").asText(null);
+                        String features = item.path("features").asText(null); // "2026.5.30 ~ 5.31"
+                        String imgUrl   = item.path("image").path("url").asText(null);
+
+                        if (title == null || title.isBlank()) continue;
+
+                        String detailUrl = id != null ? BASE_URL + "/ticket/" + id : LIST_URL;
+                        LocalDate[] dates = parseFeaturesDate(features);
+
+                        results.add(CrawledFestivalData.builder()
+                                .title(title)
+                                .location(location)
+                                .startDate(dates[0])
+                                .endDate(dates[1])
+                                .posterImageUrl(imgUrl)
+                                .sourceUrl(detailUrl)
+                                .sourceSite(SITE_NAME)
+                                .build());
+                    } catch (Exception ignored) {}
+                }
+                return;
+            }
         }
-        return null;
+
+        if (node.isObject()) {
+            node.fields().forEachRemaining(entry ->
+                    findItemsRecursive(entry.getValue(), results, depth + 1));
+        } else if (node.isArray()) {
+            node.forEach(child -> findItemsRecursive(child, results, depth + 1));
+        }
     }
 
-    private LocalDate parseDateFlex(String raw) {
-        if (raw == null || raw.isBlank()) return null;
-        // ISO 형식: "2025-08-01T00:00:00"
-        if (raw.length() >= 10 && raw.charAt(4) == '-') {
-            try { return LocalDate.parse(raw.substring(0, 10)); }
-            catch (DateTimeParseException ignored) {}
-        }
-        String cleaned = raw.replaceAll("[^0-9]", "");
-        if (cleaned.length() == 8) {
-            try { return LocalDate.parse(cleaned, DateTimeFormatter.ofPattern("yyyyMMdd")); }
-            catch (DateTimeParseException ignored) {}
-        }
-        return parseDateRange(raw)[0];
-    }
-
-    private LocalDate[] parseDateRange(String raw) {
+    /**
+     * "2026.5.30 ~ 5.31" 또는 "2026.3.24 ~ 6.7" 형식 파싱
+     */
+    private LocalDate[] parseFeaturesDate(String raw) {
         LocalDate[] result = {null, null};
-        if (raw == null) return result;
-        List<LocalDate> dates = new ArrayList<>();
-        Matcher m = DATE_PATTERN.matcher(raw);
-        while (m.find()) {
+        if (raw == null || raw.isBlank()) return result;
+
+        Matcher m = FEATURES_DATE.matcher(raw);
+        if (m.find()) {
+            int startYear  = Integer.parseInt(m.group(1));
+            int startMonth = Integer.parseInt(m.group(2));
+            int startDay   = Integer.parseInt(m.group(3));
+            // 종료 연도가 명시되지 않으면 시작 연도 사용
+            int endYear    = m.group(4) != null ? Integer.parseInt(m.group(4)) : startYear;
+            int endMonth   = Integer.parseInt(m.group(5));
+            int endDay     = Integer.parseInt(m.group(6));
+
             try {
-                dates.add(LocalDate.parse(
-                        String.format("%s.%02d.%02d", m.group(1),
-                                Integer.parseInt(m.group(2)),
-                                Integer.parseInt(m.group(3))),
-                        DateTimeFormatter.ofPattern("yyyy.MM.dd")));
-            } catch (DateTimeParseException ignored) {}
+                result[0] = LocalDate.of(startYear, startMonth, startDay);
+                result[1] = LocalDate.of(endYear, endMonth, endDay);
+            } catch (Exception ignored) {}
+        } else {
+            // 단일 날짜 시도
+            Pattern single = Pattern.compile("(\\d{4})\\.(\\d{1,2})\\.(\\d{1,2})");
+            Matcher ms = single.matcher(raw);
+            if (ms.find()) {
+                try {
+                    LocalDate d = LocalDate.parse(
+                            String.format("%s.%02d.%02d", ms.group(1),
+                                    Integer.parseInt(ms.group(2)),
+                                    Integer.parseInt(ms.group(3))),
+                            DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+                    result[0] = result[1] = d;
+                } catch (DateTimeParseException ignored) {}
+            }
         }
-        if (!dates.isEmpty()) result[0] = dates.get(0);
-        result[1] = dates.size() >= 2 ? dates.get(1) : result[0];
         return result;
     }
 }

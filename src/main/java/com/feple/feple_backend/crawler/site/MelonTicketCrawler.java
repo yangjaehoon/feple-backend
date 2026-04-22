@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Component
+// @Component  // 멜론 티켓은 마이크로서비스 API 방식으로 Jsoup 크롤링 불가 — 추후 API 엔드포인트 확인 후 재활성화
 @RequiredArgsConstructor
 public class MelonTicketCrawler implements FestivalSiteCrawler {
 
