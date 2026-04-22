@@ -296,14 +296,48 @@
                 </form>
                 <div th:if="${timetableSuccess}" class="alert alert-success" style="margin-bottom:16px;" th:text="${timetableSuccess}"></div>
 
+                <!-- 운영 항목 추가 폼 -->
+                <div style="background:#fffbeb; border:1px solid #f6d860; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
+                    <div style="font-size:13px; font-weight:700; color:#b7791f; margin-bottom:10px;">📢 운영 항목 추가 (티켓 부스 오픈, 입장 게이트 오픈 등)</div>
+                    <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                          method="post"
+                          onsubmit="return validateCustomTimetable(this)"
+                          style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; align-items:end;">
+                        <input type="hidden" name="stageName" value="📢"/>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">항목명</label>
+                            <input type="text" name="artistName" placeholder="예: 티켓 부스 오픈, 입장 게이트 오픈" required maxlength="50"
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">날짜</label>
+                            <input type="date" name="festivalDate"
+                                   th:min="${festival.startDate}" th:max="${festival.endDate}"
+                                   th:value="${festival.startDate}" required
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">시작</label>
+                            <input type="time" name="startTime" required
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">종료</label>
+                            <input type="time" name="endTime" required
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <button type="submit" class="btn btn-warning" style="white-space:nowrap;">+ 추가</button>
+                    </form>
+                </div>
+
                 <!-- 목록 테이블 -->
                 <div class="table-wrap">
                     <table>
                         <thead>
                         <tr>
-                            <th>스테이지</th>
+                            <th>구분</th>
                             <th>시간</th>
-                            <th>아티스트</th>
+                            <th>아티스트 / 항목</th>
                             <th>삭제</th>
                         </tr>
                         </thead>
@@ -317,9 +351,14 @@
                                     📅 <span th:text="${entry.festivalDate}"></span>
                                 </td>
                             </tr>
-                            <!-- 항목 행 -->
-                            <tr>
-                                <td><span class="badge badge-stage" th:data-stage="${entry.stageName}" th:text="${entry.stageName}"></span></td>
+                            <!-- 항목 행: 운영 항목(📢)은 노란 배경 -->
+                            <tr th:classappend="${entry.stageName == '📢'} ? 'bg-warning-subtle' : ''">
+                                <td>
+                                    <span th:if="${entry.stageName == '📢'}"
+                                          style="font-size:13px; font-weight:700; color:#b7791f;">📢 운영</span>
+                                    <span th:unless="${entry.stageName == '📢'}"
+                                          class="badge badge-stage" th:data-stage="${entry.stageName}" th:text="${entry.stageName}"></span>
+                                </td>
                                 <td style="font-size:13px; white-space:nowrap;">
                                     <span style="font-weight:700; color:#2d3748;" th:text="${entry.startTime}"></span>
                                     <span style="color:var(--muted); margin:0 4px;">~</span>
@@ -613,6 +652,16 @@ function validateTimetable(form) {
         document.getElementById('startTime').style.borderColor = '#e53e3e';
         document.getElementById('endTime').style.borderColor = '#e53e3e';
         document.getElementById('endTime').focus();
+        return false;
+    }
+    return true;
+}
+
+function validateCustomTimetable(form) {
+    const start = form.querySelector('[name="startTime"]').value;
+    const end = form.querySelector('[name="endTime"]').value;
+    if (start && end && start >= end) {
+        alert('종료 시간은 시작 시간보다 늦어야 합니다.');
         return false;
     }
     return true;

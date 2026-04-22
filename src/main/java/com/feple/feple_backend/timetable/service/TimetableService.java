@@ -56,7 +56,7 @@ public class TimetableService {
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)
                 .stageName(req.getStageName().trim())
-                .artistName(req.getArtistName().trim())
+                .artistName(req.getArtistName() != null ? req.getArtistName().trim() : "")
                 .festivalDate(req.getFestivalDate())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())

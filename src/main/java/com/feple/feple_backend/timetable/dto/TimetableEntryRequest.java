@@ -16,7 +16,6 @@ import java.time.LocalTime;
 public class TimetableEntryRequest {
     @NotBlank(message = "스테이지 이름은 필수입니다.")
     private String stageName;
-    @NotBlank(message = "아티스트 이름은 필수입니다.")
     private String artistName;
 
     @NotNull(message = "페스티벌 날짜는 필수입니다.")
