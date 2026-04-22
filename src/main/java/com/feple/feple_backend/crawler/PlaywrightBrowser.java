@@ -25,7 +25,14 @@ public class PlaywrightBrowser {
                             "--disable-setuid-sandbox",
                             "--disable-dev-shm-usage",
                             "--disable-gpu",
-                            "--single-process"   // 메모리 절약
+                            "--single-process",
+                            "--disable-extensions",
+                            "--disable-plugins",
+                            "--disable-background-networking",
+                            "--disable-sync",
+                            "--disable-translate",
+                            "--no-first-run",
+                            "--js-flags=--max-old-space-size=128"  // V8 힙 128MB로 제한
                     ));
 
     /**
