@@ -1,7 +1,6 @@
 package com.feple.feple_backend.festival.repository;
 
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.festival.entity.FestivalStatus;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,7 +24,4 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     List<Festival> findByFilters(@Param("genres") List<Genre> genres,
                                  @Param("regions") List<Region> regions);
 
-    List<Festival> findByStatusOrderByIdDesc(FestivalStatus status);
-
-    boolean existsBySourceUrl(String sourceUrl);
 }
