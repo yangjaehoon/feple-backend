@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.dto;
 
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.user.entity.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class PostResponseDto {
     private String boardDisplayName;
     private LocalDateTime createdAt;
     private boolean certified;
+    private UserRole userRole;
 
     public static PostResponseDto from(Post post) {
         return from(post, false);
@@ -60,6 +62,7 @@ public class PostResponseDto {
                 .boardDisplayName(boardDisplayName)
                 .createdAt(post.getCreatedAt())
                 .certified(certified)
+                .userRole(post.getUser().getRole())
                 .build();
     }
 }

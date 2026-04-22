@@ -5,6 +5,7 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
+import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -66,5 +67,14 @@ public class UserAdminController {
         userService.adminDeleteUser(id);
         ra.addFlashAttribute("successMessage", "회원이 삭제되었습니다.");
         return "redirect:/admin/users";
+    }
+
+    @PostMapping("/{id}/role")
+    public String updateUserRole(@PathVariable Long id,
+                                 @RequestParam UserRole role,
+                                 RedirectAttributes ra) {
+        userService.updateUserRole(id, role);
+        ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.name());
+        return "redirect:/admin/users/" + id;
     }
 }

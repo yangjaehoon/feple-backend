@@ -201,6 +201,7 @@ public class UserService {
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
+                .role(user.getRole())
                 .build();
     }
 
@@ -211,7 +212,15 @@ public class UserService {
                 .nickname(user.getNickname())
                 .email(user.getEmail())
                 .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
+                .role(user.getRole())
                 .build();
+    }
+
+    @Transactional
+    public void updateUserRole(Long userId, com.feple.feple_backend.user.entity.UserRole role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        user.changeRole(role);
     }
 
     private String resolveProfileImageUrl(String raw) {

@@ -42,8 +42,14 @@
                     <div th:if="${user.profileImageUrl == null}"
                          style="width:72px; height:72px; border-radius:50%; background:var(--primary-50); display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0;">👤</div>
                     <div>
-                        <div style="font-size:20px; font-weight:700; color:var(--text);"
-                             th:text="${user.nickname}"></div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="font-size:20px; font-weight:700; color:var(--text);"
+                                 th:text="${user.nickname}"></div>
+                            <span th:if="${user.role != null and user.role.name() == 'ADMIN'}"
+                                  class="badge badge-danger" style="font-size:11px;">🛡️ 관리자</span>
+                            <span th:if="${user.role != null and user.role.name() == 'ARTIST'}"
+                                  class="badge badge-primary" style="font-size:11px;">🎤 아티스트</span>
+                        </div>
                         <div style="font-size:13px; color:var(--muted); margin-top:4px;"
                              th:text="${user.email}"></div>
                         <div style="font-size:12px; color:var(--muted); margin-top:2px;">
@@ -155,6 +161,24 @@
                         <span style="font-weight:600; font-size:13.5px;" th:text="${festival.title}"></span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 역할 변경 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🔑 역할 관리</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post"
+                      style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <select name="role" class="form-select" style="width:auto;">
+                        <option value="USER"   th:selected="${user.role != null and user.role.name() == 'USER'}">일반 사용자</option>
+                        <option value="ARTIST" th:selected="${user.role != null and user.role.name() == 'ARTIST'}">🎤 아티스트</option>
+                        <option value="ADMIN"  th:selected="${user.role != null and user.role.name() == 'ADMIN'}">🛡️ 관리자</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">역할 변경</button>
+                </form>
             </div>
         </div>
 

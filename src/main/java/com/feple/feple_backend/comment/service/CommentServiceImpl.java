@@ -63,7 +63,8 @@ public class CommentServiceImpl implements CommentService {
                 user.getNickname(),
                 saved.getContent(),
                 saved.getCreatedAt(),
-                certified
+                certified,
+                user.getRole()
         );
     }
 
@@ -88,7 +89,8 @@ public class CommentServiceImpl implements CommentService {
                         c.getUser().getNickname(),
                         c.getContent(),
                         c.getCreatedAt(),
-                        finalCertifiedIds.contains(c.getUser().getId())
+                        finalCertifiedIds.contains(c.getUser().getId()),
+                        c.getUser().getRole()
                 ))
                 .collect(Collectors.toList());
     }
