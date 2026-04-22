@@ -20,23 +20,30 @@ public class PlaywrightBrowser {
 
     @PostConstruct
     public void init() {
+        BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
+                .setHeadless(true)
+                .setArgs(List.of(
+                        "--no-sandbox",
+                        "--disable-setuid-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-gpu"
+                ));
         try {
-            // 브라우저가 설치되어 있지 않으면 자동 설치 (EC2 최초 기동 시)
-            com.microsoft.playwright.CLI.main(new String[]{"install", "chromium", "--with-deps"});
+            // 먼저 이미 설치된 브라우저로 기동 시도
             playwright = Playwright.create();
-            browser = playwright.chromium().launch(
-                    new BrowserType.LaunchOptions()
-                            .setHeadless(true)
-                            .setArgs(List.of(
-                                    "--no-sandbox",
-                                    "--disable-setuid-sandbox",
-                                    "--disable-dev-shm-usage",
-                                    "--disable-gpu"
-                            ))
-            );
+            browser = playwright.chromium().launch(options);
             log.info("[Playwright] Chromium 브라우저 초기화 완료");
         } catch (Exception e) {
-            log.error("[Playwright] 브라우저 초기화 실패: {}", e.getMessage());
+            // 설치되지 않은 경우에만 다운로드 (최초 1회)
+            log.info("[Playwright] Chromium 미설치 — 설치 시작 (최초 1회)");
+            try {
+                com.microsoft.playwright.CLI.main(new String[]{"install", "chromium"});
+                playwright = Playwright.create();
+                browser = playwright.chromium().launch(options);
+                log.info("[Playwright] Chromium 설치 및 초기화 완료");
+            } catch (Exception ex) {
+                log.error("[Playwright] 브라우저 초기화 실패: {}", ex.getMessage());
+            }
         }
     }
 
