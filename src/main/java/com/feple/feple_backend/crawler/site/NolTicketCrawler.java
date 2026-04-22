@@ -1,12 +1,14 @@
 package com.feple.feple_backend.crawler.site;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.crawler.CrawledFestivalData;
 import com.feple.feple_backend.crawler.FestivalSiteCrawler;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -19,19 +21,20 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class NolTicketCrawler implements FestivalSiteCrawler {
 
     private static final String SITE_NAME = "NOLTICKET";
-    private static final String BASE_URL = "https://www.nolticket.com";
-    // 놀티켓 페스티벌/공연 목록 페이지
-    private static final String LIST_URL = "https://www.nolticket.com/ticket/list?genre=festival";
+    // 놀티켓 = 야놀자의 공연/전시 플랫폼 nol.yanolja.com
+    private static final String BASE_URL  = "https://nol.yanolja.com";
+    private static final String LIST_URL  = "https://nol.yanolja.com/concert";
     private static final Pattern DATE_PATTERN =
             Pattern.compile("(\\d{4})[./-](\\d{1,2})[./-](\\d{1,2})");
 
+    private final ObjectMapper objectMapper;
+
     @Override
-    public String getSiteName() {
-        return SITE_NAME;
-    }
+    public String getSiteName() { return SITE_NAME; }
 
     @Override
     public List<CrawledFestivalData> crawl() {
@@ -41,37 +44,46 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
                     .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                                "AppleWebKit/537.36 (KHTML, like Gecko) " +
                                "Chrome/124.0.0.0 Safari/537.36")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                     .header("Accept-Language", "ko-KR,ko;q=0.9")
+                    .header("Referer", BASE_URL)
                     .timeout(20_000)
                     .get();
 
-            // 상품 카드 셀렉터 (사이트 HTML 구조에 맞게 조정 필요)
-            Elements items = doc.select(
-                    ".ticket-item, .product-item, .lst-ticket li, " +
-                    "[class*='ticket-card'], [class*='product-list'] li, " +
-                    ".item-list li, ul.list-ticket > li"
-            );
+            // nol.yanolja.com 은 Next.js 앱
+            Element nextDataEl = doc.selectFirst("script#__NEXT_DATA__");
+            if (nextDataEl == null) {
+                log.warn("[{}] __NEXT_DATA__ 스크립트를 찾지 못했습니다.", SITE_NAME);
+                return results;
+            }
 
-            log.info("[{}] {}개 항목 발견", SITE_NAME, items.size());
+            JsonNode root = objectMapper.readTree(nextDataEl.html());
+            JsonNode pageProps = root.path("props").path("pageProps");
 
-            for (Element item : items) {
+            JsonNode list = findList(pageProps);
+            if (list == null || !list.isArray() || list.isEmpty()) {
+                log.warn("[{}] 상품 목록을 찾지 못했습니다. pageProps 키: {}", SITE_NAME, pageProps.fieldNames());
+                return results;
+            }
+
+            for (JsonNode item : list) {
                 try {
-                    String title   = extractText(item, ".tit, .title, h3, h4, [class*='name'], [class*='tit']");
-                    String place   = extractText(item, ".place, .location, .venue, [class*='place'], [class*='venue']");
-                    String dateStr = extractText(item, ".date, .period, .term, [class*='date'], [class*='period']");
-                    String imgUrl  = extractImg(item);
-                    String href    = extractHref(item);
+                    String title    = firstText(item, "title", "goodsName", "productName", "name");
+                    String place    = firstText(item, "venueName", "placeName", "place", "location");
+                    String startStr = firstText(item, "startAt", "startDate", "performStartDt", "openDate");
+                    String endStr   = firstText(item, "endAt", "endDate", "performEndDt", "closeDate");
+                    String imgUrl   = firstText(item, "thumbnailUrl", "imageUrl", "posterUrl", "imgUrl");
+                    String id       = firstText(item, "id", "goodsCode", "productId", "concertId");
 
-                    if (title == null || title.isBlank()) continue;
+                    if (title == null) continue;
 
-                    String detailUrl = buildUrl(href);
-                    LocalDate[] dates = parseDateRange(dateStr);
+                    String detailUrl = id != null ? BASE_URL + "/concert/" + id : LIST_URL;
 
                     results.add(CrawledFestivalData.builder()
-                            .title(title.trim())
+                            .title(title)
                             .location(place)
-                            .startDate(dates[0])
-                            .endDate(dates[1])
+                            .startDate(parseDateFlex(startStr))
+                            .endDate(parseDateFlex(endStr))
                             .posterImageUrl(imgUrl)
                             .sourceUrl(detailUrl)
                             .sourceSite(SITE_NAME)
@@ -88,32 +100,46 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
         return results;
     }
 
-    private String extractText(Element parent, String cssQuery) {
-        for (String sel : cssQuery.split(",\\s*")) {
-            Element el = parent.selectFirst(sel.trim());
-            if (el != null && !el.text().isBlank()) return el.text();
+    private JsonNode findList(JsonNode pageProps) {
+        String[][] paths = {
+            {"list"},
+            {"concertList"},
+            {"data", "list"},
+            {"serverData", "list"},
+            {"initialData", "list"},
+            {"goodsList"},
+            {"productList"},
+            {"items"},
+        };
+        for (String[] path : paths) {
+            JsonNode n = pageProps;
+            for (String k : path) n = n.path(k);
+            if (n.isArray() && !n.isEmpty()) return n;
         }
         return null;
     }
 
-    private String extractImg(Element item) {
-        Element img = item.selectFirst("img");
-        if (img == null) return null;
-        String src = img.attr("data-src");
-        if (src.isBlank()) src = img.attr("data-lazy");
-        if (src.isBlank()) src = img.attr("src");
-        if (src.isBlank()) return null;
-        return src.startsWith("http") ? src : BASE_URL + src;
+    private String firstText(JsonNode item, String... keys) {
+        for (String k : keys) {
+            JsonNode n = item.path(k);
+            if (!n.isMissingNode() && !n.isNull() && !n.asText("").isBlank()) return n.asText();
+        }
+        return null;
     }
 
-    private String extractHref(Element item) {
-        Element a = item.selectFirst("a[href]");
-        return a != null ? a.attr("href") : null;
-    }
-
-    private String buildUrl(String href) {
-        if (href == null) return LIST_URL;
-        return href.startsWith("http") ? href : BASE_URL + href;
+    private LocalDate parseDateFlex(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        // ISO 형식: "2025-08-01T00:00:00"
+        if (raw.length() >= 10 && raw.charAt(4) == '-') {
+            try { return LocalDate.parse(raw.substring(0, 10)); }
+            catch (DateTimeParseException ignored) {}
+        }
+        String cleaned = raw.replaceAll("[^0-9]", "");
+        if (cleaned.length() == 8) {
+            try { return LocalDate.parse(cleaned, DateTimeFormatter.ofPattern("yyyyMMdd")); }
+            catch (DateTimeParseException ignored) {}
+        }
+        return parseDateRange(raw)[0];
     }
 
     private LocalDate[] parseDateRange(String raw) {
@@ -123,11 +149,11 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
         Matcher m = DATE_PATTERN.matcher(raw);
         while (m.find()) {
             try {
-                String normalized = String.format("%s.%02d.%02d",
-                        m.group(1),
-                        Integer.parseInt(m.group(2)),
-                        Integer.parseInt(m.group(3)));
-                dates.add(LocalDate.parse(normalized, DateTimeFormatter.ofPattern("yyyy.MM.dd")));
+                dates.add(LocalDate.parse(
+                        String.format("%s.%02d.%02d", m.group(1),
+                                Integer.parseInt(m.group(2)),
+                                Integer.parseInt(m.group(3))),
+                        DateTimeFormatter.ofPattern("yyyy.MM.dd")));
             } catch (DateTimeParseException ignored) {}
         }
         if (!dates.isEmpty()) result[0] = dates.get(0);

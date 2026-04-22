@@ -23,15 +23,14 @@ import java.util.List;
 public class InterparkCrawler implements FestivalSiteCrawler {
 
     private static final String SITE_NAME = "INTERPARK";
-    private static final String LIST_URL =
-            "https://tickets.interpark.com/main?genreType=FES";
+    // 인터파크 → nol.interpark.com 으로 플랫폼 이전됨
+    private static final String LIST_URL = "https://nol.interpark.com/ticket";
+    private static final String DETAIL_BASE = "https://nol.interpark.com/ticket/goods/";
 
     private final ObjectMapper objectMapper;
 
     @Override
-    public String getSiteName() {
-        return SITE_NAME;
-    }
+    public String getSiteName() { return SITE_NAME; }
 
     @Override
     public List<CrawledFestivalData> crawl() {
@@ -41,11 +40,12 @@ public class InterparkCrawler implements FestivalSiteCrawler {
                     .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                                "AppleWebKit/537.36 (KHTML, like Gecko) " +
                                "Chrome/124.0.0.0 Safari/537.36")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                     .header("Accept-Language", "ko-KR,ko;q=0.9")
+                    .header("Referer", "https://nol.interpark.com")
                     .timeout(20_000)
                     .get();
 
-            // Next.js 앱은 __NEXT_DATA__ 스크립트에 초기 데이터를 포함
             Element nextDataEl = doc.selectFirst("script#__NEXT_DATA__");
             if (nextDataEl == null) {
                 log.warn("[{}] __NEXT_DATA__ 스크립트를 찾지 못했습니다.", SITE_NAME);
@@ -53,30 +53,28 @@ public class InterparkCrawler implements FestivalSiteCrawler {
             }
 
             JsonNode root = objectMapper.readTree(nextDataEl.html());
-            // 실제 경로는 페이지 구조에 따라 달라질 수 있음
-            // 예: props → pageProps → genreData → goodsList
-            JsonNode goodsList = root.path("props")
-                                     .path("pageProps")
-                                     .path("genreData")
-                                     .path("goodsList");
+            JsonNode pageProps = root.path("props").path("pageProps");
 
-            if (!goodsList.isArray()) {
-                log.warn("[{}] goodsList 경로를 찾지 못했습니다. JSON 경로를 확인하세요.", SITE_NAME);
+            // nol.interpark.com 에서 가능한 데이터 경로들을 순서대로 시도
+            JsonNode goodsList = findGoodsList(pageProps);
+
+            if (goodsList == null || !goodsList.isArray() || goodsList.isEmpty()) {
+                log.warn("[{}] 상품 목록을 찾지 못했습니다. pageProps 키: {}", SITE_NAME, pageProps.fieldNames());
                 return results;
             }
 
             for (JsonNode item : goodsList) {
                 try {
-                    String title      = item.path("goodsName").asText(null);
-                    String goodsCode  = item.path("goodsCode").asText(null);
-                    String place      = item.path("placeName").asText(null);
-                    String startStr   = item.path("startDate").asText(null);
-                    String endStr     = item.path("endDate").asText(null);
-                    String imgUrl     = item.path("imgUrl").asText(null);
+                    String title     = firstText(item, "goodsName", "title", "name", "productName");
+                    String goodsCode = firstText(item, "goodsCode", "productCode", "id", "goodsId");
+                    String place     = firstText(item, "placeName", "venueName", "place", "location");
+                    String startStr  = firstText(item, "startDate", "performStartDt", "openDate", "saleStartDate");
+                    String endStr    = firstText(item, "endDate", "performEndDt", "closeDate", "saleEndDate");
+                    String imgUrl    = firstText(item, "imgUrl", "posterUrl", "imageUrl", "thumbnailUrl");
 
-                    if (title == null || goodsCode == null) continue;
+                    if (title == null) continue;
 
-                    String detailUrl = "https://tickets.interpark.com/goods/" + goodsCode;
+                    String detailUrl = goodsCode != null ? DETAIL_BASE + goodsCode : LIST_URL;
 
                     results.add(CrawledFestivalData.builder()
                             .title(title)
@@ -99,14 +97,41 @@ public class InterparkCrawler implements FestivalSiteCrawler {
         return results;
     }
 
+    private JsonNode findGoodsList(JsonNode pageProps) {
+        // 경로 후보들을 순서대로 탐색
+        String[][] paths = {
+            {"genreData", "goodsList"},
+            {"rankingList"},
+            {"goodsList"},
+            {"productList"},
+            {"data", "goodsList"},
+            {"data", "list"},
+            {"serverData", "list"},
+            {"initialData", "goodsList"},
+        };
+        for (String[] path : paths) {
+            JsonNode node = pageProps;
+            for (String key : path) node = node.path(key);
+            if (node.isArray() && !node.isEmpty()) return node;
+        }
+        return null;
+    }
+
+    private String firstText(JsonNode item, String... keys) {
+        for (String key : keys) {
+            JsonNode node = item.path(key);
+            if (!node.isMissingNode() && !node.isNull() && !node.asText("").isBlank())
+                return node.asText();
+        }
+        return null;
+    }
+
     private LocalDate parseDate(String raw) {
         if (raw == null || raw.isBlank()) return null;
-        // 인터파크 날짜 형식: "20250801" 또는 "2025.08.01"
         String cleaned = raw.replaceAll("[^0-9]", "");
         if (cleaned.length() == 8) {
-            try {
-                return LocalDate.parse(cleaned, DateTimeFormatter.ofPattern("yyyyMMdd"));
-            } catch (DateTimeParseException ignored) {}
+            try { return LocalDate.parse(cleaned, DateTimeFormatter.ofPattern("yyyyMMdd")); }
+            catch (DateTimeParseException ignored) {}
         }
         return null;
     }
