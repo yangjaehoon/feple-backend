@@ -21,6 +21,8 @@ public class PlaywrightBrowser {
     @PostConstruct
     public void init() {
         try {
+            // 브라우저가 설치되어 있지 않으면 자동 설치 (EC2 최초 기동 시)
+            com.microsoft.playwright.CLI.main(new String[]{"install", "chromium", "--with-deps"});
             playwright = Playwright.create();
             browser = playwright.chromium().launch(
                     new BrowserType.LaunchOptions()
