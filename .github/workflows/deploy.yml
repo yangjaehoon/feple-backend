@@ -46,6 +46,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo mv /tmp/*.jar /opt/feple/feple.jar
+            # Playwright Chromium 브라우저 설치 (최초 배포 시 또는 버전 변경 시)
+            java -jar /opt/feple/feple.jar com.microsoft.playwright.CLI install chromium --with-deps 2>/dev/null || true
             sudo systemctl restart feple.service
             sleep 5
             systemctl is-active feple.service

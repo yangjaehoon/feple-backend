@@ -59,6 +59,7 @@ dependencies {
 
 	// 웹 크롤링
 	implementation 'org.jsoup:jsoup:1.18.1'
+	implementation 'com.microsoft.playwright:playwright:1.44.0'
 }
 
 tasks.named('test') {
