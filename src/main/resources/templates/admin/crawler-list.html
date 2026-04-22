@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 크롤링 대기</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">크롤링 대기 목록</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/festivals}">페스티벌</a>
+                <span class="bc-sep">›</span>
+                <span>크롤링 대기</span>
+            </div>
+        </div>
+        <div class="page-actions">
+            <form th:action="@{/admin/crawler/run}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-primary">▶ 지금 크롤링</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom:16px;"
+         th:text="${successMessage}"></div>
+
+    <div class="content-area">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    검토 대기
+                    <span class="badge badge-primary" th:text="${#lists.size(drafts)}"></span>
+                </div>
+                <small style="color:#888;">승인하면 앱에 즉시 공개됩니다. 상세 내용은 수정 후 승인하세요.</small>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:50px;"></th>
+                        <th>페스티벌명</th>
+                        <th style="width:130px;">일정</th>
+                        <th style="width:100px;">장소</th>
+                        <th style="width:90px;">출처</th>
+                        <th style="width:160px;">액션</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="draft : ${drafts}">
+                        <td>
+                            <img th:if="${draft.posterUrl != null and !draft.posterUrl.isBlank()}"
+                                 th:src="${draft.posterUrl}"
+                                 style="width:40px;height:40px;object-fit:cover;border-radius:4px;"
+                                 onerror="this.style.display='none'"/>
+                        </td>
+                        <td>
+                            <div style="font-weight:600; font-size:14px;" th:text="${draft.title}"></div>
+                            <div class="cell-secondary" th:text="${draft.location}"></div>
+                        </td>
+                        <td class="cell-secondary">
+                            <span th:text="${draft.startDate}"></span>
+                            <span th:if="${draft.endDate != null}"> ~ </span>
+                            <span th:text="${draft.endDate}"></span>
+                        </td>
+                        <td class="cell-secondary" th:text="${draft.location}"></td>
+                        <td>
+                            <a th:if="${draft.posterUrl != null and draft.posterUrl.startsWith('http')}"
+                               th:href="${draft.posterUrl}" target="_blank"
+                               class="badge badge-secondary" style="font-size:11px;">원본</a>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;">
+                                <!-- 수정 후 승인하려면 먼저 edit 페이지로 -->
+                                <a th:href="@{/admin/festivals/{id}/edit(id=${draft.id})}"
+                                   class="btn btn-secondary btn-sm">수정</a>
+                                <form th:action="@{/admin/crawler/{id}/publish(id=${draft.id})}" method="post">
+                                    <button type="submit" class="btn btn-primary btn-sm">승인</button>
+                                </form>
+                                <form th:action="@{/admin/crawler/{id}/delete(id=${draft.id})}" method="post"
+                                      onsubmit="return confirm('삭제하시겠습니까?')">
+                                    <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(drafts)}">
+                        <td colspan="6">크롤링 대기 중인 페스티벌이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

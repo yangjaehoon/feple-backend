@@ -57,6 +57,8 @@ dependencies {
 	implementation platform("software.amazon.awssdk:bom:2.25.1")
 	implementation 'com.google.firebase:firebase-admin:9.3.0'
 
+	// 웹 크롤링
+	implementation 'org.jsoup:jsoup:1.18.1'
 }
 
 tasks.named('test') {

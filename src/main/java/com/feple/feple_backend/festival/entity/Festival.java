@@ -37,6 +37,17 @@ public class Festival {
     @Builder.Default
     private EventType eventType = EventType.FESTIVAL;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    @Builder.Default
+    private FestivalStatus status = FestivalStatus.PUBLISHED;
+
+    @Column(length = 500)
+    private String sourceUrl;   // 크롤링 출처 URL
+
+    @Column(length = 50)
+    private String sourceSite;  // 출처 사이트명 (INTERPARK, MELON 등)
+
     @ElementCollection(targetClass = Genre.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "festival_genres", joinColumns = @JoinColumn(name = "festival_id"))
     @Enumerated(EnumType.STRING)

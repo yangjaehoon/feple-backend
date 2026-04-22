@@ -3,6 +3,7 @@ package com.feple.feple_backend.festival.service;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalLike;
+import com.feple.feple_backend.festival.entity.FestivalStatus;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
@@ -64,7 +65,10 @@ public class FestivalService {
 
         List<Genre> genreFilter = (genres == null || genres.isEmpty()) ? null : genres;
         List<Region> regionFilter = (regions == null || regions.isEmpty()) ? null : regions;
-        List<Festival> all = festivalRepository.findByFilters(genreFilter, regionFilter);
+        List<Festival> all = festivalRepository.findByFilters(genreFilter, regionFilter)
+                .stream()
+                .filter(f -> f.getStatus() == null || f.getStatus() == FestivalStatus.PUBLISHED)
+                .toList();
 
         if (includeEnded) {
             // 진행 중/예정: 시작일 오름차순, 종료: 최근 종료 순 (뒤에 붙임)
@@ -175,6 +179,33 @@ public class FestivalService {
         Page<Festival> result = festivalRepository
                 .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")));
         return result.map(this::toDto);
+    }
+
+    // ── 크롤러 DRAFT 관리 ──
+
+    @Transactional(readOnly = true)
+    public List<FestivalResponseDto> getDraftFestivals() {
+        return festivalRepository.findByStatusOrderByIdDesc(FestivalStatus.DRAFT)
+                .stream()
+                .map(f -> FestivalResponseDto.from(f, f.getPosterKey())) // posterKey에 외부 URL 그대로 사용
+                .toList();
+    }
+
+    @Transactional
+    public void publishDraft(Long id) {
+        Festival festival = festivalRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+        festival.setStatus(FestivalStatus.PUBLISHED);
+    }
+
+    @Transactional
+    public void deleteDraft(Long id) {
+        Festival festival = festivalRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+        if (festival.getStatus() != FestivalStatus.DRAFT) {
+            throw new IllegalStateException("DRAFT 상태인 페스티벌만 이 방법으로 삭제할 수 있습니다.");
+        }
+        festivalRepository.deleteById(id);
     }
 
 }
