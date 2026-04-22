@@ -463,14 +463,14 @@
             'cursor:pointer',
             'user-select:none',
             'overflow:hidden',
-            'min-width:70px',
+            'width:90px',
             'text-align:center'
         ].join(';');
 
         if (booth.imageUrl) {
             const img = document.createElement('img');
             img.src = booth.imageUrl;
-            img.style.cssText = 'width:70px;height:60px;object-fit:cover;display:block;';
+            img.style.cssText = 'width:90px;height:auto;display:block;';
             card.appendChild(img);
         }
 
