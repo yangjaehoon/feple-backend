@@ -4,8 +4,8 @@ import com.feple.feple_backend.crawler.CrawledFestivalData;
 import com.feple.feple_backend.crawler.FestivalSiteCrawler;
 import com.feple.feple_backend.crawler.PlaywrightBrowser;
 import com.microsoft.playwright.Page;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class NolTicketCrawler implements FestivalSiteCrawler {
 
     private static final String SITE_NAME = "NOLTICKET";
@@ -29,7 +28,8 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
     private static final Pattern FEATURES_DATE =
             Pattern.compile("(\\d{4})\\.(\\d{1,2})\\.(\\d{1,2})(?:\\s*~\\s*(?:(\\d{4})\\.)?(\\d{1,2})\\.(\\d{1,2}))?");
 
-    private final PlaywrightBrowser playwrightBrowser;
+    @Autowired(required = false)
+    private PlaywrightBrowser playwrightBrowser;
 
     @Override
     public String getSiteName() { return SITE_NAME; }
@@ -38,6 +38,10 @@ public class NolTicketCrawler implements FestivalSiteCrawler {
     @SuppressWarnings("unchecked")
     public List<CrawledFestivalData> crawl() {
         List<CrawledFestivalData> results = new ArrayList<>();
+        if (playwrightBrowser == null) {
+            log.warn("[{}] Playwright 비활성화 상태", SITE_NAME);
+            return results;
+        }
         try (PlaywrightBrowser.BrowserSession session = playwrightBrowser.openSession()) {
             Page page = session.newPage();
             try {

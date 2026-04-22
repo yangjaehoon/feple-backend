@@ -9,6 +9,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.LoadState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -20,15 +21,16 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class InterparkCrawler implements FestivalSiteCrawler {
 
     private static final String SITE_NAME   = "INTERPARK";
     private static final String LIST_URL    = "https://nol.interpark.com/ticket";
     private static final String DETAIL_BASE = "https://nol.interpark.com/ticket/goods/";
 
-    private final PlaywrightBrowser playwrightBrowser;
-    private final ObjectMapper objectMapper;
+    @Autowired(required = false)
+    private PlaywrightBrowser playwrightBrowser;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public String getSiteName() { return SITE_NAME; }
@@ -36,6 +38,10 @@ public class InterparkCrawler implements FestivalSiteCrawler {
     @Override
     public List<CrawledFestivalData> crawl() {
         List<CrawledFestivalData> results = new ArrayList<>();
+        if (playwrightBrowser == null) {
+            log.warn("[{}] Playwright 비활성화 상태 — 로컬 실행 시 application-local.yaml에 crawler.playwright.enabled=true 추가", SITE_NAME);
+            return results;
+        }
         try (PlaywrightBrowser.BrowserSession session = playwrightBrowser.openSession()) {
             Page page = session.newPage();
             try {

@@ -5,16 +5,19 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * 크롤링 실행 시에만 브라우저를 열고, 완료 후 즉시 닫습니다.
- * 앱 실행 중에는 메모리를 점유하지 않습니다.
+ * EC2(프로덕션)에서는 메모리 부족으로 사용 불가 — 로컬에서만 실행하세요.
+ * 로컬: ./gradlew bootRun → localhost:8080/admin/crawler
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "crawler.playwright.enabled", havingValue = "true", matchIfMissing = false)
 public class PlaywrightBrowser {
 
     private static final BrowserType.LaunchOptions LAUNCH_OPTIONS =
