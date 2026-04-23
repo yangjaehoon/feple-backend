@@ -143,6 +143,7 @@
                             <th>순서</th>
                             <th>아티스트</th>
                             <th>장르</th>
+                            <th>공연 시간</th>
                             <th>스테이지</th>
                             <th>삭제</th>
                         </tr>
@@ -157,6 +158,20 @@
                             </td>
                             <td style="font-weight:600;" th:text="${af.artistName}"></td>
                             <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
+                            <td>
+                                <!-- 타임테이블에 등록된 슬롯 표시 -->
+                                <th:block th:if="${timetableByArtist.containsKey(af.artistName)}">
+                                    <div th:each="slot : ${timetableByArtist.get(af.artistName)}"
+                                         style="font-size:11px; white-space:nowrap; margin-bottom:3px;">
+                                        <span style="color:var(--muted);" th:text="${slot.festivalDate}"></span>
+                                        <span style="font-weight:700; color:#2d3748; margin-left:4px;"
+                                              th:text="${slot.startTime} + ' ~ ' + ${slot.endTime}"></span>
+                                    </div>
+                                </th:block>
+                                <!-- 타임테이블 미입력 -->
+                                <span th:unless="${timetableByArtist.containsKey(af.artistName)}"
+                                      style="font-size:11px; font-weight:700; color:#e53e3e; background:#fff5f5; border-radius:20px; padding:2px 8px; white-space:nowrap;">미입력</span>
+                            </td>
                             <td>
                                 <th:block th:if="${!stages.isEmpty()}">
                                     <select name="stageNames" class="stage-select">
@@ -181,7 +196,7 @@
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
-                            <td colspan="5">참여 아티스트가 없습니다.</td>
+                            <td colspan="6">참여 아티스트가 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

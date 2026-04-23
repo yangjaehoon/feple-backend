@@ -26,9 +26,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -162,11 +165,18 @@ public class FestivalAdminController {
                 .sorted(java.util.Comparator.comparing(ArtistFestivalResponse::getArtistName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
+        List<TimetableEntryResponse> timetableEntries = timetableService.getEntries(id);
+        Map<String, List<TimetableEntryResponse>> timetableByArtist = timetableEntries.stream()
+                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
+                             && !"📢".equals(e.getStageName()))
+                .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName));
+
         model.addAttribute("festival", festival);
         model.addAttribute("allArtists", allArtists);
         model.addAttribute("participatingArtists", participatingArtists);
         model.addAttribute("participatingArtistsByName", participatingArtistsByName);
-        model.addAttribute("timetableEntries", timetableService.getEntries(id));
+        model.addAttribute("timetableEntries", timetableEntries);
+        model.addAttribute("timetableByArtist", timetableByArtist);
         model.addAttribute("stages", stageService.getStages(id));
         model.addAttribute("booths", boothService.getBooths(id));
         model.addAttribute("allBoothTypes", BoothType.values());
