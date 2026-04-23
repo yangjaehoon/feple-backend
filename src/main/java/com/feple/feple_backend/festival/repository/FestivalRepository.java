@@ -4,6 +4,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,5 +24,13 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
            "AND (:regions IS NULL OR f.region IN :regions)")
     List<Festival> findByFilters(@Param("genres") List<Genre> genres,
                                  @Param("regions") List<Region> regions);
+
+    @Modifying
+    @Query("UPDATE Festival f SET f.likeCount = f.likeCount + 1 WHERE f.id = :id")
+    void incrementLikeCount(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE Festival f SET f.likeCount = f.likeCount - 1 WHERE f.id = :id AND f.likeCount > 0")
+    void decrementLikeCount(@Param("id") Long id);
 
 }

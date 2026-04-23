@@ -6,6 +6,7 @@ import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
 import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ArtistFollowService {
     @Transactional(readOnly = true)
     public FollowStatusDto followStatus(Long userId, Long artistId) {
         if (userId == null) {
-            throw new IllegalStateException("로그인이 필요합니다.");
+            throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
 
         boolean followed = artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
@@ -44,7 +45,7 @@ public class ArtistFollowService {
     @Transactional
     public FollowResponseDto follow(Long userId, Long artistId) {
         if (userId == null) {
-            throw new IllegalStateException("로그인이 필요합니다.");
+            throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
@@ -65,7 +66,7 @@ public class ArtistFollowService {
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
         if (userId == null) {
-            throw new IllegalStateException("로그인이 필요합니다.");
+            throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
 
         Artist artist = artistRepository.findById(artistId)

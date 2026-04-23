@@ -4,8 +4,15 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
+import com.feple.feple_backend.artist.photo.entity.ArtistImage;
+import com.feple.feple_backend.artist.photo.repository.ArtistImageRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.repository.PostLikeRepository;
+import com.feple.feple_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +29,11 @@ public class ArtistService {
 
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
+    private final ArtistImageRepository artistImageRepository;
+    private final ArtistFestivalRepository artistFestivalRepository;
+    private final ArtistFollowRepository artistFollowRepository;
+    private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -114,10 +126,14 @@ public class ArtistService {
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        String oldKey = artist.getProfileImageKey();
         String imageKey = dto.getProfileImageUrl() != null
                 ? dto.getProfileImageUrl()
-                : artist.getProfileImageKey();
+                : oldKey;
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenre(), imageKey);
+        if (dto.getProfileImageUrl() != null && !dto.getProfileImageUrl().equals(oldKey)) {
+            fileStorageService.deleteFile(oldKey);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -130,7 +146,11 @@ public class ArtistService {
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        String oldKey = artist.getProfileImageKey();
         artist.update(artist.getName(), artist.getNameEn(), artist.getGenre(), imageKey);
+        if (imageKey != null && !imageKey.equals(oldKey)) {
+            fileStorageService.deleteFile(oldKey);
+        }
     }
 
     @Transactional
@@ -144,7 +164,29 @@ public class ArtistService {
         }
     }
 
+    @Transactional
     public void deleteArtist(Long id) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        String profileImageKey = artist.getProfileImageKey();
+
+        // 아티스트 이미지 삭제 (S3 + DB, ArtistImageLike는 cascade)
+        List<ArtistImage> images = artistImageRepository.findByArtist(artist);
+        images.forEach(img -> fileStorageService.deleteFile(img.getImageUrl()));
+        artistImageRepository.deleteAll(images);
+
+        // 아티스트-페스티벌 연결, 팔로우 삭제
+        artistFestivalRepository.deleteByArtistId(id);
+        artistFollowRepository.deleteAll(artistFollowRepository.findByArtistId(id));
+
+        // 게시글 삭제 (PostLike 먼저, Comment는 Post cascade)
+        List<Post> artistPosts = postRepository.findByArtist(artist);
+        for (Post post : artistPosts) {
+            postLikeRepository.deleteByPostId(post.getId());
+        }
+        postRepository.deleteAll(artistPosts);
+
         artistRepository.deleteById(id);
+        fileStorageService.deleteFile(profileImageKey);
     }
 }

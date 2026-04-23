@@ -1,6 +1,8 @@
 package com.feple.feple_backend.festival.service;
 
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.booth.repository.BoothRepository;
+import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalLike;
 import com.feple.feple_backend.festival.entity.Genre;
@@ -11,6 +13,11 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.repository.PostLikeRepository;
+import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.stage.repository.StageRepository;
+import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +40,12 @@ public class FestivalService {
     private final FestivalLikeRepository festivalLikeRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final StageRepository stageRepository;
+    private final BoothRepository boothRepository;
+    private final TimetableRepository timetableRepository;
+    private final FestivalCertificationRepository certificationRepository;
+    private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
 
     private FestivalResponseDto toDto(Festival festival) {
         return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
@@ -119,8 +132,10 @@ public class FestivalService {
         festival.setLocation(dto.getLocation());
         festival.setStartDate(dto.getStartDate());
         festival.setEndDate(dto.getEndDate());
-        if (dto.getPosterUrl() != null) {
+        if (dto.getPosterUrl() != null && !dto.getPosterUrl().equals(festival.getPosterKey())) {
+            String oldKey = festival.getPosterKey();
             festival.setPosterKey(dto.getPosterUrl());
+            fileStorageService.deleteFile(oldKey);
         }
         if (dto.getGenres() != null) {
             festival.setGenres(dto.getGenres());
@@ -146,12 +161,12 @@ public class FestivalService {
         return festivalLikeRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .map(like -> {
                     festivalLikeRepository.delete(like);
-                    festival.decrementLikeCount();
+                    festivalRepository.decrementLikeCount(festivalId);
                     return false;
                 })
                 .orElseGet(() -> {
                     festivalLikeRepository.save(FestivalLike.of(user, festival));
-                    festival.incrementLikeCount();
+                    festivalRepository.incrementLikeCount(festivalId);
                     return true;
                 });
     }
@@ -163,13 +178,32 @@ public class FestivalService {
 
     @Transactional
     public void deleteFestival(Long festivalId) {
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + festivalId));
+        String posterKey = festival.getPosterKey();
 
-        if (!festivalRepository.existsById(festivalId)) {
-            throw new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + festivalId);
+        // 타임테이블, 부스, 스테이지 삭제
+        timetableRepository.deleteByFestivalId(festivalId);
+        boothRepository.deleteByFestivalId(festivalId);
+        stageRepository.deleteByFestivalId(festivalId);
+
+        // 인증 및 좋아요 삭제
+        certificationRepository.deleteByFestivalId(festivalId);
+        festivalLikeRepository.deleteByFestivalId(festivalId);
+
+        // 게시글 삭제 (PostLike 먼저, Comment는 Post cascade)
+        List<Post> festivalPosts = postRepository.findByFestival(festival);
+        for (Post post : festivalPosts) {
+            postLikeRepository.deleteByPostId(post.getId());
         }
+        postRepository.deleteAll(festivalPosts);
 
+        // 아티스트-페스티벌 연결 및 페스티벌 삭제
         artistFestivalRepository.deleteByFestivalId(festivalId);
         festivalRepository.deleteById(festivalId);
+
+        // DB 삭제 완료 후 S3 포스터 삭제
+        fileStorageService.deleteFile(posterKey);
     }
 
     @Transactional

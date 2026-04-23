@@ -90,8 +90,8 @@ public class GlobalExceptionHandler {
     }
 
     // 인증 필요 (비로그인 상태에서 인증 필요한 작업 시도)
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+    @ExceptionHandler(AuthenticationRequiredException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthenticationRequired(AuthenticationRequiredException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.UNAUTHORIZED.value());

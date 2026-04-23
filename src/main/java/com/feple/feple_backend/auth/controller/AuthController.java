@@ -121,8 +121,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshRequest req) {
-        if (req.getRefreshToken() != null) {
+    public ResponseEntity<Map<String, String>> logout(@RequestBody RefreshRequest req) {
+        if (req != null && req.getRefreshToken() != null) {
             refreshTokenService.revoke(req.getRefreshToken());
         }
         return ResponseEntity.ok(Map.of("message", "로그아웃 되었습니다."));

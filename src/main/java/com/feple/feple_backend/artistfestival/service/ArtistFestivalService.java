@@ -104,10 +104,12 @@ public class ArtistFestivalService {
 
         ArtistFestival saved = artistFestivalRepository.save(artistFestival);
 
-        // 비동기 알림 발송 — 아티스트 팔로워들에게 새 페스티벌 알림
-        notificationService.notifyNewFestivalForArtist(
-                artist.getId(), artist.getName(),
-                festival.getId(), festival.getTitle());
+        // 비동기 알림 발송 — 아직 시작 전인 페스티벌에만 발송
+        if (festival.getStartDate() != null && festival.getStartDate().isAfter(java.time.LocalDate.now())) {
+            notificationService.notifyNewFestivalForArtist(
+                    artist.getId(), artist.getName(),
+                    festival.getId(), festival.getTitle());
+        }
 
         return saved.getId();
     }

@@ -59,10 +59,13 @@ public class AuthService {
     public User registerOrLoginFirebase(String uid, String email, String displayName) {
         return userRepository.findByProviderAndOauthId(AuthProvider.FIREBASE, uid)
                 .orElseGet(() -> {
-                    String base = (displayName != null && !displayName.isBlank())
+                    String raw = (displayName != null && !displayName.isBlank())
                             ? displayName
                             : "User" + uid.substring(0, Math.min(uid.length(), 8));
-                    String nickname = uniqueNickname(base.trim());
+                    // 허용되지 않는 문자 제거 후 빈 경우 fallback
+                    String sanitized = raw.trim().replaceAll("[^가-힣a-zA-Z0-9_]", "");
+                    String base = sanitized.isBlank() ? "User" + uid.substring(0, Math.min(uid.length(), 8)) : sanitized;
+                    String nickname = uniqueNickname(base);
                     User user = User.builder()
                             .email(email)
                             .nickname(nickname)

@@ -30,6 +30,11 @@ public class FestivalCertificationService {
 
     @Transactional
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
+        String prefix = "certifications/" + userId + "/";
+        if (photoKey == null || !photoKey.startsWith(prefix)) {
+            throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Festival festival = festivalRepository.findById(festivalId)
@@ -37,7 +42,7 @@ public class FestivalCertificationService {
 
         certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .ifPresent(existing -> {
-                    throw new IllegalStateException("이미 해당 페스티벌에 인증 신청을 했습니다.");
+                    throw new com.feple.feple_backend.global.exception.DuplicateArtistFestivalException("이미 해당 페스티벌에 인증 신청을 했습니다.");
                 });
 
         FestivalCertification cert = FestivalCertification.create(user, festival, photoKey);

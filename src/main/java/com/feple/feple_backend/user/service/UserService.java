@@ -1,19 +1,25 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.photo.repository.ArtistImageLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistImageRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
+import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
+import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +50,11 @@ public class UserService {
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalLikeRepository festivalLikeRepository;
     private final FileStorageService fileStorageService;
+    private final NotificationRepository notificationRepository;
+    private final UserDeviceTokenRepository userDeviceTokenRepository;
+    private final FestivalCertificationRepository certificationRepository;
+    private final ArtistImageLikeRepository artistImageLikeRepository;
+    private final ArtistImageRepository artistImageRepository;
 
     @Transactional(readOnly = true)
     public java.util.Map<String, Object> checkNicknameAvailable(String nickname, Long excludeUserId) {
@@ -123,8 +134,9 @@ public class UserService {
     public void adminDeleteUser(@NonNull Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        String profileImageKey = user.getProfileImageUrl();
 
-        // 1. 사용자의 댓글 삭제 (JPA 영속성 컨텍스트에서 REMOVED 상태로 전환)
+        // 1. 사용자의 댓글 삭제
         commentRepository.deleteAll(commentRepository.findByUser(user));
 
         // 2. 사용자 게시글의 좋아요 삭제
@@ -136,18 +148,27 @@ public class UserService {
         // 3. 사용자가 누른 좋아요 삭제
         postLikeRepository.deleteByUser(user);
 
-        // 4. 사용자 게시글 삭제 (cascade: 다른 사용자의 댓글도 삭제)
+        // 4. 사용자 게시글 삭제 (cascade: 댓글도 삭제)
         postRepository.deleteAll(userPosts);
 
         // 5. 페스티벌 좋아요, 아티스트 팔로우 삭제
         festivalLikeRepository.deleteAll(festivalLikeRepository.findByUserId(id));
         artistFollowRepository.deleteAll(artistFollowRepository.findByUserId(id));
 
-        // 6. S3 프로필 이미지 삭제
-        fileStorageService.deleteFile(user.getProfileImageUrl());
+        // 6. 알림, 디바이스 토큰, 인증 신청 삭제
+        notificationRepository.deleteByUserId(id);
+        userDeviceTokenRepository.deleteAll(userDeviceTokenRepository.findByUserId(id));
+        certificationRepository.deleteByUserId(id);
 
-        // 7. 사용자 삭제
+        // 7. 아티스트 이미지 좋아요 삭제, 업로더 참조 해제
+        artistImageLikeRepository.deleteByUserId(id);
+        artistImageRepository.nullifyUploaderByUserId(id);
+
+        // 8. 사용자 삭제
         userRepository.delete(user);
+
+        // 9. S3 프로필 이미지 삭제 (DB 삭제 성공 후 실행)
+        fileStorageService.deleteFile(profileImageKey);
     }
 
     @Transactional(readOnly = true)
@@ -236,7 +257,7 @@ public class UserService {
     public Long currentUserId() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            throw new IllegalStateException("Not authenticated");
+            throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
         String principal = auth.getPrincipal().toString();
         return Long.parseLong(principal);

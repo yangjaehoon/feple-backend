@@ -30,7 +30,7 @@ public class StageService {
         }
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
-        int nextOrder = stageRepository.countByFestivalId(festivalId) + 1;
+        int nextOrder = stageRepository.findMaxDisplayOrderByFestivalId(festivalId) + 1;
         Stage stage = Stage.builder()
                 .festival(festival)
                 .name(name.trim())
