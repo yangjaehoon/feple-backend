@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,8 +33,14 @@ public class FestivalArtistAdminController {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
         List<Artist> allArtists = artistRepository.findAll(Sort.by("name"));
 
+        Set<Long> participatingIds = artistFestivalService.getArtistFestivals(festivalId)
+                .stream()
+                .map(ArtistFestivalResponse::getArtistId)
+                .collect(Collectors.toSet());
+
         model.addAttribute("festival", festival);
         model.addAttribute("artists", allArtists);
+        model.addAttribute("participatingIds", participatingIds);
         model.addAttribute("request", new ArtistFestivalCreateRequest());
         return "admin/festival-artist-form";
     }

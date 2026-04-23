@@ -45,17 +45,27 @@
                         <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">
                             <span id="selectedCount">0</span>명 선택됨
                         </div>
+                        <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">
+                            <span style="display:inline-block; width:10px; height:10px; background:var(--primary); border-radius:2px; margin-right:4px;"></span>이미 참여 중인 아티스트
+                        </div>
                         <div id="artistList"
-                             style="max-height:320px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:4px 0;">
+                             style="max-height:360px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:4px 0;">
                             <div th:each="artist : ${artists}"
                                  class="artist-item"
-                                 th:data-name="${#strings.toLowerCase(artist.name)}">
-                                <label style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; transition:background .15s;"
-                                       onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">
+                                 th:data-name="${#strings.toLowerCase(artist.name)}"
+                                 th:classappend="${participatingIds.contains(artist.id)} ? ' already-in' : ''">
+                                <label th:style="${participatingIds.contains(artist.id)}
+                                            ? 'display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; background:#eef2ff;'
+                                            : 'display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; transition:background .15s;'"
+                                       onmouseover="if(!this.parentElement.classList.contains('already-in')) this.style.background='var(--hover)'"
+                                       onmouseout="if(!this.parentElement.classList.contains('already-in')) this.style.background=''">
                                     <input type="checkbox" name="artistIds" th:value="${artist.id}"
+                                           th:checked="${participatingIds.contains(artist.id)}"
                                            style="width:15px; height:15px; accent-color:var(--primary); flex-shrink:0;"
                                            onchange="updateCount()"/>
                                     <span th:text="${artist.name} + (${artist.genre} != null ? ' (' + ${artist.genre.displayName} + ')' : '')"></span>
+                                    <span th:if="${participatingIds.contains(artist.id)}"
+                                          style="margin-left:auto; font-size:11px; font-weight:700; color:var(--primary); background:#dde4ff; border-radius:20px; padding:2px 8px; white-space:nowrap;">참여 중</span>
                                 </label>
                             </div>
                         </div>
@@ -85,6 +95,8 @@
         const count = document.querySelectorAll('input[name="artistIds"]:checked').length;
         document.getElementById('selectedCount').textContent = count;
     }
+    // 페이지 로드 시 이미 체크된 수 반영
+    document.addEventListener('DOMContentLoaded', updateCount);
 </script>
 </body>
 </html>
