@@ -19,6 +19,9 @@ import java.util.List;
 public class FestivalRequestDto {
     @NotBlank(message = "페스티벌 제목은 필수입니다.")
     private String title;
+
+    private String titleEn;
+
     @NotBlank(message = "페스티벌 설명은 필수입니다.")
     private String description;
     @NotBlank(message = "페스티벌 장소는 필수입니다.")

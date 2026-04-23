@@ -22,6 +22,8 @@ public class Festival {
     @Column(nullable = false)
     private String title;
 
+    private String titleEn;
+
     @Column(length = 1000)
     private String description;
     private String location;

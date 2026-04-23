@@ -111,6 +111,7 @@ public class FestivalAdminController {
         FestivalResponseDto festival = festivalService.getFestival(id);
         FestivalRequestDto form = new FestivalRequestDto();
         form.setTitle(festival.getTitle());
+        form.setTitleEn(festival.getTitleEn());
         form.setDescription(festival.getDescription());
         form.setLocation(festival.getLocation());
         form.setStartDate(festival.getStartDate());

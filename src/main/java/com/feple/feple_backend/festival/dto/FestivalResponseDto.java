@@ -19,6 +19,7 @@ public class FestivalResponseDto {
 
     private Long id;
     private String title;
+    private String titleEn;
     private String description;
     private String location;
     private LocalDate startDate;
@@ -38,6 +39,7 @@ public class FestivalResponseDto {
         return FestivalResponseDto.builder()
                 .id(festival.getId())
                 .title(festival.getTitle())
+                .titleEn(festival.getTitleEn())
                 .description(festival.getDescription())
                 .location(festival.getLocation())
                 .startDate(festival.getStartDate())

@@ -18,6 +18,7 @@ import java.util.List;
 public class FestivalDetailResponseDto {
     private Long id;
     private String title;
+    private String titleEn;
     private String description;
     private String location;
     private LocalDate startDate;
@@ -35,6 +36,7 @@ public class FestivalDetailResponseDto {
         return FestivalDetailResponseDto.builder()
                 .id(festival.getId())
                 .title(festival.getTitle())
+                .titleEn(festival.getTitleEn())
                 .description(festival.getDescription())
                 .location(festival.getLocation())
                 .startDate(festival.getStartDate())

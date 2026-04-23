@@ -42,6 +42,7 @@ public class FestivalService {
     public Long createFestival(FestivalRequestDto dto) {
         Festival festival = Festival.builder()
                 .title(dto.getTitle())
+                .titleEn(dto.getTitleEn())
                 .description(dto.getDescription())
                 .location(dto.getLocation())
                 .startDate(dto.getStartDate())
@@ -113,6 +114,7 @@ public class FestivalService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
 
         festival.setTitle(dto.getTitle());
+        festival.setTitleEn(dto.getTitleEn());
         festival.setDescription(dto.getDescription());
         festival.setLocation(dto.getLocation());
         festival.setStartDate(dto.getStartDate());
