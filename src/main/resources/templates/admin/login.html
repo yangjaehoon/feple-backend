@@ -4,65 +4,224 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>관리자 로그인 - Feple</title>
+  <link rel="icon" th:href="@{/favicon.ico}"/>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f0f0f5;
-      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
       min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #5BC0EB 0%, #3AAFD8 50%, #2196b8 100%);
+      padding: 20px;
     }
+
+    /* 배경 장식 원 */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    body::before {
+      width: 500px; height: 500px;
+      background: #fff;
+      top: -150px; right: -150px;
+    }
+    body::after {
+      width: 350px; height: 350px;
+      background: #FDE74C;
+      bottom: -100px; left: -100px;
+    }
+
     .card {
       background: #fff;
-      border-radius: 16px;
-      padding: 40px 36px;
-      width: 100%; max-width: 400px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      border-radius: 24px;
+      padding: 44px 40px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.18), 0 4px 16px rgba(0,0,0,.08);
+      position: relative;
+      z-index: 1;
     }
-    .logo { font-size: 22px; font-weight: 800; color: #6C63FF; margin-bottom: 6px; }
-    .subtitle { font-size: 13px; color: #999; margin-bottom: 28px; }
-    label { display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 6px; }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .logo-img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+    }
+    .logo-text {
+      font-size: 24px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #5BC0EB, #3AAFD8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    .badge-admin {
+      font-size: 10px;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #5BC0EB, #3AAFD8);
+      border-radius: 20px;
+      padding: 3px 9px;
+      letter-spacing: 0.5px;
+      margin-left: 2px;
+      vertical-align: middle;
+      -webkit-text-fill-color: #fff;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #A0AEC0;
+      margin-bottom: 32px;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748B;
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #A0AEC0;
+      font-size: 16px;
+      pointer-events: none;
+    }
     input[type="text"], input[type="password"] {
-      width: 100%; padding: 12px 14px;
-      border: 1.5px solid #ddd; border-radius: 8px;
-      font-size: 15px; outline: none; margin-bottom: 16px;
-      transition: border-color .2s;
+      width: 100%;
+      padding: 13px 14px 13px 42px;
+      border: 1.5px solid #E4EDF3;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 600;
+      color: #2D3748;
+      background: #F8FBFD;
+      outline: none;
+      transition: border-color .2s, background .2s, box-shadow .2s;
     }
-    input:focus { border-color: #6C63FF; }
-    button {
-      width: 100%; padding: 14px;
-      background: #6C63FF; color: #fff;
-      border: none; border-radius: 8px;
-      font-size: 15px; font-weight: 700; cursor: pointer;
+    input:focus {
+      border-color: #5BC0EB;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(91,192,235,.15);
     }
-    button:hover { background: #574fd6; }
+    input::placeholder { color: #C0CEDD; font-weight: 500; }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #5BC0EB 0%, #3AAFD8 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 8px;
+      box-shadow: 0 4px 16px rgba(91,192,235,.45);
+      transition: transform .15s, box-shadow .15s;
+      letter-spacing: 0.2px;
+    }
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(91,192,235,.55);
+    }
+    .btn-login:active { transform: translateY(0); }
+
     .alert {
-      padding: 10px 14px; border-radius: 8px;
-      margin-bottom: 16px; font-size: 13px;
-      background: #fff0f0; color: #d32f2f; border: 1px solid #ffcdd2;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      font-weight: 600;
     }
-    .success {
-      background: #f0fff4; color: #2e7d32; border: 1px solid #c8e6c9;
+    .alert-error {
+      background: #FFF0F4;
+      color: #C53030;
+      border: 1px solid #FEB2C2;
+    }
+    .alert-success {
+      background: #E8F9F2;
+      color: #276749;
+      border: 1px solid #9AE6B4;
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: #C0CEDD;
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="logo">Feple Admin</div>
+    <div class="logo-wrap">
+      <img class="logo-img" th:src="@{/img/feple_logo.png}" alt="Feple Logo"/>
+      <span class="logo-text">feple</span>
+      <span class="badge-admin">ADMIN</span>
+    </div>
     <div class="subtitle">관리자 전용 페이지입니다.</div>
 
-    <div th:if="${param.error}" class="alert">아이디 또는 비밀번호가 올바르지 않습니다.</div>
-    <div th:if="${param.logout}" class="alert success">로그아웃 되었습니다.</div>
+    <div th:if="${param.error}" class="alert alert-error">
+      <span>⚠</span> 아이디 또는 비밀번호가 올바르지 않습니다.
+    </div>
+    <div th:if="${param.logout}" class="alert alert-success">
+      <span>✓</span> 로그아웃 되었습니다.
+    </div>
 
     <form th:action="@{/admin/login}" method="post">
-      <label for="username">아이디</label>
-      <input type="text" id="username" name="username" placeholder="관리자 아이디" required autofocus/>
+      <div class="form-group">
+        <label for="username">아이디</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="username" name="username"
+                 placeholder="관리자 아이디" required autofocus/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="password" name="password"
+                 placeholder="비밀번호" required/>
+        </div>
+      </div>
 
-      <label for="password">비밀번호</label>
-      <input type="password" id="password" name="password" placeholder="비밀번호" required/>
-
-      <button type="submit">로그인</button>
+      <button type="submit" class="btn-login">로그인</button>
     </form>
+
+    <div class="footer-note">© 2024 Feple. All rights reserved.</div>
   </div>
 </body>
 </html>
