@@ -51,11 +51,11 @@ public class SecurityConfig {
             .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
-                    "default-src 'self'; script-src 'self' 'unsafe-inline' https://dapi.kakao.com http://dapi.kakao.com https://t1.daumcdn.net http://t1.daumcdn.net https://s1.daumcdn.net http://s1.daumcdn.net https://maps.googleapis.com; " +
+                    "default-src 'self'; script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.daumcdn.net https://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' data: https://fonts.gstatic.com; " +
                     "img-src 'self' data: https: http:; " +
-                    "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com http://dapi.kakao.com"))
+                    "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com"))
                 .frameOptions(frame -> frame.deny()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
