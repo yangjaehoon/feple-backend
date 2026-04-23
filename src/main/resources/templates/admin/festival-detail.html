@@ -615,7 +615,7 @@
         });
     }
 </script>
-<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap'}" async defer></script>
+<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap&loading=async'}" async defer></script>
 <script>
 function validateBoothImage(input) {
     const errEl = document.getElementById('boothImageError');
