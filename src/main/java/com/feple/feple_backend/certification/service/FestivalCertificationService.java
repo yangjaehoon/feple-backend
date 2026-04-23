@@ -7,6 +7,7 @@ import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -42,7 +43,7 @@ public class FestivalCertificationService {
 
         certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .ifPresent(existing -> {
-                    throw new com.feple.feple_backend.global.exception.DuplicateArtistFestivalException("이미 해당 페스티벌에 인증 신청을 했습니다.");
+                    throw new DuplicateArtistFestivalException("이미 해당 페스티벌에 인증 신청을 했습니다.");
                 });
 
         FestivalCertification cert = FestivalCertification.create(user, festival, photoKey);

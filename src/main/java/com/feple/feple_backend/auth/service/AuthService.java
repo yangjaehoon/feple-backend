@@ -29,10 +29,12 @@ public class AuthService {
         String oauthId = kakaoUser.getId().toString();
         String email = account.getEmail();
 
-        String nickname = Optional.ofNullable(account.getProfile())
+        String rawNickname = Optional.ofNullable(account.getProfile())
                 .map(KakaoUserResponse.Profile::getNickname)
                 .filter(n -> !n.isBlank())
                 .orElse("KakaoUser");
+        String sanitized = rawNickname.trim().replaceAll("[^가-힣a-zA-Z0-9_]", "");
+        String nickname = sanitized.isBlank() ? "KakaoUser" : sanitized;
 
         Optional<User> existingUser = userRepository.findByOauthId(oauthId);
         if (existingUser.isPresent()) {
