@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ public class ArtistGalleryPhotoService {
 
     private final ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
     private final S3PresignService s3PresignService;
+    private final FileStorageService fileStorageService;
     private final ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
 
     public ArtistGalleryPhotoResponseDto register(
@@ -72,7 +74,9 @@ public class ArtistGalleryPhotoService {
         if (!photo.getUploaderUserId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
         }
+        String s3Key = photo.getS3Key();
         artistGalleryPhotoRepository.delete(photo);
+        fileStorageService.deleteFile(s3Key); // DB 삭제 성공 후 S3 정리
     }
 
     @Transactional

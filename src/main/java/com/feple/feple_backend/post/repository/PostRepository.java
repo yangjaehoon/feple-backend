@@ -38,7 +38,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // ── 내 게시글 (N+1: user/artist/festival 모두 접근) ──────────────────────
     @Query("SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.artist LEFT JOIN FETCH p.festival WHERE p.user = :user")
-    List<Post> findByUser(@Param("user") User user);
+    List<Post> findByUser(@Param("user") User user); // 계정 삭제 등 전체 처리용
+
+    // 마이페이지 표시용 — 최신순 정렬, 상한선 적용 (Pageable)
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    Page<Post> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
     long countByUser(User user);
 

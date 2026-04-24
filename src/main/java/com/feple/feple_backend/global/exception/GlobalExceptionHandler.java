@@ -91,6 +91,13 @@ public class GlobalExceptionHandler {
         return errorBody(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 허용 범위를 초과했습니다.");
     }
 
+    // 내부 상태 오류 (예: JCA 알고리즘 미지원) — 운영 환경에서는 발생하면 안 되는 예외
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+        log.error("Illegal state: {}", ex.getMessage(), ex);
+        return errorBody(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    }
+
     // 파일 I/O 오류 — 경로 등 시스템 정보를 클라이언트에 노출하지 않고 로그에만 기록
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Map<String, Object>> handleIOException(IOException ex) {

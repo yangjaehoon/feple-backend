@@ -171,22 +171,28 @@ public class UserService {
         fileStorageService.deleteFile(profileImageKey);
     }
 
+    private static final int MY_PAGE_MAX = 200;
+
     @Transactional(readOnly = true)
     public List<PostResponseDto> getMyPosts(@NonNull Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
-        return postRepository.findByUser(user).stream()
+        return postRepository.findByUserOrderByCreatedAtDesc(
+                        user, PageRequest.of(0, MY_PAGE_MAX))
+                .stream()
                 .map(PostResponseDto::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<MyCommentResponseDto> getMyComments(@NonNull Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
-        return commentRepository.findByUser(user).stream()
+        return commentRepository.findByUserOrderByCreatedAtDesc(
+                        user, PageRequest.of(0, MY_PAGE_MAX))
+                .stream()
                 .map(MyCommentResponseDto::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)

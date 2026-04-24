@@ -4,6 +4,7 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +24,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
            "LEFT JOIN FETCH p.festival " +
            "WHERE c.user = :user " +
            "ORDER BY c.createdAt DESC")
-    List<Comment> findByUser(@Param("user") User user);
+    List<Comment> findByUser(@Param("user") User user); // 계정 삭제 등 전체 처리용
+
+    // 마이페이지 표시용 — 최신순 정렬, 상한선 적용 (Pageable)
+    @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
+    Page<Comment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
     long countByUser(User user);
 
