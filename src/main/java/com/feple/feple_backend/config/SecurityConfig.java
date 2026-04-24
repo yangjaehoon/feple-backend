@@ -55,7 +55,7 @@ public class SecurityConfig {
                     "default-src 'self'; script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.daumcdn.net https://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' data: https://fonts.gstatic.com; " +
-                    "img-src 'self' data: https: http:; " +
+                    "img-src 'self' data: https:; " +
                     "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com"))
                 .frameOptions(frame -> frame.deny()))
             .authorizeHttpRequests(auth -> auth
@@ -73,7 +73,8 @@ public class SecurityConfig {
                 .permitAll())
             .sessionManagement(sm -> sm
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .maximumSessions(5));
+                .sessionFixation().changeSessionId()
+                .maximumSessions(1));
 
         return http.build();
     }

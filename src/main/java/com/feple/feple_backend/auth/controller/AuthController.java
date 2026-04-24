@@ -131,7 +131,12 @@ public class AuthController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        // X-Forwarded-For는 클라이언트가 위조 가능하므로 실제 TCP 연결 IP를 사용
+        // AWS ALB는 신뢰할 수 있는 X-Forwarded-For를 추가하므로 첫 번째 IP가 실제 클라이언트
+        // 직접 연결(로컬/테스트)이면 RemoteAddr 사용
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            return xff.split(",")[0].trim();
+        }
         return request.getRemoteAddr();
     }
 }

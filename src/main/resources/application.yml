@@ -1,4 +1,21 @@
 spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:ap-northeast-2}
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      stack:
+        auto: false
+
   jpa:
     hibernate:
       #ddl-auto: create
@@ -37,6 +54,7 @@ jwt:
 
 app:
   s3:
+    bucket: ${AWS_S3_BUCKET}
     prefix: artist-photos
     presign-minutes: 10
   google:
