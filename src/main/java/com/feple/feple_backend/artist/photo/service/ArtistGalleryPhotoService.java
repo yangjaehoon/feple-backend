@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -53,8 +54,12 @@ public class ArtistGalleryPhotoService {
 
     @Transactional(readOnly = true)
     public List<ArtistGalleryPhotoResponseDto> list(Long artistId, Long currentUserId) {
-        return artistGalleryPhotoRepository.findByArtistIdOrderByIdDesc(artistId)
-                .stream()
+        List<ArtistGalleryPhoto> photos = artistGalleryPhotoRepository.findByArtistIdOrderByIdDesc(artistId);
+        Set<Long> likedPhotoIds = (currentUserId != null && !photos.isEmpty())
+                ? artistGalleryPhotoLikeRepository.findLikedPhotoIds(
+                        currentUserId, photos.stream().map(ArtistGalleryPhoto::getId).toList())
+                : Set.of();
+        return photos.stream()
                 .map(p -> new ArtistGalleryPhotoResponseDto(
                         p.getId(),
                         s3PresignService.presignGetUrl(p.getS3Key()),
@@ -63,7 +68,7 @@ public class ArtistGalleryPhotoService {
                         p.getTitle(),
                         p.getDescription(),
                         p.getLikeCount(),
-                        currentUserId != null && artistGalleryPhotoLikeRepository.existsByArtistPhotoIdAndUserId(p.getId(), currentUserId)))
+                        likedPhotoIds.contains(p.getId())))
                 .toList();
     }
 
