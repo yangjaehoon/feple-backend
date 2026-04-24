@@ -94,26 +94,28 @@ public class PostService {
 
     public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword) {
         PageRequest pageable = PageRequest.of(page, size);
+        Optional<BoardType> boardType = parseBoardType(filter);
         boolean hasKeyword = keyword != null && !keyword.isBlank();
 
-        if ("FREE".equals(filter)) {
-            return hasKeyword
-                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.FREE,
-                            keyword, pageable).map(PostResponseDto::from)
-                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable)
-                            .map(PostResponseDto::from);
-        }
-        if ("MATE".equals(filter)) {
-            return hasKeyword
-                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.MATE,
-                            keyword, pageable).map(PostResponseDto::from)
-                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable)
-                            .map(PostResponseDto::from);
-        }
-        return hasKeyword
+        Page<Post> result = boardType.map(bt ->
+            hasKeyword
+                ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(bt, keyword, pageable)
+                : postRepository.findByBoardTypeOrderByCreatedAtDesc(bt, pageable)
+        ).orElseGet(() ->
+            hasKeyword
                 ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable)
-                        .map(PostResponseDto::from)
-                : postRepository.findAllByOrderByCreatedAtDesc(pageable).map(PostResponseDto::from);
+                : postRepository.findAllByOrderByCreatedAtDesc(pageable)
+        );
+        return result.map(PostResponseDto::from);
+    }
+
+    private Optional<BoardType> parseBoardType(String filter) {
+        if (filter == null) return Optional.empty();
+        return switch (filter) {
+            case "FREE" -> Optional.of(BoardType.FREE);
+            case "MATE" -> Optional.of(BoardType.MATE);
+            default     -> Optional.empty();
+        };
     }
 
     public long getTotalPostCount() {

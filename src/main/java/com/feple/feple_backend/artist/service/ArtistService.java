@@ -22,10 +22,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class ArtistService {
+
+    /** 정렬 전략 맵 — 새 정렬 옵션 추가 시 이곳에만 추가 (Strategy Pattern) */
+    private static final Map<String, Function<ArtistRepository, List<Artist>>> SORT_STRATEGIES = Map.of(
+        "name",          repo -> repo.findAll(Sort.by(Sort.Direction.ASC,  "name")),
+        "name_desc",     repo -> repo.findAll(Sort.by(Sort.Direction.DESC, "name")),
+        "followers",     repo -> repo.findAll(Sort.by(Sort.Direction.DESC, "followerCount")),
+        "followers_asc", repo -> repo.findAll(Sort.by(Sort.Direction.ASC,  "followerCount"))
+    );
 
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
@@ -68,30 +79,14 @@ public class ArtistService {
 
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre) {
-        List<ArtistResponseDto> result;
-        if (keyword != null && !keyword.isBlank()) {
-            result = artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream()
-                    .map(this::toDto).toList();
-        } else {
-            result = switch (sort == null ? "" : sort) {
-                case "name" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
-                        .map(this::toDto).toList();
-                case "name_desc" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "name")).stream()
-                        .map(this::toDto).toList();
-                case "followers" -> artistRepository.findAll(Sort.by(Sort.Direction.DESC, "followerCount")).stream()
-                        .map(this::toDto).toList();
-                case "followers_asc" -> artistRepository.findAll(Sort.by(Sort.Direction.ASC, "followerCount")).stream()
-                        .map(this::toDto).toList();
-                default -> artistRepository.findAllByOrderByWeeklyScoreDescIdAsc().stream()
-                        .map(this::toDto).toList();
-            };
-        }
-        if (genre != null) {
-            result = result.stream()
-                    .filter(a -> genre.getDisplayName().equals(a.getGenre()))
-                    .toList();
-        }
-        return result;
+        Stream<ArtistResponseDto> stream = (keyword != null && !keyword.isBlank())
+            ? artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream().map(this::toDto)
+            : SORT_STRATEGIES.getOrDefault(sort, ArtistRepository::findAllByOrderByWeeklyScoreDescIdAsc)
+                             .apply(artistRepository).stream().map(this::toDto);
+
+        return (genre != null)
+            ? stream.filter(a -> genre.getDisplayName().equals(a.getGenre())).toList()
+            : stream.toList();
     }
 
     @Transactional(readOnly = true)
