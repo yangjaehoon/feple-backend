@@ -12,6 +12,8 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.service.NotificationService;
+import com.feple.feple_backend.stage.entity.Stage;
+import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class ArtistFestivalService {
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
     private final TimetableRepository timetableRepository;
+    private final StageRepository stageRepository;
     private final NotificationService notificationService;
 
     public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
@@ -129,8 +132,10 @@ public class ArtistFestivalService {
 
         if (stageName != null && !stageName.equals(oldStage)) {
             String artistName = af.getArtist().getName();
+            Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, stageName)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스테이지입니다: " + stageName));
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
-                    .forEach(entry -> entry.setStageName(stageName));
+                    .forEach(entry -> entry.setStage(newStage));
         }
     }
 

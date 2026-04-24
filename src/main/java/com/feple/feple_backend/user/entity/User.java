@@ -27,7 +27,7 @@ public class User {
 
     private String nickname;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String oauthId;
 
     @Enumerated(EnumType.STRING)

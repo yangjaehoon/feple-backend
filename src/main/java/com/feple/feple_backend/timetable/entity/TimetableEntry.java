@@ -1,6 +1,7 @@
 package com.feple.feple_backend.timetable.entity;
 
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.stage.entity.Stage;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,8 +25,9 @@ public class TimetableEntry {
     @JoinColumn(name = "festival_id", nullable = false)
     private Festival festival;
 
-    @Column(nullable = false)
-    private String stageName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stage_id")
+    private Stage stage;
 
     @Column(nullable = false)
     private String artistName;
@@ -38,4 +40,8 @@ public class TimetableEntry {
 
     @Column(nullable = false)
     private LocalTime endTime;
+
+    public String getStageName() {
+        return stage != null ? stage.getName() : null;
+    }
 }

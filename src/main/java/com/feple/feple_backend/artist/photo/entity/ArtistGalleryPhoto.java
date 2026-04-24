@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "artist_photos")
+@Table(name = "artist_photos", indexes = {
+        @Index(name = "idx_gallery_photo_artist_id", columnList = "artistId"),
+        @Index(name = "idx_gallery_photo_uploader_id", columnList = "uploaderUserId")
+})
 public class ArtistGalleryPhoto {
 
     @Id

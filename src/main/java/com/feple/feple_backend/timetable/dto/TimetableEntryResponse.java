@@ -15,11 +15,12 @@ public class TimetableEntryResponse {
     private String startTime;
     private String endTime;
 
-    public static TimetableEntryResponse from(TimetableEntry e, int stageOrder) {
+    public static TimetableEntryResponse from(TimetableEntry e) {
+        int order = e.getStage() != null ? e.getStage().getDisplayOrder() : Integer.MAX_VALUE;
         return TimetableEntryResponse.builder()
                 .id(e.getId())
                 .stageName(e.getStageName())
-                .stageOrder(stageOrder)
+                .stageOrder(order)
                 .artistName(e.getArtistName())
                 .festivalDate(e.getFestivalDate().toString())
                 .startTime(e.getStartTime().toString())

@@ -9,7 +9,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface TimetableRepository extends JpaRepository<TimetableEntry, Long> {
-    List<TimetableEntry> findByFestivalIdOrderByFestivalDateAscStartTimeAsc(Long festivalId);
+    // stage JOIN FETCH — getStageName()/getDisplayOrder() 접근 시 N+1 방지
+    @Query("SELECT t FROM TimetableEntry t LEFT JOIN FETCH t.stage WHERE t.festival.id = :festivalId ORDER BY t.festivalDate ASC, t.startTime ASC")
+    List<TimetableEntry> findByFestivalIdWithStage(@Param("festivalId") Long festivalId);
     List<TimetableEntry> findByFestivalIdAndArtistName(Long festivalId, String artistName);
 
     @Modifying
