@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.photo.controller;
 
-import com.feple.feple_backend.artist.photo.service.ArtistImageLikeService;
+import com.feple.feple_backend.artist.photo.service.ArtistProfileImageLikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/artist-image")
-public class ArtistImageController {
-    private final ArtistImageLikeService likeService;
+public class ArtistProfileImageController {
+    private final ArtistProfileImageLikeService likeService;
 
     @PostMapping("/{id}/like")
     public void likeImage(@PathVariable Long id, @AuthenticationPrincipal Long userId) {

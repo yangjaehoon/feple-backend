@@ -1,10 +1,10 @@
 package com.feple.feple_backend.artist.photo.service;
 
-import com.feple.feple_backend.artist.photo.entity.ArtistImage;
-import com.feple.feple_backend.artist.photo.entity.ArtistImageLike;
+import com.feple.feple_backend.artist.photo.entity.ArtistProfileImage;
+import com.feple.feple_backend.artist.photo.entity.ArtistProfileImageLike;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.artist.photo.repository.ArtistImageLikeRepository;
-import com.feple.feple_backend.artist.photo.repository.ArtistImageRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -12,25 +12,25 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ArtistImageLikeService {
-    private final ArtistImageLikeRepository likeRepository;
-    private final ArtistImageRepository imageRepository;
+public class ArtistProfileImageLikeService {
+    private final ArtistProfileImageLikeRepository likeRepository;
+    private final ArtistProfileImageRepository imageRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public void likeImage(Long imageId, Long userId){
-        ArtistImage image = imageRepository.findById(imageId)
+        ArtistProfileImage image = imageRepository.findById(imageId)
                 .orElseThrow(()-> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        likeRepository.findByUserAndArtistImage(user, image)
+        likeRepository.findByUserAndArtistProfileImage(user, image)
                 .ifPresentOrElse(
                         like -> {},
                         ()-> {
-                            ArtistImageLike like = ArtistImageLike.builder()
+                            ArtistProfileImageLike like = ArtistProfileImageLike.builder()
                                     .user(user)
-                                    .artistImage(image)
+                                    .artistProfileImage(image)
                                     .build();
                             likeRepository.save(like);
                         }
@@ -39,12 +39,12 @@ public class ArtistImageLikeService {
 
     @Transactional
     public void unlikeImage(Long imageId, Long userId) {
-        ArtistImage image = imageRepository.findById(imageId)
+        ArtistProfileImage image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        likeRepository.findByUserAndArtistImage(user, image)
+        likeRepository.findByUserAndArtistProfileImage(user, image)
                 .ifPresent(likeRepository::delete);
     }
 }

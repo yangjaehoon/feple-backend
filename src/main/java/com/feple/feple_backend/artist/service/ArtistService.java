@@ -4,8 +4,8 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
-import com.feple.feple_backend.artist.photo.entity.ArtistImage;
-import com.feple.feple_backend.artist.photo.repository.ArtistImageRepository;
+import com.feple.feple_backend.artist.photo.entity.ArtistProfileImage;
+import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
@@ -29,7 +29,7 @@ public class ArtistService {
 
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
-    private final ArtistImageRepository artistImageRepository;
+    private final ArtistProfileImageRepository artistImageRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final PostRepository postRepository;
@@ -170,8 +170,8 @@ public class ArtistService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
         String profileImageKey = artist.getProfileImageKey();
 
-        // 아티스트 이미지 삭제 (S3 + DB, ArtistImageLike는 cascade)
-        List<ArtistImage> images = artistImageRepository.findByArtist(artist);
+        // 아티스트 이미지 삭제 (S3 + DB, ArtistProfileImageLike는 cascade)
+        List<ArtistProfileImage> images = artistImageRepository.findByArtist(artist);
         images.forEach(img -> fileStorageService.deleteFile(img.getImageUrl()));
         artistImageRepository.deleteAll(images);
 

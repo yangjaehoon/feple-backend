@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "artist_image")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class ArtistImage {
+public class ArtistProfileImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,8 +33,8 @@ public class ArtistImage {
 
     private LocalDateTime uploadAt;
 
-    @OneToMany(mappedBy = "artistImage", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ArtistImageLike> likes = new ArrayList<>();
+    @OneToMany(mappedBy = "artistProfileImage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArtistProfileImageLike> likes = new ArrayList<>();
 
     public int getLikeCount(){
         return likes.size();

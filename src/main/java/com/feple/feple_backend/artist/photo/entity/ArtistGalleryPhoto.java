@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "artist_photos")
-public class ArtistPhoto {
+public class ArtistGalleryPhoto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +45,7 @@ public class ArtistPhoto {
     @Column(name = "likecount", nullable = false, columnDefinition = "INT DEFAULT 0")
     private int likeCount = 0;
 
-    public ArtistPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title,
+    public ArtistGalleryPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title,
             String description) {
         this.artistId = artistId;
         this.uploaderUserId = uploaderUserId;

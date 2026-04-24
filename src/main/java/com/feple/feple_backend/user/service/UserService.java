@@ -1,8 +1,8 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.artist.photo.repository.ArtistImageLikeRepository;
-import com.feple.feple_backend.artist.photo.repository.ArtistImageRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.post.entity.Post;
@@ -53,8 +53,8 @@ public class UserService {
     private final NotificationRepository notificationRepository;
     private final UserDeviceTokenRepository userDeviceTokenRepository;
     private final FestivalCertificationRepository certificationRepository;
-    private final ArtistImageLikeRepository artistImageLikeRepository;
-    private final ArtistImageRepository artistImageRepository;
+    private final ArtistProfileImageLikeRepository artistImageLikeRepository;
+    private final ArtistProfileImageRepository artistImageRepository;
 
     @Transactional(readOnly = true)
     public java.util.Map<String, Object> checkNicknameAvailable(String nickname, Long excludeUserId) {

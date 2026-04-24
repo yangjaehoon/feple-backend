@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "artist_photo_likes", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "artist_photo_id", "user_id" })
 })
-public class ArtistPhotoLike {
+public class ArtistGalleryPhotoLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +31,7 @@ public class ArtistPhotoLike {
         this.createdAt = LocalDateTime.now();
     }
 
-    public ArtistPhotoLike(Long artistPhotoId, Long userId) {
+    public ArtistGalleryPhotoLike(Long artistPhotoId, Long userId) {
         this.artistPhotoId = artistPhotoId;
         this.userId = userId;
     }

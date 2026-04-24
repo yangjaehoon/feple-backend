@@ -1,9 +1,9 @@
 package com.feple.feple_backend.artist.photo.controller;
 
-import com.feple.feple_backend.artist.photo.dto.ArtistPhotoResponseDto;
+import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
 import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
-import com.feple.feple_backend.artist.photo.service.ArtistPhotoService;
+import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/artists/{artistId}/photos")
-public class ArtistPhotoController {
+public class ArtistGalleryPhotoController {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
@@ -28,7 +28,7 @@ public class ArtistPhotoController {
     );
 
     private final S3PresignService s3PresignService;
-    private final ArtistPhotoService artistPhotoService;
+    private final ArtistGalleryPhotoService artistGalleryPhotoService;
 
     @PostMapping("/presign")
     public S3PresignService.PresignResult presign(
@@ -51,21 +51,21 @@ public class ArtistPhotoController {
     }
 
     @PostMapping
-    public ArtistPhotoResponseDto register(
+    public ArtistGalleryPhotoResponseDto register(
             @PathVariable Long artistId,
             @Valid @RequestBody RegisterPhotoRequestDto req,
             @AuthenticationPrincipal Long userId
     ) {
-        return artistPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), userId);
+        return artistGalleryPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), userId);
     }
 
     /** 비인증 사용자도 사진 목록 조회 가능 (좋아요 여부는 false로 반환) */
     @GetMapping
-    public List<ArtistPhotoResponseDto> list(
+    public List<ArtistGalleryPhotoResponseDto> list(
             @PathVariable Long artistId,
             @AuthenticationPrincipal Long userId
     ) {
-        return artistPhotoService.list(artistId, userId);
+        return artistGalleryPhotoService.list(artistId, userId);
     }
 
     public record PresignRequest(
@@ -78,17 +78,17 @@ public class ArtistPhotoController {
             @PathVariable Long artistId,
             @PathVariable Long photoId,
             @AuthenticationPrincipal Long userId) {
-        artistPhotoService.delete(photoId, userId);
+        artistGalleryPhotoService.delete(photoId, userId);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{photoId}")
-    public ArtistPhotoResponseDto updatePhoto(
+    public ArtistGalleryPhotoResponseDto updatePhoto(
             @PathVariable Long artistId,
             @PathVariable Long photoId,
             @Valid @RequestBody UpdatePhotoRequestDto req,
             @AuthenticationPrincipal Long userId) {
-        return artistPhotoService.update(photoId, userId, req.title(), req.description());
+        return artistGalleryPhotoService.update(photoId, userId, req.title(), req.description());
     }
 
     @PostMapping("/{photoId}/like")
@@ -96,7 +96,7 @@ public class ArtistPhotoController {
             @PathVariable Long photoId,
             @PathVariable Long artistId,
             @AuthenticationPrincipal Long userId) {
-        boolean success = artistPhotoService.toggleLike(photoId, userId);
+        boolean success = artistGalleryPhotoService.toggleLike(photoId, userId);
         return ResponseEntity.ok(Map.of("success", success));
     }
 }

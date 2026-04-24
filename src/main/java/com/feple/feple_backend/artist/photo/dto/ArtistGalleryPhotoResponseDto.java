@@ -2,7 +2,7 @@ package com.feple.feple_backend.artist.photo.dto;
 
 import java.time.LocalDateTime;
 
-public record ArtistPhotoResponseDto(
+public record ArtistGalleryPhotoResponseDto(
         Long photoId,
         String url,
         Long uploaderUserId,

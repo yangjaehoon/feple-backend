@@ -15,7 +15,7 @@ import lombok.*;
                 @UniqueConstraint(columnNames = {"user_id", "artist_image_id"})
         }
 )
-public class ArtistImageLike {
+public class ArtistProfileImageLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,5 +26,5 @@ public class ArtistImageLike {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_image_id")
-    private ArtistImage artistImage;
+    private ArtistProfileImage artistProfileImage;
 }
