@@ -4,15 +4,8 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
-import com.feple.feple_backend.artist.photo.entity.ArtistProfileImage;
-import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.post.entity.Post;
-import com.feple.feple_backend.post.repository.PostLikeRepository;
-import com.feple.feple_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,11 +33,7 @@ public class ArtistService {
 
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
-    private final ArtistProfileImageRepository artistImageRepository;
-    private final ArtistFestivalRepository artistFestivalRepository;
-    private final ArtistFollowRepository artistFollowRepository;
-    private final PostRepository postRepository;
-    private final PostLikeRepository postLikeRepository;
+    private final ArtistCascadeDeleteService cascadeDeleteService;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -163,25 +152,6 @@ public class ArtistService {
     public void deleteArtist(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
-        String profileImageKey = artist.getProfileImageKey();
-
-        // 아티스트 이미지 삭제 (S3 + DB, ArtistProfileImageLike는 cascade)
-        List<ArtistProfileImage> images = artistImageRepository.findByArtist(artist);
-        images.forEach(img -> fileStorageService.deleteFile(img.getImageUrl()));
-        artistImageRepository.deleteAll(images);
-
-        // 아티스트-페스티벌 연결, 팔로우 삭제
-        artistFestivalRepository.deleteByArtistId(id);
-        artistFollowRepository.deleteAll(artistFollowRepository.findByArtistId(id));
-
-        // 게시글 삭제 (PostLike 먼저, Comment는 Post cascade)
-        List<Post> artistPosts = postRepository.findByArtist(artist);
-        for (Post post : artistPosts) {
-            postLikeRepository.deleteByPostId(post.getId());
-        }
-        postRepository.deleteAll(artistPosts);
-
-        artistRepository.deleteById(id);
-        fileStorageService.deleteFile(profileImageKey);
+        cascadeDeleteService.delete(artist);
     }
 }
