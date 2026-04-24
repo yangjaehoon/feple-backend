@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class ArtistGalleryPhotoController {
             @AuthenticationPrincipal Long userId
     ) {
         if (userId == null) {
-            throw new org.springframework.security.access.AccessDeniedException("로그인이 필요합니다.");
+            throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
         String ext = req.extension() == null ? "" : req.extension().toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(ext)) {
