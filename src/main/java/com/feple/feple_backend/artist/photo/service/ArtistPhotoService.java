@@ -61,7 +61,7 @@ public class ArtistPhotoService {
                         p.getTitle(),
                         p.getDescription(),
                         p.getLikeCount(),
-                        artistPhotoLikeRepository.existsByArtistPhotoIdAndUserId(p.getId(), currentUserId)))
+                        currentUserId != null && artistPhotoLikeRepository.existsByArtistPhotoIdAndUserId(p.getId(), currentUserId)))
                 .toList();
     }
 

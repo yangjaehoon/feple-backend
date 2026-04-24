@@ -33,8 +33,12 @@ public class ArtistPhotoController {
     @PostMapping("/presign")
     public S3PresignService.PresignResult presign(
             @PathVariable Long artistId,
-            @Valid @RequestBody PresignRequest req
+            @Valid @RequestBody PresignRequest req,
+            @AuthenticationPrincipal Long userId
     ) {
+        if (userId == null) {
+            throw new org.springframework.security.access.AccessDeniedException("로그인이 필요합니다.");
+        }
         String ext = req.extension() == null ? "" : req.extension().toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(ext)) {
             throw new IllegalArgumentException("허용되지 않는 파일 확장자입니다. (jpg, jpeg, png, gif, webp 만 가능)");

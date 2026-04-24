@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+@PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/posts")
 @RequiredArgsConstructor
