@@ -1,7 +1,7 @@
 package com.feple.feple_backend.notification.controller;
 
 import com.feple.feple_backend.notification.dto.NotificationDto;
-import com.feple.feple_backend.notification.service.NotificationService;
+import com.feple.feple_backend.notification.service.NotificationQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,20 +15,20 @@ import java.util.Map;
 @RequestMapping("/notifications")
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    private final NotificationQueryService notificationQueryService;
 
     /** 내 알림 목록 */
     @GetMapping("/my")
     public ResponseEntity<List<NotificationDto>> getMyNotifications(
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(notificationService.getMyNotifications(userId));
+        return ResponseEntity.ok(notificationQueryService.getMyNotifications(userId));
     }
 
     /** 읽지 않은 알림 수 */
     @GetMapping("/my/unread-count")
     public ResponseEntity<Map<String, Long>> getUnreadCount(
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(Map.of("count", notificationService.getUnreadCount(userId)));
+        return ResponseEntity.ok(Map.of("count", notificationQueryService.getUnreadCount(userId)));
     }
 
     /** 단건 읽음 처리 */
@@ -36,7 +36,7 @@ public class NotificationController {
     public ResponseEntity<Void> markRead(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        notificationService.markRead(id, userId);
+        notificationQueryService.markRead(id, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -44,7 +44,7 @@ public class NotificationController {
     @PatchMapping("/my/read-all")
     public ResponseEntity<Void> markAllRead(
             @AuthenticationPrincipal Long userId) {
-        notificationService.markAllRead(userId);
+        notificationQueryService.markAllRead(userId);
         return ResponseEntity.noContent().build();
     }
 }

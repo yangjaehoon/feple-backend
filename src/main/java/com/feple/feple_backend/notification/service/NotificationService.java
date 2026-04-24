@@ -2,7 +2,6 @@ package com.feple.feple_backend.notification.service;
 
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
-import com.feple.feple_backend.notification.dto.NotificationDto;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
@@ -136,32 +135,4 @@ public class NotificationService {
         log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, users.size(), festivalId);
     }
 
-    @Transactional(readOnly = true)
-    public List<NotificationDto> getMyNotifications(Long userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(NotificationDto::from)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public long getUnreadCount(Long userId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(userId);
-    }
-
-    @Transactional
-    public void markRead(Long notificationId, Long userId) {
-        Notification n = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다."));
-        if (!n.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("본인의 알림만 읽음 처리할 수 있습니다.");
-        }
-        n.markRead();
-        notificationRepository.save(n);
-    }
-
-    @Transactional
-    public void markAllRead(Long userId) {
-        notificationRepository.markAllReadByUserId(userId);
-    }
 }

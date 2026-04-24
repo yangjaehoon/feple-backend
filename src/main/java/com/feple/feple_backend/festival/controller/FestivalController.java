@@ -4,6 +4,7 @@ import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 public class FestivalController {
 
     private final FestivalService festivalService;
+    private final FestivalLikeService festivalLikeService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -36,12 +38,12 @@ public class FestivalController {
     @PostMapping("/{id}/like")
     public ResponseEntity<Boolean> toggleLike(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(festivalService.toggleLike(id, userId));
+        return ResponseEntity.ok(festivalLikeService.toggleLike(id, userId));
     }
 
     @GetMapping("/{id}/liked")
     public ResponseEntity<Boolean> isLiked(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(festivalService.isLiked(id, userId));
+        return ResponseEntity.ok(festivalLikeService.isLiked(id, userId));
     }
 }

@@ -3,6 +3,7 @@ package com.feple.feple_backend.post.controller;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.service.PostLikeService;
 import com.feple.feple_backend.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostLikeService postLikeService;
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId) {
@@ -27,7 +29,7 @@ public class PostController {
     @GetMapping("/{postId}/liked")
     public ResponseEntity<Boolean> isLiked(@PathVariable Long postId,
                                            @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.isLikedByUser(postId, userId));
+        return ResponseEntity.ok(postLikeService.isLikedByUser(postId, userId));
     }
 
     @PostMapping("/free")
@@ -62,7 +64,7 @@ public class PostController {
     @PostMapping("/{postId}/like")
     public ResponseEntity<Boolean> toggleLike(@PathVariable Long postId,
                                               @AuthenticationPrincipal Long userId) {
-        boolean liked = postService.toggleLike(postId, userId);
+        boolean liked = postLikeService.toggleLike(postId, userId);
         return ResponseEntity.ok(liked);
     }
 

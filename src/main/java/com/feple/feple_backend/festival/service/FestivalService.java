@@ -4,7 +4,6 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.booth.repository.BoothRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.festival.entity.FestivalLike;
 import com.feple.feple_backend.festival.entity.FestivalStatus;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
@@ -19,8 +18,6 @@ import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +36,6 @@ public class FestivalService {
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FestivalLikeRepository festivalLikeRepository;
-    private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final StageRepository stageRepository;
     private final BoothRepository boothRepository;
@@ -136,31 +132,6 @@ public class FestivalService {
         if (dto.getLongitude() != null) {
             festival.setLongitude(dto.getLongitude());
         }
-    }
-
-    @Transactional
-    public boolean toggleLike(Long festivalId, Long userId) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다."));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
-        return festivalLikeRepository.findByUserIdAndFestivalId(userId, festivalId)
-                .map(like -> {
-                    festivalLikeRepository.delete(like);
-                    festivalRepository.decrementLikeCount(festivalId);
-                    return false;
-                })
-                .orElseGet(() -> {
-                    festivalLikeRepository.save(FestivalLike.of(user, festival));
-                    festivalRepository.incrementLikeCount(festivalId);
-                    return true;
-                });
-    }
-
-    @Transactional(readOnly = true)
-    public boolean isLiked(Long festivalId, Long userId) {
-        return festivalLikeRepository.existsByUserIdAndFestivalId(userId, festivalId);
     }
 
     @Transactional
