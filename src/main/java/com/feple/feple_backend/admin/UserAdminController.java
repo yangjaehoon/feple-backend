@@ -6,6 +6,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.entity.UserRole;
+import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class UserAdminController {
 
     private final UserService userService;
+    private final MyPageService myPageService;
 
     @GetMapping
     public String listUsers(@RequestParam(defaultValue = "0") int page,
@@ -39,12 +41,12 @@ public class UserAdminController {
     @GetMapping("/{id}")
     public String userDetail(@PathVariable Long id, Model model) {
         UserResponseDto user = userService.getAdminUser(id);
-        UserStatsDto stats = userService.getUserStats(id);
-        List<PostResponseDto> recentPosts = userService.getMyPosts(id).stream()
+        UserStatsDto stats = myPageService.getUserStats(id);
+        List<PostResponseDto> recentPosts = myPageService.getMyPosts(id).stream()
                 .limit(10)
                 .collect(Collectors.toList());
-        List<FestivalResponseDto> likedFestivals = userService.getLikedFestivals(id);
-        List<ArtistResponseDto> followedArtists = userService.getFollowedArtists(id);
+        List<FestivalResponseDto> likedFestivals = myPageService.getLikedFestivals(id);
+        List<ArtistResponseDto> followedArtists = myPageService.getFollowedArtists(id);
 
         model.addAttribute("user", user);
         model.addAttribute("stats", stats);

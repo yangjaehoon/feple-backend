@@ -8,6 +8,7 @@ import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.DeviceTokenService;
+import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final MyPageService myPageService;
     private final DeviceTokenService deviceTokenService;
 
     @GetMapping("/check-nickname")
@@ -75,7 +77,7 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
         if (!id.equals(userId))
             throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
-        return ResponseEntity.ok(userService.getFollowedArtists(id));
+        return ResponseEntity.ok(myPageService.getFollowedArtists(id));
     }
 
     @GetMapping("/{id}/liked-festivals")
@@ -84,7 +86,7 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
         if (!id.equals(userId))
             throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
-        return ResponseEntity.ok(userService.getLikedFestivals(id));
+        return ResponseEntity.ok(myPageService.getLikedFestivals(id));
     }
 
     @GetMapping("/{id}/stats")
@@ -93,7 +95,7 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
         if (!id.equals(userId))
             throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
-        return ResponseEntity.ok(userService.getUserStats(id));
+        return ResponseEntity.ok(myPageService.getUserStats(id));
     }
 
     @GetMapping("/{id}/posts")
@@ -102,7 +104,7 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
         if (!id.equals(userId))
             throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
-        return ResponseEntity.ok(userService.getMyPosts(id));
+        return ResponseEntity.ok(myPageService.getMyPosts(id));
     }
 
     @GetMapping("/{id}/comments")
@@ -111,7 +113,7 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
         if (!id.equals(userId))
             throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
-        return ResponseEntity.ok(userService.getMyComments(id));
+        return ResponseEntity.ok(myPageService.getMyComments(id));
     }
 
     @DeleteMapping("/{id}")
