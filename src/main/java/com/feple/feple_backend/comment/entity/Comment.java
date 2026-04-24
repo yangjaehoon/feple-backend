@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "comment", indexes = {
+    @Index(name = "idx_comment_post_id_created_at", columnList = "post_id, created_at ASC")
+})
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

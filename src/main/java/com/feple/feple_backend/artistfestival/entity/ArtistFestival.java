@@ -13,15 +13,19 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
+@Table(name = "artist_festival", indexes = {
+    @Index(name = "idx_af_artist_id", columnList = "artist_id"),
+    @Index(name = "idx_af_festival_id", columnList = "festival_id")
+})
 public class ArtistFestival {
     @Id @GeneratedValue
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id")
     private Artist artist;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "festival_id")
     private Festival festival;
 

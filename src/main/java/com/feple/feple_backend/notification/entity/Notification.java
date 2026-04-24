@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications",
-        indexes = @Index(name = "idx_notification_user_id", columnList = "user_id"))
+        indexes = @Index(name = "idx_notification_user_id_created_at", columnList = "user_id, created_at DESC"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification {

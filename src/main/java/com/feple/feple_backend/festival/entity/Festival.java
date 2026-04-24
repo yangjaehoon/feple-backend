@@ -39,7 +39,7 @@ public class Festival {
     @Builder.Default
     private EventType eventType = EventType.FESTIVAL;
 
-    @ElementCollection(targetClass = Genre.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = Genre.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "festival_genres", joinColumns = @JoinColumn(name = "festival_id"))
     @Enumerated(EnumType.STRING)
     @Builder.Default

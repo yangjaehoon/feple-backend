@@ -14,7 +14,17 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostIdOrderByCreatedAtAsc(Long postId);
     Page<Comment> findByPostIdOrderByCreatedAtAsc(Long postId, Pageable pageable);
-    List<Comment> findByUser(User user);
+
+    // post/artist/festival/user JOIN FETCH — MyCommentResponseDto::from에서 N+1 방지
+    @Query("SELECT c FROM Comment c " +
+           "JOIN FETCH c.post p " +
+           "JOIN FETCH p.user " +
+           "LEFT JOIN FETCH p.artist " +
+           "LEFT JOIN FETCH p.festival " +
+           "WHERE c.user = :user " +
+           "ORDER BY c.createdAt DESC")
+    List<Comment> findByUser(@Param("user") User user);
+
     long countByUser(User user);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.artist.id = :artistId AND c.createdAt >= :since")

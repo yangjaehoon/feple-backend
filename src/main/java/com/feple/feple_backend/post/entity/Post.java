@@ -17,6 +17,10 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "post", indexes = {
+    @Index(name = "idx_post_board_type_created_at", columnList = "board_type, created_at DESC"),
+    @Index(name = "idx_post_like_count_created_at", columnList = "like_count DESC, created_at DESC")
+})
 public class Post {
 
     @Id

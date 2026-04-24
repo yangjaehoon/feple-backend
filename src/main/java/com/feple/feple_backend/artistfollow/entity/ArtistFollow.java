@@ -17,6 +17,9 @@ import java.time.LocalDateTime;
         name = "artist_follow",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"user_id", "artist_id"})
+        },
+        indexes = {
+                @Index(name = "idx_artist_follow_artist_id_created_at", columnList = "artist_id, created_at")
         }
 )
 public class ArtistFollow {
