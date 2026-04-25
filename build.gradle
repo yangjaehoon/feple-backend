@@ -53,6 +53,9 @@ dependencies {
 	implementation platform("software.amazon.awssdk:bom:2.25.1")
 	implementation 'com.google.firebase:firebase-admin:9.3.0'
 
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:5.16.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.16.0'
+
 }
 
 tasks.named('test') {
