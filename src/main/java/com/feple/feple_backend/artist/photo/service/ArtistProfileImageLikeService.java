@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 @RequiredArgsConstructor
 public class ArtistProfileImageLikeService {
@@ -20,9 +22,9 @@ public class ArtistProfileImageLikeService {
     @Transactional
     public void likeImage(Long imageId, Long userId){
         ArtistProfileImage image = imageRepository.findById(imageId)
-                .orElseThrow(()-> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
+                .orElseThrow(()-> new NoSuchElementException("이미지를 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(()-> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
         likeRepository.findByUserAndArtistProfileImage(user, image)
                 .ifPresentOrElse(
@@ -40,9 +42,9 @@ public class ArtistProfileImageLikeService {
     @Transactional
     public void unlikeImage(Long imageId, Long userId) {
         ArtistProfileImage image = imageRepository.findById(imageId)
-                .orElseThrow(() -> new IllegalArgumentException("이미지를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("이미지를 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
         likeRepository.findByUserAndArtistProfileImage(user, image)
                 .ifPresent(likeRepository::delete);

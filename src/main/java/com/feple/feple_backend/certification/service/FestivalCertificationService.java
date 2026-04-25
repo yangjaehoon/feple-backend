@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +38,9 @@ public class FestivalCertificationService {
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new IllegalArgumentException("페스티벌을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
 
         certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .ifPresent(existing -> {
@@ -85,7 +86,7 @@ public class FestivalCertificationService {
     @Transactional(readOnly = true)
     public FestivalCertification getById(Long id) {
         return certificationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("인증 신청을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("인증 신청을 찾을 수 없습니다."));
     }
 
     @Transactional

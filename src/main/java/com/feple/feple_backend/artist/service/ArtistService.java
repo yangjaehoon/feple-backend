@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -81,7 +82,7 @@ public class ArtistService {
     @Transactional(readOnly = true)
     public ArtistResponseDto getArtistById(Long id) {
         Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
         return toDto(artist);
     }
 
@@ -95,7 +96,7 @@ public class ArtistService {
     @Transactional(readOnly = true)
     public ArtistRequestDto getArtistForEdit(Long id) {
         Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
         return ArtistRequestDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
@@ -109,7 +110,7 @@ public class ArtistService {
     @Transactional
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
         String oldKey = artist.getProfileImageKey();
         String imageKey = dto.getProfileImageUrl() != null
                 ? dto.getProfileImageUrl()
@@ -129,7 +130,7 @@ public class ArtistService {
     @Transactional
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
         String oldKey = artist.getProfileImageKey();
         artist.update(artist.getName(), artist.getNameEn(), artist.getGenre(), imageKey);
         if (imageKey != null && !imageKey.equals(oldKey)) {
@@ -151,7 +152,7 @@ public class ArtistService {
     @Transactional
     public void deleteArtist(Long id) {
         Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아티스트가 존재하지 않습니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
         cascadeDeleteService.delete(artist);
     }
 }

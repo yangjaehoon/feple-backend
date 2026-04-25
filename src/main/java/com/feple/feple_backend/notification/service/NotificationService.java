@@ -38,8 +38,8 @@ public class NotificationService {
         List<ArtistFollow> follows = artistFollowRepository.findByArtistId(artistId);
         if (follows.isEmpty()) return;
 
-        String title = artistName + "의 새 페스티벌";
-        String body = "'" + festivalTitle + "' 일정이 등록됐어요!";
+        String title = NotificationMessages.newFestivalTitle(artistName);
+        String body = NotificationMessages.newFestivalBody(festivalTitle);
 
         List<Long> userIds = follows.stream()
                 .map(f -> f.getUser().getId())
@@ -66,8 +66,8 @@ public class NotificationService {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
 
-        String title = "인증이 승인됐어요!";
-        String body = "'" + festivalTitle + "' 페스티벌 인증이 승인됐습니다.";
+        String title = NotificationMessages.CERT_APPROVED_TITLE;
+        String body = NotificationMessages.certApprovedBody(festivalTitle);
 
         notificationRepository.save(
                 Notification.of(user, NotificationType.CERT_APPROVED, title, body, festivalId));
@@ -83,9 +83,8 @@ public class NotificationService {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
 
-        String title = "인증이 거절됐어요.";
-        String body = "'" + festivalTitle + "' 인증이 거절됐습니다." +
-                (reason != null && !reason.isBlank() ? " 사유: " + reason : "");
+        String title = NotificationMessages.CERT_REJECTED_TITLE;
+        String body = NotificationMessages.certRejectedBody(festivalTitle, reason);
 
         notificationRepository.save(
                 Notification.of(user, NotificationType.CERT_REJECTED, title, body, festivalId));
@@ -103,10 +102,8 @@ public class NotificationService {
         User author = userRepository.findById(postAuthorId).orElse(null);
         if (author == null) return;
 
-        String title = commenterNickname + "님이 댓글을 남겼어요.";
-        String body = postTitle != null && !postTitle.isBlank()
-                ? "'" + postTitle + "' 게시글에 새 댓글이 달렸습니다."
-                : "게시글에 새 댓글이 달렸습니다.";
+        String title = NotificationMessages.newCommentTitle(commenterNickname);
+        String body = NotificationMessages.newCommentBody(postTitle);
 
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_COMMENT, title, body, postId));
@@ -121,8 +118,8 @@ public class NotificationService {
                                        List<Long> userIds, int dDay) {
         if (userIds.isEmpty()) return;
 
-        String title = dDay == 1 ? "내일 페스티벌이에요!" : "D-" + dDay + " 페스티벌 리마인더";
-        String body = "'" + festivalTitle + "' 페스티벌이 " + dDay + "일 후 시작해요!";
+        String title = NotificationMessages.festivalReminderTitle(dDay);
+        String body = NotificationMessages.festivalReminderBody(festivalTitle, dDay);
 
         List<User> users = userRepository.findAllById(userIds);
         List<Notification> notifications = users.stream()

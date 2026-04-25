@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class BoothService {
     @Transactional
     public Long createBooth(Long festivalId, BoothRequestDto dto) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다."));
         Booth booth = Booth.builder()
                 .festival(festival)
                 .name(dto.getName())

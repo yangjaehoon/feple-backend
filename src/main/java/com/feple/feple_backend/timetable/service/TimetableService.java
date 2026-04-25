@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -37,12 +38,12 @@ public class TimetableService {
     @Transactional
     public TimetableEntryResponse createEntry(Long festivalId, TimetableEntryRequest req) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new IllegalArgumentException("페스티벌을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
         if (!req.getStartTime().isBefore(req.getEndTime())) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
         }
         Stage stage = stageRepository.findByFestivalIdAndName(festivalId, req.getStageName().trim())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스테이지입니다: " + req.getStageName()));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + req.getStageName()));
 
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)

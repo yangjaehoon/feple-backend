@@ -1,7 +1,5 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.entity.BoothType;
@@ -13,7 +11,6 @@ import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +25,6 @@ import java.util.stream.Collectors;
 public class FestivalDetailAggregationService {
 
     private final FestivalService festivalService;
-    private final ArtistRepository artistRepository;
     private final ArtistFestivalService artistFestivalService;
     private final TimetableService timetableService;
     private final StageService stageService;
@@ -40,7 +36,6 @@ public class FestivalDetailAggregationService {
     /** 페스티벌 상세 뷰에 필요한 모든 데이터를 집계하여 반환 */
     public Map<String, Object> buildAttributes(Long festivalId) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
-        List<Artist> allArtists = artistRepository.findAll(Sort.by("name"));
 
         List<ArtistFestivalResponse> participatingArtists =
                 artistFestivalService.getArtistFestivals(festivalId);
@@ -59,7 +54,6 @@ public class FestivalDetailAggregationService {
 
         Map<String, Object> attrs = new LinkedHashMap<>();
         attrs.put("festival", festival);
-        attrs.put("allArtists", allArtists);
         attrs.put("participatingArtists", participatingArtists);
         attrs.put("participatingArtistsByName", participatingArtistsByName);
         attrs.put("timetableEntries", timetableEntries);

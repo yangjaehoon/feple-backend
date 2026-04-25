@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,9 +28,9 @@ public class FestivalLikeService {
     @Transactional
     public boolean toggleLike(Long festivalId, Long userId) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 사용자입니다."));
 
         return festivalLikeRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .map(like -> {

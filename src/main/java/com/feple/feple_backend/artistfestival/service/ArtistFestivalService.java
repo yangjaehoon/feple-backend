@@ -76,7 +76,7 @@ public class ArtistFestivalService {
     public void updateArtistFestival(Long festivalId, Long artistFestivalId,
                                      Integer lineupOrder, String stageName) {
         ArtistFestival af = artistFestivalRepository.findById(artistFestivalId)
-                .orElseThrow(() -> new IllegalArgumentException("참여 정보가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("참여 정보가 없습니다."));
         if (!af.getFestival().getId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
@@ -88,7 +88,7 @@ public class ArtistFestivalService {
         if (stageName != null && !stageName.equals(oldStage)) {
             String artistName = af.getArtist().getName();
             Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, stageName)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스테이지입니다: " + stageName));
+                    .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + stageName));
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
                     .forEach(entry -> entry.setStage(newStage));
         }
@@ -97,7 +97,7 @@ public class ArtistFestivalService {
     @Transactional
     public void removeArtistFromFestival(Long festivalId, Long artistFestivalId) {
         ArtistFestival artistFestival = artistFestivalRepository.findById(artistFestivalId)
-                .orElseThrow(() -> new IllegalArgumentException("참여 정보가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("참여 정보가 없습니다."));
 
         if (!artistFestival.getFestival().getId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");

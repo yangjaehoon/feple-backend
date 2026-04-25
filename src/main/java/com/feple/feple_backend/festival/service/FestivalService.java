@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -91,7 +92,7 @@ public class FestivalService {
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
         Festival festival = festivalRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + id));
 
         return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
     }
@@ -99,7 +100,7 @@ public class FestivalService {
     @Transactional(readOnly = true)
     public FestivalResponseDto getFestival(Long id) {
         Festival festival = festivalRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + id));
 
         return toDto(festival);
     }
@@ -107,7 +108,7 @@ public class FestivalService {
     @Transactional
     public void updateFestival(Long id, FestivalRequestDto dto) {
         Festival festival = festivalRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + id));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + id));
 
         festival.setTitle(dto.getTitle());
         festival.setTitleEn(dto.getTitleEn());
@@ -137,7 +138,7 @@ public class FestivalService {
     @Transactional
     public void deleteFestival(Long festivalId) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 페스티벌입니다. id=" + festivalId));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + festivalId));
         String posterKey = festival.getPosterKey();
 
         // 타임테이블, 부스, 스테이지 삭제
