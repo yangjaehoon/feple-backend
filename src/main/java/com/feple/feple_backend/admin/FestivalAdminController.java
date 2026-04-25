@@ -1,12 +1,8 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
-import com.feple.feple_backend.booth.entity.BoothType;
-import com.feple.feple_backend.booth.service.BoothService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -14,10 +10,7 @@ import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.timetable.service.TimetableService;
-import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -27,12 +20,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -44,12 +34,7 @@ public class FestivalAdminController {
     private final FileStorageService fileStorageService;
     private final ArtistRepository artistRepository;
     private final ArtistFestivalService artistFestivalService;
-    private final TimetableService timetableService;
-    private final StageService stageService;
-    private final BoothService boothService;
-
-    @Value("${app.google.maps.key:}")
-    private String googleMapsKey;
+    private final FestivalDetailAggregationService festivalDetailAggregationService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -157,33 +142,7 @@ public class FestivalAdminController {
     /** 페스티벌 상세: 모든 하위 리소스(아티스트/스테이지/타임테이블/부스) 데이터 집계 */
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model) {
-        FestivalResponseDto festival = festivalService.getFestival(id);
-        List<Artist> allArtists = artistRepository.findAll(Sort.by("name"));
-
-        List<ArtistFestivalResponse> participatingArtists =
-                artistFestivalService.getArtistFestivals(id);
-
-        List<ArtistFestivalResponse> participatingArtistsByName = participatingArtists.stream()
-                .sorted(java.util.Comparator.comparing(ArtistFestivalResponse::getArtistName, String.CASE_INSENSITIVE_ORDER))
-                .toList();
-
-        List<TimetableEntryResponse> timetableEntries = timetableService.getEntries(id);
-        Map<String, List<TimetableEntryResponse>> timetableByArtist = timetableEntries.stream()
-                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
-                             && !"📢".equals(e.getStageName()))
-                .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName));
-
-        model.addAttribute("festival", festival);
-        model.addAttribute("allArtists", allArtists);
-        model.addAttribute("participatingArtists", participatingArtists);
-        model.addAttribute("participatingArtistsByName", participatingArtistsByName);
-        model.addAttribute("timetableEntries", timetableEntries);
-        model.addAttribute("timetableByArtist", timetableByArtist);
-        model.addAttribute("stages", stageService.getStages(id));
-        model.addAttribute("booths", boothService.getBooths(id));
-        model.addAttribute("allBoothTypes", BoothType.values());
-        model.addAttribute("googleMapsKey", googleMapsKey);
-
+        model.addAllAttributes(festivalDetailAggregationService.buildAttributes(id));
         return "admin/festival-detail";
     }
 }

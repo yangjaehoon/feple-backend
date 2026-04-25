@@ -3,7 +3,7 @@ package com.feple.feple_backend.artist.controller;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponse;
-import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.artistfestival.service.ArtistScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +18,7 @@ import java.util.List;
 public class ArtistController {
 
     private final ArtistService artistService;
-    private final ArtistFestivalService artistFestivalService;
+    private final ArtistScheduleService artistScheduleService;
 
     @GetMapping
     public List<ArtistResponseDto> getArtists(){
@@ -32,6 +32,6 @@ public class ArtistController {
 
     @GetMapping("/{id}/schedule")
     public List<ArtistScheduleResponse> getArtistSchedule(@PathVariable Long id) {
-        return artistFestivalService.getArtistSchedule(id);
+        return artistScheduleService.getArtistSchedule(id);
     }
 }
