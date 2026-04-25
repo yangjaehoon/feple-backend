@@ -58,7 +58,7 @@ public class FestivalService {
                 .location(dto.getLocation())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
-                .posterKey(dto.getPosterUrl())
+                .posterKey(dto.getPosterKey())
                 .genres(dto.getGenres() != null ? dto.getGenres() : new java.util.ArrayList<>())
                 .region(dto.getRegion())
                 .latitude(dto.getLatitude())
@@ -116,9 +116,9 @@ public class FestivalService {
         festival.setLocation(dto.getLocation());
         festival.setStartDate(dto.getStartDate());
         festival.setEndDate(dto.getEndDate());
-        if (dto.getPosterUrl() != null && !dto.getPosterUrl().equals(festival.getPosterKey())) {
+        if (dto.getPosterKey() != null && !dto.getPosterKey().equals(festival.getPosterKey())) {
             String oldKey = festival.getPosterKey();
-            festival.setPosterKey(dto.getPosterUrl());
+            festival.setPosterKey(dto.getPosterKey());
             fileStorageService.deleteFile(oldKey);
         }
         if (dto.getGenres() != null) {

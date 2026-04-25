@@ -33,7 +33,7 @@ public class FestivalRequestDto {
     @NotNull(message = "종료일은 필수입니다.")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate endDate;
-    private String posterUrl;
+    private String posterKey;
 
     private List<ArtistRequestDto> artists;
 

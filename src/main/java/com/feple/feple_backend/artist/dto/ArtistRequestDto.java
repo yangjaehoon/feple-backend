@@ -15,6 +15,6 @@ public class ArtistRequestDto {
     private String name;
     private String nameEn;
     private ArtistGenre genre;
-    private String profileImageUrl;
+    private String profileImageKey;
     private int followerCount;
 }

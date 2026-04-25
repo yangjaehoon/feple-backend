@@ -38,12 +38,12 @@ public class ArtistAdminController {
                                ) throws IOException {
 
         if (profileImageFile == null || profileImageFile.isEmpty()) {
-            bindingResult.rejectValue("profileImageUrl", "profileImageFile.required", "프로필 이미지는 필수입니다.");
+            bindingResult.rejectValue("profileImageKey", "profileImageFile.required", "프로필 이미지는 필수입니다.");
             return "admin/artist-form";
         }
 
-        String url = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
-        dto.setProfileImageUrl(url);
+        String imageKey = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
+        dto.setProfileImageKey(imageKey);
 
         artistService.createArtist(dto);
         return "redirect:/admin/artists";
@@ -74,8 +74,8 @@ public class ArtistAdminController {
                               RedirectAttributes ra) throws IOException {
         try {
             String artistName = artistService.getArtistById(id).getName();
-            String url = fileStorageService.storeArtistProfile(file, artistName);
-            artistService.updateArtistPhoto(id, url);
+            String imageKey = fileStorageService.storeArtistProfile(file, artistName);
+            artistService.updateArtistPhoto(id, imageKey);
             ra.addFlashAttribute("successMessage", "사진이 업데이트되었습니다.");
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "사진 업로드 실패: " + e.getMessage());
@@ -96,8 +96,8 @@ public class ArtistAdminController {
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
     ) throws IOException {
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            String url = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
-            dto.setProfileImageUrl(url);
+            String imageKey = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
+            dto.setProfileImageKey(imageKey);
         }
         artistService.updateArtist(id, dto);
         return "redirect:/admin/artists";

@@ -45,7 +45,7 @@ public class ArtistService {
                 .name(dto.getName())
                 .nameEn(dto.getNameEn())
                 .genre(dto.getGenre())
-                .profileImageKey(dto.getProfileImageUrl())
+                .profileImageKey(dto.getProfileImageKey())
                 .build();
 
         return artistRepository.save(artist).getId();
@@ -102,7 +102,7 @@ public class ArtistService {
                 .name(artist.getName())
                 .nameEn(artist.getNameEn())
                 .genre(artist.getGenre())
-                .profileImageUrl(fileStorageService.buildUrl(artist.getProfileImageKey()))
+                .profileImageKey(fileStorageService.buildUrl(artist.getProfileImageKey()))
                 .followerCount(artist.getFollowerCount())
                 .build();
     }
@@ -112,11 +112,11 @@ public class ArtistService {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
         String oldKey = artist.getProfileImageKey();
-        String imageKey = dto.getProfileImageUrl() != null
-                ? dto.getProfileImageUrl()
+        String imageKey = dto.getProfileImageKey() != null
+                ? dto.getProfileImageKey()
                 : oldKey;
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenre(), imageKey);
-        if (dto.getProfileImageUrl() != null && !dto.getProfileImageUrl().equals(oldKey)) {
+        if (dto.getProfileImageKey() != null && !dto.getProfileImageKey().equals(oldKey)) {
             fileStorageService.deleteFile(oldKey);
         }
     }

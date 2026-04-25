@@ -56,10 +56,10 @@
                         </div>
 
                         <!-- 현재 프로필 이미지 -->
-                        <div class="form-group" th:if="${artist.profileImageUrl != null}">
+                        <div class="form-group" th:if="${artist.profileImageKey != null}">
                             <label>현재 프로필 이미지</label>
                             <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
-                                <img th:src="${artist.profileImageUrl}"
+                                <img th:src="${artist.profileImageKey}"
                                      alt="현재 프로필"
                                      style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid var(--border);"/>
                                 <span th:text="${artist.name}" style="font-size:13px; color:var(--muted);"></span>

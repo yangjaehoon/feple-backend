@@ -57,8 +57,8 @@ public class FestivalAdminController {
 
         if (posterFile != null && !posterFile.isEmpty()) {
             try {
-                String posterUrl = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
-                dto.setPosterUrl(posterUrl);
+                String posterKey = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
+                dto.setPosterKey(posterKey);
             } catch (IllegalArgumentException e) {
                 errors.add(e.getMessage());
             }
@@ -106,7 +106,6 @@ public class FestivalAdminController {
         form.setLocation(festival.getLocation());
         form.setStartDate(festival.getStartDate());
         form.setEndDate(festival.getEndDate());
-        form.setPosterUrl(festival.getPosterUrl());
         form.setRegion(festival.getRegion());
         form.setGenres(festival.getGenres());
         form.setLatitude(festival.getLatitude());
@@ -127,7 +126,7 @@ public class FestivalAdminController {
     ) throws IOException {
         if (posterFile != null && !posterFile.isEmpty()) {
             String newPosterKey = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
-            dto.setPosterUrl(newPosterKey);
+            dto.setPosterKey(newPosterKey);
         }
         festivalService.updateFestival(id, dto);
         return "redirect:/admin";
