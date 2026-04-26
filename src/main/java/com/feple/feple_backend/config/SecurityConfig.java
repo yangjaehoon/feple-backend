@@ -96,6 +96,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                 .requestMatchers("/favicon.ico", "/error").permitAll()
+                .requestMatchers(HttpMethod.GET, "/posts/my/scrapped").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**").permitAll()
                 .anyRequest().authenticated())

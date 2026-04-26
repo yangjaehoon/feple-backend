@@ -4,6 +4,7 @@ import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostLikeService;
+import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class PostController {
 
     private final PostService postService;
     private final PostLikeService postLikeService;
+    private final PostScrapService postScrapService;
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId) {
@@ -73,6 +75,25 @@ public class PostController {
                                            @AuthenticationPrincipal Long userId) {
         postService.deleteOwnPost(postId, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── 스크랩 ──
+
+    @GetMapping("/{postId}/scraped")
+    public ResponseEntity<Boolean> isScraped(@PathVariable Long postId,
+                                             @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postScrapService.isScrapedByUser(postId, userId));
+    }
+
+    @PostMapping("/{postId}/scrap")
+    public ResponseEntity<Boolean> toggleScrap(@PathVariable Long postId,
+                                               @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postScrapService.toggleScrap(postId, userId));
+    }
+
+    @GetMapping("/my/scrapped")
+    public ResponseEntity<List<PostResponseDto>> getMyScraps(@AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postScrapService.getMyScraps(userId));
     }
 
     @GetMapping("/artist/{artistId}")
