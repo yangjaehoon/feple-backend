@@ -20,6 +20,7 @@ public class PostResponseDto {
     private String content;
     private BoardType boardType;
     private int likeCount;
+    private int scrapCount;
     private int commentCount;
     private String nickname;
     private String profileImageUrl;
@@ -54,6 +55,7 @@ public class PostResponseDto {
                 .content(post.getContent())
                 .boardType(post.getBoardType())
                 .likeCount(post.getLikeCount())
+                .scrapCount(post.getScrapCount())
                 .commentCount(post.getCommentCount())
                 .nickname(post.getUser().getNickname())
                 .profileImageUrl(post.getUser().getProfileImageUrl())

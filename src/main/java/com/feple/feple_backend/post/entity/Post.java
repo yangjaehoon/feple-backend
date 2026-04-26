@@ -37,6 +37,8 @@ public class Post {
 
     private int likeCount;
 
+    private int scrapCount;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -76,6 +78,15 @@ public class Post {
     public void decrementLikeCount() {
         if (this.likeCount > 0)
             this.likeCount--;
+    }
+
+    public void incrementScrapCount() {
+        this.scrapCount++;
+    }
+
+    public void decrementScrapCount() {
+        if (this.scrapCount > 0)
+            this.scrapCount--;
     }
 
     @Getter(AccessLevel.NONE)
