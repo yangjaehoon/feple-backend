@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 신고 관리</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .reason-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; }
+        .reason-SPAM          { background:#fff3cd; color:#856404; }
+        .reason-ABUSE         { background:#f8d7da; color:#842029; }
+        .reason-OBSCENE       { background:#f5c6cb; color:#721c24; }
+        .reason-MISINFORMATION{ background:#d1ecf1; color:#0c5460; }
+        .reason-OTHER         { background:#e2e3e5; color:#383d41; }
+        .status-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; }
+        .status-PENDING      { background:#fff3cd; color:#856404; }
+        .status-POST_DELETED { background:#d4edda; color:#155724; }
+        .status-DISMISSED    { background:#e2e3e5; color:#383d41; }
+    </style>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('reports')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">신고 관리</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>신고</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+
+        <div th:if="${successMessage}"
+             style="padding:12px 16px; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; color:#2e7d32; margin-bottom:16px;"
+             th:text="${successMessage}"></div>
+
+        <div class="card">
+            <!-- 상태 탭 -->
+            <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
+                <a th:href="@{/admin/reports(status='PENDING', page=0)}"
+                   th:style="${status == 'PENDING'}
+                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
+                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                    대기 중
+                    <span class="card-count" th:text="${status == 'PENDING' ? reports.totalElements : ''}"></span>
+                </a>
+                <a th:href="@{/admin/reports(status='ALL', page=0)}"
+                   th:style="${status == 'ALL'}
+                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
+                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                    전체
+                    <span class="card-count" th:text="${status == 'ALL' ? reports.totalElements : ''}"></span>
+                </a>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:52px;">ID</th>
+                        <th>신고된 게시글</th>
+                        <th style="width:90px;">신고 사유</th>
+                        <th style="width:100px;">신고자</th>
+                        <th style="width:90px;">일시</th>
+                        <th style="width:70px;">상태</th>
+                        <th style="width:200px;">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td class="td-id" th:text="${report.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${report.post.id})}"
+                               th:text="${report.post.title}"
+                               style="font-size:14px; font-weight:600; max-width:300px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                            <div class="cell-secondary" style="margin-top:4px;">
+                                <span th:text="${report.post.user.nickname}"></span>
+                                <span th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                      style="margin-left:6px; font-style:italic;"
+                                      th:text="'「' + ${report.detail} + '」'"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="reason-badge"
+                                  th:classappend="'reason-' + ${report.reason}"
+                                  th:text="${report.reason == T(com.feple.feple_backend.post.entity.ReportReason).SPAM ? '스팸/광고'
+                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).ABUSE ? '욕설/혐오'
+                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).OBSCENE ? '음란물'
+                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).MISINFORMATION ? '허위정보'
+                                           : '기타'}">
+                            </span>
+                        </td>
+                        <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="'status-' + ${report.status}"
+                                  th:text="${report.status == T(com.feple.feple_backend.post.entity.ReportStatus).PENDING ? '대기'
+                                           : report.status == T(com.feple.feple_backend.post.entity.ReportStatus).POST_DELETED ? '삭제됨'
+                                           : '기각'}">
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${report.status.name() == 'PENDING'}"
+                                 style="display:flex; gap:6px;">
+                                <form th:action="@{/admin/reports/{id}/delete-post(id=${report.id})}" method="post">
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('게시글을 삭제하고 신고를 처리할까요?')">
+                                        글 삭제
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                            onclick="return confirm('이 신고를 기각할까요?')">
+                                        기각
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:if="${report.status.name() != 'PENDING'}"
+                                  style="color:var(--muted); font-size:12px;">처리 완료</span>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${reports.totalElements == 0}">
+                        <td colspan="7">신고 내역이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <span class="page-info"
+                      th:text="'총 ' + ${reports.totalElements} + '건'"></span>
+                <div class="pagination" style="margin-left:auto;">
+                    <a th:if="${reports.hasPrevious()}"
+                       th:href="@{/admin/reports(status=${status}, page=${reports.number - 1})}">← 이전</a>
+                    <span class="page-info"
+                          th:text="${reports.number + 1} + ' / ' + ${reports.totalPages}"></span>
+                    <a th:if="${reports.hasNext()}"
+                       th:href="@{/admin/reports(status=${status}, page=${reports.number + 1})}">다음 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
