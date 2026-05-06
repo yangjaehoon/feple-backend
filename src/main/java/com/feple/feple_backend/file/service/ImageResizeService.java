@@ -4,12 +4,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.Set;
 
 @Service
@@ -17,6 +20,7 @@ public class ImageResizeService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif");
     private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+    private static final int MAX_DIMENSION_PX = 8_000;
 
     public void validateFile(MultipartFile file) {
         if (file.isEmpty())
@@ -36,7 +40,26 @@ public class ImageResizeService {
 
     /** 이미지를 maxPx × maxPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
     public byte[] resizeToJpeg(InputStream inputStream, int maxPx) throws IOException {
-        BufferedImage src = ImageIO.read(inputStream);
+        byte[] bytes = inputStream.readAllBytes();
+
+        // 헤더만 읽어 픽셀 크기 검증 (전체 디코딩 전에 ImageBomb 차단)
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
+            Iterator<ImageReader> it = ImageIO.getImageReaders(iis);
+            if (!it.hasNext()) throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+            ImageReader reader = it.next();
+            try {
+                reader.setInput(iis, true, true);
+                int w = reader.getWidth(0);
+                int h = reader.getHeight(0);
+                if (w > MAX_DIMENSION_PX || h > MAX_DIMENSION_PX)
+                    throw new IllegalArgumentException(
+                        "이미지 크기가 너무 큽니다. 최대 " + MAX_DIMENSION_PX + "×" + MAX_DIMENSION_PX + " 픽셀까지 허용됩니다.");
+            } finally {
+                reader.dispose();
+            }
+        }
+
+        BufferedImage src = ImageIO.read(new ByteArrayInputStream(bytes));
         if (src == null)
             throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
 

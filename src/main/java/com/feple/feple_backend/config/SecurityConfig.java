@@ -38,11 +38,14 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
 
-    @Value("${app.admin.username:admin}")
+    @Value("${app.admin.username}")
     private String adminUsername;
 
     @Value("${app.admin.password}")
     private String adminPassword;
+
+    @Value("${app.s3.bucket:}")
+    private String s3Bucket;
 
     // ── 1. 관리자 페이지용 FilterChain (세션 기반 폼 로그인, CSRF 활성화) ──
     @Bean
@@ -51,12 +54,7 @@ public class SecurityConfig {
         http
             .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
             .headers(headers -> headers
-                .contentSecurityPolicy(csp -> csp.policyDirectives(
-                    "default-src 'self'; script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.daumcdn.net https://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
-                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-                    "font-src 'self' data: https://fonts.gstatic.com; " +
-                    "img-src 'self' data: https: http://img1.kakaocdn.net http://t1.kakaocdn.net http://k.kakaocdn.net; " +
-                    "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com"))
+                .contentSecurityPolicy(csp -> csp.policyDirectives(buildAdminCsp())))
                 .frameOptions(frame -> frame.deny()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
@@ -137,5 +135,17 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    private String buildAdminCsp() {
+        String s3Origin = (s3Bucket == null || s3Bucket.isBlank())
+                ? "https://*.s3.ap-northeast-2.amazonaws.com"
+                : "https://" + s3Bucket + ".s3.ap-northeast-2.amazonaws.com";
+        return "default-src 'self'; " +
+               "script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.daumcdn.net https://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
+               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+               "font-src 'self' data: https://fonts.gstatic.com; " +
+               "img-src 'self' data: " + s3Origin + " http://img1.kakaocdn.net http://t1.kakaocdn.net http://k.kakaocdn.net; " +
+               "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com";
     }
 }

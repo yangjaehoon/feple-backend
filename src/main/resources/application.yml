@@ -22,9 +22,10 @@ spring:
 
 server:
   port: 8080
+  forward-headers-strategy: native
   servlet:
     session:
-      timeout: 24h
+      timeout: 2h
     encoding:
       charset: UTF-8
       enabled: true
@@ -47,7 +48,7 @@ app:
   firebase:
     credentials: ${FIREBASE_CREDENTIALS:}
   admin:
-    username: ${ADMIN_USERNAME:admin}
+    username: ${ADMIN_USERNAME}
     password: ${ADMIN_PASSWORD}
 
 management:

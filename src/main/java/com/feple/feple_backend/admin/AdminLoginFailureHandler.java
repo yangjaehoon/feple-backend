@@ -15,7 +15,8 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 관리자 로그인 실패 횟수를 실제 TCP 연결 IP 기준으로 제한한다.
+ * 관리자 로그인 실패 횟수를 클라이언트 IP 기준으로 제한한다.
+ * (forward-headers-strategy=native 설정으로 리버스 프록시 뒤에서도 X-Forwarded-For 기반 실제 IP 사용)
  * 10분 동안 최대 5회 실패 허용, 초과 시 429 응답.
  */
 @Component
