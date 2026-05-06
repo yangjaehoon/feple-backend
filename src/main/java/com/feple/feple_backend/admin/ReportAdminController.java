@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.post.service.PostReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,18 +16,29 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ReportAdminController {
 
     private final PostReportService postReportService;
+    private final CommentReportService commentReportService;
 
     @GetMapping
     public String list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "PENDING") String status,
+            @RequestParam(defaultValue = "post") String type,
             Model model) {
-        model.addAttribute("reports", postReportService.getReportsForAdmin(page, 20, status));
+        if ("comment".equals(type)) {
+            model.addAttribute("reports", commentReportService.getReportsForAdmin(page, 20, status));
+            model.addAttribute("pendingCount", commentReportService.getPendingCount());
+            model.addAttribute("totalCount", commentReportService.getTotalCount());
+        } else {
+            model.addAttribute("reports", postReportService.getReportsForAdmin(page, 20, status));
+            model.addAttribute("pendingCount", postReportService.getPendingCount());
+            model.addAttribute("totalCount", postReportService.getTotalCount());
+        }
         model.addAttribute("status", status);
-        model.addAttribute("pendingCount", postReportService.getPendingCount());
-        model.addAttribute("totalCount", postReportService.getTotalCount());
+        model.addAttribute("type", type);
         return "admin/report-list";
     }
+
+    // ── 게시글 신고 처리 ──────────────────────────────────────────
 
     @PostMapping("/{id}/delete-post")
     public String deletePost(@PathVariable Long id,
@@ -34,7 +46,7 @@ public class ReportAdminController {
                              RedirectAttributes ra) {
         postReportService.deletePostAndResolve(id);
         ra.addFlashAttribute("successMessage", "게시글을 삭제하고 신고를 처리했습니다.");
-        return "redirect:/admin/reports?page=" + page;
+        return "redirect:/admin/reports?type=post&page=" + page;
     }
 
     @PostMapping("/{id}/dismiss")
@@ -43,6 +55,26 @@ public class ReportAdminController {
                           RedirectAttributes ra) {
         postReportService.dismissReport(id);
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
-        return "redirect:/admin/reports?page=" + page;
+        return "redirect:/admin/reports?type=post&page=" + page;
+    }
+
+    // ── 댓글 신고 처리 ──────────────────────────────────────────
+
+    @PostMapping("/comments/{id}/delete-comment")
+    public String deleteComment(@PathVariable Long id,
+                                @RequestParam(defaultValue = "0") int page,
+                                RedirectAttributes ra) {
+        commentReportService.deleteCommentAndResolve(id);
+        ra.addFlashAttribute("successMessage", "댓글을 삭제하고 신고를 처리했습니다.");
+        return "redirect:/admin/reports?type=comment&page=" + page;
+    }
+
+    @PostMapping("/comments/{id}/dismiss")
+    public String dismissComment(@PathVariable Long id,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 RedirectAttributes ra) {
+        commentReportService.dismissReport(id);
+        ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
+        return "redirect:/admin/reports?type=comment&page=" + page;
     }
 }

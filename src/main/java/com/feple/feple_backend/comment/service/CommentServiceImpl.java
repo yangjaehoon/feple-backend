@@ -3,6 +3,7 @@ package com.feple.feple_backend.comment.service;
 
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.comment.entity.Comment;
+import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.User;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
+    private final CommentReportRepository commentReportRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
@@ -97,6 +99,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteComment(Long commentId){
+        commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
     }
 
@@ -107,6 +110,7 @@ public class CommentServiceImpl implements CommentService {
         if (!comment.getUser().getId().equals(requestUserId)) {
             throw new AccessDeniedException("본인의 댓글만 삭제할 수 있습니다.");
         }
+        commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
     }
 }

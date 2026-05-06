@@ -16,6 +16,9 @@
         .status-PENDING      { background:#fff3cd; color:#856404; }
         .status-POST_DELETED { background:#d4edda; color:#155724; }
         .status-DISMISSED    { background:#e2e3e5; color:#383d41; }
+        .type-tab { padding:12px 18px; font-size:13px; font-weight:700; text-decoration:none; border-bottom:3px solid transparent; color:var(--muted); }
+        .type-tab.active { border-bottom-color:var(--primary); color:var(--primary); }
+        .type-tab-wrap { display:flex; gap:0; border-bottom:1px solid var(--border); padding:0 22px; }
     </style>
 </head>
 <body>
@@ -38,16 +41,26 @@
              th:text="${successMessage}"></div>
 
         <div class="card">
+            <!-- 유형 탭 -->
+            <div class="type-tab-wrap">
+                <a th:href="@{/admin/reports(type='post', status=${status}, page=0)}"
+                   th:classappend="${type == 'post'} ? ' active' : ''"
+                   class="type-tab">게시글 신고</a>
+                <a th:href="@{/admin/reports(type='comment', status=${status}, page=0)}"
+                   th:classappend="${type == 'comment'} ? ' active' : ''"
+                   class="type-tab">댓글 신고</a>
+            </div>
+
             <!-- 상태 탭 -->
             <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
-                <a th:href="@{/admin/reports(status='PENDING', page=0)}"
+                <a th:href="@{/admin/reports(type=${type}, status='PENDING', page=0)}"
                    th:style="${status == 'PENDING'}
                        ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
                        : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
                     대기 중
                     <span class="card-count" th:text="${pendingCount}"></span>
                 </a>
-                <a th:href="@{/admin/reports(status='ALL', page=0)}"
+                <a th:href="@{/admin/reports(type=${type}, status='ALL', page=0)}"
                    th:style="${status == 'ALL'}
                        ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
                        : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
@@ -56,7 +69,8 @@
                 </a>
             </div>
 
-            <div class="table-wrap">
+            <!-- 게시글 신고 테이블 -->
+            <div class="table-wrap" th:if="${type == 'post'}">
                 <table>
                     <thead>
                     <tr>
@@ -133,16 +147,95 @@
                 </table>
             </div>
 
+            <!-- 댓글 신고 테이블 -->
+            <div class="table-wrap" th:if="${type == 'comment'}">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:52px;">ID</th>
+                        <th>신고된 댓글</th>
+                        <th style="width:90px;">신고 사유</th>
+                        <th style="width:100px;">신고자</th>
+                        <th style="width:90px;">일시</th>
+                        <th style="width:70px;">상태</th>
+                        <th style="width:200px;">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td class="td-id" th:text="${report.id}"></td>
+                        <td>
+                            <div style="font-size:14px; font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                 th:text="${report.comment.content}"></div>
+                            <div class="cell-secondary" style="margin-top:4px;">
+                                <span th:text="${report.comment.user.nickname}"></span>
+                                <span style="margin-left:6px;">•</span>
+                                <a th:href="@{/admin/posts/{id}(id=${report.comment.post.id})}"
+                                   th:text="${report.comment.post.title}"
+                                   style="margin-left:6px; color:var(--muted);"></a>
+                                <span th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                      style="margin-left:6px; font-style:italic;"
+                                      th:text="'「' + ${report.detail} + '」'"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="reason-badge"
+                                  th:classappend="'reason-' + ${report.reason}"
+                                  th:text="${report.reason == T(com.feple.feple_backend.post.entity.ReportReason).SPAM ? '스팸/광고'
+                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).ABUSE ? '욕설/혐오'
+                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).OBSCENE ? '음란물'
+                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).MISINFORMATION ? '허위정보'
+                                           : '기타'}">
+                            </span>
+                        </td>
+                        <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="'status-' + ${report.status}"
+                                  th:text="${report.status == T(com.feple.feple_backend.post.entity.ReportStatus).PENDING ? '대기' : '기각'}">
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${report.status.name() == 'PENDING'}"
+                                 style="display:flex; gap:6px;">
+                                <form th:action="@{/admin/reports/comments/{id}/delete-comment(id=${report.id})}" method="post">
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('댓글을 삭제하고 신고를 처리할까요?')">
+                                        댓글 삭제
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/reports/comments/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                            onclick="return confirm('이 신고를 기각할까요?')">
+                                        기각
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:if="${report.status.name() != 'PENDING'}"
+                                  style="color:var(--muted); font-size:12px;">처리 완료</span>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${reports.totalElements == 0}">
+                        <td colspan="7">신고 내역이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="table-footer">
                 <span class="page-info"
                       th:text="'총 ' + ${reports.totalElements} + '건'"></span>
                 <div class="pagination" style="margin-left:auto;">
                     <a th:if="${reports.hasPrevious()}"
-                       th:href="@{/admin/reports(status=${status}, page=${reports.number - 1})}">← 이전</a>
+                       th:href="@{/admin/reports(type=${type}, status=${status}, page=${reports.number - 1})}">← 이전</a>
                     <span class="page-info"
                           th:text="${reports.number + 1} + ' / ' + ${reports.totalPages}"></span>
                     <a th:if="${reports.hasNext()}"
-                       th:href="@{/admin/reports(status=${status}, page=${reports.number + 1})}">다음 →</a>
+                       th:href="@{/admin/reports(type=${type}, status=${status}, page=${reports.number + 1})}">다음 →</a>
                 </div>
             </div>
         </div>
