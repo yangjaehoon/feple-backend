@@ -52,15 +52,16 @@
 
             <!-- 검색 바 -->
             <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
-                <form th:action="@{/admin/artists}" method="get"
+                <form id="artist-search-form" th:action="@{/admin/artists}" method="get"
                       style="display:flex; gap:8px; align-items:center;">
                     <input type="hidden" name="genre" th:if="${genre != null}" th:value="${genre.name()}"/>
-                    <input type="text" name="keyword" th:value="${keyword}"
+                    <input type="hidden" name="sort" th:value="${sort}"/>
+                    <input id="artist-keyword" type="text" name="keyword" th:value="${keyword}"
                            placeholder="아티스트 이름 검색..."
+                           autocomplete="off"
                            style="flex:1; max-width:280px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
-                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
                     <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                       th:href="@{/admin/artists(genre=${genre?.name()})}"
+                       th:href="@{/admin/artists(genre=${genre?.name()}, sort=${sort})}"
                        class="btn btn-secondary btn-sm">✕ 초기화</a>
                 </form>
             </div>
@@ -144,5 +145,16 @@
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+(function () {
+    const input = document.getElementById('artist-keyword');
+    const form  = document.getElementById('artist-search-form');
+    let timer;
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () { form.submit(); }, 300);
+    });
+})();
+</script>
 </body>
 </html>
