@@ -559,6 +559,80 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
 /* ============================================================
+   HAMBURGER / MOBILE NAV
+   ============================================================ */
+.nb-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  margin-left: 8px;
+  transition: background .14s, border-color .14s;
+}
+.nb-toggle:hover { background: var(--primary-lt); border-color: var(--primary-soft); }
+.nb-hb-line {
+  display: block;
+  width: 16px; height: 2px;
+  background: var(--text-2);
+  border-radius: 2px;
+  transition: transform .22s ease, opacity .18s ease;
+}
+.nb-toggle.open .nb-hb-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nb-toggle.open .nb-hb-line:nth-child(2) { opacity: 0; }
+.nb-toggle.open .nb-hb-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.nb-mobile-menu {
+  display: none;
+  position: fixed;
+  top: var(--topbar-h);
+  left: 0; right: 0;
+  background: var(--surface);
+  border-bottom: 1.5px solid var(--border);
+  box-shadow: var(--shadow-md);
+  z-index: 1029;
+  flex-direction: column;
+  max-height: calc(100vh - var(--topbar-h));
+  overflow-y: auto;
+}
+.nb-mobile-menu.open { display: flex; }
+.nb-mobile-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 22px;
+  font-size: 14px; font-weight: 600;
+  color: var(--text-2);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s, color .1s;
+}
+.nb-mobile-link:last-of-type { border-bottom: none; }
+.nb-mobile-link:hover { background: var(--primary-lt); color: var(--primary-dk); }
+.nb-mobile-link.nb-active {
+  background: var(--primary-lt) !important;
+  color: var(--primary) !important;
+  font-weight: 700;
+  box-shadow: none;
+}
+.nb-mobile-footer {
+  padding: 12px 22px 16px;
+  border-top: 1.5px solid var(--border);
+}
+
+@media (max-width: 900px) {
+  .nb-divider { display: none; }
+  .nb-nav     { display: none; }
+  .nb-actions { display: none; }
+  .nb-toggle  { display: flex; }
+}
+
+/* ============================================================
    SIDEBAR — Logo & Project Selector (사이드바 상단)
    ============================================================ */
 .sb-logo-section {
