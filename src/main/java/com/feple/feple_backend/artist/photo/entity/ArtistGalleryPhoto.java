@@ -1,5 +1,7 @@
 package com.feple.feple_backend.artist.photo.entity;
 
+import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,8 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "artist_photos", indexes = {
-        @Index(name = "idx_gallery_photo_artist_id", columnList = "artistId"),
-        @Index(name = "idx_gallery_photo_uploader_id", columnList = "uploaderUserId")
+        @Index(name = "idx_gallery_photo_artist_id", columnList = "artist_id"),
+        @Index(name = "idx_gallery_photo_uploader_id", columnList = "uploader_user_id")
 })
 public class ArtistGalleryPhoto {
 
@@ -19,11 +21,13 @@ public class ArtistGalleryPhoto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long artistId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "artist_id", nullable = false)
+    private Artist artist;
 
-    @Column(nullable = false)
-    private Long uploaderUserId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "uploader_user_id", nullable = false)
+    private User uploader;
 
     @Column(nullable = false, length = 500)
     private String s3Key;
@@ -48,10 +52,10 @@ public class ArtistGalleryPhoto {
     @Column(name = "likecount", nullable = false, columnDefinition = "INT DEFAULT 0")
     private int likeCount = 0;
 
-    public ArtistGalleryPhoto(Long artistId, Long uploaderUserId, String s3Key, String contentType, String title,
+    public ArtistGalleryPhoto(Artist artist, User uploader, String s3Key, String contentType, String title,
             String description) {
-        this.artistId = artistId;
-        this.uploaderUserId = uploaderUserId;
+        this.artist = artist;
+        this.uploader = uploader;
         this.s3Key = s3Key;
         this.contentType = contentType;
         this.title = title;

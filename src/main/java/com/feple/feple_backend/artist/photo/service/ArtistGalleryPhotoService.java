@@ -1,12 +1,16 @@
 package com.feple.feple_backend.artist.photo.service;
 
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
+import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +27,8 @@ public class ArtistGalleryPhotoService {
     private final S3PresignService s3PresignService;
     private final FileStorageService fileStorageService;
     private final ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
+    private final ArtistRepository artistRepository;
+    private final UserRepository userRepository;
 
     public ArtistGalleryPhotoResponseDto register(
             Long artistId,
@@ -37,14 +43,19 @@ public class ArtistGalleryPhotoService {
             throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
         }
 
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다: " + artistId));
+        User uploader = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId));
+
         ArtistGalleryPhoto saved = artistGalleryPhotoRepository.save(
-                new ArtistGalleryPhoto(artistId, userId, objectKey, contentType, title, description));
+                new ArtistGalleryPhoto(artist, uploader, objectKey, contentType, title, description));
 
         String url = s3PresignService.presignGetUrl(saved.getS3Key());
         return new ArtistGalleryPhotoResponseDto(
                 saved.getId(),
                 url,
-                saved.getUploaderUserId(),
+                saved.getUploader().getId(),
                 saved.getCreatedAt(),
                 saved.getTitle(),
                 saved.getDescription(),
@@ -54,7 +65,7 @@ public class ArtistGalleryPhotoService {
 
     @Transactional(readOnly = true)
     public List<ArtistGalleryPhotoResponseDto> list(Long artistId, Long currentUserId) {
-        List<ArtistGalleryPhoto> photos = artistGalleryPhotoRepository.findByArtistIdOrderByIdDesc(artistId);
+        List<ArtistGalleryPhoto> photos = artistGalleryPhotoRepository.findByArtist_IdOrderByIdDesc(artistId);
         Set<Long> likedPhotoIds = (currentUserId != null && !photos.isEmpty())
                 ? artistGalleryPhotoLikeRepository.findLikedPhotoIds(
                         currentUserId, photos.stream().map(ArtistGalleryPhoto::getId).toList())
@@ -63,7 +74,7 @@ public class ArtistGalleryPhotoService {
                 .map(p -> new ArtistGalleryPhotoResponseDto(
                         p.getId(),
                         s3PresignService.presignGetUrl(p.getS3Key()),
-                        p.getUploaderUserId(),
+                        p.getUploader().getId(),
                         p.getCreatedAt(),
                         p.getTitle(),
                         p.getDescription(),
@@ -76,7 +87,7 @@ public class ArtistGalleryPhotoService {
     public void delete(Long photoId, Long userId) {
         ArtistGalleryPhoto photo = artistGalleryPhotoRepository.findById(photoId)
                 .orElseThrow(() -> new NoSuchElementException("사진을 찾을 수 없습니다."));
-        if (!photo.getUploaderUserId().equals(userId)) {
+        if (!photo.getUploader().getId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
         }
         String s3Key = photo.getS3Key();
@@ -88,13 +99,13 @@ public class ArtistGalleryPhotoService {
     public ArtistGalleryPhotoResponseDto update(Long photoId, Long userId, String title, String description) {
         ArtistGalleryPhoto photo = artistGalleryPhotoRepository.findById(photoId)
                 .orElseThrow(() -> new NoSuchElementException("사진을 찾을 수 없습니다."));
-        if (!photo.getUploaderUserId().equals(userId)) {
+        if (!photo.getUploader().getId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 수정할 수 있습니다.");
         }
         photo.updateTitleAndDescription(title, description);
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
         return new ArtistGalleryPhotoResponseDto(
-                photo.getId(), url, photo.getUploaderUserId(), photo.getCreatedAt(),
+                photo.getId(), url, photo.getUploader().getId(), photo.getCreatedAt(),
                 photo.getTitle(), photo.getDescription(), photo.getLikeCount(), false);
     }
 
@@ -103,13 +114,16 @@ public class ArtistGalleryPhotoService {
         ArtistGalleryPhoto photo = artistGalleryPhotoRepository.findById(photoId)
                 .orElseThrow(() -> new NoSuchElementException("사진을 찾을 수 없습니다."));
 
-        if (artistGalleryPhotoLikeRepository.existsByArtistPhotoIdAndUserId(photoId, userId)) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId));
+
+        if (artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, userId)) {
             // 취소
-            artistGalleryPhotoLikeRepository.deleteByArtistPhotoIdAndUserId(photoId, userId);
+            artistGalleryPhotoLikeRepository.deleteByPhoto_IdAndUser_Id(photoId, userId);
             artistGalleryPhotoRepository.decrementLikeCount(photoId);
         } else {
             // 추가
-            artistGalleryPhotoLikeRepository.save(new ArtistGalleryPhotoLike(photoId, userId));
+            artistGalleryPhotoLikeRepository.save(new ArtistGalleryPhotoLike(photo, user));
             artistGalleryPhotoRepository.incrementLikeCount(photoId);
         }
         return true;

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.photo.entity;
 
+import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,11 +18,13 @@ public class ArtistGalleryPhotoLike {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "artist_photo_id", nullable = false)
-    private Long artistPhotoId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "artist_photo_id", nullable = false)
+    private ArtistGalleryPhoto photo;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -31,8 +34,8 @@ public class ArtistGalleryPhotoLike {
         this.createdAt = LocalDateTime.now();
     }
 
-    public ArtistGalleryPhotoLike(Long artistPhotoId, Long userId) {
-        this.artistPhotoId = artistPhotoId;
-        this.userId = userId;
+    public ArtistGalleryPhotoLike(ArtistGalleryPhoto photo, User user) {
+        this.photo = photo;
+        this.user = user;
     }
 }

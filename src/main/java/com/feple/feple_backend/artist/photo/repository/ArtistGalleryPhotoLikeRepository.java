@@ -11,14 +11,14 @@ import java.util.Set;
 
 public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGalleryPhotoLike, Long> {
 
-    boolean existsByArtistPhotoIdAndUserId(Long artistPhotoId, Long userId);
+    boolean existsByPhoto_IdAndUser_Id(Long photoId, Long userId);
 
-    Optional<ArtistGalleryPhotoLike> findByArtistPhotoIdAndUserId(Long artistPhotoId, Long userId);
+    Optional<ArtistGalleryPhotoLike> findByPhoto_IdAndUser_Id(Long photoId, Long userId);
 
-    long countByArtistPhotoId(Long artistPhotoId);
+    long countByPhoto_Id(Long photoId);
 
-    long deleteByArtistPhotoIdAndUserId(Long artistPhotoId, Long userId);
+    long deleteByPhoto_IdAndUser_Id(Long photoId, Long userId);
 
-    @Query("SELECT apl.artistPhotoId FROM ArtistGalleryPhotoLike apl WHERE apl.userId = :userId AND apl.artistPhotoId IN :photoIds")
+    @Query("SELECT apl.photo.id FROM ArtistGalleryPhotoLike apl WHERE apl.user.id = :userId AND apl.photo.id IN :photoIds")
     Set<Long> findLikedPhotoIds(@Param("userId") Long userId, @Param("photoIds") List<Long> photoIds);
 }
