@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -103,6 +104,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleIOException(IOException ex) {
         log.error("I/O error: {}", ex.getMessage(), ex);
         return errorBody(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다.");
+    }
+
+    // 정적 리소스 없음 (소스맵 등 브라우저 자동 요청) — 로깅 불필요
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
+        return errorBody(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다.");
     }
 
     // 그 외 모든 예외 — 내부 메시지 노출 금지, 서버 로그에만 기록
