@@ -4,6 +4,7 @@ import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +23,11 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     List<FestivalCertification> findByUserIdAndStatus(Long userId, CertificationStatus status);
 
     Page<FestivalCertification> findByStatus(CertificationStatus status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "festival"})
+    Page<FestivalCertification> findByStatusOrderByCreatedAtDesc(CertificationStatus status, Pageable pageable);
+
+    long countByStatus(CertificationStatus status);
 
     Page<FestivalCertification> findAll(Pageable pageable);
 
