@@ -45,6 +45,14 @@ public class PostReportService {
                 .build());
     }
 
+    public long getPendingCount() {
+        return reportRepository.countByStatus(ReportStatus.PENDING);
+    }
+
+    public long getTotalCount() {
+        return reportRepository.count();
+    }
+
     /** 관리자: 신고 목록 조회 */
     public Page<PostReport> getReportsForAdmin(int page, int size, String statusFilter) {
         PageRequest pageable = PageRequest.of(page, size);

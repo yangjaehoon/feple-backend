@@ -23,6 +23,8 @@ public class ReportAdminController {
             Model model) {
         model.addAttribute("reports", postReportService.getReportsForAdmin(page, 20, status));
         model.addAttribute("status", status);
+        model.addAttribute("pendingCount", postReportService.getPendingCount());
+        model.addAttribute("totalCount", postReportService.getTotalCount());
         return "admin/report-list";
     }
 

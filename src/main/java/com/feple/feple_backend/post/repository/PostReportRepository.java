@@ -17,5 +17,7 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     Page<PostReport> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    long countByStatus(ReportStatus status);
+
     void deleteByPostId(Long postId);
 }
