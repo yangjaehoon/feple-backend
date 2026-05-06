@@ -1,5 +1,6 @@
 package com.feple.feple_backend.timetable.entity;
 
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.stage.entity.Stage;
 import jakarta.persistence.*;
@@ -28,6 +29,10 @@ public class TimetableEntry {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id")
     private Stage stage;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist_id")
+    private Artist artist;
 
     @Column(nullable = false)
     private String artistName;
