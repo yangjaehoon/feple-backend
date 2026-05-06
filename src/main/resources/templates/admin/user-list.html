@@ -62,6 +62,7 @@
                                    style="cursor:pointer; width:15px; height:15px;"/>
                         </th>
                         <th>회원</th>
+                        <th style="width:110px;">가입일</th>
                         <th style="width:80px;">상세</th>
                         <th style="width:80px;">삭제</th>
                     </tr>
@@ -86,6 +87,8 @@
                                 </div>
                             </div>
                         </td>
+                        <td style="color:var(--muted); font-size:12.5px; white-space:nowrap;"
+                            th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd') : '-'}"></td>
                         <td>
                             <a th:href="@{/admin/users/{id}(id=${user.id})}"
                                class="btn btn-secondary btn-sm">상세</a>
@@ -100,7 +103,7 @@
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${users.totalElements == 0}">
-                        <td colspan="4">회원이 없습니다.</td>
+                        <td colspan="5">회원이 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>

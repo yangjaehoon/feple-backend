@@ -175,7 +175,7 @@ public class UserService {
                 .build();
     }
 
-    /** 관리자 페이지용: email 포함 */
+    /** 관리자 페이지용: email, createdAt 포함 */
     public UserResponseDto toAdminUserDto(User user) {
         return UserResponseDto.builder()
                 .id(user.getId())
@@ -183,6 +183,7 @@ public class UserService {
                 .email(user.getEmail())
                 .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
                 .role(user.getRole())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 

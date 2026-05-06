@@ -3,7 +3,9 @@ package com.feple.feple_backend.user.entity;
 import com.feple.feple_backend.comment.entity.Comment;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +47,10 @@ public class User {
     @Column(nullable = false)
     @Builder.Default
     private UserRole role = UserRole.USER;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     public void changeRole(UserRole newRole) {
         this.role = newRole;
