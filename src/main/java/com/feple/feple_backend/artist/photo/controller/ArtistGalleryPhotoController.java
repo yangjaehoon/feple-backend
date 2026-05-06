@@ -4,10 +4,13 @@ import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
 import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
+import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
+import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,6 +33,7 @@ public class ArtistGalleryPhotoController {
 
     private final S3PresignService s3PresignService;
     private final ArtistGalleryPhotoService artistGalleryPhotoService;
+    private final ArtistPhotoReportService artistPhotoReportService;
 
     @PostMapping("/presign")
     public S3PresignService.PresignResult presign(
@@ -91,6 +95,22 @@ public class ArtistGalleryPhotoController {
             @AuthenticationPrincipal Long userId) {
         return artistGalleryPhotoService.update(photoId, userId, req.title(), req.description());
     }
+
+    @PostMapping("/{photoId}/report")
+    public ResponseEntity<Void> report(
+            @PathVariable Long artistId,
+            @PathVariable Long photoId,
+            @Valid @RequestBody ReportRequest body,
+            @AuthenticationPrincipal Long userId) {
+        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
+        artistPhotoReportService.submitReport(photoId, userId, body.reason(), body.detail());
+        return ResponseEntity.ok().build();
+    }
+
+    public record ReportRequest(
+        @NotNull ReportReason reason,
+        String detail
+    ) {}
 
     @PostMapping("/{photoId}/like")
     public ResponseEntity<Map<String, Boolean>> toggleLike(
