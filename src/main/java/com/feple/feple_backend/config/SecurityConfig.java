@@ -54,7 +54,7 @@ public class SecurityConfig {
         http
             .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
             .headers(headers -> headers
-                .contentSecurityPolicy(csp -> csp.policyDirectives(buildAdminCsp())))
+                .contentSecurityPolicy(csp -> csp.policyDirectives(buildAdminCsp()))
                 .frameOptions(frame -> frame.deny()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
