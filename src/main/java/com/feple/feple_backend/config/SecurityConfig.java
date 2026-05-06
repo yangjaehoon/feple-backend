@@ -38,7 +38,7 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
 
-    @Value("${app.admin.username}")
+    @Value("${app.admin.username:admin}")
     private String adminUsername;
 
     @Value("${app.admin.password}")
