@@ -80,15 +80,6 @@ public class Post {
             this.likeCount--;
     }
 
-    public void incrementScrapCount() {
-        this.scrapCount++;
-    }
-
-    public void decrementScrapCount() {
-        if (this.scrapCount > 0)
-            this.scrapCount--;
-    }
-
     @Getter(AccessLevel.NONE)
     @Formula("(SELECT COUNT(*) FROM comment c WHERE c.post_id = id)")
     private int formulaCommentCount;

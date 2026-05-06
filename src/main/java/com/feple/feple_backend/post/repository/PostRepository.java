@@ -88,4 +88,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying
     @Query("UPDATE Post p SET p.likeCount = p.likeCount - 1 WHERE p.id = :postId AND p.likeCount > 0")
     void decrementLikeCount(@Param("postId") Long postId);
+
+    // ── 스크랩 카운트 ─────────────────────────────────────────────────────────
+    @Modifying
+    @Query("UPDATE Post p SET p.scrapCount = p.scrapCount + 1 WHERE p.id = :postId")
+    void incrementScrapCount(@Param("postId") Long postId);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.scrapCount = p.scrapCount - 1 WHERE p.id = :postId AND p.scrapCount > 0")
+    void decrementScrapCount(@Param("postId") Long postId);
 }
