@@ -55,7 +55,7 @@ public class SecurityConfig {
                     "default-src 'self'; script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.daumcdn.net https://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' data: https://fonts.gstatic.com; " +
-                    "img-src 'self' data: https:; " +
+                    "img-src 'self' data: https: http://img1.kakaocdn.net http://t1.kakaocdn.net http://k.kakaocdn.net; " +
                     "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com"))
                 .frameOptions(frame -> frame.deny()))
             .authorizeHttpRequests(auth -> auth
