@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ── 통합 가로 네비게이션 바 ── -->
+<header th:fragment="navbar(active)" class="navbar-global">
+
+    <!-- 브랜드 로고 -->
+    <a class="nb-brand" th:href="@{/admin}">
+        <img th:src="@{/img/feple_logo.png}" alt="feple" style="width:34px; height:34px; border-radius:8px; object-fit:contain;"/>
+        <div class="nb-name">fe<span>ple</span></div>
+        <span class="nb-tag">Admin</span>
+    </a>
+
+    <div class="nb-divider"></div>
+
+    <!-- 네비게이션 링크 -->
+    <nav class="nb-nav">
+        <a th:href="@{/admin}" class="nb-link"
+           th:classappend="${active == 'home'} ? ' nb-active'">
+            📊 대시보드
+        </a>
+        <a th:href="@{/admin/festivals}" class="nb-link"
+           th:classappend="${active == 'festivals'} ? ' nb-active'">
+            🎵 페스티벌
+        </a>
+        <a th:href="@{/admin/artists}" class="nb-link"
+           th:classappend="${active == 'artists'} ? ' nb-active'">
+            🎤 아티스트
+        </a>
+        <a th:href="@{/admin/posts}" class="nb-link"
+           th:classappend="${active == 'posts'} ? ' nb-active'">
+            📝 게시글
+        </a>
+        <a th:href="@{/admin/users}" class="nb-link"
+           th:classappend="${active == 'users'} ? ' nb-active'">
+            👤 회원 관리
+        </a>
+        <a th:href="@{/admin/certifications}" class="nb-link"
+           th:classappend="${active == 'certifications'} ? ' nb-active'">
+            🏅 인증 관리
+        </a>
+        <a th:href="@{/admin/reports}" class="nb-link"
+           th:classappend="${active == 'reports'} ? ' nb-active'">
+            🚨 신고 관리
+        </a>
+    </nav>
+
+    <div style="flex:1;"></div>
+
+    <!-- 우측 액션 -->
+    <div class="nb-actions">
+        <div class="nb-avatar" title="관리자">👩‍💼</div>
+        <form th:action="@{/admin/logout}" method="post" style="margin:0;">
+            <button type="submit" class="nb-logout">로그아웃</button>
+        </form>
+    </div>
+    <script th:src="@{/js/admin-genre-colors.js}"></script>
+</header>
+
+</body>
+</html>

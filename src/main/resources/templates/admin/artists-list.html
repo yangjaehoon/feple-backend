@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 아티스트 목록</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">아티스트 목록</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>아티스트</span>
+            </div>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-secondary" th:href="@{/admin/artists/photos}">🖼 사진 관리</a>
+            <a class="btn btn-primary" th:href="@{/admin/artists/new}">+ 아티스트 등록</a>
+        </div>
+    </div>
+    <div class="content-area">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    전체 아티스트
+                    <span th:if="${genre != null}"
+                          style="font-size:12px; font-weight:500; color:var(--primary); margin-left:6px;"
+                          th:text="'— ' + ${genre.displayName}"></span>
+                </div>
+            </div>
+
+            <!-- 장르 필터 버튼 -->
+            <div style="padding:12px 22px 0; display:flex; flex-wrap:wrap; gap:8px;">
+                <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort})}"
+                   th:style="${genre == null} ? 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; background:var(--primary); color:#fff;'
+                                             : 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; background:var(--border); color:var(--text-2);'">
+                    전체
+                </a>
+                <a th:each="g : ${allGenres}"
+                   th:href="@{/admin/artists(keyword=${keyword}, sort=${sort}, genre=${g.name()})}"
+                   th:text="${g.displayName}"
+                   th:style="${genre == g} ? 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; background:var(--primary); color:#fff;'
+                                          : 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; background:var(--border); color:var(--text-2);'">
+                </a>
+            </div>
+
+            <!-- 검색 바 -->
+            <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input id="artist-keyword" type="text"
+                           placeholder="아티스트 이름 검색..."
+                           autocomplete="off"
+                           style="flex:1; max-width:280px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                    <button id="artist-clear" class="btn btn-secondary btn-sm" style="display:none;">✕ 초기화</button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>
+                            아티스트
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name')}"
+                               th:style="${sort == 'name'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
+                                                           : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
+                                ↑
+                            </a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc')}"
+                               th:style="${sort == 'name_desc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
+                                                                : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
+                                ↓
+                            </a>
+                        </th>
+                        <th style="width:200px;">영어 이름</th>
+                        <th style="width:160px;">
+                            팔로워
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers')}"
+                               th:style="${sort == 'followers'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
+                                                                : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
+                                ↓
+                            </a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc')}"
+                               th:style="${sort == 'followers_asc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
+                                                                    : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
+                                ↑
+                            </a>
+                        </th>
+                        <th style="width:140px;">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody id="artist-tbody">
+                    <tr th:each="artist : ${artists}" th:attr="data-name=${artist.name}">
+                        <td>
+                            <div class="avatar-cell">
+                                <img th:if="${artist.profileImageUrl != null}"
+                                     th:src="${artist.profileImageUrl}"
+                                     class="avatar" alt="profile"/>
+                                <div th:if="${artist.profileImageUrl == null}"
+                                     style="width:38px; height:38px; border-radius:50%; background:var(--purple-50); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎤</div>
+                                <div>
+                                    <div class="cell-primary" th:text="${artist.name}"></div>
+                                    <div class="cell-secondary" style="margin-top:4px;">
+                                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-size:13px; color:var(--muted);"
+                            th:text="${artist.nameEn != null and !artist.nameEn.isEmpty()} ? ${artist.nameEn} : '-'"></td>
+                        <td>
+                            <div class="cell-primary" th:text="${artist.followerCount}"></div>
+                            <div class="cell-secondary">팔로워</div>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
+                                   class="btn btn-warning btn-sm">수정</a>
+                                <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="no-result-row" style="display:none;">
+                        <td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">검색 결과가 없습니다.</td>
+                    </tr>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(artists)}">
+                        <td colspan="4">등록된 아티스트가 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+(function () {
+    const input    = document.getElementById('artist-keyword');
+    const clearBtn = document.getElementById('artist-clear');
+    const rows     = document.querySelectorAll('#artist-tbody tr[data-name]');
+    const noResult = document.getElementById('no-result-row');
+
+    function filter(q) {
+        const lower = q.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(function (tr) {
+            const match = tr.dataset.name.toLowerCase().includes(lower);
+            tr.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        noResult.style.display = (lower && visible === 0) ? '' : 'none';
+        clearBtn.style.display = lower ? '' : 'none';
+    }
+
+    input.addEventListener('input', function () { filter(this.value); });
+    clearBtn.addEventListener('click', function () {
+        input.value = '';
+        filter('');
+        input.focus();
+    });
+})();
+</script>
+</body>
+</html>

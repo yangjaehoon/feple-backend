@@ -1,0 +1,64 @@
+spring:
+  jpa:
+    hibernate:
+      #ddl-auto: create
+      ddl-auto: update
+    defer-datasource-initialization: true
+
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
+
+
+  sql:
+    init:
+      #mode: always #h2 설정
+      mode: always
+
+  config:
+    import: "optional:classpath:application-local.yaml"
+
+server:
+  port: 8080
+  forward-headers-strategy: native
+  servlet:
+    session:
+      timeout: 2h
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration-ms: 7200000       # 2시간
+  refresh-token-expiration-ms: 2592000000  # 30일
+
+app:
+  s3:
+    prefix: artist-photos
+    presign-minutes: 10
+  google:
+    maps:
+      key: ${GOOGLE_MAPS_KEY:}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
+  firebase:
+    credentials: ${FIREBASE_CREDENTIALS:}
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+file:
+  upload-dir: uploads/posters

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 페스티벌 수정</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">페스티벌 수정</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/festivals}">페스티벌</a>
+                <span class="bc-sep">›</span>
+                <span>수정</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+        <div class="card" style="max-width:640px;">
+            <div class="card-header">
+                <div class="card-title">✏ 페스티벌 수정</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/festivals/{id}/edit(id=${festivalId})}"
+                      th:object="${festival}"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>제목 (한국어)</label>
+                            <input type="text" th:field="*{title}" required/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>제목 (영어, 선택)</label>
+                            <input type="text" th:field="*{titleEn}" placeholder="Festival Title in English (optional)"/>
+                            <span style="font-size:11px; color:var(--muted); margin-top:3px; display:block;">영어 모드에서 표시됩니다. 비워두면 한국어 제목이 표시됩니다.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>설명</label>
+                            <textarea th:field="*{description}"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>장소</label>
+                            <input type="text" id="locationInput" name="location" th:value="*{location}" required/>
+                            <input type="hidden" id="latInput" name="latitude" th:value="*{latitude}"/>
+                            <input type="hidden" id="lngInput" name="longitude" th:value="*{longitude}"/>
+                            <div style="margin-top:8px;">
+                                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                                    <input type="text" id="addrSearch" placeholder="주소 또는 장소명 검색..."
+                                           style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                                    <button type="button" onclick="searchAddress()"
+                                            style="padding:8px 14px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-size:13px; cursor:pointer;">검색</button>
+                                </div>
+                                <div id="kakaoMap" style="width:100%; height:300px; border-radius:10px; border:1px solid var(--border);"></div>
+                                <p style="font-size:11px; color:var(--muted); margin-top:4px;">지도를 클릭하거나 주소를 검색하면 위치가 자동으로 설정됩니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label>시작일</label>
+                                <input type="date" th:field="*{startDate}" required/>
+                            </div>
+                            <div class="form-group">
+                                <label>종료일</label>
+                                <input type="date" th:field="*{endDate}" required/>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>현재 포스터</label>
+                            <div th:if="${currentPosterUrl}">
+                                <img th:src="${currentPosterUrl}" alt="poster" class="poster-preview"/>
+                                <p style="margin-top:6px;">
+                                    <a th:href="${currentPosterUrl}" target="_blank"
+                                       style="font-size:12px; color:var(--primary-600);">원본 보기 →</a>
+                                </p>
+                            </div>
+                            <p th:unless="${currentPosterUrl}" class="hint">등록된 포스터가 없습니다.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>포스터 변경</label>
+                            <input type="file" name="posterFile" accept="image/*"/>
+                            <span class="hint">선택하지 않으면 기존 포스터가 유지됩니다.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>지역</label>
+                            <select th:field="*{region}" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                                <option value="">선택 안 함</option>
+                                <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r.displayName}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>장르 <span style="font-weight:400; color:var(--muted); font-size:12px;">(복수 선택 가능)</span></label>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                                <label th:each="g : ${allGenres}"
+                                       style="display:flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;">
+                                    <input type="checkbox" name="genres" th:value="${g}"
+                                           th:checked="${festival.genres != null and festival.genres.contains(g)}"
+                                           style="accent-color:var(--primary);"/>
+                                    <span th:text="${g.displayName}"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">수정 저장</button>
+                        <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록으로</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=75c165c144f335e61cfa19338c13ad2a&libraries=services&autoload=false"></script>
+<script th:inline="javascript">
+    let map, marker, geocoder;
+    const initLat = /*[[${festival.latitude}]]*/ null;
+    const initLng = /*[[${festival.longitude}]]*/ null;
+
+    kakao.maps.load(function () {
+        const defaultLat = (initLat != null) ? initLat : 37.5665;
+        const defaultLng = (initLng != null) ? initLng : 126.9780;
+        const container = document.getElementById('kakaoMap');
+        const options = {
+            center: new kakao.maps.LatLng(defaultLat, defaultLng),
+            level: 5
+        };
+        map = new kakao.maps.Map(container, options);
+        geocoder = new kakao.maps.services.Geocoder();
+        marker = new kakao.maps.Marker({ position: options.center, map: (initLat != null) ? map : null });
+
+        kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+            const latlng = mouseEvent.latLng;
+            placeMarker(latlng.getLat(), latlng.getLng());
+            geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function (result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    const addr = result[0].road_address
+                        ? result[0].road_address.address_name
+                        : result[0].address.address_name;
+                    document.getElementById('locationInput').value = addr;
+                }
+            });
+        });
+    });
+
+    function placeMarker(lat, lng) {
+        const pos = new kakao.maps.LatLng(lat, lng);
+        marker.setPosition(pos);
+        marker.setMap(map);
+        map.setCenter(pos);
+        document.getElementById('latInput').value = lat;
+        document.getElementById('lngInput').value = lng;
+    }
+
+    function searchAddress() {
+        const keyword = document.getElementById('addrSearch').value.trim();
+        if (!keyword) return;
+        const ps = new kakao.maps.services.Places();
+        ps.keywordSearch(keyword, function (data, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                const place = data[0];
+                const lat = parseFloat(place.y);
+                const lng = parseFloat(place.x);
+                placeMarker(lat, lng);
+                document.getElementById('locationInput').value = place.place_name;
+            } else {
+                geocoder.addressSearch(keyword, function (result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        const lat = parseFloat(result[0].y);
+                        const lng = parseFloat(result[0].x);
+                        placeMarker(lat, lng);
+                        document.getElementById('locationInput').value = result[0].address_name;
+                    } else {
+                        alert('검색 결과가 없습니다.');
+                    }
+                });
+            }
+        });
+    }
+
+    document.getElementById('addrSearch').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); searchAddress(); }
+    });
+</script>
+</body>
+</html>

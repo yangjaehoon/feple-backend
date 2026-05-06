@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 페스티벌 목록</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">페스티벌 목록</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>페스티벌</span>
+            </div>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌 등록</a>
+        </div>
+    </div>
+    <div class="content-area">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">전체 페스티벌</div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>페스티벌</th>
+                        <th style="width:80px;">상태</th>
+                        <th style="width:100px;">❤ 좋아요</th>
+                        <th style="width:80px;">상세</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="festival, stat : ${festivals}">
+                        <!-- 종료 구분선: 첫 번째 종료 항목 앞에만 표시 -->
+                        <tr th:if="${festival.endDate != null
+                                     and festival.endDate.isBefore(#temporals.createToday())
+                                     and (stat.first
+                                          or festivals[stat.index - 1].endDate == null
+                                          or !festivals[stat.index - 1].endDate.isBefore(#temporals.createToday()))}">
+                            <td colspan="4"
+                                style="padding:8px 14px; font-size:12px; font-weight:700; color:#999; background:#f7f7f7; border-top:2px solid #e2e8f0; letter-spacing:0.3px;">
+                                ─── 종료된 페스티벌
+                            </td>
+                        </tr>
+
+                        <tr th:style="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}
+                                       ? 'opacity:0.55; background:#fafafa;' : ''">
+                            <td>
+                                <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                   th:text="${festival.title}"
+                                   style="font-size:14px; font-weight:600;"></a>
+                                <div class="cell-secondary cell-row" style="margin-top:5px;">
+                                    <span th:text="${festival.location}"></span>
+                                    <span>·</span>
+                                    <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span>
+                                </div>
+                            </td>
+                            <td>
+                                <!-- 종료 -->
+                                <span th:if="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}"
+                                      style="font-size:11px; font-weight:700; color:#999; background:#ececec; border-radius:20px; padding:3px 9px; white-space:nowrap;">종료</span>
+                                <!-- 진행 중 -->
+                                <span th:if="${(festival.endDate == null or !festival.endDate.isBefore(#temporals.createToday()))
+                                               and festival.startDate != null and !festival.startDate.isAfter(#temporals.createToday())}"
+                                      style="font-size:11px; font-weight:700; color:#2f855a; background:#c6f6d5; border-radius:20px; padding:3px 9px; white-space:nowrap;">진행 중</span>
+                                <!-- 예정 -->
+                                <span th:if="${festival.startDate != null and festival.startDate.isAfter(#temporals.createToday())}"
+                                      style="font-size:11px; font-weight:700; color:#2b6cb0; background:#bee3f8; border-radius:20px; padding:3px 9px; white-space:nowrap;">예정</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-primary"
+                                      th:text="'❤ ' + ${festival.likeCount}"
+                                      th:if="${festival.likeCount > 0}"></span>
+                                <span class="cell-secondary" th:if="${festival.likeCount == 0}">0</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                   class="btn btn-secondary btn-sm">상세</a>
+                            </td>
+                        </tr>
+                    </th:block>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(festivals)}">
+                        <td colspan="4">등록된 페스티벌이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

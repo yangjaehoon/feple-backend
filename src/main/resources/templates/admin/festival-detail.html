@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Feple Admin — ' + ${festival.title}">페스티벌 상세</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .stage-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px; border-radius: 8px;
+            background: #fff; margin-bottom: 6px;
+        }
+        .stage-row:last-child { margin-bottom: 0; }
+        .stage-order-num {
+            width: 22px; height: 22px; border-radius: 50%;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; flex-shrink: 0;
+        }
+        .stage-name { flex: 1; font-size: 13px; font-weight: 600; color: #2d3748; }
+        .stage-btn {
+            background: none; border: 1px solid #e2e8f0; border-radius: 5px;
+            padding: 2px 7px; font-size: 13px; cursor: pointer; color: #555;
+            line-height: 1.6;
+        }
+        .stage-btn:hover { background: #f0f4ff; border-color: #c5d0fa; color: #3b5bdb; }
+        .stage-btn.del { color: #aaa; }
+        .stage-btn.del:hover { background: #fff5f5; border-color: #fc8181; color: #e53e3e; }
+        .stage-add-inline {
+            display: flex; align-items: center; gap: 8px; margin-top: 10px;
+        }
+        .stage-add-inline input {
+            padding: 6px 12px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 13px; width: 180px;
+        }
+        .stage-add-inline button {
+            padding: 6px 16px; background: #3b5bdb; color: #fff;
+            border: none; border-radius: 8px; font-size: 13px;
+            font-weight: 600; cursor: pointer; white-space: nowrap;
+        }
+        .stage-add-inline button:hover { background: #2f4ac4; }
+        .stage-empty { font-size: 13px; color: var(--muted); margin: 4px 0 8px; }
+        select.stage-select {
+            padding: 5px 8px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 13px; min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="${festival.title}">페스티벌</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/festivals}">페스티벌</a>
+                <span class="bc-sep">›</span>
+                <span th:text="${festival.title}"></span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}"
+             style="padding:12px 16px; border-radius:6px; font-size:13.5px; font-weight:500; margin-bottom:20px; background:#FFF5F5; color:#9B2C2C; border:1px solid #FC8181;"
+             th:text="${errorMessage}"></div>
+
+        <!-- 기본 정보 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🎵 페스티벌 정보</div>
+            </div>
+            <div class="card-body">
+                <div class="festival-info">
+                    <img class="poster-img"
+                         th:if="${festival.posterUrl != null and !#strings.isEmpty(festival.posterUrl)}"
+                         th:src="${festival.posterUrl}" th:alt="${festival.title}"/>
+                    <div class="no-poster"
+                         th:if="${festival.posterUrl == null or #strings.isEmpty(festival.posterUrl)}">
+                        <span style="font-size:28px;">🖼️</span>
+                        <span>포스터 없음</span>
+                    </div>
+                    <div class="meta-list">
+                        <div class="meta-item">
+                            <div class="meta-label">기간</div>
+                            <div class="meta-value" th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">장소</div>
+                            <div class="meta-value" th:text="${festival.location}"></div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">좋아요</div>
+                            <div class="meta-value" style="color:var(--primary);">
+                                ❤ <span th:text="${festival.likeCount}">0</span>
+                            </div>
+                        </div>
+                        <div class="meta-item" th:if="${festival.description != null}">
+                            <div class="meta-label">설명</div>
+                            <div class="meta-value" th:text="${festival.description}"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-warning">✏ 수정</a>
+                    <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
+                    <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
+                    <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
+                          method="post" onsubmit="return confirm('이 페스티벌을 삭제할까요?');">
+                        <button type="submit" class="btn btn-danger">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 참여 아티스트 -->
+        <div id="artists" class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    참여 아티스트
+                    <span class="card-count" th:text="${participatingArtists.size() ?: 0}"></span>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button type="submit" form="batch-edit-form" class="btn btn-warning btn-sm"
+                            th:if="${!participatingArtists.isEmpty()}">💾 저장</button>
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}">+ 추가</a>
+                </div>
+            </div>
+
+            <form id="batch-edit-form"
+                  th:action="@{/admin/festivals/{id}/artists/batch-edit(id=${festival.id})}"
+                  method="post">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>순서</th>
+                            <th>아티스트</th>
+                            <th>장르</th>
+                            <th>공연 시간</th>
+                            <th>스테이지</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="af : ${participatingArtistsByName}">
+                            <td>
+                                <input type="hidden" name="afIds" th:value="${af.artistFestivalId}"/>
+                                <input type="number" name="lineupOrders"
+                                       th:value="${af.lineupOrder}"
+                                       style="width:55px; padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:13px; text-align:center;"/>
+                            </td>
+                            <td style="font-weight:600;" th:text="${af.artistName}"></td>
+                            <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
+                            <td>
+                                <!-- 타임테이블에 등록된 슬롯 표시 -->
+                                <th:block th:if="${timetableByArtist.containsKey(af.artistName)}">
+                                    <div th:each="slot : ${timetableByArtist.get(af.artistName)}"
+                                         style="font-size:11px; white-space:nowrap; margin-bottom:3px;">
+                                        <span style="color:var(--muted);" th:text="${slot.festivalDate}"></span>
+                                        <span style="font-weight:700; color:#2d3748; margin-left:4px;"
+                                              th:text="${slot.startTime} + ' ~ ' + ${slot.endTime}"></span>
+                                    </div>
+                                </th:block>
+                                <!-- 타임테이블 미입력 -->
+                                <span th:unless="${timetableByArtist.containsKey(af.artistName)}"
+                                      style="font-size:11px; font-weight:700; color:#e53e3e; background:#fff5f5; border-radius:20px; padding:2px 8px; white-space:nowrap;">미입력</span>
+                            </td>
+                            <td>
+                                <th:block th:if="${!stages.isEmpty()}">
+                                    <select name="stageNames" class="stage-select">
+                                        <option value="">— 미지정 —</option>
+                                        <option th:each="s : ${stages}"
+                                                th:value="${s.name}"
+                                                th:text="${s.name}"
+                                                th:selected="${s.name == af.stageName}"></option>
+                                    </select>
+                                </th:block>
+                                <th:block th:if="${stages.isEmpty()}">
+                                    <span style="font-size:12px; color:var(--muted);">스테이지 없음</span>
+                                    <input type="hidden" name="stageNames" th:value="${af.stageName}"/>
+                                </th:block>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
+                                      method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
+                            <td colspan="6">참여 아티스트가 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+
+        <!-- 타임테이블 -->
+        <div id="timetable" class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🕐 타임테이블
+                    <span class="card-count" th:text="${timetableEntries.size() ?: 0}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <!-- ── 스테이지 관리 영역 ── -->
+                <div style="background:#f8f9ff; border:1px solid #dde3ff; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
+                    <div style="font-size:13px; font-weight:700; color:#3b5bdb; margin-bottom:6px;">📋 스테이지 목록</div>
+                    <div th:if="${stages.isEmpty()}" class="stage-empty">등록된 스테이지가 없습니다. 아래에서 추가해주세요.</div>
+                    <div th:if="${!stages.isEmpty()}" style="margin-bottom:10px;">
+                        <div th:each="s, stat : ${stages}" class="stage-row" th:data-stage="${s.name}">
+                            <div class="stage-order-num" th:text="${stat.index + 1}"></div>
+                            <span class="stage-name" th:text="${s.name}"></span>
+                            <!-- 위로 -->
+                            <form th:action="@{/admin/festivals/{id}/stages/{sid}/up(id=${festival.id}, sid=${s.id})}"
+                                  method="post" style="margin:0;">
+                                <button type="submit" class="stage-btn"
+                                        th:disabled="${stat.first}" title="위로">▲</button>
+                            </form>
+                            <!-- 아래로 -->
+                            <form th:action="@{/admin/festivals/{id}/stages/{sid}/down(id=${festival.id}, sid=${s.id})}"
+                                  method="post" style="margin:0;">
+                                <button type="submit" class="stage-btn"
+                                        th:disabled="${stat.last}" title="아래로">▼</button>
+                            </form>
+                            <!-- 삭제 -->
+                            <form th:action="@{/admin/festivals/{id}/stages/{sid}/delete(id=${festival.id}, sid=${s.id})}"
+                                  method="post" style="margin:0;"
+                                  onsubmit="return confirm('스테이지를 삭제할까요?')">
+                                <button type="submit" class="stage-btn del" title="삭제">✕</button>
+                            </form>
+                        </div>
+                    </div>
+                    <form th:action="@{/admin/festivals/{id}/stages(id=${festival.id})}"
+                          method="post" class="stage-add-inline">
+                        <input type="text" name="name" placeholder="스테이지명 (예: Main, Sub1)" maxlength="30"/>
+                        <button type="submit">+ 스테이지 추가</button>
+                    </form>
+                </div>
+
+                <!-- 타임테이블 추가 폼 -->
+                <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                      method="post"
+                      onsubmit="return validateTimetable(this)"
+                      style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:20px;">
+
+                    <input type="hidden" name="stageName" id="autoStageName"/>
+
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">날짜</label>
+                        <input type="date" name="festivalDate"
+                               th:min="${festival.startDate}" th:max="${festival.endDate}"
+                               th:value="${festival.startDate}" required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">아티스트</label>
+                        <th:block th:if="${!participatingArtistsByName.isEmpty()}">
+                            <select name="artistName" id="artistSelect" required onchange="onArtistChange(this)"
+                                    style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                                <option value="" disabled selected>아티스트 선택</option>
+                                <option th:each="af : ${participatingArtistsByName}"
+                                        th:value="${af.artistName}"
+                                        th:text="${af.artistName}"
+                                        th:attr="data-stage=${af.stageName}"></option>
+                            </select>
+                        </th:block>
+                        <th:block th:if="${participatingArtistsByName.isEmpty()}">
+                            <input type="text" disabled placeholder="참여 아티스트를 먼저 추가하세요"
+                                   style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f5f5f5;"/>
+                        </th:block>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">스테이지 (자동)</label>
+                        <div id="stagePreview" style="padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f8f9ff; color:var(--muted); min-height:36px;">
+                            아티스트 선택 시 자동 입력
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                            <div>
+                                <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">시작</label>
+                                <input type="time" name="startTime" id="startTime" required
+                                       oninput="clearTimeError()"
+                                       style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                            </div>
+                            <div>
+                                <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종료</label>
+                                <input type="time" name="endTime" id="endTime" required
+                                       oninput="clearTimeError()"
+                                       style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                            </div>
+                        </div>
+                        <div id="timeError"
+                             style="display:none; margin-top:5px; font-size:12px; color:#e53e3e; font-weight:500;">
+                            ⚠ 종료 시간은 시작 시간보다 늦어야 합니다.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
+                </form>
+                <div th:if="${timetableSuccess}" class="alert alert-success" style="margin-bottom:16px;" th:text="${timetableSuccess}"></div>
+
+                <!-- 운영 항목 추가 폼 -->
+                <div style="background:#fffbeb; border:1px solid #f6d860; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
+                    <div style="font-size:13px; font-weight:700; color:#b7791f; margin-bottom:10px;">📢 운영 항목 추가 (티켓 부스 오픈, 입장 게이트 오픈 등)</div>
+                    <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                          method="post"
+                          onsubmit="return validateCustomTimetable(this)"
+                          style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; align-items:end;">
+                        <input type="hidden" name="stageName" value="📢"/>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">항목명</label>
+                            <input type="text" name="artistName" placeholder="예: 티켓 부스 오픈, 입장 게이트 오픈" required maxlength="50"
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">날짜</label>
+                            <input type="date" name="festivalDate"
+                                   th:min="${festival.startDate}" th:max="${festival.endDate}"
+                                   th:value="${festival.startDate}" required
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">시작</label>
+                            <input type="time" name="startTime" required
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#92400e; display:block; margin-bottom:4px;">종료</label>
+                            <input type="time" name="endTime" required
+                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                        </div>
+                        <button type="submit" class="btn btn-warning" style="white-space:nowrap;">+ 추가</button>
+                    </form>
+                </div>
+
+                <!-- 목록 테이블 -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>구분</th>
+                            <th>시간</th>
+                            <th>아티스트 / 항목</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="entry, stat : ${timetableEntries}">
+                            <!-- 날짜 구분 헤더: 첫 항목이거나 날짜가 바뀔 때 -->
+                            <tr th:if="${stat.first or entry.festivalDate != timetableEntries[stat.index - 1].festivalDate}"
+                                style="background:#eef2ff; border-top:2px solid #c5d0fa;">
+                                <td colspan="4"
+                                    style="padding:8px 14px; font-size:13px; font-weight:700; color:#3b5bdb; letter-spacing:0.3px;">
+                                    📅 <span th:text="${entry.festivalDate}"></span>
+                                </td>
+                            </tr>
+                            <!-- 항목 행: 운영 항목(📢)은 노란 배경 -->
+                            <tr th:classappend="${entry.stageName == '📢'} ? 'bg-warning-subtle' : ''">
+                                <td>
+                                    <span th:if="${entry.stageName == '📢'}"
+                                          style="font-size:13px; font-weight:700; color:#b7791f;">📢 운영</span>
+                                    <span th:unless="${entry.stageName == '📢'}"
+                                          class="badge badge-stage" th:data-stage="${entry.stageName}" th:text="${entry.stageName}"></span>
+                                </td>
+                                <td style="font-size:13px; white-space:nowrap;">
+                                    <span style="font-weight:700; color:#2d3748;" th:text="${entry.startTime}"></span>
+                                    <span style="color:var(--muted); margin:0 4px;">~</span>
+                                    <span style="font-weight:700; color:#2d3748;" th:text="${entry.endTime}"></span>
+                                </td>
+                                <td style="font-weight:600;" th:text="${entry.artistName}"></td>
+                                <td>
+                                    <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
+                                          method="post">
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </th:block>
+                        <tr class="empty-row" th:if="${timetableEntries.isEmpty()}">
+                            <td colspan="4">등록된 타임테이블이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 부스 관리 -->
+        <div id="booths" class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🏪 부스 관리
+                    <span class="card-count" th:text="${booths.size() ?: 0}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">지도를 클릭하면 해당 위치에 부스를 등록할 수 있습니다.</p>
+
+                <!-- 부스 추가 폼 -->
+                <form th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
+                      enctype="multipart/form-data"
+                      onsubmit="return validateBoothPos()"
+                      style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:14px;">
+                    <input type="hidden" id="boothLat" name="latitude"/>
+                    <input type="hidden" id="boothLng" name="longitude"/>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">부스명</label>
+                        <input type="text" name="name" placeholder="예: 맥주존 A" required
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종류</label>
+                        <select name="boothType" required
+                                style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                            <option value="" disabled selected>선택</option>
+                            <option th:each="bt : ${allBoothTypes}" th:value="${bt}" th:text="${bt.displayName}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">설명 (선택)</label>
+                        <input type="text" name="description" placeholder="간단한 설명"
+                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">이미지 (선택)</label>
+                        <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
+                               onchange="validateBoothImage(this)"
+                               style="width:100%; padding:5px 0; font-size:12px;"/>
+                        <span id="boothImageError" style="display:none; font-size:11px; color:#e53e3e; font-weight:600; margin-top:3px; display:none;"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
+                </form>
+
+                <!-- 지도 -->
+                <div id="boothMapWrap" style="border-radius:12px; border:1px solid var(--border); margin-bottom:8px; overflow:hidden;">
+                    <div id="boothMap" style="width:100%; aspect-ratio:1/1;"></div>
+                </div>
+                <p id="boothPosLabel" style="font-size:12px; color:var(--muted); margin-bottom:16px;">지도를 클릭하여 부스 위치를 선택하세요.</p>
+
+                <!-- 부스 목록 -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>종류</th>
+                            <th>부스명</th>
+                            <th>설명</th>
+                            <th>위치</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="booth : ${booths}">
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${booth.boothType.name() == 'FOOD'} ? 'badge-food' : (${booth.boothType.name() == 'BEER'} ? 'badge-beer' : 'badge-event')"
+                                      th:text="${booth.boothTypeName}"
+                                      style="padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600;"></span>
+                            </td>
+                            <td style="font-weight:600;" th:text="${booth.name}"></td>
+                            <td style="color:var(--muted); font-size:13px;" th:text="${booth.description ?: '-'}"></td>
+                            <td style="font-size:12px; color:var(--muted);" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
+                            <td>
+                                <form th:action="@{/admin/festivals/{fId}/booths/{bId}/delete(fId=${festival.id},bId=${booth.id})}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${booths.isEmpty()}">
+                            <td colspan="5">등록된 부스가 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:inline="javascript">
+    const festivalLat = /*[[${festival.latitude}]]*/ null;
+    const festivalLng = /*[[${festival.longitude}]]*/ null;
+    const existingBooths = /*[[${booths}]]*/ [];
+</script>
+<script>
+    let boothMap, selectedMarker;
+    const markerColors = { FOOD: '#FF7043', BEER: '#FFA000', EVENT: '#7B1FA2' };
+    const boothIcons  = { FOOD: '🍽', BEER: '🍺', EVENT: '🎉' };
+
+    function createBoothEl(booth) {
+        const color = markerColors[booth.boothType] || '#555';
+        const icon  = boothIcons[booth.boothType]  || '📍';
+
+        const card = document.createElement('div');
+        card.style.cssText = [
+            'background:' + color,
+            'color:#fff',
+            'border-radius:8px',
+            'font-size:12px',
+            'font-weight:700',
+            'box-shadow:0 2px 8px rgba(0,0,0,0.35)',
+            'border:2px solid rgba(255,255,255,0.75)',
+            'cursor:pointer',
+            'user-select:none',
+            'overflow:hidden',
+            'width:90px',
+            'text-align:center'
+        ].join(';');
+
+        if (booth.imageUrl) {
+            const img = document.createElement('img');
+            img.src = booth.imageUrl;
+            img.style.cssText = 'width:90px;height:auto;display:block;';
+            card.appendChild(img);
+        }
+
+        const label = document.createElement('div');
+        label.style.padding = '4px 8px';
+        label.textContent = icon + ' ' + booth.name;
+        card.appendChild(label);
+
+        const tail = document.createElement('div');
+        tail.style.cssText = [
+            'width:0',
+            'height:0',
+            'border-left:6px solid transparent',
+            'border-right:6px solid transparent',
+            'border-top:8px solid ' + color,
+            'margin:0 auto'
+        ].join(';');
+
+        const wrapper = document.createElement('div');
+        wrapper.style.textAlign = 'center';
+        wrapper.appendChild(card);
+        wrapper.appendChild(tail);
+        return wrapper;
+    }
+
+    function createSelectedEl() {
+        const el = document.createElement('div');
+        el.style.cssText = [
+            'width:16px',
+            'height:16px',
+            'background:#3b5bdb',
+            'border:3px solid #fff',
+            'border-radius:50%',
+            'box-shadow:0 2px 6px rgba(0,0,0,0.4)'
+        ].join(';');
+        return el;
+    }
+
+    function initBoothMap() {
+        const centerLat = festivalLat != null ? festivalLat : 37.5665;
+        const centerLng = festivalLng != null ? festivalLng : 126.9780;
+
+        boothMap = new google.maps.Map(document.getElementById('boothMap'), {
+            center: { lat: centerLat, lng: centerLng },
+            zoom: 18,
+            mapTypeControl: false,
+            streetViewControl: false,
+            mapId: 'DEMO_MAP_ID'
+        });
+
+        // 기존 부스 마커 표시
+        existingBooths.forEach(function(booth) {
+            const marker = new google.maps.marker.AdvancedMarkerElement({
+                position: { lat: booth.latitude, lng: booth.longitude },
+                map: boothMap,
+                title: booth.name,
+                content: createBoothEl(booth)
+            });
+            const descHtml = booth.description
+                ? '<br><span style="font-weight:400;font-size:12px;color:#555;">' + booth.description + '</span>'
+                : '';
+            const infoWindow = new google.maps.InfoWindow({
+                content: '<div style="padding:8px 12px;font-size:13px;font-weight:600;">'
+                    + booth.boothTypeName + ' · ' + booth.name + descHtml + '</div>'
+            });
+            marker.addListener('click', function() {
+                infoWindow.open({ anchor: marker, map: boothMap });
+            });
+        });
+
+        // 클릭으로 새 부스 위치 선택
+        boothMap.addListener('click', function(e) {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            document.getElementById('boothLat').value = lat;
+            document.getElementById('boothLng').value = lng;
+            const label = document.getElementById('boothPosLabel');
+            label.textContent = '선택된 위치: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+            label.style.color = '#3b5bdb';
+            label.style.fontWeight = 'normal';
+            document.getElementById('boothMapWrap').style.borderColor = 'var(--border)';
+            if (selectedMarker) selectedMarker.map = null;
+            selectedMarker = new google.maps.marker.AdvancedMarkerElement({
+                position: e.latLng,
+                map: boothMap,
+                content: createSelectedEl()
+            });
+        });
+    }
+</script>
+<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap&loading=async'}" async defer></script>
+<script>
+function validateBoothImage(input) {
+    const errEl = document.getElementById('boothImageError');
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif'];
+    const maxBytes = 10 * 1024 * 1024;
+    if (!input.files || !input.files[0]) { errEl.style.display = 'none'; return true; }
+    const file = input.files[0];
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!allowed.includes(ext)) {
+        errEl.textContent = '⚠ jpg, jpeg, png, gif 파일만 업로드할 수 있습니다.';
+        errEl.style.display = 'block';
+        input.value = '';
+        return false;
+    }
+    if (file.size > maxBytes) {
+        errEl.textContent = '⚠ 파일 크기는 10MB를 초과할 수 없습니다.';
+        errEl.style.display = 'block';
+        input.value = '';
+        return false;
+    }
+    errEl.style.display = 'none';
+    return true;
+}
+
+function validateBoothPos() {
+    const imageInput = document.getElementById('boothImageFile');
+    if (imageInput && imageInput.files && imageInput.files[0] && !validateBoothImage(imageInput)) {
+        imageInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    if (!document.getElementById('boothLat').value) {
+        const label = document.getElementById('boothPosLabel');
+        label.textContent = '⚠ 지도를 클릭하여 부스 위치를 먼저 선택해주세요.';
+        label.style.color = '#e53e3e';
+        label.style.fontWeight = '600';
+        document.getElementById('boothMapWrap').style.borderColor = '#e53e3e';
+        document.getElementById('boothMapWrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    return true;
+}
+
+function validateTimetable(form) {
+    const start = form.querySelector('#startTime').value;
+    const end = form.querySelector('#endTime').value;
+    if (start && end && start >= end) {
+        const err = document.getElementById('timeError');
+        err.style.display = 'block';
+        document.getElementById('startTime').style.borderColor = '#e53e3e';
+        document.getElementById('endTime').style.borderColor = '#e53e3e';
+        document.getElementById('endTime').focus();
+        return false;
+    }
+    return true;
+}
+
+function validateCustomTimetable(form) {
+    const start = form.querySelector('[name="startTime"]').value;
+    const end = form.querySelector('[name="endTime"]').value;
+    if (start && end && start >= end) {
+        alert('종료 시간은 시작 시간보다 늦어야 합니다.');
+        return false;
+    }
+    return true;
+}
+
+function clearTimeError() {
+    const err = document.getElementById('timeError');
+    if (err) err.style.display = 'none';
+    document.getElementById('startTime').style.borderColor = '';
+    document.getElementById('endTime').style.borderColor = '';
+}
+
+// ── 스테이지 색상 ──
+const stageColors = [
+    { bg: '#3b5bdb', light: '#eef2ff', border: '#c5d0fa' },
+    { bg: '#e8590c', light: '#fff4e6', border: '#ffc9a0' },
+    { bg: '#2b8a3e', light: '#ebfbee', border: '#b2f2bb' },
+    { bg: '#be4bdb', light: '#f8f0fc', border: '#e599f7' },
+    { bg: '#1098ad', light: '#e6fcf5', border: '#96f2d7' },
+    { bg: '#f59f00', light: '#fff9db', border: '#ffe066' },
+    { bg: '#d6336c', light: '#fff0f6', border: '#fcc2d7' },
+    { bg: '#495057', light: '#f1f3f5', border: '#ced4da' },
+];
+(function applyStageColors() {
+    const stageMap = {};
+    document.querySelectorAll('.stage-row[data-stage]').forEach(function(row, i) {
+        const name = row.getAttribute('data-stage');
+        const c = stageColors[i % stageColors.length];
+        stageMap[name] = c;
+        row.style.borderLeft = '4px solid ' + c.bg;
+        row.style.background = c.light;
+        row.style.borderColor = c.border;
+        row.style.borderLeftColor = c.bg;
+        row.querySelector('.stage-order-num').style.background = c.bg;
+    });
+    document.querySelectorAll('.badge-stage[data-stage]').forEach(function(badge) {
+        const name = badge.getAttribute('data-stage');
+        const c = stageMap[name];
+        if (c) {
+            badge.style.background = c.bg;
+            badge.style.color = '#fff';
+            badge.style.padding = '3px 10px';
+            badge.style.borderRadius = '20px';
+            badge.style.fontSize = '12px';
+            badge.style.fontWeight = '600';
+        }
+    });
+})();
+
+function onArtistChange(select) {
+    const opt = select.options[select.selectedIndex];
+    const stage = opt.getAttribute('data-stage') || '';
+    document.getElementById('autoStageName').value = stage;
+    const preview = document.getElementById('stagePreview');
+    if (stage) {
+        preview.textContent = stage;
+        preview.style.color = '#3b5bdb';
+        preview.style.fontWeight = '600';
+    } else {
+        preview.textContent = '스테이지 미지정';
+        preview.style.color = 'var(--muted)';
+        preview.style.fontWeight = 'normal';
+    }
+}
+</script>
+</body>
+</html>

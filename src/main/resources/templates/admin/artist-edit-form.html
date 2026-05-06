@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 아티스트 수정</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="${artist.name} + ' 수정'">아티스트 수정</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists}">아티스트</a>
+                <span class="bc-sep">›</span>
+                <span th:text="${artist.name}"></span>
+                <span class="bc-sep">›</span>
+                <span>수정</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+        <div class="card" style="max-width:560px;">
+            <div class="card-header">
+                <div class="card-title">✏ 아티스트 수정</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/artists/{id}/edit(id=${artistId})}"
+                      th:object="${artist}"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>이름</label>
+                            <input type="text" th:field="*{name}" required/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>영어 이름</label>
+                            <input type="text" th:field="*{nameEn}" placeholder="English Name (선택)"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>카테고리</label>
+                            <select th:field="*{genre}" required>
+                                <option value="">선택하세요</option>
+                                <option th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
+                                        th:value="${g}"
+                                        th:text="${g.displayName}"></option>
+                            </select>
+                        </div>
+
+                        <!-- 현재 프로필 이미지 -->
+                        <div class="form-group" th:if="${artist.profileImageKey != null}">
+                            <label>현재 프로필 이미지</label>
+                            <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
+                                <img th:src="${artist.profileImageKey}"
+                                     alt="현재 프로필"
+                                     style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid var(--border);"/>
+                                <span th:text="${artist.name}" style="font-size:13px; color:var(--muted);"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>프로필 이미지 변경</label>
+                            <input type="file" name="profileImageFile" accept="image/*"/>
+                            <span class="hint">선택하지 않으면 기존 이미지가 유지됩니다.</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">수정 저장</button>
+                        <a th:href="@{/admin/artists}" class="btn btn-secondary">취소</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
