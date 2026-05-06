@@ -1,5 +1,7 @@
 package com.feple.feple_backend.notification.entity;
 
+import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,8 +34,19 @@ public class Notification {
     @Column(nullable = false, length = 255)
     private String body;
 
-    /** 관련 리소스 ID (예: festivalId) */
-    private Long referenceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "festival_id")
+    private Festival festival;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
+    public Long getReferenceId() {
+        if (festival != null) return festival.getId();
+        if (post != null) return post.getId();
+        return null;
+    }
 
     @Column(nullable = false)
     private boolean isRead = false;
@@ -42,13 +55,24 @@ public class Notification {
     private LocalDateTime createdAt;
 
     public static Notification of(User user, NotificationType type,
-                                   String title, String body, Long referenceId) {
+                                   String title, String body, Festival festival) {
         Notification n = new Notification();
         n.user = user;
         n.type = type;
         n.title = title;
         n.body = body;
-        n.referenceId = referenceId;
+        n.festival = festival;
+        return n;
+    }
+
+    public static Notification of(User user, NotificationType type,
+                                   String title, String body, Post post) {
+        Notification n = new Notification();
+        n.user = user;
+        n.type = type;
+        n.title = title;
+        n.body = body;
+        n.post = post;
         return n;
     }
 

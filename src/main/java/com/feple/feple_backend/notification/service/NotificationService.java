@@ -2,9 +2,13 @@ package com.feple.feple_backend.notification.service;
 
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -25,6 +29,8 @@ public class NotificationService {
     private final ArtistFollowRepository artistFollowRepository;
     private final UserDeviceTokenRepository deviceTokenRepository;
     private final UserRepository userRepository;
+    private final FestivalRepository festivalRepository;
+    private final PostRepository postRepository;
     private final FcmPushService fcmPushService;
 
     /**
@@ -38,6 +44,9 @@ public class NotificationService {
         List<ArtistFollow> follows = artistFollowRepository.findByArtistId(artistId);
         if (follows.isEmpty()) return;
 
+        Festival festival = festivalRepository.findById(festivalId).orElse(null);
+        if (festival == null) return;
+
         String title = NotificationMessages.newFestivalTitle(artistName);
         String body = NotificationMessages.newFestivalBody(festivalTitle);
 
@@ -48,7 +57,7 @@ public class NotificationService {
         // 인앱 알림 저장
         List<User> users = userRepository.findAllById(userIds);
         List<Notification> notifications = users.stream()
-                .map(u -> Notification.of(u, NotificationType.NEW_FESTIVAL, title, body, festivalId))
+                .map(u -> Notification.of(u, NotificationType.NEW_FESTIVAL, title, body, festival))
                 .toList();
         notificationRepository.saveAll(notifications);
         log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})",
@@ -66,11 +75,12 @@ public class NotificationService {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
 
+        Festival festival = festivalRepository.findById(festivalId).orElse(null);
         String title = NotificationMessages.CERT_APPROVED_TITLE;
         String body = NotificationMessages.certApprovedBody(festivalTitle);
 
         notificationRepository.save(
-                Notification.of(user, NotificationType.CERT_APPROVED, title, body, festivalId));
+                Notification.of(user, NotificationType.CERT_APPROVED, title, body, festival));
 
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
         fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
@@ -83,11 +93,12 @@ public class NotificationService {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
 
+        Festival festival = festivalRepository.findById(festivalId).orElse(null);
         String title = NotificationMessages.CERT_REJECTED_TITLE;
         String body = NotificationMessages.certRejectedBody(festivalTitle, reason);
 
         notificationRepository.save(
-                Notification.of(user, NotificationType.CERT_REJECTED, title, body, festivalId));
+                Notification.of(user, NotificationType.CERT_REJECTED, title, body, festival));
 
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
         fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
@@ -105,8 +116,9 @@ public class NotificationService {
         String title = NotificationMessages.newCommentTitle(commenterNickname);
         String body = NotificationMessages.newCommentBody(postTitle);
 
+        Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
-                Notification.of(author, NotificationType.NEW_COMMENT, title, body, postId));
+                Notification.of(author, NotificationType.NEW_COMMENT, title, body, post));
 
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(postAuthorId));
         fcmPushService.sendMulticast(tokens, title, body, null);
@@ -121,9 +133,10 @@ public class NotificationService {
         String title = NotificationMessages.festivalReminderTitle(dDay);
         String body = NotificationMessages.festivalReminderBody(festivalTitle, dDay);
 
+        Festival festival = festivalRepository.findById(festivalId).orElse(null);
         List<User> users = userRepository.findAllById(userIds);
         List<Notification> notifications = users.stream()
-                .map(u -> Notification.of(u, NotificationType.FESTIVAL_REMINDER, title, body, festivalId))
+                .map(u -> Notification.of(u, NotificationType.FESTIVAL_REMINDER, title, body, festival))
                 .toList();
         notificationRepository.saveAll(notifications);
 
