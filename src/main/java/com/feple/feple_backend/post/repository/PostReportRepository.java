@@ -19,5 +19,7 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
 
     long countByStatus(ReportStatus status);
 
+    long countByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
     void deleteByPostId(Long postId);
 }

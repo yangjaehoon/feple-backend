@@ -105,24 +105,31 @@
                     </div>
                 </div>
 
-                <!-- 일별 지표 테이블 (샘플) -->
+                <!-- 일별 지표 테이블 -->
                 <div class="db-card">
                     <div class="db-card-header">
-                        <span class="db-card-title">📅 일별 지표</span>
-                        <span class="card-count" id="metrics-range"></span>
+                        <span class="db-card-title">📅 일별 지표 (7일)</span>
                     </div>
                     <div style="overflow-x:auto;">
                         <table style="width:100%; border-collapse:collapse; font-size:12px;">
                             <thead>
                             <tr style="background:#F4F9FD;">
                                 <th style="padding:9px 12px; color:var(--muted); font-weight:700; text-align:left; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;">날짜</th>
-                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">PV</th>
-                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">UV</th>
                                 <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">가입</th>
                                 <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">게시글</th>
+                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">댓글</th>
+                                <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">신고</th>
                             </tr>
                             </thead>
-                            <tbody id="metrics-tbody"></tbody>
+                            <tbody>
+                            <tr th:each="s : ${dailyStats}" style="border-bottom:1px solid var(--border);">
+                                <td style="padding:8px 12px; color:var(--text-2); font-size:12px;" th:text="${s.date()}"></td>
+                                <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--success); font-size:12px;" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
+                                <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--primary-dk); font-size:12px;" th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
+                                <td style="padding:8px 10px; text-align:right; color:var(--text-2); font-size:12px;" th:text="${s.comments() > 0 ? s.comments() : '-'}"></td>
+                                <td style="padding:8px 10px; text-align:right; color:var(--muted); font-size:12px;" th:text="${s.reports() > 0 ? s.reports() : '-'}"></td>
+                            </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -285,34 +292,6 @@
             }
         }
     });
-})();
-
-/* ── 일별 지표 테이블 (샘플 데이터) ── */
-(function () {
-    const tbody = document.getElementById('metrics-tbody');
-    const range = document.getElementById('metrics-range');
-    const rows = [];
-    const pvBase  = [210, 185, 260, 310, 195, 340, 280];
-    const uvBase  = [120,  95, 145, 180, 110, 200, 165];
-    const sigBase = [  3,   1,   5,   4,   2,   7,   3];
-    const postBase= [  8,   5,  11,   9,   4,  14,  10];
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const label = (d.getMonth() + 1) + '/' + d.getDate();
-        const idx = 6 - i;
-        rows.push(`<tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:8px 12px; color:var(--text-2); font-size:12px;">${label}</td>
-            <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--text); font-size:12px;">${pvBase[idx]}</td>
-            <td style="padding:8px 10px; text-align:right; color:var(--text-2); font-size:12px;">${uvBase[idx]}</td>
-            <td style="padding:8px 10px; text-align:right; color:var(--success); font-weight:700; font-size:12px;">+${sigBase[idx]}</td>
-            <td style="padding:8px 10px; text-align:right; color:var(--primary-dk); font-weight:700; font-size:12px;">${postBase[idx]}</td>
-        </tr>`);
-    }
-    tbody.innerHTML = rows.join('');
-    const start = (() => { const d = new Date(); d.setDate(d.getDate()-6); return (d.getMonth()+1)+'/'+ d.getDate(); })();
-    const end   = (() => { const d = new Date(); return (d.getMonth()+1)+'/'+ d.getDate(); })();
-    range.textContent = start + ' ~ ' + end;
 })();
 
 /* ── 메모 위젯 (localStorage) ── */

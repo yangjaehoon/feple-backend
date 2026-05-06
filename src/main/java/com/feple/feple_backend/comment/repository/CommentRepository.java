@@ -32,6 +32,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     long countByUser(User user);
 
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.artist.id = :artistId AND c.createdAt >= :since")
     long countByArtistAndSince(@Param("artistId") Long artistId, @Param("since") LocalDateTime since);
 

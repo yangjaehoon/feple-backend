@@ -68,6 +68,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // ── 통계 ─────────────────────────────────────────────────────────────────
     long countByCreatedAtAfter(LocalDateTime since);
 
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
     @Query("SELECT COALESCE(SUM(p.likeCount), 0) FROM Post p WHERE p.artist.id = :artistId AND p.createdAt >= :since")
     long sumLikeCountByArtistAndSince(@Param("artistId") Long artistId, @Param("since") LocalDateTime since);
 
