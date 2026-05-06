@@ -3,6 +3,8 @@ package com.feple.feple_backend.comment.service;
 
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.comment.entity.Comment;
+import com.feple.feple_backend.comment.entity.CommentLike;
+import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.post.entity.Post;
@@ -17,10 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentReportRepository commentReportRepository;
+    private final CommentLikeRepository commentLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
@@ -41,7 +42,7 @@ public class CommentServiceImpl implements CommentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
-        Comment comment = new Comment(dto.getContent(), post, user);
+        Comment comment = new Comment(dto.getContent(), post, user, dto.getParentId());
         Comment saved = commentRepository.save(comment);
 
         // 게시글 작성자 != 댓글 작성자일 때만 알림
@@ -66,13 +67,16 @@ public class CommentServiceImpl implements CommentService {
                 saved.getContent(),
                 saved.getCreatedAt(),
                 certified,
-                user.getRole()
+                user.getRole(),
+                saved.getParentId(),
+                0,
+                false
         );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getCommentsByPost(Long postId) {
+    public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다."));
 
@@ -81,9 +85,15 @@ public class CommentServiceImpl implements CommentService {
             certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(post.getFestival().getId());
         }
 
+        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, 500)).getContent();
+        List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+
+        Set<Long> likedCommentIds = (userId != null && !commentIds.isEmpty())
+                ? new HashSet<>(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(userId, commentIds))
+                : Collections.emptySet();
+
         final Set<Long> finalCertifiedIds = certifiedUserIds;
-        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, 200))
-                .stream()
+        return comments.stream()
                 .map(c -> new CommentResponseDto(
                         c.getId(),
                         c.getPost().getId(),
@@ -92,13 +102,17 @@ public class CommentServiceImpl implements CommentService {
                         c.getContent(),
                         c.getCreatedAt(),
                         finalCertifiedIds.contains(c.getUser().getId()),
-                        c.getUser().getRole()
+                        c.getUser().getRole(),
+                        c.getParentId(),
+                        c.getLikeCount(),
+                        likedCommentIds.contains(c.getId())
                 ))
                 .collect(Collectors.toList());
     }
 
     @Override
     public void deleteComment(Long commentId){
+        commentLikeRepository.deleteByCommentId(commentId);
         commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
     }
@@ -110,7 +124,27 @@ public class CommentServiceImpl implements CommentService {
         if (!comment.getUser().getId().equals(requestUserId)) {
             throw new AccessDeniedException("본인의 댓글만 삭제할 수 있습니다.");
         }
+        commentLikeRepository.deleteByCommentId(commentId);
         commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    public Map<String, Object> toggleLike(Long commentId, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("댓글을 찾을 수 없습니다."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+
+        boolean alreadyLiked = commentLikeRepository.existsByUserIdAndCommentId(userId, commentId);
+        if (alreadyLiked) {
+            commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
+            comment.decrementLikeCount();
+            return Map.of("liked", false, "likeCount", comment.getLikeCount());
+        } else {
+            commentLikeRepository.save(CommentLike.builder().comment(comment).user(user).build());
+            comment.incrementLikeCount();
+            return Map.of("liked", true, "likeCount", comment.getLikeCount());
+        }
     }
 }

@@ -36,7 +36,7 @@ public class PostAdminController {
     @GetMapping("/{id}")
     public String postDetail(@PathVariable Long id, Model model) {
         model.addAttribute("post", postService.getPost(id));
-        model.addAttribute("comments", commentService.getCommentsByPost(id));
+        model.addAttribute("comments", commentService.getCommentsByPost(id, null));
         return "admin/post-detail";
     }
 

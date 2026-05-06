@@ -10,10 +10,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/comments")
@@ -29,8 +31,11 @@ public class CommentController {
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<CommentResponseDto>> list(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getCommentsByPost(postId));
+    public ResponseEntity<List<CommentResponseDto>> list(
+            @PathVariable Long postId,
+            Authentication authentication) {
+        Long userId = (authentication != null) ? (Long) authentication.getPrincipal() : null;
+        return ResponseEntity.ok(commentService.getCommentsByPost(postId, userId));
     }
 
     @DeleteMapping("/{id}")
@@ -38,6 +43,13 @@ public class CommentController {
                                        @AuthenticationPrincipal Long userId) {
         commentService.deleteOwnComment(id, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Map<String, Object>> toggleLike(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(commentService.toggleLike(id, userId));
     }
 
     @PostMapping("/{commentId}/report")

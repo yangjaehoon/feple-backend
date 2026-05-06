@@ -34,6 +34,12 @@ public class Comment {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "parent_id")
+    private Long parentId;
+
+    @Column(nullable = false)
+    private int likeCount = 0;
+
     public Comment(String content, Post post, User user) {
         this.content = content;
         this.post = post;
@@ -41,4 +47,16 @@ public class Comment {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
+    public Comment(String content, Post post, User user, Long parentId) {
+        this.content = content;
+        this.post = post;
+        this.user = user;
+        this.parentId = parentId;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void incrementLikeCount() { this.likeCount++; }
+    public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
 }
