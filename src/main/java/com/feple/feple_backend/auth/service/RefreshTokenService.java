@@ -3,6 +3,8 @@ package com.feple.feple_backend.auth.service;
 import com.feple.feple_backend.auth.entity.RefreshToken;
 import com.feple.feple_backend.auth.jwt.JwtProperties;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProperties jwtProperties;
+    private final UserRepository userRepository;
 
     /** 토큰 → SHA-256 해시 (16진수 문자열) */
     public String hash(String token) {
@@ -34,11 +37,13 @@ public class RefreshTokenService {
 
     @Transactional
     public void save(Long userId, String rawToken) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
         String tokenHash = hash(rawToken);
         LocalDateTime expiresAt = LocalDateTime.now()
                 .plusSeconds(jwtProperties.refreshTokenExpirationMs() / 1000);
         refreshTokenRepository.deleteByUserId(userId); // 기존 토큰 교체
-        refreshTokenRepository.save(RefreshToken.of(userId, tokenHash, expiresAt));
+        refreshTokenRepository.save(RefreshToken.of(user, tokenHash, expiresAt));
     }
 
     /**
