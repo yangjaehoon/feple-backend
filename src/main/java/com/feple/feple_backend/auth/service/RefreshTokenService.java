@@ -57,12 +57,16 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
 
         if (stored.isExpired()) {
-            refreshTokenRepository.delete(stored);
+            refreshTokenRepository.deleteByTokenHash(tokenHash);
             throw new IllegalArgumentException("만료된 리프레시 토큰입니다. 다시 로그인해주세요.");
         }
 
         Long userId = stored.getUserId();
-        refreshTokenRepository.delete(stored); // 사용한 토큰 즉시 삭제 (로테이션)
+        // 직접 DELETE 쿼리로 삭제: 동시 요청이 같은 토큰을 소비하려 할 때 0이 반환됨
+        int deleted = refreshTokenRepository.deleteByTokenHash(tokenHash);
+        if (deleted == 0) {
+            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+        }
         return userId;
     }
 
