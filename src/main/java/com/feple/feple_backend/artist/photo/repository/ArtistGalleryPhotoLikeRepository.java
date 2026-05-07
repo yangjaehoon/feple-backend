@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.photo.repository;
 
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,4 +22,8 @@ public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGa
 
     @Query("SELECT apl.photo.id FROM ArtistGalleryPhotoLike apl WHERE apl.user.id = :userId AND apl.photo.id IN :photoIds")
     Set<Long> findLikedPhotoIds(@Param("userId") Long userId, @Param("photoIds") List<Long> photoIds);
+
+    @Modifying
+    @Query("DELETE FROM ArtistGalleryPhotoLike")
+    void deleteAll();
 }

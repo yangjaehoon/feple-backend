@@ -65,7 +65,7 @@ public class ArtistGalleryPhotoService {
 
     @Transactional(readOnly = true)
     public List<ArtistGalleryPhotoResponseDto> list(Long artistId, Long currentUserId) {
-        List<ArtistGalleryPhoto> photos = artistGalleryPhotoRepository.findByArtist_IdOrderByIdDesc(artistId);
+        List<ArtistGalleryPhoto> photos = artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(artistId);
         Set<Long> likedPhotoIds = (currentUserId != null && !photos.isEmpty())
                 ? artistGalleryPhotoLikeRepository.findLikedPhotoIds(
                         currentUserId, photos.stream().map(ArtistGalleryPhoto::getId).toList())
