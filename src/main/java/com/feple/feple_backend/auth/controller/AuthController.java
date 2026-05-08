@@ -6,9 +6,8 @@ import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RefreshRequest;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
-import com.feple.feple_backend.auth.service.FirebaseAuthService;
-import com.feple.feple_backend.auth.service.KakaoAuthService;
 import com.feple.feple_backend.auth.service.LocalAuthService;
+import com.feple.feple_backend.auth.service.OAuthLoginService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -28,8 +27,8 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final KakaoAuthService kakaoAuthService;
-    private final FirebaseAuthService firebaseAuthService;
+    private final OAuthLoginService kakaoAuthService;
+    private final OAuthLoginService firebaseAuthService;
     private final LocalAuthService localAuthService;
     private final UserService userService;
     private final JwtProvider jwtProvider;
@@ -37,7 +36,7 @@ public class AuthController {
     private final LoginRateLimiter loginRateLimiter;
 
     @PostMapping("/kakao")
-    public Mono<AuthResponseDto> kakaoLogin(
+    public Mono<ResponseEntity<AuthResponseDto>> kakaoLogin(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
             HttpServletRequest httpRequest
     ) {
@@ -45,14 +44,8 @@ public class AuthController {
         String kakaoAccessToken = authorization.startsWith("Bearer ")
                 ? authorization.substring(7)
                 : authorization;
-
         return kakaoAuthService.authenticate(kakaoAccessToken)
-                .map(user -> {
-                    String accessToken = jwtProvider.createAccessToken(user.getId());
-                    String refreshToken = jwtProvider.createRefreshToken(user.getId());
-                    refreshTokenService.save(user.getId(), refreshToken);
-                    return new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken);
-                });
+                .map(user -> ResponseEntity.ok(issueTokens(user)));
     }
 
     @PostMapping("/firebase")
@@ -62,12 +55,14 @@ public class AuthController {
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
         return firebaseAuthService.authenticate(req.getIdToken())
-                .map(user -> {
-                    String accessToken = jwtProvider.createAccessToken(user.getId());
-                    String refreshToken = jwtProvider.createRefreshToken(user.getId());
-                    refreshTokenService.save(user.getId(), refreshToken);
-                    return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
-                });
+                .map(user -> ResponseEntity.ok(issueTokens(user)));
+    }
+
+    private AuthResponseDto issueTokens(User user) {
+        String accessToken = jwtProvider.createAccessToken(user.getId());
+        String refreshToken = jwtProvider.createRefreshToken(user.getId());
+        refreshTokenService.save(user.getId(), refreshToken);
+        return new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken);
     }
 
     @PostMapping("/login")
