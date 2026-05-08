@@ -4,12 +4,11 @@ import com.feple.feple_backend.auth.dto.AuthResponseDto;
 import com.feple.feple_backend.auth.dto.FirebaseLoginRequest;
 import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RefreshRequest;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
-import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
-import com.feple.feple_backend.auth.service.AuthService;
+import com.feple.feple_backend.auth.service.FirebaseAuthService;
+import com.feple.feple_backend.auth.service.KakaoAuthService;
+import com.feple.feple_backend.auth.service.LocalAuthService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -29,8 +28,9 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final KakaoApiClient kakaoApiClient;
-    private final AuthService authService;
+    private final KakaoAuthService kakaoAuthService;
+    private final FirebaseAuthService firebaseAuthService;
+    private final LocalAuthService localAuthService;
     private final UserService userService;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
@@ -46,8 +46,7 @@ public class AuthController {
                 ? authorization.substring(7)
                 : authorization;
 
-        return kakaoApiClient.getMe(kakaoAccessToken)
-                .map(authService::registerOrLogin)
+        return kakaoAuthService.authenticate(kakaoAccessToken)
                 .map(user -> {
                     String accessToken = jwtProvider.createAccessToken(user.getId());
                     String refreshToken = jwtProvider.createRefreshToken(user.getId());
@@ -56,34 +55,17 @@ public class AuthController {
                 });
     }
 
-    /** Firebase ID 토큰 검증 후 앱 JWT 발급 (이메일/비밀번호 Firebase 로그인) */
     @PostMapping("/firebase")
     public ResponseEntity<AuthResponseDto> firebaseLogin(
             @Valid @RequestBody FirebaseLoginRequest req,
             HttpServletRequest httpRequest
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
-        try {
-            FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(req.getIdToken());
-
-            // 이메일 인증 확인
-            Boolean emailVerified = (Boolean) decoded.getClaims().get("email_verified");
-            if (emailVerified == null || !emailVerified) {
-                throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
-            }
-
-            String uid = decoded.getUid();
-            String email = decoded.getEmail();
-            String name = decoded.getName();
-
-            User user = authService.registerOrLoginFirebase(uid, email, name);
-            String accessToken = jwtProvider.createAccessToken(user.getId());
-            String refreshToken = jwtProvider.createRefreshToken(user.getId());
-            refreshTokenService.save(user.getId(), refreshToken);
-            return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
-        } catch (Exception e) {
-            throw new IllegalArgumentException("인증에 실패했습니다. 다시 로그인해주세요.");
-        }
+        User user = firebaseAuthService.authenticate(req.getIdToken());
+        String accessToken = jwtProvider.createAccessToken(user.getId());
+        String refreshToken = jwtProvider.createRefreshToken(user.getId());
+        refreshTokenService.save(user.getId(), refreshToken);
+        return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
     }
 
     @PostMapping("/login")
@@ -91,10 +73,8 @@ public class AuthController {
             @Valid @RequestBody LocalLoginRequest req,
             HttpServletRequest httpRequest
     ) {
-        String ip = getClientIp(httpRequest);
-        loginRateLimiter.check(ip);
-
-        User user = authService.loginLocal(req);
+        loginRateLimiter.check(getClientIp(httpRequest));
+        User user = localAuthService.login(req);
         String accessToken = jwtProvider.createAccessToken(user.getId());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
         refreshTokenService.save(user.getId(), refreshToken);
@@ -109,7 +89,6 @@ public class AuthController {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
-        // DB 검증 + 기존 토큰 삭제 (로테이션) → userId 반환
         Long userId = refreshTokenService.validateAndConsume(req.getRefreshToken());
 
         String newAccessToken = jwtProvider.createAccessToken(userId);
@@ -131,8 +110,6 @@ public class AuthController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        // AWS ALB는 신뢰할 수 있는 X-Forwarded-For를 추가하므로 첫 번째 IP가 실제 클라이언트
-        // 직접 연결(로컬/테스트)이면 RemoteAddr 사용
         String xff = request.getHeader("X-Forwarded-For");
         if (xff != null && !xff.isBlank()) {
             return xff.split(",")[0].trim();
