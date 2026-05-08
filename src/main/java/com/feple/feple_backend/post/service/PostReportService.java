@@ -23,7 +23,7 @@ public class PostReportService {
 
     private final PostReportRepository reportRepository;
     private final PostRepository postRepository;
-    private final PostService postService;
+    private final PostAdminService postAdminService;
     private final UserRepository userRepository;
 
     /** 신고 접수 */
@@ -67,7 +67,7 @@ public class PostReportService {
     public void deletePostAndResolve(Long reportId) {
         PostReport report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new NoSuchElementException("신고를 찾을 수 없습니다: " + reportId));
-        postService.deletePost(report.getPost().getId());
+        postAdminService.deletePost(report.getPost().getId());
         // 해당 게시글의 다른 신고도 모두 처리
         reportRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, Integer.MAX_VALUE))
                 .stream()

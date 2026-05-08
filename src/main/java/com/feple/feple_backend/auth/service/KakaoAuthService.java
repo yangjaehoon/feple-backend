@@ -15,11 +15,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class KakaoAuthService {
+public class KakaoAuthService implements OAuthLoginService {
 
     private final KakaoApiClient kakaoApiClient;
     private final UserRepository userRepository;
 
+    @Override
     public Mono<User> authenticate(String accessToken) {
         return kakaoApiClient.getMe(accessToken).map(this::registerOrFind);
     }

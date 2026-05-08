@@ -6,7 +6,8 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentLike;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
-import com.feple.feple_backend.notification.service.NotificationService;
+import com.feple.feple_backend.comment.event.CommentCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
@@ -32,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentLikeRepository commentLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
     private final FestivalCertificationRepository certificationRepository;
 
     @Override
@@ -45,11 +46,10 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment(dto.getContent(), post, user, dto.getParentId());
         Comment saved = commentRepository.save(comment);
 
-        // 게시글 작성자 != 댓글 작성자일 때만 알림
         Long postAuthorId = post.getUser().getId();
         if (!postAuthorId.equals(userId)) {
-            notificationService.notifyNewComment(
-                    postAuthorId, user.getNickname(), post.getTitle(), post.getId());
+            eventPublisher.publishEvent(
+                    new CommentCreatedEvent(postAuthorId, user.getNickname(), post.getTitle(), post.getId()));
         }
 
         boolean certified = false;

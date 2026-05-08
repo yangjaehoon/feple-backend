@@ -10,7 +10,7 @@ import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
-import com.feple.feple_backend.post.service.PostService;
+import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,7 +34,7 @@ public class AdminHomeController {
 
     private final FestivalService festivalService;
     private final ArtistService artistService;
-    private final PostService postService;
+    private final PostAdminService postAdminService;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
@@ -53,10 +53,10 @@ public class AdminHomeController {
 
         model.addAttribute("festivalPage", festivals);
         model.addAttribute("artistPage", artists);
-        model.addAttribute("totalPosts", postService.getTotalPostCount());
+        model.addAttribute("totalPosts", postAdminService.getTotalPostCount());
         model.addAttribute("totalUsers", userRepository.count());
-        model.addAttribute("recentPostCount", postService.countRecentPosts(7));
-        model.addAttribute("hotPosts", postService.getAdminHotPosts(5));
+        model.addAttribute("recentPostCount", postAdminService.countRecentPosts(7));
+        model.addAttribute("hotPosts", postAdminService.getAdminHotPosts(5));
         model.addAttribute("topArtists", artistService.getTopArtists(5));
         model.addAttribute("recentUsers", userRepository.findTop5ByOrderByIdDesc());
         model.addAttribute("dailyStats", buildDailyStats());

@@ -14,6 +14,8 @@ import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.feple.feple_backend.comment.event.CommentCreatedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,6 +104,14 @@ public class NotificationService {
 
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
         fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+    }
+
+    @Async
+    @EventListener
+    @Transactional
+    public void onCommentCreated(CommentCreatedEvent event) {
+        notifyNewComment(event.postAuthorId(), event.commenterNickname(),
+                event.postTitle(), event.postId());
     }
 
     /** 내 게시글에 댓글 알림 */

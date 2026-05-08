@@ -8,15 +8,23 @@ import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FirebaseAuthService {
+public class FirebaseAuthService implements OAuthLoginService {
 
     private final UserRepository userRepository;
 
-    public User authenticate(String idToken) {
+    @Override
+    public Mono<User> authenticate(String idToken) {
+        return Mono.fromCallable(() -> authenticateSync(idToken))
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private User authenticateSync(String idToken) {
         try {
             FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(idToken);
             Boolean emailVerified = (Boolean) decoded.getClaims().get("email_verified");

@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserAdminService {
 
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;

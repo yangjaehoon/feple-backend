@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import java.util.List;
 public class PostAdminController {
 
     private final PostService postService;
+    private final PostAdminService postAdminService;
     private final CommentService commentService;
 
     @GetMapping
@@ -26,7 +28,7 @@ public class PostAdminController {
             @RequestParam(defaultValue = "") String filter,
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
-        model.addAttribute("posts", postService.getPostsForAdmin(page, 20, filter, keyword));
+        model.addAttribute("posts", postAdminService.getPostsForAdmin(page, 20, filter, keyword));
         model.addAttribute("filter", filter);
         model.addAttribute("keyword", keyword);
         model.addAttribute("page", page);
@@ -46,7 +48,7 @@ public class PostAdminController {
                                   @RequestParam(defaultValue = "0") int page,
                                   RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
-            postService.bulkDeletePosts(ids);
+            postAdminService.bulkDeletePosts(ids);
             ra.addFlashAttribute("successMessage", ids.size() + "개 게시글이 삭제되었습니다.");
         }
         return "redirect:/admin/posts?filter=" + filter + "&page=" + page;
@@ -56,7 +58,7 @@ public class PostAdminController {
     public String deletePost(@PathVariable Long id,
                              @RequestParam(defaultValue = "") String filter,
                              @RequestParam(defaultValue = "0") int page) {
-        postService.deletePost(id);
+        postAdminService.deletePost(id);
         return "redirect:/admin/posts?filter=" + filter + "&page=" + page;
     }
 

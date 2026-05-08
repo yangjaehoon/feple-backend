@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -29,7 +30,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PostServiceImpl implements PostService {
+public class PostServiceImpl implements PostService, PostAdminService {
 
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
@@ -166,6 +167,15 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다: " + userId));
         return postRepository.save(buildPost(dto, user, null, null, festival)).getId();
+    }
+
+    @Override
+    @Transactional
+    public void deletePostsByUser(User user) {
+        List<Post> posts = postRepository.findByUser(user);
+        posts.forEach(post -> postLikeRepository.deleteByPostId(post.getId()));
+        postLikeRepository.deleteByUser(user);
+        postRepository.deleteAll(posts);
     }
 
     @Override

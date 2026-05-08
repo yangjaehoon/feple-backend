@@ -56,16 +56,18 @@ public class AuthController {
     }
 
     @PostMapping("/firebase")
-    public ResponseEntity<AuthResponseDto> firebaseLogin(
+    public Mono<ResponseEntity<AuthResponseDto>> firebaseLogin(
             @Valid @RequestBody FirebaseLoginRequest req,
             HttpServletRequest httpRequest
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
-        User user = firebaseAuthService.authenticate(req.getIdToken());
-        String accessToken = jwtProvider.createAccessToken(user.getId());
-        String refreshToken = jwtProvider.createRefreshToken(user.getId());
-        refreshTokenService.save(user.getId(), refreshToken);
-        return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
+        return firebaseAuthService.authenticate(req.getIdToken())
+                .map(user -> {
+                    String accessToken = jwtProvider.createAccessToken(user.getId());
+                    String refreshToken = jwtProvider.createRefreshToken(user.getId());
+                    refreshTokenService.save(user.getId(), refreshToken);
+                    return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
+                });
     }
 
     @PostMapping("/login")

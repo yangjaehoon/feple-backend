@@ -7,7 +7,7 @@ import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.service.MyPageService;
-import com.feple.feple_backend.user.service.UserService;
+import com.feple.feple_backend.user.service.UserAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserAdminController {
 
-    private final UserService userService;
+    private final UserAdminService userService;
     private final MyPageService myPageService;
 
     @GetMapping
