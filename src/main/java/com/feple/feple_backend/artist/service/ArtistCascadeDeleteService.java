@@ -7,9 +7,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.post.entity.Post;
-import com.feple.feple_backend.post.repository.PostLikeRepository;
-import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,29 +22,21 @@ public class ArtistCascadeDeleteService {
     private final ArtistProfileImageRepository artistImageRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFollowRepository artistFollowRepository;
-    private final PostRepository postRepository;
-    private final PostLikeRepository postLikeRepository;
+    private final PostService postService;
     private final FileStorageService fileStorageService;
 
     @Transactional
     public void delete(Artist artist) {
         String profileImageKey = artist.getProfileImageKey();
 
-        // 아티스트 이미지 삭제 (S3 + DB, ArtistProfileImageLike는 cascade)
         List<ArtistProfileImage> images = artistImageRepository.findByArtist(artist);
         images.forEach(img -> fileStorageService.deleteFile(img.getImageUrl()));
         artistImageRepository.deleteAll(images);
 
-        // 아티스트-페스티벌 연결, 팔로우 삭제
         artistFestivalRepository.deleteByArtistId(artist.getId());
         artistFollowRepository.deleteAll(artistFollowRepository.findByArtistId(artist.getId()));
 
-        // 게시글 삭제 (PostLike 먼저, Comment는 Post cascade)
-        List<Post> artistPosts = postRepository.findByArtist(artist);
-        for (Post post : artistPosts) {
-            postLikeRepository.deleteByPostId(post.getId());
-        }
-        postRepository.deleteAll(artistPosts);
+        postService.deletePostsByArtist(artist);
 
         artistRepository.deleteById(artist.getId());
         fileStorageService.deleteFile(profileImageKey);

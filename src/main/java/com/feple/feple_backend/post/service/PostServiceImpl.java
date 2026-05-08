@@ -180,6 +180,14 @@ public class PostServiceImpl implements PostService, PostAdminService {
 
     @Override
     @Transactional
+    public void deletePostsByArtist(Artist artist) {
+        List<Post> posts = postRepository.findByArtist(artist);
+        posts.forEach(post -> postLikeRepository.deleteByPostId(post.getId()));
+        postRepository.deleteAll(posts);
+    }
+
+    @Override
+    @Transactional
     public void deletePostsByFestival(Festival festival) {
         List<Post> posts = postRepository.findByFestival(festival);
         for (Post post : posts) {

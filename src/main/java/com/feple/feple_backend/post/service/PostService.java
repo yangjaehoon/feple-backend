@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -20,5 +21,6 @@ public interface PostService {
     Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId);
     void deletePostsByFestival(Festival festival);
     void deletePostsByUser(User user);
+    void deletePostsByArtist(Artist artist);
     List<PostResponseDto> searchPosts(String keyword);
 }
