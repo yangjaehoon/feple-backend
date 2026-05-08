@@ -5,7 +5,8 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.PermissionValidator;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -17,13 +18,11 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,15 +41,13 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다: " + userId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.save(buildPost(dto, user, dto.getBoardType(), null, null)).getId();
     }
 
     @Override
     public PostResponseDto getPost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId));
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         return PostResponseDto.from(post);
     }
 
@@ -106,11 +103,8 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     @Transactional
     public void deleteOwnPost(Long postId, Long requestUserId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId));
-        if (!post.getUser().getId().equals(requestUserId)) {
-            throw new AccessDeniedException("본인의 게시글만 삭제할 수 있습니다.");
-        }
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        PermissionValidator.checkOwner(post.getUser().getId(), requestUserId, "게시글");
         postLikeRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
@@ -132,8 +126,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
 
     @Override
     public List<PostResponseDto> getPostsByArtistId(Long artistId) {
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 없습니다: " + artistId));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         return postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(0, 100))
                 .map(PostResponseDto::from)
                 .toList();
@@ -142,17 +135,14 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     @Transactional
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 없습니다: " + artistId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다: " + userId));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.save(buildPost(dto, user, null, artist, null)).getId();
     }
 
     @Override
     public List<PostResponseDto> getPostsByFestivalId(Long festivalId) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("해당 페스티벌이 없습니다: " + festivalId));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
         return postRepository.findByFestivalOrderByCreatedAtDesc(festival, PageRequest.of(0, 100))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUser().getId())))
@@ -162,10 +152,8 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     @Transactional
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("해당 페스티벌이 없습니다: " + festivalId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다: " + userId));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.save(buildPost(dto, user, null, null, festival)).getId();
     }
 
@@ -198,16 +186,14 @@ public class PostServiceImpl implements PostService, PostAdminService {
 
     @Override
     public List<PostResponseDto> getMyPosts(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, 200))
                 .stream().map(PostResponseDto::from).toList();
     }
 
     @Override
     public long countMyPosts(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.countByUser(user);
     }
 

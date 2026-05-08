@@ -52,22 +52,11 @@ public class NotificationService {
         String title = NotificationMessages.newFestivalTitle(artistName);
         String body = NotificationMessages.newFestivalBody(festivalTitle);
 
-        List<Long> userIds = follows.stream()
-                .map(f -> f.getUser().getId())
-                .toList();
-
-        // 인앱 알림 저장
+        List<Long> userIds = follows.stream().map(f -> f.getUser().getId()).toList();
         List<User> users = userRepository.findAllById(userIds);
-        List<Notification> notifications = users.stream()
-                .map(u -> Notification.of(u, NotificationType.NEW_FESTIVAL, title, body, festival))
-                .toList();
-        notificationRepository.saveAll(notifications);
-        log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})",
-                notifications.size(), artistId, festivalId);
 
-        // FCM 푸시 발송
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(userIds);
-        fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+        saveAndPushFestivalToAll(users, NotificationType.NEW_FESTIVAL, title, body, festival, String.valueOf(festivalId));
+        log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})", users.size(), artistId, festivalId);
     }
 
     /** 인증 승인 알림 */
@@ -76,16 +65,11 @@ public class NotificationService {
     public void notifyCertApproved(Long userId, String festivalTitle, Long festivalId) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
-
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
-        String title = NotificationMessages.CERT_APPROVED_TITLE;
-        String body = NotificationMessages.certApprovedBody(festivalTitle);
-
-        notificationRepository.save(
-                Notification.of(user, NotificationType.CERT_APPROVED, title, body, festival));
-
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
-        fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+        saveAndPushFestivalToUser(user, NotificationType.CERT_APPROVED,
+                NotificationMessages.CERT_APPROVED_TITLE,
+                NotificationMessages.certApprovedBody(festivalTitle),
+                festival, String.valueOf(festivalId));
     }
 
     /** 인증 거절 알림 */
@@ -94,16 +78,11 @@ public class NotificationService {
     public void notifyCertRejected(Long userId, String festivalTitle, Long festivalId, String reason) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
-
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
-        String title = NotificationMessages.CERT_REJECTED_TITLE;
-        String body = NotificationMessages.certRejectedBody(festivalTitle, reason);
-
-        notificationRepository.save(
-                Notification.of(user, NotificationType.CERT_REJECTED, title, body, festival));
-
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
-        fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+        saveAndPushFestivalToUser(user, NotificationType.CERT_REJECTED,
+                NotificationMessages.CERT_REJECTED_TITLE,
+                NotificationMessages.certRejectedBody(festivalTitle, reason),
+                festival, String.valueOf(festivalId));
     }
 
     @Async
@@ -145,14 +124,26 @@ public class NotificationService {
 
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
         List<User> users = userRepository.findAllById(userIds);
-        List<Notification> notifications = users.stream()
-                .map(u -> Notification.of(u, NotificationType.FESTIVAL_REMINDER, title, body, festival))
-                .toList();
-        notificationRepository.saveAll(notifications);
-
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(userIds);
-        fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+        saveAndPushFestivalToAll(users, NotificationType.FESTIVAL_REMINDER, title, body, festival, String.valueOf(festivalId));
         log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, users.size(), festivalId);
+    }
+
+    private void saveAndPushFestivalToUser(User user, NotificationType type,
+                                            String title, String body,
+                                            Festival festival, String linkId) {
+        notificationRepository.save(Notification.of(user, type, title, body, festival));
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(user.getId()));
+        fcmPushService.sendMulticast(tokens, title, body, linkId);
+    }
+
+    private void saveAndPushFestivalToAll(List<User> users, NotificationType type,
+                                           String title, String body,
+                                           Festival festival, String linkId) {
+        notificationRepository.saveAll(users.stream()
+                .map(u -> Notification.of(u, type, title, body, festival))
+                .toList());
+        List<Long> userIds = users.stream().map(User::getId).toList();
+        fcmPushService.sendMulticast(deviceTokenRepository.findTokensByUserIds(userIds), title, body, linkId);
     }
 
 }

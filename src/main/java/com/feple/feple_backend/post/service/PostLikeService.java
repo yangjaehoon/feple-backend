@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
@@ -10,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -29,10 +29,8 @@ public class PostLikeService {
 
     @Transactional
     public boolean toggleLike(Long postId, Long userId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId));
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         Optional<PostLike> existing = postLikeRepository.findByUserIdAndPostId(userId, postId);
         if (existing.isPresent()) {

@@ -7,6 +7,7 @@ import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -109,8 +109,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public ArtistResponseDto getArtistById(Long id) {
-        Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         return toDto(artist);
     }
 
@@ -125,8 +124,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public ArtistRequestDto getArtistForEdit(Long id) {
-        Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         return ArtistRequestDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
@@ -140,8 +138,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional
     public void updateArtist(Long id, ArtistRequestDto dto) {
-        Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         String oldKey = artist.getProfileImageKey();
         String imageKey = dto.getProfileImageKey() != null ? dto.getProfileImageKey() : oldKey;
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenre(), imageKey);
@@ -160,8 +157,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional
     public void updateArtistPhoto(Long id, String imageKey) {
-        Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         String oldKey = artist.getProfileImageKey();
         artist.update(artist.getName(), artist.getNameEn(), artist.getGenre(), imageKey);
         if (imageKey != null && !imageKey.equals(oldKey)) {
@@ -185,8 +181,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional
     public void deleteArtist(Long id) {
-        Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 아티스트가 존재하지 않습니다. id=" + id));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
     }
 }

@@ -2,23 +2,24 @@ package com.feple.feple_backend.comment.service;
 
 
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.comment.dto.CommentResponseDto;
+import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentLike;
+import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
-import com.feple.feple_backend.comment.event.CommentCreatedEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import com.feple.feple_backend.post.entity.Post;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.comment.dto.CommentResponseDto;
-import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.PermissionValidator;
+import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +40,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
-        Post post = postRepository.findById(dto.getPostId())
-                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다."));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+        Post post = EntityFinder.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         Comment comment = new Comment(dto.getContent(), post, user, dto.getParentId());
         Comment saved = commentRepository.save(comment);
@@ -78,8 +77,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다."));
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
 
         Set<Long> certifiedUserIds = new HashSet<>();
         if (post.getFestival() != null) {
@@ -114,8 +112,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<MyCommentResponseDto> getMyComments(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, 200))
                 .stream().map(MyCommentResponseDto::from).toList();
     }
@@ -123,8 +120,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public long countMyComments(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return commentRepository.countByUser(user);
     }
 
@@ -137,11 +133,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteOwnComment(Long commentId, Long requestUserId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new NoSuchElementException("댓글을 찾을 수 없습니다."));
-        if (!comment.getUser().getId().equals(requestUserId)) {
-            throw new AccessDeniedException("본인의 댓글만 삭제할 수 있습니다.");
-        }
+        Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
+        PermissionValidator.checkOwner(comment.getUser().getId(), requestUserId, "댓글");
         commentLikeRepository.deleteByCommentId(commentId);
         commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
@@ -149,10 +142,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Map<String, Object> toggleLike(Long commentId, Long userId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new NoSuchElementException("댓글을 찾을 수 없습니다."));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+        Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         boolean alreadyLiked = commentLikeRepository.existsByUserIdAndCommentId(userId, commentId);
         if (alreadyLiked) {

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -19,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -50,16 +50,14 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getUser(@NonNull Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         return toUserDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getAdminUser(@NonNull Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         return toAdminUserDto(user);
     }
 
@@ -69,16 +67,14 @@ public class UserServiceImpl implements UserService, UserAdminService {
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         user.changeNickname(nickname.trim());
         return toUserDto(user);
     }
 
     @Override
     public UserResponseDto updateProfileImage(@NonNull Long id, MultipartFile file) throws java.io.IOException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         String url = fileStorageService.storeUserProfile(file, user.getNickname());
         user.changeProfileImage(url);
         return toUserDto(user);
@@ -110,8 +106,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
 
     @Override
     public void adminDeleteUser(@NonNull Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + id));
+        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         cascadeDeleteService.delete(user);
     }
 
@@ -138,8 +133,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
 
     @Override
     public void updateUserRole(Long userId, UserRole role) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         user.changeRole(role);
     }
 
