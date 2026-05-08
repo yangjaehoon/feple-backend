@@ -2,6 +2,7 @@ package com.feple.feple_backend.comment.service;
 
 
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
 import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
@@ -23,7 +24,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Collectors;
 
 @Service
@@ -141,7 +146,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Map<String, Object> toggleLike(Long commentId, Long userId) {
+    public CommentLikeResult toggleLike(Long commentId, Long userId) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
@@ -149,11 +154,11 @@ public class CommentServiceImpl implements CommentService {
         if (alreadyLiked) {
             commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
             comment.decrementLikeCount();
-            return Map.of("liked", false, "likeCount", comment.getLikeCount());
+            return new CommentLikeResult(false, comment.getLikeCount());
         } else {
             commentLikeRepository.save(CommentLike.builder().comment(comment).user(user).build());
             comment.incrementLikeCount();
-            return Map.of("liked", true, "likeCount", comment.getLikeCount());
+            return new CommentLikeResult(true, comment.getLikeCount());
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.feple.feple_backend.comment.dto;
 
 import com.feple.feple_backend.comment.entity.Comment;
-import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,29 +19,15 @@ public class MyCommentResponseDto {
 
     public static MyCommentResponseDto from(Comment comment) {
         Post post = comment.getPost();
-
-        String boardDisplayName;
-        if (post.getArtist() != null) {
-            boardDisplayName = post.getArtist().getName() + " 게시판";
-        } else if (post.getFestival() != null) {
-            boardDisplayName = post.getFestival().getTitle() + " 게시판";
-        } else if (post.getBoardType() == BoardType.FREE) {
-            boardDisplayName = "자유 게시판";
-        } else if (post.getBoardType() == BoardType.MATE) {
-            boardDisplayName = "동행 게시판";
-        } else {
-            boardDisplayName = "게시판";
-        }
-
         return new MyCommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
-                post.getUser().getNickname(),
+                post.getAuthorNickname(),
                 post.getLikeCount(),
-                boardDisplayName
+                post.getDisplayBoardName()
         );
     }
 }

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.comment.controller;
 
+import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
 import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.service.CommentReportService;
@@ -15,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/comments")
@@ -46,7 +46,7 @@ public class CommentController {
     }
 
     @PostMapping("/{id}/like")
-    public ResponseEntity<Map<String, Object>> toggleLike(
+    public ResponseEntity<CommentLikeResult> toggleLike(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(commentService.toggleLike(id, userId));

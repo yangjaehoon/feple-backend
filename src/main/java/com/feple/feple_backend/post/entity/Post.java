@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Formula;
@@ -91,4 +92,32 @@ public class Post {
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+
+    public String getDisplayBoardName() {
+        if (artist != null) return artist.getName() + " 게시판";
+        if (festival != null) return festival.getTitle() + " 게시판";
+        if (boardType == BoardType.FREE) return "자유 게시판";
+        if (boardType == BoardType.MATE) return "동행 게시판";
+        return "게시판";
+    }
+
+    public Long getArtistId() {
+        return artist != null ? artist.getId() : null;
+    }
+
+    public Long getFestivalId() {
+        return festival != null ? festival.getId() : null;
+    }
+
+    public String getAuthorNickname() {
+        return user.getNickname();
+    }
+
+    public String getAuthorProfileImageUrl() {
+        return user.getProfileImageUrl();
+    }
+
+    public UserRole getAuthorRole() {
+        return user.getRole();
+    }
 }

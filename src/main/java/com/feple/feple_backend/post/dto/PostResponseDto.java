@@ -3,6 +3,7 @@ package com.feple.feple_backend.post.dto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.UserRole;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,19 +37,6 @@ public class PostResponseDto {
     }
 
     public static PostResponseDto from(Post post, boolean certified) {
-        String boardDisplayName;
-        if (post.getArtist() != null) {
-            boardDisplayName = post.getArtist().getName() + " 게시판";
-        } else if (post.getFestival() != null) {
-            boardDisplayName = post.getFestival().getTitle() + " 게시판";
-        } else if (post.getBoardType() == BoardType.FREE) {
-            boardDisplayName = "자유 게시판";
-        } else if (post.getBoardType() == BoardType.MATE) {
-            boardDisplayName = "동행 게시판";
-        } else {
-            boardDisplayName = "게시판";
-        }
-
         return PostResponseDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -57,14 +45,14 @@ public class PostResponseDto {
                 .likeCount(post.getLikeCount())
                 .scrapCount(post.getScrapCount())
                 .commentCount(post.getCommentCount())
-                .nickname(post.getUser().getNickname())
-                .profileImageUrl(post.getUser().getProfileImageUrl())
-                .artistId(post.getArtist() != null ? post.getArtist().getId() : null)
-                .festivalId(post.getFestival() != null ? post.getFestival().getId() : null)
-                .boardDisplayName(boardDisplayName)
+                .nickname(post.getAuthorNickname())
+                .profileImageUrl(post.getAuthorProfileImageUrl())
+                .artistId(post.getArtistId())
+                .festivalId(post.getFestivalId())
+                .boardDisplayName(post.getDisplayBoardName())
                 .createdAt(post.getCreatedAt())
                 .certified(certified)
-                .userRole(post.getUser().getRole())
+                .userRole(post.getAuthorRole())
                 .build();
     }
 }
