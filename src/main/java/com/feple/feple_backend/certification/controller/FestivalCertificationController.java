@@ -1,7 +1,7 @@
 package com.feple.feple_backend.certification.controller;
 
-import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.certification.dto.CertificationRequestDto;
+import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import jakarta.validation.Valid;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,10 +25,9 @@ public class FestivalCertificationController {
     );
 
     private final FestivalCertificationService certificationService;
-    private final S3PresignService s3PresignService;
 
     @PostMapping("/presign")
-    public S3PresignService.PresignResult presign(
+    public PresignResult presign(
             @Valid @RequestBody PresignRequest req,
             @AuthenticationPrincipal Long userId
     ) {
@@ -40,8 +38,7 @@ public class FestivalCertificationController {
         if (!ALLOWED_CONTENT_TYPES.contains(req.contentType())) {
             throw new IllegalArgumentException("허용되지 않는 Content-Type입니다.");
         }
-        String objectKey = "certifications/" + userId + "/" + UUID.randomUUID() + "." + ext;
-        return s3PresignService.presignPut(objectKey, req.contentType());
+        return certificationService.generateUploadUrl(userId, ext, req.contentType());
     }
 
     @PostMapping

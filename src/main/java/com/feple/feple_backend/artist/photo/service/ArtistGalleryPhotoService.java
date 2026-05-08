@@ -8,6 +8,7 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRep
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,11 @@ public class ArtistGalleryPhotoService {
     private final ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
     private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
+
+    public PresignResult generateUploadUrl(Long artistId, String extension, String contentType) {
+        String objectKey = "artist-photos/" + artistId + "/" + UUID.randomUUID() + "." + extension;
+        return s3PresignService.presignPut(objectKey, contentType);
+    }
 
     public ArtistGalleryPhotoResponseDto register(
             Long artistId,

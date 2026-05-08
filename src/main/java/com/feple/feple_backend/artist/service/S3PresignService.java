@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
+import com.feple.feple_backend.file.dto.PresignResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,8 +33,6 @@ public class S3PresignService {
 
         return new PresignResult(presigned.url().toString(), objectKey);
     }
-
-    public record PresignResult(String uploadUrl, String objectKey) {}
 
     public String presignGetUrl(String objectKey) {
         PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(r -> r

@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
@@ -9,7 +9,6 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,13 +26,13 @@ import java.util.stream.Collectors;
 public class FestivalArtistAdminController {
 
     private final FestivalService festivalService;
-    private final ArtistRepository artistRepository;
+    private final ArtistService artistService;
     private final ArtistFestivalService artistFestivalService;
 
     @GetMapping("/new")
     public String addArtistForm(@PathVariable Long festivalId, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
-        List<Artist> allArtists = artistRepository.findAll(Sort.by("name"));
+        List<ArtistResponseDto> allArtists = artistService.getAllArtistsSortedByName();
 
         Set<Long> participatingIds = artistFestivalService.getArtistFestivals(festivalId)
                 .stream()

@@ -5,7 +5,7 @@ import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
-import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,12 +30,11 @@ public class ArtistGalleryPhotoController {
             "image/jpeg", "image/png", "image/gif", "image/webp"
     );
 
-    private final S3PresignService s3PresignService;
     private final ArtistGalleryPhotoService artistGalleryPhotoService;
     private final ArtistPhotoReportService artistPhotoReportService;
 
     @PostMapping("/presign")
-    public S3PresignService.PresignResult presign(
+    public PresignResult presign(
             @PathVariable Long artistId,
             @Valid @RequestBody PresignRequest req,
             @AuthenticationPrincipal Long userId
@@ -51,8 +49,7 @@ public class ArtistGalleryPhotoController {
         if (!ALLOWED_CONTENT_TYPES.contains(req.contentType())) {
             throw new IllegalArgumentException("허용되지 않는 Content-Type입니다.");
         }
-        String objectKey = "artist-photos/" + artistId + "/" + UUID.randomUUID() + "." + ext;
-        return s3PresignService.presignPut(objectKey, req.contentType());
+        return artistGalleryPhotoService.generateUploadUrl(artistId, ext, req.contentType());
     }
 
     @PostMapping

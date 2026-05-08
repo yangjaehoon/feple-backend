@@ -1,6 +1,7 @@
 package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -114,5 +116,10 @@ public class FestivalCertificationService {
 
     public String buildPhotoUrl(String photoKey) {
         return s3PresignService.presignGetUrl(photoKey);
+    }
+
+    public PresignResult generateUploadUrl(Long userId, String extension, String contentType) {
+        String objectKey = "certifications/" + userId + "/" + UUID.randomUUID() + "." + extension;
+        return s3PresignService.presignPut(objectKey, contentType);
     }
 }
