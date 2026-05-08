@@ -1,22 +1,31 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.post.service.PostReportService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Map;
+
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/reports")
-@RequiredArgsConstructor
 public class ReportAdminController {
 
     private final PostReportService postReportService;
     private final CommentReportService commentReportService;
+    private final Map<String, ReportAdminService> handlers;
+
+    public ReportAdminController(PostReportService postReportService,
+                                  CommentReportService commentReportService) {
+        this.postReportService = postReportService;
+        this.commentReportService = commentReportService;
+        this.handlers = Map.of("post", postReportService, "comment", commentReportService);
+    }
 
     @GetMapping
     public String list(
@@ -24,15 +33,10 @@ public class ReportAdminController {
             @RequestParam(defaultValue = "PENDING") String status,
             @RequestParam(defaultValue = "post") String type,
             Model model) {
-        if ("comment".equals(type)) {
-            model.addAttribute("reports", commentReportService.getReportsForAdmin(page, 20, status));
-            model.addAttribute("pendingCount", commentReportService.getPendingCount());
-            model.addAttribute("totalCount", commentReportService.getTotalCount());
-        } else {
-            model.addAttribute("reports", postReportService.getReportsForAdmin(page, 20, status));
-            model.addAttribute("pendingCount", postReportService.getPendingCount());
-            model.addAttribute("totalCount", postReportService.getTotalCount());
-        }
+        ReportAdminService handler = handlers.getOrDefault(type, postReportService);
+        model.addAttribute("reports", handler.getReportsForAdmin(page, 20, status));
+        model.addAttribute("pendingCount", handler.getPendingCount());
+        model.addAttribute("totalCount", handler.getTotalCount());
         model.addAttribute("status", status);
         model.addAttribute("type", type);
         return "admin/report-list";

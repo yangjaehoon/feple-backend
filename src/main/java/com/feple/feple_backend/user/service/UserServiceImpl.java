@@ -125,8 +125,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
                 .build();
     }
 
-    @Override
-    public UserResponseDto toAdminUserDto(User user) {
+    private UserResponseDto toAdminUserDto(User user) {
         return UserResponseDto.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())

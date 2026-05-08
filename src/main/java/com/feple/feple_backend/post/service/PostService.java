@@ -23,4 +23,6 @@ public interface PostService {
     void deletePostsByUser(User user);
     void deletePostsByArtist(Artist artist);
     List<PostResponseDto> searchPosts(String keyword);
+    List<PostResponseDto> getMyPosts(Long userId);
+    long countMyPosts(Long userId);
 }

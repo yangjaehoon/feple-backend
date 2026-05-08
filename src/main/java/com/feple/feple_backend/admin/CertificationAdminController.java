@@ -1,6 +1,5 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
@@ -21,7 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CertificationAdminController {
 
     private final FestivalCertificationService certificationService;
-    private final S3PresignService s3PresignService;
 
     @GetMapping
     public String list(
@@ -48,7 +46,7 @@ public class CertificationAdminController {
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
         FestivalCertification cert = certificationService.getById(id);
-        String photoUrl = s3PresignService.presignGetUrl(cert.getPhotoKey());
+        String photoUrl = certificationService.buildPhotoUrl(cert.getPhotoKey());
 
         model.addAttribute("cert", cert);
         model.addAttribute("photoUrl", photoUrl);

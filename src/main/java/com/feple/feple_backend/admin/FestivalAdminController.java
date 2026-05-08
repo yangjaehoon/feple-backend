@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -9,7 +9,6 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
-import com.feple.feple_backend.file.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,15 +30,14 @@ import java.util.ArrayList;
 public class FestivalAdminController {
 
     private final FestivalService festivalService;
-    private final FileStorageService fileStorageService;
-    private final ArtistRepository artistRepository;
+    private final ArtistService artistService;
     private final ArtistFestivalService artistFestivalService;
     private final FestivalDetailAggregationService festivalDetailAggregationService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("festival", new FestivalRequestDto());
-        model.addAttribute("allArtists", artistRepository.findAll(Sort.by("name")));
+        model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
         model.addAttribute("allRegions", Region.values());
         model.addAttribute("allGenres", Genre.values());
         return "admin/festival-form";
@@ -57,7 +55,7 @@ public class FestivalAdminController {
 
         if (posterFile != null && !posterFile.isEmpty()) {
             try {
-                String posterKey = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
+                String posterKey = festivalService.uploadPosterFile(posterFile, dto.getStartDate());
                 dto.setPosterKey(posterKey);
             } catch (IllegalArgumentException e) {
                 errors.add(e.getMessage());
@@ -66,7 +64,7 @@ public class FestivalAdminController {
 
         if (!errors.isEmpty()) {
             model.addAttribute("errors", errors);
-            model.addAttribute("allArtists", artistRepository.findAll(Sort.by("name")));
+            model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
             model.addAttribute("allRegions", Region.values());
             model.addAttribute("allGenres", Genre.values());
             return "admin/festival-form";
@@ -125,7 +123,7 @@ public class FestivalAdminController {
                                  @RequestParam(value="posterFile", required=false) MultipartFile posterFile
     ) throws IOException {
         if (posterFile != null && !posterFile.isEmpty()) {
-            String newPosterKey = fileStorageService.storeFestivalPoster(posterFile, dto.getStartDate());
+            String newPosterKey = festivalService.uploadPosterFile(posterFile, dto.getStartDate());
             dto.setPosterKey(newPosterKey);
         }
         festivalService.updateFestival(id, dto);

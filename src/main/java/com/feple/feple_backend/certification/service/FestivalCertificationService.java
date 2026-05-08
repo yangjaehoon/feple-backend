@@ -111,4 +111,8 @@ public class FestivalCertificationService {
                 cert.getFestival().getId(),
                 rejectionMessage);
     }
+
+    public String buildPhotoUrl(String photoKey) {
+        return s3PresignService.presignGetUrl(photoKey);
+    }
 }

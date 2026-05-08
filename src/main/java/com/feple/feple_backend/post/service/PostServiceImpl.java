@@ -197,6 +197,21 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
+    public List<PostResponseDto> getMyPosts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, 200))
+                .stream().map(PostResponseDto::from).toList();
+    }
+
+    @Override
+    public long countMyPosts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        return postRepository.countByUser(user);
+    }
+
+    @Override
     public List<PostResponseDto> searchPosts(String keyword) {
         return postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(
                         keyword, PageRequest.of(0, 10))

@@ -2,7 +2,6 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
-import com.feple.feple_backend.file.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -19,7 +18,6 @@ import java.io.IOException;
 public class FestivalBoothAdminController {
 
     private final BoothService boothService;
-    private final FileStorageService fileStorageService;
 
     @PostMapping
     public String createBooth(@PathVariable Long festivalId,
@@ -32,8 +30,7 @@ public class FestivalBoothAdminController {
         }
         if (boothImageFile != null && !boothImageFile.isEmpty()) {
             try {
-                String key = fileStorageService.storeBoothImage(boothImageFile);
-                dto.setImageUrl(fileStorageService.buildUrl(key));
+                dto.setImageUrl(boothService.uploadBoothImage(boothImageFile));
             } catch (Exception e) {
                 ra.addFlashAttribute("errorMessage", "이미지 업로드 실패: " + e.getMessage());
                 return "redirect:/admin/festivals/" + festivalId + "#booths";

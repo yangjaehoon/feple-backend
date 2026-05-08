@@ -3,7 +3,6 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.file.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -22,7 +21,6 @@ import java.util.List;
 public class ArtistAdminController {
 
     private final ArtistService artistService;
-    private final FileStorageService fileStorageService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -42,8 +40,7 @@ public class ArtistAdminController {
             return "admin/artist-form";
         }
 
-        String imageKey = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
-        dto.setProfileImageKey(imageKey);
+        dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
 
         artistService.createArtist(dto);
         return "redirect:/admin/artists";
@@ -74,7 +71,7 @@ public class ArtistAdminController {
                               RedirectAttributes ra) throws IOException {
         try {
             String artistName = artistService.getArtistById(id).getName();
-            String imageKey = fileStorageService.storeArtistProfile(file, artistName);
+            String imageKey = artistService.uploadProfile(file, artistName);
             artistService.updateArtistPhoto(id, imageKey);
             ra.addFlashAttribute("successMessage", "사진이 업데이트되었습니다.");
         } catch (Exception e) {
@@ -96,8 +93,7 @@ public class ArtistAdminController {
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
     ) throws IOException {
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            String imageKey = fileStorageService.storeArtistProfile(profileImageFile, dto.getName());
-            dto.setProfileImageKey(imageKey);
+            dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
         }
         artistService.updateArtist(id, dto);
         return "redirect:/admin/artists";

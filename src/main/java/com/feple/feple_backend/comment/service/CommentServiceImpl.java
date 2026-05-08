@@ -2,6 +2,7 @@ package com.feple.feple_backend.comment.service;
 
 
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentLike;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
@@ -108,6 +109,23 @@ public class CommentServiceImpl implements CommentService {
                         likedCommentIds.contains(c.getId())
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MyCommentResponseDto> getMyComments(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        return commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, 200))
+                .stream().map(MyCommentResponseDto::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countMyComments(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
+        return commentRepository.countByUser(user);
     }
 
     @Override

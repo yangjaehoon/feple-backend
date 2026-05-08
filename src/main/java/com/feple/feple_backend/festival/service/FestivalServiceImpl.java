@@ -22,7 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -143,6 +145,19 @@ public class FestivalServiceImpl implements FestivalService {
         festivalRepository.deleteById(festivalId);
 
         fileStorageService.deleteFile(posterKey);
+    }
+
+    @Override
+    public String uploadPosterFile(MultipartFile file, LocalDate startDate) throws IOException {
+        return fileStorageService.storeFestivalPoster(file, startDate);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FestivalResponseDto> getLikedFestivals(Long userId) {
+        return festivalLikeRepository.findByUserId(userId).stream()
+                .map(like -> toDto(like.getFestival()))
+                .toList();
     }
 
     @Override
