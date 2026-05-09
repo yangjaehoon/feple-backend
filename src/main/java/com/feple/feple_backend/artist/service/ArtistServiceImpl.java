@@ -97,14 +97,17 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre) {
-        Stream<ArtistResponseDto> stream = (keyword != null && !keyword.isBlank())
-            ? artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream().map(this::toDto)
-            : SORT_STRATEGIES.getOrDefault(sort, ArtistRepository::findAllByOrderByWeeklyScoreDescIdAsc)
-                             .apply(artistRepository).stream().map(this::toDto);
-
-        return (genre != null)
-            ? stream.filter(a -> genre.getDisplayName().equals(a.getGenre())).toList()
-            : stream.toList();
+        Stream<ArtistResponseDto> stream;
+        if (keyword != null && !keyword.isBlank()) {
+            stream = artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream().map(this::toDto);
+        } else {
+            stream = SORT_STRATEGIES.getOrDefault(sort, ArtistRepository::findAllByOrderByWeeklyScoreDescIdAsc)
+                                     .apply(artistRepository).stream().map(this::toDto);
+        }
+        if (genre != null) {
+            return stream.filter(a -> genre.getDisplayName().equals(a.getGenre())).toList();
+        }
+        return stream.toList();
     }
 
     @Override

@@ -9,13 +9,12 @@ import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +26,13 @@ public class PostReportService implements ReportAdminService {
     private final PostAdminService postAdminService;
     private final UserRepository userRepository;
 
-    /** 신고 접수 */
     @Transactional
     public void submitReport(Long postId, Long reporterId, ReportReason reason, String detail) {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
             throw new IllegalStateException("이미 신고한 게시글입니다.");
         }
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId));
-        User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + reporterId));
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        User reporter = EntityFinder.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(PostReport.builder()
                 .post(post)
@@ -54,7 +50,6 @@ public class PostReportService implements ReportAdminService {
         return reportRepository.count();
     }
 
-    /** 관리자: 신고 목록 조회 */
     public Page<PostReport> getReportsForAdmin(int page, int size, String statusFilter) {
         PageRequest pageable = PageRequest.of(page, size);
         if ("PENDING".equals(statusFilter)) {
@@ -63,24 +58,19 @@ public class PostReportService implements ReportAdminService {
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
-    /** 관리자: 게시글 삭제 후 신고 처리 */
     @Transactional
     public void deletePostAndResolve(Long reportId) {
-        PostReport report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new NoSuchElementException("신고를 찾을 수 없습니다: " + reportId));
+        PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         postAdminService.deletePost(report.getPost().getId());
-        // 해당 게시글의 다른 신고도 모두 처리
         reportRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, Integer.MAX_VALUE))
                 .stream()
                 .filter(r -> r.getPost().getId().equals(report.getPost().getId()))
                 .forEach(r -> r.resolve(ReportStatus.POST_DELETED));
     }
 
-    /** 관리자: 신고 기각 */
     @Transactional
     public void dismissReport(Long reportId) {
-        PostReport report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new NoSuchElementException("신고를 찾을 수 없습니다: " + reportId));
+        PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         report.resolve(ReportStatus.DISMISSED);
     }
 }

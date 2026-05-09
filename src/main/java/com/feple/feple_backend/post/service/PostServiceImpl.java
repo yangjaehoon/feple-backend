@@ -73,15 +73,16 @@ public class PostServiceImpl implements PostService, PostAdminService {
         Optional<BoardType> boardType = parseBoardType(filter);
         boolean hasKeyword = keyword != null && !keyword.isBlank();
 
-        Page<Post> result = boardType.map(bt ->
-            hasKeyword
-                ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(bt, keyword, pageable)
-                : postRepository.findByBoardTypeOrderByCreatedAtDesc(bt, pageable)
-        ).orElseGet(() ->
-            hasKeyword
+        Page<Post> result;
+        if (boardType.isPresent()) {
+            result = hasKeyword
+                ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(boardType.get(), keyword, pageable)
+                : postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType.get(), pageable);
+        } else {
+            result = hasKeyword
                 ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable)
-                : postRepository.findAllByOrderByCreatedAtDesc(pageable)
-        );
+                : postRepository.findAllByOrderByCreatedAtDesc(pageable);
+        }
         return result.map(PostResponseDto::from);
     }
 

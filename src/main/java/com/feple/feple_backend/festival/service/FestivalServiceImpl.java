@@ -13,6 +13,8 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
@@ -27,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -82,7 +83,7 @@ public class FestivalServiceImpl implements FestivalService {
 
         return statuses.stream()
             .flatMap(status -> status.filter(all, today).stream())
-            .limit(200)
+            .limit(PageSize.FESTIVALS)
             .map(this::toDto)
             .toList();
     }
@@ -90,24 +91,21 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
-        Festival festival = festivalRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + id));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
         return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public FestivalResponseDto getFestival(Long id) {
-        Festival festival = festivalRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + id));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
         return toDto(festival);
     }
 
     @Override
     @Transactional
     public void updateFestival(Long id, FestivalRequestDto dto) {
-        Festival festival = festivalRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + id));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
 
         festival.setTitle(dto.getTitle());
         festival.setTitleEn(dto.getTitleEn());
@@ -129,8 +127,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional
     public void deleteFestival(Long festivalId) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다. id=" + festivalId));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();
 
         timetableRepository.deleteByFestivalId(festivalId);

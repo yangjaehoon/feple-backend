@@ -6,14 +6,13 @@ import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
 import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +34,7 @@ public class ArtistFollowService {
         }
 
         boolean followed = artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
-
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
-
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         return new FollowStatusDto(followed, artist.getFollowerCount());
     }
 
@@ -47,11 +43,8 @@ public class ArtistFollowService {
         if (userId == null) {
             throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. id=" + userId));
-
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         int followerCount = artist.getFollowerCount();
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
@@ -69,8 +62,7 @@ public class ArtistFollowService {
             throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
 
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다. id=" + artistId));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         int followerCount = artist.getFollowerCount();
         if (artistFollowRepository.findByUserIdAndArtistId(userId, artistId).isPresent()) {

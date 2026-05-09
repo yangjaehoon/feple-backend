@@ -9,13 +9,12 @@ import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +30,8 @@ public class CommentReportService implements ReportAdminService {
         if (reportRepository.existsByReporterIdAndCommentId(reporterId, commentId)) {
             throw new IllegalStateException("이미 신고한 댓글입니다.");
         }
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new NoSuchElementException("댓글을 찾을 수 없습니다: " + commentId));
-        User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + reporterId));
+        Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
+        User reporter = EntityFinder.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(CommentReport.builder()
                 .comment(comment)
@@ -60,11 +57,9 @@ public class CommentReportService implements ReportAdminService {
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
-    /** 관리자: 댓글 삭제 후 신고 처리 (FK 제약으로 댓글 먼저 모든 신고 삭제) */
     @Transactional
     public void deleteCommentAndResolve(Long reportId) {
-        CommentReport report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new NoSuchElementException("신고를 찾을 수 없습니다: " + reportId));
+        CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         Long commentId = report.getComment().getId();
         reportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
@@ -72,8 +67,7 @@ public class CommentReportService implements ReportAdminService {
 
     @Transactional
     public void dismissReport(Long reportId) {
-        CommentReport report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new NoSuchElementException("신고를 찾을 수 없습니다: " + reportId));
+        CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         report.resolve(ReportStatus.DISMISSED);
     }
 }

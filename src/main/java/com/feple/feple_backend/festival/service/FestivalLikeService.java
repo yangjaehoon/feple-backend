@@ -4,13 +4,14 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalLike;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,21 +28,17 @@ public class FestivalLikeService {
 
     @Transactional
     public boolean toggleLike(Long festivalId, Long userId) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다."));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 사용자입니다."));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        return festivalLikeRepository.findByUserIdAndFestivalId(userId, festivalId)
-                .map(like -> {
-                    festivalLikeRepository.delete(like);
-                    festivalRepository.decrementLikeCount(festivalId);
-                    return false;
-                })
-                .orElseGet(() -> {
-                    festivalLikeRepository.save(FestivalLike.of(user, festival));
-                    festivalRepository.incrementLikeCount(festivalId);
-                    return true;
-                });
+        Optional<FestivalLike> existing = festivalLikeRepository.findByUserIdAndFestivalId(userId, festivalId);
+        if (existing.isPresent()) {
+            festivalLikeRepository.delete(existing.get());
+            festivalRepository.decrementLikeCount(festivalId);
+            return false;
+        }
+        festivalLikeRepository.save(FestivalLike.of(user, festival));
+        festivalRepository.incrementLikeCount(festivalId);
+        return true;
     }
 }
