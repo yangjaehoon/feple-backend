@@ -41,8 +41,18 @@ public class ImageResizeService {
     /** 이미지를 maxPx × maxPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
     public byte[] resizeToJpeg(InputStream inputStream, int maxPx) throws IOException {
         byte[] bytes = inputStream.readAllBytes();
+        validateImageDimensions(bytes);
 
-        // 헤더만 읽어 픽셀 크기 검증 (전체 디코딩 전에 ImageBomb 차단)
+        BufferedImage src = ImageIO.read(new ByteArrayInputStream(bytes));
+        if (src == null)
+            throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+
+        int[] dims = computeTargetSize(src.getWidth(), src.getHeight(), maxPx);
+        return encodeToJpeg(src, dims[0], dims[1]);
+    }
+
+    /** 헤더만 읽어 픽셀 크기 검증 — 전체 디코딩 전에 ImageBomb 차단 */
+    private void validateImageDimensions(byte[] bytes) throws IOException {
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
             Iterator<ImageReader> it = ImageIO.getImageReaders(iis);
             if (!it.hasNext()) throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
@@ -58,19 +68,16 @@ public class ImageResizeService {
                 reader.dispose();
             }
         }
+    }
 
-        BufferedImage src = ImageIO.read(new ByteArrayInputStream(bytes));
-        if (src == null)
-            throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+    private int[] computeTargetSize(int w, int h, int maxPx) {
+        if (w <= maxPx && h <= maxPx) return new int[]{w, h};
+        double scale = Math.min((double) maxPx / w, (double) maxPx / h);
+        return new int[]{(int) (w * scale), (int) (h * scale)};
+    }
 
-        int w = src.getWidth(), h = src.getHeight();
-        if (w > maxPx || h > maxPx) {
-            double scale = Math.min((double) maxPx / w, (double) maxPx / h);
-            w = (int) (w * scale);
-            h = (int) (h * scale);
-        }
-
-        // PNG 투명 배경 → 흰색으로 합성 후 JPEG 변환
+    /** PNG 투명 배경을 흰색으로 합성한 뒤 JPEG로 인코딩 */
+    private byte[] encodeToJpeg(BufferedImage src, int w, int h) throws IOException {
         BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = out.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);

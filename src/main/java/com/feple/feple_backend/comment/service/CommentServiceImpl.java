@@ -25,11 +25,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +49,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment(dto.getContent(), post, user, dto.getParentId());
         Comment saved = commentRepository.save(comment);
 
-        Long postAuthorId = post.getUser().getId();
+        Long postAuthorId = post.getUserId();
         if (!postAuthorId.equals(userId)) {
             eventPublisher.publishEvent(
                     new CommentCreatedEvent(postAuthorId, user.getNickname(), post.getTitle(), post.getId()));
@@ -83,30 +81,22 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
-
-        Set<Long> certifiedUserIds = new HashSet<>();
-        if (post.getFestival() != null) {
-            certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(post.getFestival().getId());
-        }
-
         List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, PageSize.COMMENTS)).getContent();
         List<Long> commentIds = comments.stream().map(Comment::getId).toList();
 
-        Set<Long> likedCommentIds = (userId != null && !commentIds.isEmpty())
-                ? new HashSet<>(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(userId, commentIds))
-                : Collections.emptySet();
+        Set<Long> certifiedUserIds = getCertifiedUserIds(post);
+        Set<Long> likedCommentIds = getLikedCommentIds(userId, commentIds);
 
-        final Set<Long> finalCertifiedIds = certifiedUserIds;
         return comments.stream()
                 .map(c -> new CommentResponseDto(
                         c.getId(),
-                        c.getPost().getId(),
-                        c.getUser().getId(),
-                        c.getUser().getNickname(),
+                        c.getPostId(),
+                        c.getUserId(),
+                        c.getUserNickname(),
                         c.getContent(),
                         c.getCreatedAt(),
-                        finalCertifiedIds.contains(c.getUser().getId()),
-                        c.getUser().getRole(),
+                        certifiedUserIds.contains(c.getUserId()),
+                        c.getUserRole(),
                         c.getParentId(),
                         c.getLikeCount(),
                         likedCommentIds.contains(c.getId())
@@ -139,10 +129,20 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteOwnComment(Long commentId, Long requestUserId) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
-        PermissionValidator.checkOwner(comment.getUser().getId(), requestUserId, "댓글");
+        PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
         commentLikeRepository.deleteByCommentId(commentId);
         commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
+    }
+
+    private Set<Long> getCertifiedUserIds(Post post) {
+        if (post.getFestival() == null) return Set.of();
+        return certificationRepository.findApprovedUserIdsByFestivalId(post.getFestival().getId());
+    }
+
+    private Set<Long> getLikedCommentIds(Long userId, List<Long> commentIds) {
+        if (userId == null || commentIds.isEmpty()) return Set.of();
+        return new HashSet<>(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(userId, commentIds));
     }
 
     @Override

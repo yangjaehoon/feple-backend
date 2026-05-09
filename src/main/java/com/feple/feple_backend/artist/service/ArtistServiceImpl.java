@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ArtistServiceImpl implements ArtistService {
 
-    /** 정렬 전략 맵 — 새 정렬 옵션 추가 시 이곳에만 추가 (Strategy Pattern) */
     private static final Map<String, Function<ArtistRepository, List<Artist>>> SORT_STRATEGIES = Map.of(
         "name",          repo -> repo.findAll(Sort.by(Sort.Direction.ASC,  "name")),
         "name_desc",     repo -> repo.findAll(Sort.by(Sort.Direction.DESC, "name")),

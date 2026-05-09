@@ -2,6 +2,7 @@ package com.feple.feple_backend.comment.entity;
 
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -59,4 +60,9 @@ public class Comment {
 
     public void incrementLikeCount() { this.likeCount++; }
     public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
+
+    public Long getPostId() { return post.getId(); }
+    public Long getUserId() { return user.getId(); }
+    public String getUserNickname() { return user.getNickname(); }
+    public UserRole getUserRole() { return user.getRole(); }
 }

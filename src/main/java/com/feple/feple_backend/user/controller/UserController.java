@@ -48,8 +48,7 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateNicknameDto dto,
             @AuthenticationPrincipal Long userId) {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인 정보만 수정할 수 있습니다.");
+        requireSelf(id, userId);
         UserResponseDto updated = userService.updateNickname(id, dto.getNickname());
         return ResponseEntity.ok(updated);
     }
@@ -59,8 +58,7 @@ public class UserController {
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal Long userId) throws java.io.IOException {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인 정보만 수정할 수 있습니다.");
+        requireSelf(id, userId);
         return ResponseEntity.ok(userService.updateProfileImage(id, file));
     }
 
@@ -75,8 +73,7 @@ public class UserController {
     public ResponseEntity<List<ArtistResponseDto>> getFollowedArtists(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
+        requireSelf(id, userId);
         return ResponseEntity.ok(myPageService.getFollowedArtists(id));
     }
 
@@ -84,8 +81,7 @@ public class UserController {
     public ResponseEntity<List<FestivalResponseDto>> getLikedFestivals(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
+        requireSelf(id, userId);
         return ResponseEntity.ok(myPageService.getLikedFestivals(id));
     }
 
@@ -93,8 +89,7 @@ public class UserController {
     public ResponseEntity<UserStatsDto> getUserStats(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
+        requireSelf(id, userId);
         return ResponseEntity.ok(myPageService.getUserStats(id));
     }
 
@@ -102,8 +97,7 @@ public class UserController {
     public ResponseEntity<List<PostResponseDto>> getMyPosts(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
+        requireSelf(id, userId);
         return ResponseEntity.ok(myPageService.getMyPosts(id));
     }
 
@@ -111,21 +105,23 @@ public class UserController {
     public ResponseEntity<List<MyCommentResponseDto>> getMyComments(
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인의 정보만 조회할 수 있습니다.");
+        requireSelf(id, userId);
         return ResponseEntity.ok(myPageService.getMyComments(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        if (!id.equals(userId))
-            throw new AccessDeniedException("본인 계정만 삭제할 수 있습니다.");
+        requireSelf(id, userId);
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
-    /** FCM 디바이스 토큰 등록 */
+    private void requireSelf(Long pathId, Long authenticatedId) {
+        if (!pathId.equals(authenticatedId))
+            throw new AccessDeniedException("본인만 접근할 수 있습니다.");
+    }
+
     @PostMapping("/device-token")
     public ResponseEntity<Void> registerDeviceToken(
             @RequestBody Map<String, String> body,

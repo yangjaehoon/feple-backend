@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminStatsServiceImpl implements AdminStatsService {
+
+    private static final int STATS_DAYS = 7;
+    private static final DateTimeFormatter STAT_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d");
 
     private final UserRepository userRepository;
     private final PostRepository postRepository;
@@ -45,12 +49,12 @@ public class AdminStatsServiceImpl implements AdminStatsService {
     @Override
     public List<DailyStatDto> getDailyStats() {
         List<DailyStatDto> stats = new ArrayList<>();
-        for (int i = 6; i >= 0; i--) {
+        for (int i = STATS_DAYS - 1; i >= 0; i--) {
             LocalDate date = LocalDate.now().minusDays(i);
             LocalDateTime start = date.atStartOfDay();
             LocalDateTime end = date.plusDays(1).atStartOfDay();
             stats.add(new DailyStatDto(
-                date.getMonthValue() + "/" + date.getDayOfMonth(),
+                date.format(STAT_DATE_FORMAT),
                 userRepository.countByCreatedAtBetween(start, end),
                 postRepository.countByCreatedAtBetween(start, end),
                 commentRepository.countByCreatedAtBetween(start, end),

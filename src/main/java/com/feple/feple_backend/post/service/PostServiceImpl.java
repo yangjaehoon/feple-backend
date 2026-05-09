@@ -39,11 +39,13 @@ public class PostServiceImpl implements PostService, PostAdminService {
     private final FestivalRepository festivalRepository;
     private final FestivalCertificationRepository certificationRepository;
 
+    private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
+
     @Override
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.save(buildPost(dto, user, dto.getBoardType(), null, null)).getId();
+        return postRepository.save(buildPost(dto, user, new PostContext(dto.getBoardType(), null, null))).getId();
     }
 
     @Override
@@ -54,8 +56,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
 
     @Override
     public List<PostResponseDto> getHotPosts() {
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        return postRepository.findHotPosts(oneWeekAgo, PageRequest.of(0, PageSize.HOT_POSTS)).stream()
+        return postRepository.findHotPosts(oneWeekAgo(), PageRequest.of(0, PageSize.HOT_POSTS)).stream()
                 .map(PostResponseDto::from)
                 .toList();
     }
@@ -98,7 +99,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
 
     @Override
     public List<PostResponseDto> getAdminHotPosts(int limit) {
-        return postRepository.findHotPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, limit))
+        return postRepository.findHotPosts(oneWeekAgo(), PageRequest.of(0, limit))
                 .stream().map(PostResponseDto::from).toList();
     }
 
@@ -139,7 +140,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.save(buildPost(dto, user, null, artist, null)).getId();
+        return postRepository.save(buildPost(dto, user, new PostContext(null, artist, null))).getId();
     }
 
     @Override
@@ -156,34 +157,27 @@ public class PostServiceImpl implements PostService, PostAdminService {
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.save(buildPost(dto, user, null, null, festival)).getId();
+        return postRepository.save(buildPost(dto, user, new PostContext(null, null, festival))).getId();
     }
 
     @Override
     @Transactional
     public void deletePostsByUser(User user) {
         List<Post> posts = postRepository.findByUser(user);
-        posts.forEach(post -> postLikeRepository.deleteByPostId(post.getId()));
+        deletePostLikesAndPosts(posts);
         postLikeRepository.deleteByUser(user);
-        postRepository.deleteAll(posts);
     }
 
     @Override
     @Transactional
     public void deletePostsByArtist(Artist artist) {
-        List<Post> posts = postRepository.findByArtist(artist);
-        posts.forEach(post -> postLikeRepository.deleteByPostId(post.getId()));
-        postRepository.deleteAll(posts);
+        deletePostLikesAndPosts(postRepository.findByArtist(artist));
     }
 
     @Override
     @Transactional
     public void deletePostsByFestival(Festival festival) {
-        List<Post> posts = postRepository.findByFestival(festival);
-        for (Post post : posts) {
-            postLikeRepository.deleteByPostId(post.getId());
-        }
-        postRepository.deleteAll(posts);
+        deletePostLikesAndPosts(postRepository.findByFestival(festival));
     }
 
     @Override
@@ -217,17 +211,26 @@ public class PostServiceImpl implements PostService, PostAdminService {
         };
     }
 
-    private Post buildPost(PostRequestDto dto, User user, BoardType boardType, Artist artist, Festival festival) {
+    private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
         return Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .boardType(boardType)
+                .boardType(ctx.boardType())
                 .likeCount(0)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .user(user)
-                .artist(artist)
-                .festival(festival)
+                .artist(ctx.artist())
+                .festival(ctx.festival())
                 .build();
+    }
+
+    private void deletePostLikesAndPosts(List<Post> posts) {
+        posts.forEach(post -> postLikeRepository.deleteByPostId(post.getId()));
+        postRepository.deleteAll(posts);
+    }
+
+    private LocalDateTime oneWeekAgo() {
+        return LocalDateTime.now().minusWeeks(1);
     }
 }
