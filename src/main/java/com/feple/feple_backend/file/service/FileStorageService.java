@@ -36,60 +36,47 @@ public class FileStorageService {
 
     public String storeFestivalPoster(MultipartFile file, LocalDate festivalStartDate) throws IOException {
         imageResizeService.validateFile(file);
-
         String yearMonth = festivalStartDate == null ? ""
                 : festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
         String folder = yearMonth.isEmpty() ? S3Keys.POSTERS : S3Keys.POSTERS + "/" + yearMonth;
-
-        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), FESTIVAL_POSTER_MAX_PX);
-        String key = folder + "/" + UUID.randomUUID() + ".jpg";
-
-        try (InputStream is = new ByteArrayInputStream(resized)) {
-            s3Template.upload(bucket, key, is);
-            return key;
-        }
+        return uploadResizedJpeg(file, folder + "/" + UUID.randomUUID() + ".jpg", FESTIVAL_POSTER_MAX_PX);
     }
 
     public String storeUserProfile(MultipartFile file, String nickname) throws IOException {
         imageResizeService.validateFile(file);
-
-        String safeName = (nickname == null || nickname.isBlank())
-                ? "unknown"
-                : nickname.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
-
-        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), ARTIST_PROFILE_MAX_PX);
-        String key = S3Keys.USER_PROFILES + "/" + safeName + "/" + UUID.randomUUID() + ".jpg";
-
-        try (InputStream is = new ByteArrayInputStream(resized)) {
-            s3Template.upload(bucket, key, is);
-            return key;
-        }
+        String safeName = toSafeName(nickname);
+        return uploadResizedJpeg(file,
+                S3Keys.USER_PROFILES + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
+                ARTIST_PROFILE_MAX_PX);
     }
 
     public String storeArtistProfile(MultipartFile file, String artistName) throws IOException {
         imageResizeService.validateFile(file);
+        String safeName = toSafeName(artistName);
+        return uploadResizedJpeg(file,
+                S3Keys.ARTISTS + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
+                ARTIST_PROFILE_MAX_PX);
+    }
 
-        String safeName = (artistName == null || artistName.isBlank())
-                ? "unknown"
-                : artistName.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
+    public String storeBoothImage(MultipartFile file) throws IOException {
+        imageResizeService.validateFile(file);
+        return uploadResizedJpeg(file,
+                S3Keys.BOOTHS + "/" + UUID.randomUUID() + ".jpg",
+                BOOTH_IMAGE_MAX_PX);
+    }
 
-        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), ARTIST_PROFILE_MAX_PX);
-        String key = S3Keys.ARTISTS + "/" + safeName + "/" + UUID.randomUUID() + ".jpg";
-
+    private String uploadResizedJpeg(MultipartFile file, String key, int maxPx) throws IOException {
+        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), maxPx);
         try (InputStream is = new ByteArrayInputStream(resized)) {
             s3Template.upload(bucket, key, is);
             return key;
         }
     }
 
-    public String storeBoothImage(MultipartFile file) throws IOException {
-        imageResizeService.validateFile(file);
-        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), BOOTH_IMAGE_MAX_PX);
-        String key = S3Keys.BOOTHS + "/" + UUID.randomUUID() + ".jpg";
-        try (InputStream is = new ByteArrayInputStream(resized)) {
-            s3Template.upload(bucket, key, is);
-            return key;
-        }
+    private static String toSafeName(String name) {
+        return (name == null || name.isBlank())
+                ? "unknown"
+                : name.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
     }
 
     /** S3 오브젝트 삭제 (회원 탈퇴 시 프로필 이미지 정리용) */
