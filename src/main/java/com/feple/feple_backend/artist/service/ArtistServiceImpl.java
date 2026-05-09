@@ -8,6 +8,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -78,7 +79,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAllArtists() {
-        return artistRepository.findAll(PageRequest.of(0, 200,
+        return artistRepository.findAll(PageRequest.of(0, PageSize.MY_ACTIVITIES,
                         Sort.by(Sort.Direction.DESC, "weeklyScore").and(Sort.by(Sort.Direction.ASC, "id"))))
                 .stream()
                 .map(this::toDto)

@@ -6,6 +6,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PermissionValidator;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -54,14 +55,14 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     public List<PostResponseDto> getHotPosts() {
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        return postRepository.findHotPosts(oneWeekAgo, PageRequest.of(0, 4)).stream()
+        return postRepository.findHotPosts(oneWeekAgo, PageRequest.of(0, PageSize.HOT_POSTS)).stream()
                 .map(PostResponseDto::from)
                 .toList();
     }
 
     @Override
     public List<PostResponseDto> getPostsByBoardType(BoardType boardType) {
-        return postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, PageRequest.of(0, 100))
+        return postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, PageRequest.of(0, PageSize.POSTS))
                 .map(PostResponseDto::from)
                 .toList();
     }
@@ -127,7 +128,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     public List<PostResponseDto> getPostsByArtistId(Long artistId) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        return postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(0, 100))
+        return postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(0, PageSize.POSTS))
                 .map(PostResponseDto::from)
                 .toList();
     }
@@ -144,7 +145,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     public List<PostResponseDto> getPostsByFestivalId(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
-        return postRepository.findByFestivalOrderByCreatedAtDesc(festival, PageRequest.of(0, 100))
+        return postRepository.findByFestivalOrderByCreatedAtDesc(festival, PageRequest.of(0, PageSize.POSTS))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUser().getId())))
                 .toList();
     }
@@ -187,7 +188,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     public List<PostResponseDto> getMyPosts(Long userId) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, 200))
+        return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream().map(PostResponseDto::from).toList();
     }
 
@@ -200,7 +201,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     public List<PostResponseDto> searchPosts(String keyword) {
         return postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(
-                        keyword, PageRequest.of(0, 10))
+                        keyword, PageRequest.of(0, PageSize.SEARCH))
                 .stream()
                 .map(PostResponseDto::from)
                 .toList();

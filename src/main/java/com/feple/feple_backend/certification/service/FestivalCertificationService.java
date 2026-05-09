@@ -1,8 +1,10 @@
 package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.artist.service.S3PresignService;
-import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
+import com.feple.feple_backend.file.S3Keys;
+import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -34,15 +35,13 @@ public class FestivalCertificationService {
 
     @Transactional
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
-        String prefix = "certifications/" + userId + "/";
+        String prefix = S3Keys.certificationPrefix(userId);
         if (photoKey == null || !photoKey.startsWith(prefix)) {
             throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .ifPresent(existing -> {
@@ -87,8 +86,7 @@ public class FestivalCertificationService {
 
     @Transactional(readOnly = true)
     public FestivalCertification getById(Long id) {
-        return certificationRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("인증 신청을 찾을 수 없습니다."));
+        return EntityFinder.getOrThrow(certificationRepository::findById, id, "인증 신청");
     }
 
     @Transactional
@@ -119,7 +117,7 @@ public class FestivalCertificationService {
     }
 
     public PresignResult generateUploadUrl(Long userId, String extension, String contentType) {
-        String objectKey = "certifications/" + userId + "/" + UUID.randomUUID() + "." + extension;
+        String objectKey = S3Keys.certificationPrefix(userId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);
     }
 }

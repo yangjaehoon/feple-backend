@@ -34,8 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (auth != null && auth.startsWith("Bearer ")) {
-            String token = auth.substring(7);
+        if (auth != null && auth.startsWith(JwtConstants.BEARER_PREFIX)) {
+            String token = auth.substring(JwtConstants.BEARER_LENGTH);
             try {
                 Long userId = jwtProvider.parseUserId(token);
 

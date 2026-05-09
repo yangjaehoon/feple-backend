@@ -8,8 +8,10 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRep
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.S3Keys;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class ArtistGalleryPhotoService {
     private final UserRepository userRepository;
 
     public PresignResult generateUploadUrl(Long artistId, String extension, String contentType) {
-        String objectKey = "artist-photos/" + artistId + "/" + UUID.randomUUID() + "." + extension;
+        String objectKey = S3Keys.artistPhotoPrefix(artistId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);
     }
 
@@ -45,15 +46,13 @@ public class ArtistGalleryPhotoService {
             String description,
             Long userId) {
 
-        String prefix = "artist-photos/" + artistId + "/";
+        String prefix = S3Keys.artistPhotoPrefix(artistId);
         if (objectKey == null || !objectKey.startsWith(prefix)) {
             throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
         }
 
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다: " + artistId));
-        User uploader = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId));
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        User uploader = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         ArtistGalleryPhoto saved = artistGalleryPhotoRepository.save(
                 new ArtistGalleryPhoto(artist, uploader, objectKey, contentType, title, description));
@@ -92,8 +91,7 @@ public class ArtistGalleryPhotoService {
 
     @Transactional
     public void delete(Long photoId, Long userId) {
-        ArtistGalleryPhoto photo = artistGalleryPhotoRepository.findById(photoId)
-                .orElseThrow(() -> new NoSuchElementException("사진을 찾을 수 없습니다."));
+        ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         if (!photo.getUploader().getId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
         }
@@ -104,8 +102,7 @@ public class ArtistGalleryPhotoService {
 
     @Transactional
     public ArtistGalleryPhotoResponseDto update(Long photoId, Long userId, String title, String description) {
-        ArtistGalleryPhoto photo = artistGalleryPhotoRepository.findById(photoId)
-                .orElseThrow(() -> new NoSuchElementException("사진을 찾을 수 없습니다."));
+        ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         if (!photo.getUploader().getId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 수정할 수 있습니다.");
         }
@@ -118,11 +115,9 @@ public class ArtistGalleryPhotoService {
 
     @Transactional
     public boolean toggleLike(Long photoId, Long userId) {
-        ArtistGalleryPhoto photo = artistGalleryPhotoRepository.findById(photoId)
-                .orElseThrow(() -> new NoSuchElementException("사진을 찾을 수 없습니다."));
+        ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         if (artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, userId)) {
             // 취소

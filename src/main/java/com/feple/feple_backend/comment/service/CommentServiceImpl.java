@@ -13,6 +13,7 @@ import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PermissionValidator;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -89,7 +90,7 @@ public class CommentServiceImpl implements CommentService {
             certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(post.getFestival().getId());
         }
 
-        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, 500)).getContent();
+        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, PageSize.COMMENTS)).getContent();
         List<Long> commentIds = comments.stream().map(Comment::getId).toList();
 
         Set<Long> likedCommentIds = (userId != null && !commentIds.isEmpty())
@@ -118,7 +119,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public List<MyCommentResponseDto> getMyComments(Long userId) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, 200))
+        return commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream().map(MyCommentResponseDto::from).toList();
     }
 

@@ -4,6 +4,7 @@ import com.feple.feple_backend.auth.dto.AuthResponseDto;
 import com.feple.feple_backend.auth.dto.FirebaseLoginRequest;
 import com.feple.feple_backend.auth.dto.LocalLoginRequest;
 import com.feple.feple_backend.auth.dto.RefreshRequest;
+import com.feple.feple_backend.auth.jwt.JwtConstants;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
 import com.feple.feple_backend.auth.service.LocalAuthService;
@@ -41,8 +42,8 @@ public class AuthController {
             HttpServletRequest httpRequest
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
-        String kakaoAccessToken = authorization.startsWith("Bearer ")
-                ? authorization.substring(7)
+        String kakaoAccessToken = authorization.startsWith(JwtConstants.BEARER_PREFIX)
+                ? authorization.substring(JwtConstants.BEARER_LENGTH)
                 : authorization;
         return kakaoAuthService.authenticate(kakaoAccessToken)
                 .map(user -> ResponseEntity.ok(issueTokens(user)));

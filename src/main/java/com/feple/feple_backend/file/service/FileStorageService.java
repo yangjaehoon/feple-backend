@@ -1,7 +1,7 @@
 package com.feple.feple_backend.file.service;
 
+import com.feple.feple_backend.file.S3Keys;
 import io.awspring.cloud.s3.S3Template;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,6 +20,7 @@ public class FileStorageService {
 
     private static final int ARTIST_PROFILE_MAX_PX = 400;
     private static final int FESTIVAL_POSTER_MAX_PX = 720;
+    private static final int BOOTH_IMAGE_MAX_PX = 300;
 
     private final S3Template s3Template;
     private final ImageResizeService imageResizeService;
@@ -38,7 +39,7 @@ public class FileStorageService {
 
         String yearMonth = festivalStartDate == null ? ""
                 : festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        String folder = yearMonth.isEmpty() ? "posters" : "posters/" + yearMonth;
+        String folder = yearMonth.isEmpty() ? S3Keys.POSTERS : S3Keys.POSTERS + "/" + yearMonth;
 
         byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), FESTIVAL_POSTER_MAX_PX);
         String key = folder + "/" + UUID.randomUUID() + ".jpg";
@@ -57,7 +58,7 @@ public class FileStorageService {
                 : nickname.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
 
         byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), ARTIST_PROFILE_MAX_PX);
-        String key = "user-profiles/" + safeName + "/" + UUID.randomUUID() + ".jpg";
+        String key = S3Keys.USER_PROFILES + "/" + safeName + "/" + UUID.randomUUID() + ".jpg";
 
         try (InputStream is = new ByteArrayInputStream(resized)) {
             s3Template.upload(bucket, key, is);
@@ -73,7 +74,7 @@ public class FileStorageService {
                 : artistName.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
 
         byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), ARTIST_PROFILE_MAX_PX);
-        String key = "artists/" + safeName + "/" + UUID.randomUUID() + ".jpg";
+        String key = S3Keys.ARTISTS + "/" + safeName + "/" + UUID.randomUUID() + ".jpg";
 
         try (InputStream is = new ByteArrayInputStream(resized)) {
             s3Template.upload(bucket, key, is);
@@ -83,8 +84,8 @@ public class FileStorageService {
 
     public String storeBoothImage(MultipartFile file) throws IOException {
         imageResizeService.validateFile(file);
-        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), 300);
-        String key = "booths/" + UUID.randomUUID() + ".jpg";
+        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), BOOTH_IMAGE_MAX_PX);
+        String key = S3Keys.BOOTHS + "/" + UUID.randomUUID() + ".jpg";
         try (InputStream is = new ByteArrayInputStream(resized)) {
             s3Template.upload(bucket, key, is);
             return key;
