@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.photo.entity.ArtistPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -23,7 +24,7 @@ public class ArtistPhotoReportService {
     @Transactional
     public void submitReport(Long photoId, Long reporterId, ReportReason reason, String detail) {
         if (reportRepository.existsByReporterIdAndPhotoId(reporterId, photoId)) {
-            throw new IllegalStateException("이미 신고한 사진입니다.");
+            throw new ConflictException("이미 신고한 사진입니다.");
         }
         ArtistGalleryPhoto photo = EntityFinder.getOrThrow(photoRepository::findById, photoId, "사진");
         User reporter = EntityFinder.getOrThrow(userRepository::findById, reporterId, "사용자");

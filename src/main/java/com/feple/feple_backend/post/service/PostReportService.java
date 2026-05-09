@@ -10,6 +10,7 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +30,7 @@ public class PostReportService implements ReportAdminService {
     @Transactional
     public void submitReport(Long postId, Long reporterId, ReportReason reason, String detail) {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
-            throw new IllegalStateException("이미 신고한 게시글입니다.");
+            throw new ConflictException("이미 신고한 게시글입니다.");
         }
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         User reporter = EntityFinder.getOrThrow(userRepository::findById, reporterId, "사용자");

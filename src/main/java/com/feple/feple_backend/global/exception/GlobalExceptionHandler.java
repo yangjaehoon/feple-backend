@@ -67,9 +67,9 @@ public class GlobalExceptionHandler {
         return errorBody(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
     }
 
-    // 중복 리소스
-    @ExceptionHandler(DuplicateArtistFestivalException.class)
-    public ResponseEntity<Map<String, Object>> handleDuplicate(DuplicateArtistFestivalException ex) {
+    // 중복/충돌 리소스
+    @ExceptionHandler({ConflictException.class, DuplicateArtistFestivalException.class})
+    public ResponseEntity<Map<String, Object>> handleConflict(RuntimeException ex) {
         return errorBody(HttpStatus.CONFLICT, ex.getMessage());
     }
 
