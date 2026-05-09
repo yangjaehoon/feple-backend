@@ -33,6 +33,9 @@ jobs:
           mkdir -p src/main/resources
           printf '%s' "$APPLICATION_LOCAL_YAML" > src/main/resources/application-local.yaml
 
+      - name: Test with Gradle
+        run: ./gradlew test
+
       - name: Build with Gradle
         run: ./gradlew bootJar -x test
 
