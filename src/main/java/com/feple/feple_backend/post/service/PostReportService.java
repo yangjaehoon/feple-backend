@@ -61,10 +61,11 @@ public class PostReportService implements ReportAdminService {
     @Transactional
     public void deletePostAndResolve(Long reportId) {
         PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
-        postAdminService.deletePost(report.getPost().getId());
+        Long postId = report.getPostId();
+        postAdminService.deletePost(postId);
         reportRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, Integer.MAX_VALUE))
                 .stream()
-                .filter(r -> r.getPost().getId().equals(report.getPost().getId()))
+                .filter(r -> r.getPostId().equals(postId))
                 .forEach(r -> r.resolve(ReportStatus.POST_DELETED));
     }
 

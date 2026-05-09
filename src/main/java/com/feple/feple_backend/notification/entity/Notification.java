@@ -76,6 +76,8 @@ public class Notification {
         return n;
     }
 
+    public Long getUserId() { return user.getId(); }
+
     public void markRead() {
         this.isRead = true;
     }

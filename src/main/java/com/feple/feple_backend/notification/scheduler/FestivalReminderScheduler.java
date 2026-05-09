@@ -47,7 +47,7 @@ public class FestivalReminderScheduler {
             List<Long> artistIds = artistFestivalRepository
                     .findByFestivalIdOrderByLineupOrderAsc(festival.getId())
                     .stream()
-                    .map(af -> af.getArtist().getId())
+                    .map(ArtistFestival::getArtistId)
                     .toList();
 
             if (artistIds.isEmpty()) continue;
@@ -57,7 +57,7 @@ public class FestivalReminderScheduler {
                     .flatMap(artistId ->
                             artistFollowRepository.findByArtistId(artistId)
                                     .stream()
-                                    .map(follow -> follow.getUser().getId()))
+                                    .map(ArtistFollow::getUserId))
                     .distinct()
                     .collect(Collectors.toList());
 

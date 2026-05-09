@@ -50,6 +50,8 @@ public class PostReport {
         this.createdAt = LocalDateTime.now();
     }
 
+    public Long getPostId() { return post.getId(); }
+
     public void resolve(ReportStatus newStatus) {
         this.status = newStatus;
     }

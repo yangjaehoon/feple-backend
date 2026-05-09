@@ -52,7 +52,7 @@ public class NotificationService {
         String title = NotificationMessages.newFestivalTitle(artistName);
         String body = NotificationMessages.newFestivalBody(festivalTitle);
 
-        List<Long> userIds = follows.stream().map(f -> f.getUser().getId()).toList();
+        List<Long> userIds = follows.stream().map(ArtistFollow::getUserId).toList();
         List<User> users = userRepository.findAllById(userIds);
 
         saveAndPush(users, NotificationType.NEW_FESTIVAL, title, body, festival, String.valueOf(festivalId));

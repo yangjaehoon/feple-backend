@@ -46,14 +46,12 @@ public class ArtistFollowService {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
-        int followerCount = artist.getFollowerCount();
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
-            artistRepository.incrementFollowerCount(artistId);
-            followerCount++;
+            artist.incrementFollowerCount();
         }
 
-        return new FollowResponseDto(true, followerCount);
+        return new FollowResponseDto(true, artist.getFollowerCount());
     }
 
     @Transactional
@@ -64,13 +62,11 @@ public class ArtistFollowService {
 
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
-        int followerCount = artist.getFollowerCount();
         if (artistFollowRepository.findByUserIdAndArtistId(userId, artistId).isPresent()) {
             artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
-            artistRepository.decrementFollowerCount(artistId);
-            followerCount--;
+            artist.decrementFollowerCount();
         }
 
-        return new FollowResponseDto(false, Math.max(followerCount, 0));
+        return new FollowResponseDto(false, artist.getFollowerCount());
     }
 }

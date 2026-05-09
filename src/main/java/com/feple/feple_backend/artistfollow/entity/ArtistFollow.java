@@ -41,6 +41,9 @@ public class ArtistFollow {
     private Artist artist;
 
 
+    public Long getUserId() { return user.getId(); }
+    public Long getArtistId() { return artist.getId(); }
+
     public static ArtistFollow of(User user, Artist artist) {
         ArtistFollow af = new ArtistFollow();
         af.user = user;

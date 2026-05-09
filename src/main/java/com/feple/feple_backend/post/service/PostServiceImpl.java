@@ -106,7 +106,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Transactional
     public void deleteOwnPost(Long postId, Long requestUserId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
-        PermissionValidator.checkOwner(post.getUser().getId(), requestUserId, "게시글");
+        PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
         postLikeRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
@@ -147,7 +147,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
         return postRepository.findByFestivalOrderByCreatedAtDesc(festival, PageRequest.of(0, PageSize.POSTS))
-                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUser().getId())))
+                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();
     }
 

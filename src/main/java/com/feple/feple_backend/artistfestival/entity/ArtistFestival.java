@@ -41,6 +41,9 @@ public class ArtistFestival {
         this.stageName = stageName;
     }
 
+    public Long getArtistId() { return artist.getId(); }
+    public Long getFestivalId() { return festival.getId(); }
+
     public void updateLineup(Integer lineupOrder, String stageName) {
         this.lineupOrder = lineupOrder;
         this.stageName = stageName;

@@ -101,6 +101,10 @@ public class Post {
         return "게시판";
     }
 
+    public Long getUserId() {
+        return user.getId();
+    }
+
     public Long getArtistId() {
         return artist != null ? artist.getId() : null;
     }
