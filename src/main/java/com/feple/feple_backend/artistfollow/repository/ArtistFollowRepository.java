@@ -2,6 +2,7 @@ package com.feple.feple_backend.artistfollow.repository;
 
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -10,13 +11,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long> {
-    boolean existsByUserIdAndArtistId(Long userId, Long artistId);
 
-    Optional<ArtistFollow> findByUserIdAndArtistId(Long userId, Long artistId);
+    @Query("SELECT CASE WHEN COUNT(af) > 0 THEN TRUE ELSE FALSE END FROM ArtistFollow af WHERE af.user.id = :userId AND af.artist.id = :artistId")
+    boolean existsByUserIdAndArtistId(@Param("userId") Long userId, @Param("artistId") Long artistId);
 
-    void deleteByUserIdAndArtistId(Long userId, Long artistId);
+    @Query("SELECT af FROM ArtistFollow af WHERE af.user.id = :userId AND af.artist.id = :artistId")
+    Optional<ArtistFollow> findByUserIdAndArtistId(@Param("userId") Long userId, @Param("artistId") Long artistId);
 
-    long countByArtistId(Long artistId);
+    @Modifying
+    @Query("DELETE FROM ArtistFollow af WHERE af.user.id = :userId AND af.artist.id = :artistId")
+    void deleteByUserIdAndArtistId(@Param("userId") Long userId, @Param("artistId") Long artistId);
+
+    @Query("SELECT COUNT(af) FROM ArtistFollow af WHERE af.artist.id = :artistId")
+    long countByArtistId(@Param("artistId") Long artistId);
 
     // artist JOIN FETCH — getFollowedArtists()에서 follow.getArtist() 접근 시 N+1 방지
     @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.artist WHERE af.user.id = :userId")
@@ -26,7 +33,8 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
     @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.user WHERE af.artist.id = :artistId")
     List<ArtistFollow> findByArtistId(@Param("artistId") Long artistId);
 
-    long countByArtistIdAndCreatedAtAfter(Long artistId, LocalDateTime since);
+    @Query("SELECT COUNT(af) FROM ArtistFollow af WHERE af.artist.id = :artistId AND af.createdAt > :since")
+    long countByArtistIdAndCreatedAtAfter(@Param("artistId") Long artistId, @Param("since") LocalDateTime since);
 
     /** 벌크 랭킹용: [artistId, followCount] */
     @Query("SELECT af.artist.id, COUNT(af) FROM ArtistFollow af " +

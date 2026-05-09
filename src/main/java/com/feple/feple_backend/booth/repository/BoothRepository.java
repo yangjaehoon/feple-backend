@@ -9,7 +9,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface BoothRepository extends JpaRepository<Booth, Long> {
-    List<Booth> findByFestivalId(Long festivalId);
+    @Query("SELECT b FROM Booth b WHERE b.festival.id = :festivalId")
+    List<Booth> findByFestivalId(@Param("festivalId") Long festivalId);
 
     @Modifying
     @Query("DELETE FROM Booth b WHERE b.festival.id = :festivalId")

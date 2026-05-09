@@ -13,8 +13,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    List<Comment> findByPostIdOrderByCreatedAtAsc(Long postId);
-    Page<Comment> findByPostIdOrderByCreatedAtAsc(Long postId, Pageable pageable);
+
+    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt ASC")
+    List<Comment> findByPostIdOrderByCreatedAtAsc(@Param("postId") Long postId);
+
+    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt ASC")
+    Page<Comment> findByPostIdOrderByCreatedAtAsc(@Param("postId") Long postId, Pageable pageable);
 
     // post/artist/festival/user JOIN FETCH — MyCommentResponseDto::from에서 N+1 방지
     @Query("SELECT c FROM Comment c " +

@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,10 +30,11 @@ import static org.mockito.Mockito.verify;
 class ArtistServiceTest {
 
     @Mock ArtistRepository artistRepository;
+    @Mock ArtistFollowRepository artistFollowRepository;
     @Mock FileStorageService fileStorageService;
     @Mock ArtistCascadeDeleteService cascadeDeleteService;
 
-    @InjectMocks ArtistService artistService;
+    @InjectMocks ArtistServiceImpl artistService;
 
     // ── createArtist ──────────────────────────────────────────────
 

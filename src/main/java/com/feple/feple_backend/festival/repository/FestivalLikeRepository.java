@@ -10,8 +10,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long> {
-    Optional<FestivalLike> findByUserIdAndFestivalId(Long userId, Long festivalId);
-    boolean existsByUserIdAndFestivalId(Long userId, Long festivalId);
+
+    @Query("SELECT fl FROM FestivalLike fl WHERE fl.user.id = :userId AND fl.festival.id = :festivalId")
+    Optional<FestivalLike> findByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
+
+    @Query("SELECT CASE WHEN COUNT(fl) > 0 THEN TRUE ELSE FALSE END FROM FestivalLike fl WHERE fl.user.id = :userId AND fl.festival.id = :festivalId")
+    boolean existsByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
 
     // festival JOIN FETCH — getLikedFestivals()에서 like.getFestival() 접근 시 N+1 방지
     @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
