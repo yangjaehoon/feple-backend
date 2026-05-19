@@ -113,7 +113,6 @@ public class YoutubeSearchService {
                 .queryParam("part", "snippet")
                 .queryParam("q", query)
                 .queryParam("type", "video")
-                .queryParam("videoCategoryId", "10")
                 .queryParam("maxResults", "25")
                 .queryParam("key", apiKey)
                 .toUriString();
@@ -128,10 +127,12 @@ public class YoutubeSearchService {
                 .map(this::toDto)
                 .toList();
 
-        // channelTitle에 아티스트명이 포함된 영상 우선 — 플레이리스트/컴필레이션 제거 목적
+        // channelTitle 또는 영상 title에 아티스트명이 포함된 경우 우선 반환
+        // (유통사 채널 업로드 시 channelTitle≠아티스트명이므로 title도 함께 확인)
         String lowerArtist = artistName.toLowerCase();
         List<YoutubeVideoDto> byArtist = all.stream()
-                .filter(v -> v.getChannelTitle().toLowerCase().contains(lowerArtist))
+                .filter(v -> v.getChannelTitle().toLowerCase().contains(lowerArtist)
+                        || v.getTitle().toLowerCase().contains(lowerArtist))
                 .toList();
 
         log.info("[YT] Keyword '{}': total={}, byArtist={}", query, all.size(), byArtist.size());
