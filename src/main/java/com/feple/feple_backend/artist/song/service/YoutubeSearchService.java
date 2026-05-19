@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.song.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class YoutubeSearchService {
 
@@ -27,19 +29,24 @@ public class YoutubeSearchService {
      * @param query      곡명 — Topic 채널 결과 필터링 or 키워드 검색에 사용
      */
     public List<YoutubeVideoDto> search(String artistName, String query) {
-        if (apiKey == null || apiKey.isBlank()) return Collections.emptyList();
+        log.info("[YT] search called — artistName='{}', query='{}'", artistName, query);
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("[YT] API key is blank — returning empty");
+            return Collections.emptyList();
+        }
 
         // 1) 아티스트명으로 YouTube Music Topic 채널 탐색
         String topicChannelId = findTopicChannelId(artistName);
         if (topicChannelId != null) {
+            log.info("[YT] Topic channel found: {}", topicChannelId);
             List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
-            // 곡명 입력이 있으면 채널 결과 내에서 필터링
+            log.info("[YT] Channel videos count: {}", channelVideos.size());
             if (query != null && !query.isBlank()) {
                 String lower = query.toLowerCase();
                 List<YoutubeVideoDto> filtered = channelVideos.stream()
                         .filter(v -> v.getTitle().toLowerCase().contains(lower))
                         .toList();
-                // 필터 결과가 없으면 필터 없이 전체 반환 (오타 등 대비)
+                log.info("[YT] Filtered by '{}': {} results", lower, filtered.size());
                 return filtered.isEmpty() ? channelVideos : filtered;
             }
             return channelVideos;
@@ -47,6 +54,7 @@ public class YoutubeSearchService {
 
         // 2) Topic 채널 없음 → "아티스트명 + 곡명" 키워드 검색
         String fullQuery = (artistName + " " + (query != null ? query : "")).trim();
+        log.info("[YT] No Topic channel — keyword fallback: '{}'", fullQuery);
         return searchByKeyword(fullQuery);
     }
 
@@ -63,6 +71,11 @@ public class YoutubeSearchService {
                 .body(YoutubeSearchResponse.class);
 
         if (response == null || response.items() == null) return null;
+
+        response.items().forEach(item ->
+                log.info("[YT] channel candidate: id={}, title='{}'",
+                        item.id() != null ? item.id().channelId() : "null",
+                        item.snippet() != null ? item.snippet().channelTitle() : "null"));
 
         return response.items().stream()
                 .filter(item -> item.id() != null && item.id().channelId() != null)
