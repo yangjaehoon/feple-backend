@@ -48,8 +48,8 @@
                             <td style="padding:12px 0; font-weight:600; color:var(--muted);">상태</td>
                             <td style="padding:12px 0;">
                                 <span class="badge"
-                                      th:classappend="${cert.status.name() == 'PENDING'} ? 'badge-warning' : (${cert.status.name() == 'APPROVED'} ? 'badge-success' : 'badge-danger')"
-                                      th:text="${cert.status.name() == 'PENDING'} ? '대기중' : (${cert.status.name() == 'APPROVED'} ? '승인' : '거절')"></span>
+                                      th:classappend="${cert.pending} ? 'badge-warning' : (${cert.approved} ? 'badge-success' : 'badge-danger')"
+                                      th:text="${cert.status.displayName}"></span>
                             </td>
                         </tr>
                         <tr style="border-bottom:1px solid var(--border);">
@@ -67,7 +67,7 @@
                     </table>
 
                     <!-- 액션 버튼 -->
-                    <div th:if="${cert.status.name() == 'PENDING'}" style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+                    <div th:if="${cert.pending}" style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
                         <form th:action="@{/admin/certifications/{id}/approve(id=${cert.id})}" method="post">
                             <button type="submit" class="btn btn-primary"
                                     onclick="return confirm('이 인증을 승인할까요?')">

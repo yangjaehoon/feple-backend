@@ -14,4 +14,8 @@ public enum BoothType {
     public String getDisplayName() {
         return displayName;
     }
+
+    public String getCssName() {
+        return name().toLowerCase();
+    }
 }

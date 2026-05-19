@@ -466,7 +466,7 @@
                         <tr th:each="booth : ${booths}">
                             <td>
                                 <span class="badge"
-                                      th:classappend="${booth.boothType.name() == 'FOOD'} ? 'badge-food' : (${booth.boothType.name() == 'BEER'} ? 'badge-beer' : 'badge-event')"
+                                      th:classappend="'badge-' + ${booth.boothType.cssName}"
                                       th:text="${booth.boothTypeName}"
                                       style="padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600;"></span>
                             </td>

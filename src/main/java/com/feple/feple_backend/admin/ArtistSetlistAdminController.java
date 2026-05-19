@@ -50,7 +50,7 @@ public class ArtistSetlistAdminController {
 
         List<ArtistFestivalSong> currentSetlist = songAdminService.getSetlist(artistFestivalId);
         Set<Long> selectedSongIds = new java.util.HashSet<>();
-        currentSetlist.forEach(afs -> selectedSongIds.add(afs.getSong().getId()));
+        currentSetlist.forEach(afs -> selectedSongIds.add(afs.getSongId()));
 
         model.addAttribute("artist", artist);
         model.addAttribute("artistFestival", artistFestival);

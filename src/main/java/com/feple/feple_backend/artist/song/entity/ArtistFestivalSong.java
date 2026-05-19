@@ -24,6 +24,8 @@ public class ArtistFestivalSong {
     @JoinColumn(name = "artist_festival_id", nullable = false)
     private ArtistFestival artistFestival;
 
+    public Long getSongId() { return song.getId(); }
+
     @Builder
     public ArtistFestivalSong(Song song, ArtistFestival artistFestival) {
         this.song = song;
