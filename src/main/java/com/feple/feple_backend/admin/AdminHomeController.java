@@ -28,21 +28,24 @@ public class AdminHomeController {
                             @RequestParam(defaultValue = "0") int artistPage,
                             Model model) {
 
-        model.addAttribute("festivalPage", festivalService.getFestivalsPage(festivalPage, 10));
-        model.addAttribute("artistPage", artistService.getArtistsPage(artistPage, 10));
-        model.addAttribute("totalPosts", postAdminService.getTotalPostCount());
-        model.addAttribute("totalUsers", adminStatsService.getTotalUserCount());
-        model.addAttribute("recentPostCount", postAdminService.countRecentPosts(7));
-        model.addAttribute("hotPosts", postAdminService.getAdminHotPosts(5));
-        model.addAttribute("topArtists", artistService.getTopArtists(5));
-        model.addAttribute("recentUsers", adminStatsService.getRecentUsers());
-        model.addAttribute("dailyStats", adminStatsService.getDailyStats());
-        model.addAttribute("pendingCerts", adminStatsService.getPendingCerts(5));
-        model.addAttribute("pendingCertCount", adminStatsService.getPendingCertCount());
-        model.addAttribute("pendingReports", adminStatsService.getPendingReports(5));
-        model.addAttribute("pendingReportCount", adminStatsService.getPendingReportCount());
-        model.addAttribute("pendingSongRequests", adminStatsService.getPendingSongRequests(5));
-        model.addAttribute("pendingSongRequestCount", adminStatsService.getPendingSongRequestCount());
+        AdminDashboardDto dashboard = new AdminDashboardDto(
+                festivalService.getFestivalsPage(festivalPage, AdminConstants.DASHBOARD_PAGE_SIZE),
+                artistService.getArtistsPage(artistPage, AdminConstants.DASHBOARD_PAGE_SIZE),
+                postAdminService.getTotalPostCount(),
+                adminStatsService.getTotalUserCount(),
+                postAdminService.countRecentPosts(AdminConstants.STATS_RECENT_DAYS),
+                postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                adminStatsService.getRecentUsers(),
+                adminStatsService.getDailyStats(),
+                adminStatsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                adminStatsService.getPendingCertCount(),
+                adminStatsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                adminStatsService.getPendingReportCount(),
+                adminStatsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                adminStatsService.getPendingSongRequestCount()
+        );
+        model.addAttribute("dashboard", dashboard);
 
         return "admin/admin-home";
     }

@@ -97,18 +97,7 @@
                 </table>
             </div>
 
-            <div class="table-footer">
-                <span class="page-info"
-                      th:text="'총 ' + ${certifications.totalElements} + '개'"></span>
-                <div class="pagination" style="margin-left:auto;">
-                    <a th:if="${certifications.hasPrevious()}"
-                       th:href="@{/admin/certifications(status=${status}, page=${certifications.number - 1})}">← 이전</a>
-                    <span class="page-info"
-                          th:text="${certifications.number + 1} + ' / ' + ${certifications.totalPages}"></span>
-                    <a th:if="${certifications.hasNext()}"
-                       th:href="@{/admin/certifications(status=${status}, page=${certifications.number + 1})}">다음 →</a>
-                </div>
-            </div>
+            <div th:insert="~{admin/fragments :: pagination(${certifications}, '/admin/certifications', 'status=' + ${status})}"></div>
         </div>
     </div>
 </div>

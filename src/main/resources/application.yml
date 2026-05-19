@@ -52,6 +52,9 @@ app:
   google:
     maps:
       key: ${GOOGLE_MAPS_KEY:}
+  kakao:
+    maps:
+      key: ${KAKAO_MAPS_KEY:}
   youtube:
     api-key: ${YOUTUBE_API_KEY:}
   cors:

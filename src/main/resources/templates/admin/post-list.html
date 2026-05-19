@@ -137,18 +137,7 @@
                 </table>
             </div>
 
-            <div class="table-footer">
-                <span class="page-info"
-                      th:text="'총 ' + ${posts.totalElements} + '개'"></span>
-                <div class="pagination" style="margin-left:auto;">
-                    <a th:if="${posts.hasPrevious()}"
-                       th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number - 1})}">← 이전</a>
-                    <span class="page-info"
-                          th:text="${posts.number + 1} + ' / ' + ${posts.totalPages}"></span>
-                    <a th:if="${posts.hasNext()}"
-                       th:href="@{/admin/posts(filter=${filter}, keyword=${keyword}, page=${posts.number + 1})}">다음 →</a>
-                </div>
-            </div>
+            <div th:insert="~{admin/fragments :: pagination(${posts}, '/admin/posts', 'filter=' + ${filter} + (keyword != null ? '&keyword=' + keyword : ''))}"></div>
         </div>
     </div>
 </div>

@@ -10,6 +10,7 @@ import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -29,6 +30,9 @@ import java.util.ArrayList;
 @RequestMapping("/admin/festivals")
 public class FestivalAdminController {
 
+    @Value("${app.kakao.maps.key:}")
+    private String kakaoMapsKey;
+
     private final FestivalService festivalService;
     private final ArtistService artistService;
     private final ArtistFestivalService artistFestivalService;
@@ -40,6 +44,7 @@ public class FestivalAdminController {
         model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
         model.addAttribute("allRegions", Region.values());
         model.addAttribute("allGenres", Genre.values());
+        model.addAttribute("kakaoMapsKey", kakaoMapsKey);
         return "admin/festival-form";
     }
 
@@ -67,6 +72,7 @@ public class FestivalAdminController {
             model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
             model.addAttribute("allRegions", Region.values());
             model.addAttribute("allGenres", Genre.values());
+            model.addAttribute("kakaoMapsKey", kakaoMapsKey);
             return "admin/festival-form";
         }
 
@@ -114,6 +120,7 @@ public class FestivalAdminController {
         model.addAttribute("currentPosterUrl", festival.getPosterUrl());
         model.addAttribute("allRegions", Region.values());
         model.addAttribute("allGenres", Genre.values());
+        model.addAttribute("kakaoMapsKey", kakaoMapsKey);
         return "admin/festival-edit-form";
     }
 
@@ -139,7 +146,16 @@ public class FestivalAdminController {
     /** 페스티벌 상세: 모든 하위 리소스(아티스트/스테이지/타임테이블/부스) 데이터 집계 */
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model) {
-        model.addAllAttributes(festivalDetailAggregationService.buildAttributes(id));
+        FestivalDetailDto detail = festivalDetailAggregationService.buildAttributes(id);
+        model.addAttribute("festival", detail.festival());
+        model.addAttribute("participatingArtists", detail.participatingArtists());
+        model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());
+        model.addAttribute("timetableEntries", detail.timetableEntries());
+        model.addAttribute("timetableByArtist", detail.timetableByArtist());
+        model.addAttribute("stages", detail.stages());
+        model.addAttribute("booths", detail.booths());
+        model.addAttribute("allBoothTypes", detail.allBoothTypes());
+        model.addAttribute("googleMapsKey", detail.googleMapsKey());
         return "admin/festival-detail";
     }
 }

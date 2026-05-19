@@ -127,7 +127,7 @@
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=75c165c144f335e61cfa19338c13ad2a&libraries=services&autoload=false"></script>
+<script type="text/javascript" th:src="'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoMapsKey} + '&libraries=services&autoload=false'"></script>
 <script th:inline="javascript">
     let map, marker, geocoder;
     const initLat = /*[[${festival.latitude}]]*/ null;

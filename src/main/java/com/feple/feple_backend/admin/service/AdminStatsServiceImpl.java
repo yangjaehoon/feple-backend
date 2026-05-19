@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.service;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.DailyStatDto;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
@@ -30,7 +31,6 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class AdminStatsServiceImpl implements AdminStatsService {
 
-    private static final int STATS_DAYS = 7;
     private static final DateTimeFormatter STAT_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d");
 
     private final UserRepository userRepository;
@@ -53,7 +53,7 @@ public class AdminStatsServiceImpl implements AdminStatsService {
     @Override
     public List<DailyStatDto> getDailyStats() {
         List<DailyStatDto> stats = new ArrayList<>();
-        for (int i = STATS_DAYS - 1; i >= 0; i--) {
+        for (int i = AdminConstants.STATS_RECENT_DAYS - 1; i >= 0; i--) {
             LocalDate date = LocalDate.now().minusDays(i);
             LocalDateTime start = date.atStartOfDay();
             LocalDateTime end = date.plusDays(1).atStartOfDay();

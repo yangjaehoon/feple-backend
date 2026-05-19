@@ -118,5 +118,19 @@
     </script>
 </header>
 
+<!-- ── 페이지네이션 프래그먼트 ── -->
+<!-- baseUrl: 기본 URL (예: /admin/certifications)
+     extraParams: 추가 쿼리파라미터 문자열 (예: 'status=PENDING', null이면 생략) -->
+<div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">
+    <span class="page-info" th:text="'총 ' + ${page.totalElements} + '건'"></span>
+    <div class="pagination" style="margin-left:auto;">
+        <a th:if="${page.hasPrevious()}"
+           th:href="${baseUrl + '?page=' + (page.number - 1) + (extraParams != null ? '&' + extraParams : '')}">← 이전</a>
+        <span th:text="${page.number + 1} + ' / ' + ${page.totalPages}"></span>
+        <a th:if="${page.hasNext()}"
+           th:href="${baseUrl + '?page=' + (page.number + 1) + (extraParams != null ? '&' + extraParams : '')}">다음 →</a>
+    </div>
+</div>
+
 </body>
 </html>

@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,7 +33,7 @@ public class FestivalDetailAggregationService {
     private String googleMapsKey;
 
     /** 페스티벌 상세 뷰에 필요한 모든 데이터를 집계하여 반환 */
-    public Map<String, Object> buildAttributes(Long festivalId) {
+    public FestivalDetailDto buildAttributes(Long festivalId) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
 
         List<ArtistFestivalResponse> participatingArtists =
@@ -52,16 +51,16 @@ public class FestivalDetailAggregationService {
                              && !"📢".equals(e.getStageName()))
                 .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName));
 
-        Map<String, Object> attrs = new LinkedHashMap<>();
-        attrs.put("festival", festival);
-        attrs.put("participatingArtists", participatingArtists);
-        attrs.put("participatingArtistsByName", participatingArtistsByName);
-        attrs.put("timetableEntries", timetableEntries);
-        attrs.put("timetableByArtist", timetableByArtist);
-        attrs.put("stages", stageService.getStages(festivalId));
-        attrs.put("booths", boothService.getBooths(festivalId));
-        attrs.put("allBoothTypes", BoothType.values());
-        attrs.put("googleMapsKey", googleMapsKey);
-        return attrs;
+        return new FestivalDetailDto(
+                festival,
+                participatingArtists,
+                participatingArtistsByName,
+                timetableEntries,
+                timetableByArtist,
+                stageService.getStages(festivalId),
+                boothService.getBooths(festivalId),
+                BoothType.values(),
+                googleMapsKey
+        );
     }
 }

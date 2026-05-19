@@ -16,14 +16,10 @@ import java.util.Map;
 @RequestMapping("/admin/reports")
 public class ReportAdminController {
 
-    private final PostReportService postReportService;
-    private final CommentReportService commentReportService;
     private final Map<String, ReportAdminService> handlers;
 
     public ReportAdminController(PostReportService postReportService,
                                   CommentReportService commentReportService) {
-        this.postReportService = postReportService;
-        this.commentReportService = commentReportService;
         this.handlers = Map.of("post", postReportService, "comment", commentReportService);
     }
 
@@ -33,7 +29,7 @@ public class ReportAdminController {
             @RequestParam(defaultValue = "PENDING") String status,
             @RequestParam(defaultValue = "post") String type,
             Model model) {
-        ReportAdminService handler = handlers.getOrDefault(type, postReportService);
+        ReportAdminService handler = handlers.getOrDefault(type, handlers.get("post"));
         model.addAttribute("reports", handler.getReportsForAdmin(page, 20, status));
         model.addAttribute("pendingCount", handler.getPendingCount());
         model.addAttribute("totalCount", handler.getTotalCount());
@@ -48,7 +44,7 @@ public class ReportAdminController {
     public String deletePost(@PathVariable Long id,
                              @RequestParam(defaultValue = "0") int page,
                              RedirectAttributes ra) {
-        postReportService.deletePostAndResolve(id);
+        ((PostReportService) handlers.get("post")).deletePostAndResolve(id);
         ra.addFlashAttribute("successMessage", "게시글을 삭제하고 신고를 처리했습니다.");
         return "redirect:/admin/reports?type=post&page=" + page;
     }
@@ -57,7 +53,7 @@ public class ReportAdminController {
     public String dismiss(@PathVariable Long id,
                           @RequestParam(defaultValue = "0") int page,
                           RedirectAttributes ra) {
-        postReportService.dismissReport(id);
+        ((PostReportService) handlers.get("post")).dismissReport(id);
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         return "redirect:/admin/reports?type=post&page=" + page;
     }
@@ -68,7 +64,7 @@ public class ReportAdminController {
     public String deleteComment(@PathVariable Long id,
                                 @RequestParam(defaultValue = "0") int page,
                                 RedirectAttributes ra) {
-        commentReportService.deleteCommentAndResolve(id);
+        ((CommentReportService) handlers.get("comment")).deleteCommentAndResolve(id);
         ra.addFlashAttribute("successMessage", "댓글을 삭제하고 신고를 처리했습니다.");
         return "redirect:/admin/reports?type=comment&page=" + page;
     }
@@ -77,7 +73,7 @@ public class ReportAdminController {
     public String dismissComment(@PathVariable Long id,
                                  @RequestParam(defaultValue = "0") int page,
                                  RedirectAttributes ra) {
-        commentReportService.dismissReport(id);
+        ((CommentReportService) handlers.get("comment")).dismissReport(id);
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         return "redirect:/admin/reports?type=comment&page=" + page;
     }
