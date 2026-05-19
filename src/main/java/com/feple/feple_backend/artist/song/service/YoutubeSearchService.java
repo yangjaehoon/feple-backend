@@ -80,7 +80,7 @@ public class YoutubeSearchService {
                 .queryParam("channelId", channelId)
                 .queryParam("type", "video")
                 .queryParam("order", "date")
-                .queryParam("maxResults", "20")
+                .queryParam("maxResults", "50")
                 .queryParam("key", apiKey)
                 .toUriString();
 
