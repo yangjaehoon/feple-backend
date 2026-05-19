@@ -55,7 +55,7 @@ public class YoutubeSearchService {
         // 2) Topic 채널 없음 → "아티스트명 + 곡명" 키워드 검색
         String fullQuery = (artistName + " " + (query != null ? query : "")).trim();
         log.info("[YT] No Topic channel — keyword fallback: '{}'", fullQuery);
-        return searchByKeyword(fullQuery);
+        return searchByKeyword(artistName, fullQuery);
     }
 
     private String findTopicChannelId(String artistName) {
@@ -108,13 +108,13 @@ public class YoutubeSearchService {
                 .toList();
     }
 
-    private List<YoutubeVideoDto> searchByKeyword(String query) {
+    private List<YoutubeVideoDto> searchByKeyword(String artistName, String query) {
         String uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_SEARCH_URL)
                 .queryParam("part", "snippet")
                 .queryParam("q", query)
                 .queryParam("type", "video")
-                .queryParam("topicId", "/m/04rlf")
-                .queryParam("maxResults", "15")
+                .queryParam("videoCategoryId", "10")
+                .queryParam("maxResults", "25")
                 .queryParam("key", apiKey)
                 .toUriString();
 
@@ -123,10 +123,19 @@ public class YoutubeSearchService {
 
         if (response == null || response.items() == null) return Collections.emptyList();
 
-        return response.items().stream()
+        List<YoutubeVideoDto> all = response.items().stream()
                 .filter(item -> item.id() != null && item.id().videoId() != null)
                 .map(this::toDto)
                 .toList();
+
+        // channelTitle에 아티스트명이 포함된 영상 우선 — 플레이리스트/컴필레이션 제거 목적
+        String lowerArtist = artistName.toLowerCase();
+        List<YoutubeVideoDto> byArtist = all.stream()
+                .filter(v -> v.getChannelTitle().toLowerCase().contains(lowerArtist))
+                .toList();
+
+        log.info("[YT] Keyword '{}': total={}, byArtist={}", query, all.size(), byArtist.size());
+        return byArtist.isEmpty() ? all : byArtist;
     }
 
     private YoutubeVideoDto toDto(YoutubeItem item) {
