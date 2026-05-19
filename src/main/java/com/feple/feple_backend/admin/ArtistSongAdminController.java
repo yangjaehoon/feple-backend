@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
+import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ public class ArtistSongAdminController {
     private final SongService songService;
     private final SongAdminService songAdminService;
     private final ArtistService artistService;
+    private final SongRequestAdminService songRequestAdminService;
 
     @GetMapping
     public String songsPage(@PathVariable Long artistId,
@@ -30,6 +32,7 @@ public class ArtistSongAdminController {
         model.addAttribute("artist", artist);
         model.addAttribute("songs", songService.getSongsByArtistId(artistId));
         model.addAttribute("videoUrl", videoUrl);
+        model.addAttribute("pendingRequests", songRequestAdminService.getPendingRequests(artistId));
         if (videoUrl != null && !videoUrl.isBlank()) {
             songAdminService.fetchVideoByUrl(videoUrl)
                     .ifPresent(v -> model.addAttribute("previewVideo", v));
@@ -56,6 +59,33 @@ public class ArtistSongAdminController {
                              RedirectAttributes ra) {
         songAdminService.deleteSong(songId);
         ra.addFlashAttribute("successMessage", "곡이 삭제되었습니다.");
+        return "redirect:/admin/artists/" + artistId + "/songs";
+    }
+
+    @PostMapping("/song-requests/{requestId}/approve")
+    public String approveSongRequest(@PathVariable Long artistId,
+                                     @PathVariable Long requestId,
+                                     @RequestParam(required = false) String youtubeUrl,
+                                     RedirectAttributes ra) {
+        try {
+            songRequestAdminService.approve(requestId, youtubeUrl);
+            ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/artists/" + artistId + "/songs";
+    }
+
+    @PostMapping("/song-requests/{requestId}/reject")
+    public String rejectSongRequest(@PathVariable Long artistId,
+                                    @PathVariable Long requestId,
+                                    RedirectAttributes ra) {
+        try {
+            songRequestAdminService.reject(requestId);
+            ra.addFlashAttribute("successMessage", "노래 요청이 거절되었습니다.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
 }
