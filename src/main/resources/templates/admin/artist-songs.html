@@ -41,13 +41,12 @@
                 <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="get"
                       style="display:flex; gap:8px; margin-bottom:6px;">
                     <input type="text" name="q" th:value="${q}"
-                           placeholder="아티스트명 검색 (예: 아이유, BTS)..."
+                           th:placeholder="'곡명 검색 (예: it\'s you, Celebrity)...'"
                            style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
                     <button type="submit" class="btn btn-primary">검색</button>
                 </form>
                 <div style="font-size:11px; color:var(--muted); margin-bottom:14px;">
-                    아티스트명으로 검색 시 YouTube Music 공식 채널(Topic) 곡 목록을 가져옵니다.
-                    공식 채널이 없으면 곡명을 직접 입력하세요 (예: 아이유 좋은날).
+                    곡명만 입력하면 됩니다. 아티스트명(<span th:text="${artist.name}"></span>)은 자동으로 포함됩니다.
                 </div>
 
                 <div th:if="${searchResults != null and !searchResults.isEmpty()}">

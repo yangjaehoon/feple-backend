@@ -31,7 +31,7 @@ public class ArtistSongAdminController {
         model.addAttribute("songs", songService.getSongsByArtistId(artistId));
         model.addAttribute("q", q);
         if (q != null && !q.isBlank()) {
-            model.addAttribute("searchResults", songAdminService.searchYoutube(q));
+            model.addAttribute("searchResults", songAdminService.searchYoutube(artist.getName(), q));
         }
         return "admin/artist-songs";
     }

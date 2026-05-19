@@ -21,23 +21,38 @@ public class YoutubeSearchService {
 
     private final RestClient restClient = RestClient.create();
 
-    public List<YoutubeVideoDto> search(String query) {
-        if (apiKey == null || apiKey.isBlank()) {
-            return Collections.emptyList();
-        }
-        // Topic 채널(공식 음원 채널) 우선 시도 → 없으면 키워드 검색
-        String topicChannelId = findTopicChannelId(query);
+    /**
+     * @param artistName 아티스트명 — Topic 채널 탐색에 사용
+     * @param query      곡명 — Topic 채널 결과 필터링 or 키워드 검색에 사용
+     */
+    public List<YoutubeVideoDto> search(String artistName, String query) {
+        if (apiKey == null || apiKey.isBlank()) return Collections.emptyList();
+
+        // 1) 아티스트명으로 YouTube Music Topic 채널 탐색
+        String topicChannelId = findTopicChannelId(artistName);
         if (topicChannelId != null) {
-            return searchByChannel(topicChannelId);
+            List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
+            // 곡명 입력이 있으면 채널 결과 내에서 필터링
+            if (query != null && !query.isBlank()) {
+                String lower = query.toLowerCase();
+                List<YoutubeVideoDto> filtered = channelVideos.stream()
+                        .filter(v -> v.getTitle().toLowerCase().contains(lower))
+                        .toList();
+                // 필터 결과가 없으면 필터 없이 전체 반환 (오타 등 대비)
+                return filtered.isEmpty() ? channelVideos : filtered;
+            }
+            return channelVideos;
         }
-        return searchByKeyword(query);
+
+        // 2) Topic 채널 없음 → "아티스트명 + 곡명" 키워드 검색
+        String fullQuery = (artistName + " " + (query != null ? query : "")).trim();
+        return searchByKeyword(fullQuery);
     }
 
-    // "아티스트명 - Topic" 채널 ID 조회
-    private String findTopicChannelId(String query) {
+    private String findTopicChannelId(String artistName) {
         String uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_SEARCH_URL)
                 .queryParam("part", "snippet")
-                .queryParam("q", query)
+                .queryParam("q", artistName)
                 .queryParam("type", "channel")
                 .queryParam("maxResults", "5")
                 .queryParam("key", apiKey)
@@ -58,7 +73,6 @@ public class YoutubeSearchService {
                 .orElse(null);
     }
 
-    // Topic 채널의 동영상 목록 조회
     private List<YoutubeVideoDto> searchByChannel(String channelId) {
         String uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_SEARCH_URL)
                 .queryParam("part", "snippet")
@@ -76,16 +90,10 @@ public class YoutubeSearchService {
 
         return response.items().stream()
                 .filter(item -> item.id() != null && item.id().videoId() != null)
-                .map(item -> YoutubeVideoDto.builder()
-                        .videoId(item.id().videoId())
-                        .title(item.snippet().title())
-                        .channelTitle(item.snippet().channelTitle())
-                        .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
-                        .build())
+                .map(this::toDto)
                 .toList();
     }
 
-    // Topic 채널이 없을 때 키워드 검색 (음악 토픽 필터 적용)
     private List<YoutubeVideoDto> searchByKeyword(String query) {
         String uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_SEARCH_URL)
                 .queryParam("part", "snippet")
@@ -103,13 +111,17 @@ public class YoutubeSearchService {
 
         return response.items().stream()
                 .filter(item -> item.id() != null && item.id().videoId() != null)
-                .map(item -> YoutubeVideoDto.builder()
-                        .videoId(item.id().videoId())
-                        .title(item.snippet().title())
-                        .channelTitle(item.snippet().channelTitle())
-                        .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
-                        .build())
+                .map(this::toDto)
                 .toList();
+    }
+
+    private YoutubeVideoDto toDto(YoutubeItem item) {
+        return YoutubeVideoDto.builder()
+                .videoId(item.id().videoId())
+                .title(item.snippet().title())
+                .channelTitle(item.snippet().channelTitle())
+                .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
+                .build();
     }
 
     private String extractThumbnailUrl(Map<String, Object> thumbnails) {

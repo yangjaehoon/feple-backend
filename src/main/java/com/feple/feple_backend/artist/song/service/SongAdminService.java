@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface SongAdminService {
-    List<YoutubeVideoDto> searchYoutube(String query);
+    List<YoutubeVideoDto> searchYoutube(String artistName, String query);
     SongResponseDto saveSong(Long artistId, SaveSongRequestDto dto);
     void deleteSong(Long songId);
 

@@ -70,8 +70,8 @@ public class SongServiceImpl implements SongService, SongAdminService {
     }
 
     @Override
-    public List<YoutubeVideoDto> searchYoutube(String query) {
-        return youtubeSearchService.search(query);
+    public List<YoutubeVideoDto> searchYoutube(String artistName, String query) {
+        return youtubeSearchService.search(artistName, query);
     }
 
     @Override
