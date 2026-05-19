@@ -52,10 +52,10 @@ public class YoutubeSearchService {
             return channelVideos;
         }
 
-        // 2) Topic 채널 없음 → "아티스트명 + 곡명" 키워드 검색
-        String fullQuery = (artistName + " " + (query != null ? query : "")).trim();
-        log.info("[YT] No Topic channel — keyword fallback: '{}'", fullQuery);
-        return searchByKeyword(artistName, fullQuery);
+        // 2) Topic 채널 없음 → 곡명만으로 검색 (아티스트명 붙이면 API 품질 저하)
+        String keywordQuery = (query != null && !query.isBlank()) ? query : artistName;
+        log.info("[YT] No Topic channel — keyword fallback: '{}'", keywordQuery);
+        return searchByKeyword(artistName, keywordQuery);
     }
 
     private String findTopicChannelId(String artistName) {
@@ -135,6 +135,7 @@ public class YoutubeSearchService {
                         || v.getTitle().toLowerCase().contains(lowerArtist))
                 .toList();
 
+        all.forEach(v -> log.info("[YT] result: title='{}', channel='{}'", v.getTitle(), v.getChannelTitle()));
         log.info("[YT] Keyword '{}': total={}, byArtist={}", query, all.size(), byArtist.size());
         return byArtist.isEmpty() ? all : byArtist;
     }
