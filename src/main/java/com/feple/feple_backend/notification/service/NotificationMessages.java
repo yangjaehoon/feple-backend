@@ -49,4 +49,11 @@ public final class NotificationMessages {
     public static String songRequestApprovedBody(String songTitle, String artistName) {
         return "'" + songTitle + "' 곡이 " + artistName + " 페이지에 등록됐습니다.";
     }
+
+    public static final String SONG_REQUEST_REJECTED_TITLE = "노래 요청이 거절됐어요.";
+
+    public static String songRequestRejectedBody(String songTitle, String reason) {
+        String base = "'" + songTitle + "' 요청이 거절됐습니다.";
+        return (reason != null && !reason.isBlank()) ? base + " 사유: " + reason : base;
+    }
 }

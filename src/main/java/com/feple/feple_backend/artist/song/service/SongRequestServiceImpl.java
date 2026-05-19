@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.dto.SubmitSongRequestDto;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
+import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.song.entity.Song;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
@@ -111,11 +112,13 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
 
     @Override
     @Transactional
-    public void reject(Long requestId) {
+    public void reject(Long requestId, String reason) {
         SongRequest request = songRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다: " + requestId));
         request.reject();
         songRequestRepository.save(request);
+        eventPublisher.publishEvent(new SongRequestRejectedEvent(
+                request.getUserId(), request.getSongTitle(), request.getArtist().getName(), reason));
     }
 
     private String resolveNickname(Long userId) {

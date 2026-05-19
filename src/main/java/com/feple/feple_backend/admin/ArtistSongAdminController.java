@@ -79,9 +79,10 @@ public class ArtistSongAdminController {
     @PostMapping("/song-requests/{requestId}/reject")
     public String rejectSongRequest(@PathVariable Long artistId,
                                     @PathVariable Long requestId,
+                                    @RequestParam(required = false) String reason,
                                     RedirectAttributes ra) {
         try {
-            songRequestAdminService.reject(requestId);
+            songRequestAdminService.reject(requestId, reason);
             ra.addFlashAttribute("successMessage", "노래 요청이 거절되었습니다.");
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

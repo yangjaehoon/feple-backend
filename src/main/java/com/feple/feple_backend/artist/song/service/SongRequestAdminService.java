@@ -10,5 +10,5 @@ public interface SongRequestAdminService {
 
     void approve(Long requestId, String youtubeUrl);
 
-    void reject(Long requestId);
+    void reject(Long requestId, String reason);
 }
