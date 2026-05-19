@@ -120,6 +120,8 @@
                         </td>
                         <td>
                             <div style="display:flex; gap:6px; align-items:center;">
+                                <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}"
+                                   class="btn btn-secondary btn-sm">곡</a>
                                 <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
                                    class="btn btn-warning btn-sm">수정</a>
                                 <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
