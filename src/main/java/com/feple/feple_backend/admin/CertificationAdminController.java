@@ -4,6 +4,7 @@ import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,10 +28,9 @@ public class CertificationAdminController {
             @RequestParam(required = false) String status,
             Model model) {
 
-        CertificationStatus filterStatus = null;
-        if (status != null && !status.isEmpty()) {
-            filterStatus = CertificationStatus.valueOf(status);
-        }
+        CertificationStatus filterStatus = StringUtils.hasText(status)
+                ? CertificationStatus.valueOf(status)
+                : null;
 
         Page<FestivalCertification> certPage = certificationService.getByStatus(
                 filterStatus,

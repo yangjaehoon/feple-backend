@@ -78,7 +78,7 @@ public class UserAdminController {
                                  @RequestParam UserRole role,
                                  RedirectAttributes ra) {
         userService.updateUserRole(id, role);
-        ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.name());
+        ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.getDisplayName());
         return "redirect:/admin/users/" + id;
     }
 }

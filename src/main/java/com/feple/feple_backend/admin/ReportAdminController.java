@@ -42,8 +42,6 @@ public class ReportAdminController {
         return "admin/report-list";
     }
 
-    // ── 게시글 신고 처리 ──────────────────────────────────────────
-
     @PostMapping("/{id}/delete-post")
     public String deletePost(@PathVariable Long id,
                              @RequestParam(defaultValue = "0") int page,
@@ -61,8 +59,6 @@ public class ReportAdminController {
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         return "redirect:/admin/reports?type=post&page=" + page;
     }
-
-    // ── 댓글 신고 처리 ──────────────────────────────────────────
 
     @PostMapping("/comments/{id}/delete-comment")
     public String deleteComment(@PathVariable Long id,

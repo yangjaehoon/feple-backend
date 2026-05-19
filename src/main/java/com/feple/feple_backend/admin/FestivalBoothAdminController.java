@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequiredArgsConstructor
@@ -32,7 +34,8 @@ public class FestivalBoothAdminController {
             try {
                 dto.setImageUrl(boothService.uploadBoothImage(boothImageFile));
             } catch (Exception e) {
-                ra.addFlashAttribute("errorMessage", "이미지 업로드 실패: " + e.getMessage());
+                log.error("부스 이미지 업로드 실패 festivalId={}", festivalId, e);
+                ra.addFlashAttribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요.");
                 return "redirect:/admin/festivals/" + festivalId + "#booths";
             }
         }

@@ -7,12 +7,14 @@ import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/artists/{artistId}/songs")
@@ -71,7 +73,8 @@ public class ArtistSongAdminController {
             songRequestAdminService.approve(requestId, youtubeUrl);
             ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
+            log.error("노래 요청 승인 실패 requestId={}", requestId, e);
+            ra.addFlashAttribute("errorMessage", "노래 요청 승인에 실패했습니다. 다시 시도해주세요.");
         }
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
@@ -85,7 +88,8 @@ public class ArtistSongAdminController {
             songRequestAdminService.reject(requestId, reason);
             ra.addFlashAttribute("successMessage", "노래 요청이 거절되었습니다.");
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
+            log.error("노래 요청 거절 실패 requestId={}", requestId, e);
+            ra.addFlashAttribute("errorMessage", "노래 요청 거절에 실패했습니다. 다시 시도해주세요.");
         }
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
