@@ -43,4 +43,10 @@ public final class NotificationMessages {
     public static String festivalReminderBody(String festivalTitle, int dDay) {
         return "'" + festivalTitle + "' 페스티벌이 " + dDay + "일 후 시작해요!";
     }
+
+    public static final String SONG_REQUEST_APPROVED_TITLE = "노래 요청이 등록됐어요!";
+
+    public static String songRequestApprovedBody(String songTitle, String artistName) {
+        return "'" + songTitle + "' 곡이 " + artistName + " 페이지에 등록됐습니다.";
+    }
 }

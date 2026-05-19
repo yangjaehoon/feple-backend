@@ -14,6 +14,7 @@ import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -83,6 +84,21 @@ public class NotificationService {
                 NotificationMessages.CERT_REJECTED_TITLE,
                 NotificationMessages.certRejectedBody(festivalTitle, reason),
                 festival, String.valueOf(festivalId));
+    }
+
+    @Async
+    @EventListener
+    @Transactional
+    public void onSongRequestApproved(SongRequestApprovedEvent event) {
+        User user = userRepository.findById(event.userId()).orElse(null);
+        if (user == null) return;
+        String title = NotificationMessages.SONG_REQUEST_APPROVED_TITLE;
+        String body = NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName());
+        Festival noFestival = null;
+        notificationRepository.save(
+                Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, noFestival));
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
+        fcmPushService.sendMulticast(tokens, title, body, null);
     }
 
     @Async

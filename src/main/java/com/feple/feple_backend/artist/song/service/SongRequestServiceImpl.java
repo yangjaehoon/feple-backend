@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.dto.SubmitSongRequestDto;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
+import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.entity.Song;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
@@ -14,6 +15,7 @@ import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     private final UserRepository userRepository;
     private final YoutubeSearchService youtubeSearchService;
     private final SongRepository songRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -102,6 +105,8 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         }
 
         songRequestRepository.save(request);
+        eventPublisher.publishEvent(new SongRequestApprovedEvent(
+                request.getUserId(), request.getSongTitle(), request.getArtist().getName()));
     }
 
     @Override
