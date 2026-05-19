@@ -32,56 +32,6 @@
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-        <!-- YouTube 검색 -->
-        <div class="card" style="margin-bottom:24px;">
-            <div class="card-header">
-                <div class="card-title">YouTube 곡 검색</div>
-            </div>
-            <div class="card-body">
-                <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="get"
-                      style="display:flex; gap:8px; margin-bottom:6px;">
-                    <input type="text" name="q" th:value="${q}"
-                           th:placeholder="'곡명 검색 (예: it\'s you, Celebrity)...'"
-                           style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
-                    <button type="submit" class="btn btn-primary">검색</button>
-                </form>
-                <div style="font-size:11px; color:var(--muted); margin-bottom:14px;">
-                    곡명만 입력하면 됩니다. 아티스트명(<span th:text="${artist.name}"></span>)은 자동으로 포함됩니다.
-                </div>
-
-                <div th:if="${searchResults != null and !searchResults.isEmpty()}">
-                    <div style="font-size:12px; color:var(--muted); margin-bottom:10px;"
-                         th:text="'검색 결과 ' + ${searchResults.size()} + '건'"></div>
-                    <div style="display:grid; gap:8px;">
-                        <div th:each="result : ${searchResults}"
-                             style="display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--border); border-radius:8px;">
-                            <img th:if="${result.thumbnailUrl != null}"
-                                 th:src="${result.thumbnailUrl}"
-                                 style="width:60px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0;"/>
-                            <div style="flex:1; min-width:0;">
-                                <div style="font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                                     th:text="${result.title}"></div>
-                                <div style="font-size:12px; color:var(--muted); margin-top:2px;"
-                                     th:text="${result.channelTitle}"></div>
-                            </div>
-                            <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="post"
-                                  style="flex-shrink:0;">
-                                <input type="hidden" name="youtubeVideoId" th:value="${result.videoId}"/>
-                                <input type="hidden" name="title" th:value="${result.title}"/>
-                                <input type="hidden" name="thumbnailUrl" th:value="${result.thumbnailUrl}"/>
-                                <button type="submit" class="btn btn-primary" style="font-size:12px; padding:5px 12px;">+ 추가</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div th:if="${q != null and !q.isBlank() and (searchResults == null or searchResults.isEmpty())}"
-                     style="color:var(--muted); font-size:13px; text-align:center; padding:16px 0;">
-                    검색 결과가 없습니다. YouTube API 키를 확인해주세요.
-                </div>
-            </div>
-        </div>
-
         <!-- YouTube URL 직접 입력 -->
         <div class="card" style="margin-bottom:24px;">
             <div class="card-header">
@@ -135,7 +85,7 @@
 
             <div th:if="${songs.isEmpty()}"
                  style="padding:32px; text-align:center; color:var(--muted); font-size:13px;">
-                등록된 곡이 없습니다. 위에서 검색하여 추가해주세요.
+                등록된 곡이 없습니다. 위에서 YouTube URL을 입력하여 추가해주세요.
             </div>
 
             <div th:unless="${songs.isEmpty()}" style="padding:0 16px 16px;">
