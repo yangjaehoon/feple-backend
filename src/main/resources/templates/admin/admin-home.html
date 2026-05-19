@@ -91,6 +91,33 @@
                     </div>
                 </div>
 
+                <!-- 대기 중 노래 요청 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">🎵 대기 중 노래 요청
+                            <span th:if="${pendingSongRequestCount > 0}"
+                                  style="display:inline-block; margin-left:6px; padding:1px 7px; background:#d1ecf1; color:#0c5460; border-radius:20px; font-size:11px; font-weight:700;"
+                                  th:text="${pendingSongRequestCount}"></span>
+                        </span>
+                    </div>
+                    <div class="activity-list">
+                        <div th:each="req : ${pendingSongRequests}" class="act-item">
+                            <div class="act-dot" style="background:var(--primary);"></div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div class="act-type" th:text="${req.artist.name}"></div>
+                                <a class="act-title"
+                                   th:href="@{/admin/artists/{id}/songs(id=${req.artist.id})}"
+                                   th:text="${req.songTitle}"></a>
+                            </div>
+                            <div class="act-meta" style="white-space:nowrap;"
+                                 th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'MM-dd HH:mm') : ''}"></div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(pendingSongRequests)}" class="act-empty">
+                            대기 중인 노래 요청이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 최근 가입 회원 -->
                 <div class="db-card">
                     <div class="db-card-header">

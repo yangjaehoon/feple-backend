@@ -41,6 +41,8 @@ public class AdminHomeController {
         model.addAttribute("pendingCertCount", adminStatsService.getPendingCertCount());
         model.addAttribute("pendingReports", adminStatsService.getPendingReports(5));
         model.addAttribute("pendingReportCount", adminStatsService.getPendingReportCount());
+        model.addAttribute("pendingSongRequests", adminStatsService.getPendingSongRequests(5));
+        model.addAttribute("pendingSongRequestCount", adminStatsService.getPendingSongRequestCount());
 
         return "admin/admin-home";
     }

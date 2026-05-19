@@ -1,6 +1,9 @@
 package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.DailyStatDto;
+import com.feple.feple_backend.artist.song.entity.SongRequest;
+import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
+import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
@@ -35,6 +38,7 @@ public class AdminStatsServiceImpl implements AdminStatsService {
     private final CommentRepository commentRepository;
     private final PostReportRepository reportRepository;
     private final FestivalCertificationRepository certificationRepository;
+    private final SongRequestRepository songRequestRepository;
 
     @Override
     public long getTotalUserCount() {
@@ -86,5 +90,16 @@ public class AdminStatsServiceImpl implements AdminStatsService {
     @Override
     public long getPendingReportCount() {
         return reportRepository.countByStatus(ReportStatus.PENDING);
+    }
+
+    @Override
+    public List<SongRequest> getPendingSongRequests(int limit) {
+        return songRequestRepository.findByStatusOrderByCreatedAtDesc(
+                SongRequestStatus.PENDING, PageRequest.of(0, limit));
+    }
+
+    @Override
+    public long getPendingSongRequestCount() {
+        return songRequestRepository.countByStatus(SongRequestStatus.PENDING);
     }
 }
