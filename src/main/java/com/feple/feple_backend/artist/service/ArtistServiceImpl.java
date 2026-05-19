@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -105,6 +106,8 @@ public class ArtistServiceImpl implements ArtistService {
         Stream<Artist> stream;
         if (keyword != null && !keyword.isBlank()) {
             stream = artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream();
+        } else if ("songs".equals(sort) || "songs_asc".equals(sort)) {
+            stream = artistRepository.findAll().stream();
         } else {
             stream = SORT_STRATEGIES.getOrDefault(sort, ArtistRepository::findAllByOrderByWeeklyScoreDescIdAsc)
                                      .apply(artistRepository).stream();
@@ -112,11 +115,18 @@ public class ArtistServiceImpl implements ArtistService {
         if (genre != null) {
             stream = stream.filter(a -> genre == a.getGenre());
         }
-        return stream
+        List<ArtistResponseDto> result = stream
                 .map(a -> ArtistResponseDto.from(a,
                         fileStorageService.buildUrl(a.getProfileImageKey()),
                         songCountMap.getOrDefault(a.getId(), 0)))
-                .toList();
+                .collect(Collectors.toCollection(java.util.ArrayList::new));
+
+        if ("songs".equals(sort)) {
+            result.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount).reversed());
+        } else if ("songs_asc".equals(sort)) {
+            result.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount));
+        }
+        return result;
     }
 
     @Override

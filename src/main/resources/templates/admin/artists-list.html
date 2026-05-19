@@ -92,7 +92,19 @@
                                 ↑
                             </a>
                         </th>
-                        <th style="width:80px;">곡 수</th>
+                        <th style="width:100px;">
+                            곡 수
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs')}"
+                               th:style="${sort == 'songs'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
+                                                           : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
+                                ↓
+                            </a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs_asc')}"
+                               th:style="${sort == 'songs_asc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
+                                                                : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
+                                ↑
+                            </a>
+                        </th>
                         <th style="width:160px;">관리</th>
                     </tr>
                     </thead>
