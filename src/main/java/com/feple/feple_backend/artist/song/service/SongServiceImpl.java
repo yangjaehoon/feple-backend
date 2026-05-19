@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +73,11 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Override
     public List<YoutubeVideoDto> searchYoutube(String artistName, String query) {
         return youtubeSearchService.search(artistName, query);
+    }
+
+    @Override
+    public Optional<YoutubeVideoDto> fetchVideoByUrl(String videoUrlOrId) {
+        return youtubeSearchService.fetchVideoByUrl(videoUrlOrId);
     }
 
     @Override

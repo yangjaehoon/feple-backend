@@ -25,13 +25,19 @@ public class ArtistSongAdminController {
     @GetMapping
     public String songsPage(@PathVariable Long artistId,
                             @RequestParam(required = false) String q,
+                            @RequestParam(required = false) String videoUrl,
                             Model model) {
         ArtistResponseDto artist = artistService.getArtistById(artistId);
         model.addAttribute("artist", artist);
         model.addAttribute("songs", songService.getSongsByArtistId(artistId));
         model.addAttribute("q", q);
+        model.addAttribute("videoUrl", videoUrl);
         if (q != null && !q.isBlank()) {
             model.addAttribute("searchResults", songAdminService.searchYoutube(artist.getName(), q));
+        }
+        if (videoUrl != null && !videoUrl.isBlank()) {
+            songAdminService.fetchVideoByUrl(videoUrl)
+                    .ifPresent(v -> model.addAttribute("previewVideo", v));
         }
         return "admin/artist-songs";
     }

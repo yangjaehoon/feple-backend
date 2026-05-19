@@ -9,15 +9,18 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class YoutubeSearchService {
 
     private static final String YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
+    private static final String YOUTUBE_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos";
 
     @Value("${app.youtube.api-key:}")
     private String apiKey;
@@ -157,6 +160,67 @@ public class YoutubeSearchService {
         }
         return null;
     }
+
+    public Optional<YoutubeVideoDto> fetchVideoByUrl(String videoUrlOrId) {
+        if (apiKey == null || apiKey.isBlank()) return Optional.empty();
+        String videoId = extractVideoId(videoUrlOrId);
+        if (videoId == null) {
+            log.warn("[YT] fetchVideo: could not extract video ID from '{}'", videoUrlOrId);
+            return Optional.empty();
+        }
+        try {
+            URI uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_VIDEOS_URL)
+                    .queryParam("part", "snippet")
+                    .queryParam("id", videoId)
+                    .queryParam("key", apiKey)
+                    .build().encode().toUri();
+            YoutubeVideoListResponse response = restClient.get().uri(uri).retrieve()
+                    .body(YoutubeVideoListResponse.class);
+            if (response == null || response.items() == null || response.items().isEmpty()) return Optional.empty();
+            YoutubeVideoItem item = response.items().get(0);
+            return Optional.of(YoutubeVideoDto.builder()
+                    .videoId(item.id())
+                    .title(HtmlUtils.htmlUnescape(item.snippet().title()))
+                    .channelTitle(HtmlUtils.htmlUnescape(item.snippet().channelTitle()))
+                    .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
+                    .build());
+        } catch (Exception e) {
+            log.warn("[YT] fetchVideo failed for '{}': {}", videoUrlOrId, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private String extractVideoId(String input) {
+        if (input == null || input.isBlank()) return null;
+        input = input.trim();
+        // 11자리 영상 ID 직접 입력
+        if (input.matches("[a-zA-Z0-9_\\-]{11}")) return input;
+        // URL에서 v= 파라미터 추출 (youtube.com/watch?v=ID, music.youtube.com/watch?v=ID)
+        try {
+            URI uri = new URI(input);
+            String query = uri.getQuery();
+            if (query != null) {
+                for (String param : query.split("&")) {
+                    if (param.startsWith("v=")) return param.substring(2);
+                }
+            }
+            // youtu.be/ID 형태
+            String path = uri.getPath();
+            if (path != null) {
+                String[] parts = path.split("/");
+                for (int i = parts.length - 1; i >= 0; i--) {
+                    if (parts[i].matches("[a-zA-Z0-9_\\-]{11}")) return parts[i];
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record YoutubeVideoListResponse(List<YoutubeVideoItem> items) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record YoutubeVideoItem(String id, YoutubeSnippet snippet) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     record YoutubeSearchResponse(List<YoutubeItem> items) {}

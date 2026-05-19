@@ -82,6 +82,47 @@
             </div>
         </div>
 
+        <!-- YouTube URL 직접 입력 -->
+        <div class="card" style="margin-bottom:24px;">
+            <div class="card-header">
+                <div class="card-title">YouTube URL 직접 입력</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="get"
+                      style="display:flex; gap:8px; margin-bottom:6px;">
+                    <input type="text" name="videoUrl" th:value="${videoUrl}"
+                           placeholder="YouTube URL 또는 영상 ID (예: https://youtu.be/xxxxx 또는 dQw4w9WgXcQ)"
+                           style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    <button type="submit" class="btn btn-secondary">불러오기</button>
+                </form>
+                <div style="font-size:11px; color:var(--muted); margin-bottom:14px;">
+                    YouTube에서 직접 영상을 찾아 URL을 붙여넣으세요. youtu.be 단축 URL, 전체 URL, 영상 ID 모두 지원합니다.
+                </div>
+
+                <div th:if="${previewVideo != null}"
+                     style="display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--primary); border-radius:8px; background:var(--surface);">
+                    <img th:if="${previewVideo.thumbnailUrl != null}"
+                         th:src="${previewVideo.thumbnailUrl}"
+                         style="width:80px; height:60px; object-fit:cover; border-radius:4px; flex-shrink:0;"/>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:13px; font-weight:600;" th:text="${previewVideo.title}"></div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;" th:text="${previewVideo.channelTitle}"></div>
+                    </div>
+                    <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="post" style="flex-shrink:0;">
+                        <input type="hidden" name="youtubeVideoId" th:value="${previewVideo.videoId}"/>
+                        <input type="hidden" name="title" th:value="${previewVideo.title}"/>
+                        <input type="hidden" name="thumbnailUrl" th:value="${previewVideo.thumbnailUrl}"/>
+                        <button type="submit" class="btn btn-primary" style="font-size:12px; padding:5px 12px;">+ 추가</button>
+                    </form>
+                </div>
+
+                <div th:if="${videoUrl != null and !videoUrl.isBlank() and previewVideo == null}"
+                     style="color:var(--muted); font-size:13px; text-align:center; padding:12px 0;">
+                    영상을 불러오지 못했습니다. URL을 확인해주세요.
+                </div>
+            </div>
+        </div>
+
         <!-- 등록된 곡 목록 -->
         <div class="card">
             <div class="card-header">
