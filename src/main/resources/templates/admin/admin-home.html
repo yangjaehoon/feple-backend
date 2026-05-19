@@ -72,12 +72,7 @@
                         <div th:each="report : ${dashboard.pendingReports}" class="act-item">
                             <div class="act-dot red"></div>
                             <div style="flex:1; overflow:hidden;">
-                                <div class="act-type"
-                                     th:text="${report.reason == T(com.feple.feple_backend.post.entity.ReportReason).SPAM ? '스팸/광고'
-                                              : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).ABUSE ? '욕설/혐오'
-                                              : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).OBSCENE ? '음란물'
-                                              : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).MISINFORMATION ? '허위정보'
-                                              : '기타'}"></div>
+                                <div class="act-type" th:text="${report.reason.displayName}"></div>
                                 <a class="act-title"
                                    th:href="@{/admin/posts/{id}(id=${report.post.id})}"
                                    th:text="${report.post.title}"></a>

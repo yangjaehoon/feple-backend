@@ -100,11 +100,7 @@
                         <td>
                             <span class="reason-badge"
                                   th:classappend="'reason-' + ${report.reason}"
-                                  th:text="${report.reason == T(com.feple.feple_backend.post.entity.ReportReason).SPAM ? '스팸/광고'
-                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).ABUSE ? '욕설/혐오'
-                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).OBSCENE ? '음란물'
-                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).MISINFORMATION ? '허위정보'
-                                           : '기타'}">
+                                  th:text="${report.reason.displayName}">
                             </span>
                         </td>
                         <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
@@ -113,9 +109,7 @@
                         <td>
                             <span class="status-badge"
                                   th:classappend="'status-' + ${report.status}"
-                                  th:text="${report.status == T(com.feple.feple_backend.post.entity.ReportStatus).PENDING ? '대기'
-                                           : report.status == T(com.feple.feple_backend.post.entity.ReportStatus).POST_DELETED ? '삭제됨'
-                                           : '기각'}">
+                                  th:text="${report.status.displayName}">
                             </span>
                         </td>
                         <td>
@@ -181,11 +175,7 @@
                         <td>
                             <span class="reason-badge"
                                   th:classappend="'reason-' + ${report.reason}"
-                                  th:text="${report.reason == T(com.feple.feple_backend.post.entity.ReportReason).SPAM ? '스팸/광고'
-                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).ABUSE ? '욕설/혐오'
-                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).OBSCENE ? '음란물'
-                                           : report.reason == T(com.feple.feple_backend.post.entity.ReportReason).MISINFORMATION ? '허위정보'
-                                           : '기타'}">
+                                  th:text="${report.reason.displayName}">
                             </span>
                         </td>
                         <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
@@ -194,7 +184,7 @@
                         <td>
                             <span class="status-badge"
                                   th:classappend="'status-' + ${report.status}"
-                                  th:text="${report.status == T(com.feple.feple_backend.post.entity.ReportStatus).PENDING ? '대기' : '기각'}">
+                                  th:text="${report.status.displayName}">
                             </span>
                         </td>
                         <td>

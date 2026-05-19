@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     private final Cache<String, Bucket> cache = Caffeine.newBuilder()
-            .expireAfterAccess(15, TimeUnit.MINUTES)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
             .maximumSize(5_000)
             .build();
 
