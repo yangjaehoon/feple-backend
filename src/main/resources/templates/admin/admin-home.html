@@ -46,8 +46,8 @@
                         <div th:each="cert : ${dashboard.pendingCerts}" class="act-item">
                             <div class="act-dot yellow"></div>
                             <div style="flex:1; overflow:hidden;">
-                                <div class="act-type" th:text="${cert.festival.title}"></div>
-                                <div class="act-title" th:text="${cert.user.nickname}"></div>
+                                <div class="act-type" th:text="${cert.festivalTitle}"></div>
+                                <div class="act-title" th:text="${cert.userNickname}"></div>
                             </div>
                             <div class="act-meta" style="white-space:nowrap;"
                                  th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></div>
@@ -74,8 +74,8 @@
                             <div style="flex:1; overflow:hidden;">
                                 <div class="act-type" th:text="${report.reason.displayName}"></div>
                                 <a class="act-title"
-                                   th:href="@{/admin/posts/{id}(id=${report.post.id})}"
-                                   th:text="${report.post.title}"></a>
+                                   th:href="@{/admin/posts/{id}(id=${report.postId})}"
+                                   th:text="${report.postTitle}"></a>
                             </div>
                             <div class="act-meta" style="white-space:nowrap;"
                                  th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></div>
@@ -99,9 +99,9 @@
                         <div th:each="req : ${dashboard.pendingSongRequests}" class="act-item">
                             <div class="act-dot" style="background:var(--primary);"></div>
                             <div style="flex:1; overflow:hidden;">
-                                <div class="act-type" th:text="${req.artist.name}"></div>
+                                <div class="act-type" th:text="${req.artistName}"></div>
                                 <a class="act-title"
-                                   th:href="@{/admin/artists/{id}/songs(id=${req.artist.id})}"
+                                   th:href="@{/admin/artists/{id}/songs(id=${req.artistId})}"
                                    th:text="${req.songTitle}"></a>
                             </div>
                             <div class="act-meta" style="white-space:nowrap;"

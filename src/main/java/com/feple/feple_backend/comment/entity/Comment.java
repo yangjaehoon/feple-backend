@@ -62,6 +62,7 @@ public class Comment {
     public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
 
     public Long getPostId() { return post.getId(); }
+    public String getPostTitle() { return post.getTitle(); }
     public Long getUserId() { return user.getId(); }
     public String getUserNickname() { return user.getNickname(); }
     public UserRole getUserRole() { return user.getRole(); }

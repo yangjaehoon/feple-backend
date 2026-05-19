@@ -49,6 +49,13 @@ public class FestivalCertification {
         this.createdAt = LocalDateTime.now();
     }
 
+    public Long getFestivalId() { return festival.getId(); }
+    public String getFestivalTitle() { return festival.getTitle(); }
+    public String getUserNickname() { return user.getNickname(); }
+    public String getUserEmail() { return user.getEmail(); }
+    public boolean isPending() { return status == CertificationStatus.PENDING; }
+    public boolean isApproved() { return status == CertificationStatus.APPROVED; }
+
     public static FestivalCertification create(User user, Festival festival, String photoKey) {
         FestivalCertification cert = new FestivalCertification();
         cert.user = user;

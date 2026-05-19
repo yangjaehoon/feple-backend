@@ -43,6 +43,9 @@ public class SongRequest {
         }
     }
 
+    public Long getArtistId() { return artist.getId(); }
+    public String getArtistName() { return artist.getName(); }
+
     public void approve() {
         this.status = SongRequestStatus.APPROVED;
     }

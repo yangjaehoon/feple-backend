@@ -51,6 +51,9 @@ public class PostReport {
     }
 
     public Long getPostId() { return post.getId(); }
+    public String getPostTitle() { return post.getTitle(); }
+    public String getPosterNickname() { return post.getAuthorNickname(); }
+    public boolean isPending() { return status == ReportStatus.PENDING; }
 
     public void resolve(ReportStatus newStatus) {
         this.status = newStatus;

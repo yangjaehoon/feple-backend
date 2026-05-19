@@ -52,6 +52,9 @@ public class User {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    public boolean isAdmin() { return role == UserRole.ADMIN; }
+    public boolean isArtist() { return role == UserRole.ARTIST; }
+
     public void changeRole(UserRole newRole) {
         this.role = newRole;
     }

@@ -52,6 +52,13 @@ public class CommentReport {
         this.createdAt = LocalDateTime.now();
     }
 
+    public Long getCommentId() { return comment.getId(); }
+    public String getCommentContent() { return comment.getContent(); }
+    public Long getCommentPostId() { return comment.getPostId(); }
+    public String getCommentPostTitle() { return comment.getPostTitle(); }
+    public String getCommentUserNickname() { return comment.getUserNickname(); }
+    public boolean isPending() { return status == ReportStatus.PENDING; }
+
     public void resolve(ReportStatus newStatus) {
         this.status = newStatus;
     }
