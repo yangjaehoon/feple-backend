@@ -84,7 +84,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Transactional
     public SongResponseDto saveSong(Long artistId, SaveSongRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
+        if (songRepository.existsByYoutubeVideoId(dto.getYoutubeVideoId())) {
             throw new IllegalArgumentException("이미 등록된 곡입니다.");
         }
         Song song = Song.builder()
