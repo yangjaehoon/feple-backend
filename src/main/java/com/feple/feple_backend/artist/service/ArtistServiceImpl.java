@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -38,6 +40,7 @@ public class ArtistServiceImpl implements ArtistService {
     private final ArtistFollowRepository artistFollowRepository;
     private final FileStorageService fileStorageService;
     private final ArtistCascadeDeleteService cascadeDeleteService;
+    private final SongRepository songRepository;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -96,17 +99,24 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre) {
-        Stream<ArtistResponseDto> stream;
+        Map<Long, Integer> songCountMap = songRepository.countGroupedByArtist().stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
+
+        Stream<Artist> stream;
         if (keyword != null && !keyword.isBlank()) {
-            stream = artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream().map(this::toDto);
+            stream = artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream();
         } else {
             stream = SORT_STRATEGIES.getOrDefault(sort, ArtistRepository::findAllByOrderByWeeklyScoreDescIdAsc)
-                                     .apply(artistRepository).stream().map(this::toDto);
+                                     .apply(artistRepository).stream();
         }
         if (genre != null) {
-            return stream.filter(a -> genre.getDisplayName().equals(a.getGenre())).toList();
+            stream = stream.filter(a -> genre == a.getGenre());
         }
-        return stream.toList();
+        return stream
+                .map(a -> ArtistResponseDto.from(a,
+                        fileStorageService.buildUrl(a.getProfileImageKey()),
+                        songCountMap.getOrDefault(a.getId(), 0)))
+                .toList();
     }
 
     @Override

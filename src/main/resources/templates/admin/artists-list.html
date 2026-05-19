@@ -92,7 +92,8 @@
                                 ↑
                             </a>
                         </th>
-                        <th style="width:140px;">관리</th>
+                        <th style="width:80px;">곡 수</th>
+                        <th style="width:160px;">관리</th>
                     </tr>
                     </thead>
                     <tbody id="artist-tbody">
@@ -119,9 +120,13 @@
                             <div class="cell-secondary">팔로워</div>
                         </td>
                         <td>
+                            <div class="cell-primary" th:text="${artist.songCount}"></div>
+                            <div class="cell-secondary">곡</div>
+                        </td>
+                        <td>
                             <div style="display:flex; gap:6px; align-items:center;">
                                 <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}"
-                                   class="btn btn-secondary btn-sm">곡</a>
+                                   class="btn btn-secondary btn-sm">곡 관리</a>
                                 <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
                                    class="btn btn-warning btn-sm">수정</a>
                                 <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
