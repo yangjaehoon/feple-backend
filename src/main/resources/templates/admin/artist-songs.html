@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 곡 관리</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">곡 관리</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists}">아티스트</a>
+                <span class="bc-sep">›</span>
+                <span th:text="${artist.name}"></span>
+                <span class="bc-sep">›</span>
+                <span>곡 관리</span>
+            </div>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-secondary" th:href="@{/admin/artists}">← 목록으로</a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- YouTube 검색 -->
+        <div class="card" style="margin-bottom:24px;">
+            <div class="card-header">
+                <div class="card-title">YouTube 곡 검색</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="get"
+                      style="display:flex; gap:8px; margin-bottom:16px;">
+                    <input type="text" name="q" th:value="${q}"
+                           placeholder="곡명 또는 아티스트명으로 검색..."
+                           style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                    <button type="submit" class="btn btn-primary">검색</button>
+                </form>
+
+                <div th:if="${searchResults != null and !searchResults.isEmpty()}">
+                    <div style="font-size:12px; color:var(--muted); margin-bottom:10px;"
+                         th:text="'검색 결과 ' + ${searchResults.size()} + '건'"></div>
+                    <div style="display:grid; gap:8px;">
+                        <div th:each="result : ${searchResults}"
+                             style="display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--border); border-radius:8px;">
+                            <img th:if="${result.thumbnailUrl != null}"
+                                 th:src="${result.thumbnailUrl}"
+                                 style="width:60px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0;"/>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                     th:text="${result.title}"></div>
+                                <div style="font-size:12px; color:var(--muted); margin-top:2px;"
+                                     th:text="${result.channelTitle}"></div>
+                            </div>
+                            <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="post"
+                                  style="flex-shrink:0;">
+                                <input type="hidden" name="youtubeVideoId" th:value="${result.videoId}"/>
+                                <input type="hidden" name="title" th:value="${result.title}"/>
+                                <input type="hidden" name="thumbnailUrl" th:value="${result.thumbnailUrl}"/>
+                                <button type="submit" class="btn btn-primary" style="font-size:12px; padding:5px 12px;">+ 추가</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${q != null and !q.isBlank() and (searchResults == null or searchResults.isEmpty())}"
+                     style="color:var(--muted); font-size:13px; text-align:center; padding:16px 0;">
+                    검색 결과가 없습니다. YouTube API 키를 확인해주세요.
+                </div>
+            </div>
+        </div>
+
+        <!-- 등록된 곡 목록 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    등록된 곡
+                    <span style="font-size:13px; font-weight:400; color:var(--muted); margin-left:6px;"
+                          th:text="'— ' + ${songs.size()} + '곡'"></span>
+                </div>
+            </div>
+
+            <div th:if="${songs.isEmpty()}"
+                 style="padding:32px; text-align:center; color:var(--muted); font-size:13px;">
+                등록된 곡이 없습니다. 위에서 검색하여 추가해주세요.
+            </div>
+
+            <div th:unless="${songs.isEmpty()}" style="padding:0 16px 16px;">
+                <div th:each="song, stat : ${songs}"
+                     th:style="${stat.first} ? 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);'
+                                             : 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);'">
+                    <span style="font-size:12px; color:var(--muted); width:20px; text-align:center; flex-shrink:0;"
+                          th:text="${stat.index + 1}"></span>
+                    <img th:if="${song.thumbnailUrl != null}"
+                         th:src="${song.thumbnailUrl}"
+                         style="width:48px; height:36px; object-fit:cover; border-radius:4px; flex-shrink:0;"/>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                             th:text="${song.title}"></div>
+                        <a th:href="${song.youtubeUrl}" target="_blank"
+                           style="font-size:11px; color:var(--primary);">YouTube Music에서 보기</a>
+                    </div>
+                    <form th:action="@{/admin/artists/{aId}/songs/{sId}/delete(aId=${artist.id}, sId=${song.id})}"
+                          method="post" style="flex-shrink:0;"
+                          onsubmit="return confirm('삭제하시겠습니까?')">
+                        <button type="submit" class="btn btn-danger" style="font-size:12px; padding:4px 10px;">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
