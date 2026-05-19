@@ -3,16 +3,22 @@ package com.feple.feple_backend.artist.song.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
+import com.feple.feple_backend.artist.song.dto.SongFestivalDto;
 import com.feple.feple_backend.artist.song.dto.SongResponseDto;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
+import com.feple.feple_backend.artist.song.entity.ArtistFestivalSong;
 import com.feple.feple_backend.artist.song.entity.Song;
+import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
+import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
+import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,14 +26,46 @@ public class SongServiceImpl implements SongService, SongAdminService {
 
     private final SongRepository songRepository;
     private final ArtistRepository artistRepository;
+    private final ArtistFestivalRepository artistFestivalRepository;
+    private final ArtistFestivalSongRepository artistFestivalSongRepository;
     private final YoutubeSearchService youtubeSearchService;
 
     @Override
     @Transactional(readOnly = true)
     public List<SongResponseDto> getSongsByArtistId(Long artistId) {
-        return songRepository.findByArtistIdOrderByIdDesc(artistId)
+        List<Song> songs = songRepository.findByArtistIdOrderByIdDesc(artistId);
+        if (songs.isEmpty()) return List.of();
+
+        // 한 번의 쿼리로 전체 카운트 조회
+        Map<Long, Long> countMap = artistFestivalSongRepository
+                .countGroupedBySongForArtist(artistId)
                 .stream()
-                .map(SongResponseDto::from)
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        return songs.stream()
+                .map(song -> {
+                    int count = countMap.getOrDefault(song.getId(), 0L).intValue();
+                    return SongResponseDto.from(song, count, List.of());
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SongFestivalDto> getSongFestivals(Long songId) {
+        return artistFestivalSongRepository.findBySongIdWithFestival(songId)
+                .stream()
+                .map(afs -> {
+                    var festival = afs.getArtistFestival().getFestival();
+                    return SongFestivalDto.builder()
+                            .festivalId(festival.getId())
+                            .festivalTitle(festival.getTitle())
+                            .startDate(festival.getStartDate() != null ? festival.getStartDate().toString() : null)
+                            .build();
+                })
                 .toList();
     }
 
@@ -56,5 +94,31 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Transactional
     public void deleteSong(Long songId) {
         songRepository.deleteById(songId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArtistFestivalSong> getSetlist(Long artistFestivalId) {
+        return artistFestivalSongRepository.findByArtistFestivalId(artistFestivalId);
+    }
+
+    @Override
+    @Transactional
+    public void saveSetlist(Long artistFestivalId, Set<Long> songIds) {
+        ArtistFestival artistFestival = EntityFinder.getOrThrow(
+                artistFestivalRepository::findById, artistFestivalId, "아티스트 페스티벌");
+
+        artistFestivalSongRepository.deleteByArtistFestivalId(artistFestivalId);
+
+        if (songIds == null || songIds.isEmpty()) return;
+
+        List<Song> songs = songRepository.findAllById(songIds);
+        List<ArtistFestivalSong> setlist = songs.stream()
+                .map(song -> ArtistFestivalSong.builder()
+                        .song(song)
+                        .artistFestival(artistFestival)
+                        .build())
+                .toList();
+        artistFestivalSongRepository.saveAll(setlist);
     }
 }

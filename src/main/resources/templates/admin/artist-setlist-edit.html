@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 셋리스트 수정</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">셋리스트 수정</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists}">아티스트</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}" th:text="${artist.name}"></a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists/{id}/setlist(id=${artist.id})}">셋리스트</a>
+                <span class="bc-sep">›</span>
+                <span th:text="${artistFestival.festival.title}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="card" style="max-width:560px;">
+            <div class="card-header">
+                <div class="card-title">
+                    <span th:text="${artistFestival.festival.title}"></span>
+                    <span style="font-size:12px; font-weight:400; color:var(--muted); margin-left:6px;"
+                          th:text="${artistFestival.festival.startDate} + ' ~ ' + ${artistFestival.festival.endDate}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div th:if="${songs.isEmpty()}"
+                     style="color:var(--muted); font-size:13px; padding:8px 0;">
+                    등록된 곡이 없습니다.
+                    <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}">곡을 먼저 등록해주세요.</a>
+                </div>
+
+                <form th:unless="${songs.isEmpty()}"
+                      th:action="@{/admin/artists/{aId}/setlist/{afId}(aId=${artist.id}, afId=${artistFestival.id})}"
+                      method="post">
+
+                    <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+                        이 페스티벌에서 부른 곡을 선택하세요.
+                    </div>
+
+                    <div style="display:grid; gap:6px; margin-bottom:20px;">
+                        <div th:each="song : ${songs}"
+                             style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px;">
+                            <input type="checkbox" name="songIds" th:value="${song.id}"
+                                   th:checked="${selectedSongIds.contains(song.id)}"
+                                   style="width:16px; height:16px; accent-color:var(--primary); flex-shrink:0;"/>
+                            <img th:if="${song.thumbnailUrl != null}"
+                                 th:src="${song.thumbnailUrl}"
+                                 style="width:46px; height:34px; object-fit:cover; border-radius:4px; flex-shrink:0;"/>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                     th:text="${song.title}"></div>
+                                <div th:if="${song.festivalCount > 0}"
+                                     style="font-size:11px; color:var(--primary); margin-top:2px;"
+                                     th:text="'총 ' + ${song.festivalCount} + '회 공연'"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">저장</button>
+                        <a th:href="@{/admin/artists/{id}/setlist(id=${artist.id})}" class="btn btn-secondary">취소</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

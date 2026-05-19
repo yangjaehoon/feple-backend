@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.song.controller;
 
+import com.feple.feple_backend.artist.song.dto.SongFestivalDto;
 import com.feple.feple_backend.artist.song.dto.SongResponseDto;
 import com.feple.feple_backend.artist.song.service.SongService;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +21,11 @@ public class SongController {
     @GetMapping("/{artistId}/songs")
     public List<SongResponseDto> getSongs(@PathVariable Long artistId) {
         return songService.getSongsByArtistId(artistId);
+    }
+
+    @GetMapping("/{artistId}/songs/{songId}/festivals")
+    public List<SongFestivalDto> getSongFestivals(@PathVariable Long artistId,
+                                                   @PathVariable Long songId) {
+        return songService.getSongFestivals(songId);
     }
 }
