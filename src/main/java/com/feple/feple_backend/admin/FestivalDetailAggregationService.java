@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class FestivalDetailAggregationService {
 
+    private static final String ANNOUNCEMENT_STAGE = "📢";
+
     private final FestivalService festivalService;
     private final ArtistFestivalService artistFestivalService;
     private final TimetableService timetableService;
@@ -32,7 +34,6 @@ public class FestivalDetailAggregationService {
     @Value("${app.google.maps.key:}")
     private String googleMapsKey;
 
-    /** 페스티벌 상세 뷰에 필요한 모든 데이터를 집계하여 반환 */
     public FestivalDetailDto buildAttributes(Long festivalId) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
 
@@ -48,7 +49,7 @@ public class FestivalDetailAggregationService {
         List<TimetableEntryResponse> timetableEntries = timetableService.getEntries(festivalId);
         Map<String, List<TimetableEntryResponse>> timetableByArtist = timetableEntries.stream()
                 .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
-                             && !"📢".equals(e.getStageName()))
+                             && !ANNOUNCEMENT_STAGE.equals(e.getStageName()))
                 .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName));
 
         return new FestivalDetailDto(

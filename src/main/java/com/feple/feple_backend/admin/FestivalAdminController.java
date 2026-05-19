@@ -11,9 +11,6 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,10 +38,7 @@ public class FestivalAdminController {
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("festival", new FestivalRequestDto());
-        model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
-        model.addAttribute("allRegions", Region.values());
-        model.addAttribute("allGenres", Genre.values());
-        model.addAttribute("kakaoMapsKey", kakaoMapsKey);
+        populateFestivalFormModel(model);
         return "admin/festival-form";
     }
 
@@ -69,10 +63,7 @@ public class FestivalAdminController {
 
         if (!errors.isEmpty()) {
             model.addAttribute("errors", errors);
-            model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
-            model.addAttribute("allRegions", Region.values());
-            model.addAttribute("allGenres", Genre.values());
-            model.addAttribute("kakaoMapsKey", kakaoMapsKey);
+            populateFestivalFormModel(model);
             return "admin/festival-form";
         }
 
@@ -92,11 +83,8 @@ public class FestivalAdminController {
     }
 
     @GetMapping
-    public String listFestivals(
-            Model model,
-            @PageableDefault(size = 20, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable) {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, true);
-        model.addAttribute("festivals", festivals);
+    public String listFestivals(Model model) {
+        model.addAttribute("festivals", festivalService.getAllFestivals(null, null, true));
         return "admin/festival-list";
     }
 
@@ -118,9 +106,7 @@ public class FestivalAdminController {
         model.addAttribute("festivalId", id);
         model.addAttribute("festival", form);
         model.addAttribute("currentPosterUrl", festival.getPosterUrl());
-        model.addAttribute("allRegions", Region.values());
-        model.addAttribute("allGenres", Genre.values());
-        model.addAttribute("kakaoMapsKey", kakaoMapsKey);
+        populateFestivalFormModel(model);
         return "admin/festival-edit-form";
     }
 
@@ -143,7 +129,13 @@ public class FestivalAdminController {
         return "redirect:/admin";
     }
 
-    /** 페스티벌 상세: 모든 하위 리소스(아티스트/스테이지/타임테이블/부스) 데이터 집계 */
+    private void populateFestivalFormModel(Model model) {
+        model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
+        model.addAttribute("allRegions", Region.values());
+        model.addAttribute("allGenres", Genre.values());
+        model.addAttribute("kakaoMapsKey", kakaoMapsKey);
+    }
+
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model) {
         FestivalDetailDto detail = festivalDetailAggregationService.buildAttributes(id);

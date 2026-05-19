@@ -13,7 +13,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/artists")
@@ -75,7 +77,8 @@ public class ArtistAdminController {
             artistService.updateArtistPhoto(id, imageKey);
             ra.addFlashAttribute("successMessage", "사진이 업데이트되었습니다.");
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "사진 업로드 실패: " + e.getMessage());
+            log.error("아티스트 프로필 사진 업로드 실패 artistId={}", id, e);
+            ra.addFlashAttribute("errorMessage", "사진 업로드에 실패했습니다. 다시 시도해주세요.");
         }
         return "redirect:/admin/artists/photos";
     }
