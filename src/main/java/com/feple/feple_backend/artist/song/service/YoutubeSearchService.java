@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
@@ -118,8 +119,8 @@ public class YoutubeSearchService {
     private YoutubeVideoDto toDto(YoutubeItem item) {
         return YoutubeVideoDto.builder()
                 .videoId(item.id().videoId())
-                .title(item.snippet().title())
-                .channelTitle(item.snippet().channelTitle())
+                .title(HtmlUtils.htmlUnescape(item.snippet().title()))
+                .channelTitle(HtmlUtils.htmlUnescape(item.snippet().channelTitle()))
                 .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
                 .build();
     }
