@@ -11,9 +11,11 @@ import java.util.List;
 
 public interface SongRequestRepository extends JpaRepository<SongRequest, Long> {
 
-    List<SongRequest> findByArtistIdAndStatusOrderByCreatedAtDesc(Long artistId, SongRequestStatus status);
+    @Query("SELECT sr FROM SongRequest sr WHERE sr.artist.id = :artistId AND sr.status = :status ORDER BY sr.createdAt DESC")
+    List<SongRequest> findByArtistIdAndStatusOrderByCreatedAtDesc(@Param("artistId") Long artistId, @Param("status") SongRequestStatus status);
 
-    List<SongRequest> findByArtistIdAndUserIdOrderByCreatedAtDesc(Long artistId, Long userId);
+    @Query("SELECT sr FROM SongRequest sr WHERE sr.artist.id = :artistId AND sr.userId = :userId ORDER BY sr.createdAt DESC")
+    List<SongRequest> findByArtistIdAndUserIdOrderByCreatedAtDesc(@Param("artistId") Long artistId, @Param("userId") Long userId);
 
     @Query("SELECT CASE WHEN COUNT(sr) > 0 THEN TRUE ELSE FALSE END FROM SongRequest sr " +
            "WHERE sr.artist.id = :artistId AND sr.userId = :userId " +

@@ -16,11 +16,14 @@ import java.util.Set;
 
 public interface FestivalCertificationRepository extends JpaRepository<FestivalCertification, Long> {
 
-    Optional<FestivalCertification> findByUserIdAndFestivalId(Long userId, Long festivalId);
+    @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.festival.id = :festivalId")
+    Optional<FestivalCertification> findByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
 
-    List<FestivalCertification> findByUserId(Long userId);
+    @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId")
+    List<FestivalCertification> findByUserId(@Param("userId") Long userId);
 
-    List<FestivalCertification> findByUserIdAndStatus(Long userId, CertificationStatus status);
+    @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")
+    List<FestivalCertification> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") CertificationStatus status);
 
     Page<FestivalCertification> findByStatus(CertificationStatus status, Pageable pageable);
 

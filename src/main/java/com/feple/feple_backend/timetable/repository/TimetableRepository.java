@@ -12,7 +12,8 @@ public interface TimetableRepository extends JpaRepository<TimetableEntry, Long>
     // stage JOIN FETCH — getStageName()/getDisplayOrder() 접근 시 N+1 방지
     @Query("SELECT t FROM TimetableEntry t LEFT JOIN FETCH t.stage WHERE t.festival.id = :festivalId ORDER BY t.festivalDate ASC, t.startTime ASC")
     List<TimetableEntry> findByFestivalIdWithStage(@Param("festivalId") Long festivalId);
-    List<TimetableEntry> findByFestivalIdAndArtistName(Long festivalId, String artistName);
+    @Query("SELECT t FROM TimetableEntry t WHERE t.festival.id = :festivalId AND t.artistName = :artistName")
+    List<TimetableEntry> findByFestivalIdAndArtistName(@Param("festivalId") Long festivalId, @Param("artistName") String artistName);
 
     @Modifying
     @Query("DELETE FROM TimetableEntry t WHERE t.festival.id = :festivalId")
