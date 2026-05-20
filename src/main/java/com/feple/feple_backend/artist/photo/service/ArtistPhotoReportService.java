@@ -68,7 +68,8 @@ public class ArtistPhotoReportService implements ReportAdminService {
         ArtistPhotoReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         Long photoId = report.getPhotoId();
 
-        reportRepository.findByPhotoId(photoId).forEach(r -> r.resolve(ReportStatus.POST_DELETED));
+        // FK 순서: ArtistPhotoReport → ArtistGalleryPhotoLike → ArtistGalleryPhoto
+        reportRepository.deleteAll(reportRepository.findByPhotoId(photoId));
         photoLikeRepository.deleteByPhotoId(photoId);
         photoRepository.deleteById(photoId);
     }
