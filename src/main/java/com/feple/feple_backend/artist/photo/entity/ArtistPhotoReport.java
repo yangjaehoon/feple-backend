@@ -51,4 +51,20 @@ public class ArtistPhotoReport {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    public void resolve(ReportStatus newStatus) {
+        this.status = newStatus;
+    }
+
+    public boolean isPending() {
+        return this.status == ReportStatus.PENDING;
+    }
+
+    public Long getPhotoId() {
+        return photo.getId();
+    }
+
+    public Long getReporterId() {
+        return reporter.getId();
+    }
 }

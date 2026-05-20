@@ -63,7 +63,12 @@ public class PostServiceImpl implements PostService, PostAdminService {
 
     @Override
     public List<PostResponseDto> getPostsByBoardType(BoardType boardType) {
-        return postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, PageRequest.of(0, PageSize.POSTS))
+        return getPostsByBoardTypePaged(boardType, 0, PageSize.POSTS);
+    }
+
+    @Override
+    public List<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, int page, int size) {
+        return postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, PageRequest.of(page, size))
                 .map(PostResponseDto::from)
                 .toList();
     }

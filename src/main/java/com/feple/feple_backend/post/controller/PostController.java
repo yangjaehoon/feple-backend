@@ -47,8 +47,10 @@ public class PostController {
     }
 
     @GetMapping("/free")
-    public ResponseEntity<List<PostResponseDto>> getFreePosts() {
-        return ResponseEntity.ok(postService.getPostsByBoardType(BoardType.FREE));
+    public ResponseEntity<List<PostResponseDto>> getFreePosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, page, size));
     }
 
     @PostMapping("/mate")
@@ -59,8 +61,10 @@ public class PostController {
     }
 
     @GetMapping("/mate")
-    public ResponseEntity<List<PostResponseDto>> getMatePosts() {
-        return ResponseEntity.ok(postService.getPostsByBoardType(BoardType.MATE));
+    public ResponseEntity<List<PostResponseDto>> getMatePosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, page, size));
     }
 
     @PostMapping("/{postId}/like")

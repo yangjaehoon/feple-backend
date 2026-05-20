@@ -23,4 +23,8 @@ public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGa
 
     @Query("SELECT apl.photo.id FROM ArtistGalleryPhotoLike apl WHERE apl.user.id = :userId AND apl.photo.id IN :photoIds")
     Set<Long> findLikedPhotoIds(@Param("userId") Long userId, @Param("photoIds") List<Long> photoIds);
+
+    @Query("DELETE FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId")
+    @org.springframework.data.jpa.repository.Modifying
+    void deleteByPhotoId(@Param("photoId") Long photoId);
 }

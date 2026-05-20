@@ -49,6 +49,9 @@
                 <a th:href="@{/admin/reports(type='comment', status=${status}, page=0)}"
                    th:classappend="${type == 'comment'} ? ' active' : ''"
                    class="type-tab">댓글 신고</a>
+                <a th:href="@{/admin/reports(type='photo', status=${status}, page=0)}"
+                   th:classappend="${type == 'photo'} ? ' active' : ''"
+                   class="type-tab">사진 신고</a>
             </div>
 
             <!-- 상태 탭 -->
@@ -211,6 +214,80 @@
                     </tr>
                     <tr class="empty-row" th:if="${reports.totalElements == 0}">
                         <td colspan="7">신고 내역이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 사진 신고 테이블 -->
+            <div class="table-wrap" th:if="${type == 'photo'}">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:52px;">ID</th>
+                        <th>신고된 사진</th>
+                        <th style="width:90px;">신고 사유</th>
+                        <th style="width:100px;">신고자</th>
+                        <th style="width:90px;">일시</th>
+                        <th style="width:70px;">상태</th>
+                        <th style="width:200px;">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td class="td-id" th:text="${report.id}"></td>
+                        <td>
+                            <div style="font-size:14px; font-weight:600;">
+                                사진 #<span th:text="${report.photo.id}"></span>
+                            </div>
+                            <div class="cell-secondary" style="margin-top:4px;">
+                                아티스트: <span th:text="${report.photo.artist.name}"></span>
+                                <span style="margin-left:6px;">•</span>
+                                <span style="margin-left:6px;" th:text="${report.photo.title}"></span>
+                                <span th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                      style="margin-left:6px; font-style:italic;"
+                                      th:text="'「' + ${report.detail} + '」'"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="reason-badge"
+                                  th:classappend="'reason-' + ${report.reason}"
+                                  th:text="${report.reason.displayName}">
+                            </span>
+                        </td>
+                        <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="'status-' + ${report.status}"
+                                  th:text="${report.status.displayName}">
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${report.pending}"
+                                 style="display:flex; gap:6px;">
+                                <form th:action="@{/admin/reports/photos/{id}/delete-photo(id=${report.id})}" method="post">
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('사진을 삭제하고 신고를 처리할까요?')">
+                                        사진 삭제
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/reports/photos/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                            onclick="return confirm('이 신고를 기각할까요?')">
+                                        기각
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:unless="${report.pending}"
+                                  style="color:var(--muted); font-size:12px;">처리 완료</span>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${reports.totalElements == 0}">
+                        <td colspan="7">사진 신고 내역이 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.post.service.PostReportService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,13 +19,19 @@ public class ReportAdminController {
 
     private final PostReportService postReportService;
     private final CommentReportService commentReportService;
+    private final ArtistPhotoReportService photoReportService;
     private final Map<String, ReportAdminService> handlers;
 
     public ReportAdminController(PostReportService postReportService,
-                                  CommentReportService commentReportService) {
+                                  CommentReportService commentReportService,
+                                  ArtistPhotoReportService photoReportService) {
         this.postReportService = postReportService;
         this.commentReportService = commentReportService;
-        this.handlers = Map.of("post", postReportService, "comment", commentReportService);
+        this.photoReportService = photoReportService;
+        this.handlers = Map.of(
+                "post", postReportService,
+                "comment", commentReportService,
+                "photo", photoReportService);
     }
 
     @GetMapping
@@ -76,5 +83,23 @@ public class ReportAdminController {
         commentReportService.dismissReport(id);
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         return "redirect:/admin/reports?type=comment&page=" + page;
+    }
+
+    @PostMapping("/photos/{id}/delete-photo")
+    public String deletePhoto(@PathVariable Long id,
+                              @RequestParam(defaultValue = "0") int page,
+                              RedirectAttributes ra) {
+        photoReportService.deletePhotoAndResolve(id);
+        ra.addFlashAttribute("successMessage", "사진을 삭제하고 신고를 처리했습니다.");
+        return "redirect:/admin/reports?type=photo&page=" + page;
+    }
+
+    @PostMapping("/photos/{id}/dismiss")
+    public String dismissPhoto(@PathVariable Long id,
+                               @RequestParam(defaultValue = "0") int page,
+                               RedirectAttributes ra) {
+        photoReportService.dismissReport(id);
+        ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
+        return "redirect:/admin/reports?type=photo&page=" + page;
     }
 }
