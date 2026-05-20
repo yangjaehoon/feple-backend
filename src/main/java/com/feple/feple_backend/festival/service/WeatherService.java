@@ -68,11 +68,14 @@ public class WeatherService {
         LocalDate targetDate = resolveTargetDate(festival, today);
         if (targetDate == null) return Optional.empty();
 
+        String[] baseDatetime = resolveBaseDatetime(targetDate, today);
+        if (baseDatetime == null) return Optional.empty(); // API 범위 초과
+
         int[] grid = resolveGrid(festival);
         String cacheKey = grid[0] + "_" + grid[1] + "_" + targetDate.format(DATE_FMT);
 
         try {
-            return Optional.of(fetchWeather(cacheKey, grid[0], grid[1], targetDate, today));
+            return Optional.of(fetchWeather(cacheKey, grid[0], grid[1], targetDate, baseDatetime));
         } catch (Exception e) {
             log.error("기상청 API 호출 실패: festivalId={}", festivalId, e);
             return Optional.empty();
@@ -80,8 +83,7 @@ public class WeatherService {
     }
 
     @Cacheable(value = "weather", key = "#cacheKey")
-    public WeatherDto fetchWeather(String cacheKey, int nx, int ny, LocalDate targetDate, LocalDate baseDate) {
-        String[] baseDatetime = resolveBaseDatetime(baseDate, targetDate);
+    public WeatherDto fetchWeather(String cacheKey, int nx, int ny, LocalDate targetDate, String[] baseDatetime) {
         String apiBaseDate = baseDatetime[0];
         String apiBaseTime = baseDatetime[1];
 
@@ -152,20 +154,18 @@ public class WeatherService {
         );
     }
 
-    // 페스티벌 기간 중 오늘 또는 가장 가까운 날 (3일 이내)
+    // 페스티벌 날짜 기준 target date 선택
+    // - 진행 중: 오늘
+    // - 시작 전: 시작일
+    // - 종료됨: 종료일 (API 범위 초과 여부는 resolveBaseDatetime에서 판단)
     private LocalDate resolveTargetDate(Festival festival, LocalDate today) {
         if (festival.getStartDate() == null) return null;
-        if (festival.getEndDate() != null && festival.getEndDate().isBefore(today)) return null;
+        LocalDate start = festival.getStartDate();
+        LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : start;
 
-        if (!festival.getStartDate().isAfter(today) &&
-                (festival.getEndDate() == null || !festival.getEndDate().isBefore(today))) {
-            return today;
-        }
-        if (festival.getStartDate().isAfter(today) &&
-                !festival.getStartDate().isAfter(today.plusDays(3))) {
-            return festival.getStartDate();
-        }
-        return null;
+        if (!today.isBefore(start) && !today.isAfter(end)) return today; // 진행 중
+        if (today.isBefore(start)) return start;                          // 시작 전
+        return end;                                                        // 종료됨
     }
 
     private int[] resolveGrid(Festival festival) {
@@ -175,24 +175,34 @@ public class WeatherService {
         return REGION_GRID.getOrDefault(festival.getRegion(), new int[]{60, 127}); // 기본: 서울
     }
 
-    // 기상청은 예보를 02/05/08/11/14/17/20/23시에 발표
-    // targetDate가 내일/모레면 오늘 최신 발표 기준으로 조회 가능
-    private String[] resolveBaseDatetime(LocalDate baseDate, LocalDate targetDate) {
+    // 기상청 단기예보 API 제약:
+    //   base_date는 최근 3일치만 유효, 각 예보는 base_date 기준 +3일까지 제공
+    // - 과거 2일 이내: base_date = targetDate, base_time = "0200" (그날 이른 발표본)
+    // - 오늘/미래 3일 이내: base_date = 오늘, base_time = 최신 발표 시각
+    // - 그 외(더 먼 과거 or 더 먼 미래): null 반환 → 날씨 숨김
+    private String[] resolveBaseDatetime(LocalDate targetDate, LocalDate today) {
+        if (targetDate.isBefore(today.minusDays(2))) return null; // 3일+ 전 종료 페스티벌
+        if (targetDate.isAfter(today.plusDays(3))) return null;   // 4일+ 뒤 시작 페스티벌
+
+        if (targetDate.isBefore(today)) {
+            // 어제/그제 종료된 페스티벌 → 해당 날 02시 발표본 사용
+            return new String[]{targetDate.format(DATE_FMT), "0200"};
+        }
+
+        // 오늘 또는 미래 3일 이내 → 오늘의 최신 발표 시각 사용
         LocalTime nowKST = LocalTime.now(ZoneId.of("Asia/Seoul")).minusMinutes(10);
         int currentHour = nowKST.getHour();
+        LocalDate apiDate = today;
+        int bestHour = 2;
 
-        int bestHour = BASE_HOURS[0];
-        for (int h : BASE_HOURS) {
-            if (h <= currentHour) bestHour = h;
-        }
-
-        // 자정~02시 사이면 전날 23시 발표본 사용
-        LocalDate apiDate = baseDate;
         if (currentHour < 2) {
-            apiDate = baseDate.minusDays(1);
+            apiDate = today.minusDays(1);
             bestHour = 23;
+        } else {
+            for (int h : BASE_HOURS) {
+                if (h <= currentHour) bestHour = h;
+            }
         }
-
         return new String[]{apiDate.format(DATE_FMT), String.format("%02d00", bestHour)};
     }
 }
