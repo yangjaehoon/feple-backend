@@ -1,13 +1,13 @@
 package com.feple.feple_backend.festival.controller;
 
-import com.feple.feple_backend.festival.dto.AirQualityDto;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.dto.WeatherDto;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
-import com.feple.feple_backend.festival.service.AirQualityService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +22,7 @@ public class FestivalController {
 
     private final FestivalService festivalService;
     private final FestivalLikeService festivalLikeService;
-    private final AirQualityService airQualityService;
+    private final WeatherService weatherService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -50,9 +50,9 @@ public class FestivalController {
         return ResponseEntity.ok(festivalLikeService.isLiked(id, userId));
     }
 
-    @GetMapping("/{id}/air-quality")
-    public ResponseEntity<AirQualityDto> getAirQuality(@PathVariable Long id) {
-        return airQualityService.getByFestivalId(id)
+    @GetMapping("/{id}/weather")
+    public ResponseEntity<WeatherDto> getWeather(@PathVariable Long id) {
+        return weatherService.getByFestivalId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
     }

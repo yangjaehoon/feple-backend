@@ -23,14 +23,14 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCache airQualityCache = new CaffeineCache("airQuality",
+        CaffeineCache weatherCache = new CaffeineCache("weather",
                 Caffeine.newBuilder()
                         .expireAfterWrite(1, TimeUnit.HOURS)
-                        .maximumSize(20)
+                        .maximumSize(50)
                         .build());
 
         SimpleCacheManager manager = new SimpleCacheManager();
-        manager.setCaches(List.of(airQualityCache));
+        manager.setCaches(List.of(weatherCache));
         return manager;
     }
 }
