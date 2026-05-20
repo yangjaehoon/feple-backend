@@ -49,6 +49,7 @@ dependencies {
 
 	implementation 'com.bucket4j:bucket4j-core:8.10.1'
 	implementation 'com.github.ben-manes.caffeine:caffeine'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
 	implementation platform("software.amazon.awssdk:bom:2.25.1")
 	implementation 'com.google.firebase:firebase-admin:9.3.0'

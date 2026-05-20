@@ -1,9 +1,11 @@
 package com.feple.feple_backend.festival.controller;
 
+import com.feple.feple_backend.festival.dto.AirQualityDto;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.festival.service.AirQualityService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class FestivalController {
 
     private final FestivalService festivalService;
     private final FestivalLikeService festivalLikeService;
+    private final AirQualityService airQualityService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -45,5 +48,12 @@ public class FestivalController {
     public ResponseEntity<Boolean> isLiked(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(festivalLikeService.isLiked(id, userId));
+    }
+
+    @GetMapping("/{id}/air-quality")
+    public ResponseEntity<AirQualityDto> getAirQuality(@PathVariable Long id) {
+        return airQualityService.getByFestivalId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }
