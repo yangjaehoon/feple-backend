@@ -3,29 +3,32 @@ package com.feple.feple_backend.festival.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.feple.feple_backend.festival.dto.WeatherDto;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.entity.FestivalWeather;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WeatherService {
 
-    // 지역별 기상청 격자 좌표 (위경도 없는 페스티벌 fallback)
     private static final Map<Region, int[]> REGION_GRID = Map.ofEntries(
             Map.entry(Region.SEOUL,     new int[]{60, 127}),
             Map.entry(Region.BUSAN,     new int[]{98, 76}),
@@ -57,51 +60,69 @@ public class WeatherService {
 
     private final RestTemplate restTemplate;
     private final FestivalRepository festivalRepository;
+    private final FestivalWeatherRepository weatherRepository;
 
+    @Transactional
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new NoSuchElementException("페스티벌"));
 
-        if (serviceKey == null || serviceKey.isBlank()) return Optional.empty();
-
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
+        boolean isEnded = end != null && end.isBefore(today);
+
+        // 종료된 페스티벌: DB에 저장된 날씨만 반환
+        if (isEnded) {
+            return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
+        }
+
+        // 진행 중 / 예정: API 호출 후 DB에 저장
+        if (serviceKey == null || serviceKey.isBlank()) {
+            return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
+        }
+
         LocalDate targetDate = resolveTargetDate(festival, today);
         if (targetDate == null) return Optional.empty();
 
         String[] baseDatetime = resolveBaseDatetime(targetDate, today);
-        if (baseDatetime == null) return Optional.empty(); // API 범위 초과
+        if (baseDatetime == null) return Optional.empty();
 
         int[] grid = resolveGrid(festival);
-        String cacheKey = grid[0] + "_" + grid[1] + "_" + targetDate.format(DATE_FMT);
 
         try {
-            return Optional.of(fetchWeather(cacheKey, grid[0], grid[1], targetDate, baseDatetime));
+            WeatherDto dto = fetchFromApi(grid[0], grid[1], targetDate, baseDatetime);
+            saveOrUpdate(festivalId, dto);
+            return Optional.of(dto);
         } catch (Exception e) {
             log.error("기상청 API 호출 실패: festivalId={}", festivalId, e);
-            return Optional.empty();
+            return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
         }
     }
 
-    @Cacheable(value = "weather", key = "#cacheKey")
-    public WeatherDto fetchWeather(String cacheKey, int nx, int ny, LocalDate targetDate, String[] baseDatetime) {
-        String apiBaseDate = baseDatetime[0];
-        String apiBaseTime = baseDatetime[1];
+    private void saveOrUpdate(Long festivalId, WeatherDto dto) {
+        FestivalWeather weather = weatherRepository.findByFestivalId(festivalId)
+                .orElse(FestivalWeather.of(festivalId, dto));
+        weather.apply(dto);
+        weatherRepository.save(weather);
+    }
 
-        // serviceKey는 이미 인코딩된 키를 그대로 사용 (재인코딩 방지)
+    private WeatherDto fetchFromApi(int nx, int ny, LocalDate targetDate, String[] baseDatetime) {
         String url = baseUrl + "/getVilageFcst"
                 + "?serviceKey=" + serviceKey
                 + "&pageNo=1&numOfRows=1000&dataType=JSON"
-                + "&base_date=" + apiBaseDate
-                + "&base_time=" + apiBaseTime
+                + "&base_date=" + baseDatetime[0]
+                + "&base_time=" + baseDatetime[1]
                 + "&nx=" + nx + "&ny=" + ny;
 
-        URI uri = URI.create(url);
-
-        JsonNode body = restTemplate.getForObject(uri, JsonNode.class);
+        JsonNode body = restTemplate.getForObject(URI.create(url), JsonNode.class);
         JsonNode items = body.path("response").path("body").path("items").path("item");
 
-        String fcstDate = targetDate.format(DATE_FMT);
-        return parseWeather(items, fcstDate);
+        String resultCode = body.path("response").path("header").path("resultCode").asText();
+        if (!"00".equals(resultCode)) {
+            throw new IllegalStateException("기상청 API 오류: " + resultCode);
+        }
+
+        return parseWeather(items, targetDate.format(DATE_FMT));
     }
 
     private WeatherDto parseWeather(JsonNode items, String fcstDate) {
@@ -122,18 +143,14 @@ public class WeatherService {
                 case "TMN" -> { minTemp = Double.parseDouble(value); hasTmn = true; }
                 case "TMX" -> { maxTemp = Double.parseDouble(value); hasTmx = true; }
                 case "POP" -> maxRainProb = Math.max(maxRainProb, Integer.parseInt(value));
-                // 정오 하늘 상태
                 case "SKY" -> { if ("1200".equals(fcstTime)) skyCode = value; }
-                // 가장 강한 강수 형태 우선
                 case "PTY" -> {
-                    int cur = Integer.parseInt(ptyCode);
                     int next = Integer.parseInt(value);
-                    if (next > cur) ptyCode = value;
+                    if (next > Integer.parseInt(ptyCode)) ptyCode = value;
                 }
             }
         }
 
-        // TMN/TMX가 없으면 TMP(시간별 기온)에서 대체
         if (!hasTmn || !hasTmx) {
             for (JsonNode item : items) {
                 if (!fcstDate.equals(item.path("fcstDate").asText())) continue;
@@ -154,42 +171,31 @@ public class WeatherService {
         );
     }
 
-    // 페스티벌 날짜 기준 target date 선택
-    // - 진행 중: 오늘
-    // - 시작 전: 시작일
-    // - 종료됨: 종료일 (API 범위 초과 여부는 resolveBaseDatetime에서 판단)
     private LocalDate resolveTargetDate(Festival festival, LocalDate today) {
         if (festival.getStartDate() == null) return null;
         LocalDate start = festival.getStartDate();
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : start;
 
-        if (!today.isBefore(start) && !today.isAfter(end)) return today; // 진행 중
-        if (today.isBefore(start)) return start;                          // 시작 전
-        return end;                                                        // 종료됨
+        if (!today.isBefore(start) && !today.isAfter(end)) return today;
+        if (today.isBefore(start)) return start;
+        return end;
     }
 
     private int[] resolveGrid(Festival festival) {
         if (festival.getLatitude() != null && festival.getLongitude() != null) {
             return KmaGridConverter.toGrid(festival.getLatitude(), festival.getLongitude());
         }
-        return REGION_GRID.getOrDefault(festival.getRegion(), new int[]{60, 127}); // 기본: 서울
+        return REGION_GRID.getOrDefault(festival.getRegion(), new int[]{60, 127});
     }
 
-    // 기상청 단기예보 API 제약:
-    //   base_date는 최근 3일치만 유효, 각 예보는 base_date 기준 +3일까지 제공
-    // - 과거 2일 이내: base_date = targetDate, base_time = "0200" (그날 이른 발표본)
-    // - 오늘/미래 3일 이내: base_date = 오늘, base_time = 최신 발표 시각
-    // - 그 외(더 먼 과거 or 더 먼 미래): null 반환 → 날씨 숨김
     private String[] resolveBaseDatetime(LocalDate targetDate, LocalDate today) {
-        if (targetDate.isBefore(today.minusDays(2))) return null; // 3일+ 전 종료 페스티벌
-        if (targetDate.isAfter(today.plusDays(3))) return null;   // 4일+ 뒤 시작 페스티벌
+        if (targetDate.isBefore(today.minusDays(2))) return null;
+        if (targetDate.isAfter(today.plusDays(3))) return null;
 
         if (targetDate.isBefore(today)) {
-            // 어제/그제 종료된 페스티벌 → 해당 날 02시 발표본 사용
             return new String[]{targetDate.format(DATE_FMT), "0200"};
         }
 
-        // 오늘 또는 미래 3일 이내 → 오늘의 최신 발표 시각 사용
         LocalTime nowKST = LocalTime.now(ZoneId.of("Asia/Seoul")).minusMinutes(10);
         int currentHour = nowKST.getHour();
         LocalDate apiDate = today;
