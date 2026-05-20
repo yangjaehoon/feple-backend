@@ -5,13 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGalleryPhotoLike, Long> {
 
-    boolean existsByPhoto_IdAndUser_Id(Long photoId, Long userId);
+    @Query("SELECT CASE WHEN COUNT(apl) > 0 THEN TRUE ELSE FALSE END FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId AND apl.user.id = :userId")
+    boolean existsByPhoto_IdAndUser_Id(@Param("photoId") Long photoId, @Param("userId") Long userId);
 
     Optional<ArtistGalleryPhotoLike> findByPhoto_IdAndUser_Id(Long photoId, Long userId);
 
