@@ -85,18 +85,15 @@ public class WeatherService {
         String apiBaseDate = baseDatetime[0];
         String apiBaseTime = baseDatetime[1];
 
-        URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getVilageFcst")
-                .queryParam("serviceKey", serviceKey)
-                .queryParam("pageNo", 1)
-                .queryParam("numOfRows", 1000)
-                .queryParam("dataType", "JSON")
-                .queryParam("base_date", apiBaseDate)
-                .queryParam("base_time", apiBaseTime)
-                .queryParam("nx", nx)
-                .queryParam("ny", ny)
-                .build()
-                .encode()
-                .toUri();
+        // serviceKey는 이미 인코딩된 키를 그대로 사용 (재인코딩 방지)
+        String url = baseUrl + "/getVilageFcst"
+                + "?serviceKey=" + serviceKey
+                + "&pageNo=1&numOfRows=1000&dataType=JSON"
+                + "&base_date=" + apiBaseDate
+                + "&base_time=" + apiBaseTime
+                + "&nx=" + nx + "&ny=" + ny;
+
+        URI uri = URI.create(url);
 
         JsonNode body = restTemplate.getForObject(uri, JsonNode.class);
         JsonNode items = body.path("response").path("body").path("items").path("item");
