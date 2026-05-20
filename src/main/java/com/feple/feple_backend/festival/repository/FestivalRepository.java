@@ -8,13 +8,18 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     List<Festival> findAllByOrderByStartDateDesc();
 
-    List<Festival> findByStartDate(java.time.LocalDate startDate);
+    List<Festival> findByStartDate(LocalDate startDate);
+
+    // 진행 중이거나 N일 이내 시작하는 페스티벌 (날씨 수집 대상)
+    @Query("SELECT f FROM Festival f WHERE f.startDate <= :before AND (f.endDate IS NULL OR f.endDate >= :today)")
+    List<Festival> findOngoingOrStartingBefore(@Param("today") LocalDate today, @Param("before") LocalDate before);
 
     @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Festival> findByTitleKeyword(@Param("keyword") String keyword);
