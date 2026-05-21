@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -89,8 +90,13 @@ public class FestivalAdminController {
     public String listFestivals(Model model) {
         List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, true);
         List<Long> ids = festivals.stream().map(FestivalResponseDto::getId).toList();
+        LocalDate today = LocalDate.now();
+        long activeFestivalCount = festivals.stream()
+                .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
+                .count();
         model.addAttribute("festivals", festivals);
         model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap(ids));
+        model.addAttribute("activeFestivalCount", activeFestivalCount);
         return "admin/festival-list";
     }
 

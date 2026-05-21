@@ -251,8 +251,7 @@
                                 </td>
                             </tr>
                         </th:block>
-                        <tr class="empty-row"
-                            th:if="${#lists.isEmpty(festivals) or festivals.stream().noneMatch(f -> f.endDate == null or !f.endDate.isBefore(#temporals.createToday())).toList().isEmpty()}">
+                        <tr class="empty-row" th:if="${activeFestivalCount == 0}">
                             <td colspan="7">진행 중이거나 예정된 페스티벌이 없습니다.</td>
                         </tr>
                         </tbody>
