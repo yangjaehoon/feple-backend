@@ -6,6 +6,31 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
     <style>
+        /* ── 헤더 탭 버튼 ── */
+        .header-tab-btn {
+            padding: 8px 18px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            border-radius: 8px;
+            transition: color .15s, border-color .15s, background .15s;
+        }
+        .header-tab-btn:hover { color: var(--text-1); background: var(--hover); border-color: var(--primary); }
+        .header-tab-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .header-tab-group { display: flex; gap: 8px; align-items: center; }
+
+        /* ── 탭 패널 ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── KPI 카드 ── */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -33,13 +58,11 @@
             line-height: 1;
             margin-bottom: 4px;
         }
-        .kpi-sub {
-            font-size: 12px;
-            color: var(--muted);
-        }
+        .kpi-sub { font-size: 12px; color: var(--muted); }
         .kpi-card.accent-blue  { border-top: 3px solid #3B82F6; }
         .kpi-card.accent-green { border-top: 3px solid var(--success); }
-        .kpi-card.accent-purple{ border-top: 3px solid #8B5CF6; }
+
+        /* ── 차트 카드 ── */
         .chart-card {
             background: #fff;
             border: 1.5px solid var(--border);
@@ -47,12 +70,9 @@
             padding: 20px;
             margin-bottom: 24px;
         }
-        .chart-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-1);
-            margin-bottom: 16px;
-        }
+        .chart-title { font-size: 14px; font-weight: 700; color: var(--text-1); margin-bottom: 16px; }
+
+        /* ── 섹션 타이틀 ── */
         .section-title {
             font-size: 13px;
             font-weight: 700;
@@ -61,23 +81,20 @@
             letter-spacing: .5px;
             margin: 24px 0 12px;
         }
+
+        /* ── 안내 박스 ── */
         .note-box {
-            background: #FFF8E7;
-            border: 1.5px solid #F3CC6B;
-            border-radius: 10px;
-            padding: 14px 18px;
-            font-size: 13px;
-            color: #7A5C00;
+            background: #FFF8E7; border: 1.5px solid #F3CC6B;
+            border-radius: 10px; padding: 14px 18px;
+            font-size: 13px; color: #7A5C00; margin-bottom: 24px;
         }
         .warn-box {
-            background: #FFF0F0;
-            border: 1.5px solid #F87171;
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-size: 12px;
-            color: #991B1B;
-            margin-bottom: 12px;
+            background: #FFF0F0; border: 1.5px solid #F87171;
+            border-radius: 10px; padding: 10px 16px;
+            font-size: 12px; color: #991B1B; margin-bottom: 12px;
         }
+
+        /* ── 순위 테이블 ── */
         .rank-table { width:100%; border-collapse:collapse; font-size:12px; }
         .rank-table thead tr { background:#F4F9FD; }
         .rank-table th {
@@ -95,6 +112,8 @@
             font-size:10px; font-weight:800; margin-right:6px;
         }
         .rank-num.top3 { background:var(--primary); color:#fff; }
+
+        /* ── 검색어 클라우드 ── */
         .kw-cloud { display:flex; flex-wrap:wrap; gap:8px; padding:16px; }
         .kw-chip {
             display:inline-flex; align-items:center; gap:6px;
@@ -105,8 +124,12 @@
         .kw-chip.rank2 { font-size:14px; }
         .kw-chip.rank3 { font-size:13px; }
         .kw-cnt { color:#93C5FD; font-size:11px; font-weight:700; }
+
+        /* ── 2열 그리드 ── */
         .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
         @media(max-width:768px) { .two-col { grid-template-columns:1fr; } }
+
+        /* ── 배지 ── */
         .traffic-badge {
             display:inline-block; padding:2px 7px;
             background:#FEE2E2; color:#991B1B;
@@ -131,289 +154,262 @@
                 <span>데이터 통계</span>
             </div>
         </div>
+        <div class="header-tab-group">
+            <button class="header-tab-btn active" data-tab="user-stats">사용자 통계</button>
+            <button class="header-tab-btn" data-tab="content-trend">콘텐츠 트렌드 분석</button>
+        </div>
     </div>
 
     <div class="content-area">
 
-        <!-- ── 활성 사용자 KPI ── -->
-        <div class="section-title">활성 사용자 (게시글 또는 댓글 작성 기준)</div>
-        <div class="kpi-grid">
-            <div class="kpi-card accent-blue">
-                <div class="kpi-label">DAU · 일간</div>
-                <div class="kpi-value" th:text="${activityStats.dau()}">0</div>
-                <div class="kpi-sub">오늘 활성 사용자</div>
-            </div>
-            <div class="kpi-card accent-blue">
-                <div class="kpi-label">WAU · 주간</div>
-                <div class="kpi-value" th:text="${activityStats.wau()}">0</div>
-                <div class="kpi-sub">최근 7일 활성 사용자</div>
-            </div>
-            <div class="kpi-card accent-blue">
-                <div class="kpi-label">MAU · 월간</div>
-                <div class="kpi-value" th:text="${activityStats.mau()}">0</div>
-                <div class="kpi-sub">최근 30일 활성 사용자</div>
-            </div>
-        </div>
+        <!-- ══════════════════════════════
+             탭 1 : 사용자 통계
+             ══════════════════════════════ -->
+        <div id="tab-user-stats" class="tab-panel active">
 
-        <!-- ── 신규 가입자 KPI ── -->
-        <div class="section-title">신규 가입자</div>
-        <div class="kpi-grid">
-            <div class="kpi-card accent-green">
-                <div class="kpi-label">오늘</div>
-                <div class="kpi-value" th:text="${activityStats.signupsToday()}">0</div>
-                <div class="kpi-sub">오늘 신규 가입</div>
-            </div>
-            <div class="kpi-card accent-green">
-                <div class="kpi-label">이번 주</div>
-                <div class="kpi-value" th:text="${activityStats.signupsThisWeek()}">0</div>
-                <div class="kpi-sub">최근 7일 신규 가입</div>
-            </div>
-            <div class="kpi-card accent-green">
-                <div class="kpi-label">이번 달</div>
-                <div class="kpi-value" th:text="${activityStats.signupsThisMonth()}">0</div>
-                <div class="kpi-sub">최근 30일 신규 가입</div>
-            </div>
-        </div>
-
-        <!-- ── 탈퇴율 안내 ── -->
-        <div class="note-box" style="margin-bottom:24px;">
-            탈퇴율 지표는 계정 삭제 이력(소프트 삭제) 추적이 필요합니다. 현재 User 엔티티는 즉시 삭제(hard delete) 방식이라 탈퇴 시점 데이터가 남지 않습니다. 소프트 삭제 도입 후 집계 가능합니다.
-        </div>
-
-        <!-- ── 30일 트렌드 차트 ── -->
-        <div class="chart-card">
-            <div class="chart-title">신규 가입자 추이 (최근 30일)</div>
-            <canvas id="signupsChart" height="80"></canvas>
-        </div>
-
-        <div class="chart-card">
-            <div class="chart-title">게시글 · 댓글 추이 (최근 30일)</div>
-            <canvas id="activityChart" height="80"></canvas>
-        </div>
-
-        <!-- ── 월별 상세 테이블 ── -->
-        <div class="db-card">
-            <div class="db-card-header">
-                <span class="db-card-title">일별 상세 (최근 30일)</span>
-            </div>
-            <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:12px;">
-                    <thead>
-                    <tr style="background:#F4F9FD;">
-                        <th style="padding:9px 12px; color:var(--muted); font-weight:700; text-align:left; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;">날짜</th>
-                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">가입</th>
-                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">게시글</th>
-                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">댓글</th>
-                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">신고</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="s : ${monthlyStats}" style="border-bottom:1px solid var(--border);">
-                        <td style="padding:8px 12px; color:var(--text-2); font-size:12px;" th:text="${s.date()}"></td>
-                        <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--success); font-size:12px;" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
-                        <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--primary-dk); font-size:12px;" th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
-                        <td style="padding:8px 10px; text-align:right; color:var(--text-2); font-size:12px;" th:text="${s.comments() > 0 ? s.comments() : '-'}"></td>
-                        <td style="padding:8px 10px; text-align:right; color:var(--muted); font-size:12px;" th:text="${s.reports() > 0 ? s.reports() : '-'}"></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ══════════════════════════════════════════════════
-             콘텐츠 트렌드 분석
-             ══════════════════════════════════════════════════ -->
-        <div class="section-title" style="margin-top:36px;">콘텐츠 트렌드 분석</div>
-
-        <!-- 인기 검색어 -->
-        <div class="db-card" style="margin-bottom:24px;">
-            <div class="db-card-header">
-                <span class="db-card-title">인기 검색어 TOP 10 (최근 7일)</span>
-            </div>
-            <div class="kw-cloud">
-                <div th:each="kw, stat : ${contentTrend.topKeywords()}"
-                     th:classappend="${stat.index == 0} ? ' rank1' : (${stat.index == 1} ? ' rank2' : (${stat.index == 2} ? ' rank3' : ''))"
-                     class="kw-chip">
-                    <span th:text="${stat.count + '. ' + kw.keyword()}"></span>
-                    <span class="kw-cnt" th:text="${kw.count() + '회'}"></span>
+            <!-- 활성 사용자 KPI -->
+            <div class="section-title">활성 사용자 (게시글 또는 댓글 작성 기준)</div>
+            <div class="kpi-grid">
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-label">DAU · 일간</div>
+                    <div class="kpi-value" th:text="${activityStats.dau()}">0</div>
+                    <div class="kpi-sub">오늘 활성 사용자</div>
                 </div>
-                <div th:if="${#lists.isEmpty(contentTrend.topKeywords())}"
-                     style="color:var(--muted); font-size:13px; padding:4px 0;">
-                    아직 검색 데이터가 없습니다. 유저가 검색하면 자동으로 수집됩니다.
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-label">WAU · 주간</div>
+                    <div class="kpi-value" th:text="${activityStats.wau()}">0</div>
+                    <div class="kpi-sub">최근 7일 활성 사용자</div>
+                </div>
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-label">MAU · 월간</div>
+                    <div class="kpi-value" th:text="${activityStats.mau()}">0</div>
+                    <div class="kpi-sub">최근 30일 활성 사용자</div>
                 </div>
             </div>
-        </div>
 
-        <!-- 페스티벌 순위 2열 -->
-        <div class="two-col">
+            <!-- 신규 가입자 KPI -->
+            <div class="section-title">신규 가입자</div>
+            <div class="kpi-grid">
+                <div class="kpi-card accent-green">
+                    <div class="kpi-label">오늘</div>
+                    <div class="kpi-value" th:text="${activityStats.signupsToday()}">0</div>
+                    <div class="kpi-sub">오늘 신규 가입</div>
+                </div>
+                <div class="kpi-card accent-green">
+                    <div class="kpi-label">이번 주</div>
+                    <div class="kpi-value" th:text="${activityStats.signupsThisWeek()}">0</div>
+                    <div class="kpi-sub">최근 7일 신규 가입</div>
+                </div>
+                <div class="kpi-card accent-green">
+                    <div class="kpi-label">이번 달</div>
+                    <div class="kpi-value" th:text="${activityStats.signupsThisMonth()}">0</div>
+                    <div class="kpi-sub">최근 30일 신규 가입</div>
+                </div>
+            </div>
 
-            <!-- 페스티벌 좋아요 순위 -->
+            <!-- 탈퇴율 안내 -->
+            <div class="note-box">
+                탈퇴율 지표는 계정 삭제 이력(소프트 삭제) 추적이 필요합니다. 현재 User 엔티티는 즉시 삭제(hard delete) 방식이라 탈퇴 시점 데이터가 남지 않습니다. 소프트 삭제 도입 후 집계 가능합니다.
+            </div>
+
+            <!-- 30일 트렌드 차트 -->
+            <div class="chart-card">
+                <div class="chart-title">신규 가입자 추이 (최근 30일)</div>
+                <canvas id="signupsChart" height="80"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">게시글 · 댓글 추이 (최근 30일)</div>
+                <canvas id="activityChart" height="80"></canvas>
+            </div>
+
+            <!-- 일별 상세 테이블 -->
             <div class="db-card">
                 <div class="db-card-header">
-                    <span class="db-card-title">페스티벌 좋아요 순위 TOP 10</span>
+                    <span class="db-card-title">일별 상세 (최근 30일)</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                        <thead>
+                        <tr style="background:#F4F9FD;">
+                            <th style="padding:9px 12px; color:var(--muted); font-weight:700; text-align:left; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;">날짜</th>
+                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">가입</th>
+                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">게시글</th>
+                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">댓글</th>
+                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">신고</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="s : ${monthlyStats}" style="border-bottom:1px solid var(--border);">
+                            <td style="padding:8px 12px; color:var(--text-2); font-size:12px;" th:text="${s.date()}"></td>
+                            <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--success); font-size:12px;" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
+                            <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--primary-dk); font-size:12px;" th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
+                            <td style="padding:8px 10px; text-align:right; color:var(--text-2); font-size:12px;" th:text="${s.comments() > 0 ? s.comments() : '-'}"></td>
+                            <td style="padding:8px 10px; text-align:right; color:var(--muted); font-size:12px;" th:text="${s.reports() > 0 ? s.reports() : '-'}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- /tab-user-stats -->
+
+        <!-- ══════════════════════════════
+             탭 2 : 콘텐츠 트렌드
+             ══════════════════════════════ -->
+        <div id="tab-content-trend" class="tab-panel">
+
+            <!-- 인기 검색어 -->
+            <div class="db-card" style="margin-bottom:24px;">
+                <div class="db-card-header">
+                    <span class="db-card-title">인기 검색어 TOP 10 (최근 7일)</span>
+                </div>
+                <div class="kw-cloud">
+                    <div th:each="kw, stat : ${contentTrend.topKeywords()}"
+                         th:classappend="${stat.index == 0} ? ' rank1' : (${stat.index == 1} ? ' rank2' : (${stat.index == 2} ? ' rank3' : ''))"
+                         class="kw-chip">
+                        <span th:text="${stat.count + '. ' + kw.keyword()}"></span>
+                        <span class="kw-cnt" th:text="${kw.count() + '회'}"></span>
+                    </div>
+                    <div th:if="${#lists.isEmpty(contentTrend.topKeywords())}"
+                         style="color:var(--muted); font-size:13px; padding:4px 0;">
+                        아직 검색 데이터가 없습니다. 유저가 검색하면 자동으로 수집됩니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 페스티벌 순위 2열 -->
+            <div class="two-col">
+
+                <!-- 페스티벌 좋아요 순위 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">페스티벌 좋아요 순위 TOP 10</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="rank-table">
+                            <thead>
+                            <tr>
+                                <th style="width:32px;">#</th>
+                                <th>페스티벌</th>
+                                <th class="r">좋아요</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="f, stat : ${contentTrend.topFestivalsByLike()}">
+                                <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
+                                <td><a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
+                                <td class="r" style="color:#E11D48;" th:text="${f.likeCount}"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(contentTrend.topFestivalsByLike())}">
+                                <td colspan="3" style="text-align:center; color:var(--muted); padding:20px;">데이터 없음</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 임박 인기 페스티벌 (트래픽 주의) -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">임박 인기 페스티벌 (30일 내 시작)</span>
+                        <span class="traffic-badge">트래픽 주의</span>
+                    </div>
+                    <div class="warn-box">
+                        좋아요가 많은 페스티벌 시작일 전후로 조회 트래픽이 집중될 수 있습니다.
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="rank-table">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>페스티벌</th>
+                                <th class="r">시작일</th>
+                                <th class="r">좋아요</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="f, stat : ${contentTrend.upcomingHotFestivals()}">
+                                <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
+                                <td><a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
+                                <td class="r"><span class="days-badge" th:text="${#temporals.format(f.startDate, 'M/d') + ' 시작'}"></span></td>
+                                <td class="r" style="color:#E11D48;" th:text="${f.likeCount}"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(contentTrend.upcomingHotFestivals())}">
+                                <td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">30일 내 시작 예정 페스티벌이 없습니다.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div><!-- /two-col -->
+
+            <!-- 아티스트 팔로워 순위 -->
+            <div class="db-card" style="margin-bottom:24px;">
+                <div class="db-card-header">
+                    <span class="db-card-title">아티스트 팔로워 순위 TOP 10</span>
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="rank-table">
                         <thead>
                         <tr>
                             <th style="width:32px;">#</th>
-                            <th>페스티벌</th>
-                            <th class="r">좋아요</th>
+                            <th>아티스트</th>
+                            <th class="r">팔로워</th>
+                            <th class="r">주간 점수</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="f, stat : ${contentTrend.topFestivalsByLike()}">
-                            <td>
-                                <span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num"
-                                      th:text="${stat.count}"></span>
-                            </td>
-                            <td>
-                                <a th:href="@{/admin/festivals/{id}(id=${f.id})}"
-                                   th:text="${f.title}"
-                                   style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a>
-                            </td>
-                            <td class="r" style="color:#E11D48;" th:text="${f.likeCount}"></td>
+                        <tr th:each="a, stat : ${contentTrend.topArtistsByFollower()}">
+                            <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
+                            <td><a th:href="@{/admin/artists/{id}/edit(id=${a.id})}" th:text="${a.name}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
+                            <td class="r" style="color:#7C3AED;" th:text="${a.followerCount}"></td>
+                            <td class="r" style="color:var(--muted);" th:text="${a.weeklyScore}"></td>
                         </tr>
-                        <tr th:if="${#lists.isEmpty(contentTrend.topFestivalsByLike())}">
-                            <td colspan="3" style="text-align:center; color:var(--muted); padding:20px;">
-                                데이터 없음
-                            </td>
+                        <tr th:if="${#lists.isEmpty(contentTrend.topArtistsByFollower())}">
+                            <td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">데이터 없음</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- 임박 인기 페스티벌 (트래픽 주의) -->
-            <div class="db-card">
+            <!-- 인기 게시글 TOP 10 -->
+            <div class="db-card" style="margin-bottom:24px;">
                 <div class="db-card-header">
-                    <span class="db-card-title">임박 인기 페스티벌 (30일 내 시작)</span>
-                    <span class="traffic-badge">트래픽 주의</span>
-                </div>
-                <div class="warn-box">
-                    좋아요가 많은 페스티벌 시작일 전후로 조회 트래픽이 집중될 수 있습니다.
+                    <span class="db-card-title">인기 게시글 TOP 10 (최근 30일 · 좋아요 순)</span>
+                    <a class="btn btn-secondary btn-sm" th:href="@{/admin/posts}">전체보기</a>
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="rank-table">
                         <thead>
                         <tr>
-                            <th>#</th>
-                            <th>페스티벌</th>
-                            <th class="r">D-Day</th>
+                            <th style="width:32px;">#</th>
+                            <th>제목</th>
+                            <th>게시판</th>
                             <th class="r">좋아요</th>
+                            <th class="r">스크랩</th>
+                            <th class="r">댓글</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="f, stat : ${contentTrend.upcomingHotFestivals()}">
-                            <td>
-                                <span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num"
-                                      th:text="${stat.count}"></span>
-                            </td>
-                            <td>
-                                <a th:href="@{/admin/festivals/{id}(id=${f.id})}"
-                                   th:text="${f.title}"
-                                   style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a>
-                            </td>
-                            <td class="r">
-                                <span class="days-badge"
-                                      th:text="${#temporals.format(f.startDate, 'M/d') + ' 시작'}"></span>
-                            </td>
-                            <td class="r" style="color:#E11D48;" th:text="${f.likeCount}"></td>
+                        <tr th:each="p, stat : ${contentTrend.topPostsByLike()}">
+                            <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
+                            <td><a th:href="@{/admin/posts/{id}(id=${p.id})}" th:text="${p.title}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
+                            <td style="color:var(--muted); font-size:11px;" th:text="${p.displayBoardName}"></td>
+                            <td class="r" style="color:#E11D48;" th:text="${p.likeCount}"></td>
+                            <td class="r" style="color:#0284C7;" th:text="${p.scrapCount}"></td>
+                            <td class="r" style="color:var(--muted);" th:text="${p.commentCount}"></td>
                         </tr>
-                        <tr th:if="${#lists.isEmpty(contentTrend.upcomingHotFestivals())}">
-                            <td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">
-                                30일 내 시작 예정 페스티벌이 없습니다.
-                            </td>
+                        <tr th:if="${#lists.isEmpty(contentTrend.topPostsByLike())}">
+                            <td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">최근 30일 게시글이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-        </div><!-- /two-col -->
-
-        <!-- 아티스트 팔로워 순위 -->
-        <div class="db-card" style="margin-bottom:24px;">
-            <div class="db-card-header">
-                <span class="db-card-title">아티스트 팔로워 순위 TOP 10</span>
-            </div>
-            <div style="overflow-x:auto;">
-                <table class="rank-table">
-                    <thead>
-                    <tr>
-                        <th style="width:32px;">#</th>
-                        <th>아티스트</th>
-                        <th class="r">팔로워</th>
-                        <th class="r">주간 점수</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="a, stat : ${contentTrend.topArtistsByFollower()}">
-                        <td>
-                            <span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num"
-                                  th:text="${stat.count}"></span>
-                        </td>
-                        <td>
-                            <a th:href="@{/admin/artists/{id}/edit(id=${a.id})}"
-                               th:text="${a.name}"
-                               style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a>
-                        </td>
-                        <td class="r" style="color:#7C3AED;" th:text="${a.followerCount}"></td>
-                        <td class="r" style="color:var(--muted);" th:text="${a.weeklyScore}"></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(contentTrend.topArtistsByFollower())}">
-                        <td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">
-                            데이터 없음
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 인기 게시글 TOP 10 -->
-        <div class="db-card" style="margin-bottom:24px;">
-            <div class="db-card-header">
-                <span class="db-card-title">인기 게시글 TOP 10 (최근 30일 · 좋아요 순)</span>
-                <a class="btn btn-secondary btn-sm" th:href="@{/admin/posts}">전체보기</a>
-            </div>
-            <div style="overflow-x:auto;">
-                <table class="rank-table">
-                    <thead>
-                    <tr>
-                        <th style="width:32px;">#</th>
-                        <th>제목</th>
-                        <th>게시판</th>
-                        <th class="r">좋아요</th>
-                        <th class="r">스크랩</th>
-                        <th class="r">댓글</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p, stat : ${contentTrend.topPostsByLike()}">
-                        <td>
-                            <span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num"
-                                  th:text="${stat.count}"></span>
-                        </td>
-                        <td>
-                            <a th:href="@{/admin/posts/{id}(id=${p.id})}"
-                               th:text="${p.title}"
-                               style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a>
-                        </td>
-                        <td style="color:var(--muted); font-size:11px;" th:text="${p.displayBoardName}"></td>
-                        <td class="r" style="color:#E11D48;" th:text="${p.likeCount}"></td>
-                        <td class="r" style="color:#0284C7;" th:text="${p.scrapCount}"></td>
-                        <td class="r" style="color:var(--muted);" th:text="${p.commentCount}"></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(contentTrend.topPostsByLike())}">
-                        <td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">
-                            최근 30일 게시글이 없습니다.
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </div><!-- /tab-content-trend -->
 
     </div><!-- /content-area -->
 </div><!-- /main-content -->
@@ -421,63 +417,67 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
-const monthlyStats = /*[[${monthlyStats}]]*/ [];
-const labels = monthlyStats.map(s => s.date);
-const signupsData = monthlyStats.map(s => s.signups);
-const postsData   = monthlyStats.map(s => s.posts);
-const commentsData = monthlyStats.map(s => s.comments);
+/* ── 탭 전환 ── */
+document.querySelectorAll('.header-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.header-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
 
-const chartDefaults = {
-    type: 'line',
-    options: {
-        responsive: true,
-        interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { position: 'top' } },
-        scales: {
-            x: { grid: { display: false } },
-            y: { beginAtZero: true, ticks: { precision: 0 } }
-        }
+/* ── Chart.js ── */
+const monthlyStats = /*[[${monthlyStats}]]*/ [];
+const labels       = monthlyStats.map(function(s) { return s.date; });
+const signupsData  = monthlyStats.map(function(s) { return s.signups; });
+const postsData    = monthlyStats.map(function(s) { return s.posts; });
+const commentsData = monthlyStats.map(function(s) { return s.comments; });
+
+const chartOpts = {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top' } },
+    scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, ticks: { precision: 0 } }
     }
 };
 
 new Chart(document.getElementById('signupsChart'), {
-    ...chartDefaults,
+    type: 'line',
+    options: chartOpts,
     data: {
-        labels,
+        labels: labels,
         datasets: [{
             label: '신규 가입자',
             data: signupsData,
             borderColor: '#22c55e',
             backgroundColor: 'rgba(34,197,94,.08)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 3
+            fill: true, tension: 0.3, pointRadius: 3
         }]
     }
 });
 
 new Chart(document.getElementById('activityChart'), {
-    ...chartDefaults,
+    type: 'line',
+    options: chartOpts,
     data: {
-        labels,
+        labels: labels,
         datasets: [
             {
                 label: '게시글',
                 data: postsData,
                 borderColor: '#3B82F6',
                 backgroundColor: 'rgba(59,130,246,.08)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 3
+                fill: true, tension: 0.3, pointRadius: 3
             },
             {
                 label: '댓글',
                 data: commentsData,
                 borderColor: '#8B5CF6',
                 backgroundColor: 'rgba(139,92,246,.06)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 3
+                fill: true, tension: 0.3, pointRadius: 3
             }
         ]
     }
