@@ -11,6 +11,7 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -34,6 +36,7 @@ public class FestivalAdminController {
     private final ArtistService artistService;
     private final ArtistFestivalService artistFestivalService;
     private final FestivalDetailAggregationService festivalDetailAggregationService;
+    private final FestivalChecklistService festivalChecklistService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -84,9 +87,19 @@ public class FestivalAdminController {
 
     @GetMapping
     public String listFestivals(Model model) {
-        boolean includeEnded = true;
-        model.addAttribute("festivals", festivalService.getAllFestivals(null, null, includeEnded));
+        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, true);
+        List<Long> ids = festivals.stream().map(FestivalResponseDto::getId).toList();
+        model.addAttribute("festivals", festivals);
+        model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap(ids));
         return "admin/festival-list";
+    }
+
+    @PostMapping("/{id}/checklist")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> toggleChecklist(@PathVariable Long id,
+                                                               @RequestParam String field) {
+        boolean newValue = festivalChecklistService.toggle(id, field);
+        return ResponseEntity.ok(Map.of("checked", newValue));
     }
 
     @GetMapping("/{id}/edit")

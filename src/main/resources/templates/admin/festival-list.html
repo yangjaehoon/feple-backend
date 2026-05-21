@@ -5,6 +5,80 @@
     <title>Feple Admin — 페스티벌 목록</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        /* ── 헤더 탭 버튼 ── */
+        .header-tab-btn {
+            padding: 8px 18px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            border-radius: 8px;
+            transition: color .15s, border-color .15s, background .15s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .header-tab-btn:hover { color: var(--text-1); background: var(--hover); border-color: var(--primary); }
+        .header-tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .header-tab-group { display: flex; gap: 8px; align-items: center; }
+
+        /* ── 탭 패널 ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── 체크리스트 테이블 ── */
+        .cl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .cl-table thead tr { background: #F4F9FD; }
+        .cl-table th {
+            padding: 10px 14px;
+            color: var(--muted);
+            font-weight: 700;
+            text-align: center;
+            border-bottom: 1.5px solid var(--border);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            white-space: nowrap;
+        }
+        .cl-table th.left { text-align: left; }
+        .cl-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            vertical-align: middle;
+        }
+        .cl-table td.left { text-align: left; }
+        .cl-table tr:hover { background: #FAFCFF; }
+
+        /* ── 체크박스 커스텀 ── */
+        .cl-check {
+            width: 20px; height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* ── 상태 배지 ── */
+        .status-done  { color: #166534; background: #DCFCE7; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
+        .status-pend  { color: #92400E; background: #FEF3C7; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
+
+        /* ── 완료 행 ── */
+        .cl-table tr.all-done td { opacity: 0.6; }
+
+        /* ── 저장 피드백 ── */
+        .save-toast {
+            position: fixed; bottom: 28px; right: 28px;
+            background: #1a1a2e; color: #fff;
+            padding: 10px 20px; border-radius: 10px;
+            font-size: 13px; font-weight: 600;
+            opacity: 0; pointer-events: none;
+            transition: opacity .25s;
+            z-index: 9999;
+        }
+        .save-toast.show { opacity: 1; }
+    </style>
 </head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
@@ -18,84 +92,240 @@
                 <span>페스티벌</span>
             </div>
         </div>
-        <div class="page-actions">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div class="header-tab-group">
+                <button class="header-tab-btn active" data-tab="list">페스티벌 목록</button>
+                <button class="header-tab-btn" data-tab="checklist">등록 체크리스트</button>
+            </div>
             <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌 등록</a>
         </div>
     </div>
-    <div class="content-area">
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">전체 페스티벌</div>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>페스티벌</th>
-                        <th style="width:80px;">상태</th>
-                        <th style="width:100px;">❤ 좋아요</th>
-                        <th style="width:80px;">상세</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <th:block th:each="festival, stat : ${festivals}">
-                        <!-- 종료 구분선: 첫 번째 종료 항목 앞에만 표시 -->
-                        <tr th:if="${festival.endDate != null
-                                     and festival.endDate.isBefore(#temporals.createToday())
-                                     and (stat.first
-                                          or festivals[stat.index - 1].endDate == null
-                                          or !festivals[stat.index - 1].endDate.isBefore(#temporals.createToday()))}">
-                            <td colspan="4"
-                                style="padding:8px 14px; font-size:12px; font-weight:700; color:#999; background:#f7f7f7; border-top:2px solid #e2e8f0; letter-spacing:0.3px;">
-                                ─── 종료된 페스티벌
-                            </td>
-                        </tr>
 
-                        <tr th:style="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}
-                                       ? 'opacity:0.55; background:#fafafa;' : ''">
-                            <td>
-                                <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
-                                   th:text="${festival.title}"
-                                   style="font-size:14px; font-weight:600;"></a>
-                                <div class="cell-secondary cell-row" style="margin-top:5px;">
-                                    <span th:text="${festival.location}"></span>
-                                    <span>·</span>
-                                    <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span>
-                                </div>
-                            </td>
-                            <td>
-                                <!-- 종료 -->
-                                <span th:if="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}"
-                                      style="font-size:11px; font-weight:700; color:#999; background:#ececec; border-radius:20px; padding:3px 9px; white-space:nowrap;">종료</span>
-                                <!-- 진행 중 -->
-                                <span th:if="${(festival.endDate == null or !festival.endDate.isBefore(#temporals.createToday()))
-                                               and festival.startDate != null and !festival.startDate.isAfter(#temporals.createToday())}"
-                                      style="font-size:11px; font-weight:700; color:#2f855a; background:#c6f6d5; border-radius:20px; padding:3px 9px; white-space:nowrap;">진행 중</span>
-                                <!-- 예정 -->
-                                <span th:if="${festival.startDate != null and festival.startDate.isAfter(#temporals.createToday())}"
-                                      style="font-size:11px; font-weight:700; color:#2b6cb0; background:#bee3f8; border-radius:20px; padding:3px 9px; white-space:nowrap;">예정</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-primary"
-                                      th:text="'❤ ' + ${festival.likeCount}"
-                                      th:if="${festival.likeCount > 0}"></span>
-                                <span class="cell-secondary" th:if="${festival.likeCount == 0}">0</span>
-                            </td>
-                            <td>
-                                <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
-                                   class="btn btn-secondary btn-sm">상세</a>
-                            </td>
+    <div class="content-area">
+
+        <!-- ══ 탭 1: 페스티벌 목록 ══ -->
+        <div id="tab-list" class="tab-panel active">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">전체 페스티벌</div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>페스티벌</th>
+                            <th style="width:80px;">상태</th>
+                            <th style="width:100px;">❤ 좋아요</th>
+                            <th style="width:80px;">상세</th>
                         </tr>
-                    </th:block>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(festivals)}">
-                        <td colspan="4">등록된 페스티벌이 없습니다.</td>
-                    </tr>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="festival, stat : ${festivals}">
+                            <!-- 종료 구분선: 첫 번째 종료 항목 앞에만 표시 -->
+                            <tr th:if="${festival.endDate != null
+                                         and festival.endDate.isBefore(#temporals.createToday())
+                                         and (stat.first
+                                              or festivals[stat.index - 1].endDate == null
+                                              or !festivals[stat.index - 1].endDate.isBefore(#temporals.createToday()))}">
+                                <td colspan="4"
+                                    style="padding:8px 14px; font-size:12px; font-weight:700; color:#999; background:#f7f7f7; border-top:2px solid #e2e8f0; letter-spacing:0.3px;">
+                                    ─── 종료된 페스티벌
+                                </td>
+                            </tr>
+
+                            <tr th:style="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}
+                                           ? 'opacity:0.55; background:#fafafa;' : ''">
+                                <td>
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                       th:text="${festival.title}"
+                                       style="font-size:14px; font-weight:600;"></a>
+                                    <div class="cell-secondary cell-row" style="margin-top:5px;">
+                                        <span th:text="${festival.location}"></span>
+                                        <span>·</span>
+                                        <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <!-- 종료 -->
+                                    <span th:if="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}"
+                                          style="font-size:11px; font-weight:700; color:#999; background:#ececec; border-radius:20px; padding:3px 9px; white-space:nowrap;">종료</span>
+                                    <!-- 진행 중 -->
+                                    <span th:if="${(festival.endDate == null or !festival.endDate.isBefore(#temporals.createToday()))
+                                                   and festival.startDate != null and !festival.startDate.isAfter(#temporals.createToday())}"
+                                          style="font-size:11px; font-weight:700; color:#2f855a; background:#c6f6d5; border-radius:20px; padding:3px 9px; white-space:nowrap;">진행 중</span>
+                                    <!-- 예정 -->
+                                    <span th:if="${festival.startDate != null and festival.startDate.isAfter(#temporals.createToday())}"
+                                          style="font-size:11px; font-weight:700; color:#2b6cb0; background:#bee3f8; border-radius:20px; padding:3px 9px; white-space:nowrap;">예정</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary"
+                                          th:text="'❤ ' + ${festival.likeCount}"
+                                          th:if="${festival.likeCount > 0}"></span>
+                                    <span class="cell-secondary" th:if="${festival.likeCount == 0}">0</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                       class="btn btn-secondary btn-sm">상세</a>
+                                </td>
+                            </tr>
+                        </th:block>
+                        <tr class="empty-row" th:if="${#lists.isEmpty(festivals)}">
+                            <td colspan="4">등록된 페스티벌이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+
+        <!-- ══ 탭 2: 등록 체크리스트 ══ -->
+        <div id="tab-checklist" class="tab-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">등록 체크리스트</div>
+                    <span style="font-size:12px; color:var(--muted);">종료된 페스티벌 제외 · 체크박스 클릭 시 자동 저장</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="cl-table">
+                        <thead>
+                        <tr>
+                            <th class="left" style="min-width:200px;">페스티벌</th>
+                            <th style="width:90px;">1차 라인업</th>
+                            <th style="width:90px;">2차 라인업</th>
+                            <th style="width:90px;">3차 라인업</th>
+                            <th style="width:90px;">부스 지도</th>
+                            <th style="width:90px;">타임테이블</th>
+                            <th style="width:80px;">진행률</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="f : ${festivals}"
+                                  th:if="${f.endDate == null or !f.endDate.isBefore(#temporals.createToday())}">
+                            <tr th:with="cl=${checklistMap[f.id]},
+                                         cnt=${(cl != null and cl.lineup1 ? 1 : 0)
+                                              + (cl != null and cl.lineup2 ? 1 : 0)
+                                              + (cl != null and cl.lineup3 ? 1 : 0)
+                                              + (cl != null and cl.boothMap ? 1 : 0)
+                                              + (cl != null and cl.timetable ? 1 : 0)}"
+                                th:classappend="${cnt == 5} ? ' all-done'">
+                                <td class="left">
+                                    <a th:href="@{/admin/festivals/{id}(id=${f.id})}"
+                                       th:text="${f.title}"
+                                       style="font-weight:600; color:var(--primary-dk); text-decoration:none;"></a>
+                                    <div style="font-size:11px; color:var(--muted); margin-top:2px;"
+                                         th:text="${#temporals.format(f.startDate, 'yyyy.M.d')} + ' ~ ' + ${#temporals.format(f.endDate, 'M.d')}"></div>
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.lineup1}"
+                                           th:data-festival-id="${f.id}"
+                                           data-field="lineup1" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.lineup2}"
+                                           th:data-festival-id="${f.id}"
+                                           data-field="lineup2" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.lineup3}"
+                                           th:data-festival-id="${f.id}"
+                                           data-field="lineup3" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.boothMap}"
+                                           th:data-festival-id="${f.id}"
+                                           data-field="boothMap" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.timetable}"
+                                           th:data-festival-id="${f.id}"
+                                           data-field="timetable" />
+                                </td>
+                                <td>
+                                    <span th:classappend="${cnt == 5} ? ' status-done' : ' status-pend'"
+                                          th:text="${cnt} + '/5'"></span>
+                                </td>
+                            </tr>
+                        </th:block>
+                        <tr class="empty-row"
+                            th:if="${#lists.isEmpty(festivals) or festivals.stream().noneMatch(f -> f.endDate == null or !f.endDate.isBefore(#temporals.createToday())).toList().isEmpty()}">
+                            <td colspan="7">진행 중이거나 예정된 페스티벌이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /content-area -->
+</div><!-- /main-content -->
+
+<div class="save-toast" id="saveToast">저장됨</div>
+
+<script>
+/* ── 탭 전환 ── */
+document.querySelectorAll('.header-tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.header-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+/* ── 체크박스 AJAX 저장 ── */
+var toastTimer;
+function showToast() {
+    var t = document.getElementById('saveToast');
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1500);
+}
+
+document.querySelectorAll('.cl-check').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+        var festivalId = cb.dataset.festivalId;
+        var field      = cb.dataset.field;
+        var checked    = cb.checked;
+
+        fetch('/admin/festivals/' + festivalId + '/checklist?field=' + field, {
+            method: 'POST'
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error();
+            return res.json();
+        })
+        .then(function(data) {
+            cb.checked = data.checked;
+            updateProgress(cb.closest('tr'));
+            showToast();
+        })
+        .catch(function() {
+            cb.checked = !checked; // 롤백
+        });
+    });
+});
+
+function updateProgress(row) {
+    var checks = row.querySelectorAll('.cl-check');
+    var done   = Array.from(checks).filter(function(c) { return c.checked; }).length;
+    var badge  = row.querySelector('.status-done, .status-pend');
+    if (!badge) return;
+    badge.textContent = done + '/5';
+    if (done === 5) {
+        badge.className = 'status-done';
+        row.classList.add('all-done');
+    } else {
+        badge.className = 'status-pend';
+        row.classList.remove('all-done');
+    }
+}
+</script>
+
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>
