@@ -2,6 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf"        th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Feple Admin — 크롤링 대시보드</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
@@ -41,14 +43,10 @@
             align-items: center;
             gap: 8px;
         }
-        .crawl-card-title .badge-wip {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: #FFF3CD;
-            color: #856404;
-            letter-spacing: .3px;
+        .badge-wip {
+            font-size: 10px; font-weight: 700;
+            padding: 2px 8px; border-radius: 20px;
+            background: #FFF3CD; color: #856404; letter-spacing: .3px;
         }
 
         /* ── 소스 선택 라디오 ── */
@@ -74,31 +72,14 @@
         .source-card:hover { border-color: var(--primary); background: #F0F7FF; }
         .source-card.selected { border-color: var(--primary); background: #EBF4FF; }
         .source-card input[type=radio] { accent-color: var(--primary); }
-        .source-logo {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            flex-shrink: 0;
-        }
+        .source-logo { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
 
-        /* ── URL 입력 영역 ── */
-        .url-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
+        /* ── URL 입력 ── */
+        .url-row { display: flex; gap: 8px; margin-bottom: 8px; }
         .url-row input {
-            flex: 1;
-            padding: 9px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            font-size: 13px;
-            color: var(--text-1);
-            outline: none;
+            flex: 1; padding: 9px 14px;
+            border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 13px; color: var(--text-1); outline: none;
             transition: border-color .15s;
         }
         .url-row input:focus { border-color: var(--primary); }
@@ -108,48 +89,33 @@
         .result-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .result-table thead tr { background: #F4F9FD; }
         .result-table th {
-            padding: 8px 12px;
-            text-align: left;
-            font-weight: 700;
-            color: var(--muted);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: .4px;
+            padding: 8px 12px; text-align: left;
+            font-weight: 700; color: var(--muted); font-size: 11px;
+            text-transform: uppercase; letter-spacing: .4px;
             border-bottom: 1.5px solid var(--border);
         }
         .result-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-1);
-            vertical-align: middle;
+            padding: 10px 12px; border-bottom: 1px solid var(--border);
+            color: var(--text-1); vertical-align: middle;
         }
         .result-table tr:last-child td { border-bottom: none; }
         .result-table tr:hover td { background: #FAFBFC; }
 
-        /* ── 상태 뱃지 ── */
+        /* ── 뱃지 ── */
         .badge-pending  { background:#FFF3CD; color:#856404; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; }
         .badge-approved { background:#D1FAE5; color:#065F46; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; }
         .badge-rejected { background:#FEE2E2; color:#991B1B; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; }
         .badge-source   { background:#EFF6FF; color:#1D4ED8; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; }
 
         /* ── 빈 상태 ── */
-        .empty-crawl {
-            text-align: center;
-            padding: 48px 24px;
-            color: var(--muted);
-            font-size: 13px;
-        }
+        .empty-crawl { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 13px; }
         .empty-crawl .empty-icon { font-size: 36px; margin-bottom: 10px; }
 
-        /* ── OCR 업로드 영역 ── */
+        /* ── OCR 업로드 ── */
         .ocr-upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 40px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color .2s, background .2s;
-            margin-bottom: 20px;
+            border: 2px dashed var(--border); border-radius: 12px;
+            padding: 40px 24px; text-align: center; cursor: pointer;
+            transition: border-color .2s, background .2s; margin-bottom: 20px;
         }
         .ocr-upload-zone:hover { border-color: var(--primary); background: #F0F7FF; }
         .ocr-upload-zone.drag-over { border-color: var(--primary); background: #EBF4FF; }
@@ -158,119 +124,91 @@
         .ocr-upload-zone .upload-sub { font-size: 12px; color: var(--muted); }
         .ocr-upload-zone input[type=file] { display: none; }
 
-        /* ── OCR 미리보기 ── */
-        .ocr-preview-wrap {
-            display: none;
-            gap: 20px;
-        }
+        /* ── OCR 레이아웃 ── */
+        .ocr-preview-wrap { display: none; gap: 20px; }
         .ocr-preview-wrap.visible { display: flex; }
-        .ocr-image-preview {
-            width: 280px;
-            flex-shrink: 0;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1.5px solid var(--border);
-        }
+        .ocr-image-preview { width: 260px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 1.5px solid var(--border); }
         .ocr-image-preview img { width: 100%; display: block; }
         .ocr-result-area { flex: 1; min-width: 0; }
 
-        /* ── 파싱 결과 편집 테이블 ── */
+        /* ── 편집 테이블 ── */
         .parse-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .parse-table th {
-            padding: 8px 10px;
-            text-align: left;
-            font-weight: 700;
-            color: var(--muted);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-            border-bottom: 1.5px solid var(--border);
-            background: #F4F9FD;
+            padding: 8px 10px; text-align: left;
+            font-weight: 700; color: var(--muted); font-size: 11px;
+            text-transform: uppercase; letter-spacing: .4px;
+            border-bottom: 1.5px solid var(--border); background: #F4F9FD;
         }
-        .parse-table td {
-            padding: 6px 8px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
+        .parse-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .parse-table td input, .parse-table td select {
-            width: 100%;
-            padding: 5px 8px;
-            border: 1.5px solid var(--border);
-            border-radius: 6px;
-            font-size: 12px;
-            color: var(--text-1);
-            outline: none;
+            width: 100%; padding: 5px 8px;
+            border: 1.5px solid var(--border); border-radius: 6px;
+            font-size: 12px; color: var(--text-1); outline: none;
         }
         .parse-table td input:focus, .parse-table td select:focus { border-color: var(--primary); }
-        .parse-table .row-del {
-            padding: 4px 8px;
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 14px;
-        }
+        .parse-table .row-del { padding: 4px 8px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; }
         .parse-table .row-del:hover { color: #EF4444; }
+        .conf-high { color: #059669; font-weight: 700; }
+        .conf-mid  { color: #D97706; font-weight: 700; }
+        .conf-low  { color: #DC2626; font-weight: 700; }
 
-        /* ── 처리 상태 표시줄 ── */
-        .progress-bar-wrap {
-            display: none;
-            margin-top: 12px;
-        }
+        /* ── 진행 표시 ── */
+        .progress-bar-wrap { display: none; margin-top: 12px; }
         .progress-bar-wrap.visible { display: block; }
-        .progress-bar-track {
-            height: 6px;
-            background: var(--border);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 999px;
-            transition: width .4s ease;
-        }
+        .progress-bar-track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--primary); border-radius: 999px; transition: width .4s ease; }
         .progress-label { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+        /* ── 선택 영역 ── */
+        .select-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+        .select-row label { font-size: 13px; font-weight: 600; color: var(--text-1); white-space: nowrap; }
+        .select-row select, .select-row input[type=date] {
+            padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 13px; outline: none; color: var(--text-1);
+        }
+        .select-row select:focus, .select-row input[type=date]:focus { border-color: var(--primary); }
+
+        /* ── 결과 알림 ── */
+        .apply-result {
+            display: none; padding: 14px 18px; border-radius: 10px;
+            font-size: 13px; margin-top: 16px;
+        }
+        .apply-result.success { background: #D1FAE5; border: 1.5px solid #6EE7B7; color: #065F46; }
+        .apply-result.partial { background: #FFF8E7; border: 1.5px solid #F3CC6B; color: #7A5C00; }
+        .apply-result.error   { background: #FEE2E2; border: 1.5px solid #FCA5A5; color: #991B1B; }
 
         /* ── 안내 박스 ── */
         .info-box {
-            background: #EFF6FF;
-            border: 1.5px solid #BFDBFE;
-            border-radius: 10px;
-            padding: 12px 16px;
-            font-size: 12px;
-            color: #1D4ED8;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
+            background: #EFF6FF; border: 1.5px solid #BFDBFE;
+            border-radius: 10px; padding: 12px 16px;
+            font-size: 12px; color: #1D4ED8; margin-bottom: 20px;
         }
         .warn-box {
-            background: #FFF8E7;
-            border: 1.5px solid #F3CC6B;
-            border-radius: 10px;
-            padding: 12px 16px;
-            font-size: 12px;
-            color: #7A5C00;
-            margin-bottom: 20px;
+            background: #FFF8E7; border: 1.5px solid #F3CC6B;
+            border-radius: 10px; padding: 12px 16px;
+            font-size: 12px; color: #7A5C00; margin-bottom: 20px;
         }
-
-        /* ── 액션 버튼 그룹 ── */
         .action-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+        /* ── 스피너 ── */
+        .spinner {
+            display: inline-block; width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,.4);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('crawl')}"></div>
 <div class="main-content">
 
-    <!-- 페이지 헤더 -->
     <div class="page-header">
         <div>
             <h1 class="page-title">크롤링 대시보드</h1>
             <div class="breadcrumb">
-                <span>Feple Admin</span>
-                <span class="bc-sep">›</span>
-                <span>크롤링 대시보드</span>
+                <span>Feple Admin</span><span class="bc-sep">›</span><span>크롤링 대시보드</span>
             </div>
         </div>
         <div class="header-tab-group">
@@ -282,173 +220,74 @@
     <div class="content-area">
 
         <!-- ══════════════════════════════════
-             탭 1 — 웹 스크래핑
+             탭 1 — 웹 스크래핑 (뼈대)
              ══════════════════════════════════ -->
         <div id="tab-scraping" class="tab-panel active">
-
             <div class="info-box">
                 ℹ️ 스크래핑한 데이터는 <strong>대기 중</strong> 상태로 저장되며, 관리자가 승인한 항목만 앱에 반영됩니다.
             </div>
-
-            <!-- 1. 소스 선택 + URL 입력 -->
             <div class="crawl-card">
-                <div class="crawl-card-title">
-                    1. 사이트 선택 &amp; URL 입력
-                    <span class="badge-wip">구현 예정</span>
-                </div>
-
+                <div class="crawl-card-title">1. 사이트 선택 &amp; URL 입력 <span class="badge-wip">구현 예정</span></div>
                 <div class="source-grid">
                     <label class="source-card selected">
                         <input type="radio" name="crawlSource" value="interpark" checked>
-                        <div class="source-logo" style="background:#E8F4FD;">🎫</div>
-                        인터파크
+                        <div class="source-logo" style="background:#E8F4FD;">🎫</div>인터파크
                     </label>
                     <label class="source-card">
                         <input type="radio" name="crawlSource" value="yes24">
-                        <div class="source-logo" style="background:#FFF0F0;">🎟️</div>
-                        예스24
+                        <div class="source-logo" style="background:#FFF0F0;">🎟️</div>예스24
                     </label>
                     <label class="source-card">
                         <input type="radio" name="crawlSource" value="melon">
-                        <div class="source-logo" style="background:#F0FFF4;">🍈</div>
-                        멜론티켓
+                        <div class="source-logo" style="background:#F0FFF4;">🍈</div>멜론티켓
                     </label>
                     <label class="source-card">
                         <input type="radio" name="crawlSource" value="direct">
-                        <div class="source-logo" style="background:#F5F3FF;">🔗</div>
-                        직접 입력
+                        <div class="source-logo" style="background:#F5F3FF;">🔗</div>직접 입력
                     </label>
                 </div>
-
                 <div class="url-row">
-                    <input type="text" id="crawlUrl"
-                           placeholder="페스티벌 상세 페이지 URL을 붙여넣으세요 (예: https://tickets.interpark.com/goods/...)"/>
-                    <button class="btn btn-primary" id="btnStartCrawl" disabled
-                            style="white-space:nowrap; padding:9px 20px;">
-                        스크래핑 시작
-                    </button>
+                    <input type="text" id="crawlUrl" placeholder="페스티벌 상세 페이지 URL 붙여넣기"/>
+                    <button class="btn btn-primary" id="btnStartCrawl" disabled style="white-space:nowrap; padding:9px 20px;">스크래핑 시작</button>
                 </div>
                 <div class="url-hint">* 해당 사이트의 이용약관 범위 내에서 공개 정보만 수집합니다.</div>
-
-                <!-- 진행 표시 -->
-                <div class="progress-bar-wrap" id="crawlProgress">
-                    <div class="progress-bar-track">
-                        <div class="progress-bar-fill" id="crawlProgressFill" style="width:0%"></div>
-                    </div>
-                    <div class="progress-label" id="crawlProgressLabel">페이지 로딩 중...</div>
-                </div>
             </div>
-
-            <!-- 2. 파싱 결과 (대기 중) -->
             <div class="crawl-card">
-                <div class="crawl-card-title" style="justify-content:space-between;">
-                    <span>2. 수집 결과 — 승인 대기</span>
-                    <div class="action-row">
-                        <span style="font-size:11px; color:var(--muted);">총 0건</span>
-                        <button class="btn btn-secondary btn-sm" disabled>전체 승인</button>
-                    </div>
-                </div>
-
-                <div class="warn-box">
-                    ⚠️ 수집된 데이터는 자동 파싱 결과입니다. 승인 전 반드시 내용을 검토하세요.
-                </div>
-
-                <!-- 결과 없음 상태 (초기) -->
-                <div class="empty-crawl" id="crawlEmptyState">
+                <div class="crawl-card-title">2. 수집 결과 — 승인 대기</div>
+                <div class="empty-crawl">
                     <div class="empty-icon">🕸️</div>
                     <div>아직 수집된 데이터가 없습니다.</div>
-                    <div style="margin-top:4px; font-size:12px;">위에서 URL을 입력하고 스크래핑을 시작하세요.</div>
-                </div>
-
-                <!-- 결과 테이블 (데이터가 생기면 표시) -->
-                <div id="crawlResultTable" style="display:none;">
-                    <table class="result-table">
-                        <thead>
-                        <tr>
-                            <th><input type="checkbox" style="accent-color:var(--primary);"></th>
-                            <th>출처</th>
-                            <th>페스티벌명</th>
-                            <th>날짜</th>
-                            <th>장소</th>
-                            <th>라인업</th>
-                            <th>수집 일시</th>
-                            <th>상태</th>
-                            <th>액션</th>
-                        </tr>
-                        </thead>
-                        <tbody id="crawlResultBody">
-                        <!-- JS로 채워질 영역 -->
-                        <!-- 예시 행 (실제 구현 시 삭제) -->
-                        <tr>
-                            <td><input type="checkbox" style="accent-color:var(--primary);"></td>
-                            <td><span class="badge-source">인터파크</span></td>
-                            <td style="font-weight:600;">인천 펜타포트 락 페스티벌 2025</td>
-                            <td>2025.08.01 ~ 08.03</td>
-                            <td>인천 송도 달빛축제공원</td>
-                            <td style="color:var(--muted);">파싱 중...</td>
-                            <td style="color:var(--muted);">2025-05-22 14:30</td>
-                            <td><span class="badge-pending">대기중</span></td>
-                            <td>
-                                <div class="action-row">
-                                    <button class="btn btn-primary btn-sm" disabled>승인</button>
-                                    <button class="btn btn-secondary btn-sm" disabled>거절</button>
-                                    <button class="btn btn-secondary btn-sm" disabled>상세</button>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <div style="margin-top:4px; font-size:12px;">URL을 입력하고 스크래핑을 시작하세요.</div>
                 </div>
             </div>
-
-            <!-- 3. 처리 이력 -->
-            <div class="crawl-card">
-                <div class="crawl-card-title" style="justify-content:space-between;">
-                    <span>3. 처리 이력</span>
-                    <button class="btn btn-secondary btn-sm" disabled>이력 초기화</button>
-                </div>
-                <table class="result-table">
-                    <thead>
-                    <tr>
-                        <th>페스티벌명</th>
-                        <th>출처</th>
-                        <th>처리 일시</th>
-                        <th>상태</th>
-                        <th>처리자</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td colspan="5" style="text-align:center; color:var(--muted); padding:32px;">처리된 항목이 없습니다.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </div><!-- /tab-scraping -->
-
+        </div>
 
         <!-- ══════════════════════════════════
              탭 2 — OCR 파싱
              ══════════════════════════════════ -->
         <div id="tab-ocr" class="tab-panel">
 
-            <div class="info-box">
-                ℹ️ 타임테이블 이미지를 업로드하면 AI가 아티스트명 · 스테이지 · 시간을 자동으로 인식합니다.
-                인식 결과를 수정한 뒤 <strong>타임테이블에 적용</strong>을 눌러 저장하세요.
-            </div>
-
-            <!-- 이미지 업로드 -->
+            <!-- 1. 설정 -->
             <div class="crawl-card">
-                <div class="crawl-card-title">
-                    1. 타임테이블 이미지 업로드
-                    <span class="badge-wip">구현 예정</span>
+                <div class="crawl-card-title">1. 적용 대상 설정</div>
+
+                <div class="select-row">
+                    <label>페스티벌</label>
+                    <select id="selFestival" style="flex:1; min-width:200px;">
+                        <option value="">— 페스티벌 선택 —</option>
+                    </select>
+                    <label>날짜</label>
+                    <input type="date" id="selDate" disabled/>
                 </div>
 
+                <!-- 스테이지 자동완성 목록 -->
+                <datalist id="stageOptions"></datalist>
+
+                <!-- 업로드 영역 -->
                 <div class="ocr-upload-zone" id="ocrDropZone">
                     <input type="file" id="ocrFileInput" accept="image/*">
                     <div class="upload-icon">🖼️</div>
-                    <div class="upload-title">이미지를 드래그하거나 클릭하여 업로드</div>
+                    <div class="upload-title">타임테이블 이미지를 드래그하거나 클릭하여 업로드</div>
                     <div class="upload-sub">JPG, PNG, WEBP 지원 · 최대 10MB</div>
                     <div style="margin-top:14px;">
                         <button class="btn btn-primary btn-sm"
@@ -458,111 +297,101 @@
                     </div>
                 </div>
 
-                <!-- 적용 대상 페스티벌 선택 -->
-                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                    <label style="font-size:13px; font-weight:600; color:var(--text-1); white-space:nowrap;">
-                        적용 페스티벌
-                    </label>
-                    <select style="flex:1; min-width:200px; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; outline:none;">
-                        <option value="">— 페스티벌 선택 —</option>
-                    </select>
-                    <select style="padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; outline:none;">
-                        <option value="">— 날짜 선택 —</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- OCR 결과 + 이미지 미리보기 -->
-            <div class="crawl-card">
-                <div class="crawl-card-title" style="justify-content:space-between;">
-                    <span>2. 파싱 결과 검토 &amp; 편집</span>
-                    <div class="action-row">
-                        <button class="btn btn-secondary btn-sm" id="btnAddOcrRow">+ 행 추가</button>
-                        <button class="btn btn-primary" id="btnApplyOcr" disabled>타임테이블에 적용</button>
-                    </div>
-                </div>
-
                 <!-- 진행 표시 -->
                 <div class="progress-bar-wrap" id="ocrProgress">
                     <div class="progress-bar-track">
                         <div class="progress-bar-fill" id="ocrProgressFill" style="width:0%"></div>
                     </div>
-                    <div class="progress-label" id="ocrProgressLabel">이미지 분석 중...</div>
+                    <div class="progress-label" id="ocrProgressLabel">AI 분석 중...</div>
+                </div>
+            </div>
+
+            <!-- 2. 결과 편집 -->
+            <div class="crawl-card">
+                <div class="crawl-card-title" style="justify-content:space-between;">
+                    <span>2. 파싱 결과 검토 &amp; 편집</span>
+                    <div class="action-row">
+                        <button class="btn btn-secondary btn-sm" id="btnAddRow">+ 행 추가</button>
+                        <button class="btn btn-primary" id="btnApplyOcr" disabled>타임테이블에 적용</button>
+                    </div>
                 </div>
 
-                <!-- 빈 상태 -->
+                <div class="warn-box" id="ocrWarnBox" style="display:none;">
+                    ⚠️ 확신도가 낮은 항목(🔴)은 수동으로 검토 후 적용하세요.
+                </div>
+
                 <div class="empty-crawl" id="ocrEmptyState">
                     <div class="empty-icon">🤖</div>
                     <div>이미지를 업로드하면 AI가 타임테이블을 자동으로 파싱합니다.</div>
                 </div>
 
-                <!-- 미리보기 + 편집 테이블 -->
                 <div class="ocr-preview-wrap" id="ocrPreviewWrap">
                     <div class="ocr-image-preview">
                         <img id="ocrPreviewImg" src="" alt="타임테이블 이미지">
                     </div>
                     <div class="ocr-result-area">
-                        <table class="parse-table" id="ocrParseTable">
+                        <table class="parse-table">
                             <thead>
                             <tr>
-                                <th>#</th>
+                                <th style="width:28px;">#</th>
                                 <th>아티스트명</th>
                                 <th>스테이지</th>
-                                <th>시작 시간</th>
-                                <th>종료 시간</th>
-                                <th>확신도</th>
-                                <th></th>
+                                <th style="width:90px;">시작</th>
+                                <th style="width:90px;">종료</th>
+                                <th style="width:56px;">확신도</th>
+                                <th style="width:28px;"></th>
                             </tr>
                             </thead>
-                            <tbody id="ocrParseBody">
-                            <!-- JS로 채워질 영역 -->
-                            </tbody>
+                            <tbody id="ocrParseBody"></tbody>
                         </table>
-                        <div style="margin-top:12px; font-size:11px; color:var(--muted);">
-                            * 확신도가 낮은 항목(🟡)은 수동으로 검토하세요.
+                        <div style="margin-top:8px; font-size:11px; color:var(--muted);">
+                            🟢 90+ &nbsp; 🟡 70~89 &nbsp; 🔴 ~69 — 낮은 항목은 직접 수정하세요.
                         </div>
                     </div>
                 </div>
+
+                <!-- 적용 결과 -->
+                <div class="apply-result" id="applyResult"></div>
             </div>
 
-            <!-- OCR 처리 이력 -->
+            <!-- 3. 처리 이력 -->
             <div class="crawl-card">
                 <div class="crawl-card-title">3. OCR 처리 이력</div>
-                <table class="result-table">
+                <table class="result-table" id="ocrHistoryTable">
                     <thead>
                     <tr>
                         <th>페스티벌</th>
                         <th>날짜</th>
-                        <th>파일명</th>
-                        <th>인식 항목 수</th>
+                        <th>저장 수</th>
+                        <th>실패 수</th>
                         <th>처리 일시</th>
-                        <th>상태</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr>
-                        <td colspan="6" style="text-align:center; color:var(--muted); padding:32px;">처리된 항목이 없습니다.</td>
-                    </tr>
+                    <tbody id="ocrHistoryBody">
+                    <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:32px;">처리된 항목이 없습니다.</td></tr>
                     </tbody>
                 </table>
             </div>
 
         </div><!-- /tab-ocr -->
-
-    </div><!-- /content-area -->
-</div><!-- /main-content -->
+    </div>
+</div>
 
 <script>
 (function () {
+    var csrf        = document.querySelector('meta[name="_csrf"]').content;
+    var csrfHeader  = document.querySelector('meta[name="_csrf_header"]').content;
+    var festivalMap = {}; // id → {title, startDate, endDate}
+    var rowIndex    = 0;
+    var currentFestivalTitle = '';
+
     /* ── 탭 전환 ── */
-    var tabBtns = document.querySelectorAll('.header-tab-btn');
-    tabBtns.forEach(function (btn) {
+    document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var target = btn.dataset.tab;
-            tabBtns.forEach(function (b) { b.classList.remove('active'); });
+            document.querySelectorAll('.header-tab-btn').forEach(function (b) { b.classList.remove('active'); });
             btn.classList.add('active');
             document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
-            document.getElementById('tab-' + target).classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
         });
     });
 
@@ -573,29 +402,66 @@
             card.classList.add('selected');
         });
     });
-
-    /* ── URL 입력 시 버튼 활성화 ── */
-    var crawlUrlInput = document.getElementById('crawlUrl');
-    var btnStartCrawl = document.getElementById('btnStartCrawl');
-    crawlUrlInput.addEventListener('input', function () {
-        btnStartCrawl.disabled = crawlUrlInput.value.trim().length === 0;
+    document.getElementById('crawlUrl').addEventListener('input', function () {
+        document.getElementById('btnStartCrawl').disabled = this.value.trim().length === 0;
     });
 
-    /* ── OCR 업로드 드래그&드롭 ── */
-    var dropZone = document.getElementById('ocrDropZone');
+    /* ── 페스티벌 목록 로드 ── */
+    fetch('/admin/crawl/festivals')
+        .then(function (r) { return r.json(); })
+        .then(function (festivals) {
+            var sel = document.getElementById('selFestival');
+            festivals.forEach(function (f) {
+                festivalMap[f.id] = f;
+                var opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.title;
+                sel.appendChild(opt);
+            });
+        });
+
+    /* ── 페스티벌 선택 시 날짜 범위 + 스테이지 로드 ── */
+    document.getElementById('selFestival').addEventListener('change', function () {
+        var fid = this.value;
+        var dateInput = document.getElementById('selDate');
+        dateInput.value = '';
+
+        if (!fid) { dateInput.disabled = true; return; }
+
+        var f = festivalMap[fid];
+        currentFestivalTitle = f.title;
+        if (f.startDate) { dateInput.min = f.startDate; dateInput.value = f.startDate; }
+        if (f.endDate)   { dateInput.max = f.endDate; }
+        dateInput.disabled = false;
+
+        // 스테이지 datalist 로드
+        fetch('/admin/crawl/festivals/' + fid + '/stages')
+            .then(function (r) { return r.json(); })
+            .then(function (stages) {
+                var dl = document.getElementById('stageOptions');
+                dl.innerHTML = '';
+                stages.forEach(function (name) {
+                    var opt = document.createElement('option');
+                    opt.value = name;
+                    dl.appendChild(opt);
+                });
+                // 기존 스테이지 셀 datalist 업데이트
+                document.querySelectorAll('.stage-input').forEach(function (inp) {
+                    inp.setAttribute('list', 'stageOptions');
+                });
+            });
+    });
+
+    /* ── OCR 드래그&드롭 / 파일 선택 ── */
+    var dropZone  = document.getElementById('ocrDropZone');
     var fileInput = document.getElementById('ocrFileInput');
 
     dropZone.addEventListener('click', function () { fileInput.click(); });
-    dropZone.addEventListener('dragover', function (e) {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-    });
+    dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
     dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
     dropZone.addEventListener('drop', function (e) {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        var files = e.dataTransfer.files;
-        if (files.length > 0) handleOcrFile(files[0]);
+        e.preventDefault(); dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleOcrFile(e.dataTransfer.files[0]);
     });
     fileInput.addEventListener('change', function () {
         if (fileInput.files.length > 0) handleOcrFile(fileInput.files[0]);
@@ -605,84 +471,209 @@
         if (!file.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); return; }
         if (file.size > 10 * 1024 * 1024) { alert('파일 크기는 10MB 이하여야 합니다.'); return; }
 
-        /* 미리보기 */
+        // 이미지 미리보기
         var reader = new FileReader();
         reader.onload = function (e) {
             document.getElementById('ocrPreviewImg').src = e.target.result;
-            document.getElementById('ocrEmptyState').style.display = 'none';
-            document.getElementById('ocrPreviewWrap').classList.add('visible');
-            simulateOcrProgress();
         };
         reader.readAsDataURL(file);
+
+        document.getElementById('ocrEmptyState').style.display = 'none';
+        document.getElementById('ocrPreviewWrap').classList.add('visible');
+        document.getElementById('ocrParseBody').innerHTML = '';
+        document.getElementById('applyResult').style.display = 'none';
+        document.getElementById('btnApplyOcr').disabled = true;
+
+        // 진행 표시
+        var progressWrap = document.getElementById('ocrProgress');
+        var progressFill = document.getElementById('ocrProgressFill');
+        var progressLabel = document.getElementById('ocrProgressLabel');
+        progressFill.style.width = '0%';
+        progressWrap.classList.add('visible');
+        progressLabel.textContent = 'AI 이미지 분석 중...';
+
+        // 진행 bar 애니메이션 (실제 API 응답 전까지)
+        var fakeTimer = null;
+        var fakePct = 10;
+        fakeTimer = setInterval(function () {
+            fakePct = Math.min(fakePct + 5, 85);
+            progressFill.style.width = fakePct + '%';
+        }, 800);
+
+        // 실제 API 호출
+        var formData = new FormData();
+        formData.append('image', file);
+        var headers = {};
+        headers[csrfHeader] = csrf;
+
+        fetch('/admin/crawl/ocr', { method: 'POST', headers: headers, body: formData })
+            .then(function (r) {
+                clearInterval(fakeTimer);
+                progressFill.style.width = '100%';
+                progressLabel.textContent = '완료!';
+                if (!r.ok) {
+                    return r.json().then(function (e) { throw new Error(e.error || '파싱 실패'); });
+                }
+                return r.json();
+            })
+            .then(function (results) {
+                setTimeout(function () { progressWrap.classList.remove('visible'); }, 500);
+                renderOcrResults(results);
+            })
+            .catch(function (err) {
+                clearInterval(fakeTimer);
+                progressWrap.classList.remove('visible');
+                showApplyResult('error', '오류: ' + err.message);
+            });
     }
 
-    /* OCR 진행 시뮬레이션 (실제 API 연결 전 UX 확인용) */
-    function simulateOcrProgress() {
-        var bar   = document.getElementById('ocrProgressFill');
-        var label = document.getElementById('ocrProgressLabel');
-        var wrap  = document.getElementById('ocrProgress');
-        var apply = document.getElementById('btnApplyOcr');
-        var steps = ['이미지 전처리 중...', '텍스트 영역 감지 중...', 'OCR 인식 중...', '데이터 구조화 중...', '완료!'];
-        var pct   = [20, 40, 65, 85, 100];
-
-        apply.disabled = true;
-        wrap.classList.add('visible');
-        var i = 0;
-        var timer = setInterval(function () {
-            bar.style.width   = pct[i] + '%';
-            label.textContent = steps[i];
-            i++;
-            if (i >= steps.length) {
-                clearInterval(timer);
-                setTimeout(function () {
-                    wrap.classList.remove('visible');
-                    apply.disabled = false;
-                    renderOcrSampleRows();
-                }, 600);
-            }
-        }, 600);
-    }
-
-    /* 샘플 OCR 결과 행 (실제 API 연결 전 구조 확인용) */
-    function renderOcrSampleRows() {
+    function renderOcrResults(results) {
         var body = document.getElementById('ocrParseBody');
-        var samples = [
-            { artist: 'AKMU', stage: '그린 스테이지', start: '18:00', end: '19:00', conf: '🟢 98%' },
-            { artist: '아이유',  stage: '메인 스테이지', start: '20:00', end: '21:30', conf: '🟢 95%' },
-            { artist: '???',     stage: '블루 스테이지', start: '16:30', end: '17:30', conf: '🟡 62%' },
-        ];
         body.innerHTML = '';
-        samples.forEach(function (row, idx) {
-            body.innerHTML += '<tr>' +
-                '<td>' + (idx + 1) + '</td>' +
-                '<td><input type="text" value="' + row.artist + '"/></td>' +
-                '<td><input type="text" value="' + row.stage  + '"/></td>' +
-                '<td><input type="time" value="' + row.start  + '"/></td>' +
-                '<td><input type="time" value="' + row.end    + '"/></td>' +
-                '<td>' + row.conf + '</td>' +
-                '<td><button class="row-del" onclick="this.closest(\'tr\').remove()">✕</button></td>' +
-            '</tr>';
+        rowIndex = 0;
+        var hasLow = false;
+
+        results.forEach(function (row) {
+            var conf = row.confidence != null ? row.confidence : 0;
+            if (conf < 70) hasLow = true;
+            appendRow(row.artist || '', row.stage || '', row.startTime || '', row.endTime || '', conf);
         });
+
+        document.getElementById('ocrWarnBox').style.display = hasLow ? 'block' : 'none';
+        document.getElementById('btnApplyOcr').disabled = results.length === 0;
     }
 
-    /* 행 추가 */
-    document.getElementById('btnAddOcrRow').addEventListener('click', function () {
-        var body = document.getElementById('ocrParseBody');
-        var idx  = body.querySelectorAll('tr').length + 1;
-        body.innerHTML += '<tr>' +
+    function confBadge(conf) {
+        if (conf == null) return '<span class="conf-mid">—</span>';
+        if (conf >= 90) return '<span class="conf-high">🟢 ' + conf + '</span>';
+        if (conf >= 70) return '<span class="conf-mid">🟡 ' + conf + '</span>';
+        return '<span class="conf-low">🔴 ' + conf + '</span>';
+    }
+
+    function appendRow(artist, stage, startTime, endTime, conf) {
+        rowIndex++;
+        var idx = rowIndex;
+        var tr = document.createElement('tr');
+        tr.dataset.rowIndex = idx;
+        tr.innerHTML =
             '<td>' + idx + '</td>' +
-            '<td><input type="text" placeholder="아티스트명"/></td>' +
-            '<td><input type="text" placeholder="스테이지"/></td>' +
-            '<td><input type="time"/></td>' +
-            '<td><input type="time"/></td>' +
-            '<td>—</td>' +
-            '<td><button class="row-del" onclick="this.closest(\'tr\').remove()">✕</button></td>' +
-        '</tr>';
+            '<td><input type="text" value="' + esc(artist) + '" placeholder="아티스트명"/></td>' +
+            '<td><input type="text" class="stage-input" value="' + esc(stage) + '" placeholder="스테이지" list="stageOptions"/></td>' +
+            '<td><input type="time" value="' + esc(startTime) + '"/></td>' +
+            '<td><input type="time" value="' + esc(endTime) + '"/></td>' +
+            '<td>' + confBadge(conf) + '</td>' +
+            '<td><button class="row-del" onclick="this.closest(\'tr\').remove(); checkEmpty();">✕</button></td>';
+        document.getElementById('ocrParseBody').appendChild(tr);
+    }
+
+    function checkEmpty() {
+        var rows = document.getElementById('ocrParseBody').querySelectorAll('tr');
+        if (rows.length === 0) {
+            document.getElementById('btnApplyOcr').disabled = true;
+        }
+    }
+
+    /* ── 행 추가 ── */
+    document.getElementById('btnAddRow').addEventListener('click', function () {
+        appendRow('', '', '', '', null);
         document.getElementById('ocrEmptyState').style.display = 'none';
         document.getElementById('ocrPreviewWrap').classList.add('visible');
         document.getElementById('btnApplyOcr').disabled = false;
     });
 
+    /* ── 타임테이블에 적용 ── */
+    document.getElementById('btnApplyOcr').addEventListener('click', function () {
+        var fid  = document.getElementById('selFestival').value;
+        var date = document.getElementById('selDate').value;
+
+        if (!fid)  { alert('페스티벌을 선택해주세요.'); return; }
+        if (!date) { alert('날짜를 선택해주세요.'); return; }
+
+        var entries = [];
+        document.getElementById('ocrParseBody').querySelectorAll('tr').forEach(function (tr) {
+            var inputs = tr.querySelectorAll('input');
+            entries.push({
+                artist:    inputs[0].value.trim(),
+                stage:     inputs[1].value.trim(),
+                startTime: inputs[2].value,
+                endTime:   inputs[3].value,
+                confidence: null
+            });
+        });
+
+        if (entries.length === 0) { alert('저장할 항목이 없습니다.'); return; }
+
+        var btn = document.getElementById('btnApplyOcr');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>저장 중...';
+
+        var headers = { 'Content-Type': 'application/json' };
+        headers[csrfHeader] = csrf;
+
+        fetch('/admin/crawl/ocr/apply', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ festivalId: parseInt(fid), festivalDate: date, entries: entries })
+        })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '저장 실패'); });
+            return r.json();
+        })
+        .then(function (result) {
+            btn.disabled = false;
+            btn.innerHTML = '타임테이블에 적용';
+
+            var msg = result.savedCount + '개 저장 완료';
+            if (result.failedCount > 0) {
+                msg += ', ' + result.failedCount + '개 실패';
+                var reasons = result.failures.map(function (f) {
+                    return f.artist + '/' + f.stage + ': ' + f.reason;
+                }).join('<br>');
+                msg += '<br><small>' + reasons + '</small>';
+                showApplyResult('partial', msg);
+            } else {
+                showApplyResult('success', msg);
+            }
+
+            // 이력 추가
+            addHistory(currentFestivalTitle, date, result.savedCount, result.failedCount);
+        })
+        .catch(function (err) {
+            btn.disabled = false;
+            btn.innerHTML = '타임테이블에 적용';
+            showApplyResult('error', '오류: ' + err.message);
+        });
+    });
+
+    function showApplyResult(type, msg) {
+        var el = document.getElementById('applyResult');
+        el.className = 'apply-result ' + type;
+        el.innerHTML = msg;
+        el.style.display = 'block';
+    }
+
+    function addHistory(festivalTitle, date, saved, failed) {
+        var body = document.getElementById('ocrHistoryBody');
+        var placeholder = body.querySelector('td[colspan]');
+        if (placeholder) placeholder.closest('tr').remove();
+
+        var now = new Date().toLocaleString('ko-KR');
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>' + esc(festivalTitle) + '</td>' +
+            '<td>' + esc(date) + '</td>' +
+            '<td style="color:#059669; font-weight:700;">' + saved + '</td>' +
+            '<td style="color:' + (failed > 0 ? '#DC2626' : '#6B7280') + '; font-weight:700;">' + failed + '</td>' +
+            '<td style="color:var(--muted);">' + now + '</td>';
+        body.insertBefore(tr, body.firstChild);
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
 })();
 </script>
 </body>
