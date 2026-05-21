@@ -54,6 +54,6 @@ public class FestivalBoothAdminController {
     }
 
     private String boothsRedirect(Long festivalId) {
-        return boothsRedirect(festivalId);
+        return "redirect:/admin/festivals/" + festivalId + "#booths";
     }
 }
