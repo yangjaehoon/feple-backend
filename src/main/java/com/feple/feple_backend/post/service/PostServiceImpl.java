@@ -219,7 +219,8 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
-        badWordFilter.validate(dto.getTitle(), dto.getContent());
+        badWordFilter.validateField("title", dto.getTitle());
+        badWordFilter.validateField("content", dto.getContent());
         return Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())

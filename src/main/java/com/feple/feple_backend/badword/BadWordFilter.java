@@ -32,4 +32,16 @@ public class BadWordFilter {
             }
         }
     }
+
+    public void validateField(String field, String text) {
+        if (text == null) return;
+        Set<String> snapshot = badWords;
+        if (snapshot.isEmpty()) return;
+        String lower = text.toLowerCase();
+        for (String word : snapshot) {
+            if (lower.contains(word)) {
+                throw new IllegalArgumentException(field + ":금칙어가 포함되어 있습니다.");
+            }
+        }
+    }
 }
