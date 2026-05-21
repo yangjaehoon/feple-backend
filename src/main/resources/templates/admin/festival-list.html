@@ -2,6 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Feple Admin — 페스티벌 목록</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
@@ -277,6 +279,9 @@ document.querySelectorAll('.header-tab-btn').forEach(function(btn) {
 });
 
 /* ── 체크박스 AJAX 저장 ── */
+var csrfToken  = document.querySelector('meta[name="_csrf"]').content;
+var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
 var toastTimer;
 function showToast() {
     var t = document.getElementById('saveToast');
@@ -291,8 +296,12 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
         var field      = cb.dataset.field;
         var checked    = cb.checked;
 
+        var headers = {};
+        headers[csrfHeader] = csrfToken;
+
         fetch('/admin/festivals/' + festivalId + '/checklist?field=' + field, {
-            method: 'POST'
+            method: 'POST',
+            headers: headers
         })
         .then(function(res) {
             if (!res.ok) throw new Error();
