@@ -1,6 +1,7 @@
 package com.feple.feple_backend.comment.service;
 
 
+import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
@@ -40,9 +41,11 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final FestivalCertificationRepository certificationRepository;
+    private final BadWordFilter badWordFilter;
 
     @Override
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
+        badWordFilter.validate(dto.getContent());
         Post post = EntityFinder.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 

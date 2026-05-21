@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 금칙어 관리</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('bad-words')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">금칙어 관리</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>금칙어</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <!-- 금칙어 추가 -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <div class="card-title">금칙어 추가</div>
+            </div>
+            <div style="padding:20px;">
+                <form th:action="@{/admin/bad-words/add}" method="post" style="display:flex; gap:10px; align-items:center;">
+                    <input type="text" name="word" placeholder="금칙어 입력..."
+                           required maxlength="50"
+                           style="flex:1; max-width:320px; padding:8px 12px; border:1px solid var(--border); border-radius:7px; font-size:14px;"/>
+                    <button type="submit" class="btn btn-primary">추가</button>
+                </form>
+                <p style="margin-top:8px; font-size:12px; color:var(--muted);">
+                    소문자로 저장되며, 게시글·댓글 작성 시 해당 단어가 포함되면 등록이 차단됩니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- 금칙어 목록 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    등록된 금칙어
+                    <span style="font-size:12px; font-weight:500; color:var(--muted); margin-left:6px;"
+                          th:text="'총 ' + ${#lists.size(badWords)} + '개'"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>금칙어</th>
+                        <th style="width:180px;">등록일시</th>
+                        <th style="width:100px;">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="bw : ${badWords}">
+                        <td>
+                            <span style="font-family:monospace; font-size:14px; font-weight:600;"
+                                  th:text="${bw.word}"></span>
+                        </td>
+                        <td style="font-size:13px; color:var(--muted);"
+                            th:text="${#temporals.format(bw.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(badWords)}">
+                        <td colspan="3" style="text-align:center; color:var(--muted); padding:24px;">
+                            등록된 금칙어가 없습니다.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

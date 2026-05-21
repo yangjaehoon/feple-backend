@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -38,6 +39,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
     private final FestivalCertificationRepository certificationRepository;
+    private final BadWordFilter badWordFilter;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
 
@@ -217,6 +219,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
+        badWordFilter.validate(dto.getTitle(), dto.getContent());
         return Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
