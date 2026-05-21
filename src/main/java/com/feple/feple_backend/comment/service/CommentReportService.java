@@ -17,6 +17,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -70,5 +74,11 @@ public class CommentReportService implements ReportAdminService {
     public void dismissReport(Long reportId) {
         CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         report.resolve(ReportStatus.DISMISSED);
+    }
+
+    public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        return reportRepository.countByCommentAuthorIds(userIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
     }
 }

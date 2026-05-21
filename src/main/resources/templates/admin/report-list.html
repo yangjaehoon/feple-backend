@@ -19,6 +19,10 @@
         .type-tab { padding:12px 18px; font-size:13px; font-weight:700; text-decoration:none; border-bottom:3px solid transparent; color:var(--muted); }
         .type-tab.active { border-bottom-color:var(--primary); color:var(--primary); }
         .type-tab-wrap { display:flex; gap:0; border-bottom:1px solid var(--border); padding:0 22px; }
+        .report-count-badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px; font-weight:700; margin-left:5px; vertical-align:middle; }
+        .report-count-low  { background:#fff3cd; color:#856404; }
+        .report-count-high { background:#f8d7da; color:#842029; }
+        .report-detail { margin-top:4px; font-size:12px; color:var(--text-2); background:var(--border); border-radius:4px; padding:2px 8px; display:inline-block; max-width:100%; }
     </style>
 </head>
 <body>
@@ -95,10 +99,15 @@
                                style="font-size:14px; font-weight:600; max-width:300px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
                             <div class="cell-secondary" style="margin-top:4px;">
                                 <span th:text="${report.posterNickname}"></span>
-                                <span th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
-                                      style="margin-left:6px; font-style:italic;"
-                                      th:text="'「' + ${report.detail} + '」'"></span>
+                                <span th:with="cnt=${authorReportCounts.get(report.postAuthorId)}"
+                                      th:if="${cnt != null}"
+                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
+                                      class="report-count-badge"
+                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
                             </div>
+                            <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                 class="report-detail"
+                                 th:text="${report.detail}"></div>
                         </td>
                         <td>
                             <span class="reason-badge"
@@ -166,14 +175,19 @@
                                  th:text="${report.commentContent}"></div>
                             <div class="cell-secondary" style="margin-top:4px;">
                                 <span th:text="${report.commentUserNickname}"></span>
+                                <span th:with="cnt=${authorReportCounts.get(report.commentAuthorId)}"
+                                      th:if="${cnt != null}"
+                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
+                                      class="report-count-badge"
+                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
                                 <span style="margin-left:6px;">•</span>
                                 <a th:href="@{/admin/posts/{id}(id=${report.commentPostId})}"
                                    th:text="${report.commentPostTitle}"
                                    style="margin-left:6px; color:var(--muted);"></a>
-                                <span th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
-                                      style="margin-left:6px; font-style:italic;"
-                                      th:text="'「' + ${report.detail} + '」'"></span>
                             </div>
+                            <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                 class="report-detail"
+                                 th:text="${report.detail}"></div>
                         </td>
                         <td>
                             <span class="reason-badge"
@@ -239,15 +253,22 @@
                         <td>
                             <div style="font-size:14px; font-weight:600;">
                                 사진 #<span th:text="${report.photo.id}"></span>
+                                <span style="font-size:12px; font-weight:400; color:var(--muted); margin-left:6px;"
+                                      th:text="${report.photo.title}"></span>
                             </div>
                             <div class="cell-secondary" style="margin-top:4px;">
-                                아티스트: <span th:text="${report.photo.artist.name}"></span>
+                                업로더: <span th:text="${report.photoUploaderNickname}"></span>
+                                <span th:with="cnt=${authorReportCounts.get(report.photoUploaderId)}"
+                                      th:if="${cnt != null}"
+                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
+                                      class="report-count-badge"
+                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
                                 <span style="margin-left:6px;">•</span>
-                                <span style="margin-left:6px;" th:text="${report.photo.title}"></span>
-                                <span th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
-                                      style="margin-left:6px; font-style:italic;"
-                                      th:text="'「' + ${report.detail} + '」'"></span>
+                                <span style="margin-left:6px;">아티스트: <span th:text="${report.photo.artist.name}"></span></span>
                             </div>
+                            <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                 class="report-detail"
+                                 th:text="${report.detail}"></div>
                         </td>
                         <td>
                             <span class="reason-badge"

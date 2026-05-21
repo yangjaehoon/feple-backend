@@ -10,6 +10,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface CommentReportRepository extends JpaRepository<CommentReport, Long> {
 
     @Query("SELECT CASE WHEN COUNT(cr) > 0 THEN TRUE ELSE FALSE END FROM CommentReport cr WHERE cr.reporter.id = :reporterId AND cr.comment.id = :commentId")
@@ -26,4 +29,7 @@ public interface CommentReportRepository extends JpaRepository<CommentReport, Lo
     @Modifying
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.id = :commentId")
     void deleteByCommentId(@Param("commentId") Long commentId);
+
+    @Query("SELECT cr.comment.user.id, COUNT(cr) FROM CommentReport cr WHERE cr.comment.user.id IN :userIds GROUP BY cr.comment.user.id")
+    List<Object[]> countByCommentAuthorIds(@Param("userIds") Collection<Long> userIds);
 }

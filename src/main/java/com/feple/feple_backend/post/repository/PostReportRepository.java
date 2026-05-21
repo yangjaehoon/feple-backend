@@ -10,6 +10,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface PostReportRepository extends JpaRepository<PostReport, Long> {
 
     @Query("SELECT CASE WHEN COUNT(pr) > 0 THEN TRUE ELSE FALSE END FROM PostReport pr WHERE pr.reporter.id = :reporterId AND pr.post.id = :postId")
@@ -28,4 +31,7 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
     @Modifying
     @Query("DELETE FROM PostReport pr WHERE pr.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
+
+    @Query("SELECT pr.post.user.id, COUNT(pr) FROM PostReport pr WHERE pr.post.user.id IN :userIds GROUP BY pr.post.user.id")
+    List<Object[]> countByPostAuthorIds(@Param("userIds") Collection<Long> userIds);
 }

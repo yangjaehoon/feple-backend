@@ -18,6 +18,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -78,5 +82,11 @@ public class ArtistPhotoReportService implements ReportAdminService {
     public void dismissReport(Long reportId) {
         ArtistPhotoReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         report.resolve(ReportStatus.DISMISSED);
+    }
+
+    public Map<Long, Long> getUploaderReportCounts(Collection<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        return reportRepository.countByPhotoUploaderIds(userIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
     }
 }

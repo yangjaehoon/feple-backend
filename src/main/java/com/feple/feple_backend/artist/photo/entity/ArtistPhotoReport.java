@@ -60,11 +60,8 @@ public class ArtistPhotoReport {
         return this.status == ReportStatus.PENDING;
     }
 
-    public Long getPhotoId() {
-        return photo.getId();
-    }
-
-    public Long getReporterId() {
-        return reporter.getId();
-    }
+    public Long getPhotoId() { return photo.getId(); }
+    public Long getReporterId() { return reporter.getId(); }
+    public Long getPhotoUploaderId() { return photo.getUploaderId(); }
+    public String getPhotoUploaderNickname() { return photo.getUploaderNickname(); }
 }

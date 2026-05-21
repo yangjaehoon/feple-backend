@@ -74,4 +74,7 @@ public class ArtistGalleryPhoto {
     public void decrementLikeCount() {
         if (this.likeCount > 0) this.likeCount--;
     }
+
+    public Long getUploaderId() { return uploader.getId(); }
+    public String getUploaderNickname() { return uploader.getNickname(); }
 }
