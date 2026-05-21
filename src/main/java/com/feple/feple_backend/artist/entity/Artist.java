@@ -46,11 +46,20 @@ public class Artist {
         this.rankUpdatedAt = LocalDateTime.now();
     }
 
-    public void update(String name, String nameEn, ArtistGenre genre, String profileImageKey) {
+    public void update(String name, String nameEn, ArtistGenre genre) {
         this.name = name;
         this.nameEn = nameEn;
         this.genre = genre;
-        this.profileImageKey = profileImageKey;
+    }
+
+    public String updateProfileImage(String newKey) {
+        String old = this.profileImageKey;
+        this.profileImageKey = newKey;
+        return old;
+    }
+
+    public void updateNameEn(String nameEn) {
+        this.nameEn = nameEn;
     }
 
 }

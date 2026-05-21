@@ -11,7 +11,6 @@ import java.util.List;
 @Builder
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Festival {
@@ -55,6 +54,29 @@ public class Festival {
     @Builder.Default
     @OneToMany(mappedBy = "festival", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArtistFestival> artistFestivals = new ArrayList<>();
+
+    public void update(String title, String titleEn, String description, String location,
+                       LocalDate startDate, LocalDate endDate,
+                       List<Genre> genres, Region region, Double latitude, Double longitude) {
+        this.title = title;
+        this.titleEn = titleEn;
+        this.description = description;
+        this.location = location;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        if (genres != null) this.genres = genres;
+        if (region != null) this.region = region;
+        if (latitude != null) this.latitude = latitude;
+        if (longitude != null) this.longitude = longitude;
+    }
+
+    /** 포스터를 교체하고 이전 키를 반환. 변경이 없으면 null 반환. */
+    public String updatePoster(String newKey) {
+        if (newKey == null || newKey.equals(this.posterKey)) return null;
+        String old = this.posterKey;
+        this.posterKey = newKey;
+        return old;
+    }
 
     public void incrementLikeCount() {
         this.likeCount++;

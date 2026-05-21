@@ -107,21 +107,11 @@ public class FestivalServiceImpl implements FestivalService {
     public void updateFestival(Long id, FestivalRequestDto dto) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
 
-        festival.setTitle(dto.getTitle());
-        festival.setTitleEn(dto.getTitleEn());
-        festival.setDescription(dto.getDescription());
-        festival.setLocation(dto.getLocation());
-        festival.setStartDate(dto.getStartDate());
-        festival.setEndDate(dto.getEndDate());
-        if (dto.getPosterKey() != null && !dto.getPosterKey().equals(festival.getPosterKey())) {
-            String oldKey = festival.getPosterKey();
-            festival.setPosterKey(dto.getPosterKey());
-            fileStorageService.deleteFile(oldKey);
-        }
-        if (dto.getGenres() != null) festival.setGenres(dto.getGenres());
-        if (dto.getRegion() != null) festival.setRegion(dto.getRegion());
-        if (dto.getLatitude() != null) festival.setLatitude(dto.getLatitude());
-        if (dto.getLongitude() != null) festival.setLongitude(dto.getLongitude());
+        festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
+                dto.getStartDate(), dto.getEndDate(),
+                dto.getGenres(), dto.getRegion(), dto.getLatitude(), dto.getLongitude());
+        String oldPosterKey = festival.updatePoster(dto.getPosterKey());
+        if (oldPosterKey != null) fileStorageService.deleteFile(oldPosterKey);
     }
 
     @Override

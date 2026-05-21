@@ -162,11 +162,10 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
-        String oldKey = artist.getProfileImageKey();
-        String imageKey = dto.getProfileImageKey() != null ? dto.getProfileImageKey() : oldKey;
-        artist.update(dto.getName(), dto.getNameEn(), dto.getGenre(), imageKey);
-        if (dto.getProfileImageKey() != null && !dto.getProfileImageKey().equals(oldKey)) {
-            fileStorageService.deleteFile(oldKey);
+        artist.update(dto.getName(), dto.getNameEn(), dto.getGenre());
+        if (dto.getProfileImageKey() != null) {
+            String oldKey = artist.updateProfileImage(dto.getProfileImageKey());
+            if (oldKey != null) fileStorageService.deleteFile(oldKey);
         }
     }
 
@@ -181,11 +180,8 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
-        String oldKey = artist.getProfileImageKey();
-        artist.update(artist.getName(), artist.getNameEn(), artist.getGenre(), imageKey);
-        if (imageKey != null && !imageKey.equals(oldKey)) {
-            fileStorageService.deleteFile(oldKey);
-        }
+        String oldKey = artist.updateProfileImage(imageKey);
+        if (oldKey != null) fileStorageService.deleteFile(oldKey);
     }
 
     @Override
@@ -197,8 +193,7 @@ public class ArtistServiceImpl implements ArtistService {
             Artist artist = artistMap.get(ids.get(i));
             if (artist != null) {
                 String nameEn = (i < nameEns.size()) ? nameEns.get(i).trim() : "";
-                artist.update(artist.getName(), nameEn.isEmpty() ? null : nameEn,
-                        artist.getGenre(), artist.getProfileImageKey());
+                artist.updateNameEn(nameEn.isEmpty() ? null : nameEn);
             }
         }
     }
