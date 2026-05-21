@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('ADMIN')")
@@ -31,10 +32,19 @@ public class UserAdminController {
     @GetMapping
     public String listUsers(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "latest") String sort,
             Model model) {
-        Page<UserResponseDto> users = userService.getUsersPage(page, 20, keyword);
+        Page<UserResponseDto> users = "reports".equals(sort)
+                ? userService.getUsersPageSortedByReports(page, 20, keyword)
+                : userService.getUsersPage(page, 20, keyword);
+
+        List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
+        Map<Long, Long> reportCounts = myPageService.getReportCounts(userIds);
+
         model.addAttribute("users", users);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("sort", sort);
+        model.addAttribute("reportCounts", reportCounts);
         return "admin/user-list";
     }
 

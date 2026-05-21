@@ -2,7 +2,11 @@ package com.feple.feple_backend.user.repository;
 
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -24,4 +28,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByNicknameAndIdNot(String nickname, Long id);
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    @Query(value = """
+            SELECT u.* FROM users u
+            LEFT JOIN (
+                SELECT p.user_id AS uid, COUNT(pr.id) AS cnt
+                FROM post p JOIN post_report pr ON pr.post_id = p.id
+                GROUP BY p.user_id
+            ) post_r ON post_r.uid = u.id
+            LEFT JOIN (
+                SELECT c.user_id AS uid, COUNT(cr.id) AS cnt
+                FROM comment c JOIN comment_report cr ON cr.comment_id = c.id
+                GROUP BY c.user_id
+            ) com_r ON com_r.uid = u.id
+            LEFT JOIN (
+                SELECT ap.uploader_user_id AS uid, COUNT(apr.id) AS cnt
+                FROM artist_photos ap JOIN artist_photo_report apr ON apr.photo_id = ap.id
+                GROUP BY ap.uploader_user_id
+            ) photo_r ON photo_r.uid = u.id
+            WHERE (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
+            ORDER BY (COALESCE(post_r.cnt, 0) + COALESCE(com_r.cnt, 0) + COALESCE(photo_r.cnt, 0)) DESC
+            """,
+            countQuery = """
+            SELECT COUNT(*) FROM users u
+            WHERE (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
+            """,
+            nativeQuery = true)
+    Page<User> findAllOrderByTotalReportCountDesc(@Param("keyword") String keyword, Pageable pageable);
 }

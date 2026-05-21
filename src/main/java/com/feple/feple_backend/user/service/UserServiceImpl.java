@@ -98,6 +98,14 @@ public class UserServiceImpl implements UserService, UserAdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword) {
+        String kw = (keyword == null) ? "" : keyword.trim();
+        return userRepository.findAllOrderByTotalReportCountDesc(kw, PageRequest.of(page, size))
+                .map(this::toAdminUserDto);
+    }
+
+    @Override
     public void bulkDeleteUsers(List<Long> ids) {
         for (Long id : ids) {
             adminDeleteUser(id);

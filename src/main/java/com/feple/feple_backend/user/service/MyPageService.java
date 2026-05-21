@@ -17,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +48,15 @@ public class MyPageService {
 
     public List<ArtistResponseDto> getFollowedArtists(@NonNull Long userId) {
         return artistService.getFollowedArtists(userId);
+    }
+
+    public Map<Long, Long> getReportCounts(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        Map<Long, Long> counts = new HashMap<>();
+        postReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
+        commentReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
+        photoReportService.getUploaderReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
+        return counts;
     }
 
     public UserStatsDto getUserStats(@NonNull Long userId) {
