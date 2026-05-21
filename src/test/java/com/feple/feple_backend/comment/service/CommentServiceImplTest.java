@@ -238,12 +238,14 @@ class CommentServiceImplTest {
         given(commentRepository.findById(100L)).willReturn(Optional.of(c));
         given(userRepository.findById(2L)).willReturn(Optional.of(liker));
         given(commentLikeRepository.existsByUserIdAndCommentId(2L, 100L)).willReturn(false);
+        given(commentRepository.findLikeCountById(100L)).willReturn(1);
 
         CommentLikeResult result = commentService.toggleLike(100L, 2L);
 
         assertThat(result.liked()).isTrue();
         assertThat(result.likeCount()).isEqualTo(1);
         verify(commentLikeRepository).save(any());
+        verify(commentRepository).incrementLikeCount(100L);
     }
 
     @Test
@@ -256,11 +258,13 @@ class CommentServiceImplTest {
         given(commentRepository.findById(100L)).willReturn(Optional.of(c));
         given(userRepository.findById(2L)).willReturn(Optional.of(liker));
         given(commentLikeRepository.existsByUserIdAndCommentId(2L, 100L)).willReturn(true);
+        given(commentRepository.findLikeCountById(100L)).willReturn(0);
 
         CommentLikeResult result = commentService.toggleLike(100L, 2L);
 
         assertThat(result.liked()).isFalse();
         assertThat(result.likeCount()).isEqualTo(0);
         verify(commentLikeRepository).deleteByUserIdAndCommentId(2L, 100L);
+        verify(commentRepository).decrementLikeCount(100L);
     }
 }
