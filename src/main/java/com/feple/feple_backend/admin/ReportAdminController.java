@@ -18,6 +18,8 @@ import java.util.Map;
 @RequestMapping("/admin/reports")
 public class ReportAdminController {
 
+    private static final int PAGE_SIZE = 20;
+
     private final PostReportService postReportService;
     private final CommentReportService commentReportService;
     private final ArtistPhotoReportService photoReportService;
@@ -42,7 +44,7 @@ public class ReportAdminController {
             @RequestParam(defaultValue = "post") String type,
             Model model) {
         ReportAdminService handler = handlers.getOrDefault(type, postReportService);
-        Page<?> reports = handler.getReportsForAdmin(page, 20, status);
+        Page<?> reports = handler.getReportsForAdmin(page, PAGE_SIZE, status);
         model.addAttribute("reports", reports);
         model.addAttribute("pendingCount", handler.getPendingCount());
         model.addAttribute("totalCount", handler.getTotalCount());

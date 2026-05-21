@@ -18,6 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostAdminController {
 
+    private static final int PAGE_SIZE = 20;
+
     private final PostService postService;
     private final PostAdminService postAdminService;
     private final CommentService commentService;
@@ -28,7 +30,7 @@ public class PostAdminController {
             @RequestParam(defaultValue = "") String filter,
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
-        model.addAttribute("posts", postAdminService.getPostsForAdmin(page, 20, filter, keyword));
+        model.addAttribute("posts", postAdminService.getPostsForAdmin(page, PAGE_SIZE, filter, keyword));
         model.addAttribute("filter", filter);
         model.addAttribute("keyword", keyword);
         model.addAttribute("page", page);

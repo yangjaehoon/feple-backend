@@ -113,12 +113,12 @@ public class ArtistServiceImpl implements ArtistService {
                                      .apply(artistRepository).stream();
         }
         if (genre != null) {
-            stream = stream.filter(a -> genre == a.getGenre());
+            stream = stream.filter(artist -> genre == artist.getGenre());
         }
         List<ArtistResponseDto> result = stream
-                .map(a -> ArtistResponseDto.from(a,
-                        fileStorageService.buildUrl(a.getProfileImageKey()),
-                        songCountMap.getOrDefault(a.getId(), 0)))
+                .map(artist -> ArtistResponseDto.from(artist,
+                        fileStorageService.buildUrl(artist.getProfileImageKey()),
+                        songCountMap.getOrDefault(artist.getId(), 0)))
                 .collect(Collectors.toCollection(java.util.ArrayList::new));
 
         if ("songs".equals(sort)) {

@@ -25,6 +25,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserAdminController {
 
+    private static final int PAGE_SIZE = 20;
+    private static final int RECENT_POSTS_LIMIT = 10;
+
     private final UserAdminService userService;
     private final MyPageService myPageService;
 
@@ -34,8 +37,8 @@ public class UserAdminController {
             @RequestParam(defaultValue = "latest") String sort,
             Model model) {
         Page<UserResponseDto> users = "reports".equals(sort)
-                ? userService.getUsersPageSortedByReports(page, 20, keyword)
-                : userService.getUsersPage(page, 20, keyword);
+                ? userService.getUsersPageSortedByReports(page, PAGE_SIZE, keyword)
+                : userService.getUsersPage(page, PAGE_SIZE, keyword);
 
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
         Map<Long, Long> reportCounts = myPageService.getReportCounts(userIds);
@@ -52,7 +55,7 @@ public class UserAdminController {
         UserResponseDto user = userService.getAdminUser(id);
         UserStatsDto stats = myPageService.getUserStats(id);
         List<PostResponseDto> allPosts = myPageService.getMyPosts(id);
-        List<PostResponseDto> recentPosts = allPosts.stream().limit(10).toList();
+        List<PostResponseDto> recentPosts = allPosts.stream().limit(RECENT_POSTS_LIMIT).toList();
         List<FestivalResponseDto> likedFestivals = myPageService.getLikedFestivals(id);
         List<ArtistResponseDto> followedArtists = myPageService.getFollowedArtists(id);
 

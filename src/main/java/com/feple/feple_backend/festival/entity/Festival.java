@@ -28,7 +28,6 @@ public class Festival {
     private String location;
     private LocalDate startDate;
     private LocalDate endDate;
-    //private String posterUrl;
     private String posterKey;
 
     @Builder.Default
