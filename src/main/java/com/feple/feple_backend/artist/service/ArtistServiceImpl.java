@@ -92,7 +92,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
-        return artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream()
+        return artistRepository.findByNameOrNameEnContainingIgnoreCase(keyword).stream()
                 .map(this::toDto)
                 .toList();
     }
@@ -105,7 +105,7 @@ public class ArtistServiceImpl implements ArtistService {
 
         Stream<Artist> stream;
         if (keyword != null && !keyword.isBlank()) {
-            stream = artistRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword).stream();
+            stream = artistRepository.findByNameOrNameEnContainingIgnoreCase(keyword).stream();
         } else if ("songs".equals(sort) || "songs_asc".equals(sort)) {
             stream = artistRepository.findAll().stream();
         } else {
