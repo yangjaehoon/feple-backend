@@ -84,7 +84,8 @@ public class FestivalAdminController {
 
     @GetMapping
     public String listFestivals(Model model) {
-        model.addAttribute("festivals", festivalService.getAllFestivals(null, null, true));
+        boolean includeEnded = true;
+        model.addAttribute("festivals", festivalService.getAllFestivals(null, null, includeEnded));
         return "admin/festival-list";
     }
 
