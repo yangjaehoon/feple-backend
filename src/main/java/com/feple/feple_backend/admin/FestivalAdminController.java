@@ -108,6 +108,14 @@ public class FestivalAdminController {
         return ResponseEntity.ok(Map.of("checked", newValue));
     }
 
+    @PostMapping("/{id}/checklist/memo")
+    @ResponseBody
+    public ResponseEntity<Void> saveMemo(@PathVariable Long id,
+                                         @RequestParam String memo) {
+        festivalChecklistService.saveMemo(id, memo);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(id);

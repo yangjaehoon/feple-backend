@@ -69,6 +69,26 @@
         /* ── 완료 행 ── */
         .cl-table tr.all-done td { opacity: 0.6; }
 
+        /* ── 메모 ── */
+        .memo-row td { padding: 0 14px 10px; border-bottom: 1px solid var(--border); background: #FAFCFF; }
+        .memo-textarea {
+            width: 100%; min-height: 54px; max-height: 160px;
+            resize: vertical; border: 1.5px solid var(--border);
+            border-radius: 8px; padding: 8px 10px;
+            font-size: 12px; color: var(--text-1);
+            background: #fff; outline: none;
+            transition: border-color .15s;
+            font-family: inherit;
+        }
+        .memo-textarea:focus { border-color: var(--primary); }
+        .memo-textarea::placeholder { color: var(--muted); }
+        .memo-toggle {
+            background: none; border: none; cursor: pointer;
+            font-size: 12px; color: var(--muted); padding: 2px 6px;
+            border-radius: 4px; transition: color .15s, background .15s;
+        }
+        .memo-toggle:hover { color: var(--primary); background: var(--hover); }
+
         /* ── 저장 피드백 ── */
         .save-toast {
             position: fixed; bottom: 28px; right: 28px;
@@ -198,6 +218,7 @@
                             <th style="width:90px;">부스 지도</th>
                             <th style="width:90px;">타임테이블</th>
                             <th style="width:80px;">진행률</th>
+                            <th style="width:60px;">메모</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -251,10 +272,27 @@
                                     <span th:classappend="${cnt == 5} ? ' status-done' : ' status-pend'"
                                           th:text="${cnt} + '/5'"></span>
                                 </td>
+                                <td>
+                                    <button class="memo-toggle"
+                                            th:data-festival-id="${f.id}"
+                                            th:classappend="${cl != null and cl.memo != null and !#strings.isEmpty(cl.memo)} ? ' has-memo'"
+                                            title="메모">
+                                        <span th:text="${cl != null and cl.memo != null and !#strings.isEmpty(cl.memo)} ? '✏️' : '📝'"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- 메모 행 (기본 숨김) -->
+                            <tr class="memo-row" th:id="'memo-row-' + ${f.id}" style="display:none;">
+                                <td colspan="8">
+                                    <textarea class="memo-textarea"
+                                              th:data-festival-id="${f.id}"
+                                              placeholder="이 페스티벌에 대한 메모를 입력하세요 (자동 저장)"
+                                              th:text="${cl != null ? cl.memo : ''}"></textarea>
+                                </td>
                             </tr>
                         </th:block>
                         <tr class="empty-row" th:if="${activeFestivalCount == 0}">
-                            <td colspan="7">진행 중이거나 예정된 페스티벌이 없습니다.</td>
+                            <td colspan="8">진행 중이거나 예정된 페스티벌이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>
@@ -317,6 +355,48 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
         });
     });
 });
+
+/* ── 메모 토글 ── */
+document.querySelectorAll('.memo-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var festivalId = btn.dataset.festivalId;
+        var memoRow    = document.getElementById('memo-row-' + festivalId);
+        var visible    = memoRow.style.display !== 'none';
+        memoRow.style.display = visible ? 'none' : 'table-row';
+        if (!visible) {
+            memoRow.querySelector('.memo-textarea').focus();
+        }
+    });
+});
+
+/* ── 메모 자동 저장 (blur) ── */
+var memoTimer = {};
+document.querySelectorAll('.memo-textarea').forEach(function(ta) {
+    ta.addEventListener('input', function() {
+        var festivalId = ta.dataset.festivalId;
+        clearTimeout(memoTimer[festivalId]);
+        memoTimer[festivalId] = setTimeout(function() { saveMemo(festivalId, ta.value); }, 800);
+    });
+    ta.addEventListener('blur', function() {
+        var festivalId = ta.dataset.festivalId;
+        clearTimeout(memoTimer[festivalId]);
+        saveMemo(festivalId, ta.value);
+    });
+});
+
+function saveMemo(festivalId, memo) {
+    var headers = {};
+    headers[csrfHeader] = csrfToken;
+    var body = new URLSearchParams();
+    body.append('memo', memo);
+    fetch('/admin/festivals/' + festivalId + '/checklist/memo', {
+        method: 'POST',
+        headers: headers,
+        body: body
+    }).then(function(res) {
+        if (res.ok) showToast();
+    });
+}
 
 function updateProgress(row) {
     var checks = row.querySelectorAll('.cl-check');

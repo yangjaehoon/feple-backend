@@ -26,6 +26,9 @@ public class FestivalChecklist {
     private boolean boothMap;
     private boolean timetable;
 
+    @Column(columnDefinition = "TEXT")
+    private String memo;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -45,6 +48,10 @@ public class FestivalChecklist {
             case "timetable" -> this.timetable = !this.timetable;
             default -> throw new IllegalArgumentException("알 수 없는 항목: " + field);
         }
+    }
+
+    public void updateMemo(String memo) {
+        this.memo = memo;
     }
 
     public boolean valueOf(String field) {

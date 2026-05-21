@@ -28,4 +28,11 @@ public class FestivalChecklistService {
         checklist.toggle(field);
         return checklist.valueOf(field);
     }
+
+    @Transactional
+    public void saveMemo(Long festivalId, String memo) {
+        FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
+                .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
+        checklist.updateMemo(memo);
+    }
 }
