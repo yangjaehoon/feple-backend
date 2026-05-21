@@ -30,6 +30,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     @Query(value = """
+            SELECT COUNT(*) FROM (
+                SELECT DISTINCT user_id FROM post WHERE created_at >= :start AND created_at < :end
+                UNION
+                SELECT DISTINCT user_id FROM comment WHERE created_at >= :start AND created_at < :end
+            ) AS active_users
+            """, nativeQuery = true)
+    Long countActiveUsersBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query(value = """
             SELECT u.* FROM users u
             LEFT JOIN (
                 SELECT p.user_id AS uid, COUNT(pr.id) AS cnt

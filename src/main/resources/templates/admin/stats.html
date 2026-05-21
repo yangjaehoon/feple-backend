@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 데이터 통계</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 20px 16px;
+        }
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-1);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .kpi-card.accent-blue  { border-top: 3px solid #3B82F6; }
+        .kpi-card.accent-green { border-top: 3px solid var(--success); }
+        .kpi-card.accent-purple{ border-top: 3px solid #8B5CF6; }
+        .chart-card {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-1);
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin: 24px 0 12px;
+        }
+        .note-box {
+            background: #FFF8E7;
+            border: 1.5px solid #F3CC6B;
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 13px;
+            color: #7A5C00;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('stats')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">데이터 통계</h1>
+            <div class="breadcrumb">
+                <span>Feple Admin</span>
+                <span class="bc-sep">›</span>
+                <span>데이터 통계</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+
+        <!-- ── 활성 사용자 KPI ── -->
+        <div class="section-title">활성 사용자 (게시글 또는 댓글 작성 기준)</div>
+        <div class="kpi-grid">
+            <div class="kpi-card accent-blue">
+                <div class="kpi-label">DAU · 일간</div>
+                <div class="kpi-value" th:text="${activityStats.dau()}">0</div>
+                <div class="kpi-sub">오늘 활성 사용자</div>
+            </div>
+            <div class="kpi-card accent-blue">
+                <div class="kpi-label">WAU · 주간</div>
+                <div class="kpi-value" th:text="${activityStats.wau()}">0</div>
+                <div class="kpi-sub">최근 7일 활성 사용자</div>
+            </div>
+            <div class="kpi-card accent-blue">
+                <div class="kpi-label">MAU · 월간</div>
+                <div class="kpi-value" th:text="${activityStats.mau()}">0</div>
+                <div class="kpi-sub">최근 30일 활성 사용자</div>
+            </div>
+        </div>
+
+        <!-- ── 신규 가입자 KPI ── -->
+        <div class="section-title">신규 가입자</div>
+        <div class="kpi-grid">
+            <div class="kpi-card accent-green">
+                <div class="kpi-label">오늘</div>
+                <div class="kpi-value" th:text="${activityStats.signupsToday()}">0</div>
+                <div class="kpi-sub">오늘 신규 가입</div>
+            </div>
+            <div class="kpi-card accent-green">
+                <div class="kpi-label">이번 주</div>
+                <div class="kpi-value" th:text="${activityStats.signupsThisWeek()}">0</div>
+                <div class="kpi-sub">최근 7일 신규 가입</div>
+            </div>
+            <div class="kpi-card accent-green">
+                <div class="kpi-label">이번 달</div>
+                <div class="kpi-value" th:text="${activityStats.signupsThisMonth()}">0</div>
+                <div class="kpi-sub">최근 30일 신규 가입</div>
+            </div>
+        </div>
+
+        <!-- ── 탈퇴율 안내 ── -->
+        <div class="note-box" style="margin-bottom:24px;">
+            탈퇴율 지표는 계정 삭제 이력(소프트 삭제) 추적이 필요합니다. 현재 User 엔티티는 즉시 삭제(hard delete) 방식이라 탈퇴 시점 데이터가 남지 않습니다. 소프트 삭제 도입 후 집계 가능합니다.
+        </div>
+
+        <!-- ── 30일 트렌드 차트 ── -->
+        <div class="chart-card">
+            <div class="chart-title">신규 가입자 추이 (최근 30일)</div>
+            <canvas id="signupsChart" height="80"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">게시글 · 댓글 추이 (최근 30일)</div>
+            <canvas id="activityChart" height="80"></canvas>
+        </div>
+
+        <!-- ── 월별 상세 테이블 ── -->
+        <div class="db-card">
+            <div class="db-card-header">
+                <span class="db-card-title">일별 상세 (최근 30일)</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                    <tr style="background:#F4F9FD;">
+                        <th style="padding:9px 12px; color:var(--muted); font-weight:700; text-align:left; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;">날짜</th>
+                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">가입</th>
+                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">게시글</th>
+                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">댓글</th>
+                        <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">신고</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${monthlyStats}" style="border-bottom:1px solid var(--border);">
+                        <td style="padding:8px 12px; color:var(--text-2); font-size:12px;" th:text="${s.date()}"></td>
+                        <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--success); font-size:12px;" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
+                        <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--primary-dk); font-size:12px;" th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
+                        <td style="padding:8px 10px; text-align:right; color:var(--text-2); font-size:12px;" th:text="${s.comments() > 0 ? s.comments() : '-'}"></td>
+                        <td style="padding:8px 10px; text-align:right; color:var(--muted); font-size:12px;" th:text="${s.reports() > 0 ? s.reports() : '-'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /content-area -->
+</div><!-- /main-content -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+const monthlyStats = /*[[${monthlyStats}]]*/ [];
+const labels = monthlyStats.map(s => s.date);
+const signupsData = monthlyStats.map(s => s.signups);
+const postsData   = monthlyStats.map(s => s.posts);
+const commentsData = monthlyStats.map(s => s.comments);
+
+const chartDefaults = {
+    type: 'line',
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'top' } },
+        scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+    }
+};
+
+new Chart(document.getElementById('signupsChart'), {
+    ...chartDefaults,
+    data: {
+        labels,
+        datasets: [{
+            label: '신규 가입자',
+            data: signupsData,
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34,197,94,.08)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3
+        }]
+    }
+});
+
+new Chart(document.getElementById('activityChart'), {
+    ...chartDefaults,
+    data: {
+        labels,
+        datasets: [
+            {
+                label: '게시글',
+                data: postsData,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59,130,246,.08)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3
+            },
+            {
+                label: '댓글',
+                data: commentsData,
+                borderColor: '#8B5CF6',
+                backgroundColor: 'rgba(139,92,246,.06)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3
+            }
+        ]
+    }
+});
+/*]]>*/
+</script>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
