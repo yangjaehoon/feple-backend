@@ -52,10 +52,8 @@ public class Artist {
         this.genre = genre;
     }
 
-    public String updateProfileImage(String newKey) {
-        String old = this.profileImageKey;
+    public void updateProfileImage(String newKey) {
         this.profileImageKey = newKey;
-        return old;
     }
 
     public void updateNameEn(String nameEn) {

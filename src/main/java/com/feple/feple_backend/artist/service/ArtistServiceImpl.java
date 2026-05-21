@@ -164,7 +164,8 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenre());
         if (dto.getProfileImageKey() != null) {
-            String oldKey = artist.updateProfileImage(dto.getProfileImageKey());
+            String oldKey = artist.getProfileImageKey();
+            artist.updateProfileImage(dto.getProfileImageKey());
             if (oldKey != null) fileStorageService.deleteFile(oldKey);
         }
     }
@@ -180,7 +181,8 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
-        String oldKey = artist.updateProfileImage(imageKey);
+        String oldKey = artist.getProfileImageKey();
+        artist.updateProfileImage(imageKey);
         if (oldKey != null) fileStorageService.deleteFile(oldKey);
     }
 

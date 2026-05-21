@@ -110,8 +110,11 @@ public class FestivalServiceImpl implements FestivalService {
         festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
                 dto.getStartDate(), dto.getEndDate(),
                 dto.getGenres(), dto.getRegion(), dto.getLatitude(), dto.getLongitude());
-        String oldPosterKey = festival.updatePoster(dto.getPosterKey());
-        if (oldPosterKey != null) fileStorageService.deleteFile(oldPosterKey);
+        String oldPosterKey = festival.getPosterKey();
+        festival.updatePoster(dto.getPosterKey());
+        if (dto.getPosterKey() != null && !dto.getPosterKey().equals(oldPosterKey)) {
+            fileStorageService.deleteFile(oldPosterKey);
+        }
     }
 
     @Override
