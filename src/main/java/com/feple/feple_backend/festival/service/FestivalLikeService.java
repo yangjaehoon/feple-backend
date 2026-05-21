@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,9 +29,8 @@ public class FestivalLikeService {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        Optional<FestivalLike> existing = festivalLikeRepository.findByUserIdAndFestivalId(userId, festivalId);
-        if (existing.isPresent()) {
-            festivalLikeRepository.delete(existing.get());
+        int deleted = festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId);
+        if (deleted > 0) {
             festivalRepository.decrementLikeCount(festivalId);
             return false;
         }

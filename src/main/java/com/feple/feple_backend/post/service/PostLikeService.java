@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -32,15 +30,13 @@ public class PostLikeService {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        Optional<PostLike> existing = postLikeRepository.findByUserIdAndPostId(userId, postId);
-        if (existing.isPresent()) {
-            postLikeRepository.delete(existing.get());
+        int deleted = postLikeRepository.deleteByUserIdAndPostId(userId, postId);
+        if (deleted > 0) {
             postRepository.decrementLikeCount(postId);
             return false;
-        } else {
-            postLikeRepository.save(PostLike.builder().user(user).post(post).build());
-            postRepository.incrementLikeCount(postId);
-            return true;
         }
+        postLikeRepository.save(PostLike.builder().user(user).post(post).build());
+        postRepository.incrementLikeCount(postId);
+        return true;
     }
 }

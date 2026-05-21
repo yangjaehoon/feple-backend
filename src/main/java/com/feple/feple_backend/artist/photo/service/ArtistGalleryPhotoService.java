@@ -116,18 +116,15 @@ public class ArtistGalleryPhotoService {
     @Transactional
     public boolean toggleLike(Long photoId, Long userId) {
         ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
-
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        if (artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, userId)) {
-            // 취소
-            artistGalleryPhotoLikeRepository.deleteByPhoto_IdAndUser_Id(photoId, userId);
+        int deleted = artistGalleryPhotoLikeRepository.deleteByPhotoIdAndUserId(photoId, userId);
+        if (deleted > 0) {
             artistGalleryPhotoRepository.decrementLikeCount(photoId);
-        } else {
-            // 추가
-            artistGalleryPhotoLikeRepository.save(new ArtistGalleryPhotoLike(photo, user));
-            artistGalleryPhotoRepository.incrementLikeCount(photoId);
+            return false;
         }
+        artistGalleryPhotoLikeRepository.save(new ArtistGalleryPhotoLike(photo, user));
+        artistGalleryPhotoRepository.incrementLikeCount(photoId);
         return true;
     }
 }

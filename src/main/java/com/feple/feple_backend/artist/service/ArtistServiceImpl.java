@@ -191,8 +191,10 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional
     public void batchUpdateNameEn(List<Long> ids, List<String> nameEns) {
+        Map<Long, Artist> artistMap = artistRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Artist::getId, a -> a));
         for (int i = 0; i < ids.size(); i++) {
-            Artist artist = artistRepository.findById(ids.get(i)).orElse(null);
+            Artist artist = artistMap.get(ids.get(i));
             if (artist != null) {
                 String nameEn = (i < nameEns.size()) ? nameEns.get(i).trim() : "";
                 artist.update(artist.getName(), nameEn.isEmpty() ? null : nameEn,
