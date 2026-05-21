@@ -34,7 +34,7 @@ jobs:
           printf '%s' "$APPLICATION_LOCAL_YAML" > src/main/resources/application-local.yaml
 
       - name: Test with Gradle
-        run: ./gradlew test
+        run: ./gradlew cleanTest test
 
       - name: Build with Gradle
         run: ./gradlew bootJar -x test
