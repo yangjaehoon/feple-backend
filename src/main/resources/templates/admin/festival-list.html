@@ -82,12 +82,6 @@
         }
         .memo-textarea:focus { border-color: var(--primary); }
         .memo-textarea::placeholder { color: var(--muted); }
-        .memo-toggle {
-            background: none; border: none; cursor: pointer;
-            font-size: 12px; color: var(--muted); padding: 2px 6px;
-            border-radius: 4px; transition: color .15s, background .15s;
-        }
-        .memo-toggle:hover { color: var(--primary); background: var(--hover); }
 
         /* ── 저장 피드백 ── */
         .save-toast {
@@ -116,8 +110,8 @@
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
             <div class="header-tab-group">
-                <button class="header-tab-btn active" data-tab="list">페스티벌 목록</button>
-                <button class="header-tab-btn" data-tab="checklist">등록 체크리스트</button>
+                <button class="header-tab-btn" data-tab="list">페스티벌 목록</button>
+                <button class="header-tab-btn active" data-tab="checklist">등록 체크리스트</button>
             </div>
             <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌 등록</a>
         </div>
@@ -126,7 +120,7 @@
     <div class="content-area">
 
         <!-- ══ 탭 1: 페스티벌 목록 ══ -->
-        <div id="tab-list" class="tab-panel active">
+        <div id="tab-list" class="tab-panel">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">전체 페스티벌</div>
@@ -201,7 +195,7 @@
         </div>
 
         <!-- ══ 탭 2: 등록 체크리스트 ══ -->
-        <div id="tab-checklist" class="tab-panel">
+        <div id="tab-checklist" class="tab-panel active">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">등록 체크리스트</div>
@@ -218,7 +212,7 @@
                             <th style="width:90px;">부스 지도</th>
                             <th style="width:90px;">타임테이블</th>
                             <th style="width:80px;">진행률</th>
-                            <th style="width:60px;">메모</th>
+                            <th class="left" style="min-width:180px;">메모</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -272,21 +266,10 @@
                                     <span th:classappend="${cnt == 5} ? ' status-done' : ' status-pend'"
                                           th:text="${cnt} + '/5'"></span>
                                 </td>
-                                <td>
-                                    <button class="memo-toggle"
-                                            th:data-festival-id="${f.id}"
-                                            th:classappend="${cl != null and cl.memo != null and !#strings.isEmpty(cl.memo)} ? ' has-memo'"
-                                            title="메모">
-                                        <span th:text="${cl != null and cl.memo != null and !#strings.isEmpty(cl.memo)} ? '✏️' : '📝'"></span>
-                                    </button>
-                                </td>
-                            </tr>
-                            <!-- 메모 행 (기본 숨김) -->
-                            <tr class="memo-row" th:id="'memo-row-' + ${f.id}" style="display:none;">
-                                <td colspan="8">
+                                <td class="left">
                                     <textarea class="memo-textarea"
                                               th:data-festival-id="${f.id}"
-                                              placeholder="이 페스티벌에 대한 메모를 입력하세요 (자동 저장)"
+                                              placeholder="메모 입력 (자동 저장)"
                                               th:text="${cl != null ? cl.memo : ''}"></textarea>
                                 </td>
                             </tr>
@@ -353,19 +336,6 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
         .catch(function() {
             cb.checked = !checked; // 롤백
         });
-    });
-});
-
-/* ── 메모 토글 ── */
-document.querySelectorAll('.memo-toggle').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var festivalId = btn.dataset.festivalId;
-        var memoRow    = document.getElementById('memo-row-' + festivalId);
-        var visible    = memoRow.style.display !== 'none';
-        memoRow.style.display = visible ? 'none' : 'table-row';
-        if (!visible) {
-            memoRow.querySelector('.memo-textarea').focus();
-        }
     });
 });
 
