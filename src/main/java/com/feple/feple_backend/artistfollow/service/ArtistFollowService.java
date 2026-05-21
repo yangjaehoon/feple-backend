@@ -48,10 +48,10 @@ public class ArtistFollowService {
 
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
-            artist.incrementFollowerCount();
+            artistRepository.incrementFollowerCount(artistId);
         }
 
-        return new FollowResponseDto(true, artist.getFollowerCount());
+        return new FollowResponseDto(true, artistRepository.findFollowerCountById(artistId));
     }
 
     @Transactional
@@ -60,13 +60,13 @@ public class ArtistFollowService {
             throw new AuthenticationRequiredException("로그인이 필요합니다.");
         }
 
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         if (artistFollowRepository.findByUserIdAndArtistId(userId, artistId).isPresent()) {
             artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
-            artist.decrementFollowerCount();
+            artistRepository.decrementFollowerCount(artistId);
         }
 
-        return new FollowResponseDto(false, artist.getFollowerCount());
+        return new FollowResponseDto(false, artistRepository.findFollowerCountById(artistId));
     }
 }

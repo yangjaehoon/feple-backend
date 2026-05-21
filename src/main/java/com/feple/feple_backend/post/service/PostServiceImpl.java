@@ -127,9 +127,9 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Override
     @Transactional
     public void bulkDeletePosts(List<Long> ids) {
-        for (Long id : ids) {
-            deletePost(id);
-        }
+        if (ids.isEmpty()) return;
+        postLikeRepository.deleteByPostIds(ids);
+        postRepository.deleteAllByIdInBatch(ids);
     }
 
     @Override

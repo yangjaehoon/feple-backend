@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -35,6 +36,17 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
     long countByUser(User user);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Comment c SET c.likeCount = c.likeCount + 1 WHERE c.id = :commentId")
+    void incrementLikeCount(@Param("commentId") Long commentId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Comment c SET c.likeCount = CASE WHEN c.likeCount > 0 THEN c.likeCount - 1 ELSE 0 END WHERE c.id = :commentId")
+    void decrementLikeCount(@Param("commentId") Long commentId);
+
+    @Query("SELECT c.likeCount FROM Comment c WHERE c.id = :commentId")
+    int findLikeCountById(@Param("commentId") Long commentId);
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 

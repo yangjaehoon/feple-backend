@@ -153,12 +153,11 @@ public class CommentServiceImpl implements CommentService {
         boolean alreadyLiked = commentLikeRepository.existsByUserIdAndCommentId(userId, commentId);
         if (alreadyLiked) {
             commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
-            comment.decrementLikeCount();
-            return new CommentLikeResult(false, comment.getLikeCount());
+            commentRepository.decrementLikeCount(commentId);
         } else {
             commentLikeRepository.save(CommentLike.builder().comment(comment).user(user).build());
-            comment.incrementLikeCount();
-            return new CommentLikeResult(true, comment.getLikeCount());
+            commentRepository.incrementLikeCount(commentId);
         }
+        return new CommentLikeResult(!alreadyLiked, commentRepository.findLikeCountById(commentId));
     }
 }
