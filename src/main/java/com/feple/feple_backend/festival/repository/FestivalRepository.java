@@ -3,6 +3,7 @@ package com.feple.feple_backend.festival.repository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,6 +30,14 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
            "AND (:regions IS NULL OR f.region IN :regions)")
     List<Festival> findByFilters(@Param("genres") List<Genre> genres,
                                  @Param("regions") List<Region> regions);
+
+    List<Festival> findTop10ByOrderByLikeCountDesc();
+
+    @Query("SELECT f FROM Festival f WHERE f.startDate BETWEEN :today AND :until ORDER BY f.likeCount DESC")
+    List<Festival> findUpcomingFestivalsSortedByLike(
+            @Param("today") LocalDate today,
+            @Param("until") LocalDate until,
+            Pageable pageable);
 
     @Modifying
     @Query("UPDATE Festival f SET f.likeCount = f.likeCount + 1 WHERE f.id = :id")

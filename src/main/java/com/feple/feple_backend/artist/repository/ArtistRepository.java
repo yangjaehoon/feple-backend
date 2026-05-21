@@ -30,4 +30,6 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     java.util.List<Artist> findAllByOrderByWeeklyScoreDescIdAsc();
 
+    java.util.List<Artist> findTop10ByOrderByFollowerCountDesc();
+
 }

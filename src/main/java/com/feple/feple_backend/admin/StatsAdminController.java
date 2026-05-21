@@ -20,6 +20,7 @@ public class StatsAdminController {
     public String stats(Model model) {
         model.addAttribute("activityStats", adminStatsService.getUserActivityStats());
         model.addAttribute("monthlyStats", adminStatsService.getMonthlyStats());
+        model.addAttribute("contentTrend", adminStatsService.getContentTrend());
         return "admin/stats";
     }
 }

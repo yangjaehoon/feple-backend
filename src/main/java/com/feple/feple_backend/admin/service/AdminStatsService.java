@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.service;
 
+import com.feple.feple_backend.admin.ContentTrendDto;
 import com.feple.feple_backend.admin.DailyStatDto;
 import com.feple.feple_backend.admin.UserActivityStatsDto;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
@@ -15,6 +16,7 @@ public interface AdminStatsService {
     List<DailyStatDto> getDailyStats();
     List<DailyStatDto> getMonthlyStats();
     UserActivityStatsDto getUserActivityStats();
+    ContentTrendDto getContentTrend();
     List<FestivalCertification> getPendingCerts(int limit);
     long getPendingCertCount();
     List<PostReport> getPendingReports(int limit);
