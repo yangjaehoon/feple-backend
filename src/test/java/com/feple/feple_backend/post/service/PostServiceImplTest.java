@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -46,6 +47,7 @@ class PostServiceImplTest {
     @Mock ArtistRepository artistRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock FestivalCertificationRepository certificationRepository;
+    @Mock BadWordFilter badWordFilter;
 
     @InjectMocks PostServiceImpl postService;
 

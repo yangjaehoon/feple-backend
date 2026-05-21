@@ -1,5 +1,6 @@
 package com.feple.feple_backend.comment.service;
 
+import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
@@ -48,6 +49,7 @@ class CommentServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock FestivalCertificationRepository certificationRepository;
+    @Mock BadWordFilter badWordFilter;
 
     @InjectMocks CommentServiceImpl commentService;
 
