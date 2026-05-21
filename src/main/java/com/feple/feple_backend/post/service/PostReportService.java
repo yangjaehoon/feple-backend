@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -90,5 +91,13 @@ public class PostReportService implements ReportAdminService {
     public long getReportCountForUser(Long userId) {
         List<Object[]> result = reportRepository.countByPostAuthorIds(List.of(userId));
         return result.isEmpty() ? 0L : (Long) result.get(0)[1];
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<Long, Long> buildAuthorReportCounts(Page<?> reports) {
+        Set<Long> ids = ((Page<PostReport>) reports).getContent().stream()
+                .map(PostReport::getPostAuthorId).collect(Collectors.toSet());
+        return getAuthorReportCounts(ids);
     }
 }

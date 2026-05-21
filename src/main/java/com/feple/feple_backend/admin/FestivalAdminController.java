@@ -91,20 +91,8 @@ public class FestivalAdminController {
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(id);
-        FestivalRequestDto form = new FestivalRequestDto();
-        form.setTitle(festival.getTitle());
-        form.setTitleEn(festival.getTitleEn());
-        form.setDescription(festival.getDescription());
-        form.setLocation(festival.getLocation());
-        form.setStartDate(festival.getStartDate());
-        form.setEndDate(festival.getEndDate());
-        form.setRegion(festival.getRegion());
-        form.setGenres(festival.getGenres());
-        form.setLatitude(festival.getLatitude());
-        form.setLongitude(festival.getLongitude());
-
         model.addAttribute("festivalId", id);
-        model.addAttribute("festival", form);
+        model.addAttribute("festival", FestivalRequestDto.from(festival));
         model.addAttribute("currentPosterUrl", festival.getPosterUrl());
         populateFestivalFormModel(model);
         return "admin/festival-edit-form";

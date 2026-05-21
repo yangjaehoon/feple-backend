@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,5 +95,13 @@ public class ArtistPhotoReportService implements ReportAdminService {
     public long getReportCountForUser(Long userId) {
         List<Object[]> result = reportRepository.countByPhotoUploaderIds(List.of(userId));
         return result.isEmpty() ? 0L : (Long) result.get(0)[1];
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<Long, Long> buildAuthorReportCounts(Page<?> reports) {
+        Set<Long> ids = ((Page<ArtistPhotoReport>) reports).getContent().stream()
+                .map(ArtistPhotoReport::getPhotoUploaderId).collect(Collectors.toSet());
+        return getUploaderReportCounts(ids);
     }
 }

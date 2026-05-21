@@ -1,11 +1,8 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.artist.photo.entity.ArtistPhotoReport;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
-import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.service.CommentReportService;
-import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.service.PostReportService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -53,31 +48,8 @@ public class ReportAdminController {
         model.addAttribute("totalCount", handler.getTotalCount());
         model.addAttribute("status", status);
         model.addAttribute("type", type);
-        model.addAttribute("authorReportCounts", buildAuthorReportCounts(type, reports));
+        model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : handler.buildAuthorReportCounts(reports));
         return "admin/report-list";
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<Long, Long> buildAuthorReportCounts(String type, Page<?> reports) {
-        if (reports.isEmpty()) return Map.of();
-        return switch (type) {
-            case "post" -> {
-                Set<Long> ids = ((Page<PostReport>) reports).getContent().stream()
-                        .map(PostReport::getPostAuthorId).collect(Collectors.toSet());
-                yield postReportService.getAuthorReportCounts(ids);
-            }
-            case "comment" -> {
-                Set<Long> ids = ((Page<CommentReport>) reports).getContent().stream()
-                        .map(CommentReport::getCommentAuthorId).collect(Collectors.toSet());
-                yield commentReportService.getAuthorReportCounts(ids);
-            }
-            case "photo" -> {
-                Set<Long> ids = ((Page<ArtistPhotoReport>) reports).getContent().stream()
-                        .map(ArtistPhotoReport::getPhotoUploaderId).collect(Collectors.toSet());
-                yield photoReportService.getUploaderReportCounts(ids);
-            }
-            default -> Map.of();
-        };
     }
 
     @PostMapping("/{id}/delete-post")
@@ -91,11 +63,12 @@ public class ReportAdminController {
 
     @PostMapping("/{id}/dismiss")
     public String dismiss(@PathVariable Long id,
+                          @RequestParam(defaultValue = "post") String type,
                           @RequestParam(defaultValue = "0") int page,
                           RedirectAttributes ra) {
-        postReportService.dismissReport(id);
+        handlers.getOrDefault(type, postReportService).dismissReport(id);
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
-        return "redirect:/admin/reports?type=post&page=" + page;
+        return "redirect:/admin/reports?type=" + type + "&page=" + page;
     }
 
     @PostMapping("/comments/{id}/delete-comment")
@@ -107,30 +80,12 @@ public class ReportAdminController {
         return "redirect:/admin/reports?type=comment&page=" + page;
     }
 
-    @PostMapping("/comments/{id}/dismiss")
-    public String dismissComment(@PathVariable Long id,
-                                 @RequestParam(defaultValue = "0") int page,
-                                 RedirectAttributes ra) {
-        commentReportService.dismissReport(id);
-        ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
-        return "redirect:/admin/reports?type=comment&page=" + page;
-    }
-
     @PostMapping("/photos/{id}/delete-photo")
     public String deletePhoto(@PathVariable Long id,
                               @RequestParam(defaultValue = "0") int page,
                               RedirectAttributes ra) {
         photoReportService.deletePhotoAndResolve(id);
         ra.addFlashAttribute("successMessage", "사진을 삭제하고 신고를 처리했습니다.");
-        return "redirect:/admin/reports?type=photo&page=" + page;
-    }
-
-    @PostMapping("/photos/{id}/dismiss")
-    public String dismissPhoto(@PathVariable Long id,
-                               @RequestParam(defaultValue = "0") int page,
-                               RedirectAttributes ra) {
-        photoReportService.dismissReport(id);
-        ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         return "redirect:/admin/reports?type=photo&page=" + page;
     }
 }

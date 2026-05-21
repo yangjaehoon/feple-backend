@@ -41,4 +41,19 @@ public class FestivalRequestDto {
     private Region region;
     private Double latitude;
     private Double longitude;
+
+    public static FestivalRequestDto from(FestivalResponseDto src) {
+        return FestivalRequestDto.builder()
+                .title(src.getTitle())
+                .titleEn(src.getTitleEn())
+                .description(src.getDescription())
+                .location(src.getLocation())
+                .startDate(src.getStartDate())
+                .endDate(src.getEndDate())
+                .region(src.getRegion())
+                .genres(src.getGenres())
+                .latitude(src.getLatitude())
+                .longitude(src.getLongitude())
+                .build();
+    }
 }

@@ -19,6 +19,8 @@
         .type-tab { padding:12px 18px; font-size:13px; font-weight:700; text-decoration:none; border-bottom:3px solid transparent; color:var(--muted); }
         .type-tab.active { border-bottom-color:var(--primary); color:var(--primary); }
         .type-tab-wrap { display:flex; gap:0; border-bottom:1px solid var(--border); padding:0 22px; }
+        .status-tab { padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted); }
+        .status-tab.active { border-bottom-color:var(--primary); color:var(--primary); }
         .report-count-badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px; font-weight:700; margin-left:5px; vertical-align:middle; }
         .report-count-low  { background:#fff3cd; color:#856404; }
         .report-count-high { background:#f8d7da; color:#842029; }
@@ -61,16 +63,14 @@
             <!-- 상태 탭 -->
             <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
                 <a th:href="@{/admin/reports(type=${type}, status='PENDING', page=0)}"
-                   th:style="${status == 'PENDING'}
-                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                   th:classappend="${status == 'PENDING'} ? ' active'"
+                   class="status-tab">
                     대기 중
                     <span class="card-count" th:text="${pendingCount}"></span>
                 </a>
                 <a th:href="@{/admin/reports(type=${type}, status='ALL', page=0)}"
-                   th:style="${status == 'ALL'}
-                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                   th:classappend="${status == 'ALL'} ? ' active'"
+                   class="status-tab">
                     전체
                     <span class="card-count" th:text="${totalCount}"></span>
                 </a>
@@ -214,7 +214,8 @@
                                         댓글 삭제
                                     </button>
                                 </form>
-                                <form th:action="@{/admin/reports/comments/{id}/dismiss(id=${report.id})}" method="post">
+                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="comment"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
                                     <button type="submit" class="btn btn-secondary btn-sm"
                                             onclick="return confirm('이 신고를 기각할까요?')">
@@ -295,7 +296,8 @@
                                         사진 삭제
                                     </button>
                                 </form>
-                                <form th:action="@{/admin/reports/photos/{id}/dismiss(id=${report.id})}" method="post">
+                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="photo"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
                                     <button type="submit" class="btn btn-secondary btn-sm"
                                             onclick="return confirm('이 신고를 기각할까요?')">
@@ -314,18 +316,7 @@
                 </table>
             </div>
 
-            <div class="table-footer">
-                <span class="page-info"
-                      th:text="'총 ' + ${reports.totalElements} + '건'"></span>
-                <div class="pagination" style="margin-left:auto;">
-                    <a th:if="${reports.hasPrevious()}"
-                       th:href="@{/admin/reports(type=${type}, status=${status}, page=${reports.number - 1})}">← 이전</a>
-                    <span class="page-info"
-                          th:text="${reports.number + 1} + ' / ' + ${reports.totalPages}"></span>
-                    <a th:if="${reports.hasNext()}"
-                       th:href="@{/admin/reports(type=${type}, status=${status}, page=${reports.number + 1})}">다음 →</a>
-                </div>
-            </div>
+            <div th:insert="~{admin/fragments :: pagination(${reports}, '/admin/reports', 'type=' + type + '&status=' + status)}"></div>
         </div>
     </div>
 </div>
