@@ -84,6 +84,11 @@
                              th:text="${#lists.size(followedArtists)}">0</div>
                         <div style="font-size:12px; color:var(--muted); margin-top:2px;">팔로우 아티스트</div>
                     </div>
+                    <div style="text-align:center;">
+                        <div th:style="${stats.reportCount > 0} ? 'font-size:22px; font-weight:800; color:#842029;' : 'font-size:22px; font-weight:800; color:var(--muted);'"
+                             th:text="${stats.reportCount}">0</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">누적 신고</div>
+                    </div>
                 </div>
             </div>
         </div>

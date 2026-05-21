@@ -13,6 +13,7 @@ import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,5 +81,10 @@ public class CommentReportService implements ReportAdminService {
         if (userIds.isEmpty()) return Map.of();
         return reportRepository.countByCommentAuthorIds(userIds).stream()
                 .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+    }
+
+    public long getReportCountForUser(Long userId) {
+        List<Object[]> result = reportRepository.countByCommentAuthorIds(List.of(userId));
+        return result.isEmpty() ? 0L : (Long) result.get(0)[1];
     }
 }

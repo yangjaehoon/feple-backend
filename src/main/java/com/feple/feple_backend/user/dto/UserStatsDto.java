@@ -8,4 +8,5 @@ import lombok.Getter;
 public class UserStatsDto {
     private long postCount;
     private long commentCount;
+    private long reportCount;
 }

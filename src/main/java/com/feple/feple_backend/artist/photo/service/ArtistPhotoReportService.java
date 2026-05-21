@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -88,5 +89,10 @@ public class ArtistPhotoReportService implements ReportAdminService {
         if (userIds.isEmpty()) return Map.of();
         return reportRepository.countByPhotoUploaderIds(userIds).stream()
                 .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+    }
+
+    public long getReportCountForUser(Long userId) {
+        List<Object[]> result = reportRepository.countByPhotoUploaderIds(List.of(userId));
+        return result.isEmpty() ? 0L : (Long) result.get(0)[1];
     }
 }
