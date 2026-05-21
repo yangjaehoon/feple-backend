@@ -1,6 +1,7 @@
 package com.feple.feple_backend.global.exception;
 
 import com.feple.feple_backend.auth.ratelimit.TooManyRequestsException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
@@ -71,6 +72,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({ConflictException.class, DuplicateArtistFestivalException.class})
     public ResponseEntity<Map<String, Object>> handleConflict(RuntimeException ex) {
         return errorBody(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    // DB unique/FK 제약 위반 (동시 요청 등 서비스 레벨 체크를 통과한 경우)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return errorBody(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다.");
     }
 
     // 잘못된 JSON 형식 — Spring 기본 에러 응답 대신 일관된 형식 반환
