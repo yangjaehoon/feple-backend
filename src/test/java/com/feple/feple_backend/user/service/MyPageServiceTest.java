@@ -1,12 +1,15 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
+import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.service.PostReportService;
 import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import org.junit.jupiter.api.Test;
@@ -30,6 +33,9 @@ class MyPageServiceTest {
     @Mock CommentService commentService;
     @Mock FestivalService festivalService;
     @Mock ArtistService artistService;
+    @Mock PostReportService postReportService;
+    @Mock CommentReportService commentReportService;
+    @Mock ArtistPhotoReportService photoReportService;
 
     @InjectMocks MyPageService myPageService;
 
