@@ -17,4 +17,7 @@ public class UserResponseDto {
     private String email;
     /** 관리자 페이지에서만 사용. */
     private LocalDateTime createdAt;
+
+    public boolean isAdmin() { return role == UserRole.ADMIN; }
+    public boolean isArtist() { return role == UserRole.ARTIST; }
 }
