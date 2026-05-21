@@ -52,6 +52,10 @@
            th:classappend="${active == 'bad-words'} ? ' nb-active'">
             🚫 금칙어
         </a>
+        <a th:href="@{/admin/crawl}" class="nb-link"
+           th:classappend="${active == 'crawl'} ? ' nb-active'">
+            🕸️ 크롤링
+        </a>
     </nav>
 
     <div style="flex:1;"></div>
@@ -91,6 +95,8 @@
            th:classappend="${active == 'reports'} ? ' nb-active'">🚨 신고 관리</a>
         <a th:href="@{/admin/bad-words}" class="nb-mobile-link"
            th:classappend="${active == 'bad-words'} ? ' nb-active'">🚫 금칙어</a>
+        <a th:href="@{/admin/crawl}" class="nb-mobile-link"
+           th:classappend="${active == 'crawl'} ? ' nb-active'">🕸️ 크롤링</a>
         <div class="nb-mobile-footer">
             <form th:action="@{/admin/logout}" method="post" style="margin:0;">
                 <button type="submit" class="nb-logout" style="width:100%;">로그아웃</button>
