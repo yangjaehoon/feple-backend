@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
+import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.service.ArtistService;
 import lombok.RequiredArgsConstructor;
@@ -72,8 +73,8 @@ public class ArtistAdminController {
                               @RequestParam("profileImageFile") MultipartFile file,
                               RedirectAttributes ra) throws IOException {
         try {
-            String artistName = artistService.getArtistById(id).getName();
-            String imageKey = artistService.uploadProfile(file, artistName);
+            ArtistResponseDto artist = artistService.getArtistById(id);
+            String imageKey = artistService.uploadProfile(file, artist.getName());
             artistService.updateArtistPhoto(id, imageKey);
             ra.addFlashAttribute("successMessage", "사진이 업데이트되었습니다.");
         } catch (Exception e) {

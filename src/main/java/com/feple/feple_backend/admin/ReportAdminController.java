@@ -66,7 +66,8 @@ public class ReportAdminController {
                           @RequestParam(defaultValue = "post") String type,
                           @RequestParam(defaultValue = "0") int page,
                           RedirectAttributes ra) {
-        handlers.getOrDefault(type, postReportService).dismissReport(id);
+        ReportAdminService handler = handlers.getOrDefault(type, postReportService);
+        handler.dismissReport(id);
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         return "redirect:/admin/reports?type=" + type + "&page=" + page;
     }

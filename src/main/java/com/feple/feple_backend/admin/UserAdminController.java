@@ -18,7 +18,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -52,9 +51,8 @@ public class UserAdminController {
     public String userDetail(@PathVariable Long id, Model model) {
         UserResponseDto user = userService.getAdminUser(id);
         UserStatsDto stats = myPageService.getUserStats(id);
-        List<PostResponseDto> recentPosts = myPageService.getMyPosts(id).stream()
-                .limit(10)
-                .collect(Collectors.toList());
+        List<PostResponseDto> allPosts = myPageService.getMyPosts(id);
+        List<PostResponseDto> recentPosts = allPosts.stream().limit(10).toList();
         List<FestivalResponseDto> likedFestivals = myPageService.getLikedFestivals(id);
         List<ArtistResponseDto> followedArtists = myPageService.getFollowedArtists(id);
 
