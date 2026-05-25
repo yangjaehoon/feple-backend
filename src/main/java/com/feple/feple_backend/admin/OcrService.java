@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class OcrService {
 
-    private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
     private static final String PROMPT = """
             이 이미지는 음악 페스티벌 타임테이블 포스터입니다.
             이미지에서 모든 공연 일정을 추출하여 JSON 배열 형식으로만 반환하세요.
