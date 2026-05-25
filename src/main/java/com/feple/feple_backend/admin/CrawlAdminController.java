@@ -1,6 +1,9 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.service.StageService;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +28,72 @@ import java.util.Map;
 public class CrawlAdminController {
 
     private final OcrService ocrService;
+    private final WebScraperService webScraperService;
     private final FestivalService festivalService;
     private final StageService stageService;
 
     @GetMapping
     public String crawlDashboard() {
         return "admin/crawl-dashboard";
+    }
+
+    // ── 웹 스크래핑 ─────────────────────────────────────
+
+    @PostMapping("/scrape")
+    @ResponseBody
+    public ResponseEntity<?> scrape(@RequestBody Map<String, String> body) {
+        String url    = body.get("url");
+        String source = body.getOrDefault("source", "direct");
+        if (url == null || url.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "URL을 입력해주세요."));
+        }
+        try {
+            ScrapedFestivalDto result = webScraperService.scrape(url.trim(), source);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("스크래핑 실패: {}", url, e);
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "페이지를 가져오는데 실패했습니다. URL을 확인하거나 직접 입력해주세요."));
+        }
+    }
+
+    @PostMapping("/scrape/apply")
+    @ResponseBody
+    public ResponseEntity<?> applyScrape(@RequestBody ScraperApplyRequest req) {
+        if (req.title() == null || req.title().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "제목을 입력해주세요."));
+        }
+        if (req.startDate() == null || req.startDate().isBlank()
+                || req.endDate() == null || req.endDate().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "시작일과 종료일을 입력해주세요."));
+        }
+        try {
+            FestivalRequestDto dto = new FestivalRequestDto();
+            dto.setTitle(req.title().trim());
+            dto.setTitleEn(req.titleEn() != null ? req.titleEn().trim() : null);
+            dto.setDescription(req.description() != null ? req.description().trim() : "");
+            dto.setLocation(req.location() != null ? req.location().trim() : "");
+            dto.setStartDate(LocalDate.parse(req.startDate()));
+            dto.setEndDate(LocalDate.parse(req.endDate()));
+
+            if (req.region() != null && !req.region().isBlank()) {
+                dto.setRegion(Region.valueOf(req.region()));
+            }
+            if (req.genres() != null && !req.genres().isEmpty()) {
+                dto.setGenres(req.genres().stream()
+                    .filter(g -> g != null && !g.isBlank())
+                    .map(Genre::valueOf)
+                    .toList());
+            }
+
+            Long festivalId = festivalService.createFestival(dto);
+            return ResponseEntity.ok(Map.of("festivalId", festivalId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("스크래핑 결과 페스티벌 등록 실패", e);
+            return ResponseEntity.internalServerError().body(Map.of("error", "페스티벌 등록에 실패했습니다."));
+        }
     }
 
     // ── OCR ──────────────────────────────────────────────
