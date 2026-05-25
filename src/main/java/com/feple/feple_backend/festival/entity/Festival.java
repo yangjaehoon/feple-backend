@@ -47,6 +47,11 @@ public class Festival {
     @Column(length = 20)
     private Region region;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    @Builder.Default
+    private AgeRestriction ageRestriction = AgeRestriction.NONE;
+
     private Double latitude;
     private Double longitude;
 
@@ -56,7 +61,8 @@ public class Festival {
 
     public void update(String title, String titleEn, String description, String location,
                        LocalDate startDate, LocalDate endDate,
-                       List<Genre> genres, Region region, Double latitude, Double longitude) {
+                       List<Genre> genres, Region region, AgeRestriction ageRestriction,
+                       Double latitude, Double longitude) {
         this.title = title;
         this.titleEn = titleEn;
         this.description = description;
@@ -65,6 +71,7 @@ public class Festival {
         this.endDate = endDate;
         if (genres != null) this.genres = genres;
         if (region != null) this.region = region;
+        if (ageRestriction != null) this.ageRestriction = ageRestriction;
         if (latitude != null) this.latitude = latitude;
         if (longitude != null) this.longitude = longitude;
     }

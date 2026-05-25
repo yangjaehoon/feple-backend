@@ -122,9 +122,9 @@ class FestivalServiceIntegrationTest {
         festivalService.createFestival(makeDtoEnded("종료됨", past.minusDays(3), past));
 
         List<FestivalResponseDto> activeOnly =
-                festivalService.getAllFestivals(null, null, false);
+                festivalService.getAllFestivals(null, null, null, false);
         List<FestivalResponseDto> all =
-                festivalService.getAllFestivals(null, null, true);
+                festivalService.getAllFestivals(null, null, null, true);
 
         long activeCount = activeOnly.stream()
                 .filter(f -> f.getTitle().equals("진행중")).count();
@@ -142,7 +142,7 @@ class FestivalServiceIntegrationTest {
         festivalService.createFestival(makeDtoWithGenre("힙합페스티벌", Genre.HIP_HOP));
 
         List<FestivalResponseDto> result =
-                festivalService.getAllFestivals(List.of(Genre.BAND), null, true);
+                festivalService.getAllFestivals(List.of(Genre.BAND), null, null, true);
 
         assertThat(result).allMatch(f -> f.getGenres().contains(Genre.BAND));
     }

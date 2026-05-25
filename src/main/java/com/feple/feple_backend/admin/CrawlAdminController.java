@@ -139,7 +139,7 @@ public class CrawlAdminController {
     @GetMapping("/festivals")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> getFestivals() {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, true);
+        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, null, true);
         List<Map<String, Object>> result = festivals.stream().map(f -> {
             Map<String, Object> m = new HashMap<>();
             m.put("id",        f.getId());

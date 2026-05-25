@@ -1,5 +1,6 @@
 package com.feple.feple_backend.festival.repository;
 
+import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
@@ -27,9 +28,11 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     @Query("SELECT DISTINCT f FROM Festival f LEFT JOIN f.genres g " +
            "WHERE (:genres IS NULL OR g IN :genres) " +
-           "AND (:regions IS NULL OR f.region IN :regions)")
+           "AND (:regions IS NULL OR f.region IN :regions) " +
+           "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions)")
     List<Festival> findByFilters(@Param("genres") List<Genre> genres,
-                                 @Param("regions") List<Region> regions);
+                                 @Param("regions") List<Region> regions,
+                                 @Param("ageRestrictions") List<AgeRestriction> ageRestrictions);
 
     List<Festival> findTop10ByOrderByLikeCountDesc();
 

@@ -6,6 +6,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -88,7 +89,7 @@ public class FestivalAdminController {
 
     @GetMapping
     public String listFestivals(Model model) {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, true);
+        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, null, true);
         List<Long> ids = festivals.stream().map(FestivalResponseDto::getId).toList();
         LocalDate today = LocalDate.now();
         long activeFestivalCount = festivals.stream()
@@ -149,6 +150,7 @@ public class FestivalAdminController {
         model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
         model.addAttribute("allRegions", Region.values());
         model.addAttribute("allGenres", Genre.values());
+        model.addAttribute("allAgeRestrictions", AgeRestriction.values());
         model.addAttribute("kakaoMapsKey", kakaoMapsKey);
     }
 

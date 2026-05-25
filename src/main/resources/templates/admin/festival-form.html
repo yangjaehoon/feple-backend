@@ -104,6 +104,13 @@
                         </div>
 
                         <div class="form-group">
+                            <label>연령 제한</label>
+                            <select th:field="*{ageRestriction}" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                                <option th:each="a : ${allAgeRestrictions}" th:value="${a}" th:text="${a.displayName}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label>장르 <span style="font-weight:400; color:var(--muted); font-size:12px;">(복수 선택 가능)</span></label>
                             <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
                                 <label th:each="g : ${allGenres}"

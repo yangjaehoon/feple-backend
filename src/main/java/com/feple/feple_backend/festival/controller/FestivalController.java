@@ -3,6 +3,7 @@ package com.feple.feple_backend.festival.controller;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.dto.WeatherDto;
+import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
@@ -28,8 +29,9 @@ public class FestivalController {
     public List<FestivalResponseDto> getAllFestivals(
             @RequestParam(required = false) List<Genre> genres,
             @RequestParam(required = false) List<Region> regions,
+            @RequestParam(required = false) List<AgeRestriction> ageRestrictions,
             @RequestParam(defaultValue = "false") boolean includeEnded) {
-        return festivalService.getAllFestivals(genres, regions, includeEnded);
+        return festivalService.getAllFestivals(genres, regions, ageRestrictions, includeEnded);
     }
 
     @GetMapping("/{id}")

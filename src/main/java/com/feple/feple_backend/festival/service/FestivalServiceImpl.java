@@ -6,6 +6,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalStatus;
 import com.feple.feple_backend.festival.entity.Genre;
@@ -61,6 +62,7 @@ public class FestivalServiceImpl implements FestivalService {
                 .posterKey(dto.getPosterKey())
                 .genres(dto.getGenres() != null ? dto.getGenres() : new java.util.ArrayList<>())
                 .region(dto.getRegion())
+                .ageRestriction(dto.getAgeRestriction() != null ? dto.getAgeRestriction() : AgeRestriction.NONE)
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .build();
@@ -70,11 +72,13 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions,
+                                                     List<AgeRestriction> ageRestrictions,
                                                      boolean includeEnded) {
         LocalDate today = LocalDate.now();
         List<Festival> all = festivalRepository.findByFilters(
             genres == null || genres.isEmpty() ? null : genres,
-            regions == null || regions.isEmpty() ? null : regions
+            regions == null || regions.isEmpty() ? null : regions,
+            ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions
         );
 
         List<FestivalStatus> statuses = includeEnded
@@ -109,7 +113,8 @@ public class FestivalServiceImpl implements FestivalService {
 
         festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
                 dto.getStartDate(), dto.getEndDate(),
-                dto.getGenres(), dto.getRegion(), dto.getLatitude(), dto.getLongitude());
+                dto.getGenres(), dto.getRegion(), dto.getAgeRestriction(),
+                dto.getLatitude(), dto.getLongitude());
         String oldPosterKey = festival.getPosterKey();
         festival.updatePoster(dto.getPosterKey());
         if (dto.getPosterKey() != null && !dto.getPosterKey().equals(oldPosterKey)) {

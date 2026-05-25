@@ -1,6 +1,7 @@
 package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
+import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +40,7 @@ public class FestivalRequestDto {
 
     private List<Genre> genres;
     private Region region;
+    private AgeRestriction ageRestriction;
     private Double latitude;
     private Double longitude;
 
@@ -51,6 +53,7 @@ public class FestivalRequestDto {
                 .startDate(src.getStartDate())
                 .endDate(src.getEndDate())
                 .region(src.getRegion())
+                .ageRestriction(src.getAgeRestriction())
                 .genres(src.getGenres())
                 .latitude(src.getLatitude())
                 .longitude(src.getLongitude())

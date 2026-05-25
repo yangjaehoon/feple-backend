@@ -1,5 +1,6 @@
 package com.feple.feple_backend.festival.dto;
 
+import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
@@ -28,6 +29,7 @@ public class FestivalResponseDto {
     private int likeCount;
     private List<Genre> genres;
     private Region region;
+    private AgeRestriction ageRestriction;
     private Double latitude;
     private Double longitude;
 
@@ -48,6 +50,7 @@ public class FestivalResponseDto {
                 .likeCount(festival.getLikeCount())
                 .genres(festival.getGenres())
                 .region(festival.getRegion())
+                .ageRestriction(festival.getAgeRestriction())
                 .latitude(festival.getLatitude())
                 .longitude(festival.getLongitude())
                 .build();
