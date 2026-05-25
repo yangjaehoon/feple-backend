@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class OcrService {
 
-    private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
     private static final String PROMPT = """
             이 이미지는 음악 페스티벌 타임테이블 포스터입니다.
             이미지에서 모든 공연 일정을 추출하여 JSON 배열 형식으로만 반환하세요.
@@ -35,7 +35,7 @@ public class OcrService {
             - JSON 배열만 반환하고 설명 텍스트나 마크다운 코드블록을 절대 포함하지 마세요.
             """;
 
-    @Value("${app.openai.api-key:}")
+    @Value("${app.gemini.api-key:}")
     private String apiKey;
 
     private final WebClient webClient;
@@ -51,22 +51,22 @@ public class OcrService {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
 
+        // Gemini API 요청 형식
         Map<String, Object> request = Map.of(
-                "model", "gpt-4o",
-                "max_tokens", 4096,
-                "messages", List.of(Map.of(
-                        "role", "user",
-                        "content", List.of(
-                                Map.of("type", "text", "text", PROMPT),
-                                Map.of("type", "image_url", "image_url",
-                                        Map.of("url", "data:" + mimeType + ";base64," + base64))
+                "contents", List.of(Map.of(
+                        "parts", List.of(
+                                Map.of("text", PROMPT),
+                                Map.of("inlineData", Map.of(
+                                        "mimeType", mimeType,
+                                        "data", base64
+                                ))
                         )
-                ))
+                )),
+                "generationConfig", Map.of("maxOutputTokens", 4096)
         );
 
         Map response = webClient.post()
-                .uri(OPENAI_URL)
-                .header("Authorization", "Bearer " + apiKey)
+                .uri(GEMINI_BASE_URL + "?key=" + apiKey)
                 .header("Content-Type", "application/json")
                 .bodyValue(request)
                 .retrieve()
@@ -74,7 +74,7 @@ public class OcrService {
                 .block(Duration.ofSeconds(90));
 
         String content = extractContent(response);
-        log.debug("GPT OCR raw response: {}", content);
+        log.debug("Gemini OCR raw response: {}", content);
         return parseJsonArray(content);
     }
 
@@ -105,9 +105,11 @@ public class OcrService {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private String extractContent(Map response) {
-        List<Map> choices = (List<Map>) response.get("choices");
-        Map message = (Map) choices.get(0).get("message");
-        return (String) message.get("content");
+        // Gemini 응답 구조: candidates[0].content.parts[0].text
+        List<Map> candidates = (List<Map>) response.get("candidates");
+        Map content = (Map) candidates.get(0).get("content");
+        List<Map> parts = (List<Map>) content.get("parts");
+        return (String) parts.get(0).get("text");
     }
 
     private List<OcrResultDto> parseJsonArray(String content) {

@@ -41,7 +41,7 @@ public class CrawlAdminController {
             return ResponseEntity.badRequest().body(Map.of("error", "이미지를 업로드해주세요."));
         }
         if (!ocrService.isConfigured()) {
-            return ResponseEntity.status(503).body(Map.of("error", "OpenAI API 키가 설정되지 않았습니다. application-local.yaml을 확인하세요."));
+            return ResponseEntity.status(503).body(Map.of("error", "Gemini API 키가 설정되지 않았습니다. application-local.yaml에 app.gemini.api-key를 설정하세요."));
         }
         try {
             List<OcrResultDto> results = ocrService.parseTimeTable(image);

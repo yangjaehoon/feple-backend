@@ -61,8 +61,8 @@ app:
       key: ${KAKAO_MAPS_KEY:}
   youtube:
     api-key: ${YOUTUBE_API_KEY:}
-  openai:
-    api-key: ${OPENAI_API_KEY:}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
   firebase:
