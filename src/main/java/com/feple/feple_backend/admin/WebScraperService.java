@@ -199,7 +199,7 @@ public class WebScraperService {
     private ScrapedFestivalDto scrapeWithGemini(String url, String source) {
         String prompt = """
             아래 URL의 공연/페스티벌 페이지에서 정보를 추출하세요.
-            다음 형식의 JSON 객체만 반환하세요 (설명 텍스트나 마크다운 없이):
+            다음 형식의 JSON 객체만 반환하세요 (마크다운·설명 텍스트 없이):
             {"title":"공연명","description":"설명(200자 이내)","location":"공연장소","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","posterImageUrl":"포스터 이미지 URL"}
             값을 찾을 수 없는 필드는 빈 문자열("")로 설정하세요.
             URL: """ + url;
@@ -221,6 +221,13 @@ public class WebScraperService {
             .bodyToMono(Map.class)
             .block(Duration.ofSeconds(60));
 
+        // URL 접근 차단 여부 먼저 확인
+        if (isUrlBlocked(response)) {
+            log.warn("Gemini URL context blocked for: {}", url);
+            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
+                "이 사이트는 외부 접근이 차단되어 있습니다. 페이지 스크린샷을 'OCR 파싱' 탭에 업로드하면 정보를 자동 추출할 수 있습니다.");
+        }
+
         String raw = extractGeminiText(response);
         log.debug("Gemini URL context raw: {}", raw);
 
@@ -228,12 +235,36 @@ public class WebScraperService {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
+    private boolean isUrlBlocked(Map response) {
+        try {
+            var candidates = (java.util.List<Map>) response.get("candidates");
+            Map candidate = candidates.get(0);
+            Map urlMeta = (Map) candidate.get("urlContextMetadata");
+            if (urlMeta == null) return false;
+            var urlMetadata = (java.util.List<Map>) urlMeta.get("urlMetadata");
+            if (urlMetadata == null || urlMetadata.isEmpty()) return false;
+            String st = (String) urlMetadata.get(0).get("urlRetrievalStatus");
+            return "URL_RETRIEVAL_STATUS_ERROR".equals(st);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private String extractGeminiText(Map response) {
         try {
             var candidates = (java.util.List<Map>) response.get("candidates");
             var content    = (Map) candidates.get(0).get("content");
-            var parts      = (java.util.List<Map>) content.get("parts");
-            return (String) parts.get(0).get("text");
+            if (content == null) return "";
+            var parts = (java.util.List<Map>) content.get("parts");
+            if (parts == null) return "";
+            // 모든 parts의 text를 합쳐서 반환
+            StringBuilder sb = new StringBuilder();
+            for (Map part : parts) {
+                Object text = part.get("text");
+                if (text instanceof String s && !s.isBlank()) sb.append(s);
+            }
+            return sb.toString().trim();
         } catch (Exception e) {
             log.warn("Failed to extract Gemini response text", e);
             return "";
@@ -246,10 +277,10 @@ public class WebScraperService {
                 "자동 추출에 실패했습니다. 직접 입력해주세요.");
         }
 
-        // JSON 부분 추출
         int start = raw.indexOf('{');
         int end   = raw.lastIndexOf('}');
         if (start == -1 || end <= start) {
+            log.warn("Gemini did not return JSON. raw={}", raw);
             return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
                 "자동 추출에 실패했습니다. 직접 입력해주세요.");
         }
