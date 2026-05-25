@@ -1,20 +1,32 @@
 package com.feple.feple_backend.admin;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class WebScraperService {
+
+    private static final String GEMINI_URL =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     private static final String USER_AGENT =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -23,7 +35,40 @@ public class WebScraperService {
         "(\\d{4})[.\\-/년]\\s*(\\d{1,2})[.\\-/월]\\s*(\\d{1,2})"
     );
 
+    // SPA 껍데기로 판단하는 사이트별 기본 title
+    private static final List<String> SPA_FALLBACK_TITLES = List.of(
+        "NOL 티켓", "NOL 인터파크", "인터파크티켓", "인터파크 티켓",
+        "예스24 티켓", "YES24", "멜론티켓", "MELON TICKET",
+        "티켓링크", "하나티켓", "알티켓"
+    );
+
+    @Value("${app.gemini.api-key:}")
+    private String geminiApiKey;
+
+    private final WebClient webClient;
+    private final ObjectMapper objectMapper;
+
     public ScrapedFestivalDto scrape(String url, String source) throws IOException {
+        // 1단계: Jsoup으로 정적 HTML 파싱
+        ScrapedFestivalDto jsoupResult = scrapeWithJsoup(url, source);
+
+        // 2단계: SPA 감지 → Gemini URL context 폴백
+        if (isSpaOrEmpty(jsoupResult) && isGeminiAvailable()) {
+            log.info("SPA detected, falling back to Gemini URL context for: {}", url);
+            try {
+                return scrapeWithGemini(url, source);
+            } catch (Exception e) {
+                log.warn("Gemini URL context failed for {}: {}", url, e.getMessage());
+                // Gemini 실패 시 빈 결과 반환 (Jsoup보다 낫지 않음)
+            }
+        }
+
+        return jsoupResult;
+    }
+
+    // ── Jsoup 파싱 ────────────────────────────────────────────────────────────
+
+    private ScrapedFestivalDto scrapeWithJsoup(String url, String source) throws IOException {
         Document doc = Jsoup.connect(url)
             .userAgent(USER_AGENT)
             .header("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8")
@@ -38,14 +83,10 @@ public class WebScraperService {
         String location    = extractLocation(doc, source);
         String[] dates     = extractDates(doc, source);
 
-        String warning = (title.isBlank() && description.isBlank())
-            ? "이 사이트는 자바스크립트로 렌더링되어 일부 정보를 가져오지 못했을 수 있습니다. 직접 입력해주세요."
-            : null;
-
-        log.info("Scraped [{}] {} → title={}, dates={}/{}", source, url, title, dates[0], dates[1]);
+        log.debug("Jsoup scraped [{}] {} → title={}", source, url, title);
 
         return new ScrapedFestivalDto(title, description, location,
-            dates[0], dates[1], imageUrl, url, source, warning);
+            dates[0], dates[1], imageUrl, url, source, null);
     }
 
     private String extractTitle(Document doc, String source) {
@@ -53,7 +94,7 @@ public class WebScraperService {
             "meta[property=og:title]", "meta[name=twitter:title]"
         }) {
             String v = doc.select(sel).attr("content").trim();
-            if (!v.isBlank()) return v;
+            if (!v.isBlank() && !isSpaTitle(v)) return v;
         }
 
         String specific = switch (source) {
@@ -66,8 +107,7 @@ public class WebScraperService {
             case "yes24" -> firstNonEmpty(
                 doc.select(".goods_name h2").text(),
                 doc.select(".tit_goods").text(),
-                doc.select("h2.info_title").text(),
-                doc.select(".goods_name").text()
+                doc.select("h2.info_title").text()
             );
             case "melon" -> firstNonEmpty(
                 doc.select(".subject_wrap .subject").text(),
@@ -78,8 +118,8 @@ public class WebScraperService {
         };
         if (!specific.isBlank()) return specific;
 
-        // HTML <title> fallback — strip site name suffix
-        return doc.title().replaceAll("\\s*[|\\-–—].*", "").trim();
+        String htmlTitle = doc.title().replaceAll("\\s*[|\\-–—].*", "").trim();
+        return isSpaTitle(htmlTitle) ? "" : htmlTitle;
     }
 
     private String extractDescription(Document doc, String source) {
@@ -89,15 +129,12 @@ public class WebScraperService {
             String v = doc.select(sel).attr("content").trim();
             if (!v.isBlank()) return v;
         }
-
         return switch (source) {
             case "interpark" -> firstNonEmpty(
                 doc.select(".goods_detail_info").text(),
                 doc.select(".box_con_detail .con").text()
             );
-            case "yes24" -> firstNonEmpty(
-                doc.select(".goods_intro").text()
-            );
+            case "yes24" -> firstNonEmpty(doc.select(".goods_intro").text());
             default -> "";
         };
     }
@@ -131,23 +168,16 @@ public class WebScraperService {
         };
 
         String raw = extractTableCell(doc, headers);
-        if (!raw.isBlank()) {
-            return parseDateRange(raw);
-        }
+        if (!raw.isBlank()) return parseDateRange(raw);
 
-        // JSON-LD structured data fallback
         for (Element script : doc.select("script[type=application/ld+json]")) {
             String json = script.html();
             String start = extractJsonValue(json, "startDate");
             String end   = extractJsonValue(json, "endDate");
             if (!start.isBlank()) {
-                return new String[]{
-                    normalizeDate(start),
-                    normalizeDate(end.isBlank() ? start : end)
-                };
+                return new String[]{normalizeDate(start), normalizeDate(end.isBlank() ? start : end)};
             }
         }
-
         return new String[]{"", ""};
     }
 
@@ -157,13 +187,115 @@ public class WebScraperService {
                 String text = th.text().trim();
                 if (text.equals(header) || text.startsWith(header)) {
                     Element next = th.nextElementSibling();
-                    if (next != null && !next.text().isBlank()) {
-                        return next.text().trim();
-                    }
+                    if (next != null && !next.text().isBlank()) return next.text().trim();
                 }
             }
         }
         return "";
+    }
+
+    // ── Gemini URL context 폴백 ───────────────────────────────────────────────
+
+    private ScrapedFestivalDto scrapeWithGemini(String url, String source) {
+        String prompt = """
+            아래 URL의 공연/페스티벌 페이지에서 정보를 추출하세요.
+            다음 형식의 JSON 객체만 반환하세요 (설명 텍스트나 마크다운 없이):
+            {"title":"공연명","description":"설명(200자 이내)","location":"공연장소","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","posterImageUrl":"포스터 이미지 URL"}
+            값을 찾을 수 없는 필드는 빈 문자열("")로 설정하세요.
+            URL: """ + url;
+
+        Map<String, Object> request = Map.of(
+            "tools", List.of(Map.of("url_context", Map.of())),
+            "contents", List.of(Map.of(
+                "parts", List.of(Map.of("text", prompt))
+            )),
+            "generationConfig", Map.of("maxOutputTokens", 512, "temperature", 0)
+        );
+
+        @SuppressWarnings("rawtypes")
+        Map response = webClient.post()
+            .uri(GEMINI_URL + "?key=" + geminiApiKey)
+            .header("Content-Type", "application/json")
+            .bodyValue(request)
+            .retrieve()
+            .bodyToMono(Map.class)
+            .block(Duration.ofSeconds(60));
+
+        String raw = extractGeminiText(response);
+        log.debug("Gemini URL context raw: {}", raw);
+
+        return parseGeminiFestivalJson(raw, url, source);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private String extractGeminiText(Map response) {
+        try {
+            var candidates = (java.util.List<Map>) response.get("candidates");
+            var content    = (Map) candidates.get(0).get("content");
+            var parts      = (java.util.List<Map>) content.get("parts");
+            return (String) parts.get(0).get("text");
+        } catch (Exception e) {
+            log.warn("Failed to extract Gemini response text", e);
+            return "";
+        }
+    }
+
+    private ScrapedFestivalDto parseGeminiFestivalJson(String raw, String url, String source) {
+        if (raw == null || raw.isBlank()) {
+            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
+                "자동 추출에 실패했습니다. 직접 입력해주세요.");
+        }
+
+        // JSON 부분 추출
+        int start = raw.indexOf('{');
+        int end   = raw.lastIndexOf('}');
+        if (start == -1 || end <= start) {
+            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
+                "자동 추출에 실패했습니다. 직접 입력해주세요.");
+        }
+        String json = raw.substring(start, end + 1);
+
+        try {
+            JsonNode node = objectMapper.readTree(json);
+            return new ScrapedFestivalDto(
+                textOf(node, "title"),
+                textOf(node, "description"),
+                textOf(node, "location"),
+                textOf(node, "startDate"),
+                textOf(node, "endDate"),
+                textOf(node, "posterImageUrl"),
+                url,
+                source,
+                null
+            );
+        } catch (Exception e) {
+            log.warn("Failed to parse Gemini festival JSON: {}", json, e);
+            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
+                "자동 추출에 실패했습니다. 직접 입력해주세요.");
+        }
+    }
+
+    private String textOf(JsonNode node, String field) {
+        JsonNode n = node.get(field);
+        return (n == null || n.isNull()) ? "" : n.asText("").trim();
+    }
+
+    // ── 공통 유틸 ─────────────────────────────────────────────────────────────
+
+    private boolean isSpaOrEmpty(ScrapedFestivalDto r) {
+        return (r.title().isBlank() || isSpaTitle(r.title()))
+            && r.description().isBlank()
+            && r.location().isBlank();
+    }
+
+    private boolean isSpaTitle(String title) {
+        if (title == null || title.isBlank()) return true;
+        String lower = title.toLowerCase();
+        return SPA_FALLBACK_TITLES.stream().anyMatch(t -> lower.contains(t.toLowerCase()));
+    }
+
+    private boolean isGeminiAvailable() {
+        return geminiApiKey != null && !geminiApiKey.isBlank();
     }
 
     private String[] parseDateRange(String raw) {
