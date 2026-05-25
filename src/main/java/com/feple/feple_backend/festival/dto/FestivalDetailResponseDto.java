@@ -1,7 +1,9 @@
 package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.entity.Genre;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +28,8 @@ public class FestivalDetailResponseDto {
     private String posterUrl;
     private Double latitude;
     private Double longitude;
+    private List<Genre> genres;
+    private AgeRestriction ageRestriction;
     private List<ArtistResponseDto> artists;
 
     public static FestivalDetailResponseDto from(Festival festival) {
@@ -44,6 +48,8 @@ public class FestivalDetailResponseDto {
                 .posterUrl(posterUrl)
                 .latitude(festival.getLatitude())
                 .longitude(festival.getLongitude())
+                .genres(festival.getGenres())
+                .ageRestriction(festival.getAgeRestriction())
                 .build();
     }
 
