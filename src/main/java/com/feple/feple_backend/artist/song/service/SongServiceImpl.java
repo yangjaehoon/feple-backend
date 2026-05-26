@@ -122,7 +122,9 @@ public class SongServiceImpl implements SongService, SongAdminService {
                     List<SongResponseDto> songs = group.stream()
                             .map(afs -> SongResponseDto.from(afs.getSong()))
                             .toList();
+                    ArtistFestival af = group.get(0).getArtistFestival();
                     return FestivalSetlistEntryDto.builder()
+                            .artistFestivalId(af.getId())
                             .artistId(artist.getId())
                             .artistName(artist.getName())
                             .profileImageUrl(fileStorageService.buildUrl(artist.getProfileImageKey()))
@@ -148,6 +150,26 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Transactional(readOnly = true)
     public List<ArtistFestivalSong> getSetlist(Long artistFestivalId) {
         return artistFestivalSongRepository.findByArtistFestivalId(artistFestivalId);
+    }
+
+    @Override
+    @Transactional
+    public void updateSetlist(Long festivalId, Long artistFestivalId, Set<Long> songIds) {
+        ArtistFestival artistFestival = EntityFinder.getOrThrow(
+                artistFestivalRepository::findById, artistFestivalId, "아티스트 페스티벌");
+        if (!artistFestival.getFestivalId().equals(festivalId)) {
+            throw new IllegalArgumentException("해당 아티스트는 이 페스티벌에 참여하지 않습니다.");
+        }
+        artistFestivalSongRepository.deleteByArtistFestivalId(artistFestivalId);
+        if (songIds == null || songIds.isEmpty()) return;
+        List<Song> songs = songRepository.findAllById(songIds);
+        List<ArtistFestivalSong> setlist = songs.stream()
+                .map(song -> ArtistFestivalSong.builder()
+                        .song(song)
+                        .artistFestival(artistFestival)
+                        .build())
+                .toList();
+        artistFestivalSongRepository.saveAll(setlist);
     }
 
     @Override

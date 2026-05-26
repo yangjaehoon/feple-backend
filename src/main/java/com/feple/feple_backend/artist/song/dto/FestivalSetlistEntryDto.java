@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Builder
 public class FestivalSetlistEntryDto {
+    private Long artistFestivalId;
     private Long artistId;
     private String artistName;
     private String profileImageUrl;

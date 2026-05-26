@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/festivals")
@@ -65,5 +66,15 @@ public class FestivalController {
     @GetMapping("/{id}/setlist")
     public List<FestivalSetlistEntryDto> getSetlist(@PathVariable Long id) {
         return songService.getFestivalSetlist(id);
+    }
+
+    @PutMapping("/{id}/artists/{artistFestivalId}/setlist")
+    public ResponseEntity<Void> updateSetlist(@PathVariable Long id,
+                                              @PathVariable Long artistFestivalId,
+                                              @RequestBody(required = false) Set<Long> songIds,
+                                              @AuthenticationPrincipal Long userId) {
+        if (userId == null) return ResponseEntity.status(401).build();
+        songService.updateSetlist(id, artistFestivalId, songIds != null ? songIds : Set.of());
+        return ResponseEntity.ok().build();
     }
 }
