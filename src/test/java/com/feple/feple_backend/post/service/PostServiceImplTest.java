@@ -158,7 +158,7 @@ class PostServiceImplTest {
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(certificationRepository.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
-        given(postRepository.findByFestivalOrderByCreatedAtDesc(eq(festival), any(Pageable.class)))
+        given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 
         List<PostResponseDto> result = postService.getPostsByFestivalId(5L);
@@ -180,7 +180,7 @@ class PostServiceImplTest {
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(certificationRepository.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
-        given(postRepository.findByFestivalOrderByCreatedAtDesc(eq(festival), any(Pageable.class)))
+        given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 
         List<PostResponseDto> result = postService.getPostsByFestivalId(5L);
