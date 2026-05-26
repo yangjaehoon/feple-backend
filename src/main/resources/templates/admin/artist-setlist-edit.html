@@ -61,8 +61,9 @@
                     </div>
 
                     <div style="display:grid; gap:6px; margin-bottom:20px;">
-                        <div th:each="song : ${songs}"
-                             style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px;">
+                        <label th:each="song : ${songs}"
+                               class="song-row"
+                               style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; margin:0;">
                             <input type="checkbox" name="songIds" th:value="${song.id}"
                                    th:checked="${selectedSongIds.contains(song.id)}"
                                    style="width:16px; height:16px; accent-color:var(--primary); flex-shrink:0;"/>
@@ -76,7 +77,7 @@
                                      style="font-size:11px; color:var(--primary); margin-top:2px;"
                                      th:text="'총 ' + ${song.festivalCount} + '회 공연'"></div>
                             </div>
-                        </div>
+                        </label>
                     </div>
 
                     <div class="form-actions">
@@ -94,5 +95,10 @@
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<style>
+    .song-row { transition: background .15s; cursor: pointer; }
+    .song-row:hover { background: var(--hover); }
+    .song-row:has(input:checked) { background: #eef2ff; border-color: var(--primary) !important; }
+</style>
 </body>
 </html>
