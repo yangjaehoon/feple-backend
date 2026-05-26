@@ -19,6 +19,9 @@ public interface ArtistFestivalSongRepository extends JpaRepository<ArtistFestiv
     @Query("SELECT afs FROM ArtistFestivalSong afs JOIN FETCH afs.artistFestival af JOIN FETCH af.festival WHERE afs.song.id = :songId")
     List<ArtistFestivalSong> findBySongIdWithFestival(@Param("songId") Long songId);
 
+    @Query("SELECT afs FROM ArtistFestivalSong afs JOIN FETCH afs.song JOIN FETCH afs.artistFestival af JOIN FETCH af.artist WHERE af.festival.id = :festivalId ORDER BY af.lineupOrder ASC")
+    List<ArtistFestivalSong> findByFestivalIdWithDetails(@Param("festivalId") Long festivalId);
+
     @Modifying
     @Query("DELETE FROM ArtistFestivalSong afs WHERE afs.artistFestival.id = :artistFestivalId")
     void deleteByArtistFestivalId(@Param("artistFestivalId") Long artistFestivalId);

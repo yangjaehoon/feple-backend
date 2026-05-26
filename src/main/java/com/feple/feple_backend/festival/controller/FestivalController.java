@@ -1,5 +1,7 @@
 package com.feple.feple_backend.festival.controller;
 
+import com.feple.feple_backend.artist.song.dto.FestivalSetlistEntryDto;
+import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.dto.WeatherDto;
@@ -24,6 +26,7 @@ public class FestivalController {
     private final FestivalService festivalService;
     private final FestivalLikeService festivalLikeService;
     private final WeatherService weatherService;
+    private final SongService songService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -57,5 +60,10 @@ public class FestivalController {
         return weatherService.getByFestivalId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/{id}/setlist")
+    public List<FestivalSetlistEntryDto> getSetlist(@PathVariable Long id) {
+        return songService.getFestivalSetlist(id);
     }
 }

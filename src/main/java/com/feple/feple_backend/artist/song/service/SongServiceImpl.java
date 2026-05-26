@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.song.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.dto.FestivalSetlistEntryDto;
 import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
 import com.feple.feple_backend.artist.song.dto.SongFestivalDto;
 import com.feple.feple_backend.artist.song.dto.SongResponseDto;
@@ -12,6 +13,7 @@ import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongReposito
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFestivalSongRepository artistFestivalSongRepository;
     private final YoutubeSearchService youtubeSearchService;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional(readOnly = true)
@@ -100,6 +103,33 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Transactional
     public void deleteSong(Long songId) {
         songRepository.deleteById(songId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FestivalSetlistEntryDto> getFestivalSetlist(Long festivalId) {
+        List<ArtistFestivalSong> afSongs = artistFestivalSongRepository.findByFestivalIdWithDetails(festivalId);
+
+        Map<Long, List<ArtistFestivalSong>> byArtist = new LinkedHashMap<>();
+        for (ArtistFestivalSong afs : afSongs) {
+            Long artistId = afs.getArtistFestival().getArtistId();
+            byArtist.computeIfAbsent(artistId, k -> new ArrayList<>()).add(afs);
+        }
+
+        return byArtist.values().stream()
+                .map(group -> {
+                    Artist artist = group.get(0).getArtistFestival().getArtist();
+                    List<SongResponseDto> songs = group.stream()
+                            .map(afs -> SongResponseDto.from(afs.getSong()))
+                            .toList();
+                    return FestivalSetlistEntryDto.builder()
+                            .artistId(artist.getId())
+                            .artistName(artist.getName())
+                            .profileImageUrl(fileStorageService.buildUrl(artist.getProfileImageKey()))
+                            .songs(songs)
+                            .build();
+                })
+                .toList();
     }
 
     @Override
