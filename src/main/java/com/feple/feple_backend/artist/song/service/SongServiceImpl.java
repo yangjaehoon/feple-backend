@@ -108,29 +108,27 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Override
     @Transactional(readOnly = true)
     public List<FestivalSetlistEntryDto> getFestivalSetlist(Long festivalId) {
-        List<ArtistFestivalSong> afSongs = artistFestivalSongRepository.findByFestivalIdWithDetails(festivalId);
+        List<ArtistFestival> artistFestivals =
+                artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId);
+        if (artistFestivals.isEmpty()) return List.of();
 
-        Map<Long, List<ArtistFestivalSong>> byArtist = new LinkedHashMap<>();
+        List<ArtistFestivalSong> afSongs =
+                artistFestivalSongRepository.findByFestivalIdWithDetails(festivalId);
+
+        Map<Long, List<SongResponseDto>> songsByAfId = new HashMap<>();
         for (ArtistFestivalSong afs : afSongs) {
-            Long artistId = afs.getArtistFestival().getArtistId();
-            byArtist.computeIfAbsent(artistId, k -> new ArrayList<>()).add(afs);
+            songsByAfId.computeIfAbsent(afs.getArtistFestival().getId(), k -> new ArrayList<>())
+                       .add(SongResponseDto.from(afs.getSong()));
         }
 
-        return byArtist.values().stream()
-                .map(group -> {
-                    Artist artist = group.get(0).getArtistFestival().getArtist();
-                    List<SongResponseDto> songs = group.stream()
-                            .map(afs -> SongResponseDto.from(afs.getSong()))
-                            .toList();
-                    ArtistFestival af = group.get(0).getArtistFestival();
-                    return FestivalSetlistEntryDto.builder()
-                            .artistFestivalId(af.getId())
-                            .artistId(artist.getId())
-                            .artistName(artist.getName())
-                            .profileImageUrl(fileStorageService.buildUrl(artist.getProfileImageKey()))
-                            .songs(songs)
-                            .build();
-                })
+        return artistFestivals.stream()
+                .map(af -> FestivalSetlistEntryDto.builder()
+                        .artistFestivalId(af.getId())
+                        .artistId(af.getArtistId())
+                        .artistName(af.getArtist().getName())
+                        .profileImageUrl(fileStorageService.buildUrl(af.getArtist().getProfileImageKey()))
+                        .songs(songsByAfId.getOrDefault(af.getId(), List.of()))
+                        .build())
                 .toList();
     }
 
