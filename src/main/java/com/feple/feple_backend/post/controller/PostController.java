@@ -124,4 +124,28 @@ public class PostController {
         return ResponseEntity.ok(postService.createFestivalPost(festivalId, dto, userId));
     }
 
+    @GetMapping("/festival/{festivalId}/companion")
+    public ResponseEntity<List<PostResponseDto>> getFestivalCompanionPosts(@PathVariable Long festivalId) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardType(festivalId, BoardType.FESTIVAL_COMPANION));
+    }
+
+    @PostMapping("/festival/{festivalId}/companion")
+    public ResponseEntity<Long> createFestivalCompanionPost(@PathVariable Long festivalId,
+                                                             @Valid @RequestBody PostRequestDto dto,
+                                                             @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_COMPANION));
+    }
+
+    @GetMapping("/festival/{festivalId}/ticket")
+    public ResponseEntity<List<PostResponseDto>> getFestivalTicketPosts(@PathVariable Long festivalId) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardType(festivalId, BoardType.FESTIVAL_TICKET));
+    }
+
+    @PostMapping("/festival/{festivalId}/ticket")
+    public ResponseEntity<Long> createFestivalTicketPost(@PathVariable Long festivalId,
+                                                          @Valid @RequestBody PostRequestDto dto,
+                                                          @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_TICKET));
+    }
+
 }

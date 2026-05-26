@@ -154,7 +154,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
     public List<PostResponseDto> getPostsByFestivalId(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
-        return postRepository.findByFestivalOrderByCreatedAtDesc(festival, PageRequest.of(0, PageSize.POSTS))
+        return postRepository.findGeneralFestivalPosts(festival, PageRequest.of(0, PageSize.POSTS))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();
     }
@@ -165,6 +165,23 @@ public class PostServiceImpl implements PostService, PostAdminService {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.save(buildPost(dto, user, new PostContext(null, null, festival))).getId();
+    }
+
+    @Override
+    public List<PostResponseDto> getPostsByFestivalIdAndBoardType(Long festivalId, BoardType boardType) {
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        return postRepository.findByFestivalAndBoardTypeOrderByCreatedAtDesc(festival, boardType, PageRequest.of(0, PageSize.POSTS))
+                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType) {
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        return postRepository.save(buildPost(dto, user, new PostContext(boardType, null, festival))).getId();
     }
 
     @Override

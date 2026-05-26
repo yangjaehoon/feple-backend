@@ -33,8 +33,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByFestivalOrderByCreatedAtDesc(Festival festival);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.festival = :festival ORDER BY p.createdAt DESC")
-    Page<Post> findByFestivalOrderByCreatedAtDesc(@Param("festival") Festival festival, Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL ORDER BY p.createdAt DESC")
+    Page<Post> findGeneralFestivalPosts(@Param("festival") Festival festival, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType ORDER BY p.createdAt DESC")
+    Page<Post> findByFestivalAndBoardTypeOrderByCreatedAtDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, Pageable pageable);
 
     // ── 내 게시글 (N+1: user/artist/festival 모두 접근) ──────────────────────
     @Query("SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.artist LEFT JOIN FETCH p.festival WHERE p.user = :user")
