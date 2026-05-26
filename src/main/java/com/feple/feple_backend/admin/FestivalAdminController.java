@@ -166,6 +166,7 @@ public class FestivalAdminController {
         model.addAttribute("booths", detail.booths());
         model.addAttribute("allBoothTypes", detail.allBoothTypes());
         model.addAttribute("googleMapsKey", detail.googleMapsKey());
+        model.addAttribute("setlistCounts", detail.setlistCounts());
         return "admin/festival-detail";
     }
 }

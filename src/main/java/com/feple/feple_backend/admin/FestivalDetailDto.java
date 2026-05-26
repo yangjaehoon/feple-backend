@@ -19,5 +19,6 @@ public record FestivalDetailDto(
         List<Stage> stages,
         List<BoothResponseDto> booths,
         BoothType[] allBoothTypes,
-        String googleMapsKey
+        String googleMapsKey,
+        Map<Long, Integer> setlistCounts
 ) {}

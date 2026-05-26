@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
 import com.feple.feple_backend.artist.song.entity.ArtistFestivalSong;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,4 +18,5 @@ public interface SongAdminService {
 
     List<ArtistFestivalSong> getSetlist(Long artistFestivalId);
     void saveSetlist(Long artistFestivalId, Set<Long> songIds);
+    Map<Long, Integer> getSetlistCounts(List<Long> artistFestivalIds);
 }

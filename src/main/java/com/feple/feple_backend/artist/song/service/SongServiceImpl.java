@@ -134,6 +134,18 @@ public class SongServiceImpl implements SongService, SongAdminService {
 
     @Override
     @Transactional(readOnly = true)
+    public Map<Long, Integer> getSetlistCounts(List<Long> artistFestivalIds) {
+        if (artistFestivalIds.isEmpty()) return Map.of();
+        return artistFestivalSongRepository.countGroupedByArtistFestivalIds(artistFestivalIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> ((Long) row[1]).intValue()
+                ));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<ArtistFestivalSong> getSetlist(Long artistFestivalId) {
         return artistFestivalSongRepository.findByArtistFestivalId(artistFestivalId);
     }

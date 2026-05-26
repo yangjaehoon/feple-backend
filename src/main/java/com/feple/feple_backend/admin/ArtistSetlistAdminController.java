@@ -43,6 +43,7 @@ public class ArtistSetlistAdminController {
     @GetMapping("/{artistFestivalId}")
     public String setlistEdit(@PathVariable Long artistId,
                               @PathVariable Long artistFestivalId,
+                              @RequestParam(required = false) Long festivalId,
                               Model model) {
         ArtistResponseDto artist = artistService.getArtistById(artistId);
         ArtistFestival artistFestival = EntityFinder.getOrThrow(
@@ -56,6 +57,7 @@ public class ArtistSetlistAdminController {
         model.addAttribute("artistFestival", artistFestival);
         model.addAttribute("songs", songService.getSongsByArtistId(artistId));
         model.addAttribute("selectedSongIds", selectedSongIds);
+        model.addAttribute("festivalId", festivalId);
         return "admin/artist-setlist-edit";
     }
 
@@ -63,9 +65,13 @@ public class ArtistSetlistAdminController {
     public String setlistSave(@PathVariable Long artistId,
                               @PathVariable Long artistFestivalId,
                               @RequestParam(value = "songIds", required = false) Set<Long> songIds,
+                              @RequestParam(required = false) Long festivalId,
                               RedirectAttributes ra) {
         songAdminService.saveSetlist(artistFestivalId, songIds != null ? songIds : Set.of());
         ra.addFlashAttribute("successMessage", "셋리스트가 저장되었습니다.");
+        if (festivalId != null) {
+            return "redirect:/admin/festivals/" + festivalId + "#setlist";
+        }
         return "redirect:/admin/artists/" + artistId + "/setlist";
     }
 }

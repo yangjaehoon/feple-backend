@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.entity.BoothType;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class FestivalDetailAggregationService {
     private final TimetableService timetableService;
     private final StageService stageService;
     private final BoothService boothService;
+    private final SongAdminService songAdminService;
 
     @Value("${app.google.maps.key:}")
     private String googleMapsKey;
@@ -52,6 +55,13 @@ public class FestivalDetailAggregationService {
                              && !ANNOUNCEMENT_STAGE.equals(e.getStageName()))
                 .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName));
 
+        List<Long> afIds = participatingArtists.stream()
+                .map(ArtistFestivalResponse::getArtistFestivalId)
+                .toList();
+        Map<Long, Integer> setlistCounts = afIds.isEmpty()
+                ? Collections.emptyMap()
+                : songAdminService.getSetlistCounts(afIds);
+
         return new FestivalDetailDto(
                 festival,
                 participatingArtists,
@@ -61,7 +71,8 @@ public class FestivalDetailAggregationService {
                 stageService.getStages(festivalId),
                 boothService.getBooths(festivalId),
                 BoothType.values(),
-                googleMapsKey
+                googleMapsKey,
+                setlistCounts
         );
     }
 }
