@@ -133,7 +133,7 @@
                                      th:data-name="${#strings.toLowerCase(artist.name)}">
                                     <label style="display:flex; align-items:center; gap:8px; padding:6px 14px; cursor:pointer; font-size:13px;">
                                         <input type="checkbox" name="artistIds" th:value="${artist.id}" style="width:15px; height:15px; accent-color:var(--primary); flex-shrink:0;"/>
-                                        <span th:text="${artist.name + (artist.genre != null ? ' (' + artist.genre.displayName + ')' : '')}"></span>
+                                        <span th:text="${artist.name + (artist.genre != null ? ' (' + artist.genre + ')' : '')}"></span>
                                     </label>
                                 </div>
                             </div>

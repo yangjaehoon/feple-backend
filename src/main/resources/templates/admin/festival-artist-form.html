@@ -63,7 +63,7 @@
                                            th:checked="${participatingIds.contains(artist.id)}"
                                            style="width:15px; height:15px; accent-color:var(--primary); flex-shrink:0;"
                                            onchange="updateCount()"/>
-                                    <span th:text="${artist.name} + (${artist.genre} != null ? ' (' + ${artist.genre.displayName} + ')' : '')"></span>
+                                    <span th:text="${artist.name} + (${artist.genre} != null ? ' (' + ${artist.genre} + ')' : '')"></span>
                                     <span th:if="${participatingIds.contains(artist.id)}"
                                           style="margin-left:auto; font-size:11px; font-weight:700; color:var(--primary); background:#dde4ff; border-radius:20px; padding:2px 8px; white-space:nowrap;">참여 중</span>
                                 </label>
