@@ -40,6 +40,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType ORDER BY p.createdAt DESC")
     Page<Post> findByFestivalAndBoardTypeOrderByCreatedAtDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival ORDER BY p.likeCount DESC, p.createdAt DESC")
+    Page<Post> findByFestivalOrderByLikeCountDesc(@Param("festival") Festival festival, Pageable pageable);
+
     // ── 내 게시글 (N+1: user/artist/festival 모두 접근) ──────────────────────
     @Query("SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.artist LEFT JOIN FETCH p.festival WHERE p.user = :user")
     List<Post> findByUser(@Param("user") User user); // 계정 삭제 등 전체 처리용

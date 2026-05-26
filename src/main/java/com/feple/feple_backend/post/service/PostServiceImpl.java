@@ -185,6 +185,15 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
+    public List<PostResponseDto> getPopularFestivalPosts(Long festivalId) {
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        return postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
+                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
+                .toList();
+    }
+
+    @Override
     @Transactional
     public void deletePostsByUser(User user) {
         List<Post> posts = postRepository.findByUser(user);

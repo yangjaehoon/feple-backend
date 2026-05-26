@@ -22,6 +22,7 @@ public interface PostService {
     Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId);
     List<PostResponseDto> getPostsByFestivalIdAndBoardType(Long festivalId, BoardType boardType);
     Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType);
+    List<PostResponseDto> getPopularFestivalPosts(Long festivalId);
     void deletePostsByFestival(Festival festival);
     void deletePostsByUser(User user);
     void deletePostsByArtist(Artist artist);

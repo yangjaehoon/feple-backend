@@ -124,6 +124,11 @@ public class PostController {
         return ResponseEntity.ok(postService.createFestivalPost(festivalId, dto, userId));
     }
 
+    @GetMapping("/festival/{festivalId}/popular")
+    public ResponseEntity<List<PostResponseDto>> getPopularFestivalPosts(@PathVariable Long festivalId) {
+        return ResponseEntity.ok(postService.getPopularFestivalPosts(festivalId));
+    }
+
     @GetMapping("/festival/{festivalId}/companion")
     public ResponseEntity<List<PostResponseDto>> getFestivalCompanionPosts(@PathVariable Long festivalId) {
         return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardType(festivalId, BoardType.FESTIVAL_COMPANION));
