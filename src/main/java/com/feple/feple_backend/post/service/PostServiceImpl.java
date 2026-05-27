@@ -124,7 +124,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
         PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
         badWordFilter.validateField("title", dto.getTitle());
         badWordFilter.validateField("content", dto.getContent());
-        post.update(dto.getTitle(), dto.getContent());
+        post.update(dto.getTitle(), dto.getContent(), dto.getImageUrl());
     }
 
     @Override
