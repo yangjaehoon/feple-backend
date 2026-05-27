@@ -32,6 +32,10 @@
            th:classappend="${active == 'artists'} ? ' nb-active'">
             🎤 아티스트
         </a>
+        <a th:href="@{/admin/artist-suggestions}" class="nb-link"
+           th:classappend="${active == 'artist-suggestions'} ? ' nb-active'">
+            🙋 아티스트 신청
+        </a>
         <a th:href="@{/admin/posts}" class="nb-link"
            th:classappend="${active == 'posts'} ? ' nb-active'">
             📝 게시글
@@ -85,6 +89,8 @@
            th:classappend="${active == 'festivals'} ? ' nb-active'">🎵 페스티벌</a>
         <a th:href="@{/admin/artists}" class="nb-mobile-link"
            th:classappend="${active == 'artists'} ? ' nb-active'">🎤 아티스트</a>
+        <a th:href="@{/admin/artist-suggestions}" class="nb-mobile-link"
+           th:classappend="${active == 'artist-suggestions'} ? ' nb-active'">🙋 아티스트 신청</a>
         <a th:href="@{/admin/posts}" class="nb-mobile-link"
            th:classappend="${active == 'posts'} ? ' nb-active'">📝 게시글</a>
         <a th:href="@{/admin/users}" class="nb-mobile-link"
