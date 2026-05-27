@@ -135,7 +135,8 @@
                 </table>
             </div>
 
-            <div th:insert="~{admin/fragments :: pagination(${posts}, '/admin/posts', 'filter=' + ${filter} + (keyword != null ? '&keyword=' + keyword : ''))}"></div>
+            <div th:with="extraParams='filter=' + filter + (keyword != null ? '&keyword=' + keyword : '')"
+                 th:insert="~{admin/fragments :: pagination(${posts}, '/admin/posts', ${extraParams})}"></div>
         </div>
     </div>
 </div>

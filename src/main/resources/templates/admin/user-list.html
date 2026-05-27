@@ -124,7 +124,8 @@
                 </table>
             </div>
 
-            <div th:insert="~{admin/fragments :: pagination(${users}, '/admin/users', 'sort=' + sort + (keyword != null and !#strings.isEmpty(keyword) ? '&keyword=' + keyword : ''))}"></div>
+            <div th:with="extraParams='sort=' + sort + (keyword != null and !#strings.isEmpty(keyword) ? '&keyword=' + keyword : '')"
+                 th:insert="~{admin/fragments :: pagination(${users}, '/admin/users', ${extraParams})}"></div>
         </div>
     </div>
 </div>
