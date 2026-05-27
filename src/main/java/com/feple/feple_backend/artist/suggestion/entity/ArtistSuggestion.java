@@ -24,6 +24,9 @@ public class ArtistSuggestion {
 
     private String note;
 
+    @Column(length = 500)
+    private String processNote;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ArtistSuggestionStatus status;
@@ -36,7 +39,8 @@ public class ArtistSuggestion {
         if (this.status == null) this.status = ArtistSuggestionStatus.PENDING;
     }
 
-    public void dismiss() {
+    public void dismiss(String processNote) {
         this.status = ArtistSuggestionStatus.DISMISSED;
+        this.processNote = processNote;
     }
 }

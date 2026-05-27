@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
+import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -113,6 +114,20 @@ public class NotificationService {
         Festival noFestival = null;
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, noFestival));
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
+        fcmPushService.sendMulticast(tokens, title, body, null);
+    }
+
+    @Async
+    @EventListener
+    @Transactional
+    public void onArtistSuggestionProcessed(ArtistSuggestionProcessedEvent event) {
+        User user = userRepository.findById(event.userId()).orElse(null);
+        if (user == null) return;
+        String title = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE;
+        String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
+        notificationRepository.save(
+                Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, (Festival) null));
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
         fcmPushService.sendMulticast(tokens, title, body, null);
     }

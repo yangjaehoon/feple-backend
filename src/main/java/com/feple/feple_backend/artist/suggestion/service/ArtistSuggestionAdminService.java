@@ -8,5 +8,5 @@ public interface ArtistSuggestionAdminService {
     List<ArtistSuggestionResponseDto> getPendingSuggestions();
     List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit);
     long countPending();
-    void dismiss(Long suggestionId);
+    void dismiss(Long suggestionId, String processNote);
 }

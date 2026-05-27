@@ -56,4 +56,11 @@ public final class NotificationMessages {
         String base = "'" + songTitle + "' 요청이 거절됐습니다.";
         return (reason != null && !reason.isBlank()) ? base + " 사유: " + reason : base;
     }
+
+    public static final String ARTIST_SUGGESTION_PROCESSED_TITLE = "아티스트 신청 결과가 도착했어요.";
+
+    public static String artistSuggestionProcessedBody(String artistName, String note) {
+        String base = "'" + artistName + "' 아티스트 신청이 처리됐습니다.";
+        return (note != null && !note.isBlank()) ? base + " 사유: " + note : base;
+    }
 }

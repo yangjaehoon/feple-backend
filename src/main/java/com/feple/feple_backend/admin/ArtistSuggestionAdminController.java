@@ -25,14 +25,16 @@ public class ArtistSuggestionAdminController {
     }
 
     @PostMapping("/{id}/dismiss")
-    public String dismiss(@PathVariable Long id, RedirectAttributes ra) {
+    public String dismiss(@PathVariable Long id,
+                          @RequestParam(defaultValue = "") String processNote,
+                          RedirectAttributes ra) {
         try {
-            artistSuggestionAdminService.dismiss(id);
+            artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
             ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 신청 처리 실패: {}", id, e);
             ra.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin/artist-suggestions";
+        return "redirect:/admin/artists";
     }
 }

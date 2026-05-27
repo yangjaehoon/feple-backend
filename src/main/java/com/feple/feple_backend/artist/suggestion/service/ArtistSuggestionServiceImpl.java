@@ -4,10 +4,12 @@ import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto
 import com.feple.feple_backend.artist.suggestion.dto.SubmitArtistSuggestionDto;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
+import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
 
     private final ArtistSuggestionRepository suggestionRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -68,11 +71,13 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
 
     @Override
     @Transactional
-    public void dismiss(Long suggestionId) {
+    public void dismiss(Long suggestionId, String processNote) {
         ArtistSuggestion suggestion = suggestionRepository.findById(suggestionId)
                 .orElseThrow(() -> new NoSuchElementException("아티스트 신청을 찾을 수 없습니다: " + suggestionId));
-        suggestion.dismiss();
+        suggestion.dismiss(processNote);
         suggestionRepository.save(suggestion);
+        eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
+                suggestion.getUserId(), suggestion.getArtistName(), processNote));
     }
 
     private String resolveNickname(Long userId) {
