@@ -76,6 +76,13 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
+    public List<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, int page, int size) {
+        return postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDesc(boardType, PageRequest.of(page, size))
+                .map(PostResponseDto::from)
+                .toList();
+    }
+
+    @Override
     public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword) {
         PageRequest pageable = PageRequest.of(page, size);
         Optional<BoardType> boardType = parseBoardType(filter);
@@ -258,6 +265,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
                 .artist(ctx.artist())
                 .festival(ctx.festival())
                 .anonymous(dto.isAnonymous())
+                .imageUrl(dto.getImageUrl())
                 .build();
     }
 

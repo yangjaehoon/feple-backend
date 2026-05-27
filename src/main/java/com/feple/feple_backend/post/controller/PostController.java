@@ -1,5 +1,7 @@
 package com.feple.feple_backend.post.controller;
 
+import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -13,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class PostController {
     private final PostService postService;
     private final PostLikeService postLikeService;
     private final PostScrapService postScrapService;
+    private final S3PresignService s3PresignService;
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId) {
@@ -49,7 +53,11 @@ public class PostController {
     @GetMapping("/free")
     public ResponseEntity<List<PostResponseDto>> getFreePosts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "latest") String sort) {
+        if ("popular".equals(sort)) {
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, page, Math.min(size, 50)));
+        }
         return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, page, Math.min(size, 50)));
     }
 
@@ -63,7 +71,11 @@ public class PostController {
     @GetMapping("/mate")
     public ResponseEntity<List<PostResponseDto>> getMatePosts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "latest") String sort) {
+        if ("popular".equals(sort)) {
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, page, Math.min(size, 50)));
+        }
         return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, page, Math.min(size, 50)));
     }
 
@@ -151,6 +163,12 @@ public class PostController {
                                                           @Valid @RequestBody PostRequestDto dto,
                                                           @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_TICKET));
+    }
+
+    @GetMapping("/image-upload-url")
+    public ResponseEntity<PresignResult> getPostImageUploadUrl(@AuthenticationPrincipal Long userId) {
+        String key = "posts/" + userId + "/" + UUID.randomUUID() + ".jpg";
+        return ResponseEntity.ok(s3PresignService.presignPut(key, "image/jpeg"));
     }
 
 }

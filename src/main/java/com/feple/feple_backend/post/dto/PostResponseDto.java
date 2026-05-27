@@ -32,6 +32,7 @@ public class PostResponseDto {
     private boolean certified;
     private UserRole userRole;
     private boolean anonymous;
+    private String imageUrl;
 
     public static PostResponseDto from(Post post) {
         return from(post, false);
@@ -56,6 +57,7 @@ public class PostResponseDto {
                 .certified(certified && !anon)
                 .userRole(anon ? null : post.getAuthorRole())
                 .anonymous(anon)
+                .imageUrl(post.getImageUrl())
                 .build();
     }
 }

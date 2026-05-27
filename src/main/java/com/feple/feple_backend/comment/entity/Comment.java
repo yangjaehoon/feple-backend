@@ -66,4 +66,5 @@ public class Comment {
     public Long getUserId() { return user.getId(); }
     public String getUserNickname() { return user.getNickname(); }
     public UserRole getUserRole() { return user.getRole(); }
+    public String getUserProfileImageUrl() { return user.getProfileImageUrl(); }
 }

@@ -66,6 +66,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     Page<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    Page<Post> findByBoardTypeOrderByLikeCountDescCreatedAtDesc(BoardType boardType, Pageable pageable);
+
     // ── 검색 (관리자) ────────────────────────────────────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     Page<Post> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title, Pageable pageable);

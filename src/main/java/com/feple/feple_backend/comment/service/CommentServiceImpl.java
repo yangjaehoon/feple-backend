@@ -76,7 +76,8 @@ public class CommentServiceImpl implements CommentService {
                 user.getRole(),
                 saved.getParentId(),
                 0,
-                false
+                false,
+                user.getProfileImageUrl()
         );
     }
 
@@ -102,7 +103,8 @@ public class CommentServiceImpl implements CommentService {
                         c.getUserRole(),
                         c.getParentId(),
                         c.getLikeCount(),
-                        likedCommentIds.contains(c.getId())
+                        likedCommentIds.contains(c.getId()),
+                        c.getUserProfileImageUrl()
                 ))
                 .toList();
     }

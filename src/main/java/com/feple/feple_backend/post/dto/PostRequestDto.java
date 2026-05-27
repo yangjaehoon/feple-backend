@@ -19,5 +19,7 @@ public class PostRequestDto {
 
     private boolean anonymous;
 
+    private String imageUrl;
+
 }
 

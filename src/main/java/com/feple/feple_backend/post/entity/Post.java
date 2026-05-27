@@ -40,6 +40,9 @@ public class Post {
 
     private int scrapCount;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

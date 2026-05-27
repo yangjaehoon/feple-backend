@@ -15,6 +15,7 @@ public interface PostService {
     List<PostResponseDto> getHotPosts();
     List<PostResponseDto> getPostsByBoardType(BoardType boardType);
     List<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, int page, int size);
+    List<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, int page, int size);
     void deleteOwnPost(Long postId, Long requestUserId);
     List<PostResponseDto> getPostsByArtistId(Long artistId);
     Long createArtistPost(Long artistId, PostRequestDto dto, Long userId);
