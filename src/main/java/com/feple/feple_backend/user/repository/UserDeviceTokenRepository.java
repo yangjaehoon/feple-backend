@@ -24,4 +24,8 @@ public interface UserDeviceTokenRepository extends JpaRepository<UserDeviceToken
     @Modifying
     @Query("DELETE FROM UserDeviceToken t WHERE t.user.id = :userId AND t.token = :token")
     void deleteByUserIdAndToken(@Param("userId") Long userId, @Param("token") String token);
+
+    @Modifying
+    @Query("DELETE FROM UserDeviceToken t WHERE t.token = :token AND t.user.id != :userId")
+    void deleteByTokenAndOtherUsers(@Param("token") String token, @Param("userId") Long userId);
 }

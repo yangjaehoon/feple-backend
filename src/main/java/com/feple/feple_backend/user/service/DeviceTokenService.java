@@ -19,7 +19,9 @@ public class DeviceTokenService {
 
     @Transactional
     public void register(Long userId, String token, String platform) {
-        // 이미 등록된 토큰이면 업데이트 타임스탬프만 갱신 (upsert)
+        // 같은 기기에서 계정 전환 시 동일 토큰이 다른 계정에 남아 있으면 제거
+        tokenRepository.deleteByTokenAndOtherUsers(token, userId);
+
         if (tokenRepository.findByUserIdAndToken(userId, token).isPresent()) {
             return;
         }
