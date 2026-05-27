@@ -225,6 +225,7 @@
         </div>
 
         <form id="dismiss-form" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" name="processNote" id="dismiss-process-note"/>
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button type="button" class="btn btn-secondary" onclick="closeDismissModal()">취소</button>
