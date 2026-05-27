@@ -30,10 +30,13 @@ public class PostAdminController {
             @RequestParam(defaultValue = "") String filter,
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
+        String extraParams = "filter=" + filter + (keyword != null && !keyword.isBlank() ? "&keyword=" + keyword : "");
+
         model.addAttribute("posts", postAdminService.getPostsForAdmin(page, PAGE_SIZE, filter, keyword));
         model.addAttribute("filter", filter);
         model.addAttribute("keyword", keyword);
         model.addAttribute("page", page);
+        model.addAttribute("extraParams", extraParams);
         return "admin/post-list";
     }
 

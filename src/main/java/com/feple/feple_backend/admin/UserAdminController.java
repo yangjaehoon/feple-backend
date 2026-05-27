@@ -43,10 +43,13 @@ public class UserAdminController {
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
         Map<Long, Long> reportCounts = myPageService.getReportCounts(userIds);
 
+        String extraParams = "sort=" + sort + (keyword != null && !keyword.isBlank() ? "&keyword=" + keyword : "");
+
         model.addAttribute("users", users);
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("reportCounts", reportCounts);
+        model.addAttribute("extraParams", extraParams);
         return "admin/user-list";
     }
 
