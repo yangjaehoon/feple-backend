@@ -55,10 +55,10 @@
                         <td style="font-size:12px; color:var(--muted);"
                             th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                         <td>
-                            <button type="button" class="btn btn-secondary btn-sm"
+                            <button type="button" class="btn btn-primary btn-sm"
                                     onclick="openDismissModal(this)"
                                     th:data-id="${s.id}"
-                                    th:data-artist="${s.artistName}">처리완료</button>
+                                    th:data-artist="${s.artistName}">처리하기</button>
                         </td>
                     </tr>
                     </tbody>
