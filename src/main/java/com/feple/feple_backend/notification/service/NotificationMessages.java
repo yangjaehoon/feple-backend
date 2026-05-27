@@ -60,6 +60,7 @@ public final class NotificationMessages {
     public static final String ARTIST_SUGGESTION_PROCESSED_TITLE = "아티스트 신청 결과";
 
     public static String artistSuggestionProcessedBody(String artistName, String note) {
-        return (note != null && !note.isBlank()) ? note : "'" + artistName + "' 신청을 검토했어요.";
+        String base = "'" + artistName + "' 신청";
+        return (note != null && !note.isBlank()) ? base + ": " + note : base + "을 검토했어요.";
     }
 }
