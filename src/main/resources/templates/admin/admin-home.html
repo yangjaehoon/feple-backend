@@ -113,6 +113,32 @@
                     </div>
                 </div>
 
+                <!-- 대기 중 아티스트 신청 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">🙋 대기 중 아티스트 신청
+                            <span th:if="${dashboard.pendingArtistSuggestionCount > 0}"
+                                  style="display:inline-block; margin-left:6px; padding:1px 7px; background:#fff3cd; color:#856404; border-radius:20px; font-size:11px; font-weight:700;"
+                                  th:text="${dashboard.pendingArtistSuggestionCount}"></span>
+                        </span>
+                        <a class="btn btn-secondary btn-sm" th:href="@{/admin/artists}">전체보기</a>
+                    </div>
+                    <div class="activity-list">
+                        <div th:if="${dashboard.pendingArtistSuggestionCount == 0}" class="act-empty">
+                            대기 중인 아티스트 신청이 없습니다.
+                        </div>
+                        <div th:if="${dashboard.pendingArtistSuggestionCount > 0}" class="act-item">
+                            <div class="act-dot yellow"></div>
+                            <div style="flex:1;">
+                                <div class="act-title">
+                                    <a th:href="@{/admin/artists}" style="text-decoration:none; color:inherit;"
+                                       th:text="${dashboard.pendingArtistSuggestionCount} + '건의 신청이 대기 중입니다.'"></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 최근 가입 회원 -->
                 <div class="db-card">
                     <div class="db-card-header">
@@ -171,12 +197,6 @@
                         <div class="sum-item">
                             <span class="sum-label"><span class="sum-icon">🔥</span>최근 7일 게시글</span>
                             <span class="sum-val" th:text="${dashboard.recentPostCount}">0</span>
-                        </div>
-                        <div class="sum-item">
-                            <span class="sum-label"><span class="sum-icon">🙋</span>아티스트 신청 대기</span>
-                            <a th:href="@{/admin/artists}"
-                               th:text="${dashboard.pendingArtistSuggestionCount}"
-                               th:style="${dashboard.pendingArtistSuggestionCount > 0} ? 'font-size:20px; font-weight:800; color:var(--warning); text-decoration:none;' : 'font-size:20px; font-weight:800; color:var(--text-1); text-decoration:none;'">0</a>
                         </div>
                     </div>
                 </div>
