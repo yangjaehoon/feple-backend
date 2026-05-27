@@ -1,9 +1,12 @@
 package com.feple.feple_backend.user.controller;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
+import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.user.dto.UpdateBioDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
@@ -30,6 +33,7 @@ public class UserController {
     private final UserService userService;
     private final MyPageService myPageService;
     private final DeviceTokenService deviceTokenService;
+    private final SongRequestService songRequestService;
 
     @GetMapping("/check-nickname")
     public ResponseEntity<java.util.Map<String, Object>> checkNickname(
@@ -107,6 +111,31 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
         requireSelf(id, userId);
         return ResponseEntity.ok(myPageService.getMyComments(id));
+    }
+
+    @GetMapping("/{id}/liked-posts")
+    public ResponseEntity<List<PostResponseDto>> getLikedPosts(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        requireSelf(id, userId);
+        return ResponseEntity.ok(myPageService.getLikedPosts(id));
+    }
+
+    @PatchMapping("/{id}/bio")
+    public ResponseEntity<UserResponseDto> updateBio(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateBioDto dto,
+            @AuthenticationPrincipal Long userId) {
+        requireSelf(id, userId);
+        return ResponseEntity.ok(userService.updateBio(id, dto.getBio()));
+    }
+
+    @GetMapping("/{id}/song-requests")
+    public ResponseEntity<List<SongRequestResponseDto>> getMySongRequests(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        requireSelf(id, userId);
+        return ResponseEntity.ok(songRequestService.getMyAllRequests(id));
     }
 
     @DeleteMapping("/{id}")

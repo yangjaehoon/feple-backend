@@ -12,6 +12,7 @@ public interface UserService {
     UserResponseDto getUser(Long id);
     UserResponseDto updateNickname(Long id, String nickname);
     UserResponseDto updateProfileImage(Long id, MultipartFile file) throws IOException;
+    UserResponseDto updateBio(Long id, String bio);
     void deleteUser(Long id);
     Long currentUserId();
     UserResponseDto toUserDto(User user);

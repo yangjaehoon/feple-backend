@@ -38,6 +38,10 @@ public class MyPageService {
         return postService.getMyPosts(userId);
     }
 
+    public List<PostResponseDto> getLikedPosts(@NonNull Long userId) {
+        return postService.getLikedPosts(userId);
+    }
+
     public List<MyCommentResponseDto> getMyComments(@NonNull Long userId) {
         return commentService.getMyComments(userId);
     }

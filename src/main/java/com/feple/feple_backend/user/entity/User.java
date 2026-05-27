@@ -48,6 +48,9 @@ public class User {
     @Builder.Default
     private UserRole role = UserRole.USER;
 
+    @Column(length = 150)
+    private String bio;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -69,6 +72,10 @@ public class User {
 
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public void updateBio(String bio) {
+        this.bio = bio;
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

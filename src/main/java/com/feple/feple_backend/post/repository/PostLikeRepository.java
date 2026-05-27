@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.repository;
 
+import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
 import com.feple.feple_backend.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,4 +32,7 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     int deleteByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
     void deleteByUser(User user);
+
+    @Query("SELECT pl.post FROM PostLike pl WHERE pl.user.id = :userId ORDER BY pl.id DESC")
+    List<Post> findPostsByUserId(@Param("userId") Long userId);
 }

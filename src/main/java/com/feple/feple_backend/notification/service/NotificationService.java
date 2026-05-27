@@ -14,6 +14,7 @@ import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
@@ -37,6 +38,7 @@ public class NotificationService {
     private final FestivalRepository festivalRepository;
     private final PostRepository postRepository;
     private final FcmPushService fcmPushService;
+    private final NotificationPreferenceService preferenceService;
 
     /**
      * 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송
@@ -69,10 +71,14 @@ public class NotificationService {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
-        saveAndPush(List.of(user), NotificationType.CERT_APPROVED,
-                NotificationMessages.CERT_APPROVED_TITLE,
-                NotificationMessages.certApprovedBody(festivalTitle),
-                festival, String.valueOf(festivalId));
+        String title = NotificationMessages.CERT_APPROVED_TITLE;
+        String body = NotificationMessages.certApprovedBody(festivalTitle);
+        notificationRepository.save(Notification.of(user, NotificationType.CERT_APPROVED, title, body, festival));
+        NotificationPreference pref = preferenceService.getOrCreate(userId);
+        if (pref.isEnabledFor(NotificationType.CERT_APPROVED)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
+            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+        }
     }
 
     /** 인증 거절 알림 */
@@ -82,10 +88,14 @@ public class NotificationService {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
-        saveAndPush(List.of(user), NotificationType.CERT_REJECTED,
-                NotificationMessages.CERT_REJECTED_TITLE,
-                NotificationMessages.certRejectedBody(festivalTitle, reason),
-                festival, String.valueOf(festivalId));
+        String title = NotificationMessages.CERT_REJECTED_TITLE;
+        String body = NotificationMessages.certRejectedBody(festivalTitle, reason);
+        notificationRepository.save(Notification.of(user, NotificationType.CERT_REJECTED, title, body, festival));
+        NotificationPreference pref = preferenceService.getOrCreate(userId);
+        if (pref.isEnabledFor(NotificationType.CERT_REJECTED)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
+            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+        }
     }
 
     @Async
@@ -99,8 +109,11 @@ public class NotificationService {
         Festival noFestival = null;
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, noFestival));
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-        fcmPushService.sendMulticast(tokens, title, body, null);
+        NotificationPreference pref = preferenceService.getOrCreate(event.userId());
+        if (pref.isEnabledFor(NotificationType.SONG_REQUEST_APPROVED)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
+            fcmPushService.sendMulticast(tokens, title, body, null);
+        }
     }
 
     @Async
@@ -114,8 +127,11 @@ public class NotificationService {
         Festival noFestival = null;
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, noFestival));
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-        fcmPushService.sendMulticast(tokens, title, body, null);
+        NotificationPreference pref = preferenceService.getOrCreate(event.userId());
+        if (pref.isEnabledFor(NotificationType.SONG_REQUEST_REJECTED)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
+            fcmPushService.sendMulticast(tokens, title, body, null);
+        }
     }
 
     @Async
@@ -128,8 +144,11 @@ public class NotificationService {
         String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
         notificationRepository.save(
                 Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, (Festival) null));
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-        fcmPushService.sendMulticast(tokens, title, body, null);
+        NotificationPreference pref = preferenceService.getOrCreate(event.userId());
+        if (pref.isEnabledFor(NotificationType.ARTIST_SUGGESTION_PROCESSED)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
+            fcmPushService.sendMulticast(tokens, title, body, null);
+        }
     }
 
     @Async
@@ -156,8 +175,11 @@ public class NotificationService {
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_COMMENT, title, body, post));
 
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(postAuthorId));
-        fcmPushService.sendMulticast(tokens, title, body, null);
+        NotificationPreference pref = preferenceService.getOrCreate(postAuthorId);
+        if (pref.isEnabledFor(NotificationType.NEW_COMMENT)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(postAuthorId));
+            fcmPushService.sendMulticast(tokens, title, body, null);
+        }
     }
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
@@ -181,8 +203,12 @@ public class NotificationService {
         notificationRepository.saveAll(users.stream()
                 .map(u -> Notification.of(u, type, title, body, festival))
                 .toList());
-        List<Long> userIds = users.stream().map(User::getId).toList();
-        fcmPushService.sendMulticast(deviceTokenRepository.findTokensByUserIds(userIds), title, body, linkId);
+        List<Long> enabledUserIds = users.stream()
+                .filter(u -> preferenceService.getOrCreate(u.getId()).isEnabledFor(type))
+                .map(User::getId)
+                .toList();
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(enabledUserIds);
+        fcmPushService.sendMulticast(tokens, title, body, linkId);
     }
 
 }

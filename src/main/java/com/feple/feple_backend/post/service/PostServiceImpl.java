@@ -252,6 +252,15 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getLikedPosts(Long userId) {
+        return postLikeRepository.findPostsByUserId(userId)
+                .stream()
+                .map(PostResponseDto::from)
+                .toList();
+    }
+
+    @Override
     public List<PostResponseDto> searchPosts(String keyword, String boardType) {
         Optional<BoardType> type = parseBoardType(boardType);
         if (type.isPresent()) {

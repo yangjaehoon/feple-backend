@@ -73,6 +73,13 @@ public class UserServiceImpl implements UserService, UserAdminService {
     }
 
     @Override
+    public UserResponseDto updateBio(@NonNull Long id, String bio) {
+        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        user.updateBio(bio);
+        return toUserDto(user);
+    }
+
+    @Override
     public UserResponseDto updateProfileImage(@NonNull Long id, MultipartFile file) throws java.io.IOException {
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         String url = fileStorageService.storeUserProfile(file, user.getNickname());
@@ -125,6 +132,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
                 .nickname(user.getNickname())
                 .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
                 .role(user.getRole())
+                .bio(user.getBio())
                 .build();
     }
 

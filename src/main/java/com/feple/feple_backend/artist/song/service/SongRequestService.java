@@ -10,4 +10,6 @@ public interface SongRequestService {
     SongRequestResponseDto submit(Long artistId, Long userId, SubmitSongRequestDto dto);
 
     List<SongRequestResponseDto> getMyRequests(Long artistId, Long userId);
+
+    List<SongRequestResponseDto> getMyAllRequests(Long userId);
 }

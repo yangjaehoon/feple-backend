@@ -32,4 +32,5 @@ public interface PostService {
     List<PostResponseDto> getMyPosts(Long userId);
     long countMyPosts(Long userId);
     int incrementViewCount(Long postId);
+    List<PostResponseDto> getLikedPosts(Long userId);
 }
