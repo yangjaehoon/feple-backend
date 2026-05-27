@@ -24,6 +24,7 @@ public class PostResponseDto {
     private int likeCount;
     private int scrapCount;
     private int commentCount;
+    private int viewCount;
     private String nickname;
     private String profileImageUrl;
     private Long artistId;
@@ -50,6 +51,7 @@ public class PostResponseDto {
                 .likeCount(post.getLikeCount())
                 .scrapCount(post.getScrapCount())
                 .commentCount(post.getCommentCount())
+                .viewCount(post.getViewCount())
                 .nickname(anon ? "익명" : post.getAuthorNickname())
                 .profileImageUrl(anon ? null : post.getAuthorProfileImageUrl())
                 .artistId(post.getArtistId())

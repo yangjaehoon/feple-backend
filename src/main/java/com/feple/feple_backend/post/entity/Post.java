@@ -53,6 +53,9 @@ public class Post {
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private boolean anonymous = false;
 
+    @Builder.Default
+    private int viewCount = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -77,6 +80,10 @@ public class Post {
         this.title = title;
         this.content = content;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
     }
 
     public void incrementLikeCount() {

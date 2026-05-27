@@ -140,6 +140,14 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.deleteById(commentId);
     }
 
+    @Override
+    public void updateOwnComment(Long commentId, Long requestUserId, String content) {
+        Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
+        PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
+        badWordFilter.validate(content);
+        comment.update(content);
+    }
+
     private Set<Long> getCertifiedUserIds(Post post) {
         if (post.getFestival() == null) return Set.of();
         return certificationRepository.findApprovedUserIdsByFestivalId(post.getFestival().getId());

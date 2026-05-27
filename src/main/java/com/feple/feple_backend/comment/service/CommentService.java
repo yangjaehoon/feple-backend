@@ -15,4 +15,5 @@ public interface CommentService {
     CommentLikeResult toggleLike(Long commentId, Long userId);
     List<MyCommentResponseDto> getMyComments(Long userId);
     long countMyComments(Long userId);
+    void updateOwnComment(Long commentId, Long requestUserId, String content);
 }

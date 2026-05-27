@@ -31,4 +31,5 @@ public interface PostService {
     List<PostResponseDto> searchPosts(String keyword, String boardType);
     List<PostResponseDto> getMyPosts(Long userId);
     long countMyPosts(Long userId);
+    int incrementViewCount(Long postId);
 }

@@ -244,6 +244,14 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
+    @Transactional
+    public int incrementViewCount(Long postId) {
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        post.incrementViewCount();
+        return post.getViewCount();
+    }
+
+    @Override
     public List<PostResponseDto> searchPosts(String keyword, String boardType) {
         Optional<BoardType> type = parseBoardType(boardType);
         if (type.isPresent()) {

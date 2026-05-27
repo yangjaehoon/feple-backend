@@ -180,6 +180,11 @@ public class PostController {
         return ResponseEntity.ok(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_TICKET));
     }
 
+    @PostMapping("/{postId}/view")
+    public ResponseEntity<Integer> incrementView(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.incrementViewCount(postId));
+    }
+
     @GetMapping("/image-upload-url")
     public ResponseEntity<PresignResult> getPostImageUploadUrl(@AuthenticationPrincipal Long userId) {
         String key = "posts/" + userId + "/" + UUID.randomUUID() + ".jpg";

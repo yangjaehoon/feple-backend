@@ -7,6 +7,7 @@ import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,14 @@ public class CommentController {
         return ResponseEntity.ok(commentService.toggleLike(id, userId));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id,
+                                        @Valid @RequestBody UpdateCommentRequest body,
+                                        @AuthenticationPrincipal Long userId) {
+        commentService.updateOwnComment(id, userId, body.getContent());
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{commentId}/report")
     public ResponseEntity<Void> report(
             @PathVariable Long commentId,
@@ -59,6 +68,13 @@ public class CommentController {
             @AuthenticationPrincipal Long userId) {
         commentReportService.submitReport(commentId, userId, body.getReason(), body.getDetail());
         return ResponseEntity.ok().build();
+    }
+
+    @Data
+    public static class UpdateCommentRequest {
+        @NotNull
+        @NotBlank
+        private String content;
     }
 
     @Data
