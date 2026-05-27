@@ -31,6 +31,7 @@ public class PostResponseDto {
     private Long festivalId;
     private String boardDisplayName;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private boolean certified;
     private UserRole userRole;
     private boolean anonymous;
@@ -58,6 +59,7 @@ public class PostResponseDto {
                 .festivalId(post.getFestivalId())
                 .boardDisplayName(post.getDisplayBoardName())
                 .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
                 .certified(certified && !anon)
                 .userRole(anon ? null : post.getAuthorRole())
                 .anonymous(anon)

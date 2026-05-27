@@ -15,6 +15,7 @@ public class CommentResponseDto {
     private String nickname;
     private String content;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private boolean certified;
     private UserRole userRole;
     private Long parentId;
@@ -23,15 +24,16 @@ public class CommentResponseDto {
     private String profileImageUrl;
 
     public CommentResponseDto(Long id, Long postId, Long userId, String nickname,
-                              String content, LocalDateTime createdAt, boolean certified,
-                              UserRole userRole, Long parentId, int likeCount, boolean liked,
-                              String profileImageUrl) {
+                              String content, LocalDateTime createdAt, LocalDateTime updatedAt,
+                              boolean certified, UserRole userRole, Long parentId,
+                              int likeCount, boolean liked, String profileImageUrl) {
         this.id = id;
         this.postId = postId;
         this.userId = userId;
         this.nickname = nickname;
         this.content = content;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.certified = certified;
         this.userRole = userRole;
         this.parentId = parentId;
