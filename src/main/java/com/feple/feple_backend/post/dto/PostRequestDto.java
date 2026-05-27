@@ -17,5 +17,7 @@ public class PostRequestDto {
     @Setter
     private BoardType boardType;
 
+    private boolean anonymous;
+
 }
 

@@ -46,6 +46,10 @@ public class Post {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    private boolean anonymous = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

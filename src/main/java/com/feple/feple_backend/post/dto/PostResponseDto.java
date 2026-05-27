@@ -31,12 +31,14 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
     private boolean certified;
     private UserRole userRole;
+    private boolean anonymous;
 
     public static PostResponseDto from(Post post) {
         return from(post, false);
     }
 
     public static PostResponseDto from(Post post, boolean certified) {
+        boolean anon = post.isAnonymous();
         return PostResponseDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -45,14 +47,15 @@ public class PostResponseDto {
                 .likeCount(post.getLikeCount())
                 .scrapCount(post.getScrapCount())
                 .commentCount(post.getCommentCount())
-                .nickname(post.getAuthorNickname())
-                .profileImageUrl(post.getAuthorProfileImageUrl())
+                .nickname(anon ? "익명" : post.getAuthorNickname())
+                .profileImageUrl(anon ? null : post.getAuthorProfileImageUrl())
                 .artistId(post.getArtistId())
                 .festivalId(post.getFestivalId())
                 .boardDisplayName(post.getDisplayBoardName())
                 .createdAt(post.getCreatedAt())
-                .certified(certified)
-                .userRole(post.getAuthorRole())
+                .certified(certified && !anon)
+                .userRole(anon ? null : post.getAuthorRole())
+                .anonymous(anon)
                 .build();
     }
 }

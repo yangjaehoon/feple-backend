@@ -257,6 +257,7 @@ public class PostServiceImpl implements PostService, PostAdminService {
                 .user(user)
                 .artist(ctx.artist())
                 .festival(ctx.festival())
+                .anonymous(dto.isAnonymous())
                 .build();
     }
 
