@@ -119,6 +119,16 @@ public class PostServiceImpl implements PostService, PostAdminService {
 
     @Override
     @Transactional
+    public void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId) {
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
+        badWordFilter.validateField("title", dto.getTitle());
+        badWordFilter.validateField("content", dto.getContent());
+        post.update(dto.getTitle(), dto.getContent());
+    }
+
+    @Override
+    @Transactional
     public void deleteOwnPost(Long postId, Long requestUserId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
@@ -234,7 +244,15 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
-    public List<PostResponseDto> searchPosts(String keyword) {
+    public List<PostResponseDto> searchPosts(String keyword, String boardType) {
+        Optional<BoardType> type = parseBoardType(boardType);
+        if (type.isPresent()) {
+            return postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
+                            type.get(), keyword, PageRequest.of(0, PageSize.SEARCH))
+                    .stream()
+                    .map(PostResponseDto::from)
+                    .toList();
+        }
         return postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(
                         keyword, PageRequest.of(0, PageSize.SEARCH))
                 .stream()

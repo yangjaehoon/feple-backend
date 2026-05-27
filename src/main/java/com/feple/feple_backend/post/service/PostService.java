@@ -17,6 +17,7 @@ public interface PostService {
     List<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, int page, int size);
     List<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, int page, int size);
     void deleteOwnPost(Long postId, Long requestUserId);
+    void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId);
     List<PostResponseDto> getPostsByArtistId(Long artistId);
     Long createArtistPost(Long artistId, PostRequestDto dto, Long userId);
     List<PostResponseDto> getPostsByFestivalId(Long festivalId);
@@ -27,7 +28,7 @@ public interface PostService {
     void deletePostsByFestival(Festival festival);
     void deletePostsByUser(User user);
     void deletePostsByArtist(Artist artist);
-    List<PostResponseDto> searchPosts(String keyword);
+    List<PostResponseDto> searchPosts(String keyword, String boardType);
     List<PostResponseDto> getMyPosts(Long userId);
     long countMyPosts(Long userId);
 }

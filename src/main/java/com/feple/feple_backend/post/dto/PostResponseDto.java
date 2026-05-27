@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 public class PostResponseDto {
     private Long id;
+    private Long userId;
     private String title;
     private String content;
     private BoardType boardType;
@@ -42,6 +43,7 @@ public class PostResponseDto {
         boolean anon = post.isAnonymous();
         return PostResponseDto.builder()
                 .id(post.getId())
+                .userId(post.getUserId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .boardType(post.getBoardType())

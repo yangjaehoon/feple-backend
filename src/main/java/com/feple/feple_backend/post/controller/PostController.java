@@ -93,6 +93,21 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{postId}")
+    public ResponseEntity<Void> updatePost(@PathVariable Long postId,
+                                            @Valid @RequestBody PostRequestDto dto,
+                                            @AuthenticationPrincipal Long userId) {
+        postService.updateOwnPost(postId, dto, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PostResponseDto>> searchPosts(
+            @RequestParam String keyword,
+            @RequestParam(required = false) String boardType) {
+        return ResponseEntity.ok(postService.searchPosts(keyword, boardType));
+    }
+
     // ── 스크랩 ──
 
     @GetMapping("/{postId}/scraped")
