@@ -46,6 +46,7 @@ public class AdminHomeController {
                 adminStatsService.getPendingReportCount(),
                 adminStatsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                 adminStatsService.getPendingSongRequestCount(),
+                artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                 artistSuggestionAdminService.countPending()
         );
         model.addAttribute("dashboard", dashboard);

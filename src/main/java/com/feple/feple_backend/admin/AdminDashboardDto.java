@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
+import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -27,5 +28,6 @@ public record AdminDashboardDto(
         long pendingReportCount,
         List<SongRequest> pendingSongRequests,
         long pendingSongRequestCount,
+        List<ArtistSuggestionResponseDto> pendingArtistSuggestions,
         long pendingArtistSuggestionCount
 ) {}

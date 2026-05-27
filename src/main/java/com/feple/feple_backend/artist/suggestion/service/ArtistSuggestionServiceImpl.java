@@ -57,6 +57,16 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit) {
+        return suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.PENDING)
+                .stream()
+                .limit(limit)
+                .map(s -> ArtistSuggestionResponseDto.from(s, resolveNickname(s.getUserId())))
+                .toList();
+    }
+
+    @Override
     @Transactional
     public void dismiss(Long suggestionId) {
         ArtistSuggestion suggestion = suggestionRepository.findById(suggestionId)

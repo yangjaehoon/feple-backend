@@ -124,17 +124,17 @@
                         <a class="btn btn-secondary btn-sm" th:href="@{/admin/artists}">전체보기</a>
                     </div>
                     <div class="activity-list">
-                        <div th:if="${dashboard.pendingArtistSuggestionCount == 0}" class="act-empty">
-                            대기 중인 아티스트 신청이 없습니다.
-                        </div>
-                        <div th:if="${dashboard.pendingArtistSuggestionCount > 0}" class="act-item">
+                        <div th:each="s : ${dashboard.pendingArtistSuggestions}" class="act-item">
                             <div class="act-dot yellow"></div>
-                            <div style="flex:1;">
-                                <div class="act-title">
-                                    <a th:href="@{/admin/artists}" style="text-decoration:none; color:inherit;"
-                                       th:text="${dashboard.pendingArtistSuggestionCount} + '건의 신청이 대기 중입니다.'"></a>
-                                </div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div class="act-title" th:text="${s.artistName}"></div>
+                                <div class="act-type" th:text="${s.userNickname}"></div>
                             </div>
+                            <div class="act-meta" style="white-space:nowrap;"
+                                 th:text="${#temporals.format(s.createdAt, 'MM-dd HH:mm')}"></div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(dashboard.pendingArtistSuggestions)}" class="act-empty">
+                            대기 중인 아티스트 신청이 없습니다.
                         </div>
                     </div>
                 </div>
