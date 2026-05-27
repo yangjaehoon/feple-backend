@@ -172,6 +172,12 @@
                             <span class="sum-label"><span class="sum-icon">🔥</span>최근 7일 게시글</span>
                             <span class="sum-val" th:text="${dashboard.recentPostCount}">0</span>
                         </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">🙋</span>아티스트 신청 대기</span>
+                            <a th:href="@{/admin/artists}"
+                               th:text="${dashboard.pendingArtistSuggestionCount}"
+                               th:style="${dashboard.pendingArtistSuggestionCount > 0} ? 'font-size:20px; font-weight:800; color:var(--warning); text-decoration:none;' : 'font-size:20px; font-weight:800; color:var(--text-1); text-decoration:none;'">0</a>
+                        </div>
                     </div>
                 </div>
 

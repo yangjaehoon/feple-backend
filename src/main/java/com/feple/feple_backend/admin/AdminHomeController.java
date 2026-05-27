@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.service.AdminStatsService;
 import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class AdminHomeController {
     private final ArtistService artistService;
     private final PostAdminService postAdminService;
     private final AdminStatsService adminStatsService;
+    private final ArtistSuggestionAdminService artistSuggestionAdminService;
 
     @GetMapping
     public String adminHome(@RequestParam(defaultValue = "0") int festivalPage,
@@ -43,7 +45,8 @@ public class AdminHomeController {
                 adminStatsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                 adminStatsService.getPendingReportCount(),
                 adminStatsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getPendingSongRequestCount()
+                adminStatsService.getPendingSongRequestCount(),
+                artistSuggestionAdminService.countPending()
         );
         model.addAttribute("dashboard", dashboard);
 

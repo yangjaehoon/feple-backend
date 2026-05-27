@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ArtistAdminController {
 
     private final ArtistService artistService;
+    private final ArtistSuggestionAdminService artistSuggestionAdminService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -59,7 +61,20 @@ public class ArtistAdminController {
         model.addAttribute("sort", sort);
         model.addAttribute("genre", genre);
         model.addAttribute("allGenres", ArtistGenre.values());
+        model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestions());
         return "admin/artists-list";
+    }
+
+    @PostMapping("/suggestions/{id}/dismiss")
+    public String dismissSuggestion(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            artistSuggestionAdminService.dismiss(id);
+            ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
+        } catch (Exception e) {
+            log.error("아티스트 신청 처리 실패: {}", id, e);
+            ra.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
+        }
+        return "redirect:/admin/artists";
     }
 
     @GetMapping("/photos")

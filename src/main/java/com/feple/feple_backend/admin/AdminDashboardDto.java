@@ -26,5 +26,6 @@ public record AdminDashboardDto(
         List<PostReport> pendingReports,
         long pendingReportCount,
         List<SongRequest> pendingSongRequests,
-        long pendingSongRequestCount
+        long pendingSongRequestCount,
+        long pendingArtistSuggestionCount
 ) {}
