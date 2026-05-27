@@ -66,6 +66,46 @@
             </div>
         </div>
 
+        <!-- 처리 완료 내역 -->
+        <div th:if="${not #lists.isEmpty(processedSuggestions)}" class="card" style="margin-bottom:20px;">
+            <details>
+                <summary style="padding:16px 22px; cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px;">
+                    <div class="card-title" style="margin:0;">
+                        처리 완료 내역
+                        <span style="display:inline-block; margin-left:6px; padding:1px 8px; background:var(--border); color:var(--text-2); border-radius:20px; font-size:12px; font-weight:700;"
+                              th:text="${#lists.size(processedSuggestions)}"></span>
+                    </div>
+                    <span class="summary-arrow" style="margin-left:auto; font-size:12px; color:var(--muted);">▼ 펼치기</span>
+                </summary>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>아티스트 이름</th>
+                            <th>신청 메모</th>
+                            <th style="width:120px;">신청자</th>
+                            <th style="width:140px;">신청일</th>
+                            <th style="width:300px;">처리 메시지</th>
+                            <th style="width:140px;">처리일</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="s : ${processedSuggestions}">
+                            <td class="cell-primary" th:text="${s.artistName}"></td>
+                            <td style="font-size:13px; color:var(--text-2);" th:text="${s.note != null ? s.note : '-'}"></td>
+                            <td style="font-size:13px;" th:text="${s.userNickname}"></td>
+                            <td style="font-size:12px; color:var(--muted);"
+                                th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td style="font-size:13px; color:var(--text-2);" th:text="${s.processNote != null ? s.processNote : '-'}"></td>
+                            <td style="font-size:12px; color:var(--muted);"
+                                th:text="${s.processedAt != null ? #temporals.format(s.processedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+
         <div class="card">
             <div class="card-header">
                 <div class="card-title">
@@ -236,6 +276,9 @@
 </div>
 
 <style>
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] .summary-arrow { transform: rotate(180deg); }
 .reason-chip {
     padding: 4px 12px;
     border-radius: 20px;

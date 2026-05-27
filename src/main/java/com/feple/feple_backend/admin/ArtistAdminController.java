@@ -62,6 +62,7 @@ public class ArtistAdminController {
         model.addAttribute("genre", genre);
         model.addAttribute("allGenres", ArtistGenre.values());
         model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestions());
+        model.addAttribute("processedSuggestions", artistSuggestionAdminService.getProcessedSuggestions());
         return "admin/artists-list";
     }
 

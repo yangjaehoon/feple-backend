@@ -33,6 +33,8 @@ public class ArtistSuggestion {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime processedAt;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -42,5 +44,6 @@ public class ArtistSuggestion {
     public void dismiss(String processNote) {
         this.status = ArtistSuggestionStatus.DISMISSED;
         this.processNote = processNote;
+        this.processedAt = LocalDateTime.now();
     }
 }

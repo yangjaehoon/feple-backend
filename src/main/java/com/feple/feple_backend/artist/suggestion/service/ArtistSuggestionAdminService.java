@@ -7,6 +7,7 @@ import java.util.List;
 public interface ArtistSuggestionAdminService {
     List<ArtistSuggestionResponseDto> getPendingSuggestions();
     List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit);
+    List<ArtistSuggestionResponseDto> getProcessedSuggestions();
     long countPending();
     void dismiss(Long suggestionId, String processNote);
 }
