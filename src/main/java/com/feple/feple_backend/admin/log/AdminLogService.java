@@ -8,6 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -38,12 +40,22 @@ public class AdminLogService {
         }
     }
 
-    public Page<AdminLog> getLogs(int page, int size, String targetType) {
+    public Page<AdminLog> getLogs(int page, int size, String targetType, LocalDate from, LocalDate to) {
         PageRequest pageable = PageRequest.of(page, size);
-        if (targetType != null && !targetType.isBlank()) {
-            return repository.findByTargetTypeOrderByCreatedAtDesc(targetType, pageable);
+        boolean hasType = targetType != null && !targetType.isBlank();
+        boolean hasDate = from != null || to != null;
+
+        if (!hasDate) {
+            return hasType
+                    ? repository.findByTargetTypeOrderByCreatedAtDesc(targetType, pageable)
+                    : repository.findAllByOrderByCreatedAtDesc(pageable);
         }
-        return repository.findAllByOrderByCreatedAtDesc(pageable);
+
+        LocalDateTime fromDt = (from != null ? from : LocalDate.of(2000, 1, 1)).atStartOfDay();
+        LocalDateTime toDt   = (to   != null ? to   : LocalDate.now()).atTime(23, 59, 59);
+        return hasType
+                ? repository.findByTargetTypeAndDateRange(targetType, fromDt, toDt, pageable)
+                : repository.findByDateRange(fromDt, toDt, pageable);
     }
 
     public List<AdminLog> getRecentLogs() {

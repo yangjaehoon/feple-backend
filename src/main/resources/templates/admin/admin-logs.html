@@ -38,8 +38,8 @@
             <!-- 필터 바 -->
             <div style="padding:14px 22px; border-bottom:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <form th:action="@{/admin/logs}" method="get" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                    <select name="targetType" class="form-select" style="width:auto;" onchange="this.form.submit()">
-                        <option value=""           th:selected="${#strings.isEmpty(targetType)}">전체</option>
+                    <select name="targetType" class="form-select" style="width:auto;">
+                        <option value=""           th:selected="${#strings.isEmpty(targetType)}">전체 대상</option>
                         <option value="USER"        th:selected="${targetType == 'USER'}">회원</option>
                         <option value="FESTIVAL"    th:selected="${targetType == 'FESTIVAL'}">페스티벌</option>
                         <option value="ARTIST"      th:selected="${targetType == 'ARTIST'}">아티스트</option>
@@ -48,10 +48,21 @@
                         <option value="REPORT"      th:selected="${targetType == 'REPORT'}">신고</option>
                         <option value="CERTIFICATION" th:selected="${targetType == 'CERTIFICATION'}">인증</option>
                         <option value="BAD_WORD"    th:selected="${targetType == 'BAD_WORD'}">금칙어</option>
+                        <option value="SONG_REQUEST" th:selected="${targetType == 'SONG_REQUEST'}">노래 요청</option>
                     </select>
-                    <a th:if="${!#strings.isEmpty(targetType)}"
+                    <input type="date" name="from"
+                           th:value="${from}"
+                           class="form-select" style="width:auto; cursor:pointer;"
+                           title="시작일"/>
+                    <span style="font-size:13px; color:var(--muted);">~</span>
+                    <input type="date" name="to"
+                           th:value="${to}"
+                           class="form-select" style="width:auto; cursor:pointer;"
+                           title="종료일"/>
+                    <button type="submit" class="btn btn-primary btn-sm">조회</button>
+                    <a th:if="${!#strings.isEmpty(targetType) or from != null or to != null}"
                        th:href="@{/admin/logs}"
-                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                       class="btn btn-secondary btn-sm">초기화</a>
                 </form>
                 <span style="margin-left:auto; font-size:13px; color:var(--muted);"
                       th:text="'총 ' + ${logs.totalElements} + '건'"></span>
