@@ -12,4 +12,9 @@ public class AdminLoginController {
     public String loginPage() {
         return "admin/login";
     }
+
+    @GetMapping("/access-denied")
+    public String accessDenied() {
+        return "admin/admin-access-denied";
+    }
 }

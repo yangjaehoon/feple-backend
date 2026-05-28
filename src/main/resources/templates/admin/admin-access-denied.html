@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 접근 권한 없음</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('none')}"></div>
+<div class="main-content">
+    <div class="content-area" style="display:flex; align-items:center; justify-content:center; min-height:60vh;">
+        <div style="text-align:center; max-width:420px;">
+            <div style="font-size:56px; margin-bottom:16px;">🔒</div>
+            <h2 style="font-size:22px; font-weight:800; color:var(--text-1); margin-bottom:8px;">접근 권한이 없습니다</h2>
+            <p style="font-size:14px; color:var(--muted); margin-bottom:24px;">
+                이 페이지에 접근하려면 추가 권한이 필요합니다.<br>
+                최고 관리자에게 권한 부여를 요청하세요.
+            </p>
+            <div style="background:#F8FBFD; border:1.5px solid var(--border); border-radius:10px; padding:14px 18px; margin-bottom:24px; text-align:left;">
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--muted); letter-spacing:.5px; margin-bottom:8px;">내 권한</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;" sec:authorize="isAuthenticated()">
+                    <span th:each="auth : ${#authentication.authorities}"
+                          th:if="${#strings.startsWith(auth.authority, 'PERM_')}"
+                          th:text="${auth.authority.replace('PERM_', '')}"
+                          style="display:inline-block; padding:3px 10px; background:#EFF6FF; color:#1D4ED8; border-radius:20px; font-size:11px; font-weight:700;"></span>
+                    <span sec:authorize="hasRole('SUPER_ADMIN')"
+                          style="display:inline-block; padding:3px 10px; background:#FEF3C7; color:#92400E; border-radius:20px; font-size:11px; font-weight:700;">SUPER_ADMIN</span>
+                </div>
+            </div>
+            <a th:href="@{/admin}" class="btn btn-primary">대시보드로 돌아가기</a>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

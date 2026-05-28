@@ -65,7 +65,9 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .sessionFixation().changeSessionId()
-                .maximumSessions(1));
+                .maximumSessions(1))
+            .exceptionHandling(ex -> ex
+                .accessDeniedPage("/admin/access-denied"));
 
         return http.build();
     }

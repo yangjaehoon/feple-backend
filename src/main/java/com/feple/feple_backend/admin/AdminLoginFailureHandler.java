@@ -6,6 +6,7 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,11 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
 
         if (!bucket.tryConsume(1)) {
             response.sendError(429, "로그인 시도가 너무 많습니다. 10분 후 다시 시도해주세요.");
+            return;
+        }
+
+        if (exception instanceof DisabledException) {
+            response.sendRedirect("/admin/login?disabled=true");
             return;
         }
 
