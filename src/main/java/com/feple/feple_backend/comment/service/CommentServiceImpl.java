@@ -149,6 +149,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, Long> getCommentCountsByUserIds(java.util.List<Long> userIds) {
+        if (userIds.isEmpty()) return java.util.Map.of();
+        return commentRepository.countGroupByUserId(userIds).stream()
+                .collect(java.util.stream.Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+    }
+
+    @Override
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");

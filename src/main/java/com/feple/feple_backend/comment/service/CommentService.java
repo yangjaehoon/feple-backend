@@ -17,4 +17,5 @@ public interface CommentService {
     long countMyComments(Long userId);
     void updateOwnComment(Long commentId, Long requestUserId, String content);
     long countCommentsContaining(String word);
+    java.util.Map<Long, Long> getCommentCountsByUserIds(java.util.List<Long> userIds);
 }

@@ -13,4 +13,5 @@ public interface PostAdminService {
     void deletePost(Long postId);
     void bulkDeletePosts(List<Long> ids);
     long countPostsContaining(String word);
+    java.util.Map<Long, Long> getPostCountsByUserIds(java.util.List<Long> userIds);
 }

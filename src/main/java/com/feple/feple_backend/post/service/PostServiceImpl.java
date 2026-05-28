@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -170,6 +171,14 @@ public class PostServiceImpl implements PostService, PostAdminService {
     @Transactional(readOnly = true)
     public long countPostsContaining(String word) {
         return postRepository.countByTitleOrContentContaining(word.toLowerCase());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getPostCountsByUserIds(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        return postRepository.countGroupByUserId(userIds).stream()
+                .collect(java.util.stream.Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
     }
 
     @Override

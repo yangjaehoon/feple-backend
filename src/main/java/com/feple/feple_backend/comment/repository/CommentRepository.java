@@ -61,4 +61,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :word, '%'))")
     long countByContentContaining(@Param("word") String word);
+
+    @Query("SELECT c.user.id, COUNT(c) FROM Comment c WHERE c.user.id IN :userIds GROUP BY c.user.id")
+    List<Object[]> countGroupByUserId(@Param("userIds") List<Long> userIds);
 }

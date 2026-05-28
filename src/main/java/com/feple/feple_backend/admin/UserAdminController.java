@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -35,6 +36,7 @@ public class UserAdminController {
     private final UserAdminService userService;
     private final MyPageService myPageService;
     private final CommentService commentService;
+    private final PostAdminService postAdminService;
     private final AdminLogService adminLogService;
 
     @GetMapping
@@ -54,6 +56,8 @@ public class UserAdminController {
 
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
         Map<Long, Long> reportCounts = myPageService.getReportCounts(userIds);
+        Map<Long, Long> postCounts = postAdminService.getPostCountsByUserIds(userIds);
+        Map<Long, Long> commentCounts = commentService.getCommentCountsByUserIds(userIds);
 
         java.util.List<String> params = new java.util.ArrayList<>();
         params.add("filter=" + filter);
@@ -66,6 +70,8 @@ public class UserAdminController {
         model.addAttribute("sort", sort);
         model.addAttribute("filter", filter);
         model.addAttribute("reportCounts", reportCounts);
+        model.addAttribute("postCounts", postCounts);
+        model.addAttribute("commentCounts", commentCounts);
         model.addAttribute("extraParams", extraParams);
         return "admin/user-list";
     }

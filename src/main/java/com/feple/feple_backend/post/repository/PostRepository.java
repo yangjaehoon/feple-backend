@@ -112,6 +112,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.festival.id = :festivalId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
     Page<Post> findByFestivalIdAndTitleLikeOrderByCreatedAtDesc(@Param("festivalId") Long festivalId, @Param("kw") String keyword, Pageable pageable);
 
+    // ── 관리자 배치 카운트 ────────────────────────────────────────────────────
+    @Query("SELECT p.user.id, COUNT(p) FROM Post p WHERE p.user.id IN :userIds GROUP BY p.user.id")
+    List<Object[]> countGroupByUserId(@Param("userIds") List<Long> userIds);
+
     // ── 금칙어 스캔 ───────────────────────────────────────────────────────────
     @Query("SELECT COUNT(p) FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :word, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :word, '%'))")
     long countByTitleOrContentContaining(@Param("word") String word);
