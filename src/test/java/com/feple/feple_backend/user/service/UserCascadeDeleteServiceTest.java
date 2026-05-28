@@ -4,14 +4,12 @@ import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRep
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
-import com.feple.feple_backend.comment.entity.Comment;
-import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.entity.FestivalLike;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
-import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
@@ -24,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,8 +31,7 @@ import static org.mockito.Mockito.verify;
 class UserCascadeDeleteServiceTest {
 
     @Mock UserRepository userRepository;
-    @Mock PostService postService;
-    @Mock CommentRepository commentRepository;
+    @Mock RefreshTokenRepository refreshTokenRepository;
     @Mock FestivalLikeRepository festivalLikeRepository;
     @Mock ArtistFollowRepository artistFollowRepository;
     @Mock NotificationRepository notificationRepository;
@@ -52,26 +50,10 @@ class UserCascadeDeleteServiceTest {
                 .build();
     }
 
-    private void stubEmptyRelations(Long userId, User user) {
-        given(commentRepository.findByUser(user)).willReturn(List.of());
+    private void stubEmptyRelations(Long userId) {
         given(festivalLikeRepository.findByUserId(userId)).willReturn(List.of());
         given(artistFollowRepository.findByUserId(userId)).willReturn(List.of());
         given(userDeviceTokenRepository.findByUserId(userId)).willReturn(List.of());
-    }
-
-    @Test
-    void 사용자_삭제시_댓글과_게시글_삭제됨() {
-        User user = userWithImage(1L);
-        List<Comment> comments = List.of(mock(Comment.class));
-        given(commentRepository.findByUser(user)).willReturn(comments);
-        given(festivalLikeRepository.findByUserId(1L)).willReturn(List.of());
-        given(artistFollowRepository.findByUserId(1L)).willReturn(List.of());
-        given(userDeviceTokenRepository.findByUserId(1L)).willReturn(List.of());
-
-        userCascadeDeleteService.delete(user);
-
-        verify(commentRepository).deleteAll(comments);
-        verify(postService).deletePostsByUser(user);
     }
 
     @Test
@@ -79,7 +61,6 @@ class UserCascadeDeleteServiceTest {
         User user = userWithImage(1L);
         List<FestivalLike> festivalLikes = List.of(mock(FestivalLike.class));
         List<ArtistFollow> artistFollows = List.of(mock(ArtistFollow.class));
-        given(commentRepository.findByUser(user)).willReturn(List.of());
         given(festivalLikeRepository.findByUserId(1L)).willReturn(festivalLikes);
         given(artistFollowRepository.findByUserId(1L)).willReturn(artistFollows);
         given(userDeviceTokenRepository.findByUserId(1L)).willReturn(List.of());
@@ -95,7 +76,6 @@ class UserCascadeDeleteServiceTest {
     void 사용자_삭제시_기기토큰_인증_이미지좋아요_업로더참조_정리됨() {
         User user = userWithImage(1L);
         List<UserDeviceToken> tokens = List.of(mock(UserDeviceToken.class));
-        given(commentRepository.findByUser(user)).willReturn(List.of());
         given(festivalLikeRepository.findByUserId(1L)).willReturn(List.of());
         given(artistFollowRepository.findByUserId(1L)).willReturn(List.of());
         given(userDeviceTokenRepository.findByUserId(1L)).willReturn(tokens);
@@ -109,24 +89,37 @@ class UserCascadeDeleteServiceTest {
     }
 
     @Test
-    void 사용자_삭제시_유저_레코드와_프로필_이미지_파일_삭제됨() {
+    void 사용자_삭제시_리프레시토큰_무효화_및_소프트삭제됨() {
         User user = userWithImage(1L);
-        stubEmptyRelations(1L, user);
+        stubEmptyRelations(1L);
 
         userCascadeDeleteService.delete(user);
 
-        verify(userRepository).delete(user);
+        verify(refreshTokenRepository).deleteByUserId(1L);
         verify(fileStorageService).deleteFile("profile/user-1.jpg");
+        assertThat(user.isDeleted()).isTrue();
+        assertThat(user.getNickname()).isEqualTo("(탈퇴한 사용자)");
+    }
+
+    @Test
+    void 게시글과_댓글은_익명화_유지하며_삭제하지_않음() {
+        User user = userWithImage(1L);
+        stubEmptyRelations(1L);
+
+        userCascadeDeleteService.delete(user);
+
+        // 소프트 삭제: userRepository.delete() 호출 없음
+        verify(userRepository, org.mockito.Mockito.never()).delete(user);
     }
 
     @Test
     void 프로필_이미지_없는_사용자도_정상_삭제됨() {
         User user = User.builder().id(2L).oauthId("o2").nickname("noimage").build();
-        stubEmptyRelations(2L, user);
+        stubEmptyRelations(2L);
 
         userCascadeDeleteService.delete(user);
 
-        verify(userRepository).delete(user);
         verify(fileStorageService).deleteFile(null);
+        assertThat(user.isDeleted()).isTrue();
     }
 }
