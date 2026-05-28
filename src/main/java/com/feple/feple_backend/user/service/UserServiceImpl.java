@@ -98,11 +98,9 @@ public class UserServiceImpl implements UserService, UserAdminService {
     public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         if (keyword != null && !keyword.isBlank()) {
-            return userRepository
-                    .findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, pageable)
-                    .map(this::toAdminUserDto);
+            return userRepository.findActiveByKeyword(keyword, pageable).map(this::toAdminUserDto);
         }
-        return userRepository.findAll(pageable).map(this::toAdminUserDto);
+        return userRepository.findAllByDeletedAtIsNull(pageable).map(this::toAdminUserDto);
     }
 
     @Override
@@ -156,6 +154,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
                 .bannedUntil(user.getBannedUntil())
                 .banReason(user.getBanReason())
                 .bannedBy(user.getBannedBy())
+                .deletedAt(user.getDeletedAt())
                 .build();
     }
 
@@ -185,7 +184,8 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public List<UserResponseDto> getAllUsersForExport() {
-        return userRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
+        return userRepository.findAllByDeletedAtIsNull(
+                        org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "id")))
                 .stream().map(this::toAdminUserDto).toList();
     }
 

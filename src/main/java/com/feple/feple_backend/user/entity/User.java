@@ -64,8 +64,12 @@ public class User {
     @Column(name = "banned_by", length = 100)
     private String bannedBy;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
+    public boolean isDeleted() { return deletedAt != null; }
 
     public boolean isBanned() {
         return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now());
@@ -103,6 +107,15 @@ public class User {
 
     public void updateBio(String bio) {
         this.bio = bio;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+        this.nickname = "(탈퇴한 사용자)";
+        this.oauthId = "DELETED_" + this.id;
+        this.email = null;
+        this.bio = null;
+        this.profileImageUrl = null;
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

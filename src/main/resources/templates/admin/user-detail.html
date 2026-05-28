@@ -33,7 +33,7 @@
                 <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
                     <button type="submit"
                             class="btn btn-danger btn-sm"
-                            onclick="return confirm('이 회원을 삭제할까요? 게시글과 댓글도 모두 삭제됩니다.')">삭제</button>
+                            onclick="return confirm('이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">탈퇴</button>
                 </form>
             </div>
             <div class="card-body">

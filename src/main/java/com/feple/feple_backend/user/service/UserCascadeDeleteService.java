@@ -3,12 +3,11 @@ package com.feple.feple_backend.user.service;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
-import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
-import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -23,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserCascadeDeleteService {
 
     private final UserRepository userRepository;
-    private final PostService postService;
-    private final CommentRepository commentRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final FestivalLikeRepository festivalLikeRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final NotificationRepository notificationRepository;
@@ -38,21 +36,24 @@ public class UserCascadeDeleteService {
         Long id = user.getId();
         String profileImageKey = user.getProfileImageUrl();
 
-        commentRepository.deleteAll(commentRepository.findByUser(user));
-        postService.deletePostsByUser(user);
+        // 인증 세션 무효화
+        refreshTokenRepository.deleteByUserId(id);
+        userDeviceTokenRepository.deleteAll(userDeviceTokenRepository.findByUserId(id));
 
+        // 소셜 활동 데이터 삭제
         festivalLikeRepository.deleteAll(festivalLikeRepository.findByUserId(id));
         artistFollowRepository.deleteAll(artistFollowRepository.findByUserId(id));
 
         notificationRepository.deleteByUserId(id);
-        userDeviceTokenRepository.deleteAll(userDeviceTokenRepository.findByUserId(id));
         certificationRepository.deleteByUserId(id);
 
         artistImageLikeRepository.deleteByUserId(id);
         artistImageRepository.nullifyUploaderByUserId(id);
 
-        userRepository.delete(user);
-
+        // S3 프로필 이미지 삭제
         fileStorageService.deleteFile(profileImageKey);
+
+        // 게시글·댓글은 익명 처리 후 유지 (작성자 닉네임은 "(탈퇴한 사용자)"로 표시됨)
+        user.softDelete();
     }
 }

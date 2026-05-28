@@ -26,6 +26,9 @@ public class UserResponseDto {
     /** 관리자 페이지에서만 사용. */
     private String bannedBy;
 
+    /** 관리자 페이지에서만 사용. null이면 정상 계정. */
+    private LocalDateTime deletedAt;
+
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
     public boolean isBanned() { return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now()); }

@@ -59,7 +59,7 @@ public class AdminStatsServiceImpl implements AdminStatsService {
 
     @Override
     public List<User> getRecentUsers() {
-        return userRepository.findTop5ByOrderByIdDesc();
+        return userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc();
     }
 
     @Override

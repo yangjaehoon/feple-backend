@@ -19,13 +19,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByProviderAndOauthId(AuthProvider provider, String oauthId);
 
-    org.springframework.data.domain.Page<User> findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(String nickname, String email, org.springframework.data.domain.Pageable pageable);
+    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND " +
+           "(LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<User> findActiveByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    java.util.List<User> findTop5ByOrderByIdDesc();
+    Page<User> findAllByDeletedAtIsNull(Pageable pageable);
 
-    boolean existsByNickname(String nickname);
+    java.util.List<User> findTop5ByDeletedAtIsNullOrderByIdDesc();
 
-    boolean existsByNicknameAndIdNot(String nickname, Long id);
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE u.nickname = :nickname AND u.deletedAt IS NULL")
+    boolean existsByNickname(@Param("nickname") String nickname);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE u.nickname = :nickname AND u.id <> :id AND u.deletedAt IS NULL")
+    boolean existsByNicknameAndIdNot(@Param("nickname") String nickname, @Param("id") Long id);
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
@@ -38,7 +44,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             """, nativeQuery = true)
     Long countActiveUsersBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    @Query("SELECT u FROM User u WHERE u.bannedUntil IS NOT NULL AND u.bannedUntil > :now " +
+    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND u.bannedUntil IS NOT NULL AND u.bannedUntil > :now " +
            "AND (:keyword = '' OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
            "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
            "ORDER BY u.bannedUntil DESC")
@@ -63,12 +69,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 FROM artist_photos ap JOIN artist_photo_report apr ON apr.photo_id = ap.id
                 GROUP BY ap.uploader_user_id
             ) photo_r ON photo_r.uid = u.id
-            WHERE (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
+            WHERE u.deleted_at IS NULL
+              AND (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
             ORDER BY (COALESCE(post_r.cnt, 0) + COALESCE(com_r.cnt, 0) + COALESCE(photo_r.cnt, 0)) DESC
             """,
             countQuery = """
             SELECT COUNT(*) FROM users u
-            WHERE (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
+            WHERE u.deleted_at IS NULL
+              AND (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
             """,
             nativeQuery = true)
     Page<User> findAllOrderByTotalReportCountDesc(@Param("keyword") String keyword, Pageable pageable);
