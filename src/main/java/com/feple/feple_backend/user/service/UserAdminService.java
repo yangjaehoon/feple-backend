@@ -13,4 +13,6 @@ public interface UserAdminService {
     void bulkDeleteUsers(List<Long> ids);
     void adminDeleteUser(Long id);
     void updateUserRole(Long userId, UserRole role);
+    void banUser(Long id, int days);
+    void unbanUser(Long id);
 }

@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
+import com.feple.feple_backend.user.repository.UserRepository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,7 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final AdminLoginFailureHandler adminLoginFailureHandler;
+    private final UserRepository userRepository;
 
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
@@ -103,7 +105,7 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((req, res, e) ->
                     res.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
-            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
+            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userRepository),
                 UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

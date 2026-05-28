@@ -23,6 +23,9 @@
     </div>
     <div class="content-area">
 
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
         <!-- 회원 프로필 카드 -->
         <div class="card">
             <div class="card-header">
@@ -188,6 +191,55 @@
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">역할 변경</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- 정지 관리 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🚫 정지 관리</div>
+            </div>
+            <div class="card-body">
+                <!-- 현재 정지 상태 -->
+                <div th:if="${user.banned}"
+                     style="margin-bottom:16px; padding:12px 16px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px;">
+                    <div style="font-weight:700; color:#991b1b; font-size:14px; margin-bottom:4px;">현재 정지 상태</div>
+                    <div style="font-size:13px; color:#b91c1c;">
+                        정지 만료:
+                        <span th:if="${user.permanentBan}">영구 정지</span>
+                        <span th:unless="${user.permanentBan}"
+                              th:text="${#temporals.format(user.bannedUntil, 'yyyy년 MM월 dd일 HH:mm')}"></span>
+                    </div>
+                    <form th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post"
+                          style="margin-top:10px; display:inline;">
+                        <button type="submit" class="btn btn-secondary btn-sm"
+                                onclick="return confirm('정지를 해제하시겠습니까?')">정지 해제</button>
+                    </form>
+                </div>
+
+                <!-- 정지 설정 폼 -->
+                <div th:if="${!user.admin}">
+                    <div style="font-size:13px; color:var(--muted); margin-bottom:10px;"
+                         th:if="${user.banned}">정지 기간을 변경하거나 재정지할 수 있습니다.</div>
+                    <form th:action="@{/admin/users/{id}/ban(id=${user.id})}" method="post"
+                          style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <select name="days" class="form-select" style="width:auto;">
+                            <option value="1">1일</option>
+                            <option value="3">3일</option>
+                            <option value="7" selected>7일</option>
+                            <option value="30">30일</option>
+                            <option value="365">365일</option>
+                            <option value="0">영구 정지</option>
+                        </select>
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('이 회원을 정지하시겠습니까?')">
+                            <span th:if="${user.banned}">재정지 (갱신)</span>
+                            <span th:unless="${user.banned}">정지</span>
+                        </button>
+                    </form>
+                </div>
+                <div th:if="${user.admin}"
+                     style="font-size:13px; color:var(--muted);">관리자 계정은 정지할 수 없습니다.</div>
             </div>
         </div>
 

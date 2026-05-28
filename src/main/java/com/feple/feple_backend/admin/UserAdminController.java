@@ -9,6 +9,7 @@ import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/users")
@@ -93,6 +95,37 @@ public class UserAdminController {
                                  RedirectAttributes ra) {
         userService.updateUserRole(id, role);
         ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.getDisplayName());
+        return "redirect:/admin/users/" + id;
+    }
+
+    @PostMapping("/{id}/ban")
+    public String banUser(@PathVariable Long id,
+                          @RequestParam(defaultValue = "7") int days,
+                          RedirectAttributes ra) {
+        try {
+            userService.banUser(id, days);
+            String label = days <= 0 ? "영구" : days + "일";
+            ra.addFlashAttribute("successMessage", label + " 정지가 적용되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("회원 정지 처리 중 오류. userId={}", id, e);
+            ra.addFlashAttribute("errorMessage", "정지 처리 중 오류가 발생했습니다.");
+        }
+        return "redirect:/admin/users/" + id;
+    }
+
+    @PostMapping("/{id}/unban")
+    public String unbanUser(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            userService.unbanUser(id);
+            ra.addFlashAttribute("successMessage", "정지가 해제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("회원 정지 해제 중 오류. userId={}", id, e);
+            ra.addFlashAttribute("errorMessage", "정지 해제 중 오류가 발생했습니다.");
+        }
         return "redirect:/admin/users/" + id;
     }
 }

@@ -55,8 +55,25 @@ public class User {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @Column
+    private LocalDateTime bannedUntil;
+
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
+
+    public boolean isBanned() {
+        return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now());
+    }
+
+    public void ban(int days) {
+        this.bannedUntil = (days <= 0)
+                ? LocalDateTime.of(9999, 12, 31, 23, 59, 59)
+                : LocalDateTime.now().plusDays(days);
+    }
+
+    public void unban() {
+        this.bannedUntil = null;
+    }
 
     public void changeRole(UserRole newRole) {
         this.role = newRole;

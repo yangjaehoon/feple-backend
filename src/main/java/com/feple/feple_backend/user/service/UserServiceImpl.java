@@ -144,6 +144,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
                 .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
+                .bannedUntil(user.getBannedUntil())
                 .build();
     }
 
@@ -151,6 +152,18 @@ public class UserServiceImpl implements UserService, UserAdminService {
     public void updateUserRole(Long userId, UserRole role) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         user.changeRole(role);
+    }
+
+    @Override
+    public void banUser(Long userId, int days) {
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        user.ban(days);
+    }
+
+    @Override
+    public void unbanUser(Long userId) {
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        user.unban();
     }
 
     @Override

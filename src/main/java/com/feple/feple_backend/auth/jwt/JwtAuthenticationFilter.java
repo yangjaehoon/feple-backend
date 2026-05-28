@@ -1,5 +1,6 @@
 package com.feple.feple_backend.auth.jwt;
 
+import com.feple.feple_backend.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -39,8 +41,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Long userId = jwtProvider.parseUserId(token);
 
+                var user = userRepository.findById(userId).orElse(null);
+                if (user != null && user.isBanned()) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"banned\",\"message\":\"계정이 정지되었습니다.\"}");
+                    return;
+                }
+
                 var authentication = new UsernamePasswordAuthenticationToken(
-                        userId,  // principal
+                        userId,
                         null,
                         List.of(new SimpleGrantedAuthority("ROLE_USER"))
                 );
