@@ -167,6 +167,12 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long countPostsContaining(String word) {
+        return postRepository.countByTitleOrContentContaining(word.toLowerCase());
+    }
+
+    @Override
     public List<PostResponseDto> getPostsByArtistId(Long artistId) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         return postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(0, PageSize.POSTS))

@@ -15,9 +15,9 @@
             <div class="breadcrumb">
                 <a th:href="@{/admin}">대시보드</a>
                 <span class="bc-sep">›</span>
-                <a th:href="@{/admin/posts}">게시글</a>
+                <a th:href="${backUrl}">게시글</a>
                 <span class="bc-sep">›</span>
-                <span>상세</span>
+                <span th:text="${post.boardDisplayName}">상세</span>
             </div>
         </div>
     </div>
@@ -117,7 +117,7 @@
         </div>
 
         <div style="margin-top:8px;">
-            <a th:href="@{/admin/posts}" class="btn btn-secondary">← 목록으로</a>
+            <a th:href="${backUrl}" class="btn btn-secondary">← 목록으로</a>
         </div>
 
     </div>

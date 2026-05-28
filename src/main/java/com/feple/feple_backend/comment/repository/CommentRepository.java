@@ -58,4 +58,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
            "FROM Comment c WHERE c.post.artist IS NOT NULL AND c.createdAt >= :since " +
            "GROUP BY c.post.artist.id")
     List<Object[]> countByArtistSince(@Param("since") LocalDateTime since);
+
+    @Query("SELECT COUNT(c) FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :word, '%'))")
+    long countByContentContaining(@Param("word") String word);
 }

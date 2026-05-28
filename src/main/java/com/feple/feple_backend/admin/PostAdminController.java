@@ -59,9 +59,20 @@ public class PostAdminController {
     }
 
     @GetMapping("/{id}")
-    public String postDetail(@PathVariable Long id, Model model) {
+    public String postDetail(@PathVariable Long id,
+                             @RequestParam(defaultValue = "") String filter,
+                             @RequestParam(required = false) Long artistId,
+                             @RequestParam(required = false) Long festivalId,
+                             Model model) {
         model.addAttribute("post", postService.getPost(id));
         model.addAttribute("comments", commentService.getCommentsByPost(id, null));
+        StringBuilder back = new StringBuilder("/admin/posts");
+        if (!filter.isBlank() || artistId != null || festivalId != null) {
+            back.append("?filter=").append(filter);
+            if (artistId != null) back.append("&artistId=").append(artistId);
+            if (festivalId != null) back.append("&festivalId=").append(festivalId);
+        }
+        model.addAttribute("backUrl", back.toString());
         return "admin/post-detail";
     }
 

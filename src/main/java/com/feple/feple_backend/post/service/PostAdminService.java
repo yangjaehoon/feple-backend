@@ -12,4 +12,5 @@ public interface PostAdminService {
     List<PostResponseDto> getAdminHotPosts(int limit);
     void deletePost(Long postId);
     void bulkDeletePosts(List<Long> ids);
+    long countPostsContaining(String word);
 }

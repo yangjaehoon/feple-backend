@@ -140,6 +140,47 @@
             </div>
         </div>
 
+        <!-- 최근 댓글 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    💬 최근 댓글
+                    <span class="card-count" th:text="${#lists.size(recentComments)}"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>내용</th>
+                        <th>게시글</th>
+                        <th>게시판</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="comment : ${recentComments}">
+                        <td class="td-id" th:text="${comment.commentId}"></td>
+                        <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                            th:text="${comment.content}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${comment.postId})}"
+                               th:text="${comment.postTitle}"
+                               style="max-width:220px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                        </td>
+                        <td>
+                            <span class="badge badge-genre"
+                                  th:text="${comment.boardDisplayName}"></span>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(recentComments)}">
+                        <td colspan="4">댓글이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- 팔로우 아티스트 -->
         <div class="card" th:if="${!#lists.isEmpty(followedArtists)}">
             <div class="card-header">

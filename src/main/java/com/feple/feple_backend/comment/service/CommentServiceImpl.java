@@ -143,6 +143,12 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long countCommentsContaining(String word) {
+        return commentRepository.countByContentContaining(word.toLowerCase());
+    }
+
+    @Override
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");

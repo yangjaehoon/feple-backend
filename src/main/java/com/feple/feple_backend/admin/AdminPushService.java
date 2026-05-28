@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.service.FcmPushService;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -19,6 +22,8 @@ public class AdminPushService {
     private final UserDeviceTokenRepository deviceTokenRepository;
     private final FcmPushService fcmPushService;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
+    private final ArtistFollowRepository artistFollowRepository;
+    private final FestivalCertificationRepository festivalCertificationRepository;
 
     @Transactional(readOnly = true)
     public long getRegisteredDeviceCount() {
@@ -40,6 +45,35 @@ public class AdminPushService {
             throw new IllegalArgumentException("해당 사용자에게 등록된 디바이스 토큰이 없습니다. (userId=" + targetUserId + ")");
         }
         log.info("[AdminPush] 테스트 발송 — userId={}, 토큰 {}개, 제목: {}", targetUserId, tokens.size(), title);
+        fcmPushService.sendBroadcast(tokens, title, body);
+    }
+
+    @Transactional(readOnly = true)
+    public void sendToArtistFollowers(Long artistId, String title, String body) {
+        List<Long> userIds = artistFollowRepository.findByArtistId(artistId)
+                .stream().map(af -> af.getUserId()).toList();
+        if (userIds.isEmpty()) {
+            throw new IllegalArgumentException("해당 아티스트의 팔로워가 없습니다.");
+        }
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(userIds);
+        if (tokens.isEmpty()) {
+            throw new IllegalArgumentException("발송 대상 기기가 없습니다. (팔로워 " + userIds.size() + "명 모두 알림 비활성)");
+        }
+        log.info("[AdminPush] 아티스트 팔로워 발송 — artistId={}, 팔로워 {}명, 토큰 {}개, 제목: {}", artistId, userIds.size(), tokens.size(), title);
+        fcmPushService.sendBroadcast(tokens, title, body);
+    }
+
+    @Transactional(readOnly = true)
+    public void sendToFestivalCertified(Long festivalId, String title, String body) {
+        Set<Long> userIds = festivalCertificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        if (userIds.isEmpty()) {
+            throw new IllegalArgumentException("해당 페스티벌의 인증된 참여자가 없습니다.");
+        }
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.copyOf(userIds));
+        if (tokens.isEmpty()) {
+            throw new IllegalArgumentException("발송 대상 기기가 없습니다. (인증자 " + userIds.size() + "명 모두 알림 비활성)");
+        }
+        log.info("[AdminPush] 페스티벌 인증자 발송 — festivalId={}, 인증자 {}명, 토큰 {}개, 제목: {}", festivalId, userIds.size(), tokens.size(), title);
         fcmPushService.sendBroadcast(tokens, title, body);
     }
 

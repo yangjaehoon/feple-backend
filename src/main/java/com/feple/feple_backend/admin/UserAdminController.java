@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -33,6 +34,7 @@ public class UserAdminController {
 
     private final UserAdminService userService;
     private final MyPageService myPageService;
+    private final CommentService commentService;
     private final AdminLogService adminLogService;
 
     @GetMapping
@@ -77,9 +79,11 @@ public class UserAdminController {
         List<FestivalResponseDto> likedFestivals = myPageService.getLikedFestivals(id);
         List<ArtistResponseDto> followedArtists = myPageService.getFollowedArtists(id);
 
+        var recentComments = commentService.getMyComments(id).stream().limit(10).toList();
         model.addAttribute("user", user);
         model.addAttribute("stats", stats);
         model.addAttribute("recentPosts", recentPosts);
+        model.addAttribute("recentComments", recentComments);
         model.addAttribute("likedFestivals", likedFestivals);
         model.addAttribute("followedArtists", followedArtists);
         return "admin/user-detail";

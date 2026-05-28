@@ -41,6 +41,11 @@
            th:classappend="${active == 'artists'} ? ' active'">
             <span class="sb-icon">🎤</span> 아티스트
         </a>
+        <a sec:authorize="hasAuthority('PERM_ARTISTS')"
+           th:href="@{/admin/artist-suggestions}" class="sb-link"
+           th:classappend="${active == 'artist-suggestions'} ? ' active'">
+            <span class="sb-icon">💡</span> 아티스트 신청
+        </a>
         <a sec:authorize="hasAuthority('PERM_POSTS')"
            th:href="@{/admin/posts}" class="sb-link"
            th:classappend="${active == 'posts'} ? ' active'">

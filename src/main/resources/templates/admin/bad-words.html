@@ -68,10 +68,15 @@
                         <td style="font-size:13px; color:var(--muted);"
                             th:text="${#temporals.format(bw.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                         <td>
-                            <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
-                                <button type="submit" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('삭제하시겠습니까?')">삭제</button>
-                            </form>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                        th:onclick="'scanWord(this, \'' + ${bw.word} + '\')'">스캔</button>
+                                <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </div>
+                            <div class="scan-result" style="display:none; margin-top:6px; font-size:12px; color:var(--text-2);"></div>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(badWords)}">
@@ -86,5 +91,30 @@
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+async function scanWord(btn, word) {
+    const resultEl = btn.closest('td').querySelector('.scan-result');
+    resultEl.style.display = 'block';
+    resultEl.textContent = '스캔 중...';
+    try {
+        const res = await fetch('/admin/bad-words/scan?word=' + encodeURIComponent(word));
+        const data = await res.json();
+        if (res.ok) {
+            const total = data.postCount + data.commentCount;
+            if (total === 0) {
+                resultEl.style.color = 'var(--muted)';
+                resultEl.textContent = '기존 콘텐츠에서 발견되지 않음';
+            } else {
+                resultEl.style.color = '#b91c1c';
+                resultEl.textContent = '게시글 ' + data.postCount + '건, 댓글 ' + data.commentCount + '건에서 발견';
+            }
+        } else {
+            resultEl.textContent = data.error || '스캔 오류';
+        }
+    } catch (e) {
+        resultEl.textContent = '스캔 중 오류가 발생했습니다.';
+    }
+}
+</script>
 </body>
 </html>

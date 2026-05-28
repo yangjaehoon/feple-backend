@@ -90,6 +90,58 @@
             </div>
         </div>
 
+        <!-- 타겟 발송 카드 -->
+        <div class="card" style="max-width:640px; margin-top:20px;">
+            <div class="card-header">
+                <div class="card-title">타겟 발송</div>
+            </div>
+            <div style="padding:20px 24px; display:flex; flex-direction:column; gap:20px;">
+                <p style="margin:0; font-size:13px; color:var(--muted);">
+                    위 카드의 제목·내용을 그대로 사용하여 특정 그룹에게만 발송합니다. 감사 로그에 기록되며 발송 이력에는 저장되지 않습니다.
+                </p>
+
+                <!-- 아티스트 팔로워 -->
+                <div>
+                    <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">
+                        아티스트 팔로워에게 발송
+                    </div>
+                    <form th:action="@{/admin/push/artist-followers}" method="post"
+                          style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <input type="hidden" name="title" id="target-title-artist"/>
+                        <input type="hidden" name="body"  id="target-body-artist"/>
+                        <select name="artistId"
+                                style="flex:1; min-width:200px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                            <option value="">아티스트 선택</option>
+                            <option th:each="a : ${artists}" th:value="${a.id}" th:text="${a.name}"></option>
+                        </select>
+                        <button type="submit"
+                                onclick="return fillTargetAndConfirm('artist')"
+                                class="btn btn-secondary">팔로워에게 발송</button>
+                    </form>
+                </div>
+
+                <!-- 페스티벌 인증자 -->
+                <div>
+                    <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">
+                        페스티벌 인증 참여자에게 발송
+                    </div>
+                    <form th:action="@{/admin/push/festival-certified}" method="post"
+                          style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <input type="hidden" name="title" id="target-title-festival"/>
+                        <input type="hidden" name="body"  id="target-body-festival"/>
+                        <select name="festivalId"
+                                style="flex:1; min-width:220px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                            <option value="">페스티벌 선택</option>
+                            <option th:each="f : ${festivals}" th:value="${f.id}" th:text="${f.title}"></option>
+                        </select>
+                        <button type="submit"
+                                onclick="return fillTargetAndConfirm('festival')"
+                                class="btn btn-secondary">인증자에게 발송</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <div class="card" style="max-width:640px; margin-top:20px;">
             <div class="card-header">
                 <div class="card-title">주의사항</div>
@@ -169,6 +221,15 @@
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
+    function fillTargetAndConfirm(type) {
+        const title = document.querySelector('[name="title"]').value.trim();
+        const body  = document.querySelector('[name="body"]').value.trim();
+        if (!title || !body) { alert('제목과 내용을 먼저 입력해주세요.'); return false; }
+        document.getElementById('target-title-' + type).value = title;
+        document.getElementById('target-body-'  + type).value = body;
+        return confirm('제목: ' + title + '\n\n해당 그룹에게 발송하시겠습니까?');
+    }
+
     async function searchNickname() {
         const nickname = document.getElementById('nickname-search').value.trim();
         const resultEl = document.getElementById('search-result');

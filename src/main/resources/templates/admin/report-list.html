@@ -126,7 +126,11 @@
                                th:text="${report.postTitle}"
                                style="font-size:14px; font-weight:600; max-width:300px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
                             <div class="cell-secondary" style="margin-top:4px;">
-                                <span th:text="${report.posterNickname}"></span>
+                                <a th:href="@{/admin/users/{id}(id=${report.postAuthorId})}"
+                                   th:text="${report.posterNickname}"
+                                   style="color:var(--text-2); text-decoration:none;"
+                                   onmouseover="this.style.textDecoration='underline'"
+                                   onmouseout="this.style.textDecoration='none'"></a>
                                 <span th:with="cnt=${authorReportCounts.get(report.postAuthorId)}"
                                       th:if="${cnt != null}"
                                       th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
@@ -218,7 +222,11 @@
                             <div style="font-size:14px; font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
                                  th:text="${report.commentContent}"></div>
                             <div class="cell-secondary" style="margin-top:4px;">
-                                <span th:text="${report.commentUserNickname}"></span>
+                                <a th:href="@{/admin/users/{id}(id=${report.commentAuthorId})}"
+                                   th:text="${report.commentUserNickname}"
+                                   style="color:var(--text-2); text-decoration:none;"
+                                   onmouseover="this.style.textDecoration='underline'"
+                                   onmouseout="this.style.textDecoration='none'"></a>
                                 <span th:with="cnt=${authorReportCounts.get(report.commentAuthorId)}"
                                       th:if="${cnt != null}"
                                       th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
@@ -319,7 +327,12 @@
                                       th:text="${report.photo.title}"></span>
                             </div>
                             <div class="cell-secondary" style="margin-top:4px;">
-                                업로더: <span th:text="${report.photoUploaderNickname}"></span>
+                                업로더:
+                                <a th:href="@{/admin/users/{id}(id=${report.photoUploaderId})}"
+                                   th:text="${report.photoUploaderNickname}"
+                                   style="color:var(--text-2); text-decoration:none;"
+                                   onmouseover="this.style.textDecoration='underline'"
+                                   onmouseout="this.style.textDecoration='none'"></a>
                                 <span th:with="cnt=${authorReportCounts.get(report.photoUploaderId)}"
                                       th:if="${cnt != null}"
                                       th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
