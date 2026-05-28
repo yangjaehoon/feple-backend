@@ -13,6 +13,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -51,6 +54,14 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 .stream()
                 .map(s -> ArtistSuggestionResponseDto.from(s, resolveNickname(s.getUserId())))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ArtistSuggestionResponseDto> getSuggestionsPage(int page, int size) {
+        return suggestionRepository.findByStatusOrderByCreatedAtDesc(
+                ArtistSuggestionStatus.PENDING, PageRequest.of(page, size))
+                .map(s -> ArtistSuggestionResponseDto.from(s, resolveNickname(s.getUserId())));
     }
 
     @Override

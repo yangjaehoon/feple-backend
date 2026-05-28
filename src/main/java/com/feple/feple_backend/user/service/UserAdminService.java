@@ -10,6 +10,7 @@ public interface UserAdminService {
     UserResponseDto getAdminUser(Long id);
     Page<UserResponseDto> getUsersPage(int page, int size, String keyword);
     Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword);
+    Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword);
     void bulkDeleteUsers(List<Long> ids);
     void adminDeleteUser(Long id);
     void updateUserRole(Long userId, UserRole role);

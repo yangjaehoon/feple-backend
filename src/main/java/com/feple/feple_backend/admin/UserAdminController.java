@@ -39,19 +39,30 @@ public class UserAdminController {
     public String listUsers(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "") String filter,
             Model model) {
-        Page<UserResponseDto> users = "reports".equals(sort)
-                ? userService.getUsersPageSortedByReports(page, PAGE_SIZE, keyword)
-                : userService.getUsersPage(page, PAGE_SIZE, keyword);
+        Page<UserResponseDto> users;
+        if ("banned".equals(filter)) {
+            users = userService.getBannedUsersPage(page, PAGE_SIZE, keyword);
+        } else if ("reports".equals(sort)) {
+            users = userService.getUsersPageSortedByReports(page, PAGE_SIZE, keyword);
+        } else {
+            users = userService.getUsersPage(page, PAGE_SIZE, keyword);
+        }
 
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
         Map<Long, Long> reportCounts = myPageService.getReportCounts(userIds);
 
-        String extraParams = "sort=" + sort + (keyword != null && !keyword.isBlank() ? "&keyword=" + keyword : "");
+        java.util.List<String> params = new java.util.ArrayList<>();
+        params.add("filter=" + filter);
+        if (!"banned".equals(filter)) params.add("sort=" + sort);
+        if (keyword != null && !keyword.isBlank()) params.add("keyword=" + keyword);
+        String extraParams = String.join("&", params);
 
         model.addAttribute("users", users);
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
+        model.addAttribute("filter", filter);
         model.addAttribute("reportCounts", reportCounts);
         model.addAttribute("extraParams", extraParams);
         return "admin/user-list";

@@ -39,7 +39,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="s : ${suggestions}">
+                    <tr th:each="s : ${suggestions.content}">
                         <td class="td-id" th:text="${s.id}"></td>
                         <td style="font-weight:600;" th:text="${s.artistName}"></td>
                         <td class="cell-secondary" th:text="${s.note != null ? s.note : '—'}"></td>
@@ -54,12 +54,14 @@
                             </form>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(suggestions)}">
+                    <tr class="empty-row" th:if="${suggestions.totalElements == 0}">
                         <td colspan="6">대기 중인 아티스트 신청이 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${suggestions}, '/admin/artist-suggestions', null)}"></div>
         </div>
     </div>
 </div>

@@ -9,7 +9,7 @@ public interface SongRequestAdminService {
 
     List<SongRequestResponseDto> getPendingRequests(Long artistId);
 
-    Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status);
+    Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status, String keyword);
 
     long getPendingCount();
 

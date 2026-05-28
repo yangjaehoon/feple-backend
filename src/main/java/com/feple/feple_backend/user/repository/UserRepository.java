@@ -38,6 +38,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
             """, nativeQuery = true)
     Long countActiveUsersBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
+    @Query("SELECT u FROM User u WHERE u.bannedUntil IS NOT NULL AND u.bannedUntil > :now " +
+           "AND (:keyword = '' OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "ORDER BY u.bannedUntil DESC")
+    Page<User> findBannedUsers(@Param("now") LocalDateTime now,
+                               @Param("keyword") String keyword,
+                               Pageable pageable);
+
     @Query(value = """
             SELECT u.* FROM users u
             LEFT JOIN (

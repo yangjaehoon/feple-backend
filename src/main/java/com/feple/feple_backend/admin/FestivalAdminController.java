@@ -91,14 +91,17 @@ public class FestivalAdminController {
     }
 
     @GetMapping
-    public String listFestivals(Model model) {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, null, true);
+    public String listFestivals(@RequestParam(defaultValue = "") String keyword, Model model) {
+        List<FestivalResponseDto> festivals = keyword.isBlank()
+                ? festivalService.getAllFestivals(null, null, null, true)
+                : festivalService.searchFestivals(keyword);
         List<Long> ids = festivals.stream().map(FestivalResponseDto::getId).toList();
         LocalDate today = LocalDate.now();
         long activeFestivalCount = festivals.stream()
                 .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
                 .count();
         model.addAttribute("festivals", festivals);
+        model.addAttribute("keyword", keyword);
         model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap(ids));
         model.addAttribute("activeFestivalCount", activeFestivalCount);
         return "admin/festival-list";

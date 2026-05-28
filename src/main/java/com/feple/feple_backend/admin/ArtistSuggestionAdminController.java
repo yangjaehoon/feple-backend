@@ -1,8 +1,10 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +20,12 @@ public class ArtistSuggestionAdminController {
 
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
 
+    private static final int PAGE_SIZE = 20;
+
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestions());
+    public String list(@RequestParam(defaultValue = "0") int page, Model model) {
+        Page<ArtistSuggestionResponseDto> suggestions = artistSuggestionAdminService.getSuggestionsPage(page, PAGE_SIZE);
+        model.addAttribute("suggestions", suggestions);
         return "admin/artist-suggestions";
     }
 

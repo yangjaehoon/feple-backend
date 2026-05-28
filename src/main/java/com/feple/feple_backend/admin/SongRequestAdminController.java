@@ -29,10 +29,12 @@ public class SongRequestAdminController {
     @GetMapping
     public String list(@RequestParam(defaultValue = "PENDING") String status,
                        @RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "") String keyword,
                        Model model) {
-        Page<SongRequestResponseDto> requests = songRequestAdminService.getRequestsPage(page, PAGE_SIZE, status);
+        Page<SongRequestResponseDto> requests = songRequestAdminService.getRequestsPage(page, PAGE_SIZE, status, keyword);
         model.addAttribute("requests", requests);
         model.addAttribute("status", status);
+        model.addAttribute("keyword", keyword);
         model.addAttribute("pendingCount", songRequestAdminService.getPendingCount());
         return "admin/song-request-list";
     }
@@ -42,6 +44,7 @@ public class SongRequestAdminController {
                           @RequestParam(required = false) String youtubeUrl,
                           @RequestParam(defaultValue = "PENDING") String status,
                           @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "") String keyword,
                           RedirectAttributes ra) {
         try {
             songRequestAdminService.approve(id, youtubeUrl);
@@ -53,7 +56,7 @@ public class SongRequestAdminController {
             log.error("노래 요청 승인 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "승인 처리 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin/song-requests?status=" + status + "&page=" + page;
+        return redirectUrl(status, page, keyword);
     }
 
     @PostMapping("/{id}/reject")
@@ -61,6 +64,7 @@ public class SongRequestAdminController {
                          @RequestParam(required = false) String reason,
                          @RequestParam(defaultValue = "PENDING") String status,
                          @RequestParam(defaultValue = "0") int page,
+                         @RequestParam(defaultValue = "") String keyword,
                          RedirectAttributes ra) {
         try {
             songRequestAdminService.reject(id, reason);
@@ -72,6 +76,12 @@ public class SongRequestAdminController {
             log.error("노래 요청 거절 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "거절 처리 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin/song-requests?status=" + status + "&page=" + page;
+        return redirectUrl(status, page, keyword);
+    }
+
+    private String redirectUrl(String status, int page, String keyword) {
+        String url = "redirect:/admin/song-requests?status=" + status + "&page=" + page;
+        if (keyword != null && !keyword.isBlank()) url += "&keyword=" + keyword;
+        return url;
     }
 }

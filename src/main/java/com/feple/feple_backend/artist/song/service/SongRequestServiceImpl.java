@@ -83,12 +83,13 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
 
     @Override
     @Transactional(readOnly = true)
-    public Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status) {
+    public Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status, String keyword) {
         PageRequest pageable = PageRequest.of(page, size);
-        Page<SongRequest> requests = (status == null || status.isBlank() || status.equals("ALL"))
-                ? songRequestRepository.findAllForAdmin(pageable)
-                : songRequestRepository.findByStatusForAdmin(SongRequestStatus.valueOf(status), pageable);
-        return requests.map(r -> SongRequestResponseDto.from(r, resolveNickname(r.getUserId())));
+        SongRequestStatus statusEnum = (status == null || status.isBlank() || status.equals("ALL"))
+                ? null : SongRequestStatus.valueOf(status);
+        String kw = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        return songRequestRepository.findWithFilters(statusEnum, kw, pageable)
+                .map(r -> SongRequestResponseDto.from(r, resolveNickname(r.getUserId())));
     }
 
     @Override

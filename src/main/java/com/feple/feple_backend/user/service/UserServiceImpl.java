@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -109,6 +110,14 @@ public class UserServiceImpl implements UserService, UserAdminService {
     public Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword) {
         String kw = (keyword == null) ? "" : keyword.trim();
         return userRepository.findAllOrderByTotalReportCountDesc(kw, PageRequest.of(page, size))
+                .map(this::toAdminUserDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword) {
+        String kw = (keyword == null) ? "" : keyword.trim();
+        return userRepository.findBannedUsers(LocalDateTime.now(), kw, PageRequest.of(page, size))
                 .map(this::toAdminUserDto);
     }
 

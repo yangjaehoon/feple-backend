@@ -14,10 +14,20 @@ public class FcmPushService {
 
     private static final int BATCH_SIZE = 500; // FCM multicast 최대 500개
 
+    /** 관리자 공지 브로드캐스트 */
+    public void sendBroadcast(List<String> tokens, String title, String body) {
+        sendMulticast(tokens, title, body, null, "ADMIN_NOTICE");
+    }
+
     /**
      * 여러 FCM 토큰에 푸시 발송
      */
     public void sendMulticast(List<String> tokens, String title, String body, String festivalId) {
+        sendMulticast(tokens, title, body, festivalId, "NEW_FESTIVAL");
+    }
+
+    private void sendMulticast(List<String> tokens, String title, String body,
+                               String festivalId, String type) {
         if (tokens.isEmpty()) return;
         if (FirebaseApp.getApps().isEmpty()) {
             log.warn("[FCM] Firebase 미초기화 상태 — 푸시 생략");
@@ -36,7 +46,7 @@ public class FcmPushService {
                                 .setTitle(title)
                                 .setBody(body)
                                 .build())
-                        .putData("type", "NEW_FESTIVAL")
+                        .putData("type", type)
                         .putData("festivalId", festivalId != null ? festivalId : "")
                         .setAndroidConfig(AndroidConfig.builder()
                                 .setPriority(AndroidConfig.Priority.HIGH)

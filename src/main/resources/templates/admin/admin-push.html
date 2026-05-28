@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 푸시 알림 발송</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('push')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">푸시 알림 발송</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>푸시 알림</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+
+        <div class="card" style="max-width:640px;">
+            <div class="card-header">
+                <div class="card-title">전체 회원 공지 발송</div>
+                <div class="card-count" th:text="${deviceCount} + '명 수신 가능'"></div>
+            </div>
+            <div style="padding:24px;">
+                <form th:action="@{/admin/push}" method="post"
+                      onsubmit="return confirm('전체 ' + document.getElementById('device-count').textContent + '에게 푸시 알림을 발송하시겠습니까?')">
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-1);">제목 *</label>
+                        <input type="text" name="title" required maxlength="100"
+                               placeholder="알림 제목 (최대 100자)"
+                               style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px;"/>
+                    </div>
+                    <div style="margin-bottom:24px;">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-1);">내용 *</label>
+                        <textarea name="body" required maxlength="300" rows="4"
+                                  placeholder="알림 내용 (최대 300자)"
+                                  style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; resize:vertical;"></textarea>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <button type="submit" class="btn btn-primary">발송하기</button>
+                        <span id="device-count" style="font-size:13px; color:var(--muted);"
+                              th:text="${deviceCount} + '명'"></span>
+                        <span style="font-size:12px; color:var(--muted);">의 기기로 발송됩니다.</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card" style="max-width:640px; margin-top:20px;">
+            <div class="card-header">
+                <div class="card-title">주의사항</div>
+            </div>
+            <div style="padding:20px; font-size:13.5px; line-height:1.8; color:var(--text-2);">
+                <ul style="margin:0; padding-left:18px;">
+                    <li>앱에 로그인하여 알림 권한을 허용한 회원에게만 발송됩니다.</li>
+                    <li>발송된 알림은 취소할 수 없습니다.</li>
+                    <li>모든 발송 내역은 감사 로그에 기록됩니다.</li>
+                    <li>테스트 발송은 별도 테스트 계정에서 진행해주세요.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

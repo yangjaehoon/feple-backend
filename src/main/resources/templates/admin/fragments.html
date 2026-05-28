@@ -77,6 +77,11 @@
             📋 감사 로그
         </a>
         <a sec:authorize="hasRole('SUPER_ADMIN')"
+           th:href="@{/admin/push}" class="nb-link"
+           th:classappend="${active == 'push'} ? ' nb-active'">
+            푸시 발송
+        </a>
+        <a sec:authorize="hasRole('SUPER_ADMIN')"
            th:href="@{/admin/accounts}" class="nb-link"
            th:classappend="${active == 'accounts'} ? ' nb-active'">
             관리자 계정
@@ -137,6 +142,9 @@
         <a sec:authorize="hasAuthority('PERM_LOGS')"
            th:href="@{/admin/logs}" class="nb-mobile-link"
            th:classappend="${active == 'logs'} ? ' nb-active'">📋 감사 로그</a>
+        <a sec:authorize="hasRole('SUPER_ADMIN')"
+           th:href="@{/admin/push}" class="nb-mobile-link"
+           th:classappend="${active == 'push'} ? ' nb-active'">푸시 발송</a>
         <a sec:authorize="hasRole('SUPER_ADMIN')"
            th:href="@{/admin/accounts}" class="nb-mobile-link"
            th:classappend="${active == 'accounts'} ? ' nb-active'">관리자 계정</a>

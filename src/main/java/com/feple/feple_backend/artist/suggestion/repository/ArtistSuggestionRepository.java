@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface ArtistSuggestionRepository extends JpaRepository<ArtistSuggestion, Long> {
@@ -18,6 +21,8 @@ public interface ArtistSuggestionRepository extends JpaRepository<ArtistSuggesti
             @Param("status") ArtistSuggestionStatus status);
 
     List<ArtistSuggestion> findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus status);
+
+    Page<ArtistSuggestion> findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus status, Pageable pageable);
 
     long countByStatus(ArtistSuggestionStatus status);
 }

@@ -27,11 +27,14 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
 
     List<SongRequest> findByStatusOrderByCreatedAtDesc(SongRequestStatus status, Pageable pageable);
 
-    @Query("SELECT sr FROM SongRequest sr ORDER BY sr.createdAt DESC")
-    Page<SongRequest> findAllForAdmin(Pageable pageable);
-
-    @Query("SELECT sr FROM SongRequest sr WHERE sr.status = :status ORDER BY sr.createdAt DESC")
-    Page<SongRequest> findByStatusForAdmin(@Param("status") SongRequestStatus status, Pageable pageable);
+    @Query("SELECT sr FROM SongRequest sr WHERE " +
+           "(:status IS NULL OR sr.status = :status) AND " +
+           "(:keyword IS NULL OR LOWER(sr.songTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "ORDER BY sr.createdAt DESC")
+    Page<SongRequest> findWithFilters(@Param("status") SongRequestStatus status,
+                                      @Param("keyword") String keyword,
+                                      Pageable pageable);
 
     long countByStatus(SongRequestStatus status);
 

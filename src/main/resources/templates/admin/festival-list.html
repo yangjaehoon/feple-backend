@@ -122,8 +122,18 @@
         <!-- ══ 탭 1: 페스티벌 목록 ══ -->
         <div id="tab-list" class="tab-panel">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header" style="justify-content:space-between; align-items:center;">
                     <div class="card-title">전체 페스티벌</div>
+                    <form th:action="@{/admin/festivals}" method="get"
+                          style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" name="keyword" th:value="${keyword}"
+                               placeholder="페스티벌명 검색..."
+                               style="padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px; width:220px;"/>
+                        <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                        <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                           th:href="@{/admin/festivals}"
+                           class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    </form>
                 </div>
                 <div class="table-wrap">
                     <table>
