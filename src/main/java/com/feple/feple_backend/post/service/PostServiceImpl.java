@@ -83,21 +83,36 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
-    public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword) {
+    public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword, Long artistId, Long festivalId) {
         PageRequest pageable = PageRequest.of(page, size);
-        Optional<BoardType> boardType = parseBoardType(filter);
         boolean hasKeyword = keyword != null && !keyword.isBlank();
+        String kw = hasKeyword ? keyword : "";
 
-        Page<Post> result;
-        if (boardType.isPresent()) {
-            result = hasKeyword
-                ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(boardType.get(), keyword, pageable)
-                : postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType.get(), pageable);
-        } else {
-            result = hasKeyword
-                ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(keyword, pageable)
-                : postRepository.findAllByOrderByCreatedAtDesc(pageable);
-        }
+        Page<Post> result = switch (filter == null ? "" : filter) {
+            case "FREE" -> hasKeyword
+                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.FREE, kw, pageable)
+                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable);
+            case "MATE" -> hasKeyword
+                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.MATE, kw, pageable)
+                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable);
+            case "ARTIST" -> artistId != null
+                    ? (hasKeyword
+                        ? postRepository.findByArtistIdAndTitleLikeOrderByCreatedAtDesc(artistId, kw, pageable)
+                        : postRepository.findByArtistIdOrderByCreatedAtDesc(artistId, pageable))
+                    : (hasKeyword
+                        ? postRepository.findByArtistIsNotNullAndTitleLikeOrderByCreatedAtDesc(kw, pageable)
+                        : postRepository.findByArtistIsNotNullOrderByCreatedAtDesc(pageable));
+            case "FESTIVAL" -> festivalId != null
+                    ? (hasKeyword
+                        ? postRepository.findByFestivalIdAndTitleLikeOrderByCreatedAtDesc(festivalId, kw, pageable)
+                        : postRepository.findByFestivalIdOrderByCreatedAtDesc(festivalId, pageable))
+                    : (hasKeyword
+                        ? postRepository.findByFestivalIsNotNullAndTitleLikeOrderByCreatedAtDesc(kw, pageable)
+                        : postRepository.findByFestivalIsNotNullOrderByCreatedAtDesc(pageable));
+            default -> hasKeyword
+                    ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(kw, pageable)
+                    : postRepository.findAllByOrderByCreatedAtDesc(pageable);
+        };
         return result.map(PostResponseDto::from);
     }
 

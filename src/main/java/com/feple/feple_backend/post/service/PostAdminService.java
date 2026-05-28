@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface PostAdminService {
-    Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword);
+    Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword, Long artistId, Long festivalId);
     long getTotalPostCount();
     long countRecentPosts(int days);
     List<PostResponseDto> getAdminHotPosts(int limit);

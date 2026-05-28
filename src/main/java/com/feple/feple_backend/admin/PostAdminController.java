@@ -1,7 +1,9 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.post.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -25,20 +27,34 @@ public class PostAdminController {
     private final PostAdminService postAdminService;
     private final CommentService commentService;
     private final AdminLogService adminLogService;
+    private final ArtistService artistService;
+    private final FestivalService festivalService;
 
     @GetMapping
     public String listPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "") String filter,
             @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(required = false) Long artistId,
+            @RequestParam(required = false) Long festivalId,
             Model model) {
-        String extraParams = "filter=" + filter + (keyword != null && !keyword.isBlank() ? "&keyword=" + keyword : "");
+        StringBuilder extra = new StringBuilder("filter=").append(filter);
+        if (keyword != null && !keyword.isBlank()) extra.append("&keyword=").append(keyword);
+        if (artistId != null) extra.append("&artistId=").append(artistId);
+        if (festivalId != null) extra.append("&festivalId=").append(festivalId);
 
-        model.addAttribute("posts", postAdminService.getPostsForAdmin(page, PAGE_SIZE, filter, keyword));
+        model.addAttribute("posts", postAdminService.getPostsForAdmin(page, PAGE_SIZE, filter, keyword, artistId, festivalId));
         model.addAttribute("filter", filter);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("page", page);
-        model.addAttribute("extraParams", extraParams);
+        model.addAttribute("artistId", artistId);
+        model.addAttribute("festivalId", festivalId);
+        model.addAttribute("extraParams", extra.toString());
+
+        if ("ARTIST".equals(filter)) {
+            model.addAttribute("artists", artistService.getAllArtistsSortedByName());
+        } else if ("FESTIVAL".equals(filter)) {
+            model.addAttribute("festivals", festivalService.getAllFestivals(null, null, null, true));
+        }
         return "admin/post-list";
     }
 
@@ -53,22 +69,33 @@ public class PostAdminController {
     public String bulkDeletePosts(@RequestParam(required = false) List<Long> ids,
                                   @RequestParam(defaultValue = "") String filter,
                                   @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(required = false) Long artistId,
+                                  @RequestParam(required = false) Long festivalId,
                                   RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
             postAdminService.bulkDeletePosts(ids);
             adminLogService.log("POST_BULK_DELETE", "POST", null, "총 " + ids.size() + "개");
             ra.addFlashAttribute("successMessage", ids.size() + "개 게시글이 삭제되었습니다.");
         }
-        return "redirect:/admin/posts?filter=" + filter + "&page=" + page;
+        return "redirect:/admin/posts?" + buildRedirectParams(filter, page, artistId, festivalId);
     }
 
     @PostMapping("/{id}/delete")
     public String deletePost(@PathVariable Long id,
                              @RequestParam(defaultValue = "") String filter,
-                             @RequestParam(defaultValue = "0") int page) {
+                             @RequestParam(defaultValue = "0") int page,
+                             @RequestParam(required = false) Long artistId,
+                             @RequestParam(required = false) Long festivalId) {
         postAdminService.deletePost(id);
         adminLogService.log("POST_DELETE", "POST", id, null);
-        return "redirect:/admin/posts?filter=" + filter + "&page=" + page;
+        return "redirect:/admin/posts?" + buildRedirectParams(filter, page, artistId, festivalId);
+    }
+
+    private String buildRedirectParams(String filter, int page, Long artistId, Long festivalId) {
+        StringBuilder sb = new StringBuilder("filter=").append(filter).append("&page=").append(page);
+        if (artistId != null) sb.append("&artistId=").append(artistId);
+        if (festivalId != null) sb.append("&festivalId=").append(festivalId);
+        return sb.toString();
     }
 
     @PostMapping("/comments/{id}/delete")

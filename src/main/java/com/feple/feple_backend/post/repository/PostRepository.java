@@ -76,6 +76,42 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     Page<Post> findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType boardType, String title, Pageable pageable);
 
+    // 아티스트 게시판 전체
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.artist IS NOT NULL ORDER BY p.createdAt DESC")
+    Page<Post> findByArtistIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.artist IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    Page<Post> findByArtistIsNotNullAndTitleLikeOrderByCreatedAtDesc(@Param("kw") String keyword, Pageable pageable);
+
+    // 특정 아티스트 게시판
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.artist.id = :artistId ORDER BY p.createdAt DESC")
+    Page<Post> findByArtistIdOrderByCreatedAtDesc(@Param("artistId") Long artistId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.artist.id = :artistId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    Page<Post> findByArtistIdAndTitleLikeOrderByCreatedAtDesc(@Param("artistId") Long artistId, @Param("kw") String keyword, Pageable pageable);
+
+    // 페스티벌 게시판 전체
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival IS NOT NULL ORDER BY p.createdAt DESC")
+    Page<Post> findByFestivalIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    Page<Post> findByFestivalIsNotNullAndTitleLikeOrderByCreatedAtDesc(@Param("kw") String keyword, Pageable pageable);
+
+    // 특정 페스티벌 게시판
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival.id = :festivalId ORDER BY p.createdAt DESC")
+    Page<Post> findByFestivalIdOrderByCreatedAtDesc(@Param("festivalId") Long festivalId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival.id = :festivalId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    Page<Post> findByFestivalIdAndTitleLikeOrderByCreatedAtDesc(@Param("festivalId") Long festivalId, @Param("kw") String keyword, Pageable pageable);
+
     // ── 통계 ─────────────────────────────────────────────────────────────────
     long countByCreatedAtAfter(LocalDateTime since);
 
