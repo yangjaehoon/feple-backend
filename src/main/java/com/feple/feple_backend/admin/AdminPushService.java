@@ -30,6 +30,19 @@ public class AdminPushService {
         return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    @Transactional(readOnly = true)
+    public void sendTest(Long targetUserId, String title, String body) {
+        List<String> tokens = deviceTokenRepository.findByUserId(targetUserId)
+                .stream()
+                .map(t -> t.getToken())
+                .toList();
+        if (tokens.isEmpty()) {
+            throw new IllegalArgumentException("해당 사용자에게 등록된 디바이스 토큰이 없습니다. (userId=" + targetUserId + ")");
+        }
+        log.info("[AdminPush] 테스트 발송 — userId={}, 토큰 {}개, 제목: {}", targetUserId, tokens.size(), title);
+        fcmPushService.sendBroadcast(tokens, title, body);
+    }
+
     @Transactional
     public void sendToAll(String title, String body) {
         broadcastNotificationRepository.save(BroadcastNotification.of(title, body));

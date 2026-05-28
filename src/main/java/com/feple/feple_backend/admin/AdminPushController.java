@@ -44,4 +44,26 @@ public class AdminPushController {
         }
         return "redirect:/admin/push";
     }
+
+    @PostMapping("/test")
+    public String sendTest(@RequestParam String title,
+                           @RequestParam String body,
+                           @RequestParam Long targetUserId,
+                           RedirectAttributes ra) {
+        try {
+            if (title.isBlank() || body.isBlank()) {
+                ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
+                return "redirect:/admin/push";
+            }
+            adminPushService.sendTest(targetUserId, title.strip(), body.strip());
+            adminLogService.log("PUSH_TEST", "USER", targetUserId, title.strip());
+            ra.addFlashAttribute("successMessage", "테스트 발송 완료 (userId=" + targetUserId + ")");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("테스트 발송 오류", e);
+            ra.addFlashAttribute("errorMessage", "발송 중 오류가 발생했습니다.");
+        }
+        return "redirect:/admin/push";
+    }
 }

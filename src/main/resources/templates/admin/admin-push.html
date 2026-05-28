@@ -44,11 +44,35 @@
                                   placeholder="알림 내용 (최대 300자)"
                                   style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; resize:vertical;"></textarea>
                     </div>
-                    <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                         <button type="submit" class="btn btn-primary">발송하기</button>
                         <span id="device-count" style="font-size:13px; color:var(--muted);"
                               th:text="${deviceCount} + '명'"></span>
                         <span style="font-size:12px; color:var(--muted);">의 기기로 발송됩니다.</span>
+                    </div>
+
+                    <hr style="margin:24px 0; border-color:var(--border);"/>
+
+                    <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px;">
+                        테스트 발송
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+                        <div>
+                            <label style="display:block; font-size:12px; font-weight:600; margin-bottom:5px; color:var(--text-2);">앱 사용자 ID</label>
+                            <input type="number" name="targetUserId" min="1" required
+                                   placeholder="예) 42"
+                                   style="width:130px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px;"/>
+                        </div>
+                        <div style="align-self:flex-end;">
+                            <button type="submit"
+                                    formaction="/admin/push/test"
+                                    formnovalidate
+                                    onclick="return validateTest(this.form)"
+                                    class="btn btn-secondary">나에게 발송</button>
+                        </div>
+                        <div style="align-self:flex-end; font-size:12px; color:var(--muted); line-height:1.5;">
+                            위 제목·내용으로 해당 사용자 기기에만 발송됩니다.<br/>이력에 저장되지 않습니다.
+                        </div>
                     </div>
                 </form>
             </div>
@@ -133,6 +157,15 @@
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
+    function validateTest(form) {
+        const title = form.querySelector('[name="title"]').value.trim();
+        const body  = form.querySelector('[name="body"]').value.trim();
+        const uid   = form.querySelector('[name="targetUserId"]').value.trim();
+        if (!title || !body) { alert('제목과 내용을 입력해주세요.'); return false; }
+        if (!uid)            { alert('테스트 대상 사용자 ID를 입력해주세요.'); return false; }
+        return confirm('사용자 ID ' + uid + ' 에게 테스트 발송하시겠습니까?');
+    }
+
     function openBroadcastModal(btn) {
         document.getElementById('modal-title').textContent = btn.dataset.title;
         document.getElementById('modal-date').textContent  = btn.dataset.createdAt;
