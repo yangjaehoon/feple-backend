@@ -3,6 +3,8 @@ package com.feple.feple_backend.artistfestival.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 public class ArtistFestivalResponse {
@@ -15,5 +17,6 @@ public class ArtistFestivalResponse {
 
     private Integer lineupOrder;
     private String stageName;
+    private List<String> performanceDates;
 
 }

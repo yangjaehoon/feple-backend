@@ -8,6 +8,7 @@ import com.feple.feple_backend.festival.dto.WeatherDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
@@ -26,6 +27,7 @@ public class FestivalController {
 
     private final FestivalService festivalService;
     private final FestivalLikeService festivalLikeService;
+    private final FestivalAttendanceService festivalAttendanceService;
     private final WeatherService weatherService;
     private final SongService songService;
 
@@ -54,6 +56,20 @@ public class FestivalController {
     public ResponseEntity<Boolean> isLiked(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(festivalLikeService.isLiked(id, userId));
+    }
+
+    @PostMapping("/{id}/attending")
+    public ResponseEntity<Boolean> toggleAttending(@PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        if (userId == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(festivalAttendanceService.toggleAttending(id, userId));
+    }
+
+    @GetMapping("/{id}/attending")
+    public ResponseEntity<Boolean> isAttending(@PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        if (userId == null) return ResponseEntity.ok(false);
+        return ResponseEntity.ok(festivalAttendanceService.isAttending(id, userId));
     }
 
     @GetMapping("/{id}/weather")

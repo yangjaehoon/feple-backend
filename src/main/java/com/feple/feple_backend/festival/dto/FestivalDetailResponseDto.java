@@ -31,6 +31,7 @@ public class FestivalDetailResponseDto {
     private List<Genre> genres;
     private AgeRestriction ageRestriction;
     private List<ArtistResponseDto> artists;
+    private int attendingCount;
 
     public static FestivalDetailResponseDto from(Festival festival) {
         return from(festival, festival.getPosterKey());
@@ -50,6 +51,7 @@ public class FestivalDetailResponseDto {
                 .longitude(festival.getLongitude())
                 .genres(festival.getGenres())
                 .ageRestriction(festival.getAgeRestriction())
+                .attendingCount(festival.getAttendingCount())
                 .build();
     }
 

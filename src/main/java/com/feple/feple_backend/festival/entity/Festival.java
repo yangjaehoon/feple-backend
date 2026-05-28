@@ -33,6 +33,9 @@ public class Festival {
     @Builder.Default
     private int likeCount = 0;
 
+    @Builder.Default
+    private int attendingCount = 0;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private EventType eventType = EventType.FESTIVAL;
@@ -86,6 +89,14 @@ public class Festival {
 
     public void decrementLikeCount() {
         this.likeCount = Math.max(0, this.likeCount - 1);
+    }
+
+    public void incrementAttendingCount() {
+        this.attendingCount++;
+    }
+
+    public void decrementAttendingCount() {
+        this.attendingCount = Math.max(0, this.attendingCount - 1);
     }
 
 }

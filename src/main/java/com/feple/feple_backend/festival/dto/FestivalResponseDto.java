@@ -27,6 +27,7 @@ public class FestivalResponseDto {
     private LocalDate endDate;
     private String posterUrl;
     private int likeCount;
+    private int attendingCount;
     private List<Genre> genres;
     private Region region;
     private AgeRestriction ageRestriction;
@@ -48,6 +49,7 @@ public class FestivalResponseDto {
                 .endDate(festival.getEndDate())
                 .posterUrl(posterUrl)
                 .likeCount(festival.getLikeCount())
+                .attendingCount(festival.getAttendingCount())
                 .genres(festival.getGenres())
                 .region(festival.getRegion())
                 .ageRestriction(festival.getAgeRestriction())

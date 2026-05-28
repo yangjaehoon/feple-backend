@@ -13,13 +13,16 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.repository.StageRepository;
+import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +38,24 @@ public class ArtistFestivalService {
     private final NotificationService notificationService;
 
     public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId) {
-        return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId)
+        List<ArtistFestival> artistFestivals =
+                artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId);
+
+        // 타임테이블에서 artistName → performanceDates 맵 빌드 (N+1 방지)
+        Map<String, List<String>> datesByArtistName = timetableRepository
+                .findByFestivalIdWithStage(festivalId)
                 .stream()
-                .map(this::toResponse)
+                .collect(Collectors.groupingBy(
+                        TimetableEntry::getArtistName,
+                        Collectors.mapping(
+                                e -> e.getFestivalDate().toString(),
+                                Collectors.toList()
+                        )
+                ));
+
+        return artistFestivals.stream()
+                .map(af -> toResponse(af, datesByArtistName.getOrDefault(
+                        af.getArtist().getName(), List.of())))
                 .toList();
     }
 
@@ -107,7 +125,7 @@ public class ArtistFestivalService {
     }
 
 
-    private ArtistFestivalResponse toResponse(ArtistFestival af) {
+    private ArtistFestivalResponse toResponse(ArtistFestival af, List<String> dates) {
         return ArtistFestivalResponse.builder()
                 .artistFestivalId(af.getId())
                 .artistId(af.getArtist().getId())
@@ -116,6 +134,7 @@ public class ArtistFestivalService {
                 .profileImageUrl(fileStorageService.buildUrl(af.getArtist().getProfileImageKey()))
                 .lineupOrder(af.getLineupOrder())
                 .stageName(af.getStageName())
+                .performanceDates(dates)
                 .build();
     }
 }

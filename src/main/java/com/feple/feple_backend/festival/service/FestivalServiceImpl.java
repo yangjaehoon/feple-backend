@@ -11,6 +11,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalStatus;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
@@ -38,6 +39,7 @@ public class FestivalServiceImpl implements FestivalService {
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FestivalLikeRepository festivalLikeRepository;
+    private final FestivalAttendanceRepository festivalAttendanceRepository;
     private final FileStorageService fileStorageService;
     private final StageRepository stageRepository;
     private final BoothRepository boothRepository;
@@ -133,6 +135,7 @@ public class FestivalServiceImpl implements FestivalService {
         stageRepository.deleteByFestivalId(festivalId);
         certificationRepository.deleteByFestivalId(festivalId);
         festivalLikeRepository.deleteByFestivalId(festivalId);
+        festivalAttendanceRepository.deleteByFestivalId(festivalId);
 
         postService.deletePostsByFestival(festival);
 
