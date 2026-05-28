@@ -91,8 +91,16 @@
                             <td style="color:var(--muted); font-size:13px; white-space:nowrap;"
                                 th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                             <td style="font-weight:600;" th:text="${item.title}"></td>
-                            <td style="color:var(--text-2); font-size:13px;"
-                                th:text="${#strings.length(item.body) > 80 ? #strings.substring(item.body, 0, 80) + '…' : item.body}"></td>
+                            <td style="color:var(--text-2); font-size:13px;">
+                                <span th:text="${#strings.length(item.body) > 80 ? #strings.substring(item.body, 0, 80) + '…' : item.body}"></span>
+                                <button th:if="${#strings.length(item.body) > 80}"
+                                        type="button"
+                                        class="btn-link-inline"
+                                        th:data-title="${item.title}"
+                                        th:data-body="${item.body}"
+                                        th:data-created-at="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"
+                                        onclick="openBroadcastModal(this)">전체보기</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -101,6 +109,49 @@
 
     </div>
 </div>
+
+<!-- 공지 내용 전체보기 모달 -->
+<div id="broadcast-modal"
+     style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:28px 28px 24px; width:520px; max-width:calc(100vw - 32px); box-shadow:0 8px 32px rgba(0,0,0,.18);">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; gap:12px;">
+            <div>
+                <div id="modal-title" style="font-size:16px; font-weight:700; color:var(--text-1);"></div>
+                <div id="modal-date"  style="font-size:12px; color:var(--muted); margin-top:4px;"></div>
+            </div>
+            <button type="button" onclick="closeBroadcastModal()"
+                    style="background:none; border:none; cursor:pointer; color:var(--muted); font-size:20px; line-height:1; padding:0; flex-shrink:0;">&times;</button>
+        </div>
+        <div id="modal-body"
+             style="font-size:14px; color:var(--text-2); line-height:1.7; white-space:pre-wrap;
+                    background:var(--surface,#f8f9fa); border-radius:8px; padding:16px; max-height:360px; overflow-y:auto;"></div>
+        <div style="margin-top:20px; text-align:right;">
+            <button type="button" class="btn btn-secondary" onclick="closeBroadcastModal()">닫기</button>
+        </div>
+    </div>
+</div>
+
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    function openBroadcastModal(btn) {
+        document.getElementById('modal-title').textContent = btn.dataset.title;
+        document.getElementById('modal-date').textContent  = btn.dataset.createdAt;
+        document.getElementById('modal-body').textContent  = btn.dataset.body;
+        const modal = document.getElementById('broadcast-modal');
+        modal.style.display = 'flex';
+    }
+
+    function closeBroadcastModal() {
+        document.getElementById('broadcast-modal').style.display = 'none';
+    }
+
+    document.getElementById('broadcast-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeBroadcastModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeBroadcastModal();
+    });
+</script>
 </body>
 </html>
