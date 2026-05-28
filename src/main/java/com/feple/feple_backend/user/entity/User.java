@@ -58,6 +58,12 @@ public class User {
     @Column
     private LocalDateTime bannedUntil;
 
+    @Column(name = "ban_reason", length = 300)
+    private String banReason;
+
+    @Column(name = "banned_by", length = 100)
+    private String bannedBy;
+
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
 
@@ -65,14 +71,18 @@ public class User {
         return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now());
     }
 
-    public void ban(int days) {
+    public void ban(int days, String reason, String bannedBy) {
         this.bannedUntil = (days <= 0)
                 ? LocalDateTime.of(9999, 12, 31, 23, 59, 59)
                 : LocalDateTime.now().plusDays(days);
+        this.banReason = (reason != null && !reason.isBlank()) ? reason.strip() : null;
+        this.bannedBy = bannedBy;
     }
 
     public void unban() {
         this.bannedUntil = null;
+        this.banReason = null;
+        this.bannedBy = null;
     }
 
     public void changeRole(UserRole newRole) {

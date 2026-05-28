@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +18,16 @@ public class AdminLogService {
     private final AdminLogRepository repository;
 
     public void log(String action, String targetType, Long targetId, String detail) {
+        String adminUsername = null;
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                adminUsername = auth.getName();
+            }
+        } catch (Exception ignored) {}
         try {
             repository.save(AdminLog.builder()
+                    .adminUsername(adminUsername)
                     .action(action)
                     .targetType(targetType)
                     .targetId(targetId)

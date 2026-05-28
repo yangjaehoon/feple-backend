@@ -145,6 +145,8 @@ public class UserServiceImpl implements UserService, UserAdminService {
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
                 .bannedUntil(user.getBannedUntil())
+                .banReason(user.getBanReason())
+                .bannedBy(user.getBannedBy())
                 .build();
     }
 
@@ -155,9 +157,14 @@ public class UserServiceImpl implements UserService, UserAdminService {
     }
 
     @Override
-    public void banUser(Long userId, int days) {
+    public void banUser(Long userId, int days, String reason) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        user.ban(days);
+        String adminUsername = null;
+        try {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) adminUsername = auth.getName();
+        } catch (Exception ignored) {}
+        user.ban(days, reason, adminUsername);
     }
 
     @Override

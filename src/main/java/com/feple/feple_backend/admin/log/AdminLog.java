@@ -21,6 +21,9 @@ public class AdminLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "admin_username", length = 100)
+    private String adminUsername;
+
     @Column(nullable = false, length = 50)
     private String action;
 

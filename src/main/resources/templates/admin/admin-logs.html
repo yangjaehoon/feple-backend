@@ -62,7 +62,8 @@
                     <thead>
                     <tr>
                         <th style="width:140px;">시각</th>
-                        <th style="width:220px;">액션</th>
+                        <th style="width:110px;">관리자</th>
+                        <th style="width:200px;">액션</th>
                         <th style="width:90px;">대상</th>
                         <th style="width:70px;">ID</th>
                         <th>상세</th>
@@ -72,6 +73,9 @@
                     <tr th:each="entry : ${logs.content}">
                         <td style="color:var(--muted); font-size:12px; white-space:nowrap;"
                             th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm:ss')}"></td>
+
+                        <td style="font-size:12.5px; color:var(--text-2);"
+                            th:text="${entry.adminUsername != null ? entry.adminUsername : '—'}"></td>
 
                         <td>
                             <span th:with="a=${entry.action}"
@@ -111,7 +115,7 @@
                             th:text="${entry.detail != null ? entry.detail : '—'}"></td>
                     </tr>
                     <tr class="empty-row" th:if="${logs.totalElements == 0}">
-                        <td colspan="5">기록된 로그가 없습니다.</td>
+                        <td colspan="6">기록된 로그가 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>

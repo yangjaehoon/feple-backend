@@ -107,11 +107,13 @@ public class UserAdminController {
     @PostMapping("/{id}/ban")
     public String banUser(@PathVariable Long id,
                           @RequestParam(defaultValue = "7") int days,
+                          @RequestParam(required = false) String reason,
                           RedirectAttributes ra) {
         try {
-            userService.banUser(id, days);
+            userService.banUser(id, days, reason);
             String label = days <= 0 ? "영구" : days + "일";
-            adminLogService.log("USER_BAN", "USER", id, label + " 정지");
+            String detail = label + " 정지" + (reason != null && !reason.isBlank() ? " / " + reason : "");
+            adminLogService.log("USER_BAN", "USER", id, detail);
             ra.addFlashAttribute("successMessage", label + " 정지가 적용되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

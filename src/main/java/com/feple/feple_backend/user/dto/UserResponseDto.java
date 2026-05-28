@@ -21,6 +21,10 @@ public class UserResponseDto {
 
     /** 관리자 페이지에서만 사용. null이면 미정지. */
     private LocalDateTime bannedUntil;
+    /** 관리자 페이지에서만 사용. */
+    private String banReason;
+    /** 관리자 페이지에서만 사용. */
+    private String bannedBy;
 
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
