@@ -60,12 +60,12 @@ class AdminStatsServiceImplTest {
     @Test
     void 최근_가입자_5명_조회시_userRepository_위임() {
         List<User> users = List.of(mock(User.class), mock(User.class));
-        given(userRepository.findTop5ByOrderByIdDesc()).willReturn(users);
+        given(userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc()).willReturn(users);
 
         List<User> result = adminStatsService.getRecentUsers();
 
         assertThat(result).isEqualTo(users);
-        verify(userRepository).findTop5ByOrderByIdDesc();
+        verify(userRepository).findTop5ByDeletedAtIsNullOrderByIdDesc();
     }
 
     // ── getDailyStats ─────────────────────────────────────────────────
