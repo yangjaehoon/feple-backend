@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
@@ -30,12 +31,14 @@ public class UserServiceImpl implements UserService, UserAdminService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final UserCascadeDeleteService cascadeDeleteService;
+    private final BadWordFilter badWordFilter;
 
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> checkNicknameAvailable(String nickname, Long excludeUserId) {
         try {
             NicknameValidator.validate(nickname);
+            badWordFilter.validate(nickname);
         } catch (IllegalArgumentException e) {
             return Map.of("available", false, "message", e.getMessage());
         }
@@ -65,6 +68,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     public UserResponseDto updateNickname(@NonNull Long id, String nickname) {
         NicknameValidator.validate(nickname);
+        badWordFilter.validate(nickname);
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }

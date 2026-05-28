@@ -24,9 +24,9 @@ public class BadWordFilter {
         if (snapshot.isEmpty()) return;
         for (String text : texts) {
             if (text == null) continue;
-            String lower = text.toLowerCase();
+            String normalized = text.toLowerCase().replaceAll("\\s+", "");
             for (String word : snapshot) {
-                if (lower.contains(word)) {
+                if (normalized.contains(word)) {
                     throw new IllegalArgumentException("금칙어가 포함되어 있습니다.");
                 }
             }
@@ -37,9 +37,9 @@ public class BadWordFilter {
         if (text == null) return;
         Set<String> snapshot = badWords;
         if (snapshot.isEmpty()) return;
-        String lower = text.toLowerCase();
+        String normalized = text.toLowerCase().replaceAll("\\s+", "");
         for (String word : snapshot) {
-            if (lower.contains(word)) {
+            if (normalized.contains(word)) {
                 throw new IllegalArgumentException(field + ":금칙어가 포함되어 있습니다.");
             }
         }
