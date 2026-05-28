@@ -3,12 +3,15 @@ package com.feple.feple_backend.notification.service;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.notification.dto.NotificationDto;
 import com.feple.feple_backend.notification.entity.Notification;
+import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -16,11 +19,21 @@ import java.util.List;
 public class NotificationQueryService {
 
     private final NotificationRepository notificationRepository;
+    private final BroadcastNotificationRepository broadcastNotificationRepository;
 
     public List<NotificationDto> getMyNotifications(Long userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+        List<NotificationDto> personal = notificationRepository
+                .findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(NotificationDto::from)
+                .toList();
+        List<NotificationDto> broadcasts = broadcastNotificationRepository
+                .findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(NotificationDto::forBroadcast)
+                .toList();
+        return Stream.concat(personal.stream(), broadcasts.stream())
+                .sorted(Comparator.comparing(NotificationDto::createdAt).reversed())
                 .toList();
     }
 

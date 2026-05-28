@@ -42,6 +42,7 @@ public class NotificationPreference {
             case NEW_FESTIVAL, FESTIVAL_REMINDER -> festivalEnabled;
             case SONG_REQUEST_APPROVED, SONG_REQUEST_REJECTED,
                  ARTIST_SUGGESTION_PROCESSED -> songRequestEnabled;
+            case ADMIN_BROADCAST -> true;
         };
     }
 }

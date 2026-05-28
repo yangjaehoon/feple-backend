@@ -1,5 +1,6 @@
 package com.feple.feple_backend.notification.dto;
 
+import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationType;
 
@@ -23,6 +24,18 @@ public record NotificationDto(
                 n.getReferenceId(),
                 n.isRead(),
                 n.getCreatedAt()
+        );
+    }
+
+    public static NotificationDto forBroadcast(BroadcastNotification b) {
+        return new NotificationDto(
+                b.getId(),
+                NotificationType.ADMIN_BROADCAST,
+                b.getTitle(),
+                b.getBody(),
+                null,
+                true,
+                b.getCreatedAt()
         );
     }
 }
