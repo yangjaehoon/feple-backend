@@ -64,12 +64,19 @@ public class AdminStatsServiceImpl implements AdminStatsService {
 
     @Override
     public List<DailyStatDto> getDailyStats() {
-        return buildDailyStats(AdminConstants.STATS_RECENT_DAYS);
+        LocalDate today = LocalDate.now();
+        return buildDailyStats(today.minusDays(AdminConstants.STATS_RECENT_DAYS - 1), today);
     }
 
     @Override
     public List<DailyStatDto> getMonthlyStats() {
-        return buildDailyStats(AdminConstants.STATS_MONTHLY_DAYS);
+        LocalDate today = LocalDate.now();
+        return buildDailyStats(today.minusDays(AdminConstants.STATS_MONTHLY_DAYS - 1), today);
+    }
+
+    @Override
+    public List<DailyStatDto> getRangeStats(LocalDate from, LocalDate to) {
+        return buildDailyStats(from, to);
     }
 
     @Override
@@ -90,10 +97,10 @@ public class AdminStatsServiceImpl implements AdminStatsService {
         );
     }
 
-    private List<DailyStatDto> buildDailyStats(int days) {
+    private List<DailyStatDto> buildDailyStats(LocalDate from, LocalDate to) {
         List<DailyStatDto> stats = new ArrayList<>();
-        for (int i = days - 1; i >= 0; i--) {
-            LocalDate date = LocalDate.now().minusDays(i);
+        LocalDate date = from;
+        while (!date.isAfter(to)) {
             LocalDateTime start = date.atStartOfDay();
             LocalDateTime end = date.plusDays(1).atStartOfDay();
             stats.add(new DailyStatDto(
@@ -103,6 +110,7 @@ public class AdminStatsServiceImpl implements AdminStatsService {
                     commentRepository.countByCreatedAtBetween(start, end),
                     reportRepository.countByCreatedAtBetween(start, end)
             ));
+            date = date.plusDays(1);
         }
         return stats;
     }

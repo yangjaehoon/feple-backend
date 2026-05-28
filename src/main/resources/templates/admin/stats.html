@@ -129,6 +129,42 @@
         .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
         @media(max-width:768px) { .two-col { grid-template-columns:1fr; } }
 
+        /* ── 날짜 범위 선택 ── */
+        .date-range-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+        }
+        .preset-btn {
+            padding: 5px 13px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            border-radius: 6px;
+            transition: color .15s, border-color .15s, background .15s;
+        }
+        .preset-btn:hover { color: var(--primary); border-color: var(--primary); }
+        .date-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+        .date-input {
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            color: var(--text-1);
+            outline: none;
+            cursor: pointer;
+        }
+        .date-input:focus { border-color: var(--primary); }
+
         /* ── 배지 ── */
         .traffic-badge {
             display:inline-block; padding:2px 7px;
@@ -207,25 +243,40 @@
                 </div>
             </div>
 
+            <!-- 날짜 범위 선택 -->
+            <div class="date-range-bar">
+                <span style="font-size:12px; font-weight:700; color:var(--muted); white-space:nowrap;">기간 선택</span>
+                <button type="button" class="preset-btn" data-days="7">7일</button>
+                <button type="button" class="preset-btn" data-days="30">30일</button>
+                <button type="button" class="preset-btn" data-days="90">90일</button>
+                <div class="date-sep"></div>
+                <form id="date-range-form" th:action="@{/admin/stats}" method="get" style="display:flex; gap:6px; align-items:center;">
+                    <input type="date" id="from-input" name="from" th:value="${from}" class="date-input"/>
+                    <span style="color:var(--muted); font-size:13px;">~</span>
+                    <input type="date" id="to-input" name="to" th:value="${to}" class="date-input"/>
+                    <button type="submit" class="btn btn-primary btn-sm">적용</button>
+                </form>
+            </div>
+
             <!-- 탈퇴율 안내 -->
             <div class="note-box">
                 탈퇴율 지표는 계정 삭제 이력(소프트 삭제) 추적이 필요합니다. 현재 User 엔티티는 즉시 삭제(hard delete) 방식이라 탈퇴 시점 데이터가 남지 않습니다. 소프트 삭제 도입 후 집계 가능합니다.
             </div>
 
-            <!-- 30일 트렌드 차트 -->
+            <!-- 트렌드 차트 -->
             <div class="chart-card">
-                <div class="chart-title">신규 가입자 추이 (최근 30일)</div>
+                <div class="chart-title" th:text="'신규 가입자 추이 (' + ${from} + ' ~ ' + ${to} + ')'">신규 가입자 추이</div>
                 <canvas id="signupsChart" height="80"></canvas>
             </div>
             <div class="chart-card">
-                <div class="chart-title">게시글 · 댓글 추이 (최근 30일)</div>
+                <div class="chart-title" th:text="'게시글 · 댓글 추이 (' + ${from} + ' ~ ' + ${to} + ')'">게시글 · 댓글 추이</div>
                 <canvas id="activityChart" height="80"></canvas>
             </div>
 
             <!-- 일별 상세 테이블 -->
             <div class="db-card">
                 <div class="db-card-header">
-                    <span class="db-card-title">일별 상세 (최근 30일)</span>
+                    <span class="db-card-title" th:text="'일별 상세 (' + ${from} + ' ~ ' + ${to} + ')'">일별 상세</span>
                 </div>
                 <div style="overflow-x:auto;">
                     <table style="width:100%; border-collapse:collapse; font-size:12px;">
@@ -239,7 +290,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="s : ${monthlyStats}" style="border-bottom:1px solid var(--border);">
+                        <tr th:each="s : ${rangeStats}" style="border-bottom:1px solid var(--border);">
                             <td style="padding:8px 12px; color:var(--text-2); font-size:12px;" th:text="${s.date()}"></td>
                             <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--success); font-size:12px;" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
                             <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--primary-dk); font-size:12px;" th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
@@ -427,12 +478,25 @@ document.querySelectorAll('.header-tab-btn').forEach(function(btn) {
     });
 });
 
+/* ── 날짜 범위 프리셋 ── */
+document.querySelectorAll('.preset-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var days = parseInt(btn.dataset.days);
+        var to   = new Date();
+        var from = new Date(to);
+        from.setDate(from.getDate() - days + 1);
+        document.getElementById('to-input').value   = to.toISOString().slice(0, 10);
+        document.getElementById('from-input').value = from.toISOString().slice(0, 10);
+        document.getElementById('date-range-form').submit();
+    });
+});
+
 /* ── Chart.js ── */
-const monthlyStats = /*[[${monthlyStats}]]*/ [];
-const labels       = monthlyStats.map(function(s) { return s.date; });
-const signupsData  = monthlyStats.map(function(s) { return s.signups; });
-const postsData    = monthlyStats.map(function(s) { return s.posts; });
-const commentsData = monthlyStats.map(function(s) { return s.comments; });
+const rangeStats   = /*[[${rangeStats}]]*/ [];
+const labels       = rangeStats.map(function(s) { return s.date; });
+const signupsData  = rangeStats.map(function(s) { return s.signups; });
+const postsData    = rangeStats.map(function(s) { return s.posts; });
+const commentsData = rangeStats.map(function(s) { return s.comments; });
 
 const chartOpts = {
     responsive: true,

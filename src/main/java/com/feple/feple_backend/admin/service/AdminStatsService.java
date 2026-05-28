@@ -8,6 +8,7 @@ import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.user.entity.User;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface AdminStatsService {
@@ -15,6 +16,7 @@ public interface AdminStatsService {
     List<User> getRecentUsers();
     List<DailyStatDto> getDailyStats();
     List<DailyStatDto> getMonthlyStats();
+    List<DailyStatDto> getRangeStats(LocalDate from, LocalDate to);
     UserActivityStatsDto getUserActivityStats();
     ContentTrendDto getContentTrend();
     List<FestivalCertification> getPendingCerts(int limit);
