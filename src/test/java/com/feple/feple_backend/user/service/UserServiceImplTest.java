@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -31,6 +32,7 @@ class UserServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
     @Mock UserCascadeDeleteService cascadeDeleteService;
+    @Mock BadWordFilter badWordFilter;
 
     @InjectMocks UserServiceImpl userService;
 
