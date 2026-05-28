@@ -35,6 +35,6 @@ public class ArtistSuggestionAdminController {
             log.error("아티스트 신청 처리 실패: {}", id, e);
             ra.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin/artists";
+        return "redirect:/admin/artist-suggestions";
     }
 }

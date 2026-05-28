@@ -815,3 +815,12 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 .memo-chip-text { flex: 1; line-height: 1.5; word-break: break-word; }
 .memo-chip-del  { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 0; flex-shrink: 0; line-height: 1; }
 .memo-chip-del:hover { color: var(--danger); }
+
+/* ── 공통 필터 탭 ── */
+.type-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 14px 16px; font-size: 13.5px; font-weight: 600;
+  text-decoration: none; border-bottom: 2px solid transparent;
+  color: var(--muted); transition: color .15s, border-color .15s;
+}
+.type-tab.active { border-bottom-color: var(--primary); color: var(--primary); }

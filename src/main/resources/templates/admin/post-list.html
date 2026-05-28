@@ -33,25 +33,17 @@
             <!-- 필터 탭 -->
             <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
                 <a th:href="@{/admin/posts(filter='', page=0)}"
-                   style="padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent;"
-                   th:style="${filter == '' or filter == null}
-                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
+                   th:classappend="${filter == '' or filter == null} ? ' active' : ''"
+                   class="type-tab">
                     전체
                     <span class="card-count" th:text="${posts.totalElements}"></span>
                 </a>
                 <a th:href="@{/admin/posts(filter='FREE', page=0)}"
-                   th:style="${filter == 'FREE'}
-                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
-                    자유게시판
-                </a>
+                   th:classappend="${filter == 'FREE'} ? ' active' : ''"
+                   class="type-tab">자유게시판</a>
                 <a th:href="@{/admin/posts(filter='MATE', page=0)}"
-                   th:style="${filter == 'MATE'}
-                       ? 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid var(--primary); color:var(--primary);'
-                       : 'padding:14px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid transparent; color:var(--muted);'">
-                    동행게시판
-                </a>
+                   th:classappend="${filter == 'MATE'} ? ' active' : ''"
+                   class="type-tab">동행게시판</a>
             </div>
 
             <!-- 검색 바 -->

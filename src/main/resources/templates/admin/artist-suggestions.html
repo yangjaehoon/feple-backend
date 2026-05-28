@@ -14,7 +14,7 @@
         <div>
             <h1 class="page-title">아티스트 신청</h1>
             <div class="breadcrumb">
-                <span>Feple Admin</span>
+                <a th:href="@{/admin}">대시보드</a>
                 <span class="bc-sep">›</span>
                 <span>아티스트 신청</span>
             </div>
@@ -23,42 +23,46 @@
 
     <div class="content-area">
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
 
-        <div class="table-card">
-            <table class="data-table">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>아티스트 이름</th>
-                    <th>추가 정보</th>
-                    <th>신청자</th>
-                    <th>신청일</th>
-                    <th>처리</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="s : ${suggestions}">
-                    <td th:text="${s.id}"></td>
-                    <td th:text="${s.artistName}"></td>
-                    <td th:text="${s.note != null ? s.note : '-'}"></td>
-                    <td th:text="${s.userNickname}"></td>
-                    <td th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-                    <td>
-                        <form th:action="@{/admin/artist-suggestions/{id}/dismiss(id=${s.id})}" method="post">
-                            <button type="submit" class="btn btn-secondary btn-sm">처리완료</button>
-                        </form>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(suggestions)}">
-                    <td colspan="6" style="text-align:center; color:#999; padding:32px;">
-                        대기 중인 아티스트 신청이 없습니다.
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:48px;">#</th>
+                        <th>아티스트 이름</th>
+                        <th>추가 정보</th>
+                        <th style="width:110px;">신청자</th>
+                        <th style="width:130px;">신청일</th>
+                        <th style="width:90px;">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${suggestions}">
+                        <td class="td-id" th:text="${s.id}"></td>
+                        <td style="font-weight:600;" th:text="${s.artistName}"></td>
+                        <td class="cell-secondary" th:text="${s.note != null ? s.note : '—'}"></td>
+                        <td th:text="${s.userNickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(s.createdAt, 'yy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <form th:action="@{/admin/artist-suggestions/{id}/dismiss(id=${s.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('이 아티스트 신청을 처리 완료하시겠습니까?')">
+                                <button type="submit" class="btn btn-secondary btn-sm">처리완료</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(suggestions)}">
+                        <td colspan="6">대기 중인 아티스트 신청이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>
