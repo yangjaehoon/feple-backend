@@ -68,6 +68,37 @@
             </div>
         </div>
 
+        <div class="card" style="margin-top:32px;">
+            <div class="card-header">
+                <div class="card-title">공지 발송 이력</div>
+                <div class="card-count" th:text="${#lists.size(history)} + '건'"></div>
+            </div>
+            <div th:if="${#lists.isEmpty(history)}"
+                 style="padding:32px; text-align:center; color:var(--muted); font-size:14px;">
+                발송 이력이 없습니다.
+            </div>
+            <div th:unless="${#lists.isEmpty(history)}" class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width:160px;">발송 시각</th>
+                            <th style="width:220px;">제목</th>
+                            <th>내용</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${history}">
+                            <td style="color:var(--muted); font-size:13px; white-space:nowrap;"
+                                th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td style="font-weight:600;" th:text="${item.title}"></td>
+                            <td style="color:var(--text-2); font-size:13px;"
+                                th:text="${#strings.length(item.body) > 80 ? #strings.substring(item.body, 0, 80) + '…' : item.body}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>

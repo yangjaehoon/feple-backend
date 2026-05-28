@@ -25,6 +25,11 @@ public class AdminPushService {
         return deviceTokenRepository.countDistinctUsers();
     }
 
+    @Transactional(readOnly = true)
+    public List<BroadcastNotification> getBroadcastHistory() {
+        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc();
+    }
+
     @Transactional
     public void sendToAll(String title, String body) {
         broadcastNotificationRepository.save(BroadcastNotification.of(title, body));

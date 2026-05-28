@@ -22,6 +22,7 @@ public class AdminPushController {
     @GetMapping
     public String showForm(Model model) {
         model.addAttribute("deviceCount", adminPushService.getRegisteredDeviceCount());
+        model.addAttribute("history", adminPushService.getBroadcastHistory());
         return "admin/admin-push";
     }
 
