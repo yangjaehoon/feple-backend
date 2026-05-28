@@ -79,6 +79,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
 
     @Override
     public UserResponseDto updateBio(@NonNull Long id, String bio) {
+        if (bio != null) badWordFilter.validate(bio);
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         user.updateBio(bio);
         return toUserDto(user);
