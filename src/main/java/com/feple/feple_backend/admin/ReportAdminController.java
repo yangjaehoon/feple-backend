@@ -55,6 +55,9 @@ public class ReportAdminController {
         model.addAttribute("status", status);
         model.addAttribute("type", type);
         model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : handler.buildAuthorReportCounts(reports));
+        model.addAttribute("postPendingCount", postReportService.getPendingCount());
+        model.addAttribute("commentPendingCount", commentReportService.getPendingCount());
+        model.addAttribute("photoPendingCount", photoReportService.getPendingCount());
         return "admin/report-list";
     }
 

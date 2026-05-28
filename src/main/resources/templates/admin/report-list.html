@@ -49,13 +49,22 @@
             <div class="type-tab-wrap">
                 <a th:href="@{/admin/reports(type='post', status=${status}, page=0)}"
                    th:classappend="${type == 'post'} ? ' active' : ''"
-                   class="type-tab">게시글 신고</a>
+                   class="type-tab">
+                    게시글 신고
+                    <span th:if="${postPendingCount > 0}" class="card-count" th:text="${postPendingCount}"></span>
+                </a>
                 <a th:href="@{/admin/reports(type='comment', status=${status}, page=0)}"
                    th:classappend="${type == 'comment'} ? ' active' : ''"
-                   class="type-tab">댓글 신고</a>
+                   class="type-tab">
+                    댓글 신고
+                    <span th:if="${commentPendingCount > 0}" class="card-count" th:text="${commentPendingCount}"></span>
+                </a>
                 <a th:href="@{/admin/reports(type='photo', status=${status}, page=0)}"
                    th:classappend="${type == 'photo'} ? ' active' : ''"
-                   class="type-tab">사진 신고</a>
+                   class="type-tab">
+                    사진 신고
+                    <span th:if="${photoPendingCount > 0}" class="card-count" th:text="${photoPendingCount}"></span>
+                </a>
             </div>
 
             <!-- 상태 탭 + CSV 내보내기 -->
