@@ -15,4 +15,5 @@ public interface UserAdminService {
     void updateUserRole(Long userId, UserRole role);
     void banUser(Long id, int days);
     void unbanUser(Long id);
+    List<UserResponseDto> getAllUsersForExport();
 }

@@ -58,6 +58,7 @@ public class CommentReport {
     public String getCommentPostTitle() { return comment.getPostTitle(); }
     public String getCommentUserNickname() { return comment.getUserNickname(); }
     public Long getCommentAuthorId() { return comment.getUserId(); }
+    public String getReporterNickname() { return reporter.getNickname(); }
     public boolean isPending() { return status == ReportStatus.PENDING; }
 
     public void resolve(ReportStatus newStatus) {

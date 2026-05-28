@@ -58,8 +58,8 @@
                    class="type-tab">사진 신고</a>
             </div>
 
-            <!-- 상태 탭 -->
-            <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
+            <!-- 상태 탭 + CSV 내보내기 -->
+            <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px; align-items:center;">
                 <a th:href="@{/admin/reports(type=${type}, status='PENDING', page=0)}"
                    th:classappend="${status == 'PENDING'} ? ' active'"
                    class="status-tab">
@@ -71,6 +71,11 @@
                    class="status-tab">
                     전체
                     <span class="card-count" th:text="${totalCount}"></span>
+                </a>
+                <a th:if="${type == 'post' or type == 'comment'}"
+                   th:href="@{/admin/export/reports.csv(type=${type})}"
+                   class="btn btn-secondary btn-sm" style="margin-left:auto; margin-right:0;">
+                    CSV 내보내기
                 </a>
             </div>
 

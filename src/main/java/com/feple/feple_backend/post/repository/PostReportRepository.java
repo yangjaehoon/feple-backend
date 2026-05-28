@@ -24,6 +24,10 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     Page<PostReport> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
+    @Query("SELECT pr FROM PostReport pr ORDER BY pr.createdAt DESC")
+    List<PostReport> findAllForExport();
+
     long countByStatus(ReportStatus status);
 
     long countByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);

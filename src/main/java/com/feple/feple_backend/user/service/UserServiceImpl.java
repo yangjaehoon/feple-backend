@@ -167,6 +167,13 @@ public class UserServiceImpl implements UserService, UserAdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UserResponseDto> getAllUsersForExport() {
+        return userRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
+                .stream().map(this::toAdminUserDto).toList();
+    }
+
+    @Override
     public Long currentUserId() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {

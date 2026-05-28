@@ -84,6 +84,10 @@ public class CommentReportService implements ReportAdminService {
                 .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
     }
 
+    public List<CommentReport> getAllCommentReportsForExport() {
+        return reportRepository.findAllForExport();
+    }
+
     public long getReportCountForUser(Long userId) {
         List<Object[]> result = reportRepository.countByCommentAuthorIds(List.of(userId));
         return result.isEmpty() ? 0L : (Long) result.get(0)[1];
