@@ -101,7 +101,7 @@
                             <div style="flex:1; overflow:hidden;">
                                 <div class="act-type" th:text="${req.artistName}"></div>
                                 <a class="act-title"
-                                   th:href="@{/admin/artists/{id}/songs(id=${req.artistId})}"
+                                   th:href="@{/admin/song-requests(status='PENDING')}"
                                    th:text="${req.songTitle}"></a>
                             </div>
                             <div class="act-meta" style="white-space:nowrap;"

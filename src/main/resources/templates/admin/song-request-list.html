@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 노래 요청 관리</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .type-tab {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 14px 16px; font-size: 13.5px; font-weight: 600;
+            text-decoration: none; border-bottom: 2px solid transparent;
+            color: var(--muted); transition: color .15s, border-color .15s;
+        }
+        .type-tab.active { border-color: var(--primary); color: var(--primary); }
+        .inline-form { display: flex; gap: 6px; align-items: center; }
+        .inline-input {
+            padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 12px; color: var(--text-1); outline: none;
+        }
+        .inline-input:focus { border-color: var(--primary); }
+        .yt-link { font-size: 11px; color: var(--primary); }
+        .action-cell { display: flex; flex-direction: column; gap: 6px; min-width: 320px; }
+    </style>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('song-requests')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">노래 요청 관리</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>노래 요청</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+
+        <div class="card">
+            <!-- 상태 필터 탭 -->
+            <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px; flex-wrap:wrap;">
+                <a th:href="@{/admin/song-requests(status='PENDING', page=0)}"
+                   th:classappend="${status == 'PENDING'} ? ' active' : ''"
+                   class="type-tab">
+                    대기중
+                    <span th:if="${pendingCount > 0}" class="card-count" th:text="${pendingCount}"></span>
+                </a>
+                <a th:href="@{/admin/song-requests(status='APPROVED', page=0)}"
+                   th:classappend="${status == 'APPROVED'} ? ' active' : ''"
+                   class="type-tab">승인됨</a>
+                <a th:href="@{/admin/song-requests(status='REJECTED', page=0)}"
+                   th:classappend="${status == 'REJECTED'} ? ' active' : ''"
+                   class="type-tab">거절됨</a>
+                <a th:href="@{/admin/song-requests(status='ALL', page=0)}"
+                   th:classappend="${status == 'ALL'} ? ' active' : ''"
+                   class="type-tab">
+                    전체
+                    <span class="card-count" th:text="${requests.totalElements}"></span>
+                </a>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:48px;">ID</th>
+                        <th>곡명</th>
+                        <th style="width:130px;">아티스트</th>
+                        <th style="width:110px;">요청자</th>
+                        <th style="width:80px;">상태</th>
+                        <th style="width:100px;">요청일</th>
+                        <th>액션</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="req : ${requests.content}">
+                        <td class="td-id" th:text="${req.id}"></td>
+                        <td>
+                            <div style="font-size:13px; font-weight:600;" th:text="${req.songTitle}"></div>
+                            <a th:if="${req.youtubeUrl != null and !req.youtubeUrl.isEmpty()}"
+                               th:href="${req.youtubeUrl}" target="_blank"
+                               class="yt-link" th:text="${req.youtubeUrl}"></a>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/artists/{id}/songs(id=${req.artistId})}"
+                               style="font-size:13px; font-weight:600; text-decoration:none; color:var(--text-1);"
+                               th:text="${req.artistName}"></a>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${req.userId})}"
+                               style="font-size:13px; text-decoration:none; color:var(--text-1);"
+                               th:text="${req.userNickname}"></a>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${req.status == 'PENDING'} ? 'badge-warning' : (${req.status == 'APPROVED'} ? 'badge-success' : 'badge-danger')"
+                                  th:text="${req.status == 'PENDING'} ? '대기중' : (${req.status == 'APPROVED'} ? '승인됨' : '거절됨')"></span>
+                        </td>
+                        <td class="cell-secondary" th:text="${req.createdAt}"></td>
+                        <td th:if="${req.status == 'PENDING'}">
+                            <div class="action-cell">
+                                <form th:action="@{/admin/song-requests/{id}/approve(id=${req.id})}"
+                                      method="post" class="inline-form">
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="page"   th:value="${requests.number}"/>
+                                    <input type="text" name="youtubeUrl"
+                                           th:value="${req.youtubeUrl != null ? req.youtubeUrl : ''}"
+                                           placeholder="YouTube URL (선택)"
+                                           class="inline-input" style="width:200px;"/>
+                                    <button type="submit" class="btn btn-primary btn-sm">승인</button>
+                                </form>
+                                <form th:action="@{/admin/song-requests/{id}/reject(id=${req.id})}"
+                                      method="post" class="inline-form"
+                                      onsubmit="return confirm('거절하시겠습니까?')">
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="page"   th:value="${requests.number}"/>
+                                    <input type="text" name="reason"
+                                           placeholder="거절 사유 (선택)"
+                                           class="inline-input" style="width:160px;"/>
+                                    <button type="submit" class="btn btn-danger btn-sm">거절</button>
+                                </form>
+                            </div>
+                        </td>
+                        <td th:unless="${req.status == 'PENDING'}"></td>
+                    </tr>
+                    <tr class="empty-row" th:if="${requests.totalElements == 0}">
+                        <td colspan="7">노래 요청이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${requests}, '/admin/song-requests', 'status=' + ${status})}"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

@@ -17,6 +17,8 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +79,22 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 .stream()
                 .map(r -> SongRequestResponseDto.from(r, nickname))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<SongRequest> requests = (status == null || status.isBlank() || status.equals("ALL"))
+                ? songRequestRepository.findAllForAdmin(pageable)
+                : songRequestRepository.findByStatusForAdmin(SongRequestStatus.valueOf(status), pageable);
+        return requests.map(r -> SongRequestResponseDto.from(r, resolveNickname(r.getUserId())));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getPendingCount() {
+        return songRequestRepository.countByStatus(SongRequestStatus.PENDING);
     }
 
     @Override

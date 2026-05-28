@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.song.repository;
 
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,6 +26,12 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
             @Param("songTitle") String songTitle, @Param("status") SongRequestStatus status);
 
     List<SongRequest> findByStatusOrderByCreatedAtDesc(SongRequestStatus status, Pageable pageable);
+
+    @Query("SELECT sr FROM SongRequest sr ORDER BY sr.createdAt DESC")
+    Page<SongRequest> findAllForAdmin(Pageable pageable);
+
+    @Query("SELECT sr FROM SongRequest sr WHERE sr.status = :status ORDER BY sr.createdAt DESC")
+    Page<SongRequest> findByStatusForAdmin(@Param("status") SongRequestStatus status, Pageable pageable);
 
     long countByStatus(SongRequestStatus status);
 
