@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 import java.util.Map;
 
 @PreAuthorize("hasRole('ADMIN')")
@@ -101,5 +102,89 @@ public class ReportAdminController {
         adminLogService.log("REPORT_PHOTO_DELETE", "REPORT", id, null);
         ra.addFlashAttribute("successMessage", "사진을 삭제하고 신고를 처리했습니다.");
         return "redirect:/admin/reports?type=photo&page=" + page;
+    }
+
+    @PostMapping("/bulk-dismiss")
+    public String bulkDismiss(@RequestParam List<Long> ids,
+                              @RequestParam(defaultValue = "post") String type,
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "PENDING") String status,
+                              RedirectAttributes ra) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            return redirectReports(type, status, page);
+        }
+        ReportAdminService handler = handlers.getOrDefault(type, postReportService);
+        handler.bulkDismiss(ids);
+        adminLogService.log("REPORT_BULK_DISMISS", "REPORT", null, type + " " + ids.size() + "건");
+        ra.addFlashAttribute("successMessage", ids.size() + "건을 일괄 기각했습니다.");
+        return redirectReports(type, status, page);
+    }
+
+    @PostMapping("/bulk-delete-post")
+    public String bulkDeletePost(@RequestParam List<Long> ids,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "PENDING") String status,
+                                 RedirectAttributes ra) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            return redirectReports("post", status, page);
+        }
+        int count = 0;
+        for (Long id : ids) {
+            try {
+                postReportService.deletePostAndResolve(id);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        adminLogService.log("REPORT_BULK_POST_DELETE", "REPORT", null, count + "건");
+        ra.addFlashAttribute("successMessage", count + "건의 게시글을 삭제하고 신고를 처리했습니다.");
+        return redirectReports("post", status, page);
+    }
+
+    @PostMapping("/bulk-delete-comment")
+    public String bulkDeleteComment(@RequestParam List<Long> ids,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(defaultValue = "PENDING") String status,
+                                    RedirectAttributes ra) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            return redirectReports("comment", status, page);
+        }
+        int count = 0;
+        for (Long id : ids) {
+            try {
+                commentReportService.deleteCommentAndResolve(id);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        adminLogService.log("REPORT_BULK_COMMENT_DELETE", "REPORT", null, count + "건");
+        ra.addFlashAttribute("successMessage", count + "건의 댓글을 삭제하고 신고를 처리했습니다.");
+        return redirectReports("comment", status, page);
+    }
+
+    @PostMapping("/bulk-delete-photo")
+    public String bulkDeletePhoto(@RequestParam List<Long> ids,
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "PENDING") String status,
+                                  RedirectAttributes ra) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            return redirectReports("photo", status, page);
+        }
+        int count = 0;
+        for (Long id : ids) {
+            try {
+                photoReportService.deletePhotoAndResolve(id);
+                count++;
+            } catch (Exception ignored) {}
+        }
+        adminLogService.log("REPORT_BULK_PHOTO_DELETE", "REPORT", null, count + "건");
+        ra.addFlashAttribute("successMessage", count + "건의 사진을 삭제하고 신고를 처리했습니다.");
+        return redirectReports("photo", status, page);
+    }
+
+    private String redirectReports(String type, String status, int page) {
+        return "redirect:/admin/reports?type=" + type + "&status=" + status + "&page=" + page;
     }
 }

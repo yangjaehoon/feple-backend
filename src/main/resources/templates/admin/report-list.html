@@ -23,6 +23,9 @@
         .report-count-low  { background:#fff3cd; color:#856404; }
         .report-count-high { background:#f8d7da; color:#842029; }
         .report-detail { margin-top:4px; font-size:12px; color:var(--text-2); background:var(--border); border-radius:4px; padding:2px 8px; display:inline-block; max-width:100%; }
+        .bulk-toolbar { padding:10px 22px; background:var(--bg-2); border-bottom:1px solid var(--border); display:none; align-items:center; gap:12px; }
+        .bulk-toolbar.visible { display:flex; }
+        .bulk-count { font-size:13px; font-weight:600; color:var(--text-1); }
     </style>
 </head>
 <body>
@@ -87,10 +90,24 @@
             </div>
 
             <!-- 게시글 신고 테이블 -->
-            <div class="table-wrap" th:if="${type == 'post'}">
+            <div th:if="${type == 'post'}">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" style="display:none;">
+                    <input type="hidden" name="type" value="post"/>
+                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                </form>
+                <div class="bulk-toolbar" id="bulk-toolbar">
+                    <span class="bulk-count" id="bulk-count">0건 선택됨</span>
+                    <button type="button" class="btn btn-secondary btn-sm"
+                            onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm"
+                            onclick="submitBulk('/admin/reports/bulk-delete-post', '선택한 {n}건의 게시글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 글 삭제</button>
+                </div>
+                <div class="table-wrap">
                 <table>
                     <thead>
                     <tr>
+                        <th style="width:36px;"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
                         <th style="width:52px;">ID</th>
                         <th>신고된 게시글</th>
                         <th style="width:90px;">신고 사유</th>
@@ -102,6 +119,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <a th:href="@{/admin/posts/{id}(id=${report.postId})}"
@@ -157,17 +175,32 @@
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${reports.totalElements == 0}">
-                        <td colspan="7">신고 내역이 없습니다.</td>
+                        <td colspan="8">신고 내역이 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- 댓글 신고 테이블 -->
-            <div class="table-wrap" th:if="${type == 'comment'}">
+            <div th:if="${type == 'comment'}">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" style="display:none;">
+                    <input type="hidden" name="type" value="comment"/>
+                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                </form>
+                <div class="bulk-toolbar" id="bulk-toolbar">
+                    <span class="bulk-count" id="bulk-count">0건 선택됨</span>
+                    <button type="button" class="btn btn-secondary btn-sm"
+                            onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm"
+                            onclick="submitBulk('/admin/reports/bulk-delete-comment', '선택한 {n}건의 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 댓글 삭제</button>
+                </div>
+                <div class="table-wrap">
                 <table>
                     <thead>
                     <tr>
+                        <th style="width:36px;"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
                         <th style="width:52px;">ID</th>
                         <th>신고된 댓글</th>
                         <th style="width:90px;">신고 사유</th>
@@ -179,6 +212,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <div style="font-size:14px; font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
@@ -238,17 +272,33 @@
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${reports.totalElements == 0}">
-                        <td colspan="7">신고 내역이 없습니다.</td>
+                        <td colspan="8">신고 내역이 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>
+                </div>
+            </div>
             </div>
 
             <!-- 사진 신고 테이블 -->
-            <div class="table-wrap" th:if="${type == 'photo'}">
+            <div th:if="${type == 'photo'}">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" style="display:none;">
+                    <input type="hidden" name="type" value="photo"/>
+                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                </form>
+                <div class="bulk-toolbar" id="bulk-toolbar">
+                    <span class="bulk-count" id="bulk-count">0건 선택됨</span>
+                    <button type="button" class="btn btn-secondary btn-sm"
+                            onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm"
+                            onclick="submitBulk('/admin/reports/bulk-delete-photo', '선택한 {n}건의 사진을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 사진 삭제</button>
+                </div>
+                <div class="table-wrap">
                 <table>
                     <thead>
                     <tr>
+                        <th style="width:36px;"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
                         <th style="width:52px;">ID</th>
                         <th>신고된 사진</th>
                         <th style="width:90px;">신고 사유</th>
@@ -260,6 +310,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <div style="font-size:14px; font-weight:600;">
@@ -320,10 +371,11 @@
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${reports.totalElements == 0}">
-                        <td colspan="7">사진 신고 내역이 없습니다.</td>
+                        <td colspan="8">사진 신고 내역이 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <div th:insert="~{admin/fragments :: pagination(${reports}, '/admin/reports', 'type=' + type + '&status=' + status)}"></div>
@@ -331,5 +383,57 @@
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+(function () {
+    function toggleAll(master) {
+        document.querySelectorAll('.row-chk').forEach(function (cb) {
+            cb.checked = master.checked;
+        });
+        updateToolbar();
+    }
+
+    function updateToolbar() {
+        var checked = document.querySelectorAll('.row-chk:checked');
+        var toolbar = document.getElementById('bulk-toolbar');
+        var countEl = document.getElementById('bulk-count');
+        if (!toolbar) return;
+        if (checked.length > 0) {
+            toolbar.classList.add('visible');
+            countEl.textContent = checked.length + '건 선택됨';
+        } else {
+            toolbar.classList.remove('visible');
+        }
+        var master = document.getElementById('chk-all');
+        var all = document.querySelectorAll('.row-chk');
+        if (master && all.length > 0) {
+            master.indeterminate = checked.length > 0 && checked.length < all.length;
+            master.checked = checked.length === all.length;
+        }
+    }
+
+    function submitBulk(endpoint, confirmTpl) {
+        var checked = document.querySelectorAll('.row-chk:checked');
+        if (checked.length === 0) return;
+        var msg = confirmTpl.replace('{n}', checked.length);
+        if (!confirm(msg)) return;
+
+        var form = document.getElementById('bulk-form');
+        form.action = endpoint;
+        form.querySelectorAll('input[name="ids"]').forEach(function (el) { el.remove(); });
+        checked.forEach(function (cb) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids';
+            input.value = cb.value;
+            form.appendChild(input);
+        });
+        form.submit();
+    }
+
+    window.toggleAll = toggleAll;
+    window.updateToolbar = updateToolbar;
+    window.submitBulk = submitBulk;
+})();
+</script>
 </body>
 </html>

@@ -86,6 +86,15 @@ public class ArtistPhotoReportService implements ReportAdminService {
         report.resolve(ReportStatus.DISMISSED);
     }
 
+    @Override
+    @Transactional
+    public void bulkDismiss(List<Long> ids) {
+        if (ids.isEmpty()) return;
+        reportRepository.findAllById(ids).stream()
+                .filter(ArtistPhotoReport::isPending)
+                .forEach(r -> r.resolve(ReportStatus.DISMISSED));
+    }
+
     public Map<Long, Long> getUploaderReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
         return reportRepository.countByPhotoUploaderIds(userIds).stream()

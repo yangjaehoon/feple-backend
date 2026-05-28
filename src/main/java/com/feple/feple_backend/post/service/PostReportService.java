@@ -82,6 +82,15 @@ public class PostReportService implements ReportAdminService {
         report.resolve(ReportStatus.DISMISSED);
     }
 
+    @Override
+    @Transactional
+    public void bulkDismiss(List<Long> ids) {
+        if (ids.isEmpty()) return;
+        reportRepository.findAllById(ids).stream()
+                .filter(PostReport::isPending)
+                .forEach(r -> r.resolve(ReportStatus.DISMISSED));
+    }
+
     public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
         return reportRepository.countByPostAuthorIds(userIds).stream()
