@@ -50,6 +50,9 @@
                         <option value="BAD_WORD"    th:selected="${targetType == 'BAD_WORD'}">금칙어</option>
                         <option value="SONG_REQUEST" th:selected="${targetType == 'SONG_REQUEST'}">노래 요청</option>
                     </select>
+                    <input type="text" name="adminUsername" th:value="${adminUsername}"
+                           placeholder="관리자 이름"
+                           style="padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; width:130px;"/>
                     <input type="date" name="from"
                            th:value="${from}"
                            class="form-select" style="width:auto; cursor:pointer;"
@@ -60,7 +63,7 @@
                            class="form-select" style="width:auto; cursor:pointer;"
                            title="종료일"/>
                     <button type="submit" class="btn btn-primary btn-sm">조회</button>
-                    <a th:if="${!#strings.isEmpty(targetType) or from != null or to != null}"
+                    <a th:if="${!#strings.isEmpty(targetType) or !#strings.isEmpty(adminUsername) or from != null or to != null}"
                        th:href="@{/admin/logs}"
                        class="btn btn-secondary btn-sm">초기화</a>
                 </form>

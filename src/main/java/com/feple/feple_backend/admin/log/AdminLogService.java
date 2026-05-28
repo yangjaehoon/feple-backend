@@ -40,22 +40,13 @@ public class AdminLogService {
         }
     }
 
-    public Page<AdminLog> getLogs(int page, int size, String targetType, LocalDate from, LocalDate to) {
+    public Page<AdminLog> getLogs(int page, int size, String targetType, String adminUsername, LocalDate from, LocalDate to) {
         PageRequest pageable = PageRequest.of(page, size);
-        boolean hasType = targetType != null && !targetType.isBlank();
-        boolean hasDate = from != null || to != null;
-
-        if (!hasDate) {
-            return hasType
-                    ? repository.findByTargetTypeOrderByCreatedAtDesc(targetType, pageable)
-                    : repository.findAllByOrderByCreatedAtDesc(pageable);
-        }
-
-        LocalDateTime fromDt = (from != null ? from : LocalDate.of(2000, 1, 1)).atStartOfDay();
-        LocalDateTime toDt   = (to   != null ? to   : LocalDate.now()).atTime(23, 59, 59);
-        return hasType
-                ? repository.findByTargetTypeAndDateRange(targetType, fromDt, toDt, pageable)
-                : repository.findByDateRange(fromDt, toDt, pageable);
+        String type     = (targetType     != null && !targetType.isBlank())     ? targetType     : null;
+        String username = (adminUsername  != null && !adminUsername.isBlank())  ? adminUsername  : null;
+        LocalDateTime fromDt = from != null ? from.atStartOfDay()      : null;
+        LocalDateTime toDt   = to   != null ? to.atTime(23, 59, 59)    : null;
+        return repository.findWithFilters(type, username, fromDt, toDt, pageable);
     }
 
     public List<AdminLog> getRecentLogs() {

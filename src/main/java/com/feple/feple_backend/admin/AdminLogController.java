@@ -27,16 +27,19 @@ public class AdminLogController {
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "") String targetType,
+                       @RequestParam(defaultValue = "") String adminUsername,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                        Model model) {
-        model.addAttribute("logs", adminLogService.getLogs(page, PAGE_SIZE, targetType, from, to));
+        model.addAttribute("logs", adminLogService.getLogs(page, PAGE_SIZE, targetType, adminUsername, from, to));
         model.addAttribute("targetType", targetType);
+        model.addAttribute("adminUsername", adminUsername);
         model.addAttribute("from", from);
         model.addAttribute("to", to);
 
         List<String> params = new ArrayList<>();
         if (!targetType.isBlank()) params.add("targetType=" + targetType);
+        if (!adminUsername.isBlank()) params.add("adminUsername=" + adminUsername);
         if (from != null) params.add("from=" + from);
         if (to != null) params.add("to=" + to);
         model.addAttribute("extraParams", params.isEmpty() ? null : String.join("&", params));
