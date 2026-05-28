@@ -68,11 +68,11 @@ public class AdminAccountController {
                          @RequestParam(defaultValue = "") String displayName,
                          @RequestParam AdminRole role,
                          @RequestParam(required = false) Set<AdminPermission> permissions,
-                         @RequestParam(defaultValue = "") String newPassword,
+                         @RequestParam(defaultValue = "") String password,
                          RedirectAttributes redirectAttributes) {
         try {
             Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-            accountService.update(id, displayName, role, perms, newPassword);
+            accountService.update(id, displayName, role, perms, password);
             redirectAttributes.addFlashAttribute("successMessage", "관리자 계정이 수정되었습니다.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
