@@ -41,7 +41,12 @@ public class FirebaseAuthService implements OAuthLoginService {
 
     private User registerOrFind(String uid, String email, String displayName) {
         return userRepository.findByProviderAndOauthId(AuthProvider.FIREBASE, uid)
-                .orElseGet(() -> {
+                .map(user -> {
+                    if (user.isDeleted()) {
+                        throw new IllegalStateException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
+                    }
+                    return user;
+                }).orElseGet(() -> {
                     String raw = (displayName != null && !displayName.isBlank())
                             ? displayName
                             : "User" + uid.substring(0, Math.min(uid.length(), 8));

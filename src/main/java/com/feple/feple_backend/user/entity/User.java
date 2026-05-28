@@ -112,7 +112,7 @@ public class User {
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
         this.nickname = "(탈퇴한 사용자)";
-        this.oauthId = "DELETED_" + this.id;
+        // oauthId는 유지 — 동일 계정으로 재가입 시 차단하기 위함
         this.email = null;
         this.bio = null;
         this.profileImageUrl = null;

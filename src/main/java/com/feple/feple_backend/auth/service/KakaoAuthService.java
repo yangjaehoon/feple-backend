@@ -39,7 +39,12 @@ public class KakaoAuthService implements OAuthLoginService {
         String sanitized = rawNickname.trim().replaceAll("[^가-힣a-zA-Z0-9_]", "");
         String nickname = sanitized.isBlank() ? "KakaoUser" : sanitized;
 
-        return userRepository.findByOauthId(oauthId).orElseGet(() -> {
+        return userRepository.findByOauthId(oauthId).map(user -> {
+            if (user.isDeleted()) {
+                throw new IllegalStateException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
+            }
+            return user;
+        }).orElseGet(() -> {
             String kakaoImageUrl = Optional.ofNullable(account.getProfile())
                     .map(KakaoUserResponse.Profile::getProfile_image_url)
                     .filter(url -> !url.isBlank())
