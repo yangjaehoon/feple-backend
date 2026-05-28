@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
@@ -39,6 +40,7 @@ public class FestivalAdminController {
     private final ArtistFestivalService artistFestivalService;
     private final FestivalDetailAggregationService festivalDetailAggregationService;
     private final FestivalChecklistService festivalChecklistService;
+    private final AdminLogService adminLogService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -73,6 +75,7 @@ public class FestivalAdminController {
         }
 
         Long festivalId = festivalService.createFestival(dto);
+        adminLogService.log("FESTIVAL_CREATE", "FESTIVAL", festivalId, dto.getTitle());
 
         if (artistIds != null) {
             for (Long artistId : artistIds) {
@@ -137,12 +140,14 @@ public class FestivalAdminController {
             dto.setPosterKey(newPosterKey);
         }
         festivalService.updateFestival(id, dto);
+        adminLogService.log("FESTIVAL_UPDATE", "FESTIVAL", id, dto.getTitle());
         return "redirect:/admin";
     }
 
     @PostMapping("/{id}/delete")
     public String deleteFestival(@PathVariable Long id) {
         festivalService.deleteFestival(id);
+        adminLogService.log("FESTIVAL_DELETE", "FESTIVAL", id, null);
         return "redirect:/admin";
     }
 

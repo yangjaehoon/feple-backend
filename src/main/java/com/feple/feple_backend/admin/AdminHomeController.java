@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.service.AdminStatsService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
@@ -24,6 +25,7 @@ public class AdminHomeController {
     private final PostAdminService postAdminService;
     private final AdminStatsService adminStatsService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final AdminLogService adminLogService;
 
     @GetMapping
     public String adminHome(@RequestParam(defaultValue = "0") int festivalPage,
@@ -50,6 +52,7 @@ public class AdminHomeController {
                 artistSuggestionAdminService.countPending()
         );
         model.addAttribute("dashboard", dashboard);
+        model.addAttribute("recentLogs", adminLogService.getRecentLogs());
 
         return "admin/admin-home";
     }

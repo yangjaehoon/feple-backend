@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.comment.service.CommentReportService;
@@ -23,14 +24,17 @@ public class ReportAdminController {
     private final PostReportService postReportService;
     private final CommentReportService commentReportService;
     private final ArtistPhotoReportService photoReportService;
+    private final AdminLogService adminLogService;
     private final Map<String, ReportAdminService> handlers;
 
     public ReportAdminController(PostReportService postReportService,
                                   CommentReportService commentReportService,
-                                  ArtistPhotoReportService photoReportService) {
+                                  ArtistPhotoReportService photoReportService,
+                                  AdminLogService adminLogService) {
         this.postReportService = postReportService;
         this.commentReportService = commentReportService;
         this.photoReportService = photoReportService;
+        this.adminLogService = adminLogService;
         this.handlers = Map.of(
                 "post", postReportService,
                 "comment", commentReportService,
@@ -59,6 +63,7 @@ public class ReportAdminController {
                              @RequestParam(defaultValue = "0") int page,
                              RedirectAttributes ra) {
         postReportService.deletePostAndResolve(id);
+        adminLogService.log("REPORT_POST_DELETE", "REPORT", id, null);
         ra.addFlashAttribute("successMessage", "게시글을 삭제하고 신고를 처리했습니다.");
         return "redirect:/admin/reports?type=post&page=" + page;
     }
@@ -70,6 +75,7 @@ public class ReportAdminController {
                           RedirectAttributes ra) {
         ReportAdminService handler = handlers.getOrDefault(type, postReportService);
         handler.dismissReport(id);
+        adminLogService.log("REPORT_DISMISS", "REPORT", id, type);
         ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         return "redirect:/admin/reports?type=" + type + "&page=" + page;
     }
@@ -79,6 +85,7 @@ public class ReportAdminController {
                                 @RequestParam(defaultValue = "0") int page,
                                 RedirectAttributes ra) {
         commentReportService.deleteCommentAndResolve(id);
+        adminLogService.log("REPORT_COMMENT_DELETE", "REPORT", id, null);
         ra.addFlashAttribute("successMessage", "댓글을 삭제하고 신고를 처리했습니다.");
         return "redirect:/admin/reports?type=comment&page=" + page;
     }
@@ -88,6 +95,7 @@ public class ReportAdminController {
                               @RequestParam(defaultValue = "0") int page,
                               RedirectAttributes ra) {
         photoReportService.deletePhotoAndResolve(id);
+        adminLogService.log("REPORT_PHOTO_DELETE", "REPORT", id, null);
         ra.addFlashAttribute("successMessage", "사진을 삭제하고 신고를 처리했습니다.");
         return "redirect:/admin/reports?type=photo&page=" + page;
     }

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.post.service.PostService;
@@ -23,6 +24,7 @@ public class PostAdminController {
     private final PostService postService;
     private final PostAdminService postAdminService;
     private final CommentService commentService;
+    private final AdminLogService adminLogService;
 
     @GetMapping
     public String listPosts(
@@ -54,6 +56,7 @@ public class PostAdminController {
                                   RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
             postAdminService.bulkDeletePosts(ids);
+            adminLogService.log("POST_BULK_DELETE", "POST", null, "총 " + ids.size() + "개");
             ra.addFlashAttribute("successMessage", ids.size() + "개 게시글이 삭제되었습니다.");
         }
         return "redirect:/admin/posts?filter=" + filter + "&page=" + page;
@@ -64,6 +67,7 @@ public class PostAdminController {
                              @RequestParam(defaultValue = "") String filter,
                              @RequestParam(defaultValue = "0") int page) {
         postAdminService.deletePost(id);
+        adminLogService.log("POST_DELETE", "POST", id, null);
         return "redirect:/admin/posts?filter=" + filter + "&page=" + page;
     }
 
@@ -71,6 +75,7 @@ public class PostAdminController {
     public String deleteComment(@PathVariable Long id,
                                 @RequestParam Long postId) {
         commentService.deleteComment(id);
+        adminLogService.log("COMMENT_DELETE", "COMMENT", id, null);
         return "redirect:/admin/posts/" + postId;
     }
 }

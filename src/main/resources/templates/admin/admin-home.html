@@ -315,6 +315,30 @@
                     </div>
                 </div>
 
+                <!-- 최근 감사 로그 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">📋 최근 관리자 활동</span>
+                        <a class="btn btn-secondary btn-sm" th:href="@{/admin/logs}">전체보기</a>
+                    </div>
+                    <div class="activity-list">
+                        <div th:each="entry : ${recentLogs}" class="act-item">
+                            <div th:class="${#strings.contains(entry.action,'DELETE') or #strings.contains(entry.action,'BAN') or #strings.contains(entry.action,'REJECT')} ? 'act-dot red'
+                                         : (${#strings.contains(entry.action,'CREATE') or #strings.contains(entry.action,'ADD') or #strings.contains(entry.action,'APPROVE') or entry.action == 'USER_UNBAN'} ? 'act-dot green'
+                                         : 'act-dot yellow')"></div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div class="act-type" th:text="${entry.action}"></div>
+                                <div class="act-title" th:text="${entry.detail != null ? entry.detail : (entry.targetType + (entry.targetId != null ? ' #' + entry.targetId : ''))}"></div>
+                            </div>
+                            <div class="act-meta" style="white-space:nowrap;"
+                                 th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm')}"></div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(recentLogs)}" class="act-empty">
+                            기록된 활동이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 메모 위젯 -->
                 <div class="db-card">
                     <div class="db-card-header">

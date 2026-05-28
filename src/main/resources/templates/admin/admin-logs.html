@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 감사 로그</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .log-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 11.5px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .log-danger  { background: #fef2f2; color: #b91c1c; }
+        .log-success { background: #f0fdf4; color: #15803d; }
+        .log-info    { background: #eff6ff; color: #1d4ed8; }
+    </style>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('logs')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">감사 로그</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>감사 로그</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+
+        <div class="card">
+            <!-- 필터 바 -->
+            <div style="padding:14px 22px; border-bottom:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <form th:action="@{/admin/logs}" method="get" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <select name="targetType" class="form-select" style="width:auto;" onchange="this.form.submit()">
+                        <option value=""           th:selected="${#strings.isEmpty(targetType)}">전체</option>
+                        <option value="USER"        th:selected="${targetType == 'USER'}">회원</option>
+                        <option value="FESTIVAL"    th:selected="${targetType == 'FESTIVAL'}">페스티벌</option>
+                        <option value="ARTIST"      th:selected="${targetType == 'ARTIST'}">아티스트</option>
+                        <option value="POST"        th:selected="${targetType == 'POST'}">게시글</option>
+                        <option value="COMMENT"     th:selected="${targetType == 'COMMENT'}">댓글</option>
+                        <option value="REPORT"      th:selected="${targetType == 'REPORT'}">신고</option>
+                        <option value="CERTIFICATION" th:selected="${targetType == 'CERTIFICATION'}">인증</option>
+                        <option value="BAD_WORD"    th:selected="${targetType == 'BAD_WORD'}">금칙어</option>
+                    </select>
+                    <a th:if="${!#strings.isEmpty(targetType)}"
+                       th:href="@{/admin/logs}"
+                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                </form>
+                <span style="margin-left:auto; font-size:13px; color:var(--muted);"
+                      th:text="'총 ' + ${logs.totalElements} + '건'"></span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:140px;">시각</th>
+                        <th style="width:220px;">액션</th>
+                        <th style="width:90px;">대상</th>
+                        <th style="width:70px;">ID</th>
+                        <th>상세</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="entry : ${logs.content}">
+                        <td style="color:var(--muted); font-size:12px; white-space:nowrap;"
+                            th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm:ss')}"></td>
+
+                        <td>
+                            <span th:with="a=${entry.action}"
+                                  th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT')}
+                                           ? 'log-badge log-danger'
+                                           : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'}
+                                              ? 'log-badge log-success'
+                                              : 'log-badge log-info')"
+                                  th:text="${entry.action}"></span>
+                        </td>
+
+                        <td style="font-size:12.5px; color:var(--muted);"
+                            th:text="${entry.targetType != null ? entry.targetType : '—'}"></td>
+
+                        <td style="font-size:12.5px;">
+                            <th:block th:if="${entry.targetId != null}">
+                                <a th:if="${entry.targetType == 'USER'}"
+                                   th:href="@{/admin/users/{id}(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   style="color:var(--primary);"></a>
+                                <a th:if="${entry.targetType == 'FESTIVAL'}"
+                                   th:href="@{/admin/festivals/{id}(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   style="color:var(--primary);"></a>
+                                <a th:if="${entry.targetType == 'POST'}"
+                                   th:href="@{/admin/posts/{id}(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   style="color:var(--primary);"></a>
+                                <span th:if="${entry.targetType != 'USER' and entry.targetType != 'FESTIVAL' and entry.targetType != 'POST'}"
+                                      th:text="${entry.targetId}"
+                                      style="color:var(--muted);"></span>
+                            </th:block>
+                            <span th:if="${entry.targetId == null}" style="color:var(--muted);">—</span>
+                        </td>
+
+                        <td style="font-size:13px; color:var(--text);"
+                            th:text="${entry.detail != null ? entry.detail : '—'}"></td>
+                    </tr>
+                    <tr class="empty-row" th:if="${logs.totalElements == 0}">
+                        <td colspan="5">기록된 로그가 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${logs}, '/admin/logs', ${extraParams})}"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

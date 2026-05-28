@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -32,6 +33,7 @@ public class UserAdminController {
 
     private final UserAdminService userService;
     private final MyPageService myPageService;
+    private final AdminLogService adminLogService;
 
     @GetMapping
     public String listUsers(@RequestParam(defaultValue = "0") int page,
@@ -77,6 +79,7 @@ public class UserAdminController {
             RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
             userService.bulkDeleteUsers(ids);
+            adminLogService.log("USER_BULK_DELETE", "USER", null, "총 " + ids.size() + "명");
             ra.addFlashAttribute("successMessage", ids.size() + "명 회원이 삭제되었습니다.");
         }
         return "redirect:/admin/users";
@@ -84,7 +87,9 @@ public class UserAdminController {
 
     @PostMapping("/{id}/delete")
     public String deleteUser(@PathVariable Long id, RedirectAttributes ra) {
+        String nickname = userService.getAdminUser(id).getNickname();
         userService.adminDeleteUser(id);
+        adminLogService.log("USER_DELETE", "USER", id, nickname);
         ra.addFlashAttribute("successMessage", "회원이 삭제되었습니다.");
         return "redirect:/admin/users";
     }
@@ -94,6 +99,7 @@ public class UserAdminController {
                                  @RequestParam UserRole role,
                                  RedirectAttributes ra) {
         userService.updateUserRole(id, role);
+        adminLogService.log("USER_ROLE_CHANGE", "USER", id, role.getDisplayName());
         ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.getDisplayName());
         return "redirect:/admin/users/" + id;
     }
@@ -105,6 +111,7 @@ public class UserAdminController {
         try {
             userService.banUser(id, days);
             String label = days <= 0 ? "영구" : days + "일";
+            adminLogService.log("USER_BAN", "USER", id, label + " 정지");
             ra.addFlashAttribute("successMessage", label + " 정지가 적용되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -119,6 +126,7 @@ public class UserAdminController {
     public String unbanUser(@PathVariable Long id, RedirectAttributes ra) {
         try {
             userService.unbanUser(id);
+            adminLogService.log("USER_UNBAN", "USER", id, null);
             ra.addFlashAttribute("successMessage", "정지가 해제되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

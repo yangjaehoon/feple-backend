@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CertificationAdminController {
 
     private final FestivalCertificationService certificationService;
+    private final AdminLogService adminLogService;
 
     @GetMapping
     public String list(
@@ -54,6 +56,7 @@ public class CertificationAdminController {
                           @RequestParam(defaultValue = "0") int page,
                           RedirectAttributes ra) {
         certificationService.approve(id, "admin");
+        adminLogService.log("CERTIFICATION_APPROVE", "CERTIFICATION", id, null);
         ra.addFlashAttribute("successMessage", "인증이 승인되었습니다.");
         return "redirect:/admin/certifications?status=" + status + "&page=" + page;
     }
@@ -65,6 +68,8 @@ public class CertificationAdminController {
                          @RequestParam(defaultValue = "0") int page,
                          RedirectAttributes ra) {
         certificationService.reject(id, rejectionMessage, "admin");
+        adminLogService.log("CERTIFICATION_REJECT", "CERTIFICATION", id,
+                rejectionMessage.isBlank() ? null : rejectionMessage);
         ra.addFlashAttribute("successMessage", "인증이 거절되었습니다.");
         return "redirect:/admin/certifications?status=" + status + "&page=" + page;
     }

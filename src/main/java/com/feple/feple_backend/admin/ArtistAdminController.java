@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
@@ -26,6 +27,7 @@ public class ArtistAdminController {
 
     private final ArtistService artistService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final AdminLogService adminLogService;
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
@@ -48,6 +50,7 @@ public class ArtistAdminController {
         dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
 
         artistService.createArtist(dto);
+        adminLogService.log("ARTIST_CREATE", "ARTIST", null, dto.getName());
         return "redirect:/admin/artists";
     }
 
@@ -72,6 +75,7 @@ public class ArtistAdminController {
                                     RedirectAttributes ra) {
         try {
             artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
+            adminLogService.log("ARTIST_SUGGESTION_DISMISS", "ARTIST", id, null);
             ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 신청 처리 실패: {}", id, e);
@@ -118,6 +122,7 @@ public class ArtistAdminController {
             dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
         }
         artistService.updateArtist(id, dto);
+        adminLogService.log("ARTIST_UPDATE", "ARTIST", id, dto.getName());
         return "redirect:/admin/artists";
     }
 
@@ -133,6 +138,7 @@ public class ArtistAdminController {
     @PostMapping("/{id}/delete")
     public String deleteArtist(@PathVariable Long id) {
         artistService.deleteArtist(id);
+        adminLogService.log("ARTIST_DELETE", "ARTIST", id, null);
         return "redirect:/admin/artists";
     }
 

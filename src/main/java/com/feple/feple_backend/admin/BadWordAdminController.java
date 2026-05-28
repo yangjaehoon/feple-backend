@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.badword.service.BadWordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class BadWordAdminController {
 
     private final BadWordService badWordService;
+    private final AdminLogService adminLogService;
 
     @GetMapping
     public String list(Model model) {
@@ -28,6 +30,7 @@ public class BadWordAdminController {
     public String add(@RequestParam String word, RedirectAttributes ra) {
         try {
             badWordService.add(word);
+            adminLogService.log("BAD_WORD_ADD", "BAD_WORD", null, word);
             ra.addFlashAttribute("success", "금칙어가 추가되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("error", e.getMessage());
@@ -39,6 +42,7 @@ public class BadWordAdminController {
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
             badWordService.delete(id);
+            adminLogService.log("BAD_WORD_DELETE", "BAD_WORD", id, null);
             ra.addFlashAttribute("success", "삭제되었습니다.");
         } catch (Exception e) {
             log.error("금칙어 삭제 실패: id={}", id, e);
