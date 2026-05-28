@@ -60,6 +60,14 @@ public class UserServiceImpl implements UserService, UserAdminService {
 
     @Override
     @Transactional(readOnly = true)
+    public UserResponseDto findByNickname(String nickname) {
+        User user = userRepository.findByNicknameAndNotDeleted(nickname.trim())
+                .orElseThrow(() -> new java.util.NoSuchElementException("해당 닉네임의 사용자가 없습니다."));
+        return toUserDto(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public UserResponseDto getAdminUser(@NonNull Long id) {
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         return toAdminUserDto(user);

@@ -1,13 +1,18 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.user.service.UserAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -18,6 +23,7 @@ public class AdminPushController {
 
     private final AdminPushService adminPushService;
     private final AdminLogService adminLogService;
+    private final UserAdminService userAdminService;
 
     @GetMapping
     public String showForm(Model model) {
@@ -43,6 +49,17 @@ public class AdminPushController {
             ra.addFlashAttribute("errorMessage", "발송 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/push";
+    }
+
+    @GetMapping("/search-user")
+    @ResponseBody
+    public ResponseEntity<?> searchUser(@RequestParam String nickname) {
+        try {
+            var user = userAdminService.findByNickname(nickname);
+            return ResponseEntity.ok(Map.of("id", user.getId(), "nickname", user.getNickname()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/test")

@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface UserAdminService {
     UserResponseDto getAdminUser(Long id);
+    UserResponseDto findByNickname(String nickname);
     Page<UserResponseDto> getUsersPage(int page, int size, String keyword);
     Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword);
     Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword);

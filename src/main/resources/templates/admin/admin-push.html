@@ -56,23 +56,35 @@
                     <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px;">
                         테스트 발송
                     </div>
-                    <div style="display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+
+                    <!-- 닉네임 검색 -->
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block; font-size:12px; font-weight:600; margin-bottom:5px; color:var(--text-2);">닉네임으로 검색</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="text" id="nickname-search" placeholder="앱 닉네임 입력"
+                                   style="width:200px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px;"
+                                   onkeydown="if(event.key==='Enter'){event.preventDefault();searchNickname();}"/>
+                            <button type="button" class="btn btn-secondary" style="padding:8px 14px;" onclick="searchNickname()">검색</button>
+                        </div>
+                        <div id="search-result" style="margin-top:8px; font-size:13px; display:none;"></div>
+                    </div>
+
+                    <!-- 사용자 ID + 발송 -->
+                    <div style="display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
                         <div>
                             <label style="display:block; font-size:12px; font-weight:600; margin-bottom:5px; color:var(--text-2);">앱 사용자 ID</label>
-                            <input type="number" name="targetUserId" min="1" required
+                            <input type="number" name="targetUserId" id="target-user-id" min="1"
                                    placeholder="예) 42"
                                    style="width:130px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px;"/>
                         </div>
-                        <div style="align-self:flex-end;">
-                            <button type="submit"
-                                    formaction="/admin/push/test"
-                                    formnovalidate
-                                    onclick="return validateTest(this.form)"
-                                    class="btn btn-secondary">나에게 발송</button>
-                        </div>
-                        <div style="align-self:flex-end; font-size:12px; color:var(--muted); line-height:1.5;">
+                        <button type="submit"
+                                formaction="/admin/push/test"
+                                formnovalidate
+                                onclick="return validateTest(this.form)"
+                                class="btn btn-secondary">나에게 발송</button>
+                        <span style="font-size:12px; color:var(--muted); line-height:1.5;">
                             위 제목·내용으로 해당 사용자 기기에만 발송됩니다.<br/>이력에 저장되지 않습니다.
-                        </div>
+                        </span>
                     </div>
                 </form>
             </div>
@@ -157,6 +169,38 @@
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
+    async function searchNickname() {
+        const nickname = document.getElementById('nickname-search').value.trim();
+        const resultEl = document.getElementById('search-result');
+        if (!nickname) { resultEl.style.display = 'none'; return; }
+
+        resultEl.style.display = 'block';
+        resultEl.style.color = 'var(--muted)';
+        resultEl.textContent = '검색 중...';
+
+        try {
+            const res = await fetch('/admin/push/search-user?nickname=' + encodeURIComponent(nickname));
+            const data = await res.json();
+            if (res.ok) {
+                resultEl.style.color = 'var(--primary)';
+                resultEl.innerHTML =
+                    '<strong>' + data.nickname + '</strong> (ID: ' + data.id + ')' +
+                    ' &nbsp;<button type="button" onclick="fillUserId(' + data.id + ')" ' +
+                    'style="font-size:12px; padding:2px 10px;" class="btn btn-secondary">이 ID로 설정</button>';
+            } else {
+                resultEl.style.color = 'var(--danger, #dc3545)';
+                resultEl.textContent = data.error || '사용자를 찾을 수 없습니다.';
+            }
+        } catch (e) {
+            resultEl.style.color = 'var(--danger, #dc3545)';
+            resultEl.textContent = '검색 중 오류가 발생했습니다.';
+        }
+    }
+
+    function fillUserId(id) {
+        document.getElementById('target-user-id').value = id;
+    }
+
     function validateTest(form) {
         const title = form.querySelector('[name="title"]').value.trim();
         const body  = form.querySelector('[name="body"]').value.trim();

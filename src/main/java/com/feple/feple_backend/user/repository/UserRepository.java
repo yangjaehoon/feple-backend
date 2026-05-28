@@ -33,6 +33,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE u.nickname = :nickname AND u.id <> :id AND u.deletedAt IS NULL")
     boolean existsByNicknameAndIdNot(@Param("nickname") String nickname, @Param("id") Long id);
 
+    @Query("SELECT u FROM User u WHERE u.nickname = :nickname AND u.deletedAt IS NULL")
+    Optional<User> findByNicknameAndNotDeleted(@Param("nickname") String nickname);
+
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     @Query(value = """
