@@ -16,10 +16,6 @@ public class FestivalTimetableAdminController {
 
     private final TimetableService timetableService;
 
-    private String timetableRedirect(Long festivalId) {
-        return "redirect:/admin/festivals/" + festivalId + "#timetable";
-    }
-
     @PostMapping
     public String createTimetableEntry(@PathVariable Long festivalId,
                                        @ModelAttribute TimetableEntryRequest req,
@@ -30,7 +26,7 @@ public class FestivalTimetableAdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return timetableRedirect(festivalId);
+        return AdminFestivalRedirects.timetable(festivalId);
     }
 
     @PostMapping("/{entryId}/delete")
@@ -39,6 +35,6 @@ public class FestivalTimetableAdminController {
                                        RedirectAttributes ra) {
         timetableService.deleteEntry(entryId);
         ra.addFlashAttribute("successMessage", "항목이 삭제되었습니다.");
-        return timetableRedirect(festivalId);
+        return AdminFestivalRedirects.timetable(festivalId);
     }
 }

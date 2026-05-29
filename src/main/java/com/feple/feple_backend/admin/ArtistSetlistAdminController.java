@@ -70,7 +70,7 @@ public class ArtistSetlistAdminController {
         songAdminService.saveSetlist(artistFestivalId, songIds != null ? songIds : Set.of());
         ra.addFlashAttribute("successMessage", "셋리스트가 저장되었습니다.");
         if (festivalId != null) {
-            return "redirect:/admin/festivals/" + festivalId + "#setlist";
+            return AdminFestivalRedirects.setlist(festivalId);
         }
         return "redirect:/admin/artists/" + artistId + "/setlist";
     }

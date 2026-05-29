@@ -62,7 +62,7 @@ public class CertificationAdminController {
         certificationService.approve(id, "admin");
         adminLogService.log("CERTIFICATION_APPROVE", "CERTIFICATION", id, null);
         ra.addFlashAttribute("successMessage", "인증이 승인되었습니다.");
-        return "redirect:/admin/certifications?status=" + status + "&page=" + page;
+        return certRedirect(status, page);
     }
 
     @PostMapping("/{id}/reject")
@@ -75,6 +75,10 @@ public class CertificationAdminController {
         adminLogService.log("CERTIFICATION_REJECT", "CERTIFICATION", id,
                 rejectionMessage.isBlank() ? null : rejectionMessage);
         ra.addFlashAttribute("successMessage", "인증이 거절되었습니다.");
+        return certRedirect(status, page);
+    }
+
+    private String certRedirect(String status, int page) {
         return "redirect:/admin/certifications?status=" + status + "&page=" + page;
     }
 }

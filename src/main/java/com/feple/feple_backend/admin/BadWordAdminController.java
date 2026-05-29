@@ -38,9 +38,9 @@ public class BadWordAdminController {
         try {
             badWordService.add(word);
             adminLogService.log("BAD_WORD_ADD", "BAD_WORD", null, word);
-            ra.addFlashAttribute("success", "금칙어가 추가되었습니다.");
+            ra.addFlashAttribute("successMessage", "금칙어가 추가되었습니다.");
         } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("error", e.getMessage());
+            ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/bad-words";
     }
@@ -61,10 +61,10 @@ public class BadWordAdminController {
         try {
             badWordService.delete(id);
             adminLogService.log("BAD_WORD_DELETE", "BAD_WORD", id, null);
-            ra.addFlashAttribute("success", "삭제되었습니다.");
+            ra.addFlashAttribute("successMessage", "삭제되었습니다.");
         } catch (Exception e) {
             log.error("금칙어 삭제 실패: id={}", id, e);
-            ra.addFlashAttribute("error", "삭제 중 오류가 발생했습니다.");
+            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/bad-words";
     }

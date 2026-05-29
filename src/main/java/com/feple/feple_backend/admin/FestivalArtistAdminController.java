@@ -76,11 +76,7 @@ public class FestivalArtistAdminController {
         } else {
             ra.addFlashAttribute("successMessage", added + "명의 아티스트가 추가되었습니다.");
         }
-        return "redirect:/admin/festivals/" + festivalId;
-    }
-
-    private String artistsRedirect(Long festivalId) {
-        return "redirect:/admin/festivals/" + festivalId + "#artists";
+        return AdminFestivalRedirects.detail(festivalId);
     }
 
     @GetMapping("/list")
@@ -97,7 +93,7 @@ public class FestivalArtistAdminController {
                                RedirectAttributes ra) {
         artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, lineupOrder, stageName);
         ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
-        return artistsRedirect(festivalId);
+        return AdminFestivalRedirects.artists(festivalId);
     }
 
     @PostMapping("/batch-edit")
@@ -112,7 +108,7 @@ public class FestivalArtistAdminController {
             artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), order, stage);
         }
         ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
-        return artistsRedirect(festivalId);
+        return AdminFestivalRedirects.artists(festivalId);
     }
 
     @PostMapping("/{artistFestivalId}/delete")
@@ -121,6 +117,6 @@ public class FestivalArtistAdminController {
             @PathVariable Long artistFestivalId) {
 
         artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
-        return artistsRedirect(festivalId);
+        return AdminFestivalRedirects.artists(festivalId);
     }
 }

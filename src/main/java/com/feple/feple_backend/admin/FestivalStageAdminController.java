@@ -15,10 +15,6 @@ public class FestivalStageAdminController {
 
     private final StageService stageService;
 
-    private String timetableRedirect(Long festivalId) {
-        return "redirect:/admin/festivals/" + festivalId + "#timetable";
-    }
-
     @PostMapping
     public String createStage(@PathVariable Long festivalId,
                               @RequestParam String name,
@@ -29,7 +25,7 @@ public class FestivalStageAdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return timetableRedirect(festivalId);
+        return AdminFestivalRedirects.timetable(festivalId);
     }
 
     @PostMapping("/{stageId}/delete")
@@ -38,18 +34,18 @@ public class FestivalStageAdminController {
                               RedirectAttributes ra) {
         stageService.deleteStage(stageId);
         ra.addFlashAttribute("successMessage", "스테이지가 삭제되었습니다.");
-        return timetableRedirect(festivalId);
+        return AdminFestivalRedirects.timetable(festivalId);
     }
 
     @PostMapping("/{stageId}/up")
     public String moveStageUp(@PathVariable Long festivalId, @PathVariable Long stageId) {
         stageService.moveUp(festivalId, stageId);
-        return timetableRedirect(festivalId);
+        return AdminFestivalRedirects.timetable(festivalId);
     }
 
     @PostMapping("/{stageId}/down")
     public String moveStageDown(@PathVariable Long festivalId, @PathVariable Long stageId) {
         stageService.moveDown(festivalId, stageId);
-        return timetableRedirect(festivalId);
+        return AdminFestivalRedirects.timetable(festivalId);
     }
 }

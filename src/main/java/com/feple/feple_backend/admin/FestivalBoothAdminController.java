@@ -28,7 +28,7 @@ public class FestivalBoothAdminController {
                               RedirectAttributes ra) throws IOException {
         if (dto.getLatitude() == null || dto.getLongitude() == null) {
             ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
-            return boothsRedirect(festivalId);
+            return AdminFestivalRedirects.booths(festivalId);
         }
         if (boothImageFile != null && !boothImageFile.isEmpty()) {
             try {
@@ -36,12 +36,12 @@ public class FestivalBoothAdminController {
             } catch (Exception e) {
                 log.error("부스 이미지 업로드 실패 festivalId={}", festivalId, e);
                 ra.addFlashAttribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요.");
-                return boothsRedirect(festivalId);
+                return AdminFestivalRedirects.booths(festivalId);
             }
         }
         boothService.createBooth(festivalId, dto);
         ra.addFlashAttribute("successMessage", "부스가 추가되었습니다.");
-        return boothsRedirect(festivalId);
+        return AdminFestivalRedirects.booths(festivalId);
     }
 
     @PostMapping("/{boothId}/delete")
@@ -50,10 +50,8 @@ public class FestivalBoothAdminController {
                               RedirectAttributes ra) {
         boothService.deleteBooth(boothId);
         ra.addFlashAttribute("successMessage", "부스가 삭제되었습니다.");
-        return boothsRedirect(festivalId);
+        return AdminFestivalRedirects.booths(festivalId);
     }
 
-    private String boothsRedirect(Long festivalId) {
-        return "redirect:/admin/festivals/" + festivalId + "#booths";
-    }
+
 }

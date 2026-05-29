@@ -23,6 +23,9 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class AdminPushController {
 
+    private static final String PUSH_REDIRECT   = "redirect:/admin/push";
+    private static final String SEND_ERROR_MSG  = "발송 중 오류가 발생했습니다.";
+
     private final AdminPushService adminPushService;
     private final AdminLogService adminLogService;
     private final UserAdminService userAdminService;
@@ -42,16 +45,16 @@ public class AdminPushController {
     public String send(@RequestParam String title,
                        @RequestParam String body,
                        RedirectAttributes ra) {
-        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
+        if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendToAll(title.strip(), body.strip());
             adminLogService.log("PUSH_BROADCAST", null, null, title.strip());
             ra.addFlashAttribute("successMessage", "푸시 알림이 발송되었습니다.");
         } catch (Exception e) {
             log.error("푸시 발송 오류", e);
-            ra.addFlashAttribute("errorMessage", "발송 중 오류가 발생했습니다.");
+            ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
         }
-        return "redirect:/admin/push";
+        return PUSH_REDIRECT;
     }
 
     @GetMapping("/search-user")
@@ -70,7 +73,7 @@ public class AdminPushController {
                                         @RequestParam String body,
                                         @RequestParam Long artistId,
                                         RedirectAttributes ra) {
-        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
+        if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendToArtistFollowers(artistId, title.strip(), body.strip());
             adminLogService.log("PUSH_ARTIST_FOLLOWERS", "ARTIST", artistId, title.strip());
@@ -79,9 +82,9 @@ public class AdminPushController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("아티스트 팔로워 발송 오류", e);
-            ra.addFlashAttribute("errorMessage", "발송 중 오류가 발생했습니다.");
+            ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
         }
-        return "redirect:/admin/push";
+        return PUSH_REDIRECT;
     }
 
     @PostMapping("/festival-certified")
@@ -89,7 +92,7 @@ public class AdminPushController {
                                           @RequestParam String body,
                                           @RequestParam Long festivalId,
                                           RedirectAttributes ra) {
-        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
+        if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendToFestivalCertified(festivalId, title.strip(), body.strip());
             adminLogService.log("PUSH_FESTIVAL_CERTIFIED", "FESTIVAL", festivalId, title.strip());
@@ -98,9 +101,9 @@ public class AdminPushController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("페스티벌 인증자 발송 오류", e);
-            ra.addFlashAttribute("errorMessage", "발송 중 오류가 발생했습니다.");
+            ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
         }
-        return "redirect:/admin/push";
+        return PUSH_REDIRECT;
     }
 
     @PostMapping("/test")
@@ -108,7 +111,7 @@ public class AdminPushController {
                            @RequestParam String body,
                            @RequestParam Long targetUserId,
                            RedirectAttributes ra) {
-        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
+        if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendTest(targetUserId, title.strip(), body.strip());
             adminLogService.log("PUSH_TEST", "USER", targetUserId, title.strip());
@@ -117,9 +120,9 @@ public class AdminPushController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("테스트 발송 오류", e);
-            ra.addFlashAttribute("errorMessage", "발송 중 오류가 발생했습니다.");
+            ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
         }
-        return "redirect:/admin/push";
+        return PUSH_REDIRECT;
     }
 
     private boolean validatePushInput(String title, String body, RedirectAttributes ra) {
