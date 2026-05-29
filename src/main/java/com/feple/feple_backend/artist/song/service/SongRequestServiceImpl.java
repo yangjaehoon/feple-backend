@@ -117,7 +117,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         request.approve();
 
         if (youtubeUrl != null && !youtubeUrl.isBlank()) {
-            request.setYoutubeUrl(youtubeUrl);
+            request.updateYoutubeUrl(youtubeUrl);
             Optional<YoutubeVideoDto> videoOpt = youtubeSearchService.fetchVideoByUrl(youtubeUrl);
             if (videoOpt.isPresent()) {
                 YoutubeVideoDto video = videoOpt.get();

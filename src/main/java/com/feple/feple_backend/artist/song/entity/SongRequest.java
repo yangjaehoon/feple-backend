@@ -54,7 +54,7 @@ public class SongRequest {
         this.status = SongRequestStatus.REJECTED;
     }
 
-    public void setYoutubeUrl(String youtubeUrl) {
+    public void updateYoutubeUrl(String youtubeUrl) {
         this.youtubeUrl = youtubeUrl;
     }
 }

@@ -108,7 +108,7 @@ public class ArtistFestivalService {
             Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, stageName)
                     .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + stageName));
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
-                    .forEach(entry -> entry.setStage(newStage));
+                    .forEach(entry -> entry.updateStage(newStage));
         }
     }
 

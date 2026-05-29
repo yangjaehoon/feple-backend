@@ -50,11 +50,7 @@ public class StageService {
         stageRepository
                 .findFirstByFestivalIdAndDisplayOrderLessThanOrderByDisplayOrderDesc(
                         festivalId, current.getDisplayOrder())
-                .ifPresent(prev -> {
-                    int tmp = prev.getDisplayOrder();
-                    prev.setDisplayOrder(current.getDisplayOrder());
-                    current.setDisplayOrder(tmp);
-                });
+                .ifPresent(prev -> prev.swapDisplayOrder(current));
     }
 
     /** 아래로 이동: 바로 뒤 스테이지와 순서를 교환 */
@@ -64,10 +60,6 @@ public class StageService {
         stageRepository
                 .findFirstByFestivalIdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc(
                         festivalId, current.getDisplayOrder())
-                .ifPresent(next -> {
-                    int tmp = next.getDisplayOrder();
-                    next.setDisplayOrder(current.getDisplayOrder());
-                    current.setDisplayOrder(tmp);
-                });
+                .ifPresent(next -> next.swapDisplayOrder(current));
     }
 }

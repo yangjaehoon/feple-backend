@@ -49,4 +49,8 @@ public class TimetableEntry {
     public String getStageName() {
         return stage != null ? stage.getName() : null;
     }
+
+    public void updateStage(Stage stage) {
+        this.stage = stage;
+    }
 }
