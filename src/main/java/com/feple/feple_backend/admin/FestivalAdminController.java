@@ -116,7 +116,8 @@ public class FestivalAdminController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleChecklist(@PathVariable Long id,
                                                                @RequestParam String field) {
-        boolean newValue = festivalChecklistService.toggle(id, field);
+        festivalChecklistService.toggle(id, field);
+        boolean newValue = festivalChecklistService.isChecked(id, field);
         return ResponseEntity.ok(Map.of("checked", newValue));
     }
 
