@@ -61,12 +61,29 @@ public class ArtistPhotoReportService implements ReportAdminService {
     }
 
     @Override
+    public String getReportType() { return "photo"; }
+
+    @Override
     public Page<ArtistPhotoReport> getReportsForAdmin(int page, int size, String statusFilter) {
         PageRequest pageable = PageRequest.of(page, size);
         if ("PENDING".equals(statusFilter)) {
             return reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable);
         }
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
+    }
+
+    @Override
+    public Page<ArtistPhotoReport> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
+        if (keyword == null || keyword.isBlank()) return getReportsForAdmin(page, size, statusFilter);
+        PageRequest pageable = PageRequest.of(page, size);
+        ReportStatus status = "PENDING".equals(statusFilter) ? ReportStatus.PENDING : null;
+        return reportRepository.searchByKeyword(keyword, status, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void deleteContentAndResolve(Long reportId) {
+        deletePhotoAndResolve(reportId);
     }
 
     @Transactional

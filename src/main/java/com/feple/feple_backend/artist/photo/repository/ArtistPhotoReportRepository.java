@@ -23,6 +23,17 @@ public interface ArtistPhotoReportRepository extends JpaRepository<ArtistPhotoRe
     @EntityGraph(attributePaths = {"photo", "photo.artist", "photo.uploader", "reporter"})
     Page<ArtistPhotoReport> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    @EntityGraph(attributePaths = {"photo", "photo.artist", "photo.uploader", "reporter"})
+    @Query("SELECT apr FROM ArtistPhotoReport apr WHERE " +
+           "(:status IS NULL OR apr.status = :status) AND " +
+           "(LOWER(apr.photo.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(apr.photo.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(apr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "ORDER BY apr.createdAt DESC")
+    Page<ArtistPhotoReport> searchByKeyword(@Param("keyword") String keyword,
+                                             @Param("status") ReportStatus status,
+                                             Pageable pageable);
+
     long countByStatus(ReportStatus status);
 
     @Query("SELECT apr FROM ArtistPhotoReport apr WHERE apr.photo.id = :photoId")

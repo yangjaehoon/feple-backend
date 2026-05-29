@@ -95,7 +95,7 @@
                     <button type="button" class="btn btn-secondary btn-sm"
                             onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
                     <button type="button" class="btn btn-danger btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-delete-post', '선택한 {n}건의 게시글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 글 삭제</button>
+                            onclick="submitBulk('/admin/reports/bulk-delete', '선택한 {n}건의 게시글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 글 삭제</button>
                 </div>
                 <div class="table-wrap">
                 <table>
@@ -153,7 +153,8 @@
                         <td>
                             <div th:if="${report.pending}"
                                  style="display:flex; gap:6px;">
-                                <form th:action="@{/admin/reports/{id}/delete-post(id=${report.id})}" method="post">
+                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="post"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             onclick="return confirm('게시글을 삭제하고 신고를 처리할까요?')">
@@ -192,7 +193,7 @@
                     <button type="button" class="btn btn-secondary btn-sm"
                             onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
                     <button type="button" class="btn btn-danger btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-delete-comment', '선택한 {n}건의 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 댓글 삭제</button>
+                            onclick="submitBulk('/admin/reports/bulk-delete', '선택한 {n}건의 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 댓글 삭제</button>
                 </div>
                 <div class="table-wrap">
                 <table>
@@ -253,7 +254,8 @@
                         <td>
                             <div th:if="${report.pending}"
                                  style="display:flex; gap:6px;">
-                                <form th:action="@{/admin/reports/comments/{id}/delete-comment(id=${report.id})}" method="post">
+                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="comment"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             onclick="return confirm('댓글을 삭제하고 신고를 처리할까요?')">
@@ -294,7 +296,7 @@
                     <button type="button" class="btn btn-secondary btn-sm"
                             onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
                     <button type="button" class="btn btn-danger btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-delete-photo', '선택한 {n}건의 사진을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 사진 삭제</button>
+                            onclick="submitBulk('/admin/reports/bulk-delete', '선택한 {n}건의 사진을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 사진 삭제</button>
                 </div>
                 <div class="table-wrap">
                 <table>
@@ -357,7 +359,8 @@
                         <td>
                             <div th:if="${report.pending}"
                                  style="display:flex; gap:6px;">
-                                <form th:action="@{/admin/reports/photos/{id}/delete-photo(id=${report.id})}" method="post">
+                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="photo"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             onclick="return confirm('사진을 삭제하고 신고를 처리할까요?')">

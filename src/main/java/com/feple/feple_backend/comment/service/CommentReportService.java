@@ -56,6 +56,9 @@ public class CommentReportService implements ReportAdminService {
         return reportRepository.count();
     }
 
+    @Override
+    public String getReportType() { return "comment"; }
+
     public Page<CommentReport> getReportsForAdmin(int page, int size, String statusFilter) {
         PageRequest pageable = PageRequest.of(page, size);
         if ("PENDING".equals(statusFilter)) {
@@ -70,6 +73,12 @@ public class CommentReportService implements ReportAdminService {
         PageRequest pageable = PageRequest.of(page, size);
         ReportStatus status = "PENDING".equals(statusFilter) ? ReportStatus.PENDING : null;
         return reportRepository.searchByKeyword(keyword, status, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void deleteContentAndResolve(Long reportId) {
+        deleteCommentAndResolve(reportId);
     }
 
     @Transactional
