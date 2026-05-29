@@ -9,6 +9,7 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PermissionValidator;
+import com.feple.feple_backend.post.dto.PostAdminFilter;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -84,12 +85,14 @@ public class PostServiceImpl implements PostService, PostAdminService {
     }
 
     @Override
-    public Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword, Long artistId, Long festivalId) {
-        PageRequest pageable = PageRequest.of(page, size);
-        boolean hasKeyword = keyword != null && !keyword.isBlank();
-        String kw = hasKeyword ? keyword : "";
+    public Page<PostResponseDto> getPostsForAdmin(PostAdminFilter params) {
+        PageRequest pageable = PageRequest.of(params.page(), params.size());
+        boolean hasKeyword = params.keyword() != null && !params.keyword().isBlank();
+        String kw = hasKeyword ? params.keyword() : "";
+        Long artistId = params.artistId();
+        Long festivalId = params.festivalId();
 
-        Page<Post> result = switch (filter == null ? "" : filter) {
+        Page<Post> result = switch (params.filter() == null ? "" : params.filter()) {
             case "FREE" -> hasKeyword
                     ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.FREE, kw, pageable)
                     : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable);

@@ -37,8 +37,8 @@ public class FcmPushService {
         FirebaseMessaging messaging = FirebaseMessaging.getInstance();
 
         // 500개씩 나눠서 발송
-        for (int i = 0; i < tokens.size(); i += BATCH_SIZE) {
-            List<String> batch = tokens.subList(i, Math.min(i + BATCH_SIZE, tokens.size()));
+        for (int batchStart = 0; batchStart < tokens.size(); batchStart += BATCH_SIZE) {
+            List<String> batch = tokens.subList(batchStart, Math.min(batchStart + BATCH_SIZE, tokens.size()));
             try {
                 MulticastMessage message = MulticastMessage.builder()
                         .addAllTokens(batch)
@@ -62,9 +62,9 @@ public class FcmPushService {
 
                 // 실패 토큰 로깅 (필요 시 DB에서 삭제 가능)
                 List<SendResponse> responses = response.getResponses();
-                for (int j = 0; j < responses.size(); j++) {
-                    if (!responses.get(j).isSuccessful()) {
-                        log.debug("[FCM] 실패 토큰: {}", batch.get(j));
+                for (int idx = 0; idx < responses.size(); idx++) {
+                    if (!responses.get(idx).isSuccessful()) {
+                        log.debug("[FCM] 실패 토큰: {}", batch.get(idx));
                     }
                 }
             } catch (FirebaseMessagingException e) {

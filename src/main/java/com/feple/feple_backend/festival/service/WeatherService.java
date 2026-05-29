@@ -155,9 +155,9 @@ public class WeatherService {
             for (JsonNode item : items) {
                 if (!fcstDate.equals(item.path("fcstDate").asText())) continue;
                 if (!"TMP".equals(item.path("category").asText())) continue;
-                double tmp = Double.parseDouble(item.path("fcstValue").asText());
-                if (!hasTmn && tmp < minTemp) minTemp = tmp;
-                if (!hasTmx && tmp > maxTemp) maxTemp = tmp;
+                double fcstTemp = Double.parseDouble(item.path("fcstValue").asText());
+                if (!hasTmn && fcstTemp < minTemp) minTemp = fcstTemp;
+                if (!hasTmx && fcstTemp > maxTemp) maxTemp = fcstTemp;
             }
         }
 

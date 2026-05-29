@@ -1,12 +1,13 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.post.dto.PostAdminFilter;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface PostAdminService {
-    Page<PostResponseDto> getPostsForAdmin(int page, int size, String filter, String keyword, Long artistId, Long festivalId);
+    Page<PostResponseDto> getPostsForAdmin(PostAdminFilter params);
     long getTotalPostCount();
     long countRecentPosts(int days);
     List<PostResponseDto> getAdminHotPosts(int limit);

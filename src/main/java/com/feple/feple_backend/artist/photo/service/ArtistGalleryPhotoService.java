@@ -77,15 +77,15 @@ public class ArtistGalleryPhotoService {
                         currentUserId, photos.stream().map(ArtistGalleryPhoto::getId).toList())
                 : Set.of();
         return photos.stream()
-                .map(p -> new ArtistGalleryPhotoResponseDto(
-                        p.getId(),
-                        s3PresignService.presignGetUrl(p.getS3Key()),
-                        p.getUploaderId(),
-                        p.getCreatedAt(),
-                        p.getTitle(),
-                        p.getDescription(),
-                        p.getLikeCount(),
-                        likedPhotoIds.contains(p.getId())))
+                .map(photo -> new ArtistGalleryPhotoResponseDto(
+                        photo.getId(),
+                        s3PresignService.presignGetUrl(photo.getS3Key()),
+                        photo.getUploaderId(),
+                        photo.getCreatedAt(),
+                        photo.getTitle(),
+                        photo.getDescription(),
+                        photo.getLikeCount(),
+                        likedPhotoIds.contains(photo.getId())))
                 .toList();
     }
 

@@ -4,6 +4,7 @@ import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.post.dto.PostAdminFilter;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.post.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,8 @@ public class PostAdminController {
         if (artistId != null) extra.append("&artistId=").append(artistId);
         if (festivalId != null) extra.append("&festivalId=").append(festivalId);
 
-        model.addAttribute("posts", postAdminService.getPostsForAdmin(page, PAGE_SIZE, filter, keyword, artistId, festivalId));
+        model.addAttribute("posts", postAdminService.getPostsForAdmin(
+                new PostAdminFilter(page, PAGE_SIZE, filter, keyword, artistId, festivalId)));
         model.addAttribute("filter", filter);
         model.addAttribute("keyword", keyword);
         model.addAttribute("artistId", artistId);

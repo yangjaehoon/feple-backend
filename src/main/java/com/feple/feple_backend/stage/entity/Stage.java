@@ -28,8 +28,8 @@ public class Stage {
     private int displayOrder;
 
     public void swapDisplayOrder(Stage other) {
-        int tmp = this.displayOrder;
+        int savedOrder = this.displayOrder;
         this.displayOrder = other.displayOrder;
-        other.displayOrder = tmp;
+        other.displayOrder = savedOrder;
     }
 }
