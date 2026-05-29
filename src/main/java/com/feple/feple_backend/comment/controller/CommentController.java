@@ -15,10 +15,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "댓글", description = "댓글 CRUD, 좋아요, 신고")
 @RestController
 @RequestMapping("/comments")
 @RequiredArgsConstructor

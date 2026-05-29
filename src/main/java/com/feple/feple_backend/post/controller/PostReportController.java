@@ -5,12 +5,14 @@ import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.service.PostReportService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "신고", description = "게시글 신고 제출")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")

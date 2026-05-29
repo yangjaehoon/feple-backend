@@ -6,6 +6,7 @@ import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
+@Tag(name = "페스티벌 인증", description = "페스티벌 참여 인증 제출·조회")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/certifications")

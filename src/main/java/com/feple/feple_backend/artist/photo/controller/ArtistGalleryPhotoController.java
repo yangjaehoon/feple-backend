@@ -12,6 +12,7 @@ import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Tag(name = "아티스트 갤러리", description = "아티스트 갤러리 사진 등록·조회·신고")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/artists/{artistId}/photos")

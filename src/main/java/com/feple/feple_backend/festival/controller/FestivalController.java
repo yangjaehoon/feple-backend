@@ -12,6 +12,7 @@ import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
+@Tag(name = "페스티벌", description = "페스티벌 조회, 좋아요, 참석 여부, 날씨")
 @RestController
 @RequestMapping("/festivals")
 @RequiredArgsConstructor
