@@ -8,7 +8,7 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.post.service.PostService;
+import com.feple.feple_backend.post.service.PostCascadeService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +29,7 @@ class ArtistCascadeDeleteServiceTest {
     @Mock ArtistProfileImageRepository artistImageRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;
     @Mock ArtistFollowRepository artistFollowRepository;
-    @Mock PostService postService;
+    @Mock PostCascadeService postCascadeService;
     @Mock FileStorageService fileStorageService;
 
     @InjectMocks ArtistCascadeDeleteService artistCascadeDeleteService;
@@ -74,7 +74,7 @@ class ArtistCascadeDeleteServiceTest {
 
         verify(artistFestivalRepository).deleteByArtistId(1L);
         verify(artistFollowRepository).deleteAll(follows);
-        verify(postService).deletePostsByArtist(artist);
+        verify(postCascadeService).deletePostsByArtist(artist);
     }
 
     @Test
