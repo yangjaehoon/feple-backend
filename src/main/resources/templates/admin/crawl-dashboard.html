@@ -99,25 +99,25 @@
                         </div>
                         <div style="flex:1; display:flex; flex-direction:column; gap:10px; min-width:0;">
                             <div>
-                                <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">제목 <span style="color:#EF4444;">*</span></label>
+                                <label class="form-label-md">제목 <span class="required-star">*</span></label>
                                 <input type="text" id="scrapeTitle" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;" placeholder="페스티벌 제목"/>
                             </div>
                             <div>
-                                <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">영문 제목 <span style="font-weight:400; color:var(--muted);">(선택)</span></label>
+                                <label class="form-label-md">영문 제목 <span style="font-weight:400; color:var(--muted);">(선택)</span></label>
                                 <input type="text" id="scrapeTitleEn" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;" placeholder="Festival Title in English"/>
                             </div>
                             <div style="display:flex; gap:10px;">
                                 <div style="flex:1;">
-                                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">시작일 <span style="color:#EF4444;">*</span></label>
+                                    <label class="form-label-md">시작일 <span class="required-star">*</span></label>
                                     <input type="date" id="scrapeStartDate" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;"/>
                                 </div>
                                 <div style="flex:1;">
-                                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">종료일 <span style="color:#EF4444;">*</span></label>
+                                    <label class="form-label-md">종료일 <span class="required-star">*</span></label>
                                     <input type="date" id="scrapeEndDate" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;"/>
                                 </div>
                             </div>
                             <div>
-                                <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">장소 <span style="color:#EF4444;">*</span></label>
+                                <label class="form-label-md">장소 <span class="required-star">*</span></label>
                                 <input type="text" id="scrapeLocation" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;" placeholder="행사 장소"/>
                             </div>
                         </div>
@@ -125,14 +125,14 @@
 
                     <!-- 설명 -->
                     <div style="margin-bottom:12px;">
-                        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">설명 <span style="color:#EF4444;">*</span></label>
+                        <label class="form-label-md">설명 <span class="required-star">*</span></label>
                         <textarea id="scrapeDesc" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; min-height:80px; resize:vertical; box-sizing:border-box;" placeholder="페스티벌 설명"></textarea>
                     </div>
 
                     <!-- 지역 + 장르 -->
                     <div style="display:flex; gap:24px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-start;">
                         <div>
-                            <label style="font-size:12px; font-weight:600; display:block; margin-bottom:6px;">지역</label>
+                            <label class="form-label-md">지역</label>
                             <select id="scrapeRegion" style="padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; min-width:130px;">
                                 <option value="">선택 안 함</option>
                                 <option value="SEOUL">서울</option>
@@ -156,7 +156,7 @@
                             </select>
                         </div>
                         <div>
-                            <label style="font-size:12px; font-weight:600; display:block; margin-bottom:6px;">장르</label>
+                            <label class="form-label-md">장르</label>
                             <div style="display:flex; flex-wrap:wrap; gap:8px;">
                                 <label style="display:flex; align-items:center; gap:6px; padding:5px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;"><input type="checkbox" name="scrapeGenres" value="HIP_HOP" style="accent-color:var(--primary);"/> Hip-hop</label>
                                 <label style="display:flex; align-items:center; gap:6px; padding:5px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;"><input type="checkbox" name="scrapeGenres" value="INDIE" style="accent-color:var(--primary);"/> Indie</label>

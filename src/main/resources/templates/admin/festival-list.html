@@ -65,10 +65,7 @@
                                          and (stat.first
                                               or festivals[stat.index - 1].endDate == null
                                               or !festivals[stat.index - 1].endDate.isBefore(#temporals.createToday()))}">
-                                <td colspan="4"
-                                    style="padding:8px 14px; font-size:12px; font-weight:700; color:#999; background:#f7f7f7; border-top:2px solid #e2e8f0; letter-spacing:0.3px;">
-                                    ─── 종료된 페스티벌
-                                </td>
+                                <td colspan="4" class="table-section-sep">─── 종료된 페스티벌</td>
                             </tr>
 
                             <tr th:style="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}

@@ -1054,7 +1054,16 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ============================================================
    FORM LABEL SMALL
    ============================================================ */
-.form-label-sm { font-size: 11px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
+.form-label-sm  { font-size: 11px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
+.form-label-ops { font-size: 11px; font-weight: 600; color: #92400e;        display: block; margin-bottom: 4px; }
+.form-label-md  { font-size: 12px; font-weight: 600; color: var(--text);    display: block; margin-bottom: 4px; }
+.field-error    { display: none; color: var(--danger); font-size: 12px; margin-top: 4px; }
+.required-star  { color: var(--danger); }
+.ban-box { background: var(--danger-lt); border: 1px solid #fecaca; border-radius: 8px; margin-bottom: 16px; padding: 12px 16px; }
+.ban-box-title { font-weight: 700; color: var(--danger); font-size: 14px; margin-bottom: 8px; }
+.ban-box-grid  { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; color: #b91c1c; margin-bottom: 10px; }
+.table-section-sep { padding: 8px 14px; font-size: 12px; font-weight: 700; color: var(--muted); background: var(--bg); border-top: 2px solid var(--border); letter-spacing: 0.3px; }
+.ops-label { font-size: 13px; font-weight: 700; color: #92400e; }
 
 /* ============================================================
    COUNT BADGE (대시보드 카드 타이틀 인라인 배지)
