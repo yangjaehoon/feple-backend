@@ -122,15 +122,15 @@
             <!-- 장르 필터 버튼 -->
             <div style="padding:12px 22px 0; display:flex; flex-wrap:wrap; gap:8px;">
                 <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort})}"
-                   th:style="${genre == null} ? 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; background:var(--primary); color:#fff;'
-                                             : 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; background:var(--border); color:var(--text-2);'">
+                   class="filter-pill"
+                   th:classappend="${genre == null} ? ' active'">
                     전체
                 </a>
                 <a th:each="g : ${allGenres}"
                    th:href="@{/admin/artists(keyword=${keyword}, sort=${sort}, genre=${g.name()})}"
                    th:text="${g.displayName}"
-                   th:style="${genre == g} ? 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; background:var(--primary); color:#fff;'
-                                          : 'padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; background:var(--border); color:var(--text-2);'">
+                   class="filter-pill"
+                   th:classappend="${genre == g} ? ' active'">
                 </a>
             </div>
 
@@ -152,42 +152,24 @@
                         <th>
                             아티스트
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='name')}"
-                               th:style="${sort == 'name'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
-                                                           : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                ↑
-                            </a>
+                               class="sort-btn" th:classappend="${sort == 'name'} ? ' active'">↑</a>
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc')}"
-                               th:style="${sort == 'name_desc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
-                                                                : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                ↓
-                            </a>
+                               class="sort-btn" th:classappend="${sort == 'name_desc'} ? ' active'">↓</a>
                         </th>
                         <th style="width:200px;">영어 이름</th>
                         <th style="width:160px;">
                             팔로워
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers')}"
-                               th:style="${sort == 'followers'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
-                                                                : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                ↓
-                            </a>
+                               class="sort-btn" th:classappend="${sort == 'followers'} ? ' active'">↓</a>
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc')}"
-                               th:style="${sort == 'followers_asc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
-                                                                    : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                ↑
-                            </a>
+                               class="sort-btn" th:classappend="${sort == 'followers_asc'} ? ' active'">↑</a>
                         </th>
                         <th style="width:100px;">
                             곡 수
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs')}"
-                               th:style="${sort == 'songs'} ? 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
-                                                           : 'margin-left:4px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                ↓
-                            </a>
+                               class="sort-btn" th:classappend="${sort == 'songs'} ? ' active'">↓</a>
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs_asc')}"
-                               th:style="${sort == 'songs_asc'} ? 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--purple); color:#fff; text-decoration:none; font-weight:600;'
-                                                                : 'margin-left:2px; font-size:11px; padding:2px 7px; border-radius:10px; background:var(--border); color:var(--text-2); text-decoration:none;'">
-                                ↑
-                            </a>
+                               class="sort-btn" th:classappend="${sort == 'songs_asc'} ? ' active'">↑</a>
                         </th>
                         <th style="width:160px;">관리</th>
                     </tr>
@@ -278,28 +260,6 @@
     </div>
 </div>
 
-<style>
-details > summary { list-style: none; }
-details > summary::-webkit-details-marker { display: none; }
-.summary-text::before { content: "펼치기"; }
-details[open] .summary-text::before { content: "접기"; }
-details[open] .summary-arrow { transform: rotate(180deg); }
-.reason-chip {
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-2);
-    font-size: 12px;
-    cursor: pointer;
-    transition: background .15s, color .15s, border-color .15s;
-}
-.reason-chip:hover, .reason-chip.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-}
-</style>
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>

@@ -5,16 +5,6 @@
     <title>Feple Admin — 노래 요청 관리</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-    <style>
-        .inline-form { display: flex; gap: 6px; align-items: center; }
-        .inline-input {
-            padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;
-            font-size: 12px; color: var(--text-1); outline: none;
-        }
-        .inline-input:focus { border-color: var(--primary); }
-        .yt-link { font-size: 11px; color: var(--primary); }
-        .action-cell { display: flex; flex-direction: column; gap: 6px; min-width: 320px; }
-    </style>
 </head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('song-requests')}"></div>

@@ -5,47 +5,6 @@
     <title th:text="'Feple Admin — ' + ${festival.title}">페스티벌 상세</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-    <style>
-        .stage-row {
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 8px; border-radius: 8px;
-            background: #fff; margin-bottom: 6px;
-        }
-        .stage-row:last-child { margin-bottom: 0; }
-        .stage-order-num {
-            width: 22px; height: 22px; border-radius: 50%;
-            color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 700; flex-shrink: 0;
-        }
-        .stage-name { flex: 1; font-size: 13px; font-weight: 600; color: #2d3748; }
-        .stage-btn {
-            background: none; border: 1px solid #e2e8f0; border-radius: 5px;
-            padding: 2px 7px; font-size: 13px; cursor: pointer; color: #555;
-            line-height: 1.6;
-        }
-        .stage-btn:hover { background: #f0f4ff; border-color: #c5d0fa; color: #3b5bdb; }
-        .stage-btn.del { color: #aaa; }
-        .stage-btn.del:hover { background: #fff5f5; border-color: #fc8181; color: #e53e3e; }
-        .stage-add-inline {
-            display: flex; align-items: center; gap: 8px; margin-top: 10px;
-        }
-        .stage-add-inline input {
-            padding: 6px 12px; border: 1px solid var(--border);
-            border-radius: 8px; font-size: 13px; width: 180px;
-        }
-        .stage-add-inline button {
-            padding: 6px 16px; background: #3b5bdb; color: #fff;
-            border: none; border-radius: 8px; font-size: 13px;
-            font-weight: 600; cursor: pointer; white-space: nowrap;
-        }
-        .stage-add-inline button:hover { background: #2f4ac4; }
-        .stage-empty { font-size: 13px; color: var(--muted); margin: 4px 0 8px; }
-        select.stage-select {
-            padding: 5px 8px; border: 1px solid var(--border);
-            border-radius: 6px; font-size: 13px; min-width: 120px;
-        }
-    </style>
 </head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
@@ -162,13 +121,13 @@
                                     <div th:each="slot : ${timetableByArtist.get(af.artistName)}"
                                          style="font-size:11px; white-space:nowrap; margin-bottom:3px;">
                                         <span style="color:var(--muted);" th:text="${slot.festivalDate}"></span>
-                                        <span style="font-weight:700; color:#2d3748; margin-left:4px;"
+                                        <span style="font-weight:700; color:var(--text); margin-left:4px;"
                                               th:text="${slot.startTime} + ' ~ ' + ${slot.endTime}"></span>
                                     </div>
                                 </th:block>
                                 <!-- 타임테이블 미입력 -->
                                 <span th:unless="${timetableByArtist.containsKey(af.artistName)}"
-                                      style="font-size:11px; font-weight:700; color:#e53e3e; background:#fff5f5; border-radius:20px; padding:2px 8px; white-space:nowrap;">미입력</span>
+                                      class="badge badge-danger">미입력</span>
                             </td>
                             <td>
                                 <th:block th:if="${!stages.isEmpty()}">
@@ -213,8 +172,8 @@
             <div class="card-body">
 
                 <!-- ── 스테이지 관리 영역 ── -->
-                <div style="background:#f8f9ff; border:1px solid #dde3ff; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
-                    <div style="font-size:13px; font-weight:700; color:#3b5bdb; margin-bottom:6px;">📋 스테이지 목록</div>
+                <div class="stage-box">
+                    <div class="stage-box-title">📋 스테이지 목록</div>
                     <div th:if="${stages.isEmpty()}" class="stage-empty">등록된 스테이지가 없습니다. 아래에서 추가해주세요.</div>
                     <div th:if="${!stages.isEmpty()}" style="margin-bottom:10px;">
                         <div th:each="s, stat : ${stages}" class="stage-row" th:data-stage="${s.name}">
@@ -301,7 +260,7 @@
                             </div>
                         </div>
                         <div id="timeError"
-                             style="display:none; margin-top:5px; font-size:12px; color:#e53e3e; font-weight:500;">
+                             style="display:none; margin-top:5px; font-size:12px; color:var(--danger); font-weight:500;">
                             ⚠ 종료 시간은 시작 시간보다 늦어야 합니다.
                         </div>
                     </div>
@@ -310,8 +269,8 @@
                 <div th:if="${timetableSuccess}" class="alert alert-success" style="margin-bottom:16px;" th:text="${timetableSuccess}"></div>
 
                 <!-- 운영 항목 추가 폼 -->
-                <div style="background:#fffbeb; border:1px solid #f6d860; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
-                    <div style="font-size:13px; font-weight:700; color:#b7791f; margin-bottom:10px;">📢 운영 항목 추가 (티켓 부스 오픈, 입장 게이트 오픈 등)</div>
+                <div class="ops-box">
+                    <div class="ops-box-title">📢 운영 항목 추가 (티켓 부스 오픈, 입장 게이트 오픈 등)</div>
                     <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                           method="post"
                           onsubmit="return validateCustomTimetable(this)"
@@ -358,9 +317,8 @@
                         <th:block th:each="entry, stat : ${timetableEntries}">
                             <!-- 날짜 구분 헤더: 첫 항목이거나 날짜가 바뀔 때 -->
                             <tr th:if="${stat.first or entry.festivalDate != timetableEntries[stat.index - 1].festivalDate}"
-                                style="background:#eef2ff; border-top:2px solid #c5d0fa;">
-                                <td colspan="4"
-                                    style="padding:8px 14px; font-size:13px; font-weight:700; color:#3b5bdb; letter-spacing:0.3px;">
+                                class="tt-date-row">
+                                <td colspan="4" class="tt-date-cell">
                                     📅 <span th:text="${entry.festivalDate}"></span>
                                 </td>
                             </tr>
@@ -373,9 +331,9 @@
                                           class="badge badge-stage" th:data-stage="${entry.stageName}" th:text="${entry.stageName}"></span>
                                 </td>
                                 <td style="font-size:13px; white-space:nowrap;">
-                                    <span style="font-weight:700; color:#2d3748;" th:text="${entry.startTime}"></span>
+                                    <span style="font-weight:700; color:var(--text);" th:text="${entry.startTime}"></span>
                                     <span style="color:var(--muted); margin:0 4px;">~</span>
-                                    <span style="font-weight:700; color:#2d3748;" th:text="${entry.endTime}"></span>
+                                    <span style="font-weight:700; color:var(--text);" th:text="${entry.endTime}"></span>
                                 </td>
                                 <td style="font-weight:600;" th:text="${entry.artistName}"></td>
                                 <td>
@@ -437,7 +395,7 @@
                         <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
                                onchange="validateBoothImage(this)"
                                style="width:100%; padding:5px 0; font-size:12px;"/>
-                        <span id="boothImageError" style="display:none; font-size:11px; color:#e53e3e; font-weight:600; margin-top:3px; display:none;"></span>
+                        <span id="boothImageError" style="display:none; font-size:11px; color:var(--danger); font-weight:600; margin-top:3px;"></span>
                     </div>
                     <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
                 </form>

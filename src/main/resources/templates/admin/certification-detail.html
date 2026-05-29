@@ -62,7 +62,7 @@
                         </tr>
                         <tr th:if="${cert.rejectionMessage != null and !#strings.isEmpty(cert.rejectionMessage)}">
                             <td style="padding:12px 0; font-weight:600; color:var(--muted);">거절 사유</td>
-                            <td style="padding:12px 0; color:#d32f2f;" th:text="${cert.rejectionMessage}"></td>
+                            <td style="padding:12px 0; color:var(--danger);" th:text="${cert.rejectionMessage}"></td>
                         </tr>
                     </table>
 
