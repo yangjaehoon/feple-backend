@@ -1,13 +1,10 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostAdminFilter;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.post.service.PostService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,11 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/posts")
-@RequiredArgsConstructor
 public class PostAdminController {
 
     private static final int PAGE_SIZE = 20;
@@ -28,8 +26,20 @@ public class PostAdminController {
     private final PostAdminService postAdminService;
     private final CommentService commentService;
     private final AdminLogService adminLogService;
-    private final ArtistService artistService;
-    private final FestivalService festivalService;
+    private final Map<String, FilterDropdownProvider> dropdownProviders;
+
+    public PostAdminController(PostService postService,
+                               PostAdminService postAdminService,
+                               CommentService commentService,
+                               AdminLogService adminLogService,
+                               List<FilterDropdownProvider> providers) {
+        this.postService = postService;
+        this.postAdminService = postAdminService;
+        this.commentService = commentService;
+        this.adminLogService = adminLogService;
+        this.dropdownProviders = providers.stream()
+                .collect(Collectors.toMap(FilterDropdownProvider::filter, p -> p));
+    }
 
     @GetMapping
     public String listPosts(
@@ -52,11 +62,9 @@ public class PostAdminController {
         model.addAttribute("festivalId", festivalId);
         model.addAttribute("extraParams", extra.toString());
 
-        if ("ARTIST".equals(filter)) {
-            model.addAttribute("artists", artistService.getAllArtistsSortedByName());
-        } else if ("FESTIVAL".equals(filter)) {
-            model.addAttribute("festivals", festivalService.getAllFestivals(null, null, null, true));
-        }
+        FilterDropdownProvider provider = dropdownProviders.get(filter);
+        if (provider != null) provider.populate(model);
+
         return "admin/post-list";
     }
 

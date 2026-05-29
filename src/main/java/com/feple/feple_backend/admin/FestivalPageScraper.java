@@ -10,8 +10,10 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,12 +26,18 @@ public class FestivalPageScraper {
         "(\\d{4})[.\\-/년]\\s*(\\d{1,2})[.\\-/월]\\s*(\\d{1,2})"
     );
 
-    // SPA 껍데기로 판단하는 사이트별 기본 title
     private static final List<String> SPA_FALLBACK_TITLES = List.of(
         "NOL 티켓", "NOL 인터파크", "인터파크티켓", "인터파크 티켓",
         "예스24 티켓", "YES24", "멜론티켓", "MELON TICKET",
         "티켓링크", "하나티켓", "알티켓"
     );
+
+    private final Map<String, SiteScraperStrategy> strategies;
+
+    public FestivalPageScraper(List<SiteScraperStrategy> strategyList) {
+        this.strategies = strategyList.stream()
+                .collect(Collectors.toMap(SiteScraperStrategy::source, s -> s));
+    }
 
     public ScrapedFestivalDto scrape(String url, String source) throws IOException {
         Document doc = Jsoup.connect(url)
@@ -58,6 +66,10 @@ public class FestivalPageScraper {
             && r.location().isBlank();
     }
 
+    private SiteScraperStrategy strategy(String source) {
+        return strategies.getOrDefault(source, DefaultSiteScraperStrategy.INSTANCE);
+    }
+
     private String extractTitle(Document doc, String source) {
         for (String sel : new String[]{
             "meta[property=og:title]", "meta[name=twitter:title]"
@@ -66,26 +78,10 @@ public class FestivalPageScraper {
             if (!v.isBlank() && !isSpaTitle(v)) return v;
         }
 
-        String specific = switch (source) {
-            case "interpark" -> firstNonEmpty(
-                doc.select(".GoodsDetail .title").text(),
-                doc.select(".box_concert_name span").text(),
-                doc.select("h3.tit_goods").text(),
-                doc.select(".goods_name").text()
-            );
-            case "yes24" -> firstNonEmpty(
-                doc.select(".goods_name h2").text(),
-                doc.select(".tit_goods").text(),
-                doc.select("h2.info_title").text()
-            );
-            case "melon" -> firstNonEmpty(
-                doc.select(".subject_wrap .subject").text(),
-                doc.select(".info_tit").text(),
-                doc.select(".concert_tit").text()
-            );
-            default -> "";
-        };
-        if (!specific.isBlank()) return specific;
+        for (String sel : strategy(source).titleSelectors()) {
+            String v = doc.select(sel).text().trim();
+            if (!v.isBlank()) return v;
+        }
 
         String htmlTitle = doc.title().replaceAll("\\s*[|\\-–—].*", "").trim();
         return isSpaTitle(htmlTitle) ? "" : htmlTitle;
@@ -98,14 +94,12 @@ public class FestivalPageScraper {
             String v = doc.select(sel).attr("content").trim();
             if (!v.isBlank()) return v;
         }
-        return switch (source) {
-            case "interpark" -> firstNonEmpty(
-                doc.select(".goods_detail_info").text(),
-                doc.select(".box_con_detail .con").text()
-            );
-            case "yes24" -> firstNonEmpty(doc.select(".goods_intro").text());
-            default -> "";
-        };
+
+        for (String sel : strategy(source).descriptionSelectors()) {
+            String v = doc.select(sel).text().trim();
+            if (!v.isBlank()) return v;
+        }
+        return "";
     }
 
     private String extractImageUrl(Document doc) {
@@ -119,24 +113,11 @@ public class FestivalPageScraper {
     }
 
     private String extractLocation(Document doc, String source) {
-        String[] headers = switch (source) {
-            case "interpark" -> new String[]{"장소", "공연장소", "행사장소"};
-            case "yes24"     -> new String[]{"공연장소", "장소", "공연장"};
-            case "melon"     -> new String[]{"장소", "공연장소"};
-            default          -> new String[]{"장소", "공연장소", "공연장", "행사장소"};
-        };
-        return extractTableCell(doc, headers);
+        return extractTableCell(doc, strategy(source).locationHeaders());
     }
 
     private String[] extractDates(Document doc, String source) {
-        String[] headers = switch (source) {
-            case "interpark" -> new String[]{"기간", "공연기간", "행사기간"};
-            case "yes24"     -> new String[]{"공연기간", "기간", "행사기간"};
-            case "melon"     -> new String[]{"기간", "공연기간"};
-            default          -> new String[]{"기간", "공연기간", "행사기간"};
-        };
-
-        String raw = extractTableCell(doc, headers);
+        String raw = extractTableCell(doc, strategy(source).dateHeaders());
         if (!raw.isBlank()) return parseDateRange(raw);
 
         for (Element script : doc.select("script[type=application/ld+json]")) {
@@ -204,12 +185,5 @@ public class FestivalPageScraper {
         if (title == null || title.isBlank()) return true;
         String lower = title.toLowerCase();
         return SPA_FALLBACK_TITLES.stream().anyMatch(t -> lower.contains(t.toLowerCase()));
-    }
-
-    private String firstNonEmpty(String... candidates) {
-        for (String s : candidates) {
-            if (s != null && !s.isBlank()) return s.trim();
-        }
-        return "";
     }
 }

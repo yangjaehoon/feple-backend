@@ -89,16 +89,20 @@ public class PostServiceImpl implements PostService, PostAdminService {
         PageRequest pageable = PageRequest.of(params.page(), params.size());
         boolean hasKeyword = params.keyword() != null && !params.keyword().isBlank();
         String kw = hasKeyword ? params.keyword() : "";
-        Long artistId = params.artistId();
-        Long festivalId = params.festivalId();
 
-        Page<Post> result = switch (params.filter() == null ? "" : params.filter()) {
-            case "FREE" -> hasKeyword
-                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.FREE, kw, pageable)
-                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.FREE, pageable);
-            case "MATE" -> hasKeyword
-                    ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType.MATE, kw, pageable)
-                    : postRepository.findByBoardTypeOrderByCreatedAtDesc(BoardType.MATE, pageable);
+        // BoardType enum에 해당하는 필터(FREE, MATE, FESTIVAL_COMPANION 등)는 enum이 직접 처리.
+        // 새 BoardType을 추가해도 이 메서드를 수정할 필요 없음.
+        return BoardType.fromAdminFilter(params.filter())
+                .map(boardType -> hasKeyword
+                        ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(boardType, kw, pageable)
+                        : postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, pageable))
+                .orElseGet(() -> resolveRelationFilter(params.filter(), params.artistId(), params.festivalId(), hasKeyword, kw, pageable))
+                .map(PostResponseDto::from);
+    }
+
+    private Page<Post> resolveRelationFilter(String filter, Long artistId, Long festivalId,
+                                             boolean hasKeyword, String kw, PageRequest pageable) {
+        return switch (filter == null ? "" : filter) {
             case "ARTIST" -> artistId != null
                     ? (hasKeyword
                         ? postRepository.findByArtistIdAndTitleLikeOrderByCreatedAtDesc(artistId, kw, pageable)
@@ -117,7 +121,6 @@ public class PostServiceImpl implements PostService, PostAdminService {
                     ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(kw, pageable)
                     : postRepository.findAllByOrderByCreatedAtDesc(pageable);
         };
-        return result.map(PostResponseDto::from);
     }
 
     @Override
