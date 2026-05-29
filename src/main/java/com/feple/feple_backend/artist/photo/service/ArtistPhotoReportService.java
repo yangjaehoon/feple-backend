@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ArtistPhotoReportService implements ReportAdminService {
+public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoReport> {
 
     private final ArtistPhotoReportRepository reportRepository;
     private final ArtistGalleryPhotoRepository photoRepository;
@@ -126,9 +126,8 @@ public class ArtistPhotoReportService implements ReportAdminService {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Map<Long, Long> buildAuthorReportCounts(Page<?> reports) {
-        Set<Long> ids = ((Page<ArtistPhotoReport>) reports).getContent().stream()
+    public Map<Long, Long> buildAuthorReportCounts(Page<ArtistPhotoReport> reports) {
+        Set<Long> ids = reports.getContent().stream()
                 .map(ArtistPhotoReport::getPhotoUploaderId).collect(Collectors.toSet());
         return getUploaderReportCounts(ids);
     }

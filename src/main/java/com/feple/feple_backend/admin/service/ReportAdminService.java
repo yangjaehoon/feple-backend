@@ -1,4 +1,4 @@
 package com.feple.feple_backend.admin.service;
 
-public interface ReportAdminService extends ReportQueryService, ReportCommandService {
+public interface ReportAdminService<T> extends ReportQueryService<T>, ReportCommandService {
 }

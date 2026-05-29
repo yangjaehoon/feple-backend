@@ -21,10 +21,10 @@ public class ReportAdminController {
 
     private static final int PAGE_SIZE = 20;
 
-    private final Map<String, ReportAdminService> handlers;
+    private final Map<String, ReportAdminService<?>> handlers;
     private final AdminLogService adminLogService;
 
-    public ReportAdminController(List<ReportAdminService> services, AdminLogService adminLogService) {
+    public ReportAdminController(List<ReportAdminService<?>> services, AdminLogService adminLogService) {
         this.adminLogService = adminLogService;
         this.handlers = services.stream()
                 .collect(Collectors.toMap(ReportAdminService::getReportType, s -> s));
@@ -37,7 +37,7 @@ public class ReportAdminController {
             @RequestParam(defaultValue = "post") String type,
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
-        ReportAdminService handler = resolveHandler(type);
+        ReportAdminService<?> handler = resolveHandler(type);
         Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(page, PAGE_SIZE, status, keyword));
         model.addAttribute("reports", reports);
         model.addAttribute("pendingCount", handler.getPendingCount());
@@ -45,7 +45,7 @@ public class ReportAdminController {
         model.addAttribute("status", status);
         model.addAttribute("type", type);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : handler.buildAuthorReportCounts(reports));
+        model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : buildCounts(handler, reports));
         handlers.forEach((t, h) -> model.addAttribute(t + "PendingCount", h.getPendingCount()));
         return "admin/report-list";
     }
@@ -98,9 +98,15 @@ public class ReportAdminController {
         return redirectReports(type, status, page);
     }
 
-    private ReportAdminService resolveHandler(String type) {
-        ReportAdminService handler = handlers.get(type);
+    private ReportAdminService<?> resolveHandler(String type) {
+        ReportAdminService<?> handler = handlers.get(type);
         return handler != null ? handler : handlers.get("post");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Map<Long, Long> buildCounts(ReportAdminService<T> handler, Page<?> reports) {
+        // handler and reports are always paired: handler produced this page via searchReportsForAdmin
+        return handler.buildAuthorReportCounts((Page<T>) reports);
     }
 
     private String emptySelectionRedirect(String type, String status, int page, RedirectAttributes ra) {

@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PostReportService implements ReportAdminService {
+public class PostReportService implements ReportAdminService<PostReport> {
 
     private final PostReportRepository reportRepository;
     private final PostRepository postRepository;
@@ -126,9 +126,8 @@ public class PostReportService implements ReportAdminService {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Map<Long, Long> buildAuthorReportCounts(Page<?> reports) {
-        Set<Long> ids = ((Page<PostReport>) reports).getContent().stream()
+    public Map<Long, Long> buildAuthorReportCounts(Page<PostReport> reports) {
+        Set<Long> ids = reports.getContent().stream()
                 .map(PostReport::getPostAuthorId).collect(Collectors.toSet());
         return getAuthorReportCounts(ids);
     }
