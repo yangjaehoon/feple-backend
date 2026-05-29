@@ -7,8 +7,8 @@ import java.util.Map;
 public interface ReportQueryService {
     String getReportType();
     Page<?> getReportsForAdmin(int page, int size, String statusFilter);
-    default Page<?> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
-        return getReportsForAdmin(page, size, statusFilter);
+    default Page<?> searchReportsForAdmin(ReportSearchParams params) {
+        return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
     }
     long getPendingCount();
     long getTotalCount();

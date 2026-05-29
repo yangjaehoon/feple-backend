@@ -7,6 +7,7 @@ import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
+import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -90,7 +91,7 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long photoId,
             @Valid @RequestBody UpdatePhotoRequestDto req,
             @AuthenticationPrincipal Long userId) {
-        return artistGalleryPhotoService.update(photoId, userId, req.title(), req.description());
+        return artistGalleryPhotoService.update(photoId, userId, req);
     }
 
     @PostMapping("/{photoId}/report")
@@ -100,7 +101,7 @@ public class ArtistGalleryPhotoController {
             @Valid @RequestBody ReportRequest body,
             @AuthenticationPrincipal Long userId) {
         if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
-        artistPhotoReportService.submitReport(photoId, userId, body.reason(), body.detail());
+        artistPhotoReportService.submitReport(photoId, userId, new SubmitReportCommand(body.reason(), body.detail()));
         return ResponseEntity.ok().build();
     }
 

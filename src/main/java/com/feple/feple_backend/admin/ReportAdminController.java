@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.admin.service.ReportSearchParams;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -37,9 +38,7 @@ public class ReportAdminController {
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
         ReportAdminService handler = resolveHandler(type);
-        Page<?> reports = keyword.isBlank()
-                ? handler.getReportsForAdmin(page, PAGE_SIZE, status)
-                : handler.searchReportsForAdmin(page, PAGE_SIZE, status, keyword);
+        Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(page, PAGE_SIZE, status, keyword));
         model.addAttribute("reports", reports);
         model.addAttribute("pendingCount", handler.getPendingCount());
         model.addAttribute("totalCount", handler.getTotalCount());

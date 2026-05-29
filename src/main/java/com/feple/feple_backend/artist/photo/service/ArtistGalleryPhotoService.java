@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.photo.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
+import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
@@ -101,12 +102,12 @@ public class ArtistGalleryPhotoService {
     }
 
     @Transactional
-    public ArtistGalleryPhotoResponseDto update(Long photoId, Long userId, String title, String description) {
+    public ArtistGalleryPhotoResponseDto update(Long photoId, Long userId, UpdatePhotoRequestDto command) {
         ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         if (!photo.getUploaderId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 수정할 수 있습니다.");
         }
-        photo.updateTitleAndDescription(title, description);
+        photo.updateTitleAndDescription(command.title(), command.description());
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
         return new ArtistGalleryPhotoResponseDto(
                 photo.getId(), url, photo.getUploaderId(), photo.getCreatedAt(),

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.controller;
 
+import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.service.PostReportService;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ public class PostReportController {
             @PathVariable Long postId,
             @Valid @RequestBody ReportRequest body,
             @AuthenticationPrincipal Long userId) {
-        postReportService.submitReport(postId, userId, body.getReason(), body.getDetail());
+        postReportService.submitReport(postId, userId, new SubmitReportCommand(body.getReason(), body.getDetail()));
         return ResponseEntity.ok().build();
     }
 

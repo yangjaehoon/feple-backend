@@ -5,6 +5,7 @@ import com.feple.feple_backend.comment.dto.CommentResponseDto;
 import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -66,7 +67,7 @@ public class CommentController {
             @PathVariable Long commentId,
             @Valid @RequestBody ReportRequest body,
             @AuthenticationPrincipal Long userId) {
-        commentReportService.submitReport(commentId, userId, body.getReason(), body.getDetail());
+        commentReportService.submitReport(commentId, userId, new SubmitReportCommand(body.getReason(), body.getDetail()));
         return ResponseEntity.ok().build();
     }
 

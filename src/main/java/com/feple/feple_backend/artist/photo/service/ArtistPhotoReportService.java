@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.photo.service;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.admin.service.ReportSearchParams;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
@@ -8,6 +9,7 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReposit
 import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
@@ -35,7 +37,7 @@ public class ArtistPhotoReportService implements ReportAdminService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void submitReport(Long photoId, Long reporterId, ReportReason reason, String detail) {
+    public void submitReport(Long photoId, Long reporterId, SubmitReportCommand command) {
         if (reportRepository.existsByReporterIdAndPhotoId(reporterId, photoId)) {
             throw new ConflictException("이미 신고한 사진입니다.");
         }
@@ -45,8 +47,8 @@ public class ArtistPhotoReportService implements ReportAdminService {
         reportRepository.save(ArtistPhotoReport.builder()
                 .photo(photo)
                 .reporter(reporter)
-                .reason(reason)
-                .detail(detail)
+                .reason(command.reason())
+                .detail(command.detail())
                 .build());
     }
 
@@ -73,11 +75,11 @@ public class ArtistPhotoReportService implements ReportAdminService {
     }
 
     @Override
-    public Page<ArtistPhotoReport> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
-        if (keyword == null || keyword.isBlank()) return getReportsForAdmin(page, size, statusFilter);
-        PageRequest pageable = PageRequest.of(page, size);
-        ReportStatus status = "PENDING".equals(statusFilter) ? ReportStatus.PENDING : null;
-        return reportRepository.searchByKeyword(keyword, status, pageable);
+    public Page<ArtistPhotoReport> searchReportsForAdmin(ReportSearchParams params) {
+        if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
+        PageRequest pageable = PageRequest.of(params.page(), params.size());
+        ReportStatus status = "PENDING".equals(params.statusFilter()) ? ReportStatus.PENDING : null;
+        return reportRepository.searchByKeyword(params.keyword(), status, pageable);
     }
 
     @Override

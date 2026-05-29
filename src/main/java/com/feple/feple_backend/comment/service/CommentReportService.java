@@ -1,9 +1,11 @@
 package com.feple.feple_backend.comment.service;
 
+import com.feple.feple_backend.admin.service.ReportSearchParams;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
@@ -33,7 +35,7 @@ public class CommentReportService implements ReportAdminService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void submitReport(Long commentId, Long reporterId, ReportReason reason, String detail) {
+    public void submitReport(Long commentId, Long reporterId, SubmitReportCommand command) {
         if (reportRepository.existsByReporterIdAndCommentId(reporterId, commentId)) {
             throw new ConflictException("이미 신고한 댓글입니다.");
         }
@@ -43,8 +45,8 @@ public class CommentReportService implements ReportAdminService {
         reportRepository.save(CommentReport.builder()
                 .comment(comment)
                 .reporter(reporter)
-                .reason(reason)
-                .detail(detail)
+                .reason(command.reason())
+                .detail(command.detail())
                 .build());
     }
 
@@ -68,11 +70,11 @@ public class CommentReportService implements ReportAdminService {
     }
 
     @Override
-    public Page<CommentReport> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
-        if (keyword == null || keyword.isBlank()) return getReportsForAdmin(page, size, statusFilter);
-        PageRequest pageable = PageRequest.of(page, size);
-        ReportStatus status = "PENDING".equals(statusFilter) ? ReportStatus.PENDING : null;
-        return reportRepository.searchByKeyword(keyword, status, pageable);
+    public Page<CommentReport> searchReportsForAdmin(ReportSearchParams params) {
+        if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
+        PageRequest pageable = PageRequest.of(params.page(), params.size());
+        ReportStatus status = "PENDING".equals(params.statusFilter()) ? ReportStatus.PENDING : null;
+        return reportRepository.searchByKeyword(params.keyword(), status, pageable);
     }
 
     @Override

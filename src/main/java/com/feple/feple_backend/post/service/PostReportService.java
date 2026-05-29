@@ -1,5 +1,7 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.admin.service.ReportSearchParams;
+import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportReason;
@@ -34,7 +36,7 @@ public class PostReportService implements ReportAdminService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void submitReport(Long postId, Long reporterId, ReportReason reason, String detail) {
+    public void submitReport(Long postId, Long reporterId, SubmitReportCommand command) {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
             throw new ConflictException("이미 신고한 게시글입니다.");
         }
@@ -44,8 +46,8 @@ public class PostReportService implements ReportAdminService {
         reportRepository.save(PostReport.builder()
                 .post(post)
                 .reporter(reporter)
-                .reason(reason)
-                .detail(detail)
+                .reason(command.reason())
+                .detail(command.detail())
                 .build());
     }
 
@@ -69,11 +71,11 @@ public class PostReportService implements ReportAdminService {
     }
 
     @Override
-    public Page<PostReport> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
-        if (keyword == null || keyword.isBlank()) return getReportsForAdmin(page, size, statusFilter);
-        PageRequest pageable = PageRequest.of(page, size);
-        ReportStatus status = "PENDING".equals(statusFilter) ? ReportStatus.PENDING : null;
-        return reportRepository.searchByKeyword(keyword, status, pageable);
+    public Page<PostReport> searchReportsForAdmin(ReportSearchParams params) {
+        if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
+        PageRequest pageable = PageRequest.of(params.page(), params.size());
+        ReportStatus status = "PENDING".equals(params.statusFilter()) ? ReportStatus.PENDING : null;
+        return reportRepository.searchByKeyword(params.keyword(), status, pageable);
     }
 
     @Override
