@@ -2,11 +2,6 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.account.AdminAccountService;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.admin.service.AdminStatsService;
-import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
-import com.feple.feple_backend.festival.service.FestivalService;
-import com.feple.feple_backend.post.service.PostAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,11 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class AdminHomeController {
 
-    private final FestivalService festivalService;
-    private final ArtistService artistService;
-    private final PostAdminService postAdminService;
-    private final AdminStatsService adminStatsService;
-    private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final AdminDashboardAssembler dashboardAssembler;
     private final AdminLogService adminLogService;
     private final AdminAccountService adminAccountService;
 
@@ -35,31 +26,10 @@ public class AdminHomeController {
                             @RequestParam(defaultValue = "0") int festivalPage,
                             @RequestParam(defaultValue = "0") int artistPage,
                             Model model) {
-
-        AdminDashboardDto dashboard = new AdminDashboardDto(
-                festivalService.getFestivalsPage(festivalPage, AdminConstants.DASHBOARD_PAGE_SIZE),
-                artistService.getArtistsPage(artistPage, AdminConstants.DASHBOARD_PAGE_SIZE),
-                postAdminService.getTotalPostCount(),
-                adminStatsService.getTotalUserCount(),
-                postAdminService.countRecentPosts(AdminConstants.STATS_RECENT_DAYS),
-                postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getRecentUsers(),
-                adminStatsService.getDailyStats(),
-                adminStatsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getPendingCertCount(),
-                adminStatsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getPendingReportCount(),
-                adminStatsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getPendingSongRequestCount(),
-                artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                artistSuggestionAdminService.countPending()
-        );
-        model.addAttribute("dashboard", dashboard);
+        model.addAttribute("dashboard", dashboardAssembler.assemble(festivalPage, artistPage));
         model.addAttribute("recentLogs", adminLogService.getRecentLogs());
         adminAccountService.findByUsername(authentication.getName())
                 .ifPresent(admin -> model.addAttribute("currentAdmin", admin));
-
         return "admin/admin-home";
     }
 }

@@ -11,12 +11,14 @@ import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +27,6 @@ import org.springframework.data.domain.Page;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
 @PreAuthorize("hasRole('ADMIN')")
@@ -52,26 +53,24 @@ public class FestivalAdminController {
     }
 
     @PostMapping("/new")
-    public String createFestival(@ModelAttribute("festival") FestivalRequestDto dto,
+    public String createFestival(@Valid @ModelAttribute("festival") FestivalRequestDto dto,
+                                 BindingResult bindingResult,
                                  @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
                                  @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
                                  Model model) throws IOException {
 
-        List<String> errors = new ArrayList<>();
-        if (dto.getTitle() == null || dto.getTitle().isBlank()) errors.add("제목을 입력해주세요.");
-        if (dto.getDescription() == null || dto.getDescription().isBlank()) errors.add("설명을 입력해주세요.");
-
         if (posterFile != null && !posterFile.isEmpty()) {
             try {
-                String posterKey = festivalService.uploadPosterFile(posterFile, dto.getStartDate());
-                dto.setPosterKey(posterKey);
+                dto.setPosterKey(festivalService.uploadPosterFile(posterFile, dto.getStartDate()));
             } catch (IllegalArgumentException e) {
-                errors.add(e.getMessage());
+                bindingResult.rejectValue("posterKey", "upload.failed", e.getMessage());
             }
         }
 
-        if (!errors.isEmpty()) {
-            model.addAttribute("errors", errors);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors().stream()
+                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList());
             populateFestivalFormModel(model);
             return "admin/festival-form";
         }

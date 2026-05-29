@@ -42,11 +42,8 @@ public class AdminPushController {
     public String send(@RequestParam String title,
                        @RequestParam String body,
                        RedirectAttributes ra) {
+        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
         try {
-            if (title.isBlank() || body.isBlank()) {
-                ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
-                return "redirect:/admin/push";
-            }
             adminPushService.sendToAll(title.strip(), body.strip());
             adminLogService.log("PUSH_BROADCAST", null, null, title.strip());
             ra.addFlashAttribute("successMessage", "푸시 알림이 발송되었습니다.");
@@ -73,11 +70,8 @@ public class AdminPushController {
                                         @RequestParam String body,
                                         @RequestParam Long artistId,
                                         RedirectAttributes ra) {
+        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
         try {
-            if (title.isBlank() || body.isBlank()) {
-                ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
-                return "redirect:/admin/push";
-            }
             adminPushService.sendToArtistFollowers(artistId, title.strip(), body.strip());
             adminLogService.log("PUSH_ARTIST_FOLLOWERS", "ARTIST", artistId, title.strip());
             ra.addFlashAttribute("successMessage", "아티스트 팔로워에게 발송되었습니다.");
@@ -95,11 +89,8 @@ public class AdminPushController {
                                           @RequestParam String body,
                                           @RequestParam Long festivalId,
                                           RedirectAttributes ra) {
+        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
         try {
-            if (title.isBlank() || body.isBlank()) {
-                ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
-                return "redirect:/admin/push";
-            }
             adminPushService.sendToFestivalCertified(festivalId, title.strip(), body.strip());
             adminLogService.log("PUSH_FESTIVAL_CERTIFIED", "FESTIVAL", festivalId, title.strip());
             ra.addFlashAttribute("successMessage", "페스티벌 인증 참여자에게 발송되었습니다.");
@@ -117,11 +108,8 @@ public class AdminPushController {
                            @RequestParam String body,
                            @RequestParam Long targetUserId,
                            RedirectAttributes ra) {
+        if (!validatePushInput(title, body, ra)) return "redirect:/admin/push";
         try {
-            if (title.isBlank() || body.isBlank()) {
-                ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
-                return "redirect:/admin/push";
-            }
             adminPushService.sendTest(targetUserId, title.strip(), body.strip());
             adminLogService.log("PUSH_TEST", "USER", targetUserId, title.strip());
             ra.addFlashAttribute("successMessage", "테스트 발송 완료 (userId=" + targetUserId + ")");
@@ -132,5 +120,13 @@ public class AdminPushController {
             ra.addFlashAttribute("errorMessage", "발송 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/push";
+    }
+
+    private boolean validatePushInput(String title, String body, RedirectAttributes ra) {
+        if (title.isBlank() || body.isBlank()) {
+            ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
+            return false;
+        }
+        return true;
     }
 }

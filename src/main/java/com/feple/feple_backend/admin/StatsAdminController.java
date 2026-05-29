@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.admin.service.AdminStatsService;
+import com.feple.feple_backend.admin.service.AdminMetricsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @RequestMapping("/admin/stats")
 public class StatsAdminController {
 
-    private final AdminStatsService adminStatsService;
+    private final AdminMetricsService adminStatsService;
 
     @GetMapping
     public String stats(
