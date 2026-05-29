@@ -16,9 +16,11 @@ public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGa
     @Query("SELECT CASE WHEN COUNT(apl) > 0 THEN TRUE ELSE FALSE END FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId AND apl.user.id = :userId")
     boolean existsByPhoto_IdAndUser_Id(@Param("photoId") Long photoId, @Param("userId") Long userId);
 
-    Optional<ArtistGalleryPhotoLike> findByPhoto_IdAndUser_Id(Long photoId, Long userId);
+    @Query("SELECT apl FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId AND apl.user.id = :userId")
+    Optional<ArtistGalleryPhotoLike> findByPhoto_IdAndUser_Id(@Param("photoId") Long photoId, @Param("userId") Long userId);
 
-    long countByPhoto_Id(Long photoId);
+    @Query("SELECT COUNT(apl) FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId")
+    long countByPhoto_Id(@Param("photoId") Long photoId);
 
     @Query("SELECT apl.photo.id FROM ArtistGalleryPhotoLike apl WHERE apl.user.id = :userId AND apl.photo.id IN :photoIds")
     Set<Long> findLikedPhotoIds(@Param("userId") Long userId, @Param("photoIds") List<Long> photoIds);

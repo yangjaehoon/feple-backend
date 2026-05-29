@@ -9,11 +9,14 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGalleryPhoto, Long> {
-    List<ArtistGalleryPhoto> findByArtist_IdOrderByIdDesc(Long artistId);
+    @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.artist.id = :artistId ORDER BY p.id DESC")
+    List<ArtistGalleryPhoto> findByArtist_IdOrderByIdDesc(@Param("artistId") Long artistId);
 
-    List<ArtistGalleryPhoto> findByArtist_IdOrderByLikeCountDescCreatedAtDesc(Long artistId);
+    @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.artist.id = :artistId ORDER BY p.likeCount DESC, p.createdAt DESC")
+    List<ArtistGalleryPhoto> findByArtist_IdOrderByLikeCountDescCreatedAtDesc(@Param("artistId") Long artistId);
 
-    ArtistGalleryPhoto findByIdAndArtist_Id(Long id, Long artistId);
+    @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.id = :id AND p.artist.id = :artistId")
+    ArtistGalleryPhoto findByIdAndArtist_Id(@Param("id") Long id, @Param("artistId") Long artistId);
 
     @Modifying
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount + 1 WHERE p.id = :photoId")
