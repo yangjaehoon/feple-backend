@@ -25,6 +25,7 @@ public class ArtistFestivalSong {
     private ArtistFestival artistFestival;
 
     public Long getSongId() { return song.getId(); }
+    public Long getArtistFestivalId() { return artistFestival.getId(); }
 
     @Builder
     public ArtistFestivalSong(Song song, ArtistFestival artistFestival) {

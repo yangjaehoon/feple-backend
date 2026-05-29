@@ -136,7 +136,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
 
         songRequestRepository.save(request);
         eventPublisher.publishEvent(new SongRequestApprovedEvent(
-                request.getUserId(), request.getSongTitle(), request.getArtist().getName()));
+                request.getUserId(), request.getSongTitle(), request.getArtistName()));
     }
 
     @Override
@@ -147,7 +147,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         request.reject();
         songRequestRepository.save(request);
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
-                request.getUserId(), request.getSongTitle(), request.getArtist().getName(), reason));
+                request.getUserId(), request.getSongTitle(), request.getArtistName(), reason));
     }
 
     private String resolveNickname(Long userId) {

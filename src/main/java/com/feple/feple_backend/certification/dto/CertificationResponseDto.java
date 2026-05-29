@@ -19,8 +19,8 @@ public record CertificationResponseDto(
     public static CertificationResponseDto from(FestivalCertification cert, String festivalPosterUrl, String photoUrl) {
         return new CertificationResponseDto(
                 cert.getId(),
-                cert.getFestival().getId(),
-                cert.getFestival().getTitle(),
+                cert.getFestivalId(),
+                cert.getFestivalTitle(),
                 festivalPosterUrl,
                 photoUrl,
                 cert.getStatus(),

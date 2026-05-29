@@ -27,14 +27,14 @@ public class ArtistScheduleService {
 
         // 페스티벌 ID 목록을 한 번에 조회하여 N+1 방지
         List<Long> festivalIds = myFestivals.stream()
-                .map(af -> af.getFestival().getId())
+                .map(ArtistFestival::getFestivalId)
                 .toList();
 
         Map<Long, List<ArtistFestival>> coArtistMap = festivalIds.isEmpty()
                 ? Map.of()
                 : artistFestivalRepository.findByFestivalIdInWithArtist(festivalIds)
                         .stream()
-                        .collect(Collectors.groupingBy(af -> af.getFestival().getId()));
+                        .collect(Collectors.groupingBy(ArtistFestival::getFestivalId));
 
         return myFestivals.stream()
                 .map(af -> buildResponse(af, artistId, coArtistMap))
@@ -47,12 +47,12 @@ public class ArtistScheduleService {
         List<ArtistScheduleResponse.CoArtistInfo> coArtists =
                 coArtistMap.getOrDefault(festival.getId(), List.of())
                         .stream()
-                        .filter(other -> !other.getArtist().getId().equals(artistId))
+                        .filter(other -> !other.getArtistId().equals(artistId))
                         .map(other -> ArtistScheduleResponse.CoArtistInfo.builder()
-                                .artistId(other.getArtist().getId())
-                                .artistName(other.getArtist().getName())
+                                .artistId(other.getArtistId())
+                                .artistName(other.getArtistName())
                                 .profileImageUrl(fileStorageService.buildUrl(
-                                        other.getArtist().getProfileImageKey()))
+                                        other.getArtistProfileImageKey()))
                                 .build())
                         .toList();
 

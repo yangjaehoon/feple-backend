@@ -61,8 +61,8 @@ public class FestivalCertificationService {
     public List<CertificationResponseDto> getMyCertifications(Long userId) {
         return certificationRepository.findByUserId(userId).stream()
                 .map(cert -> {
-                    String posterUrl = cert.getFestival().getPosterKey() != null
-                            ? s3PresignService.presignGetUrl(cert.getFestival().getPosterKey())
+                    String posterUrl = cert.getFestivalPosterKey() != null
+                            ? s3PresignService.presignGetUrl(cert.getFestivalPosterKey())
                             : null;
                     String photoUrl = s3PresignService.presignGetUrl(cert.getPhotoKey());
                     return CertificationResponseDto.from(cert, posterUrl, photoUrl);
@@ -73,7 +73,7 @@ public class FestivalCertificationService {
     @Transactional(readOnly = true)
     public List<Long> getApprovedFestivalIds(Long userId) {
         return certificationRepository.findByUserIdAndStatus(userId, CertificationStatus.APPROVED).stream()
-                .map(cert -> cert.getFestival().getId())
+                .map(FestivalCertification::getFestivalId)
                 .toList();
     }
 
@@ -103,9 +103,9 @@ public class FestivalCertificationService {
         cert.approve(reviewerName);
         // 비동기 알림
         notificationService.notifyCertApproved(
-                cert.getUser().getId(),
-                cert.getFestival().getTitle(),
-                cert.getFestival().getId());
+                cert.getUserId(),
+                cert.getFestivalTitle(),
+                cert.getFestivalId());
     }
 
     @Transactional
@@ -114,9 +114,9 @@ public class FestivalCertificationService {
         cert.reject(rejectionMessage, reviewerName);
         // 비동기 알림
         notificationService.notifyCertRejected(
-                cert.getUser().getId(),
-                cert.getFestival().getTitle(),
-                cert.getFestival().getId(),
+                cert.getUserId(),
+                cert.getFestivalTitle(),
+                cert.getFestivalId(),
                 rejectionMessage);
     }
 

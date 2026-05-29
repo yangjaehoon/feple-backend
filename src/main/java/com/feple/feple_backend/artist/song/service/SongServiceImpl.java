@@ -117,7 +117,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
 
         Map<Long, List<SongResponseDto>> songsByAfId = new HashMap<>();
         for (ArtistFestivalSong afs : afSongs) {
-            songsByAfId.computeIfAbsent(afs.getArtistFestival().getId(), k -> new ArrayList<>())
+            songsByAfId.computeIfAbsent(afs.getArtistFestivalId(), k -> new ArrayList<>())
                        .add(SongResponseDto.from(afs.getSong()));
         }
 
@@ -125,8 +125,8 @@ public class SongServiceImpl implements SongService, SongAdminService {
                 .map(af -> FestivalSetlistEntryDto.builder()
                         .artistFestivalId(af.getId())
                         .artistId(af.getArtistId())
-                        .artistName(af.getArtist().getName())
-                        .profileImageUrl(fileStorageService.buildUrl(af.getArtist().getProfileImageKey()))
+                        .artistName(af.getArtistName())
+                        .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
                         .songs(songsByAfId.getOrDefault(af.getId(), List.of()))
                         .build())
                 .toList();

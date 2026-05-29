@@ -55,7 +55,7 @@ public class ArtistFestivalService {
 
         return artistFestivals.stream()
                 .map(af -> toResponse(af, datesByArtistName.getOrDefault(
-                        af.getArtist().getName(), List.of())))
+                        af.getArtistName(), List.of())))
                 .toList();
     }
 
@@ -95,7 +95,7 @@ public class ArtistFestivalService {
                                      Integer lineupOrder, String stageName) {
         ArtistFestival af = artistFestivalRepository.findById(artistFestivalId)
                 .orElseThrow(() -> new NoSuchElementException("참여 정보가 없습니다."));
-        if (!af.getFestival().getId().equals(festivalId)) {
+        if (!af.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
 
@@ -104,7 +104,7 @@ public class ArtistFestivalService {
         af.updateLineup(lineupOrder, stageName);
 
         if (stageName != null && !stageName.equals(oldStage)) {
-            String artistName = af.getArtist().getName();
+            String artistName = af.getArtistName();
             Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, stageName)
                     .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + stageName));
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
@@ -117,7 +117,7 @@ public class ArtistFestivalService {
         ArtistFestival artistFestival = artistFestivalRepository.findById(artistFestivalId)
                 .orElseThrow(() -> new NoSuchElementException("참여 정보가 없습니다."));
 
-        if (!artistFestival.getFestival().getId().equals(festivalId)) {
+        if (!artistFestival.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
 
@@ -128,10 +128,10 @@ public class ArtistFestivalService {
     private ArtistFestivalResponse toResponse(ArtistFestival af, List<String> dates) {
         return ArtistFestivalResponse.builder()
                 .artistFestivalId(af.getId())
-                .artistId(af.getArtist().getId())
-                .artistName(af.getArtist().getName())
-                .artistGenre(af.getArtist().getGenre() != null ? af.getArtist().getGenre().getDisplayName() : null)
-                .profileImageUrl(fileStorageService.buildUrl(af.getArtist().getProfileImageKey()))
+                .artistId(af.getArtistId())
+                .artistName(af.getArtistName())
+                .artistGenre(af.getArtistGenreDisplayName())
+                .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
                 .lineupOrder(af.getLineupOrder())
                 .stageName(af.getStageName())
                 .performanceDates(dates)

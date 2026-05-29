@@ -59,9 +59,9 @@ public class CommentServiceImpl implements CommentService {
         }
 
         boolean certified = false;
-        if (post.getFestival() != null) {
+        if (post.getFestivalId() != null) {
             certified = certificationRepository
-                    .findApprovedUserIdsByFestivalId(post.getFestival().getId())
+                    .findApprovedUserIdsByFestivalId(post.getFestivalId())
                     .contains(userId);
         }
 
@@ -165,8 +165,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Set<Long> getCertifiedUserIds(Post post) {
-        if (post.getFestival() == null) return Set.of();
-        return certificationRepository.findApprovedUserIdsByFestivalId(post.getFestival().getId());
+        if (post.getFestivalId() == null) return Set.of();
+        return certificationRepository.findApprovedUserIdsByFestivalId(post.getFestivalId());
     }
 
     private Set<Long> getLikedCommentIds(Long userId, List<Long> commentIds) {

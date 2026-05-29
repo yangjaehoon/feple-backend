@@ -42,6 +42,9 @@ public class ArtistFestival {
     }
 
     public Long getArtistId() { return artist.getId(); }
+    public String getArtistName() { return artist.getName(); }
+    public String getArtistGenreDisplayName() { return artist.getGenre() != null ? artist.getGenre().getDisplayName() : null; }
+    public String getArtistProfileImageKey() { return artist.getProfileImageKey(); }
     public Long getFestivalId() { return festival.getId(); }
 
     public void updateLineup(Integer lineupOrder, String stageName) {

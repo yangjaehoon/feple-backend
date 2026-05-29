@@ -61,7 +61,7 @@ public class ArtistGalleryPhotoService {
         return new ArtistGalleryPhotoResponseDto(
                 saved.getId(),
                 url,
-                saved.getUploader().getId(),
+                saved.getUploaderId(),
                 saved.getCreatedAt(),
                 saved.getTitle(),
                 saved.getDescription(),
@@ -80,7 +80,7 @@ public class ArtistGalleryPhotoService {
                 .map(p -> new ArtistGalleryPhotoResponseDto(
                         p.getId(),
                         s3PresignService.presignGetUrl(p.getS3Key()),
-                        p.getUploader().getId(),
+                        p.getUploaderId(),
                         p.getCreatedAt(),
                         p.getTitle(),
                         p.getDescription(),
@@ -92,7 +92,7 @@ public class ArtistGalleryPhotoService {
     @Transactional
     public void delete(Long photoId, Long userId) {
         ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
-        if (!photo.getUploader().getId().equals(userId)) {
+        if (!photo.getUploaderId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
         }
         String s3Key = photo.getS3Key();
@@ -103,13 +103,13 @@ public class ArtistGalleryPhotoService {
     @Transactional
     public ArtistGalleryPhotoResponseDto update(Long photoId, Long userId, String title, String description) {
         ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
-        if (!photo.getUploader().getId().equals(userId)) {
+        if (!photo.getUploaderId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 수정할 수 있습니다.");
         }
         photo.updateTitleAndDescription(title, description);
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
         return new ArtistGalleryPhotoResponseDto(
-                photo.getId(), url, photo.getUploader().getId(), photo.getCreatedAt(),
+                photo.getId(), url, photo.getUploaderId(), photo.getCreatedAt(),
                 photo.getTitle(), photo.getDescription(), photo.getLikeCount(), false);
     }
 

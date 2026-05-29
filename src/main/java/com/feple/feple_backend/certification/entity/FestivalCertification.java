@@ -51,6 +51,7 @@ public class FestivalCertification {
 
     public Long getFestivalId() { return festival.getId(); }
     public String getFestivalTitle() { return festival.getTitle(); }
+    public String getFestivalPosterKey() { return festival.getPosterKey(); }
     public Long getUserId() { return user.getId(); }
     public String getUserNickname() { return user.getNickname(); }
     public String getUserEmail() { return user.getEmail(); }
