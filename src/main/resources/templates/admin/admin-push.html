@@ -30,7 +30,7 @@
                 <div class="card-count" th:text="${deviceCount} + '명 수신 가능'"></div>
             </div>
             <div style="padding:24px;">
-                <form th:action="@{/admin/push}" method="post"
+                <form id="broadcast-form" th:action="@{/admin/push}" method="post"
                       onsubmit="return confirm('전체 ' + document.getElementById('device-count').textContent + '에게 푸시 알림을 발송하시겠습니까?')">
                     <div style="margin-bottom:16px;">
                         <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-1);">제목 *</label>
@@ -50,8 +50,13 @@
                               th:text="${deviceCount} + '명'"></span>
                         <span style="font-size:12px; color:var(--muted);">의 기기로 발송됩니다.</span>
                     </div>
+                </form>
 
-                    <hr style="margin:24px 0; border-color:var(--border);"/>
+                <hr style="margin:24px 0; border-color:var(--border);"/>
+
+                <form id="test-form" th:action="@{/admin/push/test}" method="post">
+                    <input type="hidden" name="title"/>
+                    <input type="hidden" name="body"/>
 
                     <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px;">
                         테스트 발송
@@ -78,8 +83,6 @@
                                    style="width:130px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px;"/>
                         </div>
                         <button type="submit"
-                                formaction="/admin/push/test"
-                                formnovalidate
                                 onclick="return validateTest(this.form)"
                                 class="btn btn-secondary">나에게 발송</button>
                         <span style="font-size:12px; color:var(--muted); line-height:1.5;">
@@ -262,13 +265,17 @@
         document.getElementById('target-user-id').value = id;
     }
 
-    function validateTest(form) {
-        const title = form.querySelector('[name="title"]').value.trim();
-        const body  = form.querySelector('[name="body"]').value.trim();
-        const uid   = form.querySelector('[name="targetUserId"]').value.trim();
+    function validateTest(testForm) {
+        const broadcastForm = document.getElementById('broadcast-form');
+        const title = broadcastForm.querySelector('[name="title"]').value.trim();
+        const body  = broadcastForm.querySelector('[name="body"]').value.trim();
+        const uid   = testForm.querySelector('[name="targetUserId"]').value.trim();
         if (!title || !body) { alert('제목과 내용을 입력해주세요.'); return false; }
         if (!uid)            { alert('테스트 대상 사용자 ID를 입력해주세요.'); return false; }
-        return confirm('사용자 ID ' + uid + ' 에게 테스트 발송하시겠습니까?');
+        if (!confirm('사용자 ID ' + uid + ' 에게 테스트 발송하시겠습니까?')) return false;
+        testForm.querySelector('[name="title"]').value = title;
+        testForm.querySelector('[name="body"]').value  = body;
+        return true;
     }
 
     function openBroadcastModal(btn) {
