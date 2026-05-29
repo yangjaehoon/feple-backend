@@ -12,11 +12,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "게시글", description = "자유·동행·아티스트·페스티벌 게시글 CRUD, 좋아요, 스크랩")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")

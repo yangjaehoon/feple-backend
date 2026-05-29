@@ -86,3 +86,11 @@ file:
 kma:
   service-key: ${KMA_SERVICE_KEY:}
   base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    operations-sorter: alpha
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs

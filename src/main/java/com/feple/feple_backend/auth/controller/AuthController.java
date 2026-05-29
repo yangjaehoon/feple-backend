@@ -18,11 +18,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+@Tag(name = "인증", description = "카카오·Firebase OAuth 로그인, 토큰 갱신·로그아웃")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")

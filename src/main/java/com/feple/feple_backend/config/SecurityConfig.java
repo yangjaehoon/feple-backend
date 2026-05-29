@@ -87,6 +87,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                 .requestMatchers("/favicon.ico", "/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/posts/my/scrapped").authenticated()
