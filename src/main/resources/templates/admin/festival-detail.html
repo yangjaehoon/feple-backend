@@ -215,14 +215,14 @@
                     <input type="hidden" name="stageName" id="autoStageName"/>
 
                     <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">날짜</label>
+                        <label class="form-label-sm">날짜</label>
                         <input type="date" name="festivalDate"
                                th:min="${festival.startDate}" th:max="${festival.endDate}"
                                th:value="${festival.startDate}" required
                                style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">아티스트</label>
+                        <label class="form-label-sm">아티스트</label>
                         <th:block th:if="${!participatingArtistsByName.isEmpty()}">
                             <select name="artistName" id="artistSelect" required onchange="onArtistChange(this)"
                                     style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
@@ -239,7 +239,7 @@
                         </th:block>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">스테이지 (자동)</label>
+                        <label class="form-label-sm">스테이지 (자동)</label>
                         <div id="stagePreview" style="padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f8f9ff; color:var(--muted); min-height:36px;">
                             아티스트 선택 시 자동 입력
                         </div>
@@ -247,13 +247,13 @@
                     <div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                             <div>
-                                <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">시작</label>
+                                <label class="form-label-sm">시작</label>
                                 <input type="time" name="startTime" id="startTime" required
                                        oninput="clearTimeError()"
                                        style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
                             </div>
                             <div>
-                                <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종료</label>
+                                <label class="form-label-sm">종료</label>
                                 <input type="time" name="endTime" id="endTime" required
                                        oninput="clearTimeError()"
                                        style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
@@ -373,12 +373,12 @@
                     <input type="hidden" id="boothLat" name="latitude"/>
                     <input type="hidden" id="boothLng" name="longitude"/>
                     <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">부스명</label>
+                        <label class="form-label-sm">부스명</label>
                         <input type="text" name="name" placeholder="예: 맥주존 A" required
                                style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">종류</label>
+                        <label class="form-label-sm">종류</label>
                         <select name="boothType" required
                                 style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
                             <option value="" disabled selected>선택</option>
@@ -386,12 +386,12 @@
                         </select>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">설명 (선택)</label>
+                        <label class="form-label-sm">설명 (선택)</label>
                         <input type="text" name="description" placeholder="간단한 설명"
                                style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">이미지 (선택)</label>
+                        <label class="form-label-sm">이미지 (선택)</label>
                         <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
                                onchange="validateBoothImage(this)"
                                style="width:100%; padding:5px 0; font-size:12px;"/>

@@ -139,7 +139,7 @@
         <!-- 사진 없는 아티스트 -->
         <div class="card" th:unless="${#lists.isEmpty(artists.?[profileImageUrl == null])}">
             <div class="card-header">
-                <div class="card-title" style="color:#e53935;">⚠ 사진 미등록 아티스트</div>
+                <div class="card-title" style="color:var(--danger);">⚠ 사진 미등록 아티스트</div>
                 <span class="card-count"
                       th:text="${#lists.size(artists.?[profileImageUrl == null])}"></span>
             </div>

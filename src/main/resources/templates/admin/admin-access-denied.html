@@ -24,9 +24,9 @@
                     <span th:each="auth : ${#authentication.authorities}"
                           th:if="${#strings.startsWith(auth.authority, 'PERM_')}"
                           th:text="${auth.authority.replace('PERM_', '')}"
-                          style="display:inline-block; padding:3px 10px; background:#EFF6FF; color:#1D4ED8; border-radius:20px; font-size:11px; font-weight:700;"></span>
+                          class="badge badge-primary"></span>
                     <span sec:authorize="hasRole('SUPER_ADMIN')"
-                          style="display:inline-block; padding:3px 10px; background:#FEF3C7; color:#92400E; border-radius:20px; font-size:11px; font-weight:700;">SUPER_ADMIN</span>
+                          class="badge badge-warning">SUPER_ADMIN</span>
                 </div>
             </div>
             <a th:href="@{/admin}" class="btn btn-primary">대시보드로 돌아가기</a>
