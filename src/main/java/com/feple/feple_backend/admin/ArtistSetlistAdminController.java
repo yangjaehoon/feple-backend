@@ -6,8 +6,7 @@ import com.feple.feple_backend.artist.song.entity.ArtistFestivalSong;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
-import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -27,13 +26,12 @@ public class ArtistSetlistAdminController {
     private final SongService songService;
     private final SongAdminService songAdminService;
     private final ArtistService artistService;
-    private final ArtistFestivalRepository artistFestivalRepository;
+    private final ArtistFestivalService artistFestivalService;
 
     @GetMapping
     public String setlistIndex(@PathVariable Long artistId, Model model) {
         ArtistResponseDto artist = artistService.getArtistById(artistId);
-        List<ArtistFestival> appearances = artistFestivalRepository
-                .findByArtistIdOrderByFestivalStartDateDesc(artistId);
+        List<ArtistFestival> appearances = artistFestivalService.getAppearancesByArtistId(artistId);
 
         model.addAttribute("artist", artist);
         model.addAttribute("appearances", appearances);
@@ -46,8 +44,7 @@ public class ArtistSetlistAdminController {
                               @RequestParam(required = false) Long festivalId,
                               Model model) {
         ArtistResponseDto artist = artistService.getArtistById(artistId);
-        ArtistFestival artistFestival = EntityFinder.getOrThrow(
-                artistFestivalRepository::findById, artistFestivalId, "아티스트 페스티벌");
+        ArtistFestival artistFestival = artistFestivalService.getArtistFestivalById(artistFestivalId);
 
         List<ArtistFestivalSong> currentSetlist = songAdminService.getSetlist(artistFestivalId);
         Set<Long> selectedSongIds = new java.util.HashSet<>();

@@ -125,6 +125,15 @@ public class ArtistFestivalService {
         }
     }
 
+    public List<ArtistFestival> getAppearancesByArtistId(Long artistId) {
+        return artistFestivalRepository.findByArtistIdOrderByFestivalStartDateDesc(artistId);
+    }
+
+    public ArtistFestival getArtistFestivalById(Long id) {
+        return artistFestivalRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("아티스트 페스티벌을 찾을 수 없습니다."));
+    }
+
     @Transactional
     public void removeArtistFromFestival(Long festivalId, Long artistFestivalId) {
         ArtistFestival artistFestival = artistFestivalRepository.findById(artistFestivalId)
