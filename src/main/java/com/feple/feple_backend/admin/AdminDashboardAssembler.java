@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.admin.service.AdminStatsService;
+import com.feple.feple_backend.admin.service.AdminMetricsService;
+import com.feple.feple_backend.admin.service.AdminPendingItemsService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -15,7 +16,8 @@ public class AdminDashboardAssembler {
     private final FestivalService festivalService;
     private final ArtistService artistService;
     private final PostAdminService postAdminService;
-    private final AdminStatsService adminStatsService;
+    private final AdminMetricsService adminMetricsService;
+    private final AdminPendingItemsService adminPendingItemsService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
 
     public AdminDashboardDto assemble(int festivalPage, int artistPage) {
@@ -23,18 +25,18 @@ public class AdminDashboardAssembler {
                 festivalService.getFestivalsPage(festivalPage, AdminConstants.DASHBOARD_PAGE_SIZE),
                 artistService.getArtistsPage(artistPage, AdminConstants.DASHBOARD_PAGE_SIZE),
                 postAdminService.getTotalPostCount(),
-                adminStatsService.getTotalUserCount(),
+                adminMetricsService.getTotalUserCount(),
                 postAdminService.countRecentPosts(AdminConstants.STATS_RECENT_DAYS),
                 postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                 artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getRecentUsers(),
-                adminStatsService.getDailyStats(),
-                adminStatsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getPendingCertCount(),
-                adminStatsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getPendingReportCount(),
-                adminStatsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminStatsService.getPendingSongRequestCount(),
+                adminMetricsService.getRecentUsers(),
+                adminMetricsService.getDailyStats(),
+                adminPendingItemsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                adminPendingItemsService.getPendingCertCount(),
+                adminPendingItemsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                adminPendingItemsService.getPendingReportCount(),
+                adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                adminPendingItemsService.getPendingSongRequestCount(),
                 artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                 artistSuggestionAdminService.countPending()
         );

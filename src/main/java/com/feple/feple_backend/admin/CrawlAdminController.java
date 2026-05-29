@@ -1,9 +1,6 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.festival.entity.Genre;
-import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.service.StageService;
@@ -15,7 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,25 +64,7 @@ public class CrawlAdminController {
             return ResponseEntity.badRequest().body(Map.of("error", "시작일과 종료일을 입력해주세요."));
         }
         try {
-            FestivalRequestDto dto = new FestivalRequestDto();
-            dto.setTitle(req.title().trim());
-            dto.setTitleEn(req.titleEn() != null ? req.titleEn().trim() : null);
-            dto.setDescription(req.description() != null ? req.description().trim() : "");
-            dto.setLocation(req.location() != null ? req.location().trim() : "");
-            dto.setStartDate(LocalDate.parse(req.startDate()));
-            dto.setEndDate(LocalDate.parse(req.endDate()));
-
-            if (req.region() != null && !req.region().isBlank()) {
-                dto.setRegion(Region.valueOf(req.region()));
-            }
-            if (req.genres() != null && !req.genres().isEmpty()) {
-                dto.setGenres(req.genres().stream()
-                    .filter(g -> g != null && !g.isBlank())
-                    .map(Genre::valueOf)
-                    .toList());
-            }
-
-            Long festivalId = festivalService.createFestival(dto);
+            Long festivalId = festivalService.createFestival(ScrapedFestivalMapper.toFestivalRequestDto(req));
             return ResponseEntity.ok(Map.of("festivalId", festivalId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
