@@ -6,30 +6,6 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
     <style>
-        /* ── 헤더 탭 버튼 ── */
-        .header-tab-btn {
-            padding: 8px 18px;
-            border: 1.5px solid var(--border);
-            background: #fff;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--muted);
-            border-radius: 8px;
-            transition: color .15s, border-color .15s, background .15s;
-        }
-        .header-tab-btn:hover { color: var(--text-1); background: var(--hover); border-color: var(--primary); }
-        .header-tab-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: #fff;
-        }
-        .header-tab-group { display: flex; gap: 8px; align-items: center; }
-
-        /* ── 탭 패널 ── */
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-
         /* ── KPI 카드 ── */
         .kpi-grid {
             display: grid;
@@ -279,23 +255,23 @@
                     <span class="db-card-title" th:text="'일별 상세 (' + ${from} + ' ~ ' + ${to} + ')'">일별 상세</span>
                 </div>
                 <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <table class="stats-table">
                         <thead>
-                        <tr style="background:#F4F9FD;">
-                            <th style="padding:9px 12px; color:var(--muted); font-weight:700; text-align:left; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;">날짜</th>
-                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">가입</th>
-                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">게시글</th>
-                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">댓글</th>
-                            <th style="padding:9px 10px; color:var(--muted); font-weight:700; text-align:right; border-bottom:1.5px solid var(--border); font-size:10px; text-transform:uppercase; letter-spacing:.5px;">신고</th>
+                        <tr>
+                            <th>날짜</th>
+                            <th class="r">가입</th>
+                            <th class="r">게시글</th>
+                            <th class="r">댓글</th>
+                            <th class="r">신고</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="s : ${rangeStats}" style="border-bottom:1px solid var(--border);">
-                            <td style="padding:8px 12px; color:var(--text-2); font-size:12px;" th:text="${s.date()}"></td>
-                            <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--success); font-size:12px;" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
-                            <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--primary-dk); font-size:12px;" th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
-                            <td style="padding:8px 10px; text-align:right; color:var(--text-2); font-size:12px;" th:text="${s.comments() > 0 ? s.comments() : '-'}"></td>
-                            <td style="padding:8px 10px; text-align:right; color:var(--muted); font-size:12px;" th:text="${s.reports() > 0 ? s.reports() : '-'}"></td>
+                        <tr th:each="s : ${rangeStats}">
+                            <td th:text="${s.date()}"></td>
+                            <td class="r val-green" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
+                            <td class="r val-blue"  th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
+                            <td class="r"           th:text="${s.comments() > 0 ? s.comments() : '-'}"></td>
+                            <td class="r val-muted" th:text="${s.reports() > 0 ? s.reports() : '-'}"></td>
                         </tr>
                         </tbody>
                     </table>

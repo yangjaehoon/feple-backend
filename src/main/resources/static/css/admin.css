@@ -44,6 +44,12 @@
   --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
   --shadow:    0 4px 16px rgba(0,0,0,.08);
   --shadow-md: 0 8px 28px rgba(0,0,0,.10);
+
+  /* ── Aliases (legacy inline refs in older pages) ── */
+  --text-1:     var(--text);
+  --primary-50: var(--primary-lt);
+  --hover:      var(--primary-lt);
+  --bg-2:       #F4F9FD;
 }
 
 /* ── Base ── */
@@ -413,6 +419,17 @@ tbody td a:hover { text-decoration: underline; color: var(--primary); }
   background: var(--danger-lt) !important; color: var(--danger) !important;
   border-color: #FFD0DE !important;
 }
+/* 역할 / 상태 배지 */
+.badge-admin    { background: #ede9fe !important; color: #5b21b6 !important; border-color: #c4b5fd !important; }
+.badge-artist   { background: #dbeafe !important; color: #1e40af !important; border-color: #93c5fd !important; }
+.badge-ban      { background: #f1f5f9 !important; color: #475569 !important; border-color: #cbd5e1 !important; }
+/* 페스티벌 진행 상태 배지 */
+.badge-ongoing  { background: #dcfce7 !important; color: #166534 !important; border-color: #86efac !important; }
+.badge-upcoming { background: #dbeafe !important; color: #1e40af !important; border-color: #93c5fd !important; }
+.badge-ended    { background: #f1f5f9 !important; color: #64748b !important; border-color: #cbd5e1 !important; }
+/* 신고 누적 수 배지 */
+.badge-report-low  { background: var(--warning-lt) !important; color: #92400e !important; border-color: #fed7aa !important; }
+.badge-report-high { background: var(--danger-lt)  !important; color: var(--danger) !important; border-color: #FFD0DE !important; }
 
 /* ============================================================
    PAGINATION
@@ -835,3 +852,50 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
   padding: 0 0 0 6px; text-decoration: underline; white-space: nowrap;
 }
 .btn-link-inline:hover { opacity: .75; }
+
+/* ============================================================
+   HEADER TAB BUTTONS  (페스티벌 목록 · 통계 페이지 공유)
+   ============================================================ */
+.header-tab-btn {
+  padding: 8px 18px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  color: var(--muted);
+  border-radius: 8px;
+  transition: color .15s, border-color .15s, background .15s;
+  text-decoration: none;
+  display: inline-flex; align-items: center;
+  font-family: inherit;
+}
+.header-tab-btn:hover  { color: var(--text); background: var(--primary-lt); border-color: var(--primary); }
+.header-tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.header-tab-group { display: flex; gap: 8px; align-items: center; }
+
+/* ============================================================
+   TAB PANELS
+   ============================================================ */
+.tab-panel        { display: none; }
+.tab-panel.active { display: block; }
+
+/* ============================================================
+   COMPACT STATS TABLE  (대시보드 일별 지표 · 통계 일별 상세)
+   ============================================================ */
+.stats-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.stats-table thead th {
+  padding: 9px 12px;
+  background: #F4F9FD; color: var(--muted);
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 1.5px solid var(--border);
+  white-space: nowrap; text-align: left;
+}
+.stats-table thead th.r { text-align: right; }
+.stats-table tbody tr { border-bottom: 1px solid var(--border); }
+.stats-table tbody tr:last-child { border-bottom: none; }
+.stats-table tbody td { padding: 8px 12px; color: var(--text-2); font-size: 12px; }
+.stats-table tbody td.r { text-align: right; font-weight: 700; }
+.stats-table tbody td.val-green { color: var(--success); }
+.stats-table tbody td.val-blue  { color: var(--primary-dk); }
+.stats-table tbody td.val-muted { color: var(--muted); font-weight: 400; }

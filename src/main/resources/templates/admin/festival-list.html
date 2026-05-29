@@ -8,29 +8,6 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
     <style>
-        /* ── 헤더 탭 버튼 ── */
-        .header-tab-btn {
-            padding: 8px 18px;
-            border: 1.5px solid var(--border);
-            background: #fff;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--muted);
-            border-radius: 8px;
-            transition: color .15s, border-color .15s, background .15s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-        }
-        .header-tab-btn:hover { color: var(--text-1); background: var(--hover); border-color: var(--primary); }
-        .header-tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-        .header-tab-group { display: flex; gap: 8px; align-items: center; }
-
-        /* ── 탭 패널 ── */
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-
         /* ── 체크리스트 테이블 ── */
         .cl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .cl-table thead tr { background: #F4F9FD; }
@@ -174,14 +151,14 @@
                                 <td>
                                     <!-- 종료 -->
                                     <span th:if="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}"
-                                          style="font-size:11px; font-weight:700; color:#999; background:#ececec; border-radius:20px; padding:3px 9px; white-space:nowrap;">종료</span>
+                                          class="badge badge-ended">종료</span>
                                     <!-- 진행 중 -->
                                     <span th:if="${(festival.endDate == null or !festival.endDate.isBefore(#temporals.createToday()))
                                                    and festival.startDate != null and !festival.startDate.isAfter(#temporals.createToday())}"
-                                          style="font-size:11px; font-weight:700; color:#2f855a; background:#c6f6d5; border-radius:20px; padding:3px 9px; white-space:nowrap;">진행 중</span>
+                                          class="badge badge-ongoing">진행 중</span>
                                     <!-- 예정 -->
                                     <span th:if="${festival.startDate != null and festival.startDate.isAfter(#temporals.createToday())}"
-                                          style="font-size:11px; font-weight:700; color:#2b6cb0; background:#bee3f8; border-radius:20px; padding:3px 9px; white-space:nowrap;">예정</span>
+                                          class="badge badge-upcoming">예정</span>
                                 </td>
                                 <td>
                                     <span class="badge badge-primary"
