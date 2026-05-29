@@ -91,6 +91,19 @@ public class ArtistFestivalService {
     }
 
     @Transactional
+    public void linkArtistsToFestival(Long festivalId, List<Long> artistIds) {
+        if (artistIds == null || artistIds.isEmpty()) return;
+        for (Long artistId : artistIds) {
+            try {
+                ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
+                req.setArtistId(artistId);
+                addArtistToFestival(festivalId, req);
+            } catch (DuplicateArtistFestivalException ignored) {
+            }
+        }
+    }
+
+    @Transactional
     public void updateArtistFestival(Long festivalId, Long artistFestivalId,
                                      Integer lineupOrder, String stageName) {
         ArtistFestival af = artistFestivalRepository.findById(artistFestivalId)

@@ -3,8 +3,6 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import lombok.extern.slf4j.Slf4j;
-import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -73,18 +71,7 @@ public class FestivalAdminController {
 
         Long festivalId = festivalService.createFestival(dto);
         adminLogService.log("FESTIVAL_CREATE", "FESTIVAL", festivalId, dto.getTitle());
-
-        if (artistIds != null) {
-            for (Long artistId : artistIds) {
-                try {
-                    ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
-                    req.setArtistId(artistId);
-                    artistFestivalService.addArtistToFestival(festivalId, req);
-                } catch (DuplicateArtistFestivalException e) {
-                    log.debug("아티스트 중복으로 제외. festivalId={}, artistId={}", festivalId, artistId);
-                }
-            }
-        }
+        artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
 
         return "redirect:/admin";
     }

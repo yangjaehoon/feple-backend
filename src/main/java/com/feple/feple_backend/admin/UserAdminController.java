@@ -1,13 +1,9 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostAdminService;
-import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
-import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserAdminService;
@@ -31,9 +27,9 @@ import java.util.Map;
 public class UserAdminController {
 
     private static final int PAGE_SIZE = 20;
-    private static final int RECENT_POSTS_LIMIT = 10;
 
     private final UserAdminService userService;
+    private final UserDetailAggregationService userDetailAggregationService;
     private final MyPageService myPageService;
     private final CommentService commentService;
     private final PostAdminService postAdminService;
@@ -74,20 +70,7 @@ public class UserAdminController {
 
     @GetMapping("/{id}")
     public String userDetail(@PathVariable Long id, Model model) {
-        UserResponseDto user = userService.getAdminUser(id);
-        UserStatsDto stats = myPageService.getUserStats(id);
-        List<PostResponseDto> allPosts = myPageService.getMyPosts(id);
-        List<PostResponseDto> recentPosts = allPosts.stream().limit(RECENT_POSTS_LIMIT).toList();
-        List<FestivalResponseDto> likedFestivals = myPageService.getLikedFestivals(id);
-        List<ArtistResponseDto> followedArtists = myPageService.getFollowedArtists(id);
-
-        var recentComments = commentService.getMyComments(id).stream().limit(10).toList();
-        model.addAttribute("user", user);
-        model.addAttribute("stats", stats);
-        model.addAttribute("recentPosts", recentPosts);
-        model.addAttribute("recentComments", recentComments);
-        model.addAttribute("likedFestivals", likedFestivals);
-        model.addAttribute("followedArtists", followedArtists);
+        userDetailAggregationService.populateModel(id, model);
         return "admin/user-detail";
     }
 
