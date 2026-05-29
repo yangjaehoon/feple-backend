@@ -65,17 +65,19 @@
                 </div>
             </div>
 
-            <!-- 일괄 삭제 액션 바 -->
-            <div style="padding:10px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+            <!-- CSV 내보내기 -->
+            <div style="padding:8px 22px; border-bottom:1px solid var(--border); display:flex; justify-content:flex-end;">
+                <a th:href="@{/admin/export/users.csv}" class="btn btn-secondary btn-sm">CSV 내보내기</a>
+            </div>
+
+            <!-- 일괄 삭제 툴바 (선택 시에만 표시) -->
+            <div class="bulk-toolbar" id="bulk-toolbar">
+                <span class="bulk-count" id="select-count">0명 선택됨</span>
                 <button type="submit" form="bulk-form"
                         class="btn btn-danger btn-sm"
-                        onclick="return checkBulkSelection() && confirm('선택한 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">
-                    선택 삭제
+                        onclick="return confirm('선택한 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">
+                    선택 탈퇴
                 </button>
-                <span id="select-count" style="font-size:12.5px; color:var(--muted);">0명 선택됨</span>
-                <a th:href="@{/admin/export/users.csv}" class="btn btn-secondary btn-sm" style="margin-left:auto;">
-                    CSV 내보내기
-                </a>
             </div>
 
             <div class="table-wrap">
@@ -177,27 +179,31 @@
     </div>
 </div>
 <script>
-const selectAll = document.getElementById('select-all');
-const countLabel = document.getElementById('select-count');
+(function () {
+    const selectAll = document.getElementById('select-all');
+    const toolbar   = document.getElementById('bulk-toolbar');
+    const countLabel = document.getElementById('select-count');
 
-function updateCount() {
-    const checked = document.querySelectorAll('.row-check:checked').length;
-    countLabel.textContent = checked + '명 선택됨';
-}
+    function updateToolbar() {
+        const checked = document.querySelectorAll('.row-check:checked').length;
+        countLabel.textContent = checked + '명 선택됨';
+        if (checked > 0) toolbar.classList.add('visible');
+        else toolbar.classList.remove('visible');
+        const all = document.querySelectorAll('.row-check');
+        if (selectAll && all.length > 0) {
+            selectAll.indeterminate = checked > 0 && checked < all.length;
+            selectAll.checked = checked === all.length;
+        }
+    }
 
-function checkBulkSelection() {
-    const checked = document.querySelectorAll('.row-check:checked').length;
-    if (checked === 0) { alert('삭제할 회원을 선택해주세요.'); return false; }
-    return true;
-}
-
-if (selectAll) {
-    selectAll.addEventListener('change', () => {
-        document.querySelectorAll('.row-check').forEach(cb => cb.checked = selectAll.checked);
-        updateCount();
-    });
-}
-document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateCount));
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            document.querySelectorAll('.row-check').forEach(cb => cb.checked = selectAll.checked);
+            updateToolbar();
+        });
+    }
+    document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateToolbar));
+})();
 </script>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>

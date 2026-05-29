@@ -65,6 +65,14 @@ public class PostReportService implements ReportAdminService {
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
+    @Override
+    public Page<PostReport> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
+        if (keyword == null || keyword.isBlank()) return getReportsForAdmin(page, size, statusFilter);
+        PageRequest pageable = PageRequest.of(page, size);
+        ReportStatus status = "PENDING".equals(statusFilter) ? ReportStatus.PENDING : null;
+        return reportRepository.searchByKeyword(keyword, status, pageable);
+    }
+
     @Transactional
     public void deletePostAndResolve(Long reportId) {
         PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");

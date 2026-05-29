@@ -24,6 +24,22 @@
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
 
         <div class="card">
+            <!-- 검색 바 -->
+            <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
+                <form th:action="@{/admin/reports}" method="get"
+                      style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="type" th:value="${type}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           placeholder="신고 내용 또는 신고자 닉네임 검색..."
+                           style="flex:1; max-width:360px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                       th:href="@{/admin/reports(type=${type}, status=${status}, page=0)}"
+                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                </form>
+            </div>
+
             <!-- 유형 탭 -->
             <div class="type-tab-wrap">
                 <a th:href="@{/admin/reports(type='post', status=${status}, page=0)}"

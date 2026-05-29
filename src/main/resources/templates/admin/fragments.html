@@ -72,11 +72,15 @@
            th:href="@{/admin/certifications}" class="sb-link"
            th:classappend="${active == 'certifications'} ? ' active'">
             <span class="sb-icon">🏅</span> 인증 관리
+            <span th:if="${sidebarCertCount != null and sidebarCertCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarCertCount}"></span>
         </a>
         <a sec:authorize="hasAuthority('PERM_REPORTS')"
            th:href="@{/admin/reports}" class="sb-link"
            th:classappend="${active == 'reports'} ? ' active'">
             <span class="sb-icon">🚨</span> 신고 관리
+            <span th:if="${sidebarReportCount != null and sidebarReportCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarReportCount}"></span>
         </a>
         <a sec:authorize="hasAuthority('PERM_BAD_WORDS')"
            th:href="@{/admin/bad-words}" class="sb-link"

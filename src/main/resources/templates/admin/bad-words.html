@@ -70,7 +70,8 @@
                         <td>
                             <div style="display:flex; gap:6px; align-items:center;">
                                 <button type="button" class="btn btn-secondary btn-sm"
-                                        th:onclick="'scanWord(this, \'' + ${bw.word} + '\')'">스캔</button>
+                                        th:data-word="${bw.word}"
+                                        onclick="scanWord(this)">스캔</button>
                                 <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             onclick="return confirm('삭제하시겠습니까?')">삭제</button>
@@ -92,7 +93,8 @@
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
-async function scanWord(btn, word) {
+async function scanWord(btn) {
+    const word = btn.dataset.word;
     const resultEl = btn.closest('td').querySelector('.scan-result');
     resultEl.style.display = 'block';
     resultEl.textContent = '스캔 중...';

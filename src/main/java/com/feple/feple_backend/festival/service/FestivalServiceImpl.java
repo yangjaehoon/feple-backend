@@ -174,4 +174,16 @@ public class FestivalServiceImpl implements FestivalService {
                 .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")));
         return result.map(this::toDto);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FestivalResponseDto> getFestivalsAdminPage(String keyword, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+        if (keyword == null || keyword.isBlank()) {
+            return festivalRepository.findAll(
+                    PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")))
+                    .map(this::toDto);
+        }
+        return festivalRepository.findByTitleKeywordPaged(keyword, pageable).map(this::toDto);
+    }
 }

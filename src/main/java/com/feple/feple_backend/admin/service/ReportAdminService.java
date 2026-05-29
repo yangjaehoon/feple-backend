@@ -7,6 +7,9 @@ import java.util.Map;
 
 public interface ReportAdminService {
     Page<?> getReportsForAdmin(int page, int size, String statusFilter);
+    default Page<?> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
+        return getReportsForAdmin(page, size, statusFilter);
+    }
     long getPendingCount();
     long getTotalCount();
     void dismissReport(Long reportId);

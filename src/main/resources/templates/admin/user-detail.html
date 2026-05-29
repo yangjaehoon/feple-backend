@@ -156,6 +156,7 @@
                         <th>내용</th>
                         <th>게시글</th>
                         <th>게시판</th>
+                        <th style="width:100px;">작성일</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -172,9 +173,11 @@
                             <span class="badge badge-genre"
                                   th:text="${comment.boardDisplayName}"></span>
                         </td>
+                        <td style="color:var(--muted); white-space:nowrap; font-size:12.5px;"
+                            th:text="${comment.createdAt != null ? #temporals.format(comment.createdAt, 'MM-dd HH:mm') : '-'}"></td>
                     </tr>
                     <tr class="empty-row" th:if="${#lists.isEmpty(recentComments)}">
-                        <td colspan="4">댓글이 없습니다.</td>
+                        <td colspan="5">댓글이 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>
@@ -182,38 +185,41 @@
         </div>
 
         <!-- 팔로우 아티스트 -->
-        <div class="card" th:if="${!#lists.isEmpty(followedArtists)}">
+        <div class="card">
             <div class="card-header">
                 <div class="card-title">
-                    🎤 팔로우 아티스트
+                    팔로우 아티스트
                     <span class="card-count" th:text="${#lists.size(followedArtists)}"></span>
                 </div>
             </div>
             <div class="card-body">
-                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <div th:if="${!#lists.isEmpty(followedArtists)}" style="display:flex; flex-wrap:wrap; gap:8px;">
                     <span th:each="artist : ${followedArtists}"
                           class="badge badge-genre"
                           th:text="${artist.name}"></span>
                 </div>
+                <div th:if="${#lists.isEmpty(followedArtists)}"
+                     style="font-size:13px; color:var(--muted);">팔로우한 아티스트가 없습니다.</div>
             </div>
         </div>
 
         <!-- 좋아요 페스티벌 -->
-        <div class="card" th:if="${!#lists.isEmpty(likedFestivals)}">
+        <div class="card">
             <div class="card-header">
                 <div class="card-title">
-                    🎵 좋아요 페스티벌
+                    좋아요 페스티벌
                     <span class="card-count" th:text="${#lists.size(likedFestivals)}"></span>
                 </div>
             </div>
             <div class="card-body">
-                <div style="display:flex; flex-direction:column; gap:8px;">
+                <div th:if="${!#lists.isEmpty(likedFestivals)}" style="display:flex; flex-direction:column; gap:8px;">
                     <div th:each="festival : ${likedFestivals}"
                          style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg); border-radius:8px; border:1px solid var(--border);">
-                        <span style="font-size:16px;">🎵</span>
                         <span style="font-weight:600; font-size:13.5px;" th:text="${festival.title}"></span>
                     </div>
                 </div>
+                <div th:if="${#lists.isEmpty(likedFestivals)}"
+                     style="font-size:13px; color:var(--muted);">좋아요한 페스티벌이 없습니다.</div>
             </div>
         </div>
 

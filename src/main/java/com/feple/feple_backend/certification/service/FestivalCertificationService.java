@@ -120,6 +120,11 @@ public class FestivalCertificationService {
                 rejectionMessage);
     }
 
+    @Transactional(readOnly = true)
+    public long getPendingCount() {
+        return certificationRepository.countByStatus(CertificationStatus.PENDING);
+    }
+
     public String buildPhotoUrl(String photoKey) {
         return s3PresignService.presignGetUrl(photoKey);
     }

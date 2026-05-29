@@ -25,6 +25,16 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
     Page<PostReport> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
+    @Query("SELECT pr FROM PostReport pr WHERE " +
+           "(:status IS NULL OR pr.status = :status) AND " +
+           "(LOWER(pr.post.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(pr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "ORDER BY pr.createdAt DESC")
+    Page<PostReport> searchByKeyword(@Param("keyword") String keyword,
+                                     @Param("status") ReportStatus status,
+                                     Pageable pageable);
+
+    @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     @Query("SELECT pr FROM PostReport pr ORDER BY pr.createdAt DESC")
     List<PostReport> findAllForExport();
 

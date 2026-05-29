@@ -26,6 +26,10 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Festival> findByTitleKeyword(@Param("keyword") String keyword);
 
+    @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY f.startDate DESC")
+    org.springframework.data.domain.Page<Festival> findByTitleKeywordPaged(
+            @Param("keyword") String keyword, Pageable pageable);
+
     @Query("SELECT DISTINCT f FROM Festival f LEFT JOIN f.genres g " +
            "WHERE (:genres IS NULL OR g IN :genres) " +
            "AND (:regions IS NULL OR f.region IN :regions) " +

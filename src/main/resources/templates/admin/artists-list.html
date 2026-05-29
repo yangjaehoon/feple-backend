@@ -136,13 +136,19 @@
 
             <!-- 검색 바 -->
             <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <input id="artist-keyword" type="text"
+                <form th:action="@{/admin/artists}" method="get"
+                      style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="sort" th:value="${sort}"/>
+                    <input type="hidden" name="genre" th:if="${genre != null}" th:value="${genre.name()}"/>
+                    <input type="text" name="keyword" th:value="${keyword}"
                            placeholder="아티스트 이름 검색..."
                            autocomplete="off"
                            style="flex:1; max-width:280px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
-                    <button id="artist-clear" class="btn btn-secondary btn-sm" style="display:none;">✕ 초기화</button>
-                </div>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                       th:href="@{/admin/artists(sort=${sort}, genre=${genre != null ? genre.name() : null})}"
+                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                </form>
             </div>
 
             <div class="table-wrap">
@@ -209,17 +215,17 @@
                                    class="btn btn-warning btn-sm">수정</a>
                                 <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
                                     <button type="submit"
-                                            class="btn btn-danger btn-sm"
+                                            class="btn btn-ghost-danger btn-sm"
                                             onclick="return confirm('삭제하시겠습니까?')">삭제</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
-                    <tr id="no-result-row" style="display:none;">
-                        <td colspan="4" style="text-align:center; color:var(--muted); padding:24px;">검색 결과가 없습니다.</td>
-                    </tr>
                     <tr class="empty-row" th:if="${#lists.isEmpty(artists)}">
-                        <td colspan="4">등록된 아티스트가 없습니다.</td>
+                        <td colspan="5">
+                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                            <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}">등록된 아티스트가 없습니다.</span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -263,32 +269,6 @@
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
-(function () {
-    const input    = document.getElementById('artist-keyword');
-    const clearBtn = document.getElementById('artist-clear');
-    const rows     = document.querySelectorAll('#artist-tbody tr[data-name]');
-    const noResult = document.getElementById('no-result-row');
-
-    function filter(q) {
-        const lower = q.trim().toLowerCase();
-        let visible = 0;
-        rows.forEach(function (tr) {
-            const match = tr.dataset.name.toLowerCase().includes(lower);
-            tr.style.display = match ? '' : 'none';
-            if (match) visible++;
-        });
-        noResult.style.display = (lower && visible === 0) ? '' : 'none';
-        clearBtn.style.display = lower ? '' : 'none';
-    }
-
-    input.addEventListener('input', function () { filter(this.value); });
-    clearBtn.addEventListener('click', function () {
-        input.value = '';
-        filter('');
-        input.focus();
-    });
-})();
-
 function openDismissModal(btn) {
     const id     = btn.dataset.id;
     const artist = btn.dataset.artist;

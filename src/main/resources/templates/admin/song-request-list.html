@@ -103,7 +103,8 @@
                         <td th:if="${req.status == 'PENDING'}">
                             <div class="action-cell">
                                 <form th:action="@{/admin/song-requests/{id}/approve(id=${req.id})}"
-                                      method="post" class="inline-form">
+                                      method="post" class="inline-form"
+                                      onsubmit="return confirm('이 노래 요청을 승인하시겠습니까?')">
                                     <input type="hidden" name="status"  th:value="${status}"/>
                                     <input type="hidden" name="page"    th:value="${requests.number}"/>
                                     <input type="hidden" name="keyword" th:value="${keyword}"/>

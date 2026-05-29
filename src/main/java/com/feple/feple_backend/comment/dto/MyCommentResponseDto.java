@@ -5,6 +5,8 @@ import com.feple.feple_backend.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @AllArgsConstructor
 public class MyCommentResponseDto {
@@ -16,6 +18,7 @@ public class MyCommentResponseDto {
     private String postNickname;
     private int postLikeCount;
     private String boardDisplayName;
+    private LocalDateTime createdAt;
 
     public static MyCommentResponseDto from(Comment comment) {
         Post post = comment.getPost();
@@ -27,7 +30,8 @@ public class MyCommentResponseDto {
                 post.getContent(),
                 post.getAuthorNickname(),
                 post.getLikeCount(),
-                post.getDisplayBoardName()
+                post.getDisplayBoardName(),
+                comment.getCreatedAt()
         );
     }
 }

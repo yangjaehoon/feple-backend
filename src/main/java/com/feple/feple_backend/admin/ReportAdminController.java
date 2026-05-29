@@ -47,14 +47,18 @@ public class ReportAdminController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "PENDING") String status,
             @RequestParam(defaultValue = "post") String type,
+            @RequestParam(defaultValue = "") String keyword,
             Model model) {
         ReportAdminService handler = handlers.getOrDefault(type, postReportService);
-        Page<?> reports = handler.getReportsForAdmin(page, PAGE_SIZE, status);
+        Page<?> reports = keyword.isBlank()
+                ? handler.getReportsForAdmin(page, PAGE_SIZE, status)
+                : handler.searchReportsForAdmin(page, PAGE_SIZE, status, keyword);
         model.addAttribute("reports", reports);
         model.addAttribute("pendingCount", handler.getPendingCount());
         model.addAttribute("totalCount", handler.getTotalCount());
         model.addAttribute("status", status);
         model.addAttribute("type", type);
+        model.addAttribute("keyword", keyword);
         model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : handler.buildAuthorReportCounts(reports));
         model.addAttribute("postPendingCount", postReportService.getPendingCount());
         model.addAttribute("commentPendingCount", commentReportService.getPendingCount());
@@ -186,5 +190,10 @@ public class ReportAdminController {
 
     private String redirectReports(String type, String status, int page) {
         return "redirect:/admin/reports?type=" + type + "&status=" + status + "&page=" + page;
+    }
+
+    private String redirectReports(String type, String status, int page, String keyword) {
+        String base = "redirect:/admin/reports?type=" + type + "&status=" + status + "&page=" + page;
+        return (keyword != null && !keyword.isBlank()) ? base + "&keyword=" + keyword : base;
     }
 }

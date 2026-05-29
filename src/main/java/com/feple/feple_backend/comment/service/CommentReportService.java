@@ -64,6 +64,14 @@ public class CommentReportService implements ReportAdminService {
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
+    @Override
+    public Page<CommentReport> searchReportsForAdmin(int page, int size, String statusFilter, String keyword) {
+        if (keyword == null || keyword.isBlank()) return getReportsForAdmin(page, size, statusFilter);
+        PageRequest pageable = PageRequest.of(page, size);
+        ReportStatus status = "PENDING".equals(statusFilter) ? ReportStatus.PENDING : null;
+        return reportRepository.searchByKeyword(keyword, status, pageable);
+    }
+
     @Transactional
     public void deleteCommentAndResolve(Long reportId) {
         CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");

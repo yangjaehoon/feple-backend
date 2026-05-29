@@ -20,6 +20,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Page;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -91,16 +93,22 @@ public class FestivalAdminController {
     }
 
     @GetMapping
-    public String listFestivals(@RequestParam(defaultValue = "") String keyword, Model model) {
-        List<FestivalResponseDto> festivals = keyword.isBlank()
-                ? festivalService.getAllFestivals(null, null, null, true)
-                : festivalService.searchFestivals(keyword);
-        List<Long> ids = festivals.stream().map(FestivalResponseDto::getId).toList();
+    public String listFestivals(@RequestParam(defaultValue = "") String keyword,
+                                @RequestParam(defaultValue = "0") int page,
+                                Model model) {
+        // 목록 탭: 페이지네이션 적용
+        Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, 30);
+
+        // 체크리스트 탭: 전체 목록 (종료 포함) — 별도 조회
+        List<FestivalResponseDto> allFestivals = festivalService.getAllFestivals(null, null, null, true);
+        List<Long> ids = allFestivals.stream().map(FestivalResponseDto::getId).toList();
         LocalDate today = LocalDate.now();
-        long activeFestivalCount = festivals.stream()
+        long activeFestivalCount = allFestivals.stream()
                 .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
                 .count();
-        model.addAttribute("festivals", festivals);
+
+        model.addAttribute("festivalsPage", festivalsPage);
+        model.addAttribute("festivals", allFestivals);
         model.addAttribute("keyword", keyword);
         model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap(ids));
         model.addAttribute("activeFestivalCount", activeFestivalCount);

@@ -23,6 +23,7 @@ public interface FestivalService {
     void deleteFestival(Long festivalId);
     List<FestivalResponseDto> searchFestivals(String keyword);
     Page<FestivalResponseDto> getFestivalsPage(int page, int size);
+    Page<FestivalResponseDto> getFestivalsAdminPage(String keyword, int page, int size);
     String uploadPosterFile(MultipartFile file, LocalDate startDate) throws IOException;
     List<FestivalResponseDto> getLikedFestivals(Long userId);
 }

@@ -74,7 +74,11 @@
                     <tr th:each="cert : ${certifications.content}">
                         <td class="td-id" th:text="${cert.id}"></td>
                         <td>
-                            <span th:text="${cert.userNickname}"></span>
+                            <a th:href="@{/admin/users/{id}(id=${cert.userId})}"
+                               th:text="${cert.userNickname}"
+                               style="font-weight:600; text-decoration:none; color:var(--text-1);"
+                               onmouseover="this.style.textDecoration='underline'"
+                               onmouseout="this.style.textDecoration='none'"></a>
                             <div class="cell-secondary" th:text="${cert.userEmail}"></div>
                         </td>
                         <td>

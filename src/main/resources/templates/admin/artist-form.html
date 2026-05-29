@@ -54,8 +54,19 @@
                         </div>
 
                         <div class="form-group">
-                            <label>프로필 이미지</label>
-                            <input type="file" name="profileImageFile" accept="image/*" required/>
+                            <label>프로필 이미지 <span style="color:#E11D48;">*</span></label>
+                            <div style="display:flex; gap:16px; align-items:flex-start;">
+                                <div id="img-preview" style="width:72px; height:72px; border-radius:50%; overflow:hidden; border:2px solid var(--border); flex-shrink:0; background:var(--bg); display:flex; align-items:center; justify-content:center;">
+                                    <img id="preview-img" style="display:none; width:100%; height:100%; object-fit:cover;" alt="미리보기"/>
+                                    <span id="preview-ph" style="font-size:24px; color:var(--muted);">🎤</span>
+                                </div>
+                                <div>
+                                    <input type="file" name="profileImageFile" id="profile-img-input"
+                                           accept=".jpg,.jpeg,.png,.webp" required
+                                           onchange="previewArtistImage(this)"/>
+                                    <div style="font-size:11px; color:var(--muted); margin-top:6px;">jpg, jpeg, png, webp · 최대 5MB</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -69,5 +80,25 @@
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+function previewArtistImage(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+        alert('파일 크기가 5MB를 초과합니다.');
+        input.value = '';
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var img = document.getElementById('preview-img');
+        var ph  = document.getElementById('preview-ph');
+        img.src = e.target.result;
+        img.style.display = '';
+        ph.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+</script>
 </body>
 </html>
