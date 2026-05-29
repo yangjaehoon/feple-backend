@@ -106,10 +106,13 @@ public class ReportAdminController {
     }
 
     private ReportAdminService resolveHandler(String type) {
-        return handlers.getOrDefault(type, handlers.values().iterator().next());
+        ReportAdminService handler = handlers.get(type);
+        return handler != null ? handler : handlers.get("post");
     }
 
     private String redirectReports(String type, String status, int page) {
-        return "redirect:/admin/reports?type=" + type + "&status=" + status + "&page=" + page;
+        String safeType   = handlers.containsKey(type) ? type : "post";
+        String safeStatus = "PENDING".equals(status) ? "PENDING" : "ALL";
+        return "redirect:/admin/reports?type=" + safeType + "&status=" + safeStatus + "&page=" + page;
     }
 }

@@ -59,11 +59,7 @@ public class UserAdminController {
         Map<Long, Long> postCounts = postAdminService.getPostCountsByUserIds(userIds);
         Map<Long, Long> commentCounts = commentService.getCommentCountsByUserIds(userIds);
 
-        java.util.List<String> params = new java.util.ArrayList<>();
-        params.add("filter=" + filter);
-        if (!"banned".equals(filter)) params.add("sort=" + sort);
-        if (keyword != null && !keyword.isBlank()) params.add("keyword=" + keyword);
-        String extraParams = String.join("&", params);
+        String extraParams = buildListParams(filter, sort, keyword);
 
         model.addAttribute("users", users);
         model.addAttribute("keyword", keyword);
@@ -158,5 +154,12 @@ public class UserAdminController {
             ra.addFlashAttribute("errorMessage", "정지 해제 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/users/" + id;
+    }
+
+    private static String buildListParams(String filter, String sort, String keyword) {
+        StringBuilder sb = new StringBuilder("filter=").append(filter);
+        if (!"banned".equals(filter)) sb.append("&sort=").append(sort);
+        if (keyword != null && !keyword.isBlank()) sb.append("&keyword=").append(keyword);
+        return sb.toString();
     }
 }
