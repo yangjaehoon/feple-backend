@@ -274,7 +274,7 @@
                         <img th:if="${currentAdmin == null or currentAdmin.profileImageUrl == null}"
                              th:src="@{/img/feple_logo.png}"
                              class="profile-av-xl"
-                             style="object-fit:contain; padding:10px; opacity:.75;" alt="feple"/>
+                             style="object-fit:cover;" alt="feple"/>
                         <img th:if="${currentAdmin != null and currentAdmin.profileImageUrl != null}"
                              th:src="${currentAdmin.profileImageUrl}"
                              style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-lt); margin-bottom:10px;"
