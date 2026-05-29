@@ -3,8 +3,17 @@
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <body>
 
-<!-- ── 사이드바 네비게이션 ── -->
-<aside th:fragment="navbar(active)" class="sidebar">
+<!-- ── 공통 <head> ── -->
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <title th:text="'Feple Admin — ' + ${pageTitle}">Feple Admin</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+
+<!-- ── 사이드바 네비게이션 + 전역 스크립트 ── -->
+<th:block th:fragment="navbar(active)">
+<aside class="sidebar">
 
     <!-- 로고 -->
     <div class="sb-logo-section">
@@ -116,6 +125,7 @@
 
     <script th:src="@{/js/admin-genre-colors.js}"></script>
 </aside>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
 /* ── 전역: Alert 자동 닫기 ── */
 (function() {
@@ -139,6 +149,7 @@
     });
 })();
 </script>
+</th:block>
 
 <!-- ── 알림 메시지 ── -->
 <div th:fragment="alerts">

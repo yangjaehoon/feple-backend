@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Feple Admin — 셋리스트 수정</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-</head>
+<head th:replace="~{admin/fragments :: head('셋리스트 수정')}"></head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('artists')}"></div>
 <div class="main-content">
@@ -94,7 +89,6 @@
         </div>
     </div>
 </div>
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <style>
     .song-row { transition: background .15s; cursor: pointer; }
     .song-row:hover { background: var(--hover); }

@@ -1,12 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
-<head>
-    <meta charset="UTF-8">
-    <title>Feple Admin — 접근 권한 없음</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-</head>
+<head th:replace="~{admin/fragments :: head('접근 권한 없음')}"></head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('none')}"></div>
 <div class="main-content">
@@ -33,6 +28,5 @@
         </div>
     </div>
 </div>
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

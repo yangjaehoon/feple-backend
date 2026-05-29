@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Feple Admin — 노래 요청 관리</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-</head>
+<head th:replace="~{admin/fragments :: head('노래 요청 관리')}"></head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('song-requests')}"></div>
 <div class="main-content">
@@ -130,6 +125,5 @@
         </div>
     </div>
 </div>
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

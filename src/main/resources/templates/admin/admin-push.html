@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Feple Admin — 푸시 알림 발송</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-</head>
+<head th:replace="~{admin/fragments :: head('푸시 알림 발송')}"></head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('push')}"></div>
 <div class="main-content">
@@ -212,7 +207,6 @@
     </div>
 </div>
 
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
     function fillTargetAndConfirm(type) {
         const title = document.querySelector('[name="title"]').value.trim();

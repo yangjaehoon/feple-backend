@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Feple Admin — 데이터 통계</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-</head>
+<head th:replace="~{admin/fragments :: head('데이터 통계')}"></head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('stats')}"></div>
 <div class="main-content">
@@ -301,6 +296,5 @@ initStatsCharts(/*[[${rangeStats}]]*/ []);
 /*]]>*/
 </script>
 
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

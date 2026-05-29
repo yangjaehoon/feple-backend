@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Feple Admin — 페스티벌 등록</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-</head>
+<head th:replace="~{admin/fragments :: head('페스티벌 등록')}"></head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
 <div class="main-content">
@@ -149,7 +144,6 @@
         </div>
     </div>
 </div>
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script type="text/javascript" th:src="'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoMapsKey} + '&libraries=services&autoload=false'"></script>
 <script>
     let map, marker, geocoder;
