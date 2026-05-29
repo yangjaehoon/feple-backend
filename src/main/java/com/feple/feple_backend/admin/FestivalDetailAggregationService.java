@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 
 import java.util.List;
 import java.util.Map;
@@ -74,5 +75,19 @@ public class FestivalDetailAggregationService {
                 googleMapsKey,
                 setlistCounts
         );
+    }
+
+    public void populateModel(Long festivalId, Model model) {
+        FestivalDetailDto detail = buildAttributes(festivalId);
+        model.addAttribute("festival",                 detail.festival());
+        model.addAttribute("participatingArtists",     detail.participatingArtists());
+        model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());
+        model.addAttribute("timetableEntries",         detail.timetableEntries());
+        model.addAttribute("timetableByArtist",        detail.timetableByArtist());
+        model.addAttribute("stages",                   detail.stages());
+        model.addAttribute("booths",                   detail.booths());
+        model.addAttribute("allBoothTypes",            detail.allBoothTypes());
+        model.addAttribute("googleMapsKey",            detail.googleMapsKey());
+        model.addAttribute("setlistCounts",            detail.setlistCounts());
     }
 }

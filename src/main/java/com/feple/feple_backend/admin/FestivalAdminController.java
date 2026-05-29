@@ -171,17 +171,7 @@ public class FestivalAdminController {
 
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model) {
-        FestivalDetailDto detail = festivalDetailAggregationService.buildAttributes(id);
-        model.addAttribute("festival", detail.festival());
-        model.addAttribute("participatingArtists", detail.participatingArtists());
-        model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());
-        model.addAttribute("timetableEntries", detail.timetableEntries());
-        model.addAttribute("timetableByArtist", detail.timetableByArtist());
-        model.addAttribute("stages", detail.stages());
-        model.addAttribute("booths", detail.booths());
-        model.addAttribute("allBoothTypes", detail.allBoothTypes());
-        model.addAttribute("googleMapsKey", detail.googleMapsKey());
-        model.addAttribute("setlistCounts", detail.setlistCounts());
+        festivalDetailAggregationService.populateModel(id, model);
         return "admin/festival-detail";
     }
 }
