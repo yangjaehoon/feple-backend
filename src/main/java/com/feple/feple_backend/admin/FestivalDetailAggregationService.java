@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class FestivalDetailAggregationService {
     @Value("${app.google.maps.key:}")
     private String googleMapsKey;
 
-    public FestivalDetailDto buildAttributes(Long festivalId) {
+    public void populateModel(Long festivalId, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
 
         List<ArtistFestivalResponse> participatingArtists =
@@ -63,31 +63,15 @@ public class FestivalDetailAggregationService {
                 ? Collections.emptyMap()
                 : songAdminService.getSetlistCounts(afIds);
 
-        return new FestivalDetailDto(
-                festival,
-                participatingArtists,
-                participatingArtistsByName,
-                timetableEntries,
-                timetableByArtist,
-                stageService.getStages(festivalId),
-                boothService.getBooths(festivalId),
-                BoothType.values(),
-                googleMapsKey,
-                setlistCounts
-        );
-    }
-
-    public void populateModel(Long festivalId, Model model) {
-        FestivalDetailDto detail = buildAttributes(festivalId);
-        model.addAttribute("festival",                 detail.festival());
-        model.addAttribute("participatingArtists",     detail.participatingArtists());
-        model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());
-        model.addAttribute("timetableEntries",         detail.timetableEntries());
-        model.addAttribute("timetableByArtist",        detail.timetableByArtist());
-        model.addAttribute("stages",                   detail.stages());
-        model.addAttribute("booths",                   detail.booths());
-        model.addAttribute("allBoothTypes",            detail.allBoothTypes());
-        model.addAttribute("googleMapsKey",            detail.googleMapsKey());
-        model.addAttribute("setlistCounts",            detail.setlistCounts());
+        model.addAttribute("festival",                   festival);
+        model.addAttribute("participatingArtists",       participatingArtists);
+        model.addAttribute("participatingArtistsByName", participatingArtistsByName);
+        model.addAttribute("timetableEntries",           timetableEntries);
+        model.addAttribute("timetableByArtist",          timetableByArtist);
+        model.addAttribute("stages",                     stageService.getStages(festivalId));
+        model.addAttribute("booths",                     boothService.getBooths(festivalId));
+        model.addAttribute("allBoothTypes",              BoothType.values());
+        model.addAttribute("googleMapsKey",              googleMapsKey);
+        model.addAttribute("setlistCounts",              setlistCounts);
     }
 }

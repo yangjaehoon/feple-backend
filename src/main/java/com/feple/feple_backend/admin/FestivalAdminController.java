@@ -61,13 +61,7 @@ public class FestivalAdminController {
                                  @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
                                  Model model) throws IOException {
 
-        if (posterFile != null && !posterFile.isEmpty()) {
-            try {
-                dto.setPosterKey(festivalService.uploadPosterFile(posterFile, dto.getStartDate()));
-            } catch (IllegalArgumentException e) {
-                bindingResult.rejectValue("posterKey", "upload.failed", e.getMessage());
-            }
-        }
+        applyPosterFile(posterFile, dto, bindingResult);
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors().stream()
@@ -149,10 +143,7 @@ public class FestivalAdminController {
                                  @ModelAttribute("festival") FestivalRequestDto dto,
                                  @RequestParam(value="posterFile", required=false) MultipartFile posterFile
     ) throws IOException {
-        if (posterFile != null && !posterFile.isEmpty()) {
-            String newPosterKey = festivalService.uploadPosterFile(posterFile, dto.getStartDate());
-            dto.setPosterKey(newPosterKey);
-        }
+        applyPosterFile(posterFile, dto, null);
         festivalService.updateFestival(id, dto);
         adminLogService.log("FESTIVAL_UPDATE", "FESTIVAL", id, dto.getTitle());
         return "redirect:/admin";
@@ -163,6 +154,17 @@ public class FestivalAdminController {
         festivalService.deleteFestival(id);
         adminLogService.log("FESTIVAL_DELETE", "FESTIVAL", id, null);
         return "redirect:/admin";
+    }
+
+    private void applyPosterFile(MultipartFile posterFile, FestivalRequestDto dto,
+                                  BindingResult bindingResult) throws IOException {
+        if (posterFile == null || posterFile.isEmpty()) return;
+        try {
+            dto.setPosterKey(festivalService.uploadPosterFile(posterFile, dto.getStartDate()));
+        } catch (IllegalArgumentException e) {
+            if (bindingResult != null)
+                bindingResult.rejectValue("posterKey", "upload.failed", e.getMessage());
+        }
     }
 
     private void populateFestivalFormModel(Model model) {

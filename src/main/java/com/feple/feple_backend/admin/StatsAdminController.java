@@ -28,20 +28,16 @@ public class StatsAdminController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             Model model) {
 
-        LocalDate[] range = normalizeDateRange(from, to);
-        model.addAttribute("activityStats", adminStatsService.getUserActivityStats());
-        model.addAttribute("rangeStats", adminStatsService.getRangeStats(range[0], range[1]));
-        model.addAttribute("contentTrend", adminStatsService.getContentTrend());
-        model.addAttribute("from", range[0].toString());
-        model.addAttribute("to", range[1].toString());
-        return "admin/stats";
-    }
-
-    private static LocalDate[] normalizeDateRange(LocalDate from, LocalDate to) {
         LocalDate today = LocalDate.now();
         LocalDate end   = (to == null || to.isAfter(today)) ? today : to;
         LocalDate start = (from == null) ? end.minusDays(DEFAULT_RANGE_DAYS - 1) : from;
         if (start.isAfter(end)) start = end;
-        return new LocalDate[]{ start, end };
+
+        model.addAttribute("activityStats", adminStatsService.getUserActivityStats());
+        model.addAttribute("rangeStats", adminStatsService.getRangeStats(start, end));
+        model.addAttribute("contentTrend", adminStatsService.getContentTrend());
+        model.addAttribute("from", start.toString());
+        model.addAttribute("to", end.toString());
+        return "admin/stats";
     }
 }

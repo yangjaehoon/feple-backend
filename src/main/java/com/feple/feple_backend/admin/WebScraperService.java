@@ -212,8 +212,8 @@ public class WebScraperService {
             "generationConfig", Map.of("maxOutputTokens", 512, "temperature", 0)
         );
 
-        @SuppressWarnings("rawtypes")
-        Map response = webClient.post()
+        @SuppressWarnings("unchecked")
+        Map<?, ?> response = webClient.post()
             .uri(GEMINI_URL + "?key=" + geminiApiKey)
             .header("Content-Type", "application/json")
             .bodyValue(request)
@@ -234,41 +234,47 @@ public class WebScraperService {
         return parseGeminiFestivalJson(raw, url, source);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private boolean isUrlBlocked(Map response) {
+    private boolean isUrlBlocked(Map<?, ?> response) {
         try {
-            var candidates = (java.util.List<Map>) response.get("candidates");
-            Map candidate = candidates.get(0);
-            Map urlMeta = (Map) candidate.get("urlContextMetadata");
-            if (urlMeta == null) return false;
-            var urlMetadata = (java.util.List<Map>) urlMeta.get("urlMetadata");
-            if (urlMetadata == null || urlMetadata.isEmpty()) return false;
-            String st = (String) urlMetadata.get(0).get("urlRetrievalStatus");
-            return "URL_RETRIEVAL_STATUS_ERROR".equals(st);
+            Object status = getNestedValue(response, "candidates", 0,
+                    "urlContextMetadata", "urlMetadata", 0, "urlRetrievalStatus");
+            return "URL_RETRIEVAL_STATUS_ERROR".equals(status);
         } catch (Exception e) {
             return false;
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private String extractGeminiText(Map response) {
+    @SuppressWarnings("unchecked")
+    private String extractGeminiText(Map<?, ?> response) {
         try {
-            var candidates = (java.util.List<Map>) response.get("candidates");
-            var content    = (Map) candidates.get(0).get("content");
-            if (content == null) return "";
-            var parts = (java.util.List<Map>) content.get("parts");
-            if (parts == null) return "";
-            // 모든 parts의 text를 합쳐서 반환
+            Object partsObj = getNestedValue(response, "candidates", 0, "content", "parts");
+            if (!(partsObj instanceof List<?> parts)) return "";
             StringBuilder sb = new StringBuilder();
-            for (Map part : parts) {
-                Object text = part.get("text");
-                if (text instanceof String s && !s.isBlank()) sb.append(s);
+            for (Object part : parts) {
+                if (part instanceof Map<?, ?> map) {
+                    Object text = map.get("text");
+                    if (text instanceof String s && !s.isBlank()) sb.append(s);
+                }
             }
             return sb.toString().trim();
         } catch (Exception e) {
             log.warn("Failed to extract Gemini response text", e);
             return "";
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object getNestedValue(Object current, Object... path) {
+        for (Object key : path) {
+            if (current == null) return null;
+            if (key instanceof Integer i && current instanceof List<?> list)
+                current = i < list.size() ? list.get(i) : null;
+            else if (key instanceof String s && current instanceof Map<?, ?> map)
+                current = map.get(s);
+            else
+                return null;
+        }
+        return current;
     }
 
     private ScrapedFestivalDto parseGeminiFestivalJson(String raw, String url, String source) {

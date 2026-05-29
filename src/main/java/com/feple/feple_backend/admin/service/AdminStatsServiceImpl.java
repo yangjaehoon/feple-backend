@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -88,9 +89,9 @@ public class AdminStatsServiceImpl implements AdminStatsService {
         LocalDateTime monthStart = today.minusDays(29).atStartOfDay();
 
         return new UserActivityStatsDto(
-                nullToZero(userRepository.countActiveUsersBetween(dayStart, dayEnd)),
-                nullToZero(userRepository.countActiveUsersBetween(weekStart, dayEnd)),
-                nullToZero(userRepository.countActiveUsersBetween(monthStart, dayEnd)),
+                Objects.requireNonNullElse(userRepository.countActiveUsersBetween(dayStart, dayEnd), 0L),
+                Objects.requireNonNullElse(userRepository.countActiveUsersBetween(weekStart, dayEnd), 0L),
+                Objects.requireNonNullElse(userRepository.countActiveUsersBetween(monthStart, dayEnd), 0L),
                 userRepository.countByCreatedAtBetween(dayStart, dayEnd),
                 userRepository.countByCreatedAtBetween(weekStart, dayEnd),
                 userRepository.countByCreatedAtBetween(monthStart, dayEnd)
@@ -138,10 +139,6 @@ public class AdminStatsServiceImpl implements AdminStatsService {
 
         return new ContentTrendDto(topKeywords, topFestivalsByLike, upcomingHotFestivals,
                 topArtistsByFollower, topPostsByLike);
-    }
-
-    private static long nullToZero(Long value) {
-        return value != null ? value : 0L;
     }
 
     @Override

@@ -271,16 +271,12 @@
                         <span class="db-card-title">👩‍💼 관리자</span>
                     </div>
                     <div class="profile-body">
-                        <img th:if="${currentAdmin == null or currentAdmin.profileImageUrl == null}"
-                             th:src="@{/img/feple_logo.png}"
-                             class="profile-av-xl"
-                             style="object-fit:cover;" alt="feple"/>
-                        <img th:if="${currentAdmin != null and currentAdmin.profileImageUrl != null}"
-                             th:src="${currentAdmin.profileImageUrl}"
+                        <img th:src="${currentAdmin != null and currentAdmin.profileImageUrl != null} ? ${currentAdmin.profileImageUrl} : @{/img/feple_logo.png}"
+                             th:class="${currentAdmin != null and currentAdmin.profileImageUrl != null} ? '' : 'profile-av-xl'"
                              style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-lt); margin-bottom:10px;"
                              alt="프로필"/>
                         <div class="profile-name"
-                             th:text="${currentAdmin != null and currentAdmin.displayName != null and !#strings.isEmpty(currentAdmin.displayName)} ? ${currentAdmin.displayName} : (${currentAdmin != null} ? ${currentAdmin.username} : 'Admin')"></div>
+                             th:text="${currentAdmin?.displayName ?: (currentAdmin?.username ?: 'Admin')}"></div>
                         <div class="profile-email"
                              th:text="${currentAdmin != null} ? ${currentAdmin.username} : ''"></div>
                         <span class="profile-tag"

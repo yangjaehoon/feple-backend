@@ -79,10 +79,7 @@ public class ReportAdminController {
                               @RequestParam(defaultValue = "0") int page,
                               @RequestParam(defaultValue = "PENDING") String status,
                               RedirectAttributes ra) {
-        if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
-            return redirectReports(type, status, page);
-        }
+        if (ids == null || ids.isEmpty()) return emptySelectionRedirect(type, status, page, ra);
         resolveHandler(type).bulkDismiss(ids);
         adminLogService.log("REPORT_BULK_DISMISS", "REPORT", null, type + " " + ids.size() + "건");
         ra.addFlashAttribute("successMessage", ids.size() + "건을 일괄 기각했습니다.");
@@ -95,10 +92,7 @@ public class ReportAdminController {
                              @RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "PENDING") String status,
                              RedirectAttributes ra) {
-        if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
-            return redirectReports(type, status, page);
-        }
+        if (ids == null || ids.isEmpty()) return emptySelectionRedirect(type, status, page, ra);
         resolveHandler(type).bulkDeleteContent(ids);
         adminLogService.log("REPORT_BULK_DELETE", "REPORT", null, type + " " + ids.size() + "건");
         ra.addFlashAttribute("successMessage", ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다.");
@@ -108,6 +102,11 @@ public class ReportAdminController {
     private ReportAdminService resolveHandler(String type) {
         ReportAdminService handler = handlers.get(type);
         return handler != null ? handler : handlers.get("post");
+    }
+
+    private String emptySelectionRedirect(String type, String status, int page, RedirectAttributes ra) {
+        ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+        return redirectReports(type, status, page);
     }
 
     private String redirectReports(String type, String status, int page) {
