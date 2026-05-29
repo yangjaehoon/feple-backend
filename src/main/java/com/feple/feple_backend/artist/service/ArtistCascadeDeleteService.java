@@ -7,7 +7,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.post.service.PostService;
+import com.feple.feple_backend.post.service.PostCascadeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class ArtistCascadeDeleteService {
     private final ArtistProfileImageRepository artistImageRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFollowRepository artistFollowRepository;
-    private final PostService postService;
+    private final PostCascadeService postCascadeService;
     private final FileStorageService fileStorageService;
 
     @Transactional
@@ -36,7 +36,7 @@ public class ArtistCascadeDeleteService {
         artistFestivalRepository.deleteByArtistId(artist.getId());
         artistFollowRepository.deleteAll(artistFollowRepository.findByArtistId(artist.getId()));
 
-        postService.deletePostsByArtist(artist);
+        postCascadeService.deletePostsByArtist(artist);
 
         artistRepository.deleteById(artist.getId());
         fileStorageService.deleteFile(profileImageKey);

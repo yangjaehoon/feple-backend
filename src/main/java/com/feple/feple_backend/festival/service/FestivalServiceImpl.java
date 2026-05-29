@@ -17,7 +17,7 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
-import com.feple.feple_backend.post.service.PostService;
+import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class FestivalServiceImpl implements FestivalService {
     private final BoothRepository boothRepository;
     private final TimetableRepository timetableRepository;
     private final FestivalCertificationRepository certificationRepository;
-    private final PostService postService;
+    private final PostCascadeService postCascadeService;
 
     private FestivalResponseDto toDto(Festival festival) {
         return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
@@ -137,7 +137,7 @@ public class FestivalServiceImpl implements FestivalService {
         festivalLikeRepository.deleteByFestivalId(festivalId);
         festivalAttendanceRepository.deleteByFestivalId(festivalId);
 
-        postService.deletePostsByFestival(festival);
+        postCascadeService.deletePostsByFestival(festival);
 
         artistFestivalRepository.deleteByFestivalId(festivalId);
         festivalRepository.deleteById(festivalId);

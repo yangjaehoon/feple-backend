@@ -1,11 +1,8 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
-import com.feple.feple_backend.user.entity.User;
 
 import java.util.List;
 
@@ -25,9 +22,6 @@ public interface PostService {
     List<PostResponseDto> getPostsByFestivalIdAndBoardType(Long festivalId, BoardType boardType);
     Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType);
     List<PostResponseDto> getPopularFestivalPosts(Long festivalId);
-    void deletePostsByFestival(Festival festival);
-    void deletePostsByUser(User user);
-    void deletePostsByArtist(Artist artist);
     List<PostResponseDto> searchPosts(String keyword, String boardType);
     List<PostResponseDto> getMyPosts(Long userId);
     long countMyPosts(Long userId);

@@ -33,7 +33,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PostServiceImpl implements PostService, PostAdminService {
+public class PostServiceImpl implements PostService, PostAdminService, PostCascadeService {
 
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
@@ -244,14 +244,6 @@ public class PostServiceImpl implements PostService, PostAdminService {
         return postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();
-    }
-
-    @Override
-    @Transactional
-    public void deletePostsByUser(User user) {
-        List<Post> posts = postRepository.findByUser(user);
-        deletePostLikesAndPosts(posts);
-        postLikeRepository.deleteByUser(user);
     }
 
     @Override
