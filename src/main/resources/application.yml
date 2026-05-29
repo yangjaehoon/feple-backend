@@ -89,8 +89,10 @@ kma:
 
 springdoc:
   swagger-ui:
+    enabled: false
     path: /swagger-ui
     operations-sorter: alpha
     tags-sorter: alpha
   api-docs:
+    enabled: false
     path: /v3/api-docs
