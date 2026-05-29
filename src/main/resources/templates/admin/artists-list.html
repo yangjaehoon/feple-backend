@@ -24,8 +24,7 @@
         </div>
     </div>
     <div class="content-area">
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <!-- 아티스트 신청 섹션 -->
         <div th:if="${not #lists.isEmpty(suggestions)}" class="card" style="margin-bottom:20px;">

@@ -23,8 +23,7 @@
     </div>
     <div class="content-area">
 
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+        <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <div class="card">
             <div class="table-wrap">

@@ -9,19 +9,10 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('reports')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">신고 관리</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <span>신고</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader('신고 관리', '신고')}"></div>
     <div class="content-area">
 
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <div class="card">
             <!-- 검색 바 -->

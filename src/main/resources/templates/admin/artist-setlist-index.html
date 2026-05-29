@@ -28,7 +28,7 @@
     </div>
 
     <div class="content-area">
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <div class="card">
             <div class="card-header">

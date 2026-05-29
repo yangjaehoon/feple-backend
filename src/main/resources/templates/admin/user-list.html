@@ -9,19 +9,10 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('users')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">회원 관리</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <span>회원</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader('회원 관리', '회원')}"></div>
     <div class="content-area">
 
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <!-- 일괄 삭제 폼 (테이블 바깥) -->
         <form id="bulk-form" th:action="@{/admin/users/bulk-delete}" method="post"></form>
@@ -71,7 +62,7 @@
             </div>
 
             <!-- 일괄 삭제 툴바 (선택 시에만 표시) -->
-            <div class="bulk-toolbar" id="bulk-toolbar">
+            <div class="bulk-toolbar" id="bulk-toolbar" data-unit="명">
                 <span class="bulk-count" id="select-count">0명 선택됨</span>
                 <button type="submit" form="bulk-form"
                         class="btn btn-danger btn-sm"
@@ -178,33 +169,7 @@
         </div>
     </div>
 </div>
-<script>
-(function () {
-    const selectAll = document.getElementById('select-all');
-    const toolbar   = document.getElementById('bulk-toolbar');
-    const countLabel = document.getElementById('select-count');
-
-    function updateToolbar() {
-        const checked = document.querySelectorAll('.row-check:checked').length;
-        countLabel.textContent = checked + '명 선택됨';
-        if (checked > 0) toolbar.classList.add('visible');
-        else toolbar.classList.remove('visible');
-        const all = document.querySelectorAll('.row-check');
-        if (selectAll && all.length > 0) {
-            selectAll.indeterminate = checked > 0 && checked < all.length;
-            selectAll.checked = checked === all.length;
-        }
-    }
-
-    if (selectAll) {
-        selectAll.addEventListener('change', () => {
-            document.querySelectorAll('.row-check').forEach(cb => cb.checked = selectAll.checked);
-            updateToolbar();
-        });
-    }
-    document.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', updateToolbar));
-})();
-</script>
+<script th:src="@{/js/admin-bulk.js}"></script>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

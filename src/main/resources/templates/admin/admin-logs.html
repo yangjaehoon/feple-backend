@@ -9,16 +9,7 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('logs')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">감사 로그</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <span>감사 로그</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader('감사 로그', '감사 로그')}"></div>
     <div class="content-area">
 
         <div class="card">

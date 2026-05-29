@@ -23,9 +23,7 @@
     </div>
     <div class="content-area">
 
-        <!-- Flash messages -->
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <!-- 기본 정보 -->
         <div class="card">

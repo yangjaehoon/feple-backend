@@ -9,19 +9,9 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('bad-words')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">금칙어 관리</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <span>금칙어</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader('금칙어 관리', '금칙어')}"></div>
     <div class="content-area">
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+        <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <!-- 금칙어 추가 -->
         <div class="card" style="margin-bottom:20px;">

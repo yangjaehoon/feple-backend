@@ -140,6 +140,24 @@
 })();
 </script>
 
+<!-- ── 알림 메시지 ── -->
+<div th:fragment="alerts">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+</div>
+
+<!-- ── 페이지 헤더 (page-actions 없는 단순 페이지) ── -->
+<div th:fragment="pageHeader(title, breadcrumb)" class="page-header">
+    <div>
+        <h1 class="page-title" th:text="${title}"></h1>
+        <div class="breadcrumb">
+            <a th:href="@{/admin}">대시보드</a>
+            <span class="bc-sep">›</span>
+            <span th:text="${breadcrumb}"></span>
+        </div>
+    </div>
+</div>
+
 <!-- ── 페이지네이션 프래그먼트 ── -->
 <div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">
     <span class="page-info" th:text="'총 ' + ${page.totalElements} + '건'"></span>
