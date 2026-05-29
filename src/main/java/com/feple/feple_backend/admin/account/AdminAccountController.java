@@ -9,6 +9,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Set;
 
 @Slf4j
@@ -35,16 +37,17 @@ public class AdminAccountController {
         return "admin/admin-account-form";
     }
 
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public String create(@RequestParam String username,
                          @RequestParam String password,
                          @RequestParam(defaultValue = "") String displayName,
                          @RequestParam AdminRole role,
                          @RequestParam(required = false) Set<AdminPermission> permissions,
+                         @RequestParam(required = false) MultipartFile profileImage,
                          RedirectAttributes redirectAttributes) {
         try {
             Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-            accountService.create(username, password, displayName, role, perms);
+            accountService.create(username, password, displayName, role, perms, profileImage);
             redirectAttributes.addFlashAttribute("successMessage", "관리자 계정이 생성되었습니다.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -63,16 +66,18 @@ public class AdminAccountController {
         return "admin/admin-account-form";
     }
 
-    @PostMapping("/{id}/update")
+    @PostMapping(value = "/{id}/update", consumes = "multipart/form-data")
     public String update(@PathVariable Long id,
                          @RequestParam(defaultValue = "") String displayName,
                          @RequestParam AdminRole role,
                          @RequestParam(required = false) Set<AdminPermission> permissions,
                          @RequestParam(defaultValue = "") String password,
+                         @RequestParam(required = false) MultipartFile profileImage,
+                         @RequestParam(defaultValue = "false") boolean deleteProfileImage,
                          RedirectAttributes redirectAttributes) {
         try {
             Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-            accountService.update(id, displayName, role, perms, password);
+            accountService.update(id, displayName, role, perms, password, profileImage, deleteProfileImage);
             redirectAttributes.addFlashAttribute("successMessage", "관리자 계정이 수정되었습니다.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

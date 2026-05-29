@@ -1,11 +1,14 @@
 package com.feple.feple_backend.admin.account;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +21,7 @@ public class AdminAccountService {
 
     private final AdminAccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileStorageService fileStorageService;
 
     @Transactional(readOnly = true)
     public List<AdminAccount> findAll() {
@@ -37,7 +41,8 @@ public class AdminAccountService {
     }
 
     public void create(String username, String password, String displayName,
-                       AdminRole role, Set<AdminPermission> permissions) {
+                       AdminRole role, Set<AdminPermission> permissions,
+                       MultipartFile profileImage) throws IOException {
         if (accountRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
         }
@@ -46,19 +51,25 @@ public class AdminAccountService {
                 ? new HashSet<>()
                 : new HashSet<>(permissions);
 
+        String imageUrl = (profileImage != null && !profileImage.isEmpty())
+                ? fileStorageService.storeAdminProfile(profileImage, username)
+                : null;
+
         AdminAccount account = AdminAccount.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
                 .displayName(displayName)
                 .role(role)
                 .permissions(effectivePerms)
+                .profileImageUrl(imageUrl)
                 .build();
 
         accountRepository.save(account);
     }
 
     public void update(Long id, String displayName, AdminRole role,
-                       Set<AdminPermission> permissions, String newPassword) {
+                       Set<AdminPermission> permissions, String newPassword,
+                       MultipartFile profileImage, boolean deleteProfileImage) throws IOException {
         AdminAccount account = findById(id);
 
         if (account.getRole() == AdminRole.SUPER_ADMIN
@@ -75,6 +86,12 @@ public class AdminAccountService {
 
         if (newPassword != null && !newPassword.isBlank()) {
             account.updatePassword(passwordEncoder.encode(newPassword));
+        }
+
+        if (deleteProfileImage) {
+            account.updateProfileImage(null);
+        } else if (profileImage != null && !profileImage.isEmpty()) {
+            account.updateProfileImage(fileStorageService.storeAdminProfile(profileImage, account.getUsername()));
         }
     }
 

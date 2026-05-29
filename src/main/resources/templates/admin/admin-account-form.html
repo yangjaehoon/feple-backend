@@ -111,7 +111,43 @@
 
             <!-- 생성 폼 / 수정 폼 -->
             <form th:action="${account != null} ? @{/admin/accounts/{id}/update(id=${account.id})} : @{/admin/accounts}"
-                  method="post">
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <!-- 프로필 사진 -->
+                <div class="form-section">
+                    <div class="form-section-title">프로필 사진</div>
+                    <div style="display:flex; gap:20px; align-items:flex-start;">
+                        <div id="photo-preview" style="width:88px; height:88px; border-radius:50%; overflow:hidden; border:2px solid var(--border); flex-shrink:0; background:var(--bg); display:flex; align-items:center; justify-content:center;">
+                            <img th:if="${account != null and account.profileImageUrl != null}"
+                                 th:src="${account.profileImageUrl}"
+                                 id="photo-img"
+                                 style="width:100%; height:100%; object-fit:cover;" alt="프로필"/>
+                            <span th:unless="${account != null and account.profileImageUrl != null}"
+                                  id="photo-placeholder"
+                                  style="font-size:36px; user-select:none;">🛡️</span>
+                        </div>
+                        <div style="padding-top:4px;">
+                            <input type="file" name="profileImage" id="profile-image-input"
+                                   accept=".jpg,.jpeg,.png" style="display:none;"
+                                   onchange="previewPhoto(this)"/>
+                            <input type="hidden" name="deleteProfileImage" id="delete-profile-image-flag" value="false"/>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                        onclick="document.getElementById('profile-image-input').click()">
+                                    사진 업로드
+                                </button>
+                                <button th:if="${account != null and account.profileImageUrl != null}"
+                                        type="button" id="delete-photo-btn"
+                                        class="btn btn-ghost-danger btn-sm"
+                                        onclick="confirmDeletePhoto()">
+                                    사진 삭제
+                                </button>
+                            </div>
+                            <div class="field-hint" style="margin-top:8px;">jpg, jpeg, png · 최대 5MB · 원형으로 표시됩니다</div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 기본 정보 -->
                 <div class="form-section">
@@ -204,6 +240,27 @@
 function onRoleChange(role) {
     const section = document.getElementById('perm-section');
     section.style.display = role === 'SUPER_ADMIN' ? 'none' : '';
+}
+
+function previewPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    document.getElementById('delete-profile-image-flag').value = 'false';
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var preview = document.getElementById('photo-preview');
+        preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover;" alt="미리보기"/>';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+function confirmDeletePhoto() {
+    if (!confirm('프로필 사진을 삭제할까요?')) return;
+    document.getElementById('delete-profile-image-flag').value = 'true';
+    document.getElementById('profile-image-input').value = '';
+    var preview = document.getElementById('photo-preview');
+    preview.innerHTML = '<span style="font-size:36px; user-select:none;">🛡️</span>';
+    var btn = document.getElementById('delete-photo-btn');
+    if (btn) btn.style.display = 'none';
 }
 
 // 초기화

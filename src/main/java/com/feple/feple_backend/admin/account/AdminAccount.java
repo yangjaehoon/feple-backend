@@ -45,6 +45,9 @@ public class AdminAccount {
     @Builder.Default
     private Set<AdminPermission> permissions = new HashSet<>();
 
+    @Column(length = 512)
+    private String profileImageUrl;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean enabled = true;
@@ -55,6 +58,10 @@ public class AdminAccount {
     @PrePersist
     void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void updateProfileImage(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void updateProfile(String displayName, AdminRole role, Set<AdminPermission> permissions) {

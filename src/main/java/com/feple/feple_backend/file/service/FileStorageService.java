@@ -58,6 +58,15 @@ public class FileStorageService {
                 ARTIST_PROFILE_MAX_PX);
     }
 
+    public String storeAdminProfile(MultipartFile file, String username) throws IOException {
+        imageResizeService.validateFile(file);
+        String safeName = toSafeName(username);
+        String key = uploadResizedJpeg(file,
+                "admin-profiles/" + safeName + "/" + UUID.randomUUID() + ".jpg",
+                ARTIST_PROFILE_MAX_PX);
+        return buildUrl(key);
+    }
+
     public String storeBoothImage(MultipartFile file) throws IOException {
         imageResizeService.validateFile(file);
         return uploadResizedJpeg(file,

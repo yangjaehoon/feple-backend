@@ -271,7 +271,11 @@
                         <span class="db-card-title">👩‍💼 관리자</span>
                     </div>
                     <div class="profile-body">
-                        <div class="profile-av-xl">🛡️</div>
+                        <div class="profile-av-xl" th:if="${currentAdmin == null or currentAdmin.profileImageUrl == null}">🛡️</div>
+                        <img th:if="${currentAdmin != null and currentAdmin.profileImageUrl != null}"
+                             th:src="${currentAdmin.profileImageUrl}"
+                             style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-lt); margin-bottom:10px;"
+                             alt="프로필"/>
                         <div class="profile-name"
                              th:text="${currentAdmin != null and currentAdmin.displayName != null and !#strings.isEmpty(currentAdmin.displayName)} ? ${currentAdmin.displayName} : (${currentAdmin != null} ? ${currentAdmin.username} : 'Admin')"></div>
                         <div class="profile-email"
