@@ -123,9 +123,10 @@
                                  th:src="${account.profileImageUrl}"
                                  id="photo-img"
                                  style="width:100%; height:100%; object-fit:cover;" alt="프로필"/>
-                            <span th:unless="${account != null and account.profileImageUrl != null}"
-                                  id="photo-placeholder"
-                                  style="font-size:36px; user-select:none;">🛡️</span>
+                            <img th:unless="${account != null and account.profileImageUrl != null}"
+                                 th:src="@{/img/feple_logo.png}"
+                                 id="photo-placeholder"
+                                 style="width:60%; height:60%; object-fit:contain; opacity:.6;" alt="feple"/>
                         </div>
                         <div style="padding-top:4px;">
                             <input type="file" name="profileImage" id="profile-image-input"
@@ -258,7 +259,7 @@ function confirmDeletePhoto() {
     document.getElementById('delete-profile-image-flag').value = 'true';
     document.getElementById('profile-image-input').value = '';
     var preview = document.getElementById('photo-preview');
-    preview.innerHTML = '<span style="font-size:36px; user-select:none;">🛡️</span>';
+    preview.innerHTML = '<img src="/img/feple_logo.png" style="width:60%; height:60%; object-fit:contain; opacity:.6;" alt="feple"/>';
     var btn = document.getElementById('delete-photo-btn');
     if (btn) btn.style.display = 'none';
 }

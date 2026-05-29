@@ -49,7 +49,8 @@
                                 <img th:if="${acc.profileImageUrl != null}"
                                      th:src="${acc.profileImageUrl}"
                                      class="avatar" alt="프로필"/>
-                                <div th:unless="${acc.profileImageUrl != null}" class="avatar-ph">🛡️</div>
+                                <img th:unless="${acc.profileImageUrl != null}"
+                                     th:src="@{/img/feple_logo.png}" class="avatar" alt="feple"/>
                                 <span style="font-weight:600;" th:text="${acc.displayName ?: acc.username}"></span>
                             </div>
                         </td>
