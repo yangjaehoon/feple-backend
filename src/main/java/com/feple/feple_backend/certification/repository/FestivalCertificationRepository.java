@@ -38,6 +38,14 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc.user.id FROM FestivalCertification fc WHERE fc.festival.id = :festivalId AND fc.status = 'APPROVED'")
     Set<Long> findApprovedUserIdsByFestivalId(@Param("festivalId") Long festivalId);
 
+    @Query("SELECT c FROM FestivalCertification c JOIN c.user u JOIN c.festival f " +
+           "WHERE (:status IS NULL OR c.status = :status) " +
+           "AND (LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "     OR LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<FestivalCertification> searchByKeyword(@Param("keyword") String keyword,
+                                                @Param("status") CertificationStatus status,
+                                                Pageable pageable);
+
     @Modifying
     @Query("DELETE FROM FestivalCertification fc WHERE fc.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);

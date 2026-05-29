@@ -26,16 +26,20 @@ public class CertificationAdminController {
     public String list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
             Model model) {
 
         CertificationStatus filterStatus = StringUtils.hasText(status)
                 ? CertificationStatus.valueOf(status)
                 : null;
 
-        Page<FestivalCertification> certPage = certificationService.getByStatus(filterStatus, page);
+        Page<FestivalCertification> certPage = StringUtils.hasText(keyword)
+                ? certificationService.searchByKeyword(keyword, filterStatus, page)
+                : certificationService.getByStatus(filterStatus, page);
 
         model.addAttribute("certifications", certPage);
         model.addAttribute("status", status != null ? status : "");
+        model.addAttribute("keyword", keyword);
         model.addAttribute("page", page);
         return "admin/certification-list";
     }

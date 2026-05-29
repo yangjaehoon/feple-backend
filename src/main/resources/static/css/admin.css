@@ -1153,4 +1153,24 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .apply-result.error   { background: var(--danger-lt); border: 1.5px solid #FCA5A5; color: #991B1B; }
 .action-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+/* ── Alert dismissible ── */
+.alert { position: relative; transition: opacity .3s, max-height .3s ease, padding .3s, margin .3s; overflow: hidden; }
+.alert-close { position: absolute; top: 8px; right: 12px; background: none; border: none; font-size: 18px; line-height: 1; cursor: pointer; color: inherit; opacity: .55; padding: 0 4px; }
+.alert-close:hover { opacity: 1; }
+
+/* ── 위험 행 액션 버튼 (ghost — 기본은 외곽선만, hover에 채워짐) ── */
+.btn-ghost-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); transition: background .15s, color .15s; }
+.btn-ghost-danger:hover, .btn-ghost-danger:focus { background: var(--danger); color: #fff; }
+
+/* ── 페이지네이션 번호 버튼 ── */
+.pagination a.pg-num          { padding: 5px 10px; border-radius: 7px; font-size: 13px; color: var(--text-2); text-decoration: none; background: transparent; transition: background .15s; }
+.pagination a.pg-num:hover    { background: var(--primary-lt); color: var(--primary-dk); }
+.pagination a.pg-num.current  { background: var(--primary); color: #fff; font-weight: 700; pointer-events: none; }
+
+/* ── 빈 상태 CTA ── */
+.empty-row td a.empty-cta { margin-left: 10px; font-size: 12px; }
+
+/* ── 인증 목록 검색 바 ── */
+.cert-search-bar { padding: 12px 22px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
 @keyframes spin { to { transform: rotate(360deg); } }

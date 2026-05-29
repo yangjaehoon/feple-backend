@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -23,6 +24,11 @@ public class AdminAccountService {
         return accountRepository.findAll(
                 org.springframework.data.domain.Sort.by(
                         org.springframework.data.domain.Sort.Direction.ASC, "createdAt"));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AdminAccount> findByUsername(String username) {
+        return accountRepository.findByUsername(username);
     }
 
     @Transactional(readOnly = true)

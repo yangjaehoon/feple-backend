@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.account.AdminAccountService;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.service.AdminStatsService;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -8,6 +9,7 @@ import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,9 +28,11 @@ public class AdminHomeController {
     private final AdminStatsService adminStatsService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
     private final AdminLogService adminLogService;
+    private final AdminAccountService adminAccountService;
 
     @GetMapping
-    public String adminHome(@RequestParam(defaultValue = "0") int festivalPage,
+    public String adminHome(Authentication authentication,
+                            @RequestParam(defaultValue = "0") int festivalPage,
                             @RequestParam(defaultValue = "0") int artistPage,
                             Model model) {
 
@@ -53,6 +57,8 @@ public class AdminHomeController {
         );
         model.addAttribute("dashboard", dashboard);
         model.addAttribute("recentLogs", adminLogService.getRecentLogs());
+        adminAccountService.findByUsername(authentication.getName())
+                .ifPresent(admin -> model.addAttribute("currentAdmin", admin));
 
         return "admin/admin-home";
     }

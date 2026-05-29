@@ -105,7 +105,13 @@
                             </tr>
                         </th:block>
                         <tr class="empty-row" th:if="${#lists.isEmpty(festivals)}">
-                            <td colspan="4">등록된 페스티벌이 없습니다.</td>
+                            <td colspan="4">
+                                <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                                <th:block th:unless="${keyword != null and !#strings.isEmpty(keyword)}">
+                                    등록된 페스티벌이 없습니다.
+                                    <a th:href="@{/admin/festivals/new}" class="btn btn-primary btn-sm empty-cta">+ 페스티벌 등록</a>
+                                </th:block>
+                            </td>
                         </tr>
                         </tbody>
                     </table>

@@ -157,13 +157,16 @@
                             <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
                                 <input type="hidden" name="page" th:value="${users.number}"/>
                                 <button type="submit"
-                                        class="btn btn-danger btn-sm"
+                                        class="btn btn-ghost-danger btn-sm"
                                         onclick="return confirm('이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">탈퇴</button>
                             </form>
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${users.totalElements == 0}">
-                        <td colspan="9">회원이 없습니다.</td>
+                        <td colspan="9">
+                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                            <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}">가입한 회원이 없습니다.</span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

@@ -87,6 +87,12 @@ public class FestivalCertificationService {
     }
 
     @Transactional(readOnly = true)
+    public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
+        PageRequest pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return certificationRepository.searchByKeyword(keyword, status, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public FestivalCertification getById(Long id) {
         return EntityFinder.getOrThrow(certificationRepository::findById, id, "인증 신청");
     }

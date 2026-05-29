@@ -94,6 +94,7 @@
                                   class="count-badge count-badge-blue"
                                   th:text="${dashboard.pendingSongRequestCount}"></span>
                         </span>
+                        <a class="btn btn-secondary btn-sm" th:href="@{/admin/song-requests(status='PENDING')}">전체보기</a>
                     </div>
                     <div class="activity-list">
                         <div th:each="req : ${dashboard.pendingSongRequests}" class="act-item">
@@ -270,10 +271,13 @@
                         <span class="db-card-title">👩‍💼 관리자</span>
                     </div>
                     <div class="profile-body">
-                        <div class="profile-av-xl">👩‍💼</div>
-                        <div class="profile-name">Feple Admin</div>
-                        <div class="profile-email">admin@feple.com</div>
-                        <span class="profile-tag">⭐ 최고 관리자</span>
+                        <div class="profile-av-xl">🛡️</div>
+                        <div class="profile-name"
+                             th:text="${currentAdmin != null and currentAdmin.displayName != null and !#strings.isEmpty(currentAdmin.displayName)} ? ${currentAdmin.displayName} : (${currentAdmin != null} ? ${currentAdmin.username} : 'Admin')"></div>
+                        <div class="profile-email"
+                             th:text="${currentAdmin != null} ? ${currentAdmin.username} : ''"></div>
+                        <span class="profile-tag"
+                              th:text="${currentAdmin != null} ? ('⭐ ' + ${currentAdmin.role.displayName}) : '⭐ 관리자'"></span>
                         <div style="margin-top:14px; display:flex; gap:8px;">
                             <a class="btn btn-secondary btn-sm" th:href="@{/admin/users}">회원 관리</a>
                             <a class="btn btn-primary btn-sm" th:href="@{/admin/festivals/new}">+ 페스티벌</a>

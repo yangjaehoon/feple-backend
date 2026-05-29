@@ -24,6 +24,21 @@
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
 
         <div class="card">
+            <!-- 검색 바 -->
+            <div class="cert-search-bar">
+                <form th:action="@{/admin/certifications}" method="get"
+                      style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           placeholder="신청자 닉네임 또는 페스티벌명 검색..."
+                           style="padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px; width:280px;"/>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                       th:href="@{/admin/certifications(status=${status})}"
+                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                </form>
+            </div>
+
             <!-- 필터 탭 -->
             <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px;">
                 <a th:href="@{/admin/certifications(status='', page=0)}"

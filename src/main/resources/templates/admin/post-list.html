@@ -165,13 +165,16 @@
                                 <input type="hidden" name="artistId" th:value="${artistId}"/>
                                 <input type="hidden" name="festivalId" th:value="${festivalId}"/>
                                 <button type="submit"
-                                        class="btn btn-danger btn-sm"
+                                        class="btn btn-ghost-danger btn-sm"
                                         onclick="return confirm('이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">삭제</button>
                             </form>
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${posts.totalElements == 0}">
-                        <td colspan="6">게시글이 없습니다.</td>
+                        <td colspan="6">
+                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                            <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}">게시글이 없습니다.</span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

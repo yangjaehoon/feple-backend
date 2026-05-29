@@ -112,16 +112,47 @@
 
     <script th:src="@{/js/admin-genre-colors.js}"></script>
 </aside>
+<script>
+/* ── 전역: Alert 자동 닫기 ── */
+(function() {
+    function dismissAlert(el) {
+        el.style.opacity = '0';
+        el.style.maxHeight = el.offsetHeight + 'px';
+        setTimeout(function() { el.style.maxHeight = '0'; el.style.padding = '0'; el.style.marginBottom = '0'; }, 300);
+        setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 600);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.alert-success, .alert-danger').forEach(function(el) {
+            var btn = document.createElement('button');
+            btn.className = 'alert-close';
+            btn.innerHTML = '&times;';
+            btn.addEventListener('click', function() { dismissAlert(el); });
+            el.appendChild(btn);
+        });
+        document.querySelectorAll('.alert-success').forEach(function(el) {
+            setTimeout(function() { dismissAlert(el); }, 4000);
+        });
+    });
+})();
+</script>
 
 <!-- ── 페이지네이션 프래그먼트 ── -->
 <div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">
     <span class="page-info" th:text="'총 ' + ${page.totalElements} + '건'"></span>
-    <div class="pagination" style="margin-left:auto;">
+    <div class="pagination" style="margin-left:auto;"
+         th:with="ep=${extraParams != null ? '&' + extraParams : ''},
+                  cur=${page.number},
+                  tot=${page.totalPages},
+                  s=${cur > 2 ? cur - 2 : 0},
+                  e=${cur + 2 < tot ? cur + 2 : tot - 1}">
         <a th:if="${page.hasPrevious()}"
-           th:href="${baseUrl + '?page=' + (page.number - 1) + (extraParams != null ? '&' + extraParams : '')}">← 이전</a>
-        <span th:text="${page.number + 1} + ' / ' + ${page.totalPages}"></span>
+           th:href="${baseUrl + '?page=' + (cur - 1) + ep}">← 이전</a>
+        <a th:each="i : ${#numbers.sequence(s, e >= s ? e : s)}"
+           th:href="${baseUrl + '?page=' + i + ep}"
+           th:text="${i + 1}"
+           th:classappend="${i == cur} ? 'pg-num current' : 'pg-num'"></a>
         <a th:if="${page.hasNext()}"
-           th:href="${baseUrl + '?page=' + (page.number + 1) + (extraParams != null ? '&' + extraParams : '')}">다음 →</a>
+           th:href="${baseUrl + '?page=' + (cur + 1) + ep}">다음 →</a>
     </div>
 </div>
 
