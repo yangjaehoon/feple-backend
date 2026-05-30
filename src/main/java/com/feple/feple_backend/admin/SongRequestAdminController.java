@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.NoSuchElementException;
 
@@ -80,8 +81,10 @@ public class SongRequestAdminController {
     }
 
     private String redirectUrl(String status, int page, String keyword) {
-        String url = "redirect:/admin/song-requests?status=" + status + "&page=" + page;
-        if (keyword != null && !keyword.isBlank()) url += "&keyword=" + keyword;
-        return url;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/song-requests")
+                .queryParam("status", status)
+                .queryParam("page", page);
+        if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
+        return "redirect:" + builder.build().toUriString();
     }
 }

@@ -29,6 +29,7 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         PREFIX_MAP.put("/admin/users",          AdminPermission.USERS);
         PREFIX_MAP.put("/admin/certifications", AdminPermission.CERTIFICATIONS);
         PREFIX_MAP.put("/admin/reports",        AdminPermission.REPORTS);
+        PREFIX_MAP.put("/admin/song-requests",  AdminPermission.SONG_REQUESTS);
         PREFIX_MAP.put("/admin/bad-words",      AdminPermission.BAD_WORDS);
         PREFIX_MAP.put("/admin/crawl",          AdminPermission.CRAWL);
         PREFIX_MAP.put("/admin/logs",           AdminPermission.LOGS);

@@ -42,6 +42,11 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
 
     long countByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
 
+    @Query("SELECT FUNCTION('DATE', pr.createdAt), COUNT(pr) FROM PostReport pr " +
+           "WHERE pr.createdAt >= :from AND pr.createdAt < :to GROUP BY FUNCTION('DATE', pr.createdAt)")
+    java.util.List<Object[]> countGroupByDate(@Param("from") java.time.LocalDateTime from,
+                                              @Param("to") java.time.LocalDateTime to);
+
     @Query("SELECT pr FROM PostReport pr WHERE pr.post.id = :postId")
     List<PostReport> findByPostId(@Param("postId") Long postId);
 

@@ -5,7 +5,6 @@ import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -25,20 +24,16 @@ public class CertificationAdminController {
     @GetMapping
     public String list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) CertificationStatus status,
             @RequestParam(required = false) String keyword,
             Model model) {
 
-        CertificationStatus filterStatus = StringUtils.hasText(status)
-                ? CertificationStatus.valueOf(status)
-                : null;
-
-        Page<FestivalCertification> certPage = StringUtils.hasText(keyword)
-                ? certificationService.searchByKeyword(keyword, filterStatus, page)
-                : certificationService.getByStatus(filterStatus, page);
+        Page<FestivalCertification> certPage = (keyword != null && !keyword.isBlank())
+                ? certificationService.searchByKeyword(keyword, status, page)
+                : certificationService.getByStatus(status, page);
 
         model.addAttribute("certifications", certPage);
-        model.addAttribute("status", status != null ? status : "");
+        model.addAttribute("status", status != null ? status.name() : "");
         model.addAttribute("keyword", keyword);
         model.addAttribute("page", page);
         return "admin/certification-list";

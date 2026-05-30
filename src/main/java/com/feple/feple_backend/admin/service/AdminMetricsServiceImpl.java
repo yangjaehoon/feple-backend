@@ -21,11 +21,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -114,20 +117,35 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
     }
 
     private List<DailyStatDto> buildDailyStats(LocalDate from, LocalDate to) {
+        LocalDateTime dtFrom = from.atStartOfDay();
+        LocalDateTime dtTo = to.plusDays(1).atStartOfDay();
+
+        Map<LocalDate, Long> userMap    = toDateMap(userRepository.countGroupByDate(dtFrom, dtTo));
+        Map<LocalDate, Long> postMap    = toDateMap(postRepository.countGroupByDate(dtFrom, dtTo));
+        Map<LocalDate, Long> commentMap = toDateMap(commentRepository.countGroupByDate(dtFrom, dtTo));
+        Map<LocalDate, Long> reportMap  = toDateMap(reportRepository.countGroupByDate(dtFrom, dtTo));
+
         List<DailyStatDto> stats = new ArrayList<>();
         LocalDate date = from;
         while (!date.isAfter(to)) {
-            LocalDateTime start = date.atStartOfDay();
-            LocalDateTime end = date.plusDays(1).atStartOfDay();
             stats.add(new DailyStatDto(
                     date.format(STAT_DATE_FORMAT),
-                    userRepository.countByCreatedAtBetween(start, end),
-                    postRepository.countByCreatedAtBetween(start, end),
-                    commentRepository.countByCreatedAtBetween(start, end),
-                    reportRepository.countByCreatedAtBetween(start, end)
+                    userMap.getOrDefault(date, 0L),
+                    postMap.getOrDefault(date, 0L),
+                    commentMap.getOrDefault(date, 0L),
+                    reportMap.getOrDefault(date, 0L)
             ));
             date = date.plusDays(1);
         }
         return stats;
+    }
+
+    private static Map<LocalDate, Long> toDateMap(List<Object[]> rows) {
+        Map<LocalDate, Long> map = new HashMap<>();
+        for (Object[] row : rows) {
+            LocalDate date = row[0] instanceof Date d ? d.toLocalDate() : LocalDate.parse(row[0].toString());
+            map.put(date, ((Number) row[1]).longValue());
+        }
+        return map;
     }
 }

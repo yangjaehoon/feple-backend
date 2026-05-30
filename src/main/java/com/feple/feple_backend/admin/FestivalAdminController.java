@@ -128,10 +128,18 @@ public class FestivalAdminController {
 
     @PostMapping("/{id}/edit")
     public String updateFestival(@PathVariable Long id,
-                                 @ModelAttribute("festival") FestivalRequestDto dto,
-                                 @RequestParam(value="posterFile", required=false) MultipartFile posterFile
+                                 @Valid @ModelAttribute("festival") FestivalRequestDto dto,
+                                 BindingResult bindingResult,
+                                 @RequestParam(value="posterFile", required=false) MultipartFile posterFile,
+                                 Model model
     ) throws IOException {
-        applyPosterFile(posterFile, dto, null);
+        applyPosterFile(posterFile, dto, bindingResult);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("festivalId", id);
+            model.addAttribute("currentPosterUrl", festivalService.getFestival(id).getPosterUrl());
+            populateFestivalFormModel(model);
+            return "admin/festival-edit-form";
+        }
         festivalService.updateFestival(id, dto);
         adminLogService.log("FESTIVAL_UPDATE", "FESTIVAL", id, dto.getTitle());
         return "redirect:/admin";

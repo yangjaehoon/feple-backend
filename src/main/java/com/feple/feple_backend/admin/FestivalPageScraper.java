@@ -7,6 +7,9 @@ import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -40,6 +43,7 @@ public class FestivalPageScraper {
     }
 
     public ScrapedFestivalDto scrape(String url, String source) throws IOException {
+        validateUrl(url);
         Document doc = Jsoup.connect(url)
             .userAgent(USER_AGENT)
             .header("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8")
@@ -185,5 +189,33 @@ public class FestivalPageScraper {
         if (title == null || title.isBlank()) return true;
         String lower = title.toLowerCase();
         return SPA_FALLBACK_TITLES.stream().anyMatch(t -> lower.contains(t.toLowerCase()));
+    }
+
+    // SSRF 방어: http/https만 허용, 루프백/사설/링크로컬 주소 차단
+    private static void validateUrl(String url) {
+        URI uri;
+        try {
+            uri = URI.create(url);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("유효하지 않은 URL입니다.");
+        }
+        String scheme = uri.getScheme();
+        if (!"https".equalsIgnoreCase(scheme) && !"http".equalsIgnoreCase(scheme)) {
+            throw new IllegalArgumentException("http/https URL만 허용됩니다.");
+        }
+        String host = uri.getHost();
+        if (host == null || host.isBlank()) {
+            throw new IllegalArgumentException("URL에 호스트가 없습니다.");
+        }
+        InetAddress addr;
+        try {
+            addr = InetAddress.getByName(host);
+        } catch (UnknownHostException e) {
+            throw new IllegalArgumentException("호스트를 찾을 수 없습니다: " + host);
+        }
+        if (addr.isLoopbackAddress() || addr.isLinkLocalAddress()
+                || addr.isSiteLocalAddress() || addr.isAnyLocalAddress()) {
+            throw new IllegalArgumentException("내부 네트워크 주소는 허용되지 않습니다.");
+        }
     }
 }

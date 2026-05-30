@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -140,9 +141,11 @@ public class UserAdminController {
     }
 
     private static String buildListParams(String filter, String sort, String keyword) {
-        StringBuilder sb = new StringBuilder("filter=").append(filter);
-        if (!"banned".equals(filter)) sb.append("&sort=").append(sort);
-        if (keyword != null && !keyword.isBlank()) sb.append("&keyword=").append(keyword);
-        return sb.toString();
+        UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                .queryParam("filter", filter);
+        if (!"banned".equals(filter)) builder.queryParam("sort", sort);
+        if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
+        String query = builder.build().toUriString();
+        return query.startsWith("?") ? query.substring(1) : query;
     }
 }

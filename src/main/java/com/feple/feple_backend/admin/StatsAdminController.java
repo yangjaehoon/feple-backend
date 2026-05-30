@@ -19,6 +19,7 @@ import java.time.LocalDate;
 public class StatsAdminController {
 
     private static final int DEFAULT_RANGE_DAYS = 30;
+    private static final int MAX_RANGE_DAYS     = 90;
 
     private final AdminMetricsService adminStatsService;
 
@@ -32,6 +33,7 @@ public class StatsAdminController {
         LocalDate end   = (to == null || to.isAfter(today)) ? today : to;
         LocalDate start = (from == null) ? end.minusDays(DEFAULT_RANGE_DAYS - 1) : from;
         if (start.isAfter(end)) start = end;
+        if (start.isBefore(end.minusDays(MAX_RANGE_DAYS - 1))) start = end.minusDays(MAX_RANGE_DAYS - 1);
 
         model.addAttribute("activityStats", adminStatsService.getUserActivityStats());
         model.addAttribute("rangeStats", adminStatsService.getRangeStats(start, end));

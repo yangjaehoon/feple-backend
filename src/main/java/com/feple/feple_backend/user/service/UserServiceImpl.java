@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -197,9 +198,16 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public List<UserResponseDto> getAllUsersForExport() {
-        return userRepository.findAllByDeletedAtIsNull(
-                        org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "id")))
-                .stream().map(this::toAdminUserDto).toList();
+        List<UserResponseDto> result = new ArrayList<>();
+        int page = 0;
+        final int batchSize = 1000;
+        Page<User> batch;
+        do {
+            batch = userRepository.findAllByDeletedAtIsNull(
+                    PageRequest.of(page++, batchSize, Sort.by(Sort.Direction.DESC, "id")));
+            batch.forEach(u -> result.add(toAdminUserDto(u)));
+        } while (batch.hasNext());
+        return result;
     }
 
     @Override
