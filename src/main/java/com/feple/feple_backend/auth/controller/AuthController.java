@@ -109,11 +109,9 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "로그아웃 되었습니다."));
     }
 
+    // application.yml의 server.forward-headers-strategy: native 설정으로
+    // Spring Boot가 신뢰된 프록시의 XFF를 처리하므로 remoteAddr이 실제 클라이언트 IP를 반환함
     private String getClientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            return xff.split(",")[0].trim();
-        }
         return request.getRemoteAddr();
     }
 }

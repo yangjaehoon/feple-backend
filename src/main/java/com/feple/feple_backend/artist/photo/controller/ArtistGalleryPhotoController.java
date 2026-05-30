@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -104,7 +105,7 @@ public class ArtistGalleryPhotoController {
             @AuthenticationPrincipal Long userId) {
         if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         artistPhotoReportService.submitReport(photoId, userId, new SubmitReportCommand(body.reason(), body.detail()));
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     public record ReportRequest(

@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -70,7 +71,7 @@ public class CommentController {
             @Valid @RequestBody ReportRequest body,
             @AuthenticationPrincipal Long userId) {
         commentReportService.submitReport(commentId, userId, new SubmitReportCommand(body.getReason(), body.getDetail()));
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Data

@@ -15,8 +15,8 @@ import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import java.util.List;
 import org.springframework.data.domain.PageRequest;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,9 +89,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
         PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         Long postId = report.getPostId();
         postAdminService.deletePost(postId);
-        reportRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, Integer.MAX_VALUE))
-                .stream()
-                .filter(r -> r.getPostId().equals(postId))
+        reportRepository.findByPostId(postId)
                 .forEach(r -> r.resolve(ReportStatus.POST_DELETED));
     }
 

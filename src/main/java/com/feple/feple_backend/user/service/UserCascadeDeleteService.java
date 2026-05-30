@@ -38,11 +38,11 @@ public class UserCascadeDeleteService {
 
         // 인증 세션 무효화
         refreshTokenRepository.deleteByUserId(id);
-        userDeviceTokenRepository.deleteAll(userDeviceTokenRepository.findByUserId(id));
+        userDeviceTokenRepository.deleteByUserId(id);
 
         // 소셜 활동 데이터 삭제
-        festivalLikeRepository.deleteAll(festivalLikeRepository.findByUserId(id));
-        artistFollowRepository.deleteAll(artistFollowRepository.findByUserId(id));
+        festivalLikeRepository.deleteByUserId(id);
+        artistFollowRepository.deleteByUserId(id);
 
         notificationRepository.deleteByUserId(id);
         certificationRepository.deleteByUserId(id);

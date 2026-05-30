@@ -42,17 +42,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long userId = jwtProvider.parseUserId(token);
 
                 var user = userRepository.findById(userId).orElse(null);
-                if (user != null && user.isBanned()) {
+                if (user == null) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+                if (user.isBanned()) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json;charset=UTF-8");
                     response.getWriter().write("{\"error\":\"banned\",\"message\":\"계정이 정지되었습니다.\"}");
                     return;
                 }
 
+                String role = "ROLE_" + user.getRole().name();
                 var authentication = new UsernamePasswordAuthenticationToken(
                         userId,
                         null,
-                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                        List.of(new SimpleGrantedAuthority(role))
                 );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {

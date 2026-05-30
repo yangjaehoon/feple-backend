@@ -42,6 +42,9 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
 
     long countByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
 
+    @Query("SELECT pr FROM PostReport pr WHERE pr.post.id = :postId")
+    List<PostReport> findByPostId(@Param("postId") Long postId);
+
     @Modifying
     @Query("DELETE FROM PostReport pr WHERE pr.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);

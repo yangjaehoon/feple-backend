@@ -15,6 +15,7 @@ import com.feple.feple_backend.festival.service.WeatherService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,7 @@ public class FestivalController {
     @GetMapping("/{id}/liked")
     public ResponseEntity<Boolean> isLiked(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
+        if (userId == null) return ResponseEntity.ok(false);
         return ResponseEntity.ok(festivalLikeService.isLiked(id, userId));
     }
 
@@ -86,12 +88,11 @@ public class FestivalController {
         return songService.getFestivalSetlist(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/artists/{artistFestivalId}/setlist")
     public ResponseEntity<Void> updateSetlist(@PathVariable Long id,
                                               @PathVariable Long artistFestivalId,
-                                              @RequestBody(required = false) Set<Long> songIds,
-                                              @AuthenticationPrincipal Long userId) {
-        if (userId == null) return ResponseEntity.status(401).build();
+                                              @RequestBody(required = false) Set<Long> songIds) {
         songService.updateSetlist(id, artistFestivalId, songIds != null ? songIds : Set.of());
         return ResponseEntity.ok().build();
     }

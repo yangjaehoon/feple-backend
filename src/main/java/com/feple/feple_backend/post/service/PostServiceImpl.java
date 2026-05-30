@@ -333,8 +333,10 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     private void deletePostLikesAndPosts(List<Post> posts) {
-        posts.forEach(post -> postLikeRepository.deleteByPostId(post.getId()));
-        postRepository.deleteAll(posts);
+        if (posts.isEmpty()) return;
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+        postLikeRepository.deleteByPostIds(postIds);
+        postRepository.deleteAllByIdInBatch(postIds);
     }
 
     private LocalDateTime oneWeekAgo() {
