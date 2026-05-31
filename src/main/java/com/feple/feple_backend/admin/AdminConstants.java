@@ -1,0 +1,10 @@
+package com.feple.feple_backend.admin;
+
+public final class AdminConstants {
+    private AdminConstants() {}
+
+    public static final int DASHBOARD_PAGE_SIZE = 10;
+    public static final int DASHBOARD_PREVIEW_SIZE = 5;
+    public static final int STATS_RECENT_DAYS = 7;
+    public static final int STATS_MONTHLY_DAYS = 30;
+}

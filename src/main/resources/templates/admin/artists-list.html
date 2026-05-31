@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('아티스트 목록')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">아티스트 목록</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <span>아티스트</span>
+            </div>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-secondary" th:href="@{/admin/artists/photos}">🖼 사진 관리</a>
+            <a class="btn btn-primary" th:href="@{/admin/artists/new}">+ 아티스트 등록</a>
+        </div>
+    </div>
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 아티스트 신청 섹션 -->
+        <div th:if="${not #lists.isEmpty(suggestions)}" class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <div class="card-title">
+                    🙋 아티스트 신청 대기
+                    <span class="count-badge count-badge-yellow"
+                          th:text="${#lists.size(suggestions)}"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>아티스트 이름</th>
+                        <th>추가 정보</th>
+                        <th style="width:120px;">신청자</th>
+                        <th style="width:140px;">신청일</th>
+                        <th style="width:100px;">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${suggestions}">
+                        <td class="cell-primary" th:text="${s.artistName}"></td>
+                        <td style="font-size:13px; color:var(--text-2);" th:text="${s.note != null ? s.note : '-'}"></td>
+                        <td style="font-size:13px;" th:text="${s.userNickname}"></td>
+                        <td style="font-size:12px; color:var(--muted);"
+                            th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-sm"
+                                    onclick="openDismissModal(this)"
+                                    th:data-id="${s.id}"
+                                    th:data-artist="${s.artistName}">처리하기</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 처리 완료 내역 -->
+        <div th:if="${not #lists.isEmpty(processedSuggestions)}" class="card" style="margin-bottom:20px;">
+            <details>
+                <summary style="padding:16px 22px; cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px;">
+                    <div class="card-title" style="margin:0;">
+                        처리 완료 내역
+                        <span style="display:inline-block; margin-left:6px; padding:1px 8px; background:var(--border); color:var(--text-2); border-radius:20px; font-size:12px; font-weight:700;"
+                              th:text="${#lists.size(processedSuggestions)}"></span>
+                    </div>
+                    <span style="margin-left:auto; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:4px;">
+                        <span class="summary-text"></span>
+                        <span class="summary-arrow" style="display:inline-block;">▼</span>
+                    </span>
+                </summary>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>아티스트 이름</th>
+                            <th>신청 메모</th>
+                            <th style="width:120px;">신청자</th>
+                            <th style="width:140px;">신청일</th>
+                            <th style="width:300px;">처리 메시지</th>
+                            <th style="width:140px;">처리일</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="s : ${processedSuggestions}">
+                            <td class="cell-primary" th:text="${s.artistName}"></td>
+                            <td style="font-size:13px; color:var(--text-2);" th:text="${s.note != null ? s.note : '-'}"></td>
+                            <td style="font-size:13px;" th:text="${s.userNickname}"></td>
+                            <td style="font-size:12px; color:var(--muted);"
+                                th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td style="font-size:13px; color:var(--text-2);" th:text="${s.processNote != null ? s.processNote : '-'}"></td>
+                            <td style="font-size:12px; color:var(--muted);"
+                                th:text="${s.processedAt != null ? #temporals.format(s.processedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    전체 아티스트
+                    <span th:if="${genre != null}"
+                          style="font-size:12px; font-weight:500; color:var(--primary); margin-left:6px;"
+                          th:text="'— ' + ${genre.displayName}"></span>
+                </div>
+            </div>
+
+            <!-- 장르 필터 버튼 -->
+            <div style="padding:12px 22px 0; display:flex; flex-wrap:wrap; gap:8px;">
+                <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort})}"
+                   class="filter-pill"
+                   th:classappend="${genre == null} ? ' active'">
+                    전체
+                </a>
+                <a th:each="g : ${allGenres}"
+                   th:href="@{/admin/artists(keyword=${keyword}, sort=${sort}, genre=${g.name()})}"
+                   th:text="${g.displayName}"
+                   class="filter-pill"
+                   th:classappend="${genre == g} ? ' active'">
+                </a>
+            </div>
+
+            <!-- 검색 바 -->
+            <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
+                <form th:action="@{/admin/artists}" method="get"
+                      style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="sort" th:value="${sort}"/>
+                    <input type="hidden" name="genre" th:if="${genre != null}" th:value="${genre.name()}"/>
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           placeholder="아티스트 이름 검색..."
+                           autocomplete="off"
+                           style="flex:1; max-width:280px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                       th:href="@{/admin/artists(sort=${sort}, genre=${genre != null ? genre.name() : null})}"
+                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                </form>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>
+                            아티스트
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name')}"
+                               class="sort-btn" th:classappend="${sort == 'name'} ? ' active'">↑</a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc')}"
+                               class="sort-btn" th:classappend="${sort == 'name_desc'} ? ' active'">↓</a>
+                        </th>
+                        <th style="width:200px;">영어 이름</th>
+                        <th style="width:160px;">
+                            팔로워
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers')}"
+                               class="sort-btn" th:classappend="${sort == 'followers'} ? ' active'">↓</a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc')}"
+                               class="sort-btn" th:classappend="${sort == 'followers_asc'} ? ' active'">↑</a>
+                        </th>
+                        <th style="width:100px;">
+                            곡 수
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs')}"
+                               class="sort-btn" th:classappend="${sort == 'songs'} ? ' active'">↓</a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs_asc')}"
+                               class="sort-btn" th:classappend="${sort == 'songs_asc'} ? ' active'">↑</a>
+                        </th>
+                        <th style="width:160px;">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody id="artist-tbody">
+                    <tr th:each="artist : ${artists}" th:attr="data-name=${artist.name}">
+                        <td>
+                            <div class="avatar-cell">
+                                <img th:if="${artist.profileImageUrl != null}"
+                                     th:src="${artist.profileImageUrl}"
+                                     class="avatar" alt="profile"/>
+                                <div th:if="${artist.profileImageUrl == null}"
+                                     style="width:38px; height:38px; border-radius:50%; background:var(--purple-50); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎤</div>
+                                <div>
+                                    <div class="cell-primary" th:text="${artist.name}"></div>
+                                    <div class="cell-secondary" style="margin-top:4px;">
+                                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-size:13px;"
+                            th:text="${artist.nameEn != null and !artist.nameEn.isEmpty()} ? ${artist.nameEn} : '-'"></td>
+                        <td>
+                            <div class="cell-primary" th:text="${artist.followerCount}"></div>
+                            <div class="cell-secondary">팔로워</div>
+                        </td>
+                        <td>
+                            <div class="cell-primary" th:text="${artist.songCount}"></div>
+                            <div class="cell-secondary">곡</div>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}"
+                                   class="btn btn-secondary btn-sm">곡 관리</a>
+                                <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
+                                   class="btn btn-warning btn-sm">수정</a>
+                                <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
+                                    <button type="submit"
+                                            class="btn btn-ghost-danger btn-sm"
+                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(artists)}">
+                        <td colspan="5">
+                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                            <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}">등록된 아티스트가 없습니다.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 처리완료 모달 -->
+<div id="dismiss-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:28px 28px 24px; width:480px; max-width:calc(100vw - 32px); box-shadow:0 8px 32px rgba(0,0,0,.18);">
+        <div style="margin-bottom:18px;">
+            <div style="font-size:16px; font-weight:700; color:var(--text-1);">신청 처리</div>
+            <div id="dismiss-artist-name" style="font-size:13px; color:var(--text-2); margin-top:4px;"></div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:8px;">처리 사유 (선택)</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                <button type="button" class="reason-chip" data-reason="요청하신 아티스트를 등록했어요!">등록 완료</button>
+                <button type="button" class="reason-chip" data-reason="이미 등록된 아티스트예요.">이미 등록됨</button>
+                <button type="button" class="reason-chip" data-reason="정보가 부족해서 등록이 어려워요.">정보 부족</button>
+                <button type="button" class="reason-chip" data-reason="활동 이력이 없어서 등록이 어려워요.">비활동 아티스트</button>
+                <button type="button" class="reason-chip" data-reason="">직접 입력</button>
+            </div>
+            <textarea id="dismiss-note" rows="3"
+                      placeholder="사용자에게 전달할 메시지를 입력하세요. (미입력 시 기본 메시지로 발송됩니다)"
+                      style="width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:7px; font-size:13px; resize:vertical; box-sizing:border-box;"></textarea>
+        </div>
+
+        <form id="dismiss-form" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="processNote" id="dismiss-process-note"/>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="closeDismissModal()">취소</button>
+                <button type="submit" class="btn btn-primary">처리 완료</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+function openDismissModal(btn) {
+    const id     = btn.dataset.id;
+    const artist = btn.dataset.artist;
+    document.getElementById('dismiss-artist-name').textContent = '아티스트: ' + artist;
+    document.getElementById('dismiss-form').action = '/admin/artists/suggestions/' + id + '/dismiss';
+    document.getElementById('dismiss-note').value = '';
+    document.getElementById('dismiss-process-note').value = '';
+    document.querySelectorAll('.reason-chip').forEach(function (c) { c.classList.remove('active'); });
+    const modal = document.getElementById('dismiss-modal');
+    modal.style.display = 'flex';
+}
+
+function closeDismissModal() {
+    document.getElementById('dismiss-modal').style.display = 'none';
+}
+
+document.getElementById('dismiss-modal').addEventListener('click', function (e) {
+    if (e.target === this) closeDismissModal();
+});
+
+document.querySelectorAll('.reason-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+        document.querySelectorAll('.reason-chip').forEach(function (c) { c.classList.remove('active'); });
+        this.classList.add('active');
+        document.getElementById('dismiss-note').value = this.dataset.reason;
+    });
+});
+
+document.getElementById('dismiss-form').addEventListener('submit', function () {
+    document.getElementById('dismiss-process-note').value =
+        document.getElementById('dismiss-note').value.trim();
+});
+</script>
+</body>
+</html>

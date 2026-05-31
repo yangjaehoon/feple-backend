@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Feple Admin — 관리자 계정</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .form-section {
+            margin-bottom: 28px;
+        }
+        .form-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--muted);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+        .field-group { margin-bottom: 16px; }
+        .field-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-2);
+            margin-bottom: 6px;
+        }
+        .field-label .required { color: #E11D48; margin-left: 2px; }
+        .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .form-input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-1);
+            background: #fff;
+            outline: none;
+            transition: border-color .15s;
+        }
+        .form-input:focus { border-color: var(--primary); }
+        .form-input:disabled { background: #F8FBFD; color: var(--muted); }
+        .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        .radio-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+            flex: 1; min-width: 140px;
+        }
+        .radio-card:has(input:checked) {
+            border-color: var(--primary);
+            background: #EFF6FF;
+        }
+        .radio-card input { margin: 0; cursor: pointer; }
+        .radio-card-label { font-size: 13px; font-weight: 600; color: var(--text-1); }
+        .radio-card-desc  { font-size: 11px; color: var(--muted); }
+        .perm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 8px;
+        }
+        .perm-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+            font-size: 13px;
+        }
+        .perm-check:has(input:checked) {
+            border-color: var(--primary);
+            background: #EFF6FF;
+        }
+        .perm-check input { margin: 0; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('accounts')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="${account != null} ? '관리자 계정 수정' : '새 관리자 추가'">관리자 계정</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/accounts}">관리자 계정</a>
+                <span class="bc-sep">›</span>
+                <span th:text="${account != null} ? '수정' : '추가'">폼</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+        <div class="card" style="padding: 28px;">
+
+            <!-- 생성 폼 / 수정 폼 -->
+            <form th:action="${account != null} ? @{/admin/accounts/{id}/update(id=${account.id})} : @{/admin/accounts}"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <!-- 프로필 사진 -->
+                <div class="form-section">
+                    <div class="form-section-title">프로필 사진</div>
+                    <div style="display:flex; gap:20px; align-items:flex-start;">
+                        <div id="photo-preview" style="width:88px; height:88px; border-radius:50%; overflow:hidden; border:2px solid var(--border); flex-shrink:0; background:var(--bg); display:flex; align-items:center; justify-content:center;">
+                            <img th:if="${account != null and account.profileImageUrl != null}"
+                                 th:src="${account.profileImageUrl}"
+                                 id="photo-img"
+                                 style="width:100%; height:100%; object-fit:cover;" alt="프로필"/>
+                            <img th:unless="${account != null and account.profileImageUrl != null}"
+                                 th:src="@{/img/feple_logo.png}"
+                                 id="photo-placeholder"
+                                 style="width:60%; height:60%; object-fit:contain; opacity:.6;" alt="feple"/>
+                        </div>
+                        <div style="padding-top:4px;">
+                            <input type="file" name="profileImage" id="profile-image-input"
+                                   accept=".jpg,.jpeg,.png" style="display:none;"
+                                   onchange="previewPhoto(this)"/>
+                            <input type="hidden" name="deleteProfileImage" id="delete-profile-image-flag" value="false"/>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                        onclick="document.getElementById('profile-image-input').click()">
+                                    사진 업로드
+                                </button>
+                                <button th:if="${account != null and account.profileImageUrl != null}"
+                                        type="button" id="delete-photo-btn"
+                                        class="btn btn-ghost-danger btn-sm"
+                                        onclick="confirmDeletePhoto()">
+                                    사진 삭제
+                                </button>
+                            </div>
+                            <div class="field-hint" style="margin-top:8px;">jpg, jpeg, png · 최대 5MB · 원형으로 표시됩니다</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 기본 정보 -->
+                <div class="form-section">
+                    <div class="form-section-title">기본 정보</div>
+                    <div class="form-row">
+                        <div class="field-group">
+                            <label class="field-label">아이디<span class="required">*</span></label>
+                            <input class="form-input"
+                                   type="text" name="username"
+                                   th:value="${account != null} ? ${account.username} : ''"
+                                   th:disabled="${account != null}"
+                                   placeholder="로그인 아이디"
+                                   required="true" maxlength="50"
+                                   th:attr="required=${account == null ? 'required' : null}"/>
+                            <div class="field-hint" th:if="${account != null}">아이디는 변경할 수 없습니다.</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">
+                                이름 (표시명)
+                            </label>
+                            <input class="form-input"
+                                   type="text" name="displayName"
+                                   th:value="${account != null} ? ${account.displayName} : ''"
+                                   placeholder="관리자 화면에 표시될 이름"
+                                   maxlength="50"/>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="field-group">
+                            <label class="field-label">
+                                비밀번호
+                                <span class="required" th:if="${account == null}">*</span>
+                            </label>
+                            <input class="form-input"
+                                   type="password" name="password"
+                                   th:attr="placeholder=${account != null} ? '새 비밀번호 (변경 시에만 입력)' : '비밀번호',required=${account == null ? 'required' : null}"
+                                   autocomplete="new-password"/>
+                            <div class="field-hint" th:if="${account != null}">비워두면 기존 비밀번호가 유지됩니다.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 역할 -->
+                <div class="form-section">
+                    <div class="form-section-title">역할</div>
+                    <div class="radio-group" id="role-group">
+                        <label th:each="r : ${allRoles}" class="radio-card">
+                            <input type="radio" name="role" th:value="${r.name()}"
+                                   th:checked="${account != null} ? ${account.role == r} : ${r.name() == 'MANAGER'}"
+                                   onchange="onRoleChange(this.value)"/>
+                            <div>
+                                <div class="radio-card-label" th:text="${r.displayName}"></div>
+                                <div class="radio-card-desc"
+                                     th:text="${r.name() == 'SUPER_ADMIN'} ? '모든 페이지 접근 + 관리자 계정 관리' : '선택한 페이지만 접근 가능'"></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 권한 (MANAGER일 때만 표시) -->
+                <div class="form-section" id="perm-section">
+                    <div class="form-section-title">페이지 접근 권한</div>
+                    <div class="perm-grid">
+                        <label th:each="p : ${allPermissions}" class="perm-check">
+                            <input type="checkbox" name="permissions" th:value="${p.name()}"
+                                   th:checked="${account != null and account.permissions.contains(p)}"/>
+                            <span th:text="${p.displayName}"></span>
+                        </label>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                onclick="document.querySelectorAll('#perm-section input[type=checkbox]').forEach(c=>c.checked=true)">전체 선택</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="margin-left:4px;"
+                                onclick="document.querySelectorAll('#perm-section input[type=checkbox]').forEach(c=>c.checked=false)">전체 해제</button>
+                    </div>
+                </div>
+
+                <!-- 버튼 -->
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <a th:href="@{/admin/accounts}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${account != null} ? '수정 저장' : '계정 생성'">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function onRoleChange(role) {
+    const section = document.getElementById('perm-section');
+    section.style.display = role === 'SUPER_ADMIN' ? 'none' : '';
+}
+
+function previewPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    document.getElementById('delete-profile-image-flag').value = 'false';
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var preview = document.getElementById('photo-preview');
+        preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover;" alt="미리보기"/>';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+function confirmDeletePhoto() {
+    if (!confirm('프로필 사진을 삭제할까요?')) return;
+    document.getElementById('delete-profile-image-flag').value = 'true';
+    document.getElementById('profile-image-input').value = '';
+    var preview = document.getElementById('photo-preview');
+    preview.innerHTML = '<img src="/img/feple_logo.png" style="width:60%; height:60%; object-fit:contain; opacity:.6;" alt="feple"/>';
+    var btn = document.getElementById('delete-photo-btn');
+    if (btn) btn.style.display = 'none';
+}
+
+// 초기화
+(function() {
+    const checked = document.querySelector('input[name="role"]:checked');
+    if (checked) onRoleChange(checked.value);
+})();
+</script>
+
+</body>
+</html>

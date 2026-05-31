@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<body>
+
+<!-- ── 공통 <head> ── -->
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <title th:text="'Feple Admin — ' + ${pageTitle}">Feple Admin</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+
+<!-- ── 사이드바 네비게이션 + 전역 스크립트 ── -->
+<th:block th:fragment="navbar(active)">
+<aside class="sidebar">
+
+    <!-- 로고 -->
+    <div class="sb-logo-section">
+        <a th:href="@{/admin}" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+            <img th:src="@{/img/feple_logo.png}" alt="feple"
+                 style="width:34px; height:34px; border-radius:8px; object-fit:contain; flex-shrink:0;"/>
+            <div class="sb-logo-name">fe<span>ple</span></div>
+            <span class="sb-logo-tag">Admin</span>
+        </a>
+    </div>
+
+    <!-- 메뉴 -->
+    <nav class="sb-nav">
+
+        <div class="sb-section-label">대시보드</div>
+        <a th:href="@{/admin}" class="sb-link"
+           th:classappend="${active == 'home'} ? ' active'">
+            <span class="sb-icon">📊</span> 대시보드
+        </a>
+        <a sec:authorize="hasAuthority('PERM_STATS')"
+           th:href="@{/admin/stats}" class="sb-link"
+           th:classappend="${active == 'stats'} ? ' active'">
+            <span class="sb-icon">📈</span> 통계
+        </a>
+
+        <div class="sb-section-label">콘텐츠</div>
+        <a sec:authorize="hasAuthority('PERM_FESTIVALS')"
+           th:href="@{/admin/festivals}" class="sb-link"
+           th:classappend="${active == 'festivals'} ? ' active'">
+            <span class="sb-icon">🎪</span> 페스티벌
+        </a>
+        <a sec:authorize="hasAuthority('PERM_ARTISTS')"
+           th:href="@{/admin/artists}" class="sb-link"
+           th:classappend="${active == 'artists'} ? ' active'">
+            <span class="sb-icon">🎤</span> 아티스트
+        </a>
+        <a sec:authorize="hasAuthority('PERM_ARTISTS')"
+           th:href="@{/admin/artist-suggestions}" class="sb-link"
+           th:classappend="${active == 'artist-suggestions'} ? ' active'">
+            <span class="sb-icon">💡</span> 아티스트 신청
+        </a>
+        <a sec:authorize="hasAuthority('PERM_POSTS')"
+           th:href="@{/admin/posts}" class="sb-link"
+           th:classappend="${active == 'posts'} ? ' active'">
+            <span class="sb-icon">📝</span> 게시글
+        </a>
+        <a sec:authorize="hasAuthority('PERM_SONG_REQUESTS')"
+           th:href="@{/admin/song-requests}" class="sb-link"
+           th:classappend="${active == 'song-requests'} ? ' active'">
+            <span class="sb-icon">🎵</span> 노래 요청
+        </a>
+        <a sec:authorize="hasAuthority('PERM_CRAWL')"
+           th:href="@{/admin/crawl}" class="sb-link"
+           th:classappend="${active == 'crawl'} ? ' active'">
+            <span class="sb-icon">🕸️</span> 크롤링
+        </a>
+
+        <div class="sb-section-label">회원 · 운영</div>
+        <a sec:authorize="hasAuthority('PERM_USERS')"
+           th:href="@{/admin/users}" class="sb-link"
+           th:classappend="${active == 'users'} ? ' active'">
+            <span class="sb-icon">👤</span> 회원 관리
+        </a>
+        <a sec:authorize="hasAuthority('PERM_CERTIFICATIONS')"
+           th:href="@{/admin/certifications}" class="sb-link"
+           th:classappend="${active == 'certifications'} ? ' active'">
+            <span class="sb-icon">🏅</span> 인증 관리
+            <span th:if="${sidebarCertCount != null and sidebarCertCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarCertCount}"></span>
+        </a>
+        <a sec:authorize="hasAuthority('PERM_REPORTS')"
+           th:href="@{/admin/reports}" class="sb-link"
+           th:classappend="${active == 'reports'} ? ' active'">
+            <span class="sb-icon">🚨</span> 신고 관리
+            <span th:if="${sidebarReportCount != null and sidebarReportCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarReportCount}"></span>
+        </a>
+        <a sec:authorize="hasAuthority('PERM_BAD_WORDS')"
+           th:href="@{/admin/bad-words}" class="sb-link"
+           th:classappend="${active == 'bad-words'} ? ' active'">
+            <span class="sb-icon">🚫</span> 금칙어
+        </a>
+
+        <div class="sb-section-label">시스템</div>
+        <a sec:authorize="hasRole('SUPER_ADMIN')"
+           th:href="@{/admin/push}" class="sb-link"
+           th:classappend="${active == 'push'} ? ' active'">
+            <span class="sb-icon">📣</span> 푸시 발송
+        </a>
+        <a sec:authorize="hasAuthority('PERM_LOGS')"
+           th:href="@{/admin/logs}" class="sb-link"
+           th:classappend="${active == 'logs'} ? ' active'">
+            <span class="sb-icon">📋</span> 감사 로그
+        </a>
+        <a sec:authorize="hasRole('SUPER_ADMIN')"
+           th:href="@{/admin/accounts}" class="sb-link"
+           th:classappend="${active == 'accounts'} ? ' active'">
+            <span class="sb-icon">🔑</span> 관리자 계정
+        </a>
+
+    </nav>
+
+    <!-- 하단 로그아웃 -->
+    <div class="sb-footer">
+        <form th:action="@{/admin/logout}" method="post" style="margin:0;">
+            <button type="submit" class="nb-logout" style="width:100%; justify-content:center;">로그아웃</button>
+        </form>
+    </div>
+
+    <script th:src="@{/js/admin-genre-colors.js}"></script>
+</aside>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+/* ── 전역: Alert 자동 닫기 ── */
+(function() {
+    function dismissAlert(el) {
+        el.style.opacity = '0';
+        el.style.maxHeight = el.offsetHeight + 'px';
+        setTimeout(function() { el.style.maxHeight = '0'; el.style.padding = '0'; el.style.marginBottom = '0'; }, 300);
+        setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 600);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.alert-success, .alert-danger').forEach(function(el) {
+            var btn = document.createElement('button');
+            btn.className = 'alert-close';
+            btn.innerHTML = '&times;';
+            btn.addEventListener('click', function() { dismissAlert(el); });
+            el.appendChild(btn);
+        });
+        document.querySelectorAll('.alert-success').forEach(function(el) {
+            setTimeout(function() { dismissAlert(el); }, 4000);
+        });
+    });
+})();
+</script>
+</th:block>
+
+<!-- ── 알림 메시지 ── -->
+<div th:fragment="alerts">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+</div>
+
+<!-- ── 페이지 헤더 (page-actions 없는 단순 페이지) ── -->
+<div th:fragment="pageHeader(title, breadcrumb)" class="page-header">
+    <div>
+        <h1 class="page-title" th:text="${title}"></h1>
+        <div class="breadcrumb">
+            <a th:href="@{/admin}">대시보드</a>
+            <span class="bc-sep">›</span>
+            <span th:text="${breadcrumb}"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ── 페이지네이션 프래그먼트 ── -->
+<div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">
+    <span class="page-info" th:text="'총 ' + ${page.totalElements} + '건'"></span>
+    <div class="pagination" style="margin-left:auto;"
+         th:with="ep=${extraParams != null ? '&' + extraParams : ''},
+                  cur=${page.number},
+                  tot=${page.totalPages},
+                  s=${cur > 2 ? cur - 2 : 0},
+                  e=${cur + 2 < tot ? cur + 2 : tot - 1}">
+        <a th:if="${page.hasPrevious()}"
+           th:href="${baseUrl + '?page=' + (cur - 1) + ep}">← 이전</a>
+        <a th:each="i : ${#numbers.sequence(s, e >= s ? e : s)}"
+           th:href="${baseUrl + '?page=' + i + ep}"
+           th:text="${i + 1}"
+           th:classappend="${i == cur} ? 'pg-num current' : 'pg-num'"></a>
+        <a th:if="${page.hasNext()}"
+           th:href="${baseUrl + '?page=' + (cur + 1) + ep}">다음 →</a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf"        th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Feple Admin — 크롤링 대시보드</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('crawl')}"></div>
+<div class="main-content">
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">크롤링 대시보드</h1>
+            <div class="breadcrumb">
+                <span>Feple Admin</span><span class="bc-sep">›</span><span>크롤링 대시보드</span>
+            </div>
+        </div>
+        <div class="header-tab-group">
+            <button class="header-tab-btn active" data-tab="scraping">🕸️ 웹 스크래핑</button>
+            <button class="header-tab-btn" data-tab="ocr">🖼️ OCR 파싱</button>
+        </div>
+    </div>
+
+    <div class="content-area">
+
+        <!-- ══════════════════════════════════
+             탭 1 — 웹 스크래핑 (뼈대)
+             ══════════════════════════════════ -->
+        <div id="tab-scraping" class="tab-panel active">
+            <div class="info-box">
+                ℹ️ 스크래핑한 데이터는 <strong>대기 중</strong> 상태로 저장되며, 관리자가 승인한 항목만 앱에 반영됩니다.
+            </div>
+            <div class="crawl-card">
+                <div class="crawl-card-title">1. 사이트 선택 &amp; URL 입력 <span class="badge-wip">구현 예정</span></div>
+                <div class="source-grid">
+                    <label class="source-card selected">
+                        <input type="radio" name="crawlSource" value="interpark" checked>
+                        <div class="source-logo" style="background:#E8F4FD;">🎫</div>인터파크
+                    </label>
+                    <label class="source-card">
+                        <input type="radio" name="crawlSource" value="yes24">
+                        <div class="source-logo" style="background:#FFF0F0;">🎟️</div>예스24
+                    </label>
+                    <label class="source-card">
+                        <input type="radio" name="crawlSource" value="melon">
+                        <div class="source-logo" style="background:#F0FFF4;">🍈</div>멜론티켓
+                    </label>
+                    <label class="source-card">
+                        <input type="radio" name="crawlSource" value="direct">
+                        <div class="source-logo" style="background:#F5F3FF;">🔗</div>직접 입력
+                    </label>
+                </div>
+                <div class="url-row">
+                    <input type="text" id="crawlUrl" placeholder="페스티벌 상세 페이지 URL 붙여넣기"/>
+                    <button class="btn btn-primary" id="btnStartCrawl" disabled style="white-space:nowrap; padding:9px 20px;">스크래핑 시작</button>
+                </div>
+                <div class="url-hint">* 해당 사이트의 이용약관 범위 내에서 공개 정보만 수집합니다.</div>
+            </div>
+            <div class="crawl-card">
+                <div class="crawl-card-title">2. 수집 결과</div>
+
+                <!-- 초기 빈 상태 -->
+                <div class="empty-crawl" id="scrapeEmptyState">
+                    <div class="empty-icon">🕸️</div>
+                    <div>아직 수집된 데이터가 없습니다.</div>
+                    <div style="margin-top:4px; font-size:12px;">URL을 입력하고 스크래핑을 시작하세요.</div>
+                </div>
+
+                <!-- 로딩 -->
+                <div id="scrapeLoading" style="display:none; text-align:center; padding:48px 24px;">
+                    <div style="display:inline-block; width:28px; height:28px; border:3px solid #DBEAFE; border-top-color:var(--primary); border-radius:50%; animation:spin .6s linear infinite;"></div>
+                    <div style="margin-top:14px; font-size:13px; color:var(--muted);">페이지 분석 중...</div>
+                </div>
+
+                <!-- 결과 편집 폼 -->
+                <div id="scrapeResultForm" style="display:none;">
+                    <div class="info-box" style="margin-bottom:14px;">
+                        <strong id="scrapeSourceLabel">인터파크</strong>에서 스크래핑된 결과입니다. 내용을 확인하고 수정한 뒤 등록하세요.
+                    </div>
+                    <div id="scrapeWarnMsg" class="note-box" style="display:none; margin-bottom:14px;"></div>
+
+                    <!-- 포스터 + 필드 2단 -->
+                    <div style="display:flex; gap:20px; margin-bottom:14px;">
+                        <div style="width:180px; flex-shrink:0;">
+                            <div id="scrapePosterWrap" style="width:180px; height:220px; border-radius:8px; border:1.5px solid var(--border); overflow:hidden; background:#F4F9FD; display:flex; align-items:center; justify-content:center;">
+                                <img id="scrapePosterImg" src="" alt="포스터"
+                                     style="width:100%; height:100%; object-fit:cover; display:none;"
+                                     onerror="this.style.display='none'; document.getElementById('scrapePosterEmpty').style.display='flex'"/>
+                                <div id="scrapePosterEmpty" style="display:flex; flex-direction:column; align-items:center; color:var(--muted); font-size:12px; text-align:center; padding:16px;">
+                                    <div style="font-size:28px; margin-bottom:8px;">🖼️</div>
+                                    <div>이미지 없음</div>
+                                </div>
+                            </div>
+                            <p style="font-size:11px; color:var(--muted); margin-top:6px; line-height:1.5;">포스터는 등록 후 수정 화면에서 업로드하세요.</p>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; gap:10px; min-width:0;">
+                            <div>
+                                <label class="form-label-md">제목 <span class="required-star">*</span></label>
+                                <input type="text" id="scrapeTitle" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;" placeholder="페스티벌 제목"/>
+                            </div>
+                            <div>
+                                <label class="form-label-md">영문 제목 <span style="font-weight:400; color:var(--muted);">(선택)</span></label>
+                                <input type="text" id="scrapeTitleEn" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;" placeholder="Festival Title in English"/>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <div style="flex:1;">
+                                    <label class="form-label-md">시작일 <span class="required-star">*</span></label>
+                                    <input type="date" id="scrapeStartDate" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;"/>
+                                </div>
+                                <div style="flex:1;">
+                                    <label class="form-label-md">종료일 <span class="required-star">*</span></label>
+                                    <input type="date" id="scrapeEndDate" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;"/>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label-md">장소 <span class="required-star">*</span></label>
+                                <input type="text" id="scrapeLocation" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; box-sizing:border-box;" placeholder="행사 장소"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 설명 -->
+                    <div style="margin-bottom:12px;">
+                        <label class="form-label-md">설명 <span class="required-star">*</span></label>
+                        <textarea id="scrapeDesc" style="width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; min-height:80px; resize:vertical; box-sizing:border-box;" placeholder="페스티벌 설명"></textarea>
+                    </div>
+
+                    <!-- 지역 + 장르 -->
+                    <div style="display:flex; gap:24px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-start;">
+                        <div>
+                            <label class="form-label-md">지역</label>
+                            <select id="scrapeRegion" style="padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; min-width:130px;">
+                                <option value="">선택 안 함</option>
+                                <option value="SEOUL">서울</option>
+                                <option value="BUSAN">부산</option>
+                                <option value="INCHEON">인천</option>
+                                <option value="DAEGU">대구</option>
+                                <option value="DAEJEON">대전</option>
+                                <option value="GWANGJU">광주</option>
+                                <option value="ULSAN">울산</option>
+                                <option value="SEJONG">세종</option>
+                                <option value="GYEONGGI">경기도</option>
+                                <option value="GANGWON">강원도</option>
+                                <option value="CHUNGBUK">충청북도</option>
+                                <option value="CHUNGNAM">충청남도</option>
+                                <option value="GYEONGBUK">경상북도</option>
+                                <option value="GYEONGNAM">경상남도</option>
+                                <option value="JEONBUK">전라북도</option>
+                                <option value="JEONNAM">전라남도</option>
+                                <option value="JEJU">제주도</option>
+                                <option value="ETC">기타</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label-md">장르</label>
+                            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                <label style="display:flex; align-items:center; gap:6px; padding:5px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;"><input type="checkbox" name="scrapeGenres" value="HIP_HOP" style="accent-color:var(--primary);"/> Hip-hop</label>
+                                <label style="display:flex; align-items:center; gap:6px; padding:5px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;"><input type="checkbox" name="scrapeGenres" value="INDIE" style="accent-color:var(--primary);"/> Indie</label>
+                                <label style="display:flex; align-items:center; gap:6px; padding:5px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;"><input type="checkbox" name="scrapeGenres" value="BAND" style="accent-color:var(--primary);"/> Band</label>
+                                <label style="display:flex; align-items:center; gap:6px; padding:5px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;"><input type="checkbox" name="scrapeGenres" value="ETC" style="accent-color:var(--primary);"/> 기타</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 액션 -->
+                    <div class="action-row">
+                        <button class="btn btn-primary" id="btnRegisterFestival">페스티벌 등록하기</button>
+                        <button class="btn btn-secondary" id="btnScrapeReset">초기화</button>
+                    </div>
+                    <div class="apply-result" id="scrapeApplyResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             탭 2 — OCR 파싱
+             ══════════════════════════════════ -->
+        <div id="tab-ocr" class="tab-panel">
+
+            <!-- 1. 설정 -->
+            <div class="crawl-card">
+                <div class="crawl-card-title">1. 적용 대상 설정</div>
+
+                <div class="select-row">
+                    <label>페스티벌</label>
+                    <select id="selFestival" style="flex:1; min-width:200px;">
+                        <option value="">— 페스티벌 선택 —</option>
+                    </select>
+                    <label>날짜</label>
+                    <input type="date" id="selDate" disabled/>
+                </div>
+
+                <!-- 스테이지 자동완성 목록 -->
+                <datalist id="stageOptions"></datalist>
+
+                <!-- 업로드 영역 -->
+                <div class="ocr-upload-zone" id="ocrDropZone">
+                    <input type="file" id="ocrFileInput" accept="image/*">
+                    <div class="upload-icon">🖼️</div>
+                    <div class="upload-title">타임테이블 이미지를 드래그하거나 클릭하여 업로드</div>
+                    <div class="upload-sub">JPG, PNG, WEBP 지원 · 최대 10MB</div>
+                    <div style="margin-top:14px;">
+                        <button class="btn btn-primary btn-sm"
+                                onclick="document.getElementById('ocrFileInput').click(); event.stopPropagation();">
+                            파일 선택
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 진행 표시 -->
+                <div class="progress-bar-wrap" id="ocrProgress">
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="ocrProgressFill" style="width:0%"></div>
+                    </div>
+                    <div class="progress-label" id="ocrProgressLabel">AI 분석 중...</div>
+                </div>
+            </div>
+
+            <!-- 2. 결과 편집 -->
+            <div class="crawl-card">
+                <div class="crawl-card-title" style="justify-content:space-between;">
+                    <span>2. 파싱 결과 검토 &amp; 편집</span>
+                    <div class="action-row">
+                        <button class="btn btn-secondary btn-sm" id="btnAddRow">+ 행 추가</button>
+                        <button class="btn btn-primary" id="btnApplyOcr" disabled>타임테이블에 적용</button>
+                    </div>
+                </div>
+
+                <div class="note-box" id="ocrWarnBox" style="display:none;">
+                    ⚠️ 확신도가 낮은 항목(🔴)은 수동으로 검토 후 적용하세요.
+                </div>
+
+                <div class="empty-crawl" id="ocrEmptyState">
+                    <div class="empty-icon">🤖</div>
+                    <div>이미지를 업로드하면 AI가 타임테이블을 자동으로 파싱합니다.</div>
+                </div>
+
+                <div class="ocr-preview-wrap" id="ocrPreviewWrap">
+                    <div class="ocr-image-preview">
+                        <img id="ocrPreviewImg" src="" alt="타임테이블 이미지">
+                    </div>
+                    <div class="ocr-result-area">
+                        <table class="parse-table">
+                            <thead>
+                            <tr>
+                                <th style="width:28px;">#</th>
+                                <th>아티스트명</th>
+                                <th>스테이지</th>
+                                <th style="width:90px;">시작</th>
+                                <th style="width:90px;">종료</th>
+                                <th style="width:56px;">확신도</th>
+                                <th style="width:28px;"></th>
+                            </tr>
+                            </thead>
+                            <tbody id="ocrParseBody"></tbody>
+                        </table>
+                        <div style="margin-top:8px; font-size:11px; color:var(--muted);">
+                            🟢 90+ &nbsp; 🟡 70~89 &nbsp; 🔴 ~69 — 낮은 항목은 직접 수정하세요.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 적용 결과 -->
+                <div class="apply-result" id="applyResult"></div>
+            </div>
+
+            <!-- 3. 처리 이력 -->
+            <div class="crawl-card">
+                <div class="crawl-card-title">3. OCR 처리 이력</div>
+                <table class="result-table" id="ocrHistoryTable">
+                    <thead>
+                    <tr>
+                        <th>페스티벌</th>
+                        <th>날짜</th>
+                        <th>저장 수</th>
+                        <th>실패 수</th>
+                        <th>처리 일시</th>
+                    </tr>
+                    </thead>
+                    <tbody id="ocrHistoryBody">
+                    <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:32px;">처리된 항목이 없습니다.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div><!-- /tab-ocr -->
+    </div>
+</div>
+
+<script>
+(function () {
+    var csrf        = document.querySelector('meta[name="_csrf"]').content;
+    var csrfHeader  = document.querySelector('meta[name="_csrf_header"]').content;
+    var festivalMap = {}; // id → {title, startDate, endDate}
+    var rowIndex    = 0;
+    var currentFestivalTitle = '';
+
+    /* ── 탭 전환 ── */
+    document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.header-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    /* ── 소스 카드 선택 ── */
+    document.querySelectorAll('.source-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            document.querySelectorAll('.source-card').forEach(function (c) { c.classList.remove('selected'); });
+            card.classList.add('selected');
+        });
+    });
+    document.getElementById('crawlUrl').addEventListener('input', function () {
+        document.getElementById('btnStartCrawl').disabled = this.value.trim().length === 0;
+    });
+
+    /* ── 스크래핑 시작 ── */
+    document.getElementById('btnStartCrawl').addEventListener('click', function () {
+        var url    = document.getElementById('crawlUrl').value.trim();
+        var source = document.querySelector('input[name="crawlSource"]:checked').value;
+        if (!url) return;
+
+        document.getElementById('scrapeEmptyState').style.display   = 'none';
+        document.getElementById('scrapeResultForm').style.display   = 'none';
+        document.getElementById('scrapeLoading').style.display      = 'block';
+        document.getElementById('scrapeApplyResult').style.display  = 'none';
+
+        var btn = document.getElementById('btnStartCrawl');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>분석 중...';
+
+        var headers = { 'Content-Type': 'application/json' };
+        headers[csrfHeader] = csrf;
+
+        fetch('/admin/crawl/scrape', {
+            method: 'POST', headers: headers,
+            body: JSON.stringify({ url: url, source: source })
+        })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '스크래핑 실패'); });
+            return r.json();
+        })
+        .then(function (data) {
+            document.getElementById('scrapeLoading').style.display = 'none';
+            btn.disabled = (document.getElementById('crawlUrl').value.trim().length === 0);
+            btn.innerHTML = '스크래핑 시작';
+            renderScrapeResult(data);
+        })
+        .catch(function (err) {
+            document.getElementById('scrapeLoading').style.display = 'none';
+            document.getElementById('scrapeEmptyState').style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = '스크래핑 시작';
+            alert('스크래핑 실패: ' + err.message);
+        });
+    });
+
+    function renderScrapeResult(data) {
+        var sourceNames = { interpark: '인터파크', yes24: '예스24', melon: '멜론티켓', direct: '직접 입력' };
+        document.getElementById('scrapeSourceLabel').textContent = sourceNames[data.source] || data.source;
+
+        var warnEl = document.getElementById('scrapeWarnMsg');
+        if (data.warning) { warnEl.textContent = data.warning; warnEl.style.display = 'block'; }
+        else { warnEl.style.display = 'none'; }
+
+        document.getElementById('scrapeTitle').value      = data.title       || '';
+        document.getElementById('scrapeTitleEn').value    = '';
+        document.getElementById('scrapeDesc').value       = data.description || '';
+        document.getElementById('scrapeLocation').value   = data.location    || '';
+        document.getElementById('scrapeStartDate').value  = data.startDate   || '';
+        document.getElementById('scrapeEndDate').value    = data.endDate     || '';
+        document.getElementById('scrapeRegion').value     = '';
+        document.querySelectorAll('input[name="scrapeGenres"]').forEach(function (cb) { cb.checked = false; });
+
+        var img      = document.getElementById('scrapePosterImg');
+        var emptyDiv = document.getElementById('scrapePosterEmpty');
+        if (data.posterImageUrl) {
+            img.src           = data.posterImageUrl;
+            img.style.display = 'block';
+            emptyDiv.style.display = 'none';
+        } else {
+            img.style.display      = 'none';
+            emptyDiv.style.display = 'flex';
+        }
+
+        document.getElementById('scrapeResultForm').style.display  = 'block';
+        document.getElementById('scrapeApplyResult').style.display = 'none';
+    }
+
+    /* ── 페스티벌 등록 ── */
+    document.getElementById('btnRegisterFestival').addEventListener('click', function () {
+        var title     = document.getElementById('scrapeTitle').value.trim();
+        var startDate = document.getElementById('scrapeStartDate').value;
+        var endDate   = document.getElementById('scrapeEndDate').value;
+
+        if (!title)               { alert('제목을 입력해주세요.'); document.getElementById('scrapeTitle').focus(); return; }
+        if (!startDate || !endDate) { alert('시작일과 종료일을 입력해주세요.'); return; }
+
+        var genres = [];
+        document.querySelectorAll('input[name="scrapeGenres"]:checked').forEach(function (cb) { genres.push(cb.value); });
+
+        var btn = document.getElementById('btnRegisterFestival');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>등록 중...';
+
+        var headers = { 'Content-Type': 'application/json' };
+        headers[csrfHeader] = csrf;
+
+        fetch('/admin/crawl/scrape/apply', {
+            method: 'POST', headers: headers,
+            body: JSON.stringify({
+                title:       title,
+                titleEn:     document.getElementById('scrapeTitleEn').value.trim() || null,
+                description: document.getElementById('scrapeDesc').value.trim(),
+                location:    document.getElementById('scrapeLocation').value.trim(),
+                startDate:   startDate,
+                endDate:     endDate,
+                region:      document.getElementById('scrapeRegion').value || null,
+                genres:      genres
+            })
+        })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '등록 실패'); });
+            return r.json();
+        })
+        .then(function (result) {
+            btn.disabled = false;
+            btn.innerHTML = '페스티벌 등록하기';
+            var el = document.getElementById('scrapeApplyResult');
+            el.className = 'apply-result success';
+            el.innerHTML = '페스티벌이 등록되었습니다. <a href="/admin/festivals/' + result.festivalId + '" style="color:#065F46; text-decoration:underline; font-weight:700;">상세 보기 →</a>';
+            el.style.display = 'block';
+        })
+        .catch(function (err) {
+            btn.disabled = false;
+            btn.innerHTML = '페스티벌 등록하기';
+            var el = document.getElementById('scrapeApplyResult');
+            el.className = 'apply-result error';
+            el.textContent = '오류: ' + err.message;
+            el.style.display = 'block';
+        });
+    });
+
+    /* ── 초기화 ── */
+    document.getElementById('btnScrapeReset').addEventListener('click', function () {
+        document.getElementById('scrapeResultForm').style.display  = 'none';
+        document.getElementById('scrapeEmptyState').style.display  = 'block';
+    });
+
+    /* ── 페스티벌 목록 로드 ── */
+    fetch('/admin/crawl/festivals')
+        .then(function (r) { return r.json(); })
+        .then(function (festivals) {
+            var sel = document.getElementById('selFestival');
+            festivals.forEach(function (f) {
+                festivalMap[f.id] = f;
+                var opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.title;
+                sel.appendChild(opt);
+            });
+        });
+
+    /* ── 페스티벌 선택 시 날짜 범위 + 스테이지 로드 ── */
+    document.getElementById('selFestival').addEventListener('change', function () {
+        var fid = this.value;
+        var dateInput = document.getElementById('selDate');
+        dateInput.value = '';
+
+        if (!fid) { dateInput.disabled = true; return; }
+
+        var f = festivalMap[fid];
+        currentFestivalTitle = f.title;
+        if (f.startDate) { dateInput.min = f.startDate; dateInput.value = f.startDate; }
+        if (f.endDate)   { dateInput.max = f.endDate; }
+        dateInput.disabled = false;
+
+        // 스테이지 datalist 로드
+        fetch('/admin/crawl/festivals/' + fid + '/stages')
+            .then(function (r) { return r.json(); })
+            .then(function (stages) {
+                var dl = document.getElementById('stageOptions');
+                dl.innerHTML = '';
+                stages.forEach(function (name) {
+                    var opt = document.createElement('option');
+                    opt.value = name;
+                    dl.appendChild(opt);
+                });
+                // 기존 스테이지 셀 datalist 업데이트
+                document.querySelectorAll('.stage-input').forEach(function (inp) {
+                    inp.setAttribute('list', 'stageOptions');
+                });
+            });
+    });
+
+    /* ── OCR 드래그&드롭 / 파일 선택 ── */
+    var dropZone  = document.getElementById('ocrDropZone');
+    var fileInput = document.getElementById('ocrFileInput');
+
+    dropZone.addEventListener('click', function () { fileInput.click(); });
+    dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
+    dropZone.addEventListener('drop', function (e) {
+        e.preventDefault(); dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleOcrFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function () {
+        if (fileInput.files.length > 0) handleOcrFile(fileInput.files[0]);
+    });
+
+    function handleOcrFile(file) {
+        if (!file.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); return; }
+        if (file.size > 10 * 1024 * 1024) { alert('파일 크기는 10MB 이하여야 합니다.'); return; }
+
+        // 이미지 미리보기
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('ocrPreviewImg').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        document.getElementById('ocrEmptyState').style.display = 'none';
+        document.getElementById('ocrPreviewWrap').classList.add('visible');
+        document.getElementById('ocrParseBody').innerHTML = '';
+        document.getElementById('applyResult').style.display = 'none';
+        document.getElementById('btnApplyOcr').disabled = true;
+
+        // 진행 표시
+        var progressWrap = document.getElementById('ocrProgress');
+        var progressFill = document.getElementById('ocrProgressFill');
+        var progressLabel = document.getElementById('ocrProgressLabel');
+        progressFill.style.width = '0%';
+        progressWrap.classList.add('visible');
+        progressLabel.textContent = 'AI 이미지 분석 중...';
+
+        // 진행 bar 애니메이션 (실제 API 응답 전까지)
+        var fakeTimer = null;
+        var fakePct = 10;
+        fakeTimer = setInterval(function () {
+            fakePct = Math.min(fakePct + 5, 85);
+            progressFill.style.width = fakePct + '%';
+        }, 800);
+
+        // 실제 API 호출
+        var formData = new FormData();
+        formData.append('image', file);
+        var headers = {};
+        headers[csrfHeader] = csrf;
+
+        fetch('/admin/crawl/ocr', { method: 'POST', headers: headers, body: formData })
+            .then(function (r) {
+                clearInterval(fakeTimer);
+                progressFill.style.width = '100%';
+                progressLabel.textContent = '완료!';
+                if (!r.ok) {
+                    return r.json().then(function (e) { throw new Error(e.error || '파싱 실패'); });
+                }
+                return r.json();
+            })
+            .then(function (results) {
+                setTimeout(function () { progressWrap.classList.remove('visible'); }, 500);
+                renderOcrResults(results);
+            })
+            .catch(function (err) {
+                clearInterval(fakeTimer);
+                progressWrap.classList.remove('visible');
+                showApplyResult('error', '오류: ' + err.message);
+            });
+    }
+
+    function renderOcrResults(results) {
+        var body = document.getElementById('ocrParseBody');
+        body.innerHTML = '';
+        rowIndex = 0;
+        var hasLow = false;
+
+        results.forEach(function (row) {
+            var conf = row.confidence != null ? row.confidence : 0;
+            if (conf < 70) hasLow = true;
+            appendRow(row.artist || '', row.stage || '', row.startTime || '', row.endTime || '', conf);
+        });
+
+        document.getElementById('ocrWarnBox').style.display = hasLow ? 'block' : 'none';
+        document.getElementById('btnApplyOcr').disabled = results.length === 0;
+    }
+
+    function confBadge(conf) {
+        if (conf == null) return '<span class="conf-mid">—</span>';
+        if (conf >= 90) return '<span class="conf-high">🟢 ' + conf + '</span>';
+        if (conf >= 70) return '<span class="conf-mid">🟡 ' + conf + '</span>';
+        return '<span class="conf-low">🔴 ' + conf + '</span>';
+    }
+
+    function appendRow(artist, stage, startTime, endTime, conf) {
+        rowIndex++;
+        var idx = rowIndex;
+        var tr = document.createElement('tr');
+        tr.dataset.rowIndex = idx;
+        tr.innerHTML =
+            '<td>' + idx + '</td>' +
+            '<td><input type="text" value="' + esc(artist) + '" placeholder="아티스트명"/></td>' +
+            '<td><input type="text" class="stage-input" value="' + esc(stage) + '" placeholder="스테이지" list="stageOptions"/></td>' +
+            '<td><input type="time" value="' + esc(startTime) + '"/></td>' +
+            '<td><input type="time" value="' + esc(endTime) + '"/></td>' +
+            '<td>' + confBadge(conf) + '</td>' +
+            '<td><button class="row-del" onclick="this.closest(\'tr\').remove(); checkEmpty();">✕</button></td>';
+        document.getElementById('ocrParseBody').appendChild(tr);
+    }
+
+    function checkEmpty() {
+        var rows = document.getElementById('ocrParseBody').querySelectorAll('tr');
+        if (rows.length === 0) {
+            document.getElementById('btnApplyOcr').disabled = true;
+        }
+    }
+
+    /* ── 행 추가 ── */
+    document.getElementById('btnAddRow').addEventListener('click', function () {
+        appendRow('', '', '', '', null);
+        document.getElementById('ocrEmptyState').style.display = 'none';
+        document.getElementById('ocrPreviewWrap').classList.add('visible');
+        document.getElementById('btnApplyOcr').disabled = false;
+    });
+
+    /* ── 타임테이블에 적용 ── */
+    document.getElementById('btnApplyOcr').addEventListener('click', function () {
+        var fid  = document.getElementById('selFestival').value;
+        var date = document.getElementById('selDate').value;
+
+        if (!fid)  { alert('페스티벌을 선택해주세요.'); return; }
+        if (!date) { alert('날짜를 선택해주세요.'); return; }
+
+        var entries = [];
+        document.getElementById('ocrParseBody').querySelectorAll('tr').forEach(function (tr) {
+            var inputs = tr.querySelectorAll('input');
+            entries.push({
+                artist:    inputs[0].value.trim(),
+                stage:     inputs[1].value.trim(),
+                startTime: inputs[2].value,
+                endTime:   inputs[3].value,
+                confidence: null
+            });
+        });
+
+        if (entries.length === 0) { alert('저장할 항목이 없습니다.'); return; }
+
+        var btn = document.getElementById('btnApplyOcr');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>저장 중...';
+
+        var headers = { 'Content-Type': 'application/json' };
+        headers[csrfHeader] = csrf;
+
+        fetch('/admin/crawl/ocr/apply', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ festivalId: parseInt(fid), festivalDate: date, entries: entries })
+        })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '저장 실패'); });
+            return r.json();
+        })
+        .then(function (result) {
+            btn.disabled = false;
+            btn.innerHTML = '타임테이블에 적용';
+
+            var msg = result.savedCount + '개 저장 완료';
+            if (result.failedCount > 0) {
+                msg += ', ' + result.failedCount + '개 실패';
+                var reasons = result.failures.map(function (f) {
+                    return f.artist + '/' + f.stage + ': ' + f.reason;
+                }).join('<br>');
+                msg += '<br><small>' + reasons + '</small>';
+                showApplyResult('partial', msg);
+            } else {
+                showApplyResult('success', msg);
+            }
+
+            // 이력 추가
+            addHistory(currentFestivalTitle, date, result.savedCount, result.failedCount);
+        })
+        .catch(function (err) {
+            btn.disabled = false;
+            btn.innerHTML = '타임테이블에 적용';
+            showApplyResult('error', '오류: ' + err.message);
+        });
+    });
+
+    function showApplyResult(type, msg) {
+        var el = document.getElementById('applyResult');
+        el.className = 'apply-result ' + type;
+        el.innerHTML = msg;
+        el.style.display = 'block';
+    }
+
+    function addHistory(festivalTitle, date, saved, failed) {
+        var body = document.getElementById('ocrHistoryBody');
+        var placeholder = body.querySelector('td[colspan]');
+        if (placeholder) placeholder.closest('tr').remove();
+
+        var now = new Date().toLocaleString('ko-KR');
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>' + esc(festivalTitle) + '</td>' +
+            '<td>' + esc(date) + '</td>' +
+            '<td style="color:#059669; font-weight:700;">' + saved + '</td>' +
+            '<td style="color:' + (failed > 0 ? '#DC2626' : '#6B7280') + '; font-weight:700;">' + failed + '</td>' +
+            '<td style="color:var(--muted);">' + now + '</td>';
+        body.insertBefore(tr, body.firstChild);
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+})();
+</script>
+</body>
+</html>

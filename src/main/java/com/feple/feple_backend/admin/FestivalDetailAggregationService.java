@@ -1,0 +1,77 @@
+package com.feple.feple_backend.admin;
+
+import com.feple.feple_backend.artist.song.service.SongAdminService;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.booth.entity.BoothType;
+import com.feple.feple_backend.booth.service.BoothService;
+import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.stage.service.StageService;
+import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
+import com.feple.feple_backend.timetable.service.TimetableService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class FestivalDetailAggregationService {
+
+    private static final String ANNOUNCEMENT_STAGE = "📢";
+
+    private final FestivalService festivalService;
+    private final ArtistFestivalService artistFestivalService;
+    private final TimetableService timetableService;
+    private final StageService stageService;
+    private final BoothService boothService;
+    private final SongAdminService songAdminService;
+
+    @Value("${app.google.maps.key:}")
+    private String googleMapsKey;
+
+    public void populateModel(Long festivalId, Model model) {
+        FestivalResponseDto festival = festivalService.getFestival(festivalId);
+
+        List<ArtistFestivalResponse> participatingArtists =
+                artistFestivalService.getArtistFestivals(festivalId);
+
+        List<ArtistFestivalResponse> participatingArtistsByName = participatingArtists.stream()
+                .sorted(java.util.Comparator.comparing(
+                        ArtistFestivalResponse::getArtistName,
+                        String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
+        List<TimetableEntryResponse> timetableEntries = timetableService.getEntries(festivalId);
+        Map<String, List<TimetableEntryResponse>> timetableByArtist = timetableEntries.stream()
+                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
+                             && !ANNOUNCEMENT_STAGE.equals(e.getStageName()))
+                .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName));
+
+        List<Long> afIds = participatingArtists.stream()
+                .map(ArtistFestivalResponse::getArtistFestivalId)
+                .toList();
+        Map<Long, Integer> setlistCounts = afIds.isEmpty()
+                ? Collections.emptyMap()
+                : songAdminService.getSetlistCounts(afIds);
+
+        model.addAttribute("festival",                   festival);
+        model.addAttribute("participatingArtists",       participatingArtists);
+        model.addAttribute("participatingArtistsByName", participatingArtistsByName);
+        model.addAttribute("timetableEntries",           timetableEntries);
+        model.addAttribute("timetableByArtist",          timetableByArtist);
+        model.addAttribute("stages",                     stageService.getStages(festivalId));
+        model.addAttribute("booths",                     boothService.getBooths(festivalId));
+        model.addAttribute("allBoothTypes",              BoothType.values());
+        model.addAttribute("googleMapsKey",              googleMapsKey);
+        model.addAttribute("setlistCounts",              setlistCounts);
+    }
+}

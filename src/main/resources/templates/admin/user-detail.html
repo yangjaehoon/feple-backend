@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('회원 상세')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('users')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title" th:text="${user.nickname}">회원 닉네임</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/users}">회원</a>
+                <span class="bc-sep">›</span>
+                <span>상세</span>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 회원 프로필 카드 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">👤 회원 정보</div>
+                <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
+                    <button type="submit"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">탈퇴</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
+                    <img th:if="${user.profileImageUrl != null}"
+                         th:src="${user.profileImageUrl}"
+                         style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid var(--border);"
+                         alt="profile"/>
+                    <div th:if="${user.profileImageUrl == null}"
+                         style="width:72px; height:72px; border-radius:50%; background:var(--primary-50); display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0;">👤</div>
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="font-size:20px; font-weight:700; color:var(--text);"
+                                 th:text="${user.nickname}"></div>
+                            <span th:if="${user.admin}"
+                                  class="badge badge-danger" style="font-size:11px;">🛡️ 관리자</span>
+                            <span th:if="${user.artist}"
+                                  class="badge badge-primary" style="font-size:11px;">🎤 아티스트</span>
+                        </div>
+                        <div style="font-size:13px; color:var(--muted); margin-top:4px;"
+                             th:text="${user.email}"></div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+                            ID: <span th:text="${user.id}"></span>
+                        </div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;"
+                             th:if="${user.createdAt != null}">
+                            가입일: <span th:text="${#temporals.format(user.createdAt, 'yyyy년 MM월 dd일 HH:mm')}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 통계 -->
+                <div style="display:flex; gap:24px; padding-top:16px; border-top:1px solid var(--border);">
+                    <div style="text-align:center;">
+                        <div style="font-size:22px; font-weight:800; color:var(--primary);"
+                             th:text="${stats.postCount}">0</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">게시글</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:22px; font-weight:800; color:var(--primary);"
+                             th:text="${stats.commentCount}">0</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">댓글</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:22px; font-weight:800; color:var(--primary);"
+                             th:text="${#lists.size(likedFestivals)}">0</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">페스티벌 좋아요</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:22px; font-weight:800; color:var(--primary);"
+                             th:text="${#lists.size(followedArtists)}">0</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">팔로우 아티스트</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div th:style="${stats.reportCount > 0} ? 'font-size:22px; font-weight:800; color:var(--danger);' : 'font-size:22px; font-weight:800; color:var(--muted);'"
+                             th:text="${stats.reportCount}">0</div>
+                        <div style="font-size:12px; color:var(--muted); margin-top:2px;">누적 신고</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 최근 게시글 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    📝 최근 게시글
+                    <span class="card-count" th:text="${#lists.size(recentPosts)}"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>게시판</th>
+                        <th>좋아요</th>
+                        <th>작성일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="post : ${recentPosts}">
+                        <td class="td-id" th:text="${post.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${post.id})}"
+                               th:text="${post.title}"
+                               style="max-width:360px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
+                                  th:text="${post.boardDisplayName}"></span>
+                        </td>
+                        <td style="color:var(--muted);" th:text="${post.likeCount}"></td>
+                        <td style="color:var(--muted); white-space:nowrap; font-size:12.5px;"
+                            th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></td>
+                    </tr>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(recentPosts)}">
+                        <td colspan="5">게시글이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 최근 댓글 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    💬 최근 댓글
+                    <span class="card-count" th:text="${#lists.size(recentComments)}"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>내용</th>
+                        <th>게시글</th>
+                        <th>게시판</th>
+                        <th style="width:100px;">작성일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="comment : ${recentComments}">
+                        <td class="td-id" th:text="${comment.commentId}"></td>
+                        <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                            th:text="${comment.content}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${comment.postId})}"
+                               th:text="${comment.postTitle}"
+                               style="max-width:220px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                        </td>
+                        <td>
+                            <span class="badge badge-genre"
+                                  th:text="${comment.boardDisplayName}"></span>
+                        </td>
+                        <td style="color:var(--muted); white-space:nowrap; font-size:12.5px;"
+                            th:text="${comment.createdAt != null ? #temporals.format(comment.createdAt, 'MM-dd HH:mm') : '-'}"></td>
+                    </tr>
+                    <tr class="empty-row" th:if="${#lists.isEmpty(recentComments)}">
+                        <td colspan="5">댓글이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 팔로우 아티스트 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    팔로우 아티스트
+                    <span class="card-count" th:text="${#lists.size(followedArtists)}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div th:if="${!#lists.isEmpty(followedArtists)}" style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <span th:each="artist : ${followedArtists}"
+                          class="badge badge-genre"
+                          th:text="${artist.name}"></span>
+                </div>
+                <div th:if="${#lists.isEmpty(followedArtists)}"
+                     style="font-size:13px; color:var(--muted);">팔로우한 아티스트가 없습니다.</div>
+            </div>
+        </div>
+
+        <!-- 좋아요 페스티벌 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    좋아요 페스티벌
+                    <span class="card-count" th:text="${#lists.size(likedFestivals)}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div th:if="${!#lists.isEmpty(likedFestivals)}" style="display:flex; flex-direction:column; gap:8px;">
+                    <div th:each="festival : ${likedFestivals}"
+                         style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg); border-radius:8px; border:1px solid var(--border);">
+                        <span style="font-weight:600; font-size:13.5px;" th:text="${festival.title}"></span>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(likedFestivals)}"
+                     style="font-size:13px; color:var(--muted);">좋아요한 페스티벌이 없습니다.</div>
+            </div>
+        </div>
+
+        <!-- 역할 변경 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🔑 역할 관리</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post"
+                      style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <select name="role" class="form-select" style="width:auto;">
+                        <option value="USER"   th:selected="${!user.admin and !user.artist}">일반 사용자</option>
+                        <option value="ARTIST" th:selected="${user.artist}">🎤 아티스트</option>
+                        <option value="ADMIN"  th:selected="${user.admin}">🛡️ 관리자</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">역할 변경</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 정지 관리 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🚫 정지 관리</div>
+            </div>
+            <div class="card-body">
+                <!-- 현재 정지 상태 -->
+                <div th:if="${user.banned}" class="ban-box">
+                    <div class="ban-box-title">현재 정지 상태</div>
+                    <div class="ban-box-grid">
+                        <span style="font-weight:600;">만료</span>
+                        <span>
+                            <span th:if="${user.permanentBan}">영구 정지</span>
+                            <span th:unless="${user.permanentBan}"
+                                  th:text="${#temporals.format(user.bannedUntil, 'yyyy년 MM월 dd일 HH:mm')}"></span>
+                        </span>
+                        <span style="font-weight:600;">처리자</span>
+                        <span th:text="${user.bannedBy != null ? user.bannedBy : '—'}"></span>
+                        <span style="font-weight:600;">사유</span>
+                        <span th:text="${user.banReason != null ? user.banReason : '없음'}"
+                              style="word-break:break-all;"></span>
+                    </div>
+                    <form th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post"
+                          style="display:inline;">
+                        <button type="submit" class="btn btn-secondary btn-sm"
+                                onclick="return confirm('정지를 해제하시겠습니까?')">정지 해제</button>
+                    </form>
+                </div>
+
+                <!-- 정지 설정 폼 -->
+                <div th:if="${!user.admin}">
+                    <div style="font-size:13px; color:var(--muted); margin-bottom:12px;"
+                         th:if="${user.banned}">정지 기간을 변경하거나 재정지할 수 있습니다.</div>
+                    <form th:action="@{/admin/users/{id}/ban(id=${user.id})}" method="post">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start; margin-bottom:10px;">
+                            <div>
+                                <div style="font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:6px;">정지 기간</div>
+                                <select name="days" class="form-select" style="width:auto;">
+                                    <option value="1">1일</option>
+                                    <option value="3">3일</option>
+                                    <option value="7" selected>7일</option>
+                                    <option value="30">30일</option>
+                                    <option value="365">365일</option>
+                                    <option value="0">영구 정지</option>
+                                </select>
+                            </div>
+                            <div style="flex:1; min-width:200px;">
+                                <div style="font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:6px;">정지 사유 (선택)</div>
+                                <textarea name="reason" rows="2"
+                                          placeholder="정지 사유를 입력하세요 (선택)"
+                                          style="width:100%; padding:8px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; resize:vertical; outline:none;"
+                                          maxlength="300"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('이 회원을 정지하시겠습니까?')">
+                            <span th:if="${user.banned}">재정지 (갱신)</span>
+                            <span th:unless="${user.banned}">정지</span>
+                        </button>
+                    </form>
+                </div>
+                <div th:if="${user.admin}"
+                     style="font-size:13px; color:var(--muted);">관리자 계정은 정지할 수 없습니다.</div>
+            </div>
+        </div>
+
+        <div style="margin-top:8px;">
+            <a th:href="@{/admin/users}" class="btn btn-secondary">← 목록으로</a>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('게시글 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('posts')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('게시글 관리', '게시글')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 일괄 삭제 폼 (테이블 바깥) -->
+        <form id="bulk-form" th:action="@{/admin/posts/bulk-delete}" method="post">
+            <input type="hidden" name="filter" th:value="${filter}"/>
+            <input type="hidden" name="page" th:value="${posts.number}"/>
+            <input type="hidden" name="artistId" th:value="${artistId}"/>
+            <input type="hidden" name="festivalId" th:value="${festivalId}"/>
+        </form>
+
+        <div class="card">
+            <!-- 필터 탭 -->
+            <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px; flex-wrap:wrap;">
+                <a th:href="@{/admin/posts(filter='', page=0)}"
+                   th:classappend="${filter == '' or filter == null} ? ' active' : ''"
+                   class="type-tab">
+                    전체
+                    <span class="card-count" th:text="${posts.totalElements}"></span>
+                </a>
+                <a th:href="@{/admin/posts(filter='FREE', page=0)}"
+                   th:classappend="${filter == 'FREE'} ? ' active' : ''"
+                   class="type-tab">자유게시판</a>
+                <a th:href="@{/admin/posts(filter='MATE', page=0)}"
+                   th:classappend="${filter == 'MATE'} ? ' active' : ''"
+                   class="type-tab">동행게시판</a>
+                <a th:href="@{/admin/posts(filter='ARTIST', page=0)}"
+                   th:classappend="${filter == 'ARTIST'} ? ' active' : ''"
+                   class="type-tab">아티스트 게시판</a>
+                <a th:href="@{/admin/posts(filter='FESTIVAL', page=0)}"
+                   th:classappend="${filter == 'FESTIVAL'} ? ' active' : ''"
+                   class="type-tab">페스티벌 게시판</a>
+            </div>
+
+            <!-- 아티스트 선택 드롭다운 -->
+            <div th:if="${filter == 'ARTIST'}"
+                 style="padding:10px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                <span style="font-size:13px; color:var(--text-2); font-weight:600;">아티스트 선택</span>
+                <form th:action="@{/admin/posts}" method="get" style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="filter" value="ARTIST"/>
+                    <select name="artistId" onchange="this.form.submit()"
+                            style="padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; min-width:200px;">
+                        <option value="" th:selected="${artistId == null}">전체 아티스트</option>
+                        <option th:each="a : ${artists}"
+                                th:value="${a.id}"
+                                th:text="${a.name}"
+                                th:selected="${artistId != null and artistId == a.id}"></option>
+                    </select>
+                </form>
+            </div>
+
+            <!-- 페스티벌 선택 드롭다운 -->
+            <div th:if="${filter == 'FESTIVAL'}"
+                 style="padding:10px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                <span style="font-size:13px; color:var(--text-2); font-weight:600;">페스티벌 선택</span>
+                <form th:action="@{/admin/posts}" method="get" style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="filter" value="FESTIVAL"/>
+                    <select name="festivalId" onchange="this.form.submit()"
+                            style="padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; min-width:220px;">
+                        <option value="" th:selected="${festivalId == null}">전체 페스티벌</option>
+                        <option th:each="f : ${festivals}"
+                                th:value="${f.id}"
+                                th:text="${f.title}"
+                                th:selected="${festivalId != null and festivalId == f.id}"></option>
+                    </select>
+                </form>
+            </div>
+
+            <!-- 검색 바 -->
+            <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
+                <form th:action="@{/admin/posts}" method="get"
+                      style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="filter" th:value="${filter}"/>
+                    <input type="hidden" name="artistId" th:value="${artistId}"/>
+                    <input type="hidden" name="festivalId" th:value="${festivalId}"/>
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           placeholder="제목 검색..."
+                           style="flex:1; max-width:320px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                       th:href="@{/admin/posts(filter=${filter}, artistId=${artistId}, festivalId=${festivalId}, page=0)}"
+                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                </form>
+            </div>
+
+            <!-- 일괄 삭제 툴바 (선택 시에만 표시) -->
+            <div class="bulk-toolbar" id="bulk-toolbar" data-unit="개">
+                <span class="bulk-count" id="select-count">0개 선택됨</span>
+                <button type="submit" form="bulk-form"
+                        class="btn btn-danger btn-sm"
+                        onclick="return confirm('선택한 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">
+                    선택 삭제
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:36px;">
+                            <input type="checkbox" id="select-all" title="전체 선택"
+                                   style="cursor:pointer; width:15px; height:15px;"/>
+                        </th>
+                        <th style="width:48px;">ID</th>
+                        <th>게시글</th>
+                        <th style="width:140px;">게시판</th>
+                        <th style="width:80px;">반응</th>
+                        <th style="width:80px;">삭제</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="post : ${posts.content}">
+                        <td>
+                            <input type="checkbox" name="ids" th:value="${post.id}"
+                                   form="bulk-form" class="row-check"
+                                   style="cursor:pointer; width:15px; height:15px;"/>
+                        </td>
+                        <td class="td-id" th:text="${post.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${post.id}, filter=${filter}, artistId=${artistId}, festivalId=${festivalId})}"
+                               th:text="${post.title}"
+                               style="font-size:14px; font-weight:600; max-width:380px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                            <div class="cell-secondary cell-row" style="margin-top:5px;">
+                                <span th:text="${post.nickname}"></span>
+                                <span>·</span>
+                                <span th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${post.artistId != null or post.festivalId != null} ? 'badge-genre' : 'badge-primary'"
+                                  th:text="${post.boardDisplayName}"
+                                  style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px; display:inline-block;"></span>
+                        </td>
+                        <td>
+                            <div class="cell-primary">❤ <span th:text="${post.likeCount}"></span></div>
+                            <div class="cell-secondary">💬 <span th:text="${post.commentCount}"></span></div>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/posts/{id}/delete(id=${post.id})}" method="post">
+                                <input type="hidden" name="filter" th:value="${filter}"/>
+                                <input type="hidden" name="page" th:value="${posts.number}"/>
+                                <input type="hidden" name="artistId" th:value="${artistId}"/>
+                                <input type="hidden" name="festivalId" th:value="${festivalId}"/>
+                                <button type="submit"
+                                        class="btn btn-ghost-danger btn-sm"
+                                        onclick="return confirm('이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr class="empty-row" th:if="${posts.totalElements == 0}">
+                        <td colspan="6">
+                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                            <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}">게시글이 없습니다.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${posts}, '/admin/posts', ${extraParams})}"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/admin-bulk.js}"></script>
+</body>
+</html>

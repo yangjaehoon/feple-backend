@@ -1,0 +1,75 @@
+package com.feple.feple_backend.notification.service;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.messaging.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Slf4j
+@Service
+public class FcmPushService {
+
+    private static final int BATCH_SIZE = 500; // FCM multicast 최대 500개
+
+    /** 관리자 공지 브로드캐스트 */
+    public void sendBroadcast(List<String> tokens, String title, String body) {
+        sendMulticast(tokens, title, body, null, "ADMIN_NOTICE");
+    }
+
+    /**
+     * 여러 FCM 토큰에 푸시 발송
+     */
+    public void sendMulticast(List<String> tokens, String title, String body, String festivalId) {
+        sendMulticast(tokens, title, body, festivalId, "NEW_FESTIVAL");
+    }
+
+    private void sendMulticast(List<String> tokens, String title, String body,
+                               String festivalId, String type) {
+        if (tokens.isEmpty()) return;
+        if (FirebaseApp.getApps().isEmpty()) {
+            log.warn("[FCM] Firebase 미초기화 상태 — 푸시 생략");
+            return;
+        }
+
+        FirebaseMessaging messaging = FirebaseMessaging.getInstance();
+
+        // 500개씩 나눠서 발송
+        for (int batchStart = 0; batchStart < tokens.size(); batchStart += BATCH_SIZE) {
+            List<String> batch = tokens.subList(batchStart, Math.min(batchStart + BATCH_SIZE, tokens.size()));
+            try {
+                MulticastMessage message = MulticastMessage.builder()
+                        .addAllTokens(batch)
+                        .setNotification(Notification.builder()
+                                .setTitle(title)
+                                .setBody(body)
+                                .build())
+                        .putData("type", type)
+                        .putData("festivalId", festivalId != null ? festivalId : "")
+                        .setAndroidConfig(AndroidConfig.builder()
+                                .setPriority(AndroidConfig.Priority.HIGH)
+                                .build())
+                        .setApnsConfig(ApnsConfig.builder()
+                                .setAps(Aps.builder().setSound("default").build())
+                                .build())
+                        .build();
+
+                BatchResponse response = messaging.sendEachForMulticast(message);
+                log.info("[FCM] 발송 완료 — 성공: {}, 실패: {}",
+                        response.getSuccessCount(), response.getFailureCount());
+
+                // 실패 토큰 로깅 (필요 시 DB에서 삭제 가능)
+                List<SendResponse> responses = response.getResponses();
+                for (int idx = 0; idx < responses.size(); idx++) {
+                    if (!responses.get(idx).isSuccessful()) {
+                        log.debug("[FCM] 실패 토큰: {}", batch.get(idx));
+                    }
+                }
+            } catch (FirebaseMessagingException e) {
+                log.error("[FCM] 발송 오류: {}", e.getMessage());
+            }
+        }
+    }
+}
