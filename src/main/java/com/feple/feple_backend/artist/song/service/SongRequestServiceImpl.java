@@ -13,6 +13,7 @@ import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 .existsByArtistIdAndUserIdAndSongTitleIgnoreCaseAndStatus(
                         artistId, userId, dto.getSongTitle(), SongRequestStatus.PENDING);
         if (alreadyRequested) {
-            throw new IllegalArgumentException("이미 요청한 곡입니다.");
+            throw new ConflictException("이미 요청한 곡입니다.");
         }
 
         SongRequest request = SongRequest.builder()

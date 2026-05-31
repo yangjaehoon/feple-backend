@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 .existsByUserIdAndArtistNameIgnoreCaseAndStatus(
                         userId, dto.getArtistName(), ArtistSuggestionStatus.PENDING);
         if (alreadyRequested) {
-            throw new IllegalArgumentException("이미 신청한 아티스트입니다.");
+            throw new ConflictException("이미 신청한 아티스트입니다.");
         }
 
         ArtistSuggestion suggestion = ArtistSuggestion.builder()
