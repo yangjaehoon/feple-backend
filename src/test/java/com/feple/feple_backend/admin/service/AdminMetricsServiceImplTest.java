@@ -15,9 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -25,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +40,22 @@ class AdminMetricsServiceImplTest {
     @Mock SearchLogRepository searchLogRepository;
 
     @InjectMocks AdminMetricsServiceImpl adminMetricsService;
+
+    private void stubEmptyStats() {
+        given(userRepository.countGroupByDate(any(), any())).willReturn(List.of());
+        given(postRepository.countGroupByDate(any(), any())).willReturn(List.of());
+        given(commentRepository.countGroupByDate(any(), any())).willReturn(List.of());
+        given(reportRepository.countGroupByDate(any(), any())).willReturn(List.of());
+    }
+
+    private List<Object[]> rowsForAllDays(long value) {
+        LocalDate today = LocalDate.now();
+        List<Object[]> rows = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            rows.add(new Object[]{ Date.valueOf(today.minusDays(i)), value });
+        }
+        return rows;
+    }
 
     @Test
     void 전체_사용자수_조회시_userRepository_count_위임() {
@@ -64,22 +80,14 @@ class AdminMetricsServiceImplTest {
 
     @Test
     void 일별통계가_7개_반환됨() {
-        given(userRepository.countByCreatedAtBetween(any(LocalDateTime.class), any(LocalDateTime.class))).willReturn(0L);
-        given(postRepository.countByCreatedAtBetween(any(LocalDateTime.class), any(LocalDateTime.class))).willReturn(0L);
-        given(commentRepository.countByCreatedAtBetween(any(LocalDateTime.class), any(LocalDateTime.class))).willReturn(0L);
-        given(reportRepository.countByCreatedAtBetween(any(LocalDateTime.class), any(LocalDateTime.class))).willReturn(0L);
+        stubEmptyStats();
 
-        List<DailyStatDto> stats = adminMetricsService.getDailyStats();
-
-        assertThat(stats).hasSize(7);
+        assertThat(adminMetricsService.getDailyStats()).hasSize(7);
     }
 
     @Test
     void 일별통계_첫번째가_6일전_마지막이_오늘() {
-        given(userRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(postRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(commentRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(reportRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
+        stubEmptyStats();
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("M/d");
         String expectedFirst = LocalDate.now().minusDays(6).format(fmt);
@@ -93,39 +101,32 @@ class AdminMetricsServiceImplTest {
 
     @Test
     void 일별통계_날짜_포맷이_M_d_형식임() {
-        given(userRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(postRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(commentRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(reportRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
+        stubEmptyStats();
 
         Pattern mdPattern = Pattern.compile("^\\d{1,2}/\\d{1,2}$");
 
-        List<DailyStatDto> stats = adminMetricsService.getDailyStats();
-
-        stats.forEach(s -> assertThat(s.date()).matches(mdPattern));
+        adminMetricsService.getDailyStats()
+                .forEach(s -> assertThat(s.date()).matches(mdPattern));
     }
 
     @Test
-    void 일별통계_각_저장소가_날짜별로_7회_조회됨() {
-        given(userRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(postRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(commentRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
-        given(reportRepository.countByCreatedAtBetween(any(), any())).willReturn(0L);
+    void 일별통계_각_저장소가_1회_일괄_조회됨() {
+        stubEmptyStats();
 
         adminMetricsService.getDailyStats();
 
-        verify(userRepository, times(7)).countByCreatedAtBetween(any(), any());
-        verify(postRepository, times(7)).countByCreatedAtBetween(any(), any());
-        verify(commentRepository, times(7)).countByCreatedAtBetween(any(), any());
-        verify(reportRepository, times(7)).countByCreatedAtBetween(any(), any());
+        verify(userRepository).countGroupByDate(any(), any());
+        verify(postRepository).countGroupByDate(any(), any());
+        verify(commentRepository).countGroupByDate(any(), any());
+        verify(reportRepository).countGroupByDate(any(), any());
     }
 
     @Test
     void 일별통계_값이_저장소_반환값과_일치함() {
-        given(userRepository.countByCreatedAtBetween(any(), any())).willReturn(3L);
-        given(postRepository.countByCreatedAtBetween(any(), any())).willReturn(10L);
-        given(commentRepository.countByCreatedAtBetween(any(), any())).willReturn(25L);
-        given(reportRepository.countByCreatedAtBetween(any(), any())).willReturn(1L);
+        given(userRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(3L));
+        given(postRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(10L));
+        given(commentRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(25L));
+        given(reportRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(1L));
 
         List<DailyStatDto> stats = adminMetricsService.getDailyStats();
 
