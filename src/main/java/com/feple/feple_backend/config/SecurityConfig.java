@@ -132,6 +132,12 @@ public class SecurityConfig {
                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                "font-src 'self' data: https://fonts.gstatic.com; " +
                "img-src 'self' data: " + s3Origin + " http://t1.daumcdn.net https://t1.daumcdn.net http://s1.daumcdn.net https://s1.daumcdn.net http://mts.daumcdn.net https://mts.daumcdn.net http://img1.kakaocdn.net http://t1.kakaocdn.net http://k.kakaocdn.net https://i.ytimg.com https://maps.gstatic.com https://maps.googleapis.com; " +
-               "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com https://apis.map.kakao.com http://apis.map.kakao.com;";
+               "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com https://apis.map.kakao.com http://apis.map.kakao.com; " +
+               // base-uri: <base> 태그 인젝션으로 상대 경로를 외부로 납치하는 공격 차단
+               "base-uri 'self'; " +
+               // form-action: 폼 제출 대상을 동일 출처로 한정 (피싱 사이트로의 데이터 탈취 방지)
+               "form-action 'self'; " +
+               // frame-ancestors: X-Frame-Options: DENY와 이중으로 클릭재킹 차단
+               "frame-ancestors 'none';";
     }
 }
