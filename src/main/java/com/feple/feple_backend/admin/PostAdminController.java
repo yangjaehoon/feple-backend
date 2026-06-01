@@ -5,6 +5,7 @@ import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.dto.PostAdminFilter;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.post.service.PostService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequestMapping("/admin/posts")
@@ -125,5 +127,24 @@ public class PostAdminController {
         commentService.deleteComment(id);
         adminLogService.log("COMMENT_DELETE", "COMMENT", id, null);
         return "redirect:/admin/posts/" + postId;
+    }
+
+    @GetMapping("/deleted")
+    public String deletedPosts(Model model) {
+        model.addAttribute("posts", postAdminService.getDeletedPosts(200));
+        return "admin/post-deleted-list";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restorePost(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            postAdminService.restorePost(id);
+            adminLogService.log("POST_RESTORE", "POST", id, null);
+            ra.addFlashAttribute("successMessage", "게시글이 복구되었습니다.");
+        } catch (Exception e) {
+            log.error("게시글 복구 실패 id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "복구 중 오류가 발생했습니다.");
+        }
+        return "redirect:/admin/posts/deleted";
     }
 }

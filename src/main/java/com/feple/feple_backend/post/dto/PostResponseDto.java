@@ -36,6 +36,7 @@ public class PostResponseDto {
     private UserRole userRole;
     private boolean anonymous;
     private String imageUrl;
+    private LocalDateTime deletedAt;
 
     public static PostResponseDto from(Post post) {
         return from(post, false);
@@ -64,6 +65,7 @@ public class PostResponseDto {
                 .userRole(anon ? null : post.getAuthorRole())
                 .anonymous(anon)
                 .imageUrl(post.getImageUrl())
+                .deletedAt(post.getDeletedAt())
                 .build();
     }
 }

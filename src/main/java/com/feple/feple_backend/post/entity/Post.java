@@ -7,6 +7,8 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@SQLDelete(sql = "UPDATE post SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "post", indexes = {
     @Index(name = "idx_post_board_type_created_at", columnList = "board_type, created_at DESC"),
     @Index(name = "idx_post_like_count_created_at", columnList = "like_count DESC, created_at DESC"),
@@ -52,6 +56,9 @@ public class Post {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Builder.Default
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")

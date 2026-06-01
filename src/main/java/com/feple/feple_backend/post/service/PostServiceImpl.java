@@ -168,14 +168,13 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public void deleteOwnPost(Long postId, Long requestUserId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
-        postLikeRepository.deleteByPostId(postId);
+        // soft delete: 행이 남아 FK 무결성 유지, 신고 등 증거 보존
         postRepository.deleteById(postId);
     }
 
     @Override
     @Transactional
     public void deletePost(Long postId) {
-        postLikeRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
 
@@ -183,8 +182,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Transactional
     public void bulkDeletePosts(List<Long> ids) {
         if (ids.isEmpty()) return;
-        postLikeRepository.deleteByPostIds(ids);
-        postRepository.deleteAllByIdInBatch(ids);
+        postRepository.softDeleteByIds(ids);
     }
 
     @Override
@@ -199,6 +197,20 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
         if (userIds.isEmpty()) return Map.of();
         return postRepository.countGroupByUserId(userIds).stream()
                 .collect(java.util.stream.Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getDeletedPosts(int limit) {
+        return postRepository.findSoftDeleted(limit).stream()
+                .map(PostResponseDto::from)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void restorePost(Long postId) {
+        postRepository.restore(postId);
     }
 
     @Override

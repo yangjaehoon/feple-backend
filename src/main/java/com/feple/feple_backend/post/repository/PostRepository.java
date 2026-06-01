@@ -166,4 +166,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("UPDATE Post p SET p.likeCount = p.likeCount - 1 WHERE p.id = :postId AND p.likeCount > 0")
     void decrementLikeCount(@Param("postId") Long postId);
 
+    // ── Soft delete 관리자용 ──────────────────────────────────────────────────
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE post SET deleted_at = NOW() WHERE id IN (:ids)", nativeQuery = true)
+    void softDeleteByIds(@Param("ids") List<Long> ids);
+
+    // @SQLRestriction을 우회하는 네이티브 쿼리 — 관리자 휴지통 조회용
+    @Query(value = "SELECT * FROM post WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC LIMIT :limit", nativeQuery = true)
+    List<Post> findSoftDeleted(@Param("limit") int limit);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE post SET deleted_at = NULL WHERE id = :id", nativeQuery = true)
+    void restore(@Param("id") Long id);
+
 }

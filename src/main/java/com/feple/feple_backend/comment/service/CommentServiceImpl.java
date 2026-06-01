@@ -137,8 +137,7 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long commentId){
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
-        commentLikeRepository.deleteByCommentId(commentId);
-        commentReportRepository.deleteByCommentId(commentId);
+        // soft delete: 신고 기록(CommentReport) 보존, 행이 남아 FK 무결성 유지
         commentRepository.deleteById(commentId);
         post.decrementCommentCount();
     }
@@ -149,8 +148,6 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
         Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
-        commentLikeRepository.deleteByCommentId(commentId);
-        commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
         post.decrementCommentCount();
     }

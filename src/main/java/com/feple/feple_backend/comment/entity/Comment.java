@@ -5,6 +5,8 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -13,8 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@SQLDelete(sql = "UPDATE comment SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "comment", indexes = {
-    @Index(name = "idx_comment_post_id_created_at", columnList = "post_id, created_at ASC")
+    @Index(name = "idx_comment_post_id_created_at", columnList = "post_id, created_at ASC"),
+    @Index(name = "idx_comment_user_id_created_at", columnList = "user_id, created_at DESC")
 })
 public class Comment {
     @Id
@@ -26,6 +31,9 @@ public class Comment {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
