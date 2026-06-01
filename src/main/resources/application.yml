@@ -80,6 +80,12 @@ app:
     username: ${ADMIN_USERNAME}
     password: ${ADMIN_PASSWORD}
 
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: prod
+  send-default-pii: false
+  traces-sample-rate: 0.1
+
 management:
   endpoints:
     web:
