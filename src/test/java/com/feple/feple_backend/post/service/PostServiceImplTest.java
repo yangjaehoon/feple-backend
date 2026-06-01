@@ -127,7 +127,7 @@ class PostServiceImplTest {
 
         postService.deleteOwnPost(10L, 1L);
 
-        verify(postLikeRepository).deleteByPostId(10L);
+        // soft delete: post 행이 남아 FK 무결성 유지 → like 사전 삭제 불필요
         verify(postRepository).deleteById(10L);
     }
 

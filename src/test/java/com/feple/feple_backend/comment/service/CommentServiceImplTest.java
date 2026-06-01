@@ -210,8 +210,7 @@ class CommentServiceImplTest {
 
         commentService.deleteOwnComment(100L, 1L);
 
-        verify(commentLikeRepository).deleteByCommentId(100L);
-        verify(commentReportRepository).deleteByCommentId(100L);
+        // soft delete: comment 행이 남아 FK 무결성 유지 → like/report 사전 삭제 불필요
         verify(commentRepository).deleteById(100L);
     }
 
