@@ -109,3 +109,15 @@ springdoc:
   api-docs:
     enabled: false
     path: /v3/api-docs
+
+logging:
+  structured:
+    format:
+      console: logstash   # JSON 구조화 로그 — Grafana Loki / ELK 연동용
+  level:
+    root: INFO
+    com.feple: INFO
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    com.zaxxer.hikari: WARN
+    org.flywaydb: WARN
