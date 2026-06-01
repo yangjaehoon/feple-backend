@@ -51,6 +51,7 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = new Comment(dto.getContent(), post, user, dto.getParentId());
         Comment saved = commentRepository.save(comment);
+        post.incrementCommentCount();
 
         Long postAuthorId = post.getUserId();
         if (!postAuthorId.equals(userId)) {
@@ -128,18 +129,23 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteComment(Long commentId){
+        Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
+        Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
         commentLikeRepository.deleteByCommentId(commentId);
         commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
+        post.decrementCommentCount();
     }
 
     @Override
     public void deleteOwnComment(Long commentId, Long requestUserId) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
+        Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
         commentLikeRepository.deleteByCommentId(commentId);
         commentReportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
+        post.decrementCommentCount();
     }
 
     @Override

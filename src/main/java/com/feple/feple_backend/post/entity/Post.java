@@ -7,8 +7,6 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Formula;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,12 +94,15 @@ public class Post {
             this.likeCount--;
     }
 
-    @Getter(AccessLevel.NONE)
-    @Formula("(SELECT COUNT(*) FROM comment c WHERE c.post_id = id)")
-    private int formulaCommentCount;
+    @Builder.Default
+    private int commentCount = 0;
 
-    public int getCommentCount() {
-        return formulaCommentCount;
+    public int getCommentCount() { return commentCount; }
+
+    public void incrementCommentCount() { this.commentCount++; }
+
+    public void decrementCommentCount() {
+        if (this.commentCount > 0) this.commentCount--;
     }
 
     @Builder.Default

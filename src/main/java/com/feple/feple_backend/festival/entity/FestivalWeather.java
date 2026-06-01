@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -19,7 +21,10 @@ public class FestivalWeather {
     @Column(nullable = false, unique = true)
     private Long festivalId;
 
-    private String fcstDate;
+    @Column(name = "fcst_date", columnDefinition = "DATE")
+    private LocalDate fcstDate;
+
+    private static final DateTimeFormatter KMA_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
     private Double minTemp;
     private Double maxTemp;
     private Integer rainProb;
@@ -35,7 +40,7 @@ public class FestivalWeather {
     }
 
     public void apply(WeatherDto dto) {
-        this.fcstDate = dto.fcstDate();
+        this.fcstDate = dto.fcstDate() != null ? LocalDate.parse(dto.fcstDate(), KMA_DATE) : null;
         this.minTemp = dto.minTemp();
         this.maxTemp = dto.maxTemp();
         this.rainProb = dto.rainProb();
@@ -45,6 +50,8 @@ public class FestivalWeather {
     }
 
     public WeatherDto toDto() {
-        return new WeatherDto(fcstDate, minTemp, maxTemp, rainProb, skyCode, ptyCode);
+        return new WeatherDto(
+                fcstDate != null ? fcstDate.format(KMA_DATE) : null,
+                minTemp, maxTemp, rainProb, skyCode, ptyCode);
     }
 }
