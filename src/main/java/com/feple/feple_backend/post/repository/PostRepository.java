@@ -141,6 +141,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            "GROUP BY p.artist.id")
     List<Object[]> countAndSumByArtistSince(@Param("since") LocalDateTime since);
 
+    // ── 스크랩 카운트 (원자적 SQL UPDATE — 엔티티 dirty check 대신 사용)
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Post p SET p.scrapCount = p.scrapCount + 1 WHERE p.id = :postId")
+    void incrementScrapCount(@Param("postId") Long postId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Post p SET p.scrapCount = p.scrapCount - 1 WHERE p.id = :postId AND p.scrapCount > 0")
+    void decrementScrapCount(@Param("postId") Long postId);
+
     // ── 좋아요 카운트 ─────────────────────────────────────────────────────────
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.likeCount = p.likeCount + 1 WHERE p.id = :postId")

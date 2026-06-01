@@ -92,7 +92,8 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                 .requestMatchers("/favicon.ico", "/error").permitAll()
-                .requestMatchers(HttpMethod.GET, "/posts/my/scrapped").authenticated()
+                // /posts/my/** 전체 및 presigned URL은 인증 필수
+                .requestMatchers(HttpMethod.GET, "/posts/my/**", "/posts/image-upload-url").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**").permitAll()
                 .anyRequest().authenticated())
