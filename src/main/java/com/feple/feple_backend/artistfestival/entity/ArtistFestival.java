@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
     @Index(name = "idx_af_festival_id", columnList = "festival_id")
 })
 public class ArtistFestival {
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
