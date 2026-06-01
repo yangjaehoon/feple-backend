@@ -23,6 +23,9 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     @Query("SELECT ps FROM PostScrap ps WHERE ps.user.id = :userId ORDER BY ps.id DESC")
     List<PostScrap> findByUserIdOrderByIdDesc(@Param("userId") Long userId);
 
+    @Query("SELECT COUNT(ps) FROM PostScrap ps WHERE ps.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
+
     @Modifying
     @Query("DELETE FROM PostScrap ps WHERE ps.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);

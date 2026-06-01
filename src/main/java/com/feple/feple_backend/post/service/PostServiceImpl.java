@@ -289,6 +289,12 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long countLikedPosts(Long userId) {
+        return postLikeRepository.countByUserId(userId);
+    }
+
+    @Override
     public List<PostResponseDto> searchPosts(String keyword, String boardType) {
         Optional<BoardType> type = parseBoardType(boardType);
         if (type.isPresent()) {

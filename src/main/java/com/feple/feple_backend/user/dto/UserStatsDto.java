@@ -9,4 +9,6 @@ public class UserStatsDto {
     private long postCount;
     private long commentCount;
     private long reportCount;
+    private long likedPostCount;
+    private long scrapCount;
 }

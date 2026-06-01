@@ -48,6 +48,10 @@ public class PostScrapService {
         }
     }
 
+    public long countMyScraps(Long userId) {
+        return postScrapRepository.countByUserId(userId);
+    }
+
     /** 내 스크랩 목록 조회 */
     public List<PostResponseDto> getMyScraps(Long userId) {
         return postScrapRepository.findByUserIdOrderByIdDesc(userId)

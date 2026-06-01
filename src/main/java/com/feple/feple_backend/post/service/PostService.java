@@ -27,4 +27,5 @@ public interface PostService {
     long countMyPosts(Long userId);
     int incrementViewCount(Long postId);
     List<PostResponseDto> getLikedPosts(Long userId);
+    long countLikedPosts(Long userId);
 }

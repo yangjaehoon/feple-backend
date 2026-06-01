@@ -10,6 +10,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostReportService;
+import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import lombok.NonNull;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class MyPageService {
 
     private final PostService postService;
+    private final PostScrapService postScrapService;
     private final CommentService commentService;
     private final FestivalService festivalService;
     private final ArtistService artistService;
@@ -70,6 +72,8 @@ public class MyPageService {
         return new UserStatsDto(
                 postService.countMyPosts(userId),
                 commentService.countMyComments(userId),
-                reportCount);
+                reportCount,
+                postService.countLikedPosts(userId),
+                postScrapService.countMyScraps(userId));
     }
 }
