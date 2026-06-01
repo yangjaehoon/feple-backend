@@ -1,6 +1,7 @@
 package com.feple.feple_backend.festival.service;
 
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.booth.repository.BoothRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
@@ -164,7 +165,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> searchFestivals(String keyword) {
-        return festivalRepository.findByTitleKeyword(keyword).stream()
+        return festivalRepository.findByTitleKeyword(LikeEscaper.escape(keyword)).stream()
                 .limit(10)
                 .map(this::toDto)
                 .toList();
@@ -187,6 +188,6 @@ public class FestivalServiceImpl implements FestivalService {
                     PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")))
                     .map(this::toDto);
         }
-        return festivalRepository.findByTitleKeywordPaged(keyword, pageable).map(this::toDto);
+        return festivalRepository.findByTitleKeywordPaged(LikeEscaper.escape(keyword), pageable).map(this::toDto);
     }
 }

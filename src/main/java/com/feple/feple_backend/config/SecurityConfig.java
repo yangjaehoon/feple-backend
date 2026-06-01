@@ -111,7 +111,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(o -> !o.equals("*"))
+                .toList();
+        if (origins.isEmpty()) {
+            throw new IllegalStateException(
+                    "CORS 허용 출처가 없습니다. CORS_ALLOWED_ORIGINS 환경변수를 확인하세요. 와일드카드 '*'는 허용되지 않습니다.");
+        }
         config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));

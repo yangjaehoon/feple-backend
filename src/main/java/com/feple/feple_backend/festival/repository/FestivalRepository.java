@@ -23,10 +23,10 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query("SELECT f FROM Festival f WHERE f.startDate <= :before AND (f.endDate IS NULL OR f.endDate >= :today)")
     List<Festival> findOngoingOrStartingBefore(@Param("today") LocalDate today, @Param("before") LocalDate before);
 
-    @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!'")
     List<Festival> findByTitleKeyword(@Param("keyword") String keyword);
 
-    @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY f.startDate DESC")
+    @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' ORDER BY f.startDate DESC")
     org.springframework.data.domain.Page<Festival> findByTitleKeywordPaged(
             @Param("keyword") String keyword, Pageable pageable);
 

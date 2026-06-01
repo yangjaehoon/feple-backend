@@ -25,7 +25,7 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     @Query("SELECT a.followerCount FROM Artist a WHERE a.id = :artistId")
     int findFollowerCountById(@Param("artistId") Long artistId);
 
-    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ORDER BY a.name ASC")
+    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' ORDER BY a.name ASC")
     java.util.List<Artist> findByNameOrNameEnContainingIgnoreCase(@Param("keyword") String keyword);
 
     java.util.List<Artist> findAllByOrderByWeeklyScoreDescIdAsc();

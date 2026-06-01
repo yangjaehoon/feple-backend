@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
@@ -92,7 +93,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
-        return artistRepository.findByNameOrNameEnContainingIgnoreCase(keyword).stream()
+        return artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(keyword)).stream()
                 .map(this::toDto)
                 .toList();
     }
