@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ArtistProfileImageLikeRepository extends JpaRepository<ArtistProfileImageLike, Long> {
@@ -16,4 +17,8 @@ public interface ArtistProfileImageLikeRepository extends JpaRepository<ArtistPr
     @Modifying
     @Query("DELETE FROM ArtistProfileImageLike ail WHERE ail.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM ArtistProfileImageLike ail WHERE ail.artistProfileImage.id IN :imageIds")
+    void deleteByArtistProfileImageIdIn(@Param("imageIds") List<Long> imageIds);
 }

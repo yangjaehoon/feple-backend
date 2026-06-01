@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.entity.ArtistProfileImage;
+import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,6 +29,7 @@ class ArtistCascadeDeleteServiceTest {
 
     @Mock ArtistRepository artistRepository;
     @Mock ArtistProfileImageRepository artistImageRepository;
+    @Mock ArtistProfileImageLikeRepository artistImageLikeRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;
     @Mock ArtistFollowRepository artistFollowRepository;
     @Mock PostCascadeService postCascadeService;
@@ -41,15 +44,15 @@ class ArtistCascadeDeleteServiceTest {
                 .build();
     }
 
-    private ArtistProfileImage galleryImage(String imageUrl) {
-        return ArtistProfileImage.builder().imageUrl(imageUrl).build();
+    private ArtistProfileImage galleryImage(Long id, String imageUrl) {
+        return ArtistProfileImage.builder().id(id).imageUrl(imageUrl).build();
     }
 
     @Test
     void 아티스트_삭제시_갤러리_이미지_파일과_DB레코드_삭제됨() {
         Artist artist = artist(1L);
-        ArtistProfileImage img1 = galleryImage("gallery/img1.jpg");
-        ArtistProfileImage img2 = galleryImage("gallery/img2.jpg");
+        ArtistProfileImage img1 = galleryImage(1L, "gallery/img1.jpg");
+        ArtistProfileImage img2 = galleryImage(2L, "gallery/img2.jpg");
         List<ArtistProfileImage> images = List.of(img1, img2);
 
         given(artistImageRepository.findByArtist(artist)).willReturn(images);
@@ -59,6 +62,7 @@ class ArtistCascadeDeleteServiceTest {
 
         verify(fileStorageService).deleteFile("gallery/img1.jpg");
         verify(fileStorageService).deleteFile("gallery/img2.jpg");
+        verify(artistImageLikeRepository).deleteByArtistProfileImageIdIn(List.of(1L, 2L));
         verify(artistImageRepository).deleteAll(images);
     }
 
@@ -97,6 +101,7 @@ class ArtistCascadeDeleteServiceTest {
 
         artistCascadeDeleteService.delete(artist);
 
+        verify(artistImageLikeRepository, never()).deleteByArtistProfileImageIdIn(any());
         verify(artistImageRepository).deleteAll(List.of());
         verify(artistRepository).deleteById(1L);
     }

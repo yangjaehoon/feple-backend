@@ -6,8 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "artist_image")
@@ -33,10 +31,10 @@ public class ArtistProfileImage {
 
     private LocalDateTime uploadAt;
 
-    @OneToMany(mappedBy = "artistProfileImage", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ArtistProfileImageLike> likes = new ArrayList<>();
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
+    private int likeCount = 0;
 
-    public int getLikeCount(){
-        return likes.size();
-    }
+    public void incrementLikeCount() { this.likeCount++; }
+    public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
 }

@@ -23,14 +23,14 @@ public class ArtistProfileImageLikeService {
         ArtistProfileImage image = EntityFinder.getOrThrow(imageRepository::findById, imageId, "이미지");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        likeRepository.findByUserAndArtistProfileImage(user, image)
-                .ifPresentOrElse(
-                        like -> {},
-                        () -> likeRepository.save(ArtistProfileImageLike.builder()
-                                .user(user)
-                                .artistProfileImage(image)
-                                .build())
-                );
+        boolean alreadyLiked = likeRepository.findByUserAndArtistProfileImage(user, image).isPresent();
+        if (!alreadyLiked) {
+            likeRepository.save(ArtistProfileImageLike.builder()
+                    .user(user)
+                    .artistProfileImage(image)
+                    .build());
+            image.incrementLikeCount();
+        }
     }
 
     @Transactional
@@ -39,6 +39,9 @@ public class ArtistProfileImageLikeService {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         likeRepository.findByUserAndArtistProfileImage(user, image)
-                .ifPresent(likeRepository::delete);
+                .ifPresent(like -> {
+                    likeRepository.delete(like);
+                    image.decrementLikeCount();
+                });
     }
 }
