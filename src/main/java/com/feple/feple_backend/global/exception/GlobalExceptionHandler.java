@@ -77,7 +77,9 @@ public class GlobalExceptionHandler {
     // DB unique/FK 제약 위반 (동시 요청 등 서비스 레벨 체크를 통과한 경우)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        // WARN 레벨에는 SQL 상세(테이블/컬럼명, 실제 값) 노출 금지 — PII/스키마 정보가 포함될 수 있음
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getClass().getSimpleName());
+        log.debug("Data integrity violation detail", ex.getMostSpecificCause());
         return errorBody(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다.");
     }
 

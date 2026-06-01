@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.feple.feple_backend.user.entity.UserRole;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponseDto {
     private Long id;
     private String nickname;
