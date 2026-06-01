@@ -32,7 +32,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentReportRepository commentReportRepository;
@@ -44,6 +44,7 @@ public class CommentServiceImpl implements CommentService {
     private final BadWordFilter badWordFilter;
 
     @Override
+    @Transactional
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
         badWordFilter.validate(dto.getContent());
         Post post = EntityFinder.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
@@ -128,6 +129,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void deleteComment(Long commentId){
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
@@ -138,6 +140,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void deleteOwnComment(Long commentId, Long requestUserId) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
@@ -163,6 +166,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
@@ -181,6 +185,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public CommentLikeResult toggleLike(Long commentId, Long userId) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");

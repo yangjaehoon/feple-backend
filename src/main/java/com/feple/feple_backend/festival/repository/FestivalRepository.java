@@ -46,19 +46,19 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             @Param("until") LocalDate until,
             Pageable pageable);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Festival f SET f.likeCount = f.likeCount + 1 WHERE f.id = :id")
     void incrementLikeCount(@Param("id") Long id);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Festival f SET f.likeCount = f.likeCount - 1 WHERE f.id = :id AND f.likeCount > 0")
     void decrementLikeCount(@Param("id") Long id);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Festival f SET f.attendingCount = f.attendingCount + 1 WHERE f.id = :id")
     void incrementAttendingCount(@Param("id") Long id);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Festival f SET f.attendingCount = f.attendingCount - 1 WHERE f.id = :id AND f.attendingCount > 0")
     void decrementAttendingCount(@Param("id") Long id);
 
