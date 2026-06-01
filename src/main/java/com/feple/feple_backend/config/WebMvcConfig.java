@@ -1,6 +1,7 @@
 package com.feple.feple_backend.config;
 
 import com.feple.feple_backend.admin.account.AdminPermissionInterceptor;
+import com.feple.feple_backend.auth.ratelimit.MutationRateLimitInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -11,11 +12,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final AdminPermissionInterceptor adminPermissionInterceptor;
+    private final MutationRateLimitInterceptor mutationRateLimitInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(adminPermissionInterceptor)
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/login", "/admin/logout", "/admin/access-denied");
+
+        registry.addInterceptor(mutationRateLimitInterceptor)
+                .addPathPatterns("/posts/**", "/comments/**", "/artists/*/song-requests");
     }
 }
