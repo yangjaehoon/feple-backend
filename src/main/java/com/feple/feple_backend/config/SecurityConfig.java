@@ -61,6 +61,8 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutUrl("/admin/logout")
                 .logoutSuccessUrl("/admin/login?logout=true")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll())
             .sessionManagement(sm -> sm
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

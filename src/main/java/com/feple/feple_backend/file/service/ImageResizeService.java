@@ -30,10 +30,17 @@ public class ImageResizeService {
             throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
 
         String original = file.getOriginalFilename();
-        String ext = (original != null && original.contains("."))
-                ? original.substring(original.lastIndexOf(".")).toLowerCase()
-                : "";
+        if (original == null || original.isBlank())
+            throw new IllegalArgumentException("파일 이름이 없습니다.");
 
+        // 더블 확장자 공격 방지 (.jpg.exe 등)
+        String nameWithoutExt = original.contains(".")
+                ? original.substring(0, original.lastIndexOf("."))
+                : original;
+        if (nameWithoutExt.contains("."))
+            throw new IllegalArgumentException("다중 확장자 파일은 업로드할 수 없습니다.");
+
+        String ext = original.substring(original.lastIndexOf(".")).toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(ext))
             throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. jpg, jpeg, png, gif 파일만 업로드할 수 있습니다.");
     }
