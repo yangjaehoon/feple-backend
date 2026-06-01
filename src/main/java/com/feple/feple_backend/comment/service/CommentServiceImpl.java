@@ -50,7 +50,11 @@ public class CommentServiceImpl implements CommentService {
         Post post = EntityFinder.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        Comment comment = new Comment(dto.getContent(), post, user, dto.getParentId());
+        Comment parent = null;
+        if (dto.getParentId() != null) {
+            parent = EntityFinder.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
+        }
+        Comment comment = new Comment(dto.getContent(), post, user, parent);
         Comment saved = commentRepository.save(comment);
         post.incrementCommentCount();
 

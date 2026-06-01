@@ -35,8 +35,9 @@ public class Comment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "parent_id")
-    private Long parentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
 
     @Builder.Default
     @Column(nullable = false)
@@ -50,11 +51,11 @@ public class Comment {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Comment(String content, Post post, User user, Long parentId) {
+    public Comment(String content, Post post, User user, Comment parent) {
         this.content = content;
         this.post = post;
         this.user = user;
-        this.parentId = parentId;
+        this.parent = parent;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -67,6 +68,7 @@ public class Comment {
     public void incrementLikeCount() { this.likeCount++; }
     public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
 
+    public Long getParentId() { return parent != null ? parent.getId() : null; }
     public Long getPostId() { return post.getId(); }
     public String getPostTitle() { return post.getTitle(); }
     public Long getUserId() { return user.getId(); }
