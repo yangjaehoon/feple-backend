@@ -32,7 +32,7 @@ public class FestivalBoothAdminController {
         }
         if (boothImageFile != null && !boothImageFile.isEmpty()) {
             try {
-                dto.setImageUrl(boothService.uploadBoothImage(boothImageFile));
+                dto.setImageKey(boothService.uploadBoothImage(boothImageFile));
             } catch (Exception e) {
                 log.error("부스 이미지 업로드 실패 festivalId={}", festivalId, e);
                 ra.addFlashAttribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요.");

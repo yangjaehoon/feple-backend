@@ -36,5 +36,6 @@ public class Booth {
 
     private String description;
 
-    private String imageUrl;
+    @Column(name = "image_url")
+    private String imageKey;
 }

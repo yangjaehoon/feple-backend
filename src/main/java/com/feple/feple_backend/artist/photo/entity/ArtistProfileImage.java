@@ -19,7 +19,8 @@ public class ArtistProfileImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String imageUrl;
+    @Column(name = "image_url")
+    private String imageKey;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id")

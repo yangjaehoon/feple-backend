@@ -20,5 +20,5 @@ public class BoothRequestDto {
     @NotNull(message = "경도는 필수입니다.")
     private Double longitude;
     private String description;
-    private String imageUrl;
+    private String imageKey;
 }

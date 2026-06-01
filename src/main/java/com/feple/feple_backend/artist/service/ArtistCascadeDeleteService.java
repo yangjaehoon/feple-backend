@@ -33,7 +33,7 @@ public class ArtistCascadeDeleteService {
         String profileImageKey = artist.getProfileImageKey();
 
         List<ArtistProfileImage> images = artistImageRepository.findByArtist(artist);
-        images.forEach(img -> fileStorageService.deleteFile(img.getImageUrl()));
+        images.forEach(img -> fileStorageService.deleteFile(img.getImageKey()));
         if (!images.isEmpty()) {
             List<Long> imageIds = images.stream().map(ArtistProfileImage::getId).collect(Collectors.toList());
             artistImageLikeRepository.deleteByArtistProfileImageIdIn(imageIds);

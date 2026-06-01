@@ -29,8 +29,8 @@ public class FileStorageService {
     private String bucket;
 
     public String buildUrl(String key) {
-        if (key == null)
-            return null;
+        if (key == null) return null;
+        if (key.startsWith("http")) return key; // 이전 데이터가 전체 URL을 저장한 경우 그대로 반환
         return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
     }
 

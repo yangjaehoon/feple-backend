@@ -28,7 +28,7 @@ public class BoothService {
     public List<BoothResponseDto> getBooths(Long festivalId) {
         return boothRepository.findByFestivalId(festivalId)
                 .stream()
-                .map(BoothResponseDto::from)
+                .map(b -> BoothResponseDto.from(b, fileStorageService.buildUrl(b.getImageKey())))
                 .toList();
     }
 
@@ -43,7 +43,7 @@ public class BoothService {
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .description(dto.getDescription())
-                .imageUrl(dto.getImageUrl())
+                .imageKey(dto.getImageKey())
                 .build();
         return boothRepository.save(booth).getId();
     }
@@ -54,7 +54,6 @@ public class BoothService {
     }
 
     public String uploadBoothImage(MultipartFile file) throws IOException {
-        String key = fileStorageService.storeBoothImage(file);
-        return fileStorageService.buildUrl(key);
+        return fileStorageService.storeBoothImage(file);
     }
 }

@@ -18,7 +18,7 @@ public class BoothResponseDto {
     private String description;
     private String imageUrl;
 
-    public static BoothResponseDto from(Booth booth) {
+    public static BoothResponseDto from(Booth booth, String imageUrl) {
         return BoothResponseDto.builder()
                 .id(booth.getId())
                 .name(booth.getName())
@@ -27,7 +27,7 @@ public class BoothResponseDto {
                 .latitude(booth.getLatitude())
                 .longitude(booth.getLongitude())
                 .description(booth.getDescription())
-                .imageUrl(booth.getImageUrl())
+                .imageUrl(imageUrl)
                 .build();
     }
 }

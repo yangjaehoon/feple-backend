@@ -44,8 +44,8 @@ class ArtistCascadeDeleteServiceTest {
                 .build();
     }
 
-    private ArtistProfileImage galleryImage(Long id, String imageUrl) {
-        return ArtistProfileImage.builder().id(id).imageUrl(imageUrl).build();
+    private ArtistProfileImage galleryImage(Long id, String imageKey) {
+        return ArtistProfileImage.builder().id(id).imageKey(imageKey).build();
     }
 
     @Test
