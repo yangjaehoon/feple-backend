@@ -75,22 +75,7 @@
         </div>
     </div>
 </div>
-<script th:if="${errorMessage}" th:inline="javascript">
-    alert([[${errorMessage}]]);
-</script>
-<script>
-    function filterArtists(query) {
-        const q = query.toLowerCase();
-        document.querySelectorAll('#artistList .artist-item').forEach(item => {
-            item.style.display = item.dataset.name.includes(q) ? '' : 'none';
-        });
-    }
-    function updateCount() {
-        const count = document.querySelectorAll('input[name="artistIds"]:checked').length;
-        document.getElementById('selectedCount').textContent = count;
-    }
-    // 페이지 로드 시 이미 체크된 수 반영
-    document.addEventListener('DOMContentLoaded', updateCount);
-</script>
+<div id="js-page-error" th:if="${errorMessage}" th:attr="data-msg=${errorMessage}" style="display:none"></div>
+<script th:src="@{/js/admin-festival-artist-form.js}"></script>
 </body>
 </html>
