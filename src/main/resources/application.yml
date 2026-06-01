@@ -11,7 +11,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none   # Flyway가 스키마 관리, JPA는 DDL 수행 안 함
-    defer-datasource-initialization: true
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
 
   flyway:
     enabled: true
@@ -21,17 +25,9 @@ spring:
     out-of-order: false
     validate-on-migrate: true
 
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: false
-
-
   sql:
     init:
-      #mode: always #h2 설정
-      mode: always
+      mode: never   # Flyway가 스키마·데이터 초기화 담당 — Spring SQL init 불필요
 
   config:
     import: "optional:classpath:application-local.yaml"
