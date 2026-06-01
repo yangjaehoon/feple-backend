@@ -7,6 +7,7 @@ import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
@@ -26,6 +27,7 @@ public class UserCascadeDeleteService {
     private final FestivalLikeRepository festivalLikeRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationPreferenceRepository notificationPreferenceRepository;
     private final UserDeviceTokenRepository userDeviceTokenRepository;
     private final FestivalCertificationRepository certificationRepository;
     private final ArtistProfileImageLikeRepository artistImageLikeRepository;
@@ -45,6 +47,7 @@ public class UserCascadeDeleteService {
         artistFollowRepository.deleteByUserId(id);
 
         notificationRepository.deleteByUserId(id);
+        notificationPreferenceRepository.deleteByUserId(id);
         certificationRepository.deleteByUserId(id);
 
         artistImageLikeRepository.deleteByUserId(id);

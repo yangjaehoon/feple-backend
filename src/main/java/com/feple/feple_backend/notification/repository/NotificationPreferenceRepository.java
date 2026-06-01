@@ -10,4 +10,8 @@ import java.util.Optional;
 public interface NotificationPreferenceRepository extends JpaRepository<NotificationPreference, Long> {
     @Query("SELECT np FROM NotificationPreference np WHERE np.userId = :userId")
     Optional<NotificationPreference> findByUserId(@Param("userId") Long userId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM NotificationPreference np WHERE np.userId = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }
