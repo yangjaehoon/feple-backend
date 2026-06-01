@@ -77,7 +77,7 @@ class PostScrapServiceTest {
     // ── toggleScrap ──────────────────────────────────────────────────
 
     @Test
-    void 스크랩_취소시_delete와_decrementScrapCount_호출되고_false_반환() {
+    void 스크랩_취소시_delete가_호출되고_false_반환() {
         User user = user(1L);
         Post post = post(10L, user);
         PostScrap existing = PostScrap.builder().user(user).post(post).build();
@@ -89,12 +89,11 @@ class PostScrapServiceTest {
 
         assertThat(result).isFalse();
         verify(postScrapRepository).delete(existing);
-        verify(postRepository).decrementScrapCount(10L);
         verify(postScrapRepository, never()).save(any(PostScrap.class));
     }
 
     @Test
-    void 스크랩_추가시_save와_incrementScrapCount_호출되고_true_반환() {
+    void 스크랩_추가시_save가_호출되고_카운터_증가_true_반환() {
         User user = user(1L);
         Post post = post(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
@@ -104,8 +103,8 @@ class PostScrapServiceTest {
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
         assertThat(result).isTrue();
+        assertThat(post.getScrapCount()).isEqualTo(1);
         verify(postScrapRepository).save(any(PostScrap.class));
-        verify(postRepository).incrementScrapCount(10L);
     }
 
     @Test

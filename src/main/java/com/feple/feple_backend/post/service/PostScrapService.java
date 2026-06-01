@@ -39,11 +39,11 @@ public class PostScrapService {
         Optional<PostScrap> existing = postScrapRepository.findByUserIdAndPostId(userId, postId);
         if (existing.isPresent()) {
             postScrapRepository.delete(existing.get());
-            postRepository.decrementScrapCount(postId);
+            post.decrementScrapCount();
             return false;
         } else {
             postScrapRepository.save(PostScrap.builder().user(user).post(post).build());
-            postRepository.incrementScrapCount(postId);
+            post.incrementScrapCount();
             return true;
         }
     }

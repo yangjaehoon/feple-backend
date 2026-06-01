@@ -12,7 +12,6 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "timetable_entry")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

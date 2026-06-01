@@ -49,7 +49,7 @@ public class ArtistGalleryPhoto {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "likecount", nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Column(name = "like_count", nullable = false, columnDefinition = "INT DEFAULT 0")
     private int likeCount = 0;
 
     public ArtistGalleryPhoto(Artist artist, User uploader, String s3Key, String contentType, String title,

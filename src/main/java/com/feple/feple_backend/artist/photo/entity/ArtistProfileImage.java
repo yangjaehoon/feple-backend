@@ -30,7 +30,8 @@ public class ArtistProfileImage {
     @JoinColumn(name = "uploader_id")
     private User uploader;
 
-    private LocalDateTime uploadAt;
+    @Column(name = "upload_at")
+    private LocalDateTime uploadedAt;
 
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     @Builder.Default

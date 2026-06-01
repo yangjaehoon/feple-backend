@@ -94,6 +94,12 @@ public class Post {
             this.likeCount--;
     }
 
+    public void incrementScrapCount() { this.scrapCount++; }
+
+    public void decrementScrapCount() {
+        if (this.scrapCount > 0) this.scrapCount--;
+    }
+
     @Builder.Default
     private int commentCount = 0;
 
