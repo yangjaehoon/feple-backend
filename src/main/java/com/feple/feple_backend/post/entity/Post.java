@@ -18,7 +18,13 @@ import java.util.List;
 @Builder
 @Table(name = "post", indexes = {
     @Index(name = "idx_post_board_type_created_at", columnList = "board_type, created_at DESC"),
-    @Index(name = "idx_post_like_count_created_at", columnList = "like_count DESC, created_at DESC")
+    @Index(name = "idx_post_like_count_created_at", columnList = "like_count DESC, created_at DESC"),
+    // 커서 페이지네이션: WHERE board_type = ? [AND id < ?] ORDER BY id DESC
+    @Index(name = "idx_post_board_type_id", columnList = "board_type, id DESC"),
+    // 아티스트/페스티벌 게시판, 마이페이지
+    @Index(name = "idx_post_artist_id_created_at", columnList = "artist_id, created_at DESC"),
+    @Index(name = "idx_post_festival_id_created_at", columnList = "festival_id, created_at DESC"),
+    @Index(name = "idx_post_user_id_created_at", columnList = "user_id, created_at DESC")
 })
 public class Post {
 
