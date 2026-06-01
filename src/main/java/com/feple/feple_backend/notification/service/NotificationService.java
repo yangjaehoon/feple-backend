@@ -19,10 +19,12 @@ import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
 
@@ -99,8 +101,8 @@ public class NotificationService {
     }
 
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestApproved(SongRequestApprovedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -117,8 +119,8 @@ public class NotificationService {
     }
 
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestRejected(SongRequestRejectedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -135,8 +137,8 @@ public class NotificationService {
     }
 
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onArtistSuggestionProcessed(ArtistSuggestionProcessedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -152,8 +154,8 @@ public class NotificationService {
     }
 
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCommentCreated(CommentCreatedEvent event) {
         notifyNewComment(event.postAuthorId(), event.commenterNickname(),
                 event.postTitle(), event.postId());
