@@ -1,13 +1,10 @@
 package com.feple.feple_backend.user.entity;
 
-import com.feple.feple_backend.comment.entity.Comment;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
@@ -117,9 +114,5 @@ public class User {
         this.bio = null;
         this.profileImageUrl = null;
     }
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Comment> comments = new ArrayList<>();
 
 }
