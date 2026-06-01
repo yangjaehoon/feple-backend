@@ -160,7 +160,7 @@ public class UserController {
         String token = body.get("token");
         String platform = body.getOrDefault("platform", "android");
         if (token == null || token.isBlank()) {
-            return ResponseEntity.badRequest().build();
+            throw new IllegalArgumentException("토큰이 필요합니다.");
         }
         deviceTokenService.register(userId, token, platform);
         return ResponseEntity.ok().build();

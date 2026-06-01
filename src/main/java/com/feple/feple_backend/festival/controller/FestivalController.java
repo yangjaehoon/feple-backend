@@ -65,7 +65,6 @@ public class FestivalController {
     @PostMapping("/{id}/attending")
     public ResponseEntity<Boolean> toggleAttending(@PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
-        if (userId == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok(festivalAttendanceService.toggleAttending(id, userId));
     }
 
