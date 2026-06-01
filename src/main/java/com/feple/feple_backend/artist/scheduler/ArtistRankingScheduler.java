@@ -7,6 +7,8 @@ import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,10 @@ public class ArtistRankingScheduler {
      */
     @Scheduled(cron = "0 0 0 * * MON")
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "artistRanking", allEntries = true),
+        @CacheEvict(value = "topArtists", allEntries = true)
+    })
     public void updateWeeklyRanking() {
         log.info("[ArtistRankingScheduler] 주간 랭킹 갱신 시작");
         LocalDateTime since = LocalDateTime.now().minusWeeks(1);

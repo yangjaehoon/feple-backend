@@ -12,6 +12,9 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -50,6 +53,10 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "artistRanking", allEntries = true),
+        @CacheEvict(value = "topArtists", allEntries = true)
+    })
     public Long createArtist(ArtistRequestDto dto) {
         Artist artist = Artist.builder()
                 .name(dto.getName())
@@ -81,6 +88,7 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
+    @Cacheable("artistRanking")
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAllArtists() {
         return artistRepository.findAll(PageRequest.of(0, PageSize.MY_ACTIVITIES,
@@ -161,6 +169,10 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "artistRanking", allEntries = true),
+        @CacheEvict(value = "topArtists", allEntries = true)
+    })
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenre());
@@ -172,6 +184,7 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
+    @Cacheable(value = "topArtists", key = "#limit")
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getTopArtists(int limit) {
         return artistRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "followerCount")))
@@ -180,6 +193,10 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "artistRanking", allEntries = true),
+        @CacheEvict(value = "topArtists", allEntries = true)
+    })
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         String oldKey = artist.getProfileImageKey();
@@ -203,6 +220,10 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "artistRanking", allEntries = true),
+        @CacheEvict(value = "topArtists", allEntries = true)
+    })
     public void deleteArtist(Long id) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
