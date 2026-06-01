@@ -36,6 +36,9 @@ public class AdminLog {
     @Column(length = 500)
     private String detail;
 
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

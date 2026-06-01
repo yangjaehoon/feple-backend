@@ -50,6 +50,7 @@
                     <tr>
                         <th style="width:140px;">시각</th>
                         <th style="width:110px;">관리자</th>
+                        <th style="width:120px;">IP</th>
                         <th style="width:200px;">액션</th>
                         <th style="width:90px;">대상</th>
                         <th style="width:70px;">ID</th>
@@ -63,6 +64,9 @@
 
                         <td style="font-size:12.5px; color:var(--text-2);"
                             th:text="${entry.adminUsername != null ? entry.adminUsername : '—'}"></td>
+
+                        <td style="font-size:11.5px; color:var(--muted); font-family:monospace;"
+                            th:text="${entry.ipAddress != null ? entry.ipAddress : '—'}"></td>
 
                         <td>
                             <span th:with="a=${entry.action}"
@@ -127,7 +131,7 @@
                             th:text="${entry.detail != null ? entry.detail : '—'}"></td>
                     </tr>
                     <tr class="empty-row" th:if="${logs.totalElements == 0}">
-                        <td colspan="6">기록된 로그가 없습니다.</td>
+                        <td colspan="7">기록된 로그가 없습니다.</td>
                     </tr>
                     </tbody>
                 </table>

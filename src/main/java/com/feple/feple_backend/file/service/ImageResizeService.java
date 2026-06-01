@@ -76,7 +76,11 @@ public class ImageResizeService {
         return new int[]{(int) (w * scale), (int) (h * scale)};
     }
 
-    /** PNG 투명 배경을 흰색으로 합성한 뒤 JPEG로 인코딩 */
+    /**
+     * PNG 투명 배경을 흰색으로 합성한 뒤 JPEG로 인코딩.
+     * ImageIO.write()는 IIOMetadata 없이 픽셀 데이터만 JPEG로 직렬화하므로
+     * 원본의 EXIF(GPS, 카메라 정보 등) 및 ICC 프로파일이 출력에 포함되지 않는다.
+     */
     private byte[] encodeToJpeg(BufferedImage src, int w, int h) throws IOException {
         BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = out.createGraphics();

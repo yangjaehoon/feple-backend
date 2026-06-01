@@ -39,6 +39,10 @@ server:
   servlet:
     session:
       timeout: 2h
+      cookie:
+        http-only: true
+        secure: true
+        same-site: strict
     encoding:
       charset: UTF-8
       enabled: true
