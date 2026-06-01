@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -35,6 +36,7 @@ public class MyPageService {
     private final PostReportService postReportService;
     private final CommentReportService commentReportService;
     private final ArtistPhotoReportService photoReportService;
+    private final FestivalCertificationService certificationService;
 
     public List<PostResponseDto> getMyPosts(@NonNull Long userId) {
         return postService.getMyPosts(userId);
@@ -74,6 +76,7 @@ public class MyPageService {
                 commentService.countMyComments(userId),
                 reportCount,
                 postService.countLikedPosts(userId),
-                postScrapService.countMyScraps(userId));
+                postScrapService.countMyScraps(userId),
+                certificationService.countApprovedByUser(userId));
     }
 }

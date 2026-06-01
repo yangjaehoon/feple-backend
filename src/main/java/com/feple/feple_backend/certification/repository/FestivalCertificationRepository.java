@@ -32,6 +32,9 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
 
     long countByStatus(CertificationStatus status);
 
+    @Query("SELECT COUNT(fc) FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")
+    long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") CertificationStatus status);
+
     Page<FestivalCertification> findAll(Pageable pageable);
 
     /** 특정 페스티벌의 승인된 인증 유저 ID 목록 (게시글/댓글 뱃지용) */

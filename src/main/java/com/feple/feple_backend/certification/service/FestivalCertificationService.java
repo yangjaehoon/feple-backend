@@ -78,6 +78,11 @@ public class FestivalCertificationService {
     }
 
     @Transactional(readOnly = true)
+    public long countApprovedByUser(Long userId) {
+        return certificationRepository.countByUserIdAndStatus(userId, CertificationStatus.APPROVED);
+    }
+
+    @Transactional(readOnly = true)
     public Page<FestivalCertification> getByStatus(CertificationStatus status, int page) {
         PageRequest pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
         if (status == null) {

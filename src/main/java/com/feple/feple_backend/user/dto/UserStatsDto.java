@@ -11,4 +11,5 @@ public class UserStatsDto {
     private long reportCount;
     private long likedPostCount;
     private long scrapCount;
+    private long certificationCount;
 }
