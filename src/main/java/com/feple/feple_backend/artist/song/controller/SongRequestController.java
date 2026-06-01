@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class SongRequestController {
     public ResponseEntity<SongRequestResponseDto> submit(
             @PathVariable Long artistId,
             Authentication authentication,
-            @RequestBody SubmitSongRequestDto dto) {
+            @Valid @RequestBody SubmitSongRequestDto dto) {
         Long userId = (Long) authentication.getPrincipal();
         SongRequestResponseDto response = songRequestService.submit(artistId, userId, dto);
         return ResponseEntity.ok(response);

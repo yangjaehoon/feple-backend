@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "아티스트 제안", description = "등록되지 않은 아티스트 제안")
@@ -20,7 +21,7 @@ public class ArtistSuggestionController {
     @PostMapping
     public ResponseEntity<ArtistSuggestionResponseDto> submit(
             Authentication authentication,
-            @RequestBody SubmitArtistSuggestionDto dto) {
+            @Valid @RequestBody SubmitArtistSuggestionDto dto) {
         Long userId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(artistSuggestionService.submit(userId, dto));
     }
