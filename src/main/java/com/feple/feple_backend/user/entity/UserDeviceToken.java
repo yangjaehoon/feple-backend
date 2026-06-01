@@ -24,13 +24,14 @@ public class UserDeviceToken {
     @Column(nullable = false, length = 512)
     private String token;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 10)
-    private String platform; // "android" | "ios"
+    private DevicePlatform platform;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public static UserDeviceToken of(User user, String token, String platform) {
+    public static UserDeviceToken of(User user, String token, DevicePlatform platform) {
         UserDeviceToken t = new UserDeviceToken();
         t.user = user;
         t.token = token;

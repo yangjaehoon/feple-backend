@@ -46,7 +46,7 @@ public class ArtistGalleryPhoto {
     @Column(length = 100, nullable = false)
     private String title;
 
-    @Column(length = 500, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "likecount", nullable = false, columnDefinition = "INT DEFAULT 0")

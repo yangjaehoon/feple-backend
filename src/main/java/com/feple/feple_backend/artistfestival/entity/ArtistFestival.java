@@ -13,10 +13,15 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
-@Table(name = "artist_festival", indexes = {
-    @Index(name = "idx_af_artist_id", columnList = "artist_id"),
-    @Index(name = "idx_af_festival_id", columnList = "festival_id")
-})
+@Table(name = "artist_festival",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uq_af_artist_festival", columnNames = {"artist_id", "festival_id"})
+    },
+    indexes = {
+        @Index(name = "idx_af_artist_id", columnList = "artist_id"),
+        @Index(name = "idx_af_festival_id", columnList = "festival_id")
+    }
+)
 public class ArtistFestival {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

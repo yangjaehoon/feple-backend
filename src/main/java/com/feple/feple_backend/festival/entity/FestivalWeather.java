@@ -18,8 +18,9 @@ public class FestivalWeather {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private Long festivalId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "festival_id", nullable = false, unique = true)
+    private Festival festival;
 
     @Column(name = "fcst_date", columnDefinition = "DATE")
     private LocalDate fcstDate;
@@ -32,9 +33,11 @@ public class FestivalWeather {
     private String ptyCode;
     private LocalDateTime savedAt;
 
-    public static FestivalWeather of(Long festivalId, WeatherDto dto) {
+    public Long getFestivalId() { return festival.getId(); }
+
+    public static FestivalWeather of(Festival festival, WeatherDto dto) {
         FestivalWeather w = new FestivalWeather();
-        w.festivalId = festivalId;
+        w.festival = festival;
         w.apply(dto);
         return w;
     }

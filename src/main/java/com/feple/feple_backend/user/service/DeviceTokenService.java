@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.user.entity.DevicePlatform;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
@@ -27,7 +28,7 @@ public class DeviceTokenService {
         }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
-        tokenRepository.save(UserDeviceToken.of(user, token, platform));
+        tokenRepository.save(UserDeviceToken.of(user, token, DevicePlatform.from(platform)));
     }
 
     @Transactional

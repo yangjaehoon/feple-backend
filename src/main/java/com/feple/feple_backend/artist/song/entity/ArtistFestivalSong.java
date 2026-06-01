@@ -10,6 +10,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "artist_festival_song",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uq_afs_song_artist_festival", columnNames = {"song_id", "artist_festival_id"})
+    }
+)
 public class ArtistFestivalSong {
 
     @Id

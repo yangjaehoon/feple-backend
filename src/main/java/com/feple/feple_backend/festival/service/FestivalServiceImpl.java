@@ -14,6 +14,7 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
@@ -46,6 +47,7 @@ public class FestivalServiceImpl implements FestivalService {
     private final TimetableRepository timetableRepository;
     private final FestivalCertificationRepository certificationRepository;
     private final PostCascadeService postCascadeService;
+    private final FestivalWeatherRepository weatherRepository;
 
     private FestivalResponseDto toDto(Festival festival) {
         return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
@@ -140,6 +142,7 @@ public class FestivalServiceImpl implements FestivalService {
         postCascadeService.deletePostsByFestival(festival);
 
         artistFestivalRepository.deleteByFestivalId(festivalId);
+        weatherRepository.deleteByFestivalId(festivalId);
         festivalRepository.deleteById(festivalId);
 
         fileStorageService.deleteFile(posterKey);

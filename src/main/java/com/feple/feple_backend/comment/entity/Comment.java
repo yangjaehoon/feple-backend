@@ -38,6 +38,7 @@ public class Comment {
     @Column(name = "parent_id")
     private Long parentId;
 
+    @Builder.Default
     @Column(nullable = false)
     private int likeCount = 0;
 

@@ -91,7 +91,7 @@ public class WeatherService {
 
         try {
             WeatherDto dto = fetchFromApi(grid[0], grid[1], targetDate, baseDatetime);
-            saveOrUpdate(festivalId, dto);
+            saveOrUpdate(festival, dto);
             return Optional.of(dto);
         } catch (Exception e) {
             log.error("기상청 API 호출 실패: festivalId={}", festivalId, e);
@@ -99,9 +99,9 @@ public class WeatherService {
         }
     }
 
-    private void saveOrUpdate(Long festivalId, WeatherDto dto) {
-        FestivalWeather weather = weatherRepository.findByFestivalId(festivalId)
-                .orElse(FestivalWeather.of(festivalId, dto));
+    private void saveOrUpdate(Festival festival, WeatherDto dto) {
+        FestivalWeather weather = weatherRepository.findByFestivalId(festival.getId())
+                .orElse(FestivalWeather.of(festival, dto));
         weather.apply(dto);
         weatherRepository.save(weather);
     }

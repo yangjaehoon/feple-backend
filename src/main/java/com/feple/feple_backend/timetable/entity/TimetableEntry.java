@@ -34,6 +34,7 @@ public class TimetableEntry {
     @JoinColumn(name = "artist_id")
     private Artist artist;
 
+    @Getter(AccessLevel.NONE)
     @Column(nullable = false)
     private String artistName;
 
@@ -45,6 +46,10 @@ public class TimetableEntry {
 
     @Column(nullable = false)
     private LocalTime endTime;
+
+    public String getArtistName() {
+        return artist != null ? artist.getName() : artistName;
+    }
 
     public String getStageName() {
         return stage != null ? stage.getName() : null;
