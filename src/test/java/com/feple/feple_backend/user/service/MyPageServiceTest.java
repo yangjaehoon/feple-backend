@@ -3,6 +3,7 @@ package com.feple.feple_backend.user.service;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
@@ -11,6 +12,7 @@ import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostReportService;
 import com.feple.feple_backend.post.service.PostService;
+import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,8 @@ class MyPageServiceTest {
     @Mock PostReportService postReportService;
     @Mock CommentReportService commentReportService;
     @Mock ArtistPhotoReportService photoReportService;
+    @Mock PostScrapService postScrapService;
+    @Mock FestivalCertificationService certificationService;
 
     @InjectMocks MyPageService myPageService;
 
@@ -103,6 +107,9 @@ class MyPageServiceTest {
     void 사용자_통계_게시글수와_댓글수_합산_반환() {
         given(postService.countMyPosts(1L)).willReturn(5L);
         given(commentService.countMyComments(1L)).willReturn(12L);
+        given(postService.countLikedPosts(1L)).willReturn(0L);
+        given(postScrapService.countMyScraps(1L)).willReturn(0L);
+        given(certificationService.countApprovedByUser(1L)).willReturn(0L);
 
         UserStatsDto stats = myPageService.getUserStats(1L);
 
@@ -114,6 +121,9 @@ class MyPageServiceTest {
     void 게시글과_댓글이_없으면_통계가_0() {
         given(postService.countMyPosts(1L)).willReturn(0L);
         given(commentService.countMyComments(1L)).willReturn(0L);
+        given(postService.countLikedPosts(1L)).willReturn(0L);
+        given(postScrapService.countMyScraps(1L)).willReturn(0L);
+        given(certificationService.countApprovedByUser(1L)).willReturn(0L);
 
         UserStatsDto stats = myPageService.getUserStats(1L);
 
