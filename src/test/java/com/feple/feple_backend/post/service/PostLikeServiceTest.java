@@ -15,8 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -102,6 +107,38 @@ class PostLikeServiceTest {
         assertThat(result).isTrue();
         verify(postLikeRepository).save(any(PostLike.class));
         verify(postRepository).incrementLikeCount(10L);
+    }
+
+    @Test
+    void 동시_좋아요_요청_두_스레드_모두_예외_없이_완료() throws InterruptedException {
+        // 두 스레드가 동시에 toggleLike 호출 — 서비스 레이어에서는 예외 없이 완료
+        // 실제 중복 삽입 방지는 PostLike(user_id, post_id) DB unique 제약이 담당
+        User user = user(1L);
+        Post post = post(10L, user);
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(postLikeRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
+
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(2);
+        List<Throwable> errors = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < 2; i++) {
+            new Thread(() -> {
+                try {
+                    startLatch.await();
+                    postLikeService.toggleLike(10L, 1L);
+                } catch (Throwable t) {
+                    errors.add(t);
+                } finally {
+                    doneLatch.countDown();
+                }
+            }).start();
+        }
+
+        startLatch.countDown();
+        assertThat(doneLatch.await(3, TimeUnit.SECONDS)).isTrue();
+        assertThat(errors).isEmpty();
     }
 
     @Test

@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -84,6 +85,20 @@ class PostServiceImplTest {
     }
 
     @Test
+    void 금칙어_포함_게시글_생성시_예외() {
+        User author = user(1L);
+        PostRequestDto dto = PostRequestDto.builder().title("욕설포함제목").content("내용")
+                .boardType(BoardType.FREE).build();
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        willThrow(new IllegalArgumentException("금칙어가 포함되어 있습니다."))
+                .given(badWordFilter).validateField(eq("title"), any());
+
+        assertThatThrownBy(() -> postService.createPost(dto, 1L))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(postRepository, never()).save(any());
+    }
+
+    @Test
     void 존재하지_않는_사용자로_게시글_생성시_예외() {
         PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
                 .boardType(BoardType.FREE).build();
@@ -106,6 +121,24 @@ class PostServiceImplTest {
 
         assertThat(result.getId()).isEqualTo(10L);
         assertThat(result.getNickname()).isEqualTo("user1");
+    }
+
+    @Test
+    void 익명_게시글_조회시_nickname이_익명_반환() {
+        User author = user(1L);
+        Post post = Post.builder()
+                .id(10L).title("익명 게시글").content("내용")
+                .user(author).boardType(BoardType.FREE)
+                .anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+
+        PostResponseDto result = postService.getPost(10L);
+
+        assertThat(result.getNickname()).isEqualTo("익명");
+        assertThat(result.getProfileImageUrl()).isNull();
     }
 
     @Test

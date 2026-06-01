@@ -36,7 +36,9 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -100,6 +102,18 @@ class CommentServiceImplTest {
     }
 
     @Test
+    void 금칙어_포함_댓글_생성시_예외() {
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getContent()).willReturn("욕설포함댓글");
+        willThrow(new IllegalArgumentException("금칙어가 포함되어 있습니다."))
+                .given(badWordFilter).validate(any(String.class));
+
+        assertThatThrownBy(() -> commentService.createComment(dto, 2L))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
     void 댓글_생성시_게시글_작성자와_다른_사용자면_이벤트_발행() {
         User postAuthor = user(1L);
         User commenter = user(2L);
@@ -143,6 +157,31 @@ class CommentServiceImplTest {
     }
 
     @Test
+    void 대댓글_생성_성공() {
+        User postAuthor = user(1L);
+        User commenter = user(2L);
+        Post post = freePost(10L, postAuthor);
+        Comment parent = comment(50L, post, postAuthor);
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("대댓글내용");
+        given(dto.getParentId()).willReturn(50L);
+
+        Comment saved = comment(100L, post, commenter);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
+        given(commentRepository.findById(50L)).willReturn(Optional.of(parent));
+        given(commentRepository.save(any(Comment.class))).willReturn(saved);
+
+        CommentResponseDto result = commentService.createComment(dto, 2L);
+
+        assertThat(result.getId()).isEqualTo(100L);
+        verify(commentRepository).findById(50L);
+    }
+
+    @Test
     void 존재하지_않는_게시글에_댓글_생성시_예외() {
         CreateCommentDto dto = mock(CreateCommentDto.class);
         given(dto.getPostId()).willReturn(99L);
@@ -153,7 +192,21 @@ class CommentServiceImplTest {
                 .hasMessageContaining("99");
     }
 
-    // ── getCommentsByPost ─────────────────────────────────────────────
+    // ── getCommentsByPost ────────────────────────────────────────────
+
+    @Test
+    void 댓글_없는_게시글_빈_목록_반환() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of()));
+
+        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, null);
+
+        assertThat(result).isEmpty();
+    }
 
     @Test
     void 게시글_댓글_목록_조회() {
