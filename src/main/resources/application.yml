@@ -68,7 +68,7 @@ app:
   firebase:
     credentials: ${FIREBASE_CREDENTIALS:}
   admin:
-    username: ${ADMIN_USERNAME:admin}
+    username: ${ADMIN_USERNAME}
     password: ${ADMIN_PASSWORD}
 
 management:
