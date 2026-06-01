@@ -57,6 +57,8 @@ app:
   s3:
     prefix: artist-photos
     presign-minutes: 10
+  cdn:
+    base-url: ${CDN_BASE_URL:}
   google:
     maps:
       key: ${GOOGLE_MAPS_KEY:}

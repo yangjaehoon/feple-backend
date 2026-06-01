@@ -28,9 +28,16 @@ public class FileStorageService {
     @Value("${app.s3.bucket}")
     private String bucket;
 
+    @Value("${app.cdn.base-url:}")
+    private String cdnBaseUrl;
+
     public String buildUrl(String key) {
         if (key == null) return null;
-        if (key.startsWith("http")) return key; // 이전 데이터가 전체 URL을 저장한 경우 그대로 반환
+        if (key.startsWith("http")) return key;
+        if (cdnBaseUrl != null && !cdnBaseUrl.isBlank()) {
+            String base = cdnBaseUrl.endsWith("/") ? cdnBaseUrl.substring(0, cdnBaseUrl.length() - 1) : cdnBaseUrl;
+            return base + "/" + key;
+        }
         return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
     }
 

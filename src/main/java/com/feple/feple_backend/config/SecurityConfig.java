@@ -40,6 +40,9 @@ public class SecurityConfig {
     @Value("${app.s3.bucket:}")
     private String s3Bucket;
 
+    @Value("${app.cdn.base-url:}")
+    private String cdnBaseUrl;
+
     // ── 1. 관리자 페이지용 FilterChain (세션 기반 폼 로그인, CSRF 활성화) ──
     @Bean
     @Order(1)
@@ -137,11 +140,12 @@ public class SecurityConfig {
         String s3Origin = (s3Bucket == null || s3Bucket.isBlank())
                 ? "https://*.s3.ap-northeast-2.amazonaws.com"
                 : "https://" + s3Bucket + ".s3.ap-northeast-2.amazonaws.com";
+        String cdnOrigin = (cdnBaseUrl == null || cdnBaseUrl.isBlank()) ? "" : " " + cdnBaseUrl;
         return "default-src 'self'; " +
                "script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.daumcdn.net http://t1.daumcdn.net https://s1.daumcdn.net http://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                "font-src 'self' data: https://fonts.gstatic.com; " +
-               "img-src 'self' data: " + s3Origin + " http://t1.daumcdn.net https://t1.daumcdn.net http://s1.daumcdn.net https://s1.daumcdn.net http://mts.daumcdn.net https://mts.daumcdn.net http://img1.kakaocdn.net http://t1.kakaocdn.net http://k.kakaocdn.net https://i.ytimg.com https://maps.gstatic.com https://maps.googleapis.com; " +
+               "img-src 'self' data: " + s3Origin + cdnOrigin + " http://t1.daumcdn.net https://t1.daumcdn.net http://s1.daumcdn.net https://s1.daumcdn.net http://mts.daumcdn.net https://mts.daumcdn.net http://img1.kakaocdn.net http://t1.kakaocdn.net http://k.kakaocdn.net https://i.ytimg.com https://maps.gstatic.com https://maps.googleapis.com; " +
                "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com https://apis.map.kakao.com http://apis.map.kakao.com; " +
                // base-uri: <base> 태그 인젝션으로 상대 경로를 외부로 납치하는 공격 차단
                "base-uri 'self'; " +
