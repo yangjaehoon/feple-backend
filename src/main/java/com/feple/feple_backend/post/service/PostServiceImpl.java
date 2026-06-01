@@ -9,6 +9,7 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PermissionValidator;
+import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostAdminFilter;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -67,21 +68,32 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     @Override
     public List<PostResponseDto> getPostsByBoardType(BoardType boardType) {
-        return getPostsByBoardTypePaged(boardType, 0, PageSize.POSTS);
+        return getPostsByBoardTypePaged(boardType, null, PageSize.POSTS).content();
     }
 
     @Override
-    public List<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, int page, int size) {
-        return postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, PageRequest.of(page, size))
-                .map(PostResponseDto::from)
-                .toList();
+    public CursorPage<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, Long cursor, int size) {
+        int fetchSize = size + 1;
+        PageRequest limit = PageRequest.of(0, fetchSize);
+        List<Post> posts = (cursor == null)
+                ? postRepository.findByBoardTypeOrderByIdDesc(boardType, limit)
+                : postRepository.findByBoardTypeAndIdLessThanOrderByIdDesc(boardType, cursor, limit);
+        boolean hasNext = posts.size() == fetchSize;
+        List<PostResponseDto> content = posts.stream().limit(size).map(PostResponseDto::from).toList();
+        Long nextCursor = hasNext ? content.get(content.size() - 1).getId() : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override
-    public List<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, int page, int size) {
-        return postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDesc(boardType, PageRequest.of(page, size))
-                .map(PostResponseDto::from)
-                .toList();
+    public CursorPage<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, Long cursor, int size) {
+        // likeCount는 동적으로 변하므로 offset 기반 유지, cursor는 페이지 번호를 opaque Long으로 전달
+        int page = (cursor == null) ? 0 : cursor.intValue();
+        Page<Post> result = postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDesc(
+                boardType, PageRequest.of(page, size));
+        List<PostResponseDto> content = result.map(PostResponseDto::from).toList();
+        boolean hasNext = result.hasNext();
+        Long nextCursor = hasNext ? (long) (page + 1) : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override

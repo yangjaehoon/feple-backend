@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -53,14 +54,14 @@ public class PostController {
     }
 
     @GetMapping("/free")
-    public ResponseEntity<List<PostResponseDto>> getFreePosts(
-            @RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<CursorPage<PostResponseDto>> getFreePosts(
+            @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "latest") String sort) {
         if ("popular".equals(sort)) {
-            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, page, Math.min(size, 50)));
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, cursor, Math.min(size, 50)));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, page, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, cursor, Math.min(size, 50)));
     }
 
     @PostMapping("/mate")
@@ -71,14 +72,14 @@ public class PostController {
     }
 
     @GetMapping("/mate")
-    public ResponseEntity<List<PostResponseDto>> getMatePosts(
-            @RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<CursorPage<PostResponseDto>> getMatePosts(
+            @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "latest") String sort) {
         if ("popular".equals(sort)) {
-            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, page, Math.min(size, 50)));
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, cursor, Math.min(size, 50)));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, page, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, cursor, Math.min(size, 50)));
     }
 
     @PostMapping("/{postId}/like")

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -11,8 +12,8 @@ public interface PostService {
     PostResponseDto getPost(Long postId);
     List<PostResponseDto> getHotPosts();
     List<PostResponseDto> getPostsByBoardType(BoardType boardType);
-    List<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, int page, int size);
-    List<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, int page, int size);
+    CursorPage<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, Long cursor, int size);
+    CursorPage<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, Long cursor, int size);
     void deleteOwnPost(Long postId, Long requestUserId);
     void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId);
     List<PostResponseDto> getPostsByArtistId(Long artistId);
