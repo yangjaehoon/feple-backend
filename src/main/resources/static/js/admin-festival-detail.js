@@ -1,5 +1,3 @@
-/* 서버에서 type="application/json" 스크립트 태그로 전달된 좌표·부스 데이터를 읽음 */
-var _geoData = JSON.parse(document.getElementById('festival-geo').textContent);
 var festivalLat = _geoData.lat;
 var festivalLng = _geoData.lng;
 var existingBooths = _geoData.booths;
