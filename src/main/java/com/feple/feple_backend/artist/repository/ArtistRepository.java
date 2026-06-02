@@ -32,4 +32,10 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     java.util.List<Artist> findTop10ByOrderByFollowerCountDesc();
 
+    @Query("SELECT a.name FROM Artist a WHERE a.name IS NOT NULL AND a.name <> ''")
+    java.util.List<String> findAllKoreanNames();
+
+    @Query("SELECT a.nameEn FROM Artist a WHERE a.nameEn IS NOT NULL AND a.nameEn <> ''")
+    java.util.List<String> findAllEnglishNames();
+
 }
