@@ -9,6 +9,7 @@
 
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
+        <!-- 전체 회원 공지 발송 -->
         <div class="card" style="max-width:640px;">
             <div class="card-header">
                 <div class="card-title">전체 회원 공지 발송</div>
@@ -36,16 +37,23 @@
                         <span style="font-size:12px; color:var(--muted);">의 기기로 발송됩니다.</span>
                     </div>
                 </form>
+            </div>
+        </div>
 
-                <hr style="margin:24px 0; border-color:var(--border);"/>
-
+        <!-- 테스트 발송 -->
+        <div class="card" style="max-width:640px; margin-top:16px; border:1px dashed var(--border);">
+            <div class="card-header" style="background:var(--surface, #f8f9fa);">
+                <div class="card-title" style="color:var(--muted);">테스트 발송</div>
+                <span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px;
+                             background:var(--border); color:var(--muted); text-transform:uppercase; letter-spacing:.5px;">TEST</span>
+            </div>
+            <div style="padding:20px 24px;">
+                <div class="note-box" style="margin:0 0 16px;">
+                    위 카드의 <strong>제목·내용</strong>을 그대로 사용하여 특정 사용자에게만 발송합니다. 이력에 저장되지 않습니다.
+                </div>
                 <form id="test-form" th:action="@{/admin/push/test}" method="post">
                     <input type="hidden" name="title"/>
                     <input type="hidden" name="body"/>
-
-                    <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px;">
-                        테스트 발송
-                    </div>
 
                     <!-- 닉네임 검색 -->
                     <div style="margin-bottom:12px;">
@@ -69,10 +77,7 @@
                         </div>
                         <button type="submit"
                                 onclick="return validateTest(this.form)"
-                                class="btn btn-secondary">나에게 발송</button>
-                        <span style="font-size:12px; color:var(--muted); line-height:1.5;">
-                            위 제목·내용으로 해당 사용자 기기에만 발송됩니다.<br/>이력에 저장되지 않습니다.
-                        </span>
+                                class="btn btn-secondary">테스트 발송</button>
                     </div>
                 </form>
             </div>
