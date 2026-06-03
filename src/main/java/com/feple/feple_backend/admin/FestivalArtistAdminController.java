@@ -9,6 +9,7 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequiredArgsConstructor
@@ -102,12 +104,22 @@ public class FestivalArtistAdminController {
                                     @RequestParam("lineupOrders") List<Integer> lineupOrders,
                                     @RequestParam("stageNames") List<String> stageNames,
                                     RedirectAttributes ra) {
+        int errorCount = 0;
         for (int i = 0; i < afIds.size(); i++) {
             String stage = (i < stageNames.size()) ? stageNames.get(i) : null;
             Integer order = (i < lineupOrders.size()) ? lineupOrders.get(i) : null;
-            artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), order, stage);
+            try {
+                artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), order, stage);
+            } catch (Exception e) {
+                log.warn("batchUpdateLineup 실패: festivalId={}, afId={}, {}", festivalId, afIds.get(i), e.getMessage());
+                errorCount++;
+            }
         }
-        ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
+        if (errorCount > 0) {
+            ra.addFlashAttribute("errorMessage", errorCount + "건 수정 실패. 항목을 확인해 주세요.");
+        } else {
+            ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
+        }
         return AdminFestivalRedirects.artists(festivalId);
     }
 

@@ -156,7 +156,7 @@
                                        th:text="${f.title}"
                                        style="font-weight:600; color:var(--primary-dk); text-decoration:none;"></a>
                                     <div style="font-size:11px; color:var(--muted); margin-top:2px;"
-                                         th:text="${#temporals.format(f.startDate, 'yyyy.M.d')} + ' ~ ' + ${#temporals.format(f.endDate, 'M.d')}"></div>
+                                         th:text="${f.startDate != null ? #temporals.format(f.startDate, 'yyyy.M.d') : '?'} + ' ~ ' + ${f.endDate != null ? #temporals.format(f.endDate, 'M.d') : '?'}"></div>
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"

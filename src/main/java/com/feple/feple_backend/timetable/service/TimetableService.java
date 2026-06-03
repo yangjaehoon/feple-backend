@@ -42,8 +42,12 @@ public class TimetableService {
         if (!req.getStartTime().isBefore(req.getEndTime())) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
         }
-        Stage stage = stageRepository.findByFestivalIdAndName(festivalId, req.getStageName().trim())
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + req.getStageName()));
+        String stageName = req.getStageName();
+        if (stageName == null || stageName.isBlank()) {
+            throw new IllegalArgumentException("스테이지 이름을 입력해 주세요.");
+        }
+        Stage stage = stageRepository.findByFestivalIdAndName(festivalId, stageName.trim())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스테이지입니다: " + stageName));
 
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)

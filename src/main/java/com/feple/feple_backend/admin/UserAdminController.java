@@ -103,9 +103,13 @@ public class UserAdminController {
     public String updateUserRole(@PathVariable Long id,
                                  @RequestParam UserRole role,
                                  RedirectAttributes ra) {
-        userService.updateUserRole(id, role);
-        adminLogService.log("USER_ROLE_CHANGE", "USER", id, role.getDisplayName());
-        ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.getDisplayName());
+        try {
+            userService.updateUserRole(id, role);
+            adminLogService.log("USER_ROLE_CHANGE", "USER", id, role.getDisplayName());
+            ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.getDisplayName());
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "역할 변경에 실패했습니다.");
+        }
         return "redirect:/admin/users/" + id;
     }
 

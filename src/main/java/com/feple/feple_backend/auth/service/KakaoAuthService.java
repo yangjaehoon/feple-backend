@@ -29,7 +29,9 @@ public class KakaoAuthService implements OAuthLoginService {
         var account = Optional.ofNullable(kakaoUser.getKakaoAccount())
                 .orElseThrow(() -> new IllegalArgumentException("카카오 계정 정보가 없습니다."));
 
-        String oauthId = kakaoUser.getId().toString();
+        Long kakaoId = kakaoUser.getId();
+        if (kakaoId == null) throw new IllegalArgumentException("카카오 사용자 ID를 받을 수 없습니다.");
+        String oauthId = kakaoId.toString();
         String email = account.getEmail();
 
         String rawNickname = Optional.ofNullable(account.getProfile())
