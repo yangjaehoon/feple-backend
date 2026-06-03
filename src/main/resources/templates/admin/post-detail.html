@@ -93,7 +93,7 @@
                                   style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
                         </td>
                         <td style="color:var(--muted); white-space:nowrap; font-size:12.5px;"
-                            th:text="${#temporals.format(comment.createdAt, 'MM-dd HH:mm')}"></td>
+                            th:text="${comment.createdAt != null ? #temporals.format(comment.createdAt, 'MM-dd HH:mm') : '-'}"></td>
                         <td>
                             <form th:action="@{/admin/posts/comments/{id}/delete(id=${comment.id})}" method="post">
                                 <input type="hidden" name="postId" th:value="${post.id}"/>

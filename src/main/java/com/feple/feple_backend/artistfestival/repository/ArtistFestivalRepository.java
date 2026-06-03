@@ -7,8 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, Long> {
+
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival WHERE af.id = :id")
+    Optional<ArtistFestival> findByIdWithFestival(@Param("id") Long id);
 
     @Query("SELECT af FROM ArtistFestival af WHERE af.festival.id = :festivalId")
     List<ArtistFestival> findByFestivalId(@Param("festivalId") Long festivalId);

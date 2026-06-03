@@ -30,6 +30,9 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @EntityGraph(attributePaths = {"user", "festival"})
     Page<FestivalCertification> findByStatusOrderByCreatedAtDesc(CertificationStatus status, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"user", "festival"})
+    Optional<FestivalCertification> findWithUserAndFestivalById(Long id);
+
     long countByStatus(CertificationStatus status);
 
     @Query("SELECT COUNT(fc) FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")

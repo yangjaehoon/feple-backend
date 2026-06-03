@@ -130,7 +130,7 @@ public class ArtistFestivalService {
     }
 
     public ArtistFestival getArtistFestivalById(Long id) {
-        return artistFestivalRepository.findById(id)
+        return artistFestivalRepository.findByIdWithFestival(id)
                 .orElseThrow(() -> new NoSuchElementException("아티스트 페스티벌을 찾을 수 없습니다."));
     }
 

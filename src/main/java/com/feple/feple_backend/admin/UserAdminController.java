@@ -88,10 +88,14 @@ public class UserAdminController {
 
     @PostMapping("/{id}/delete")
     public String deleteUser(@PathVariable Long id, RedirectAttributes ra) {
-        String nickname = userService.getAdminUser(id).getNickname();
-        userService.adminDeleteUser(id);
-        adminLogService.log("USER_DELETE", "USER", id, nickname);
-        ra.addFlashAttribute("successMessage", "회원이 삭제되었습니다.");
+        try {
+            String nickname = userService.getAdminUser(id).getNickname();
+            userService.adminDeleteUser(id);
+            adminLogService.log("USER_DELETE", "USER", id, nickname);
+            ra.addFlashAttribute("successMessage", "회원이 삭제되었습니다.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "회원 삭제에 실패했습니다.");
+        }
         return "redirect:/admin/users";
     }
 

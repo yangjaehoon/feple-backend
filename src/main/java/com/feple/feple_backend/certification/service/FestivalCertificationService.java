@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -100,7 +101,8 @@ public class FestivalCertificationService {
 
     @Transactional(readOnly = true)
     public FestivalCertification getById(Long id) {
-        return EntityFinder.getOrThrow(certificationRepository::findById, id, "인증 신청");
+        return certificationRepository.findWithUserAndFestivalById(id)
+                .orElseThrow(() -> new NoSuchElementException("인증 신청을 찾을 수 없습니다."));
     }
 
     @Transactional
