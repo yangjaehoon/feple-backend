@@ -8,7 +8,6 @@ import com.feple.feple_backend.search.entity.SearchLog;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,7 +22,6 @@ public class SearchService {
 
     private static final int MAX_RESULTS = 10;
 
-    @Transactional
     public SearchResultDto search(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return new SearchResultDto(List.of(), List.of(), List.of());

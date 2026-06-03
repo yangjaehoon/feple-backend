@@ -46,9 +46,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("UPDATE Comment c SET c.likeCount = CASE WHEN c.likeCount > 0 THEN c.likeCount - 1 ELSE 0 END WHERE c.id = :commentId")
     void decrementLikeCount(@Param("commentId") Long commentId);
 
-    @Query("SELECT c.likeCount FROM Comment c WHERE c.id = :commentId")
-    int findLikeCountById(@Param("commentId") Long commentId);
-
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT FUNCTION('DATE', c.createdAt), COUNT(c) FROM Comment c " +

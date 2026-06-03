@@ -7,6 +7,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PermissionValidator;
 import com.feple.feple_backend.post.dto.CursorPage;
@@ -102,7 +103,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public Page<PostResponseDto> getPostsForAdmin(PostAdminFilter params) {
         PageRequest pageable = PageRequest.of(params.page(), params.size());
         boolean hasKeyword = params.keyword() != null && !params.keyword().isBlank();
-        String kw = hasKeyword ? params.keyword() : "";
+        String kw = hasKeyword ? LikeEscaper.escape(params.keyword().trim()) : "";
 
         // BoardType enum에 해당하는 필터(FREE, MATE, FESTIVAL_COMPANION 등)는 enum이 직접 처리.
         // 새 BoardType을 추가해도 이 메서드를 수정할 필요 없음.
@@ -188,7 +189,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     @Transactional(readOnly = true)
     public long countPostsContaining(String word) {
-        return postRepository.countByTitleOrContentContaining(word.toLowerCase());
+        return postRepository.countByTitleOrContentContaining(LikeEscaper.escape(word.toLowerCase()));
     }
 
     @Override
@@ -300,9 +301,8 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     @Transactional
     public int incrementViewCount(Long postId) {
-        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
-        post.incrementViewCount();
-        return post.getViewCount();
+        postRepository.incrementViewCount(postId);
+        return postRepository.findViewCountById(postId);
     }
 
     @Override
@@ -322,16 +322,17 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     @Override
     public List<PostResponseDto> searchPosts(String keyword, String boardType) {
+        String escaped = LikeEscaper.escape(keyword.trim());
         Optional<BoardType> type = parseBoardType(boardType);
         if (type.isPresent()) {
             return postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
-                            type.get(), keyword, PageRequest.of(0, PageSize.SEARCH))
+                            type.get(), escaped, PageRequest.of(0, PageSize.SEARCH))
                     .stream()
                     .map(PostResponseDto::from)
                     .toList();
         }
         return postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(
-                        keyword, PageRequest.of(0, PageSize.SEARCH))
+                        escaped, PageRequest.of(0, PageSize.SEARCH))
                 .stream()
                 .map(PostResponseDto::from)
                 .toList();

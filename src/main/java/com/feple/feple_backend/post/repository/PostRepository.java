@@ -78,10 +78,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // ── 검색 (관리자) ────────────────────────────────────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    Page<Post> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title, Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ESCAPE '!' ORDER BY p.createdAt DESC")
+    Page<Post> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(@Param("kw") String kw, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    Page<Post> findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(BoardType boardType, String title, Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.boardType = :boardType AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ESCAPE '!' ORDER BY p.createdAt DESC")
+    Page<Post> findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(@Param("boardType") BoardType boardType, @Param("kw") String kw, Pageable pageable);
 
     // 아티스트 게시판 전체
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
@@ -89,7 +91,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByArtistIsNotNullOrderByCreatedAtDesc(Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.artist IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.artist IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ESCAPE '!' ORDER BY p.createdAt DESC")
     Page<Post> findByArtistIsNotNullAndTitleLikeOrderByCreatedAtDesc(@Param("kw") String keyword, Pageable pageable);
 
     // 특정 아티스트 게시판
@@ -98,7 +100,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByArtistIdOrderByCreatedAtDesc(@Param("artistId") Long artistId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.artist.id = :artistId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.artist.id = :artistId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ESCAPE '!' ORDER BY p.createdAt DESC")
     Page<Post> findByArtistIdAndTitleLikeOrderByCreatedAtDesc(@Param("artistId") Long artistId, @Param("kw") String keyword, Pageable pageable);
 
     // 페스티벌 게시판 전체
@@ -107,7 +109,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByFestivalIsNotNullOrderByCreatedAtDesc(Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.festival IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.festival IS NOT NULL AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ESCAPE '!' ORDER BY p.createdAt DESC")
     Page<Post> findByFestivalIsNotNullAndTitleLikeOrderByCreatedAtDesc(@Param("kw") String keyword, Pageable pageable);
 
     // 특정 페스티벌 게시판
@@ -116,7 +118,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByFestivalIdOrderByCreatedAtDesc(@Param("festivalId") Long festivalId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.festival.id = :festivalId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.festival.id = :festivalId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ESCAPE '!' ORDER BY p.createdAt DESC")
     Page<Post> findByFestivalIdAndTitleLikeOrderByCreatedAtDesc(@Param("festivalId") Long festivalId, @Param("kw") String keyword, Pageable pageable);
 
     // ── 관리자 배치 카운트 ────────────────────────────────────────────────────
@@ -124,7 +126,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Object[]> countGroupByUserId(@Param("userIds") List<Long> userIds);
 
     // ── 금칙어 스캔 ───────────────────────────────────────────────────────────
-    @Query("SELECT COUNT(p) FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :word, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :word, '%'))")
+    @Query("SELECT COUNT(p) FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :word, '%')) ESCAPE '!' OR LOWER(p.content) LIKE LOWER(CONCAT('%', :word, '%')) ESCAPE '!'")
     long countByTitleOrContentContaining(@Param("word") String word);
 
     // ── 통계 ─────────────────────────────────────────────────────────────────
@@ -147,6 +149,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            "FROM Post p WHERE p.artist IS NOT NULL AND p.createdAt >= :since " +
            "GROUP BY p.artist.id")
     List<Object[]> countAndSumByArtistSince(@Param("since") LocalDateTime since);
+
+    // ── 조회수 카운트 ─────────────────────────────────────────────────────────
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
+    void incrementViewCount(@Param("postId") Long postId);
+
+    @Query("SELECT p.viewCount FROM Post p WHERE p.id = :postId")
+    int findViewCountById(@Param("postId") Long postId);
 
     // ── 스크랩 카운트 (원자적 SQL UPDATE — 엔티티 dirty check 대신 사용)
     @Modifying(clearAutomatically = true)
