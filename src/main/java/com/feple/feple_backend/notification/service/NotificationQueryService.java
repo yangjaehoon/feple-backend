@@ -6,6 +6,9 @@ import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +24,7 @@ public class NotificationQueryService {
     private final NotificationRepository notificationRepository;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
 
-    public List<NotificationDto> getMyNotifications(Long userId) {
+    public Page<NotificationDto> getMyNotifications(Long userId, Pageable pageable) {
         List<NotificationDto> personal = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
@@ -32,9 +35,14 @@ public class NotificationQueryService {
                 .stream()
                 .map(NotificationDto::forBroadcast)
                 .toList();
-        return Stream.concat(personal.stream(), broadcasts.stream())
+        List<NotificationDto> all = Stream.concat(personal.stream(), broadcasts.stream())
                 .sorted(Comparator.comparing(NotificationDto::createdAt).reversed())
                 .toList();
+        int total = all.size();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), total);
+        List<NotificationDto> paged = start >= total ? List.of() : all.subList(start, end);
+        return new PageImpl<>(paged, pageable, total);
     }
 
     public long getUnreadCount(Long userId) {
