@@ -106,7 +106,7 @@ class CommentRepositoryIntegrationTest {
 
         commentRepository.incrementLikeCount(comment.getId()); // clearAutomatically=true
 
-        int count = commentRepository.findLikeCountById(comment.getId());
+        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(1);
     }
 
@@ -119,7 +119,7 @@ class CommentRepositoryIntegrationTest {
 
         commentRepository.decrementLikeCount(comment.getId());
 
-        int count = commentRepository.findLikeCountById(comment.getId());
+        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(1);
     }
 
@@ -131,7 +131,7 @@ class CommentRepositoryIntegrationTest {
         // CASE WHEN likeCount > 0 THEN likeCount - 1 ELSE 0 END
         commentRepository.decrementLikeCount(comment.getId());
 
-        int count = commentRepository.findLikeCountById(comment.getId());
+        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(0);
     }
 
@@ -145,7 +145,7 @@ class CommentRepositoryIntegrationTest {
         commentRepository.decrementLikeCount(comment.getId());
         commentRepository.decrementLikeCount(comment.getId());
 
-        int count = commentRepository.findLikeCountById(comment.getId());
+        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(0);
     }
 

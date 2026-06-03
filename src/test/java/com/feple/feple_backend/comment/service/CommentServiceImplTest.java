@@ -293,7 +293,6 @@ class CommentServiceImplTest {
         given(commentRepository.findById(100L)).willReturn(Optional.of(c));
         given(userRepository.findById(2L)).willReturn(Optional.of(liker));
         given(commentLikeRepository.existsByUserIdAndCommentId(2L, 100L)).willReturn(false);
-        given(commentRepository.findLikeCountById(100L)).willReturn(0);
 
         CommentLikeResult result = commentService.toggleLike(100L, 2L);
 
@@ -308,12 +307,15 @@ class CommentServiceImplTest {
         User liker = user(2L);
         User author = user(1L);
         Post post = freePost(10L, author);
-        Comment c = comment(100L, post, author);
+        Comment c = Comment.builder()
+                .id(100L).content("댓글내용").post(post).user(author)
+                .likeCount(1)
+                .createdAt(java.time.LocalDateTime.now()).updatedAt(java.time.LocalDateTime.now())
+                .build();
 
         given(commentRepository.findById(100L)).willReturn(Optional.of(c));
         given(userRepository.findById(2L)).willReturn(Optional.of(liker));
         given(commentLikeRepository.existsByUserIdAndCommentId(2L, 100L)).willReturn(true);
-        given(commentRepository.findLikeCountById(100L)).willReturn(1);
 
         CommentLikeResult result = commentService.toggleLike(100L, 2L);
 
