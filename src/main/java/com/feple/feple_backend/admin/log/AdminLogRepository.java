@@ -14,7 +14,7 @@ public interface AdminLogRepository extends JpaRepository<AdminLog, Long> {
 
     @Query("SELECT l FROM AdminLog l WHERE " +
            "(:type IS NULL OR l.targetType = :type) AND " +
-           "(:username IS NULL OR LOWER(l.adminUsername) LIKE LOWER(CONCAT('%', :username, '%'))) AND " +
+           "(:username IS NULL OR LOWER(l.adminUsername) LIKE LOWER(CONCAT('%', :username, '%')) ESCAPE '!') AND " +
            "(:from IS NULL OR l.createdAt >= :from) AND " +
            "(:to IS NULL OR l.createdAt <= :to) " +
            "ORDER BY l.createdAt DESC")

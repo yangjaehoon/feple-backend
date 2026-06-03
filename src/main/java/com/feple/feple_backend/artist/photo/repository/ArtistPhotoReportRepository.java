@@ -26,9 +26,9 @@ public interface ArtistPhotoReportRepository extends JpaRepository<ArtistPhotoRe
     @EntityGraph(attributePaths = {"photo", "photo.artist", "photo.uploader", "reporter"})
     @Query("SELECT apr FROM ArtistPhotoReport apr WHERE " +
            "(:status IS NULL OR apr.status = :status) AND " +
-           "(LOWER(apr.photo.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           " LOWER(apr.photo.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           " LOWER(apr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "(LOWER(apr.photo.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
+           " LOWER(apr.photo.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
+           " LOWER(apr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
            "ORDER BY apr.createdAt DESC")
     Page<ArtistPhotoReport> searchByKeyword(@Param("keyword") String keyword,
                                              @Param("status") ReportStatus status,

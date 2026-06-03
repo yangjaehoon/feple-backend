@@ -13,6 +13,7 @@ import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -88,7 +89,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         PageRequest pageable = PageRequest.of(page, size);
         SongRequestStatus statusEnum = (status == null || status.isBlank() || status.equals("ALL"))
                 ? null : SongRequestStatus.valueOf(status);
-        String kw = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        String kw = (keyword == null || keyword.isBlank()) ? null : LikeEscaper.escape(keyword.trim());
         return songRequestRepository.findWithFilters(statusEnum, kw, pageable)
                 .map(r -> SongRequestResponseDto.from(r, resolveNickname(r.getUserId())));
     }

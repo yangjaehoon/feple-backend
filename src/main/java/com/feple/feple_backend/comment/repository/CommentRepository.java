@@ -61,7 +61,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
            "GROUP BY c.post.artist.id")
     List<Object[]> countByArtistSince(@Param("since") LocalDateTime since);
 
-    @Query("SELECT COUNT(c) FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :word, '%'))")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :word, '%')) ESCAPE '!'")
     long countByContentContaining(@Param("word") String word);
 
     @Query("SELECT c.user.id, COUNT(c) FROM Comment c WHERE c.user.id IN :userIds GROUP BY c.user.id")

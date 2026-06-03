@@ -5,6 +5,7 @@ import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.file.S3Keys;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
@@ -94,7 +95,7 @@ public class FestivalCertificationService {
     @Transactional(readOnly = true)
     public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
         PageRequest pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return certificationRepository.searchByKeyword(keyword, status, pageable);
+        return certificationRepository.searchByKeyword(LikeEscaper.escape(keyword.trim()), status, pageable);
     }
 
     @Transactional(readOnly = true)

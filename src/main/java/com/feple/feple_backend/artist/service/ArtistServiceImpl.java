@@ -114,7 +114,7 @@ public class ArtistServiceImpl implements ArtistService {
 
         Stream<Artist> stream;
         if (keyword != null && !keyword.isBlank()) {
-            stream = artistRepository.findByNameOrNameEnContainingIgnoreCase(keyword).stream();
+            stream = artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(keyword.trim())).stream();
         } else if ("songs".equals(sort) || "songs_asc".equals(sort)) {
             stream = artistRepository.findAll().stream();
         } else {

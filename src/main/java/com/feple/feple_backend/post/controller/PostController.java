@@ -10,16 +10,20 @@ import com.feple.feple_backend.post.service.PostLikeService;
 import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.post.service.PostService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "게시글", description = "자유·동행·아티스트·페스티벌 게시글 CRUD, 좋아요, 스크랩")
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -106,7 +110,7 @@ public class PostController {
 
     @GetMapping("/search")
     public ResponseEntity<List<PostResponseDto>> searchPosts(
-            @RequestParam String keyword,
+            @RequestParam @NotBlank @Size(max = 100) String keyword,
             @RequestParam(required = false) String boardType) {
         return ResponseEntity.ok(postService.searchPosts(keyword, boardType));
     }

@@ -27,8 +27,8 @@ public interface CommentReportRepository extends JpaRepository<CommentReport, Lo
     @EntityGraph(attributePaths = {"comment", "comment.user", "comment.post", "reporter"})
     @Query("SELECT cr FROM CommentReport cr WHERE " +
            "(:status IS NULL OR cr.status = :status) AND " +
-           "(LOWER(cr.comment.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           " LOWER(cr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "(LOWER(cr.comment.content) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
+           " LOWER(cr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
            "ORDER BY cr.createdAt DESC")
     Page<CommentReport> searchByKeyword(@Param("keyword") String keyword,
                                         @Param("status") ReportStatus status,

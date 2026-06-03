@@ -29,8 +29,8 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
 
     @Query("SELECT sr FROM SongRequest sr WHERE " +
            "(:status IS NULL OR sr.status = :status) AND " +
-           "(:keyword IS NULL OR LOWER(sr.songTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "(:keyword IS NULL OR LOWER(sr.songTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+           "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
            "ORDER BY sr.createdAt DESC")
     Page<SongRequest> findWithFilters(@Param("status") SongRequestStatus status,
                                       @Param("keyword") String keyword,

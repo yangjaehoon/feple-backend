@@ -14,6 +14,9 @@ import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 @Tag(name = "사용자", description = "프로필 조회·수정, 마이페이지, 디바이스 토큰")
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -39,7 +43,7 @@ public class UserController {
 
     @GetMapping("/check-nickname")
     public ResponseEntity<java.util.Map<String, Object>> checkNickname(
-            @RequestParam String nickname,
+            @RequestParam @NotBlank @Size(min = 2, max = 30) String nickname,
             @RequestParam(required = false) Long excludeUserId) {
         return ResponseEntity.ok(userService.checkNicknameAvailable(nickname, excludeUserId));
     }

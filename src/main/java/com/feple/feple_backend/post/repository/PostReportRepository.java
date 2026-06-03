@@ -27,8 +27,8 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     @Query("SELECT pr FROM PostReport pr WHERE " +
            "(:status IS NULL OR pr.status = :status) AND " +
-           "(LOWER(pr.post.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           " LOWER(pr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "(LOWER(pr.post.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
+           " LOWER(pr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
            "ORDER BY pr.createdAt DESC")
     Page<PostReport> searchByKeyword(@Param("keyword") String keyword,
                                      @Param("status") ReportStatus status,

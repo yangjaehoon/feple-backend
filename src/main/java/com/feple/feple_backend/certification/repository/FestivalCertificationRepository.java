@@ -43,8 +43,8 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
 
     @Query("SELECT c FROM FestivalCertification c JOIN c.user u JOIN c.festival f " +
            "WHERE (:status IS NULL OR c.status = :status) " +
-           "AND (LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "     OR LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+           "AND (LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+           "     OR LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")
     Page<FestivalCertification> searchByKeyword(@Param("keyword") String keyword,
                                                 @Param("status") CertificationStatus status,
                                                 Pageable pageable);

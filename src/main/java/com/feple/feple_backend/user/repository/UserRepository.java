@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByProviderAndOauthId(AuthProvider provider, String oauthId);
 
     @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND " +
-           "(LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+           "(LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")
     Page<User> findActiveByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Page<User> findAllByDeletedAtIsNull(Pageable pageable);
@@ -53,8 +53,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Long countActiveUsersBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND u.bannedUntil IS NOT NULL AND u.bannedUntil > :now " +
-           "AND (:keyword = '' OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (:keyword = '' OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+           "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
            "ORDER BY u.bannedUntil DESC")
     Page<User> findBannedUsers(@Param("now") LocalDateTime now,
                                @Param("keyword") String keyword,
@@ -78,13 +78,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 GROUP BY ap.uploader_user_id
             ) photo_r ON photo_r.uid = u.id
             WHERE u.deleted_at IS NULL
-              AND (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
+              AND (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') ESCAPE '!' OR u.email LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
             ORDER BY (COALESCE(post_r.cnt, 0) + COALESCE(com_r.cnt, 0) + COALESCE(photo_r.cnt, 0)) DESC
             """,
             countQuery = """
             SELECT COUNT(*) FROM users u
             WHERE u.deleted_at IS NULL
-              AND (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') OR u.email LIKE CONCAT('%', :keyword, '%'))
+              AND (:keyword = '' OR u.nickname LIKE CONCAT('%', :keyword, '%') ESCAPE '!' OR u.email LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
             """,
             nativeQuery = true)
     Page<User> findAllOrderByTotalReportCountDesc(@Param("keyword") String keyword, Pageable pageable);

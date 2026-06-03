@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.ArtistNameFilter;
 import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -116,7 +117,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         if (keyword != null && !keyword.isBlank()) {
-            return userRepository.findActiveByKeyword(keyword, pageable).map(this::toAdminUserDto);
+            return userRepository.findActiveByKeyword(LikeEscaper.escape(keyword.trim()), pageable).map(this::toAdminUserDto);
         }
         return userRepository.findAllByDeletedAtIsNull(pageable).map(this::toAdminUserDto);
     }
@@ -124,7 +125,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword) {
-        String kw = (keyword == null) ? "" : keyword.trim();
+        String kw = (keyword == null) ? "" : LikeEscaper.escape(keyword.trim());
         return userRepository.findAllOrderByTotalReportCountDesc(kw, PageRequest.of(page, size))
                 .map(this::toAdminUserDto);
     }
@@ -132,7 +133,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword) {
-        String kw = (keyword == null) ? "" : keyword.trim();
+        String kw = (keyword == null) ? "" : LikeEscaper.escape(keyword.trim());
         return userRepository.findBannedUsers(LocalDateTime.now(), kw, PageRequest.of(page, size))
                 .map(this::toAdminUserDto);
     }
