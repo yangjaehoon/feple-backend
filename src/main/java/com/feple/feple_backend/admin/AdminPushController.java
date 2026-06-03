@@ -130,6 +130,14 @@ public class AdminPushController {
             ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
             return false;
         }
+        if (title.length() > 100) {
+            ra.addFlashAttribute("errorMessage", "푸시 제목은 100자 이하여야 합니다.");
+            return false;
+        }
+        if (body.length() > 500) {
+            ra.addFlashAttribute("errorMessage", "푸시 내용은 500자 이하여야 합니다.");
+            return false;
+        }
         return true;
     }
 }

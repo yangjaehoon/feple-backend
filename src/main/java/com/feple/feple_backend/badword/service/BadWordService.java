@@ -28,6 +28,8 @@ public class BadWordService {
         if (trimmed.isEmpty()) {
             throw new IllegalArgumentException("금칙어를 입력해 주세요.");
         }
+        if (trimmed.length() > 50)
+            throw new IllegalArgumentException("금칙어는 50자 이하여야 합니다.");
         if (badWordRepository.existsByWord(trimmed)) {
             throw new IllegalArgumentException("이미 등록된 금칙어입니다: " + trimmed);
         }

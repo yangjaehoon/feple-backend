@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.song.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,7 @@ public class SubmitSongRequestDto {
     private String songTitle;
 
     @Size(max = 500, message = "유튜브 URL은 500자 이내로 입력해주세요.")
+    @Pattern(regexp = "^(https?://(www\\.)?(youtube\\.com/watch\\?v=|youtu\\.be/)[a-zA-Z0-9_\\-]{11}.*)$",
+             message = "올바른 YouTube URL이 아닙니다.")
     private String youtubeUrl;
 }

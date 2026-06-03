@@ -43,6 +43,14 @@ public class AdminAccountService {
     public void create(String username, String password, String displayName,
                        AdminRole role, Set<AdminPermission> permissions,
                        MultipartFile profileImage) throws IOException {
+        if (username == null || username.isBlank())
+            throw new IllegalArgumentException("아이디를 입력해주세요.");
+        if (username.length() > 50)
+            throw new IllegalArgumentException("아이디는 50자 이하여야 합니다.");
+        if (password == null || password.length() < 8)
+            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
+        if (password.length() > 100)
+            throw new IllegalArgumentException("비밀번호는 100자 이하여야 합니다.");
         if (accountRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
         }

@@ -10,6 +10,7 @@ import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -78,6 +79,7 @@ public class CommentController {
     public static class UpdateCommentRequest {
         @NotNull
         @NotBlank
+        @Size(max = 1000, message = "댓글은 1000자 이내로 입력해주세요.")
         private String content;
     }
 
@@ -85,6 +87,7 @@ public class CommentController {
     public static class ReportRequest {
         @NotNull
         private ReportReason reason;
+        @Size(max = 500, message = "신고 사유는 500자 이하로 입력해주세요.")
         private String detail;
     }
 }

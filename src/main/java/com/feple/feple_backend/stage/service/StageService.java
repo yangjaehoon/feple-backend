@@ -28,6 +28,8 @@ public class StageService {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("스테이지 이름을 입력해주세요.");
         }
+        if (name.trim().length() > 50)
+            throw new IllegalArgumentException("스테이지 이름은 50자 이하여야 합니다.");
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
         int nextOrder = stageRepository.findMaxDisplayOrderByFestivalId(festivalId) + 1;

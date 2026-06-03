@@ -2,10 +2,12 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -23,9 +25,14 @@ public class FestivalBoothAdminController {
 
     @PostMapping
     public String createBooth(@PathVariable Long festivalId,
-                              @ModelAttribute BoothRequestDto dto,
+                              @Valid @ModelAttribute BoothRequestDto dto,
+                              BindingResult bindingResult,
                               @RequestParam(value = "boothImageFile", required = false) MultipartFile boothImageFile,
                               RedirectAttributes ra) throws IOException {
+        if (bindingResult.hasErrors()) {
+            ra.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return AdminFestivalRedirects.booths(festivalId);
+        }
         if (dto.getLatitude() == null || dto.getLongitude() == null) {
             ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
             return AdminFestivalRedirects.booths(festivalId);

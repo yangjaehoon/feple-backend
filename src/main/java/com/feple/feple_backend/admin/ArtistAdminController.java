@@ -6,10 +6,12 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -36,9 +38,9 @@ public class ArtistAdminController {
     }
 
     @PostMapping("/new")
-    public String createArtist(@ModelAttribute("artist") ArtistRequestDto dto,
+    public String createArtist(@Valid @ModelAttribute("artist") ArtistRequestDto dto,
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
-                               org.springframework.validation.BindingResult bindingResult
+                               BindingResult bindingResult
 
                                ) throws IOException {
 
@@ -115,9 +117,15 @@ public class ArtistAdminController {
 
     @PostMapping("/{id}/edit")
     public String updateArtist(@PathVariable Long id,
-                               @ModelAttribute("artist") ArtistRequestDto dto,
-                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
+                               @Valid @ModelAttribute("artist") ArtistRequestDto dto,
+                               BindingResult bindingResult,
+                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
+                               Model model
     ) throws IOException {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("artistId", id);
+            return "admin/artist-edit-form";
+        }
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
             dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
         }

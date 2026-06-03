@@ -5,6 +5,7 @@ public enum DevicePlatform {
 
     public static DevicePlatform from(String value) {
         if (value == null) return ANDROID;
-        return valueOf(value.trim().toUpperCase());
+        try { return valueOf(value.trim().toUpperCase()); }
+        catch (IllegalArgumentException ignored) { return ANDROID; }
     }
 }

@@ -5,6 +5,7 @@ import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.service.PostReportService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class PostReportController {
     public static class ReportRequest {
         @NotNull
         private ReportReason reason;
+        @Size(max = 500, message = "신고 사유는 500자 이하로 입력해주세요.")
         private String detail;
     }
 }

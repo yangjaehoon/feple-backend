@@ -64,6 +64,12 @@ public class CrawlAdminController {
             return ResponseEntity.badRequest().body(Map.of("error", "시작일과 종료일을 입력해주세요."));
         }
         try {
+            java.time.LocalDate.parse(req.startDate());
+            java.time.LocalDate.parse(req.endDate());
+        } catch (java.time.format.DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)"));
+        }
+        try {
             Long festivalId = festivalService.createFestival(ScrapedFestivalMapper.toFestivalRequestDto(req));
             return ResponseEntity.ok(Map.of("festivalId", festivalId));
         } catch (IllegalArgumentException e) {

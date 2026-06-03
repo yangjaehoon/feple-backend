@@ -6,11 +6,13 @@ import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -44,8 +46,13 @@ public class ArtistSongAdminController {
 
     @PostMapping
     public String saveSong(@PathVariable Long artistId,
-                           @ModelAttribute SaveSongRequestDto dto,
+                           @Valid @ModelAttribute SaveSongRequestDto dto,
+                           BindingResult bindingResult,
                            RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            ra.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/admin/artists/" + artistId + "/songs";
+        }
         try {
             songAdminService.saveSong(artistId, dto);
             ra.addFlashAttribute("successMessage", "'" + dto.getTitle() + "' 곡이 등록되었습니다.");

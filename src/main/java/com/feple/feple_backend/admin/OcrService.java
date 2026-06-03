@@ -34,6 +34,10 @@ public class OcrService {
 
         for (OcrResultDto entry : request.entries()) {
             try {
+                if (entry.startTime() == null || entry.endTime() == null) {
+                    failures.add(Map.of("artist", entry.artist() != null ? entry.artist() : "unknown", "reason", "시작/종료 시간 누락"));
+                    continue;
+                }
                 TimetableEntryRequest req = new TimetableEntryRequest();
                 req.setStageName(entry.stage() != null ? entry.stage().trim() : "");
                 req.setArtistName(entry.artist() != null ? entry.artist().trim() : "");

@@ -57,6 +57,10 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional
     public Long createFestival(FestivalRequestDto dto) {
+        if (dto.getEndDate() != null && dto.getStartDate() != null
+                && dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("종료일은 시작일보다 이전일 수 없습니다.");
+        }
         Festival festival = Festival.builder()
                 .title(dto.getTitle())
                 .titleEn(dto.getTitleEn())
@@ -114,6 +118,10 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional
     public void updateFestival(Long id, FestivalRequestDto dto) {
+        if (dto.getEndDate() != null && dto.getStartDate() != null
+                && dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("종료일은 시작일보다 이전일 수 없습니다.");
+        }
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
 
         festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
