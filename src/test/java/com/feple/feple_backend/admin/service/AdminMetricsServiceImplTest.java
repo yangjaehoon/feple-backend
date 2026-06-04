@@ -58,13 +58,13 @@ class AdminMetricsServiceImplTest {
     }
 
     @Test
-    void 전체_사용자수_조회시_userRepository_count_위임() {
-        given(userRepository.count()).willReturn(42L);
+    void 전체_사용자수_조회시_탈퇴회원_제외하고_반환() {
+        given(userRepository.countByDeletedAtIsNull()).willReturn(42L);
 
         long result = adminMetricsService.getTotalUserCount();
 
         assertThat(result).isEqualTo(42L);
-        verify(userRepository).count();
+        verify(userRepository).countByDeletedAtIsNull();
     }
 
     @Test
