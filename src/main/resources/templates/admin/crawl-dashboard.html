@@ -7,6 +7,38 @@
     <title>Feple Admin — 크롤링 대시보드</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        #applyToast {
+            position: fixed;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 280px;
+            max-width: 560px;
+            padding: 13px 20px 13px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 6px 24px rgba(0,0,0,.18);
+            z-index: 9999;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            transition: top .35s cubic-bezier(.4,0,.2,1), opacity .25s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #applyToast.visible { top: 16px; opacity: 1; pointer-events: auto; }
+        #applyToast.success { background:#D1FAE5; color:#065F46; border:1px solid #6EE7B7; }
+        #applyToast.partial { background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; }
+        #applyToast.error   { background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; }
+        #applyToast .toast-body { flex:1; line-height:1.5; }
+        #applyToast .toast-close {
+            background:none; border:none; font-size:16px; line-height:1;
+            cursor:pointer; color:inherit; opacity:.6; padding:0; flex-shrink:0;
+        }
+        #applyToast .toast-close:hover { opacity:1; }
+    </style>
 </head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('crawl')}"></div>
@@ -265,8 +297,6 @@
                     </div>
                 </div>
 
-                <!-- 적용 결과 -->
-                <div class="apply-result" id="applyResult"></div>
             </div>
 
             <!-- 3. 처리 이력 -->
@@ -290,6 +320,11 @@
 
         </div><!-- /tab-ocr -->
     </div>
+</div>
+
+<div id="applyToast">
+    <div class="toast-body" id="applyToastBody"></div>
+    <button class="toast-close" onclick="hideToast()">&#x2715;</button>
 </div>
 
 <script th:src="@{/js/admin-crawl.js}"></script>

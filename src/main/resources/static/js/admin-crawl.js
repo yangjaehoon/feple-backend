@@ -469,11 +469,14 @@
         });
     });
 
+    var _toastTimer = null;
+
     function showApplyResult(type, msg) {
-        var el = document.getElementById('applyResult');
-        el.className = 'apply-result ' + type;
-        el.innerHTML = msg;
-        el.style.display = 'block';
+        var toast = document.getElementById('applyToast');
+        document.getElementById('applyToastBody').innerHTML = msg;
+        toast.className = type + ' visible';
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(hideToast, 5000);
     }
 
     function addHistory(festivalTitle, date, saved, failed) {
@@ -499,3 +502,7 @@
             .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 })();
+
+function hideToast() {
+    document.getElementById('applyToast').classList.remove('visible');
+}
