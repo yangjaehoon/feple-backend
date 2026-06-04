@@ -9,6 +9,7 @@ spring:
       connection-timeout: 30000  # 커넥션 획득 대기 최대 30초
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: none   # Flyway가 스키마 관리, JPA는 DDL 수행 안 함
     show-sql: false
