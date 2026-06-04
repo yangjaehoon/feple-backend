@@ -60,7 +60,7 @@ public class GeminiOcrClient {
                                 ))
                         )
                 )),
-                "generationConfig", Map.of("maxOutputTokens", 4096)
+                "generationConfig", Map.of("maxOutputTokens", 8192)
         );
 
         Map response = webClient.post()
@@ -85,21 +85,41 @@ public class GeminiOcrClient {
     }
 
     private List<OcrResultDto> parseJsonArray(String content) {
-        String json = stripMarkdown(content.trim());
+        String json = extractJsonArray(content.trim());
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {
-            log.warn("OCR JSON parse failed. raw: {}", content, e);
+            // 응답이 maxOutputTokens에 걸려 중간에 잘린 경우 마지막 완성된 객체까지만 복구
+            log.warn("OCR JSON parse failed (likely truncated), attempting partial recovery. error: {}", e.getMessage());
+            try {
+                String partial = recoverPartialArray(json);
+                if (partial != null) {
+                    List<OcrResultDto> recovered = objectMapper.readValue(partial, new TypeReference<>() {});
+                    log.info("OCR partial recovery succeeded: {} entries", recovered.size());
+                    return recovered;
+                }
+            } catch (Exception ex) {
+                log.warn("OCR partial recovery also failed", ex);
+            }
             return List.of();
         }
     }
 
-    private static String stripMarkdown(String content) {
+    private static String extractJsonArray(String content) {
         Matcher m = Pattern.compile("```(?:json)?\\s*([\\s\\S]*?)```", Pattern.MULTILINE).matcher(content);
         if (m.find()) return m.group(1).trim();
         int start = content.indexOf('[');
-        int end   = content.lastIndexOf(']');
-        if (start != -1 && end > start) return content.substring(start, end + 1);
-        return content;
+        if (start == -1) return content;
+        int end = content.lastIndexOf(']');
+        if (end > start) return content.substring(start, end + 1);
+        // 닫는 ] 없음 — 응답이 잘린 경우, [ 이후 전체를 반환해 복구 시도
+        return content.substring(start);
+    }
+
+    private static String recoverPartialArray(String json) {
+        // 마지막 완성된 } 위치까지 자르고 배열 닫기
+        int lastClose = json.lastIndexOf('}');
+        if (lastClose == -1) return null;
+        return json.substring(0, lastClose + 1) + "]";
     }
 }
