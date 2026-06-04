@@ -37,7 +37,7 @@ public class TimetableEntry {
     @Column(nullable = false)
     private String artistName;
 
-    @Column(name = "stage_name")
+    @Column(name = "stage_name", nullable = false)
     private String stageName;
 
     @Column(nullable = false)
