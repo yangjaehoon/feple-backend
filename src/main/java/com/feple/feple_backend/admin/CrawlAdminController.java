@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.stage.entity.Stage;
@@ -27,6 +29,7 @@ public class CrawlAdminController {
     private final WebScraperService webScraperService;
     private final FestivalService festivalService;
     private final StageService stageService;
+    private final ArtistFestivalService artistFestivalService;
 
     @GetMapping
     public String crawlDashboard() {
@@ -143,5 +146,16 @@ public class CrawlAdminController {
                 .map(Stage::getName)
                 .toList();
         return ResponseEntity.ok(stageNames);
+    }
+
+    @GetMapping("/festivals/{festivalId}/artists")
+    @ResponseBody
+    public ResponseEntity<List<String>> getArtists(@PathVariable Long festivalId) {
+        List<String> artistNames = artistFestivalService.getArtistFestivals(festivalId)
+                .stream()
+                .map(ArtistFestivalResponse::getArtistName)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+        return ResponseEntity.ok(artistNames);
     }
 }

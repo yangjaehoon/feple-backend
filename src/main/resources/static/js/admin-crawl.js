@@ -4,6 +4,8 @@
     var festivalMap = {}; // id → {title, startDate, endDate}
     var rowIndex    = 0;
     var currentFestivalTitle = '';
+    var artistNames = []; // 선택된 페스티벌의 참여 아티스트 목록
+    var stageNames  = []; // 선택된 페스티벌의 스테이지 목록
 
     /* ── 탭 전환 ── */
     document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
@@ -173,13 +175,18 @@
             });
         });
 
-    /* ── 페스티벌 선택 시 날짜 범위 + 스테이지 로드 ── */
+    /* ── 페스티벌 선택 시 날짜 범위 + 아티스트/스테이지 로드 ── */
     document.getElementById('selFestival').addEventListener('change', function () {
         var fid = this.value;
         var dateInput = document.getElementById('selDate');
         dateInput.value = '';
 
-        if (!fid) { dateInput.disabled = true; return; }
+        if (!fid) {
+            dateInput.disabled = true;
+            artistNames = [];
+            stageNames  = [];
+            return;
+        }
 
         var f = festivalMap[fid];
         currentFestivalTitle = f.title;
@@ -187,21 +194,30 @@
         if (f.endDate)   { dateInput.max = f.endDate; }
         dateInput.disabled = false;
 
-        fetch('/admin/crawl/festivals/' + fid + '/stages')
-            .then(function (r) { return r.json(); })
-            .then(function (stages) {
-                var dl = document.getElementById('stageOptions');
-                dl.innerHTML = '';
-                stages.forEach(function (name) {
-                    var opt = document.createElement('option');
-                    opt.value = name;
-                    dl.appendChild(opt);
-                });
-                document.querySelectorAll('.stage-input').forEach(function (inp) {
-                    inp.setAttribute('list', 'stageOptions');
-                });
-            });
+        Promise.all([
+            fetch('/admin/crawl/festivals/' + fid + '/artists').then(function (r) { return r.json(); }),
+            fetch('/admin/crawl/festivals/' + fid + '/stages').then(function (r) { return r.json(); })
+        ]).then(function (results) {
+            artistNames = results[0];
+            stageNames  = results[1];
+            refreshExistingSelects();
+        });
     });
+
+    function refreshExistingSelects() {
+        document.getElementById('ocrParseBody').querySelectorAll('tr').forEach(function (tr) {
+            var artistSel = tr.querySelector('[data-field="artist"]');
+            var stageSel  = tr.querySelector('[data-field="stage"]');
+            if (artistSel) {
+                var cur = artistSel.value;
+                artistSel.innerHTML = makeOptions(artistNames, cur);
+            }
+            if (stageSel) {
+                var cur = stageSel.value;
+                stageSel.innerHTML = makeOptions(stageNames, cur);
+            }
+        });
+    }
 
     /* ── OCR 드래그&드롭 / 파일 선택 ── */
     var dropZone  = document.getElementById('ocrDropZone');
@@ -283,11 +299,36 @@
         results.forEach(function (row) {
             var conf = row.confidence != null ? row.confidence : 0;
             if (conf < 70) hasLow = true;
-            appendRow(row.artist || '', row.stage || '', row.startTime || '', row.endTime || '', conf);
+            var matchedArtist = findBestMatch(row.artist || '', artistNames);
+            var matchedStage  = findBestMatch(row.stage  || '', stageNames);
+            appendRow(matchedArtist, matchedStage, row.startTime || '', row.endTime || '', conf);
         });
 
         document.getElementById('ocrWarnBox').style.display = hasLow ? 'block' : 'none';
         document.getElementById('btnApplyOcr').disabled = results.length === 0;
+    }
+
+    // 대소문자 무시 포함 매칭 — 가장 가까운 항목 반환, 없으면 ''
+    function findBestMatch(name, options) {
+        if (!name || options.length === 0) return '';
+        var lower = name.toLowerCase();
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].toLowerCase() === lower) return options[i];
+        }
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].toLowerCase().includes(lower) || lower.includes(options[i].toLowerCase())) {
+                return options[i];
+            }
+        }
+        return '';
+    }
+
+    function makeOptions(options, selectedValue) {
+        var html = '<option value="">— 선택 —</option>';
+        options.forEach(function (opt) {
+            html += '<option value="' + esc(opt) + '"' + (opt === selectedValue ? ' selected' : '') + '>' + esc(opt) + '</option>';
+        });
+        return html;
     }
 
     function confBadge(conf) {
@@ -297,6 +338,9 @@
         return '<span class="conf-low">🔴 ' + conf + '</span>';
     }
 
+    var selectStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
+    var timeStyle   = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
+
     function appendRow(artist, stage, startTime, endTime, conf) {
         rowIndex++;
         var idx = rowIndex;
@@ -304,10 +348,10 @@
         tr.dataset.rowIndex = idx;
         tr.innerHTML =
             '<td>' + idx + '</td>' +
-            '<td><input type="text" value="' + esc(artist) + '" placeholder="아티스트명"/></td>' +
-            '<td><input type="text" class="stage-input" value="' + esc(stage) + '" placeholder="스테이지" list="stageOptions"/></td>' +
-            '<td><input type="time" value="' + esc(startTime) + '"/></td>' +
-            '<td><input type="time" value="' + esc(endTime) + '"/></td>' +
+            '<td><select data-field="artist" style="' + selectStyle + '">' + makeOptions(artistNames, artist) + '</select></td>' +
+            '<td><select data-field="stage"  style="' + selectStyle + '">' + makeOptions(stageNames,  stage)  + '</select></td>' +
+            '<td><input type="time" data-field="startTime" value="' + esc(startTime) + '" style="' + timeStyle + '"/></td>' +
+            '<td><input type="time" data-field="endTime"   value="' + esc(endTime)   + '" style="' + timeStyle + '"/></td>' +
             '<td>' + confBadge(conf) + '</td>' +
             '<td><button class="row-del" onclick="this.closest(\'tr\').remove(); checkEmpty();">✕</button></td>';
         document.getElementById('ocrParseBody').appendChild(tr);
@@ -338,12 +382,11 @@
 
         var entries = [];
         document.getElementById('ocrParseBody').querySelectorAll('tr').forEach(function (tr) {
-            var inputs = tr.querySelectorAll('input');
             entries.push({
-                artist:    inputs[0].value.trim(),
-                stage:     inputs[1].value.trim(),
-                startTime: inputs[2].value,
-                endTime:   inputs[3].value,
+                artist:     tr.querySelector('[data-field="artist"]').value.trim(),
+                stage:      tr.querySelector('[data-field="stage"]').value.trim(),
+                startTime:  tr.querySelector('[data-field="startTime"]').value,
+                endTime:    tr.querySelector('[data-field="endTime"]').value,
                 confidence: null
             });
         });
