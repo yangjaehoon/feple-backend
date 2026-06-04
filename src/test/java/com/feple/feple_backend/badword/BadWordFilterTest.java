@@ -1,6 +1,7 @@
 package com.feple.feple_backend.badword;
 
 import com.feple.feple_backend.badword.repository.BadWordRepository;
+import com.feple.feple_backend.global.exception.BadWordException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -9,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -83,12 +85,12 @@ class BadWordFilterTest {
     // ── validateField ────────────────────────────────────────────────
 
     @Test
-    void validateField_금칙어_포함시_필드명이_메시지에_포함됨() {
+    void validateField_금칙어_포함시_BadWordException_필드명_일치() {
         loadWords("욕설");
 
         assertThatThrownBy(() -> filter.validateField("nickname", "욕설닉네임"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("nickname");
+                .isInstanceOf(BadWordException.class)
+                .satisfies(e -> assertThat(((BadWordException) e).getField()).isEqualTo("nickname"));
     }
 
     @Test

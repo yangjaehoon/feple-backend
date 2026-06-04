@@ -2,6 +2,7 @@ package com.feple.feple_backend.comment.service;
 
 import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.global.exception.BadWordException;
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
 import com.feple.feple_backend.comment.dto.CreateCommentDto;
@@ -36,6 +37,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -105,11 +107,11 @@ class CommentServiceImplTest {
     void 금칙어_포함_댓글_생성시_예외() {
         CreateCommentDto dto = mock(CreateCommentDto.class);
         given(dto.getContent()).willReturn("욕설포함댓글");
-        willThrow(new IllegalArgumentException("금칙어가 포함되어 있습니다."))
-                .given(badWordFilter).validate(any(String.class));
+        willThrow(new BadWordException("content"))
+                .given(badWordFilter).validateField(eq("content"), anyString());
 
         assertThatThrownBy(() -> commentService.createComment(dto, 2L))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(BadWordException.class);
         verify(commentRepository, never()).save(any());
     }
 
