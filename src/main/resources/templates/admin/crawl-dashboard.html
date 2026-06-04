@@ -190,8 +190,11 @@
                     <select id="selFestival" style="flex:1; min-width:200px;">
                         <option value="">— 페스티벌 선택 —</option>
                     </select>
-                    <label>날짜</label>
-                    <input type="date" id="selDate" disabled/>
+                    <label title="선택 시 현재 목록의 모든 행 날짜를 일괄 변경합니다">날짜 일괄 설정</label>
+                    <input type="date" id="selDate" disabled title="선택 시 모든 행의 날짜가 변경됩니다"/>
+                </div>
+                <div style="font-size:11px; color:var(--muted); margin-top:-6px; margin-bottom:4px;">
+                    &#8226; 날짜 일괄 설정은 현재 목록의 모든 행에 동일 날짜를 채웁니다. 각 행에서 개별 수정도 가능합니다.
                 </div>
 
                 <!-- 업로드 영역 -->
@@ -247,8 +250,9 @@
                                 <th style="width:28px;">#</th>
                                 <th>아티스트명</th>
                                 <th>스테이지</th>
-                                <th style="width:90px;">시작</th>
-                                <th style="width:90px;">종료</th>
+                                <th style="width:110px;">날짜</th>
+                                <th style="width:80px;">시작</th>
+                                <th style="width:80px;">종료</th>
                                 <th style="width:56px;">확신도</th>
                                 <th style="width:28px;"></th>
                             </tr>

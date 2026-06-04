@@ -4,8 +4,10 @@
     var festivalMap = {}; // id → {title, startDate, endDate}
     var rowIndex    = 0;
     var currentFestivalTitle = '';
-    var artistNames = []; // 선택된 페스티벌의 참여 아티스트 목록
-    var stageNames  = []; // 선택된 페스티벌의 스테이지 목록
+    var artistNames      = []; // 선택된 페스티벌의 참여 아티스트 목록
+    var stageNames       = []; // 선택된 페스티벌의 스테이지 목록
+    var festivalStartDate = '';
+    var festivalEndDate   = '';
 
     /* ── 탭 전환 ── */
     document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
@@ -183,13 +185,17 @@
 
         if (!fid) {
             dateInput.disabled = true;
-            artistNames = [];
-            stageNames  = [];
+            artistNames      = [];
+            stageNames       = [];
+            festivalStartDate = '';
+            festivalEndDate   = '';
             return;
         }
 
         var f = festivalMap[fid];
         currentFestivalTitle = f.title;
+        festivalStartDate = f.startDate || '';
+        festivalEndDate   = f.endDate   || '';
         if (f.startDate) { dateInput.min = f.startDate; dateInput.value = f.startDate; }
         if (f.endDate)   { dateInput.max = f.endDate; }
         dateInput.disabled = false;
@@ -201,6 +207,15 @@
             artistNames = results[0];
             stageNames  = results[1];
             refreshExistingSelects();
+        });
+    });
+
+    /* ── 날짜 일괄 설정: 모든 행에 동일 날짜 적용 ── */
+    document.getElementById('selDate').addEventListener('change', function () {
+        var date = this.value;
+        if (!date) return;
+        document.getElementById('ocrParseBody').querySelectorAll('[data-field="date"]').forEach(function (input) {
+            input.value = date;
         });
     });
 
@@ -301,7 +316,8 @@
             if (conf < 70) hasLow = true;
             var matchedArtist = findBestMatch(row.artist || '', artistNames);
             var matchedStage  = findBestMatch(row.stage  || '', stageNames);
-            appendRow(matchedArtist, matchedStage, row.startTime || '', row.endTime || '', conf);
+            var date = row.date || document.getElementById('selDate').value || '';
+            appendRow(matchedArtist, matchedStage, date, row.startTime || '', row.endTime || '', conf);
         });
 
         document.getElementById('ocrWarnBox').style.display = hasLow ? 'block' : 'none';
@@ -341,15 +357,21 @@
     var selectStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
     var timeStyle   = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
 
-    function appendRow(artist, stage, startTime, endTime, conf) {
+    var dateStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
+
+    function appendRow(artist, stage, date, startTime, endTime, conf) {
         rowIndex++;
         var idx = rowIndex;
         var tr = document.createElement('tr');
         tr.dataset.rowIndex = idx;
+        var dateAttrs = '';
+        if (festivalStartDate) dateAttrs += ' min="' + festivalStartDate + '"';
+        if (festivalEndDate)   dateAttrs += ' max="' + festivalEndDate   + '"';
         tr.innerHTML =
             '<td>' + idx + '</td>' +
             '<td><select data-field="artist" style="' + selectStyle + '">' + makeOptions(artistNames, artist) + '</select></td>' +
             '<td><select data-field="stage"  style="' + selectStyle + '">' + makeOptions(stageNames,  stage)  + '</select></td>' +
+            '<td><input type="date" data-field="date" value="' + esc(date) + '"' + dateAttrs + ' style="' + dateStyle + '"/></td>' +
             '<td><input type="time" data-field="startTime" value="' + esc(startTime) + '" style="' + timeStyle + '"/></td>' +
             '<td><input type="time" data-field="endTime"   value="' + esc(endTime)   + '" style="' + timeStyle + '"/></td>' +
             '<td>' + confBadge(conf) + '</td>' +
@@ -366,7 +388,8 @@
 
     /* ── 행 추가 ── */
     document.getElementById('btnAddRow').addEventListener('click', function () {
-        appendRow('', '', '', '', null);
+        var defaultDate = document.getElementById('selDate').value || '';
+        appendRow('', '', defaultDate, '', '', null);
         document.getElementById('ocrEmptyState').style.display = 'none';
         document.getElementById('ocrPreviewWrap').classList.add('visible');
         document.getElementById('btnApplyOcr').disabled = false;
@@ -374,24 +397,27 @@
 
     /* ── 타임테이블에 적용 ── */
     document.getElementById('btnApplyOcr').addEventListener('click', function () {
-        var fid  = document.getElementById('selFestival').value;
-        var date = document.getElementById('selDate').value;
-
-        if (!fid)  { alert('페스티벌을 선택해주세요.'); return; }
-        if (!date) { alert('날짜를 선택해주세요.'); return; }
+        var fid = document.getElementById('selFestival').value;
+        if (!fid) { alert('페스티벌을 선택해주세요.'); return; }
 
         var entries = [];
         document.getElementById('ocrParseBody').querySelectorAll('tr').forEach(function (tr) {
             entries.push({
-                artist:     tr.querySelector('[data-field="artist"]').value.trim(),
-                stage:      tr.querySelector('[data-field="stage"]').value.trim(),
-                startTime:  tr.querySelector('[data-field="startTime"]').value,
-                endTime:    tr.querySelector('[data-field="endTime"]').value,
-                confidence: null
+                artist:    tr.querySelector('[data-field="artist"]').value.trim(),
+                stage:     tr.querySelector('[data-field="stage"]').value.trim(),
+                date:      tr.querySelector('[data-field="date"]').value,
+                startTime: tr.querySelector('[data-field="startTime"]').value,
+                endTime:   tr.querySelector('[data-field="endTime"]').value
             });
         });
 
         if (entries.length === 0) { alert('저장할 항목이 없습니다.'); return; }
+
+        var missingDate = entries.some(function (e) { return !e.date; });
+        if (missingDate) {
+            alert('날짜가 설정되지 않은 항목이 있습니다.\n상단 "날짜 일괄 설정"을 사용하거나 각 행의 날짜를 직접 입력해주세요.');
+            return;
+        }
 
         var btn = document.getElementById('btnApplyOcr');
         btn.disabled = true;
@@ -403,7 +429,7 @@
         fetch('/admin/crawl/ocr/apply', {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify({ festivalId: parseInt(fid), festivalDate: date, entries: entries })
+            body: JSON.stringify({ festivalId: parseInt(fid), entries: entries })
         })
         .then(function (r) {
             if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '저장 실패'); });
@@ -425,7 +451,16 @@
                 showApplyResult('success', msg);
             }
 
-            addHistory(currentFestivalTitle, date, result.savedCount, result.failedCount);
+            var uniqueDates = entries
+                .map(function (e) { return e.date; })
+                .filter(function (d, i, arr) { return d && arr.indexOf(d) === i; })
+                .sort();
+            var dateLabel = uniqueDates.length === 1
+                ? uniqueDates[0]
+                : uniqueDates.length > 1
+                    ? uniqueDates[0] + ' 외 ' + (uniqueDates.length - 1) + '일'
+                    : '—';
+            addHistory(currentFestivalTitle, dateLabel, result.savedCount, result.failedCount);
         })
         .catch(function (err) {
             btn.disabled = false;

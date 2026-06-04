@@ -106,8 +106,8 @@ public class CrawlAdminController {
     @PostMapping("/ocr/apply")
     @ResponseBody
     public ResponseEntity<?> applyOcr(@RequestBody OcrApplyRequest request) {
-        if (request.festivalId() == null || request.festivalDate() == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "페스티벌과 날짜를 선택해주세요."));
+        if (request.festivalId() == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "페스티벌을 선택해주세요."));
         }
         if (request.entries() == null || request.entries().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "저장할 항목이 없습니다."));

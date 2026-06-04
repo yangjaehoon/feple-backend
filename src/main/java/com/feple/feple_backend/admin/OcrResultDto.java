@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public record OcrResultDto(
         String artist,
         String stage,
+        String date,
         String startTime,
         String endTime,
         Integer confidence) {

@@ -26,10 +26,11 @@ public class GeminiOcrClient {
     private static final String PROMPT = """
             이 이미지는 음악 페스티벌 타임테이블 포스터입니다.
             이미지에서 모든 공연 일정을 추출하여 JSON 배열 형식으로만 반환하세요.
-            각 항목 형식: {"artist": "아티스트명", "stage": "스테이지명", "startTime": "HH:mm", "endTime": "HH:mm", "confidence": 확신도(0~100)}
+            각 항목 형식: {"artist": "아티스트명", "stage": "스테이지명", "date": "날짜(yyyy-MM-dd) 또는 null", "startTime": "HH:mm", "endTime": "HH:mm", "confidence": 확신도(0~100)}
             규칙:
             - 인식이 불확실한 항목은 confidence를 낮게 설정하세요 (0~100).
             - 스테이지나 시간을 인식할 수 없으면 null로 설정하세요.
+            - date: 이미지에 날짜 정보가 명시된 경우(예: "8월 1일", "Day 1 - 2025.08.01", "Aug 1") 반드시 yyyy-MM-dd 형식으로 변환하세요. 날짜가 없거나 연도를 알 수 없으면 null로 설정하세요.
             - 시간은 반드시 24시간 HH:mm 형식으로 변환하세요 (예: 오후 8시→20:00, PM 8:00→20:00).
             - JSON 배열만 반환하고 설명 텍스트나 마크다운 코드블록을 절대 포함하지 마세요.
             """;
