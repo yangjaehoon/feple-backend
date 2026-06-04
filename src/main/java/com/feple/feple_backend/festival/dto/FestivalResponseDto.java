@@ -50,7 +50,7 @@ public class FestivalResponseDto {
                 .posterUrl(posterUrl)
                 .likeCount(festival.getLikeCount())
                 .attendingCount(festival.getAttendingCount())
-                .genres(festival.getGenres())
+                .genres(festival.getGenres() == null ? List.of() : List.copyOf(festival.getGenres()))
                 .region(festival.getRegion())
                 .ageRestriction(festival.getAgeRestriction())
                 .latitude(festival.getLatitude())

@@ -49,7 +49,7 @@ public class FestivalDetailResponseDto {
                 .posterUrl(posterUrl)
                 .latitude(festival.getLatitude())
                 .longitude(festival.getLongitude())
-                .genres(festival.getGenres())
+                .genres(festival.getGenres() == null ? List.of() : List.copyOf(festival.getGenres()))
                 .ageRestriction(festival.getAgeRestriction())
                 .attendingCount(festival.getAttendingCount())
                 .build();
