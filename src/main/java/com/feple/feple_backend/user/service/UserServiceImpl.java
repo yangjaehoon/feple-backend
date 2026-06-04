@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     public UserResponseDto updateNickname(@NonNull Long id, String nickname) {
         NicknameValidator.validate(nickname);
-        badWordFilter.validate(nickname);
+        badWordFilter.validateField("nickname", nickname);
         artistNameFilter.validate(nickname);
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
 
     @Override
     public UserResponseDto updateBio(@NonNull Long id, String bio) {
-        if (bio != null) badWordFilter.validate(bio);
+        if (bio != null) badWordFilter.validateField("bio", bio);
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         user.updateBio(bio);
         return toUserDto(user);

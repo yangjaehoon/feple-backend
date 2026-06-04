@@ -1,6 +1,7 @@
 package com.feple.feple_backend.badword;
 
 import com.feple.feple_backend.badword.repository.BadWordRepository;
+import com.feple.feple_backend.global.exception.BadWordException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class BadWordFilter {
         String normalized = text.toLowerCase().replaceAll("\\s+", "");
         for (String word : snapshot) {
             if (normalized.contains(word)) {
-                throw new IllegalArgumentException(field + ":금칙어가 포함되어 있습니다.");
+                throw new BadWordException(field);
             }
         }
     }

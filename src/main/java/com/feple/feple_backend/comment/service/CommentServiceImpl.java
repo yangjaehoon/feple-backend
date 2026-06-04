@@ -46,7 +46,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
-        badWordFilter.validate(dto.getContent());
+        badWordFilter.validateField("content", dto.getContent());
         Post post = EntityFinder.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
@@ -171,7 +171,7 @@ public class CommentServiceImpl implements CommentService {
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
-        badWordFilter.validate(content);
+        badWordFilter.validateField("content", content);
         comment.update(content);
     }
 

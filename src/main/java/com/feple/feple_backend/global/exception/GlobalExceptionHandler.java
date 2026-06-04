@@ -40,6 +40,19 @@ public class GlobalExceptionHandler {
         return errorBody(HttpStatus.BAD_REQUEST, message);
     }
 
+    // 금칙어 포함 (필드 정보 포함 — IllegalArgumentException보다 먼저 등록)
+    @ExceptionHandler(BadWordException.class)
+    public ResponseEntity<Map<String, Object>> handleBadWord(BadWordException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        body.put("message", ex.getMessage());
+        body.put("code", "BAD_WORD");
+        body.put("field", ex.getField());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
     // 잘못된 인자 (파일 형식, 크기, 비즈니스 유효성 등)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
