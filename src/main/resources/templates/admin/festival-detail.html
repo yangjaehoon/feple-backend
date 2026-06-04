@@ -90,7 +90,7 @@
                     <table>
                         <thead>
                         <tr>
-                            <th>순서</th>
+                            <th>참여 날짜</th>
                             <th>아티스트</th>
                             <th>장르</th>
                             <th>공연 시간</th>
@@ -102,9 +102,11 @@
                         <tr th:each="af : ${participatingArtistsByName}">
                             <td>
                                 <input type="hidden" name="afIds" th:value="${af.artistFestivalId}"/>
-                                <input type="number" name="lineupOrders"
-                                       th:value="${af.lineupOrder}"
-                                       style="width:55px; padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:13px; text-align:center;"/>
+                                <input type="date" name="performanceDates"
+                                       th:value="${af.performanceDate}"
+                                       th:min="${festival.startDate}"
+                                       th:max="${festival.endDate}"
+                                       style="padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:13px;"/>
                             </td>
                             <td style="font-weight:600;" th:text="${af.artistName}"></td>
                             <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>

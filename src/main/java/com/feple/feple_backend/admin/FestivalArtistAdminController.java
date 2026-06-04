@@ -16,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -90,10 +91,12 @@ public class FestivalArtistAdminController {
     @PostMapping("/{artistFestivalId}/edit")
     public String updateLineup(@PathVariable Long festivalId,
                                @PathVariable Long artistFestivalId,
-                               @RequestParam(required = false) Integer lineupOrder,
                                @RequestParam(required = false) String stageName,
+                               @RequestParam(required = false) String performanceDate,
                                RedirectAttributes ra) {
-        artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, lineupOrder, stageName);
+        LocalDate date = (performanceDate != null && !performanceDate.isBlank())
+                ? LocalDate.parse(performanceDate) : null;
+        artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, date);
         ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
         return AdminFestivalRedirects.artists(festivalId);
     }
@@ -101,15 +104,16 @@ public class FestivalArtistAdminController {
     @PostMapping("/batch-edit")
     public String batchUpdateLineup(@PathVariable Long festivalId,
                                     @RequestParam("afIds") List<Long> afIds,
-                                    @RequestParam("lineupOrders") List<Integer> lineupOrders,
+                                    @RequestParam("performanceDates") List<String> performanceDates,
                                     @RequestParam("stageNames") List<String> stageNames,
                                     RedirectAttributes ra) {
         int errorCount = 0;
         for (int i = 0; i < afIds.size(); i++) {
             String stage = (i < stageNames.size()) ? stageNames.get(i) : null;
-            Integer order = (i < lineupOrders.size()) ? lineupOrders.get(i) : null;
+            String dateStr = (i < performanceDates.size()) ? performanceDates.get(i) : null;
+            LocalDate date = (dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr) : null;
             try {
-                artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), order, stage);
+                artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), stage, date);
             } catch (Exception e) {
                 log.warn("batchUpdateLineup 실패: festivalId={}, afId={}, {}", festivalId, afIds.get(i), e.getMessage());
                 errorCount++;

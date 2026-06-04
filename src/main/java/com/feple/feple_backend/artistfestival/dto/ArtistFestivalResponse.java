@@ -17,6 +17,7 @@ public class ArtistFestivalResponse {
 
     private Integer lineupOrder;
     private String stageName;
+    private String performanceDate;
     private List<String> performanceDates;
 
 }

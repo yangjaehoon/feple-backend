@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -105,7 +106,7 @@ public class ArtistFestivalService {
 
     @Transactional
     public void updateArtistFestival(Long festivalId, Long artistFestivalId,
-                                     Integer lineupOrder, String stageName) {
+                                     String stageName, LocalDate performanceDate) {
         ArtistFestival af = artistFestivalRepository.findById(artistFestivalId)
                 .orElseThrow(() -> new NoSuchElementException("참여 정보가 없습니다."));
         if (!af.getFestivalId().equals(festivalId)) {
@@ -114,7 +115,7 @@ public class ArtistFestivalService {
 
         // 스테이지가 변경되면 해당 아티스트의 타임테이블 스테이지도 함께 업데이트
         String oldStage = af.getStageName();
-        af.updateLineup(lineupOrder, stageName);
+        af.updateLineup(stageName, performanceDate);
 
         if (stageName != null && !stageName.equals(oldStage)) {
             String artistName = af.getArtistName();
@@ -156,6 +157,7 @@ public class ArtistFestivalService {
                 .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
                 .lineupOrder(af.getLineupOrder())
                 .stageName(af.getStageName())
+                .performanceDate(af.getPerformanceDate() != null ? af.getPerformanceDate().toString() : null)
                 .performanceDates(dates)
                 .build();
     }

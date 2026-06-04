@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 //artist와 festival 사이에 중간 엔티티
 @Entity
 @Getter
@@ -36,14 +38,16 @@ public class ArtistFestival {
 
     private Integer lineupOrder;
     private String stageName;
+    private LocalDate performanceDate;
 
     @Builder
     public ArtistFestival(Artist artist, Festival festival,
-                          Integer lineupOrder, String stageName) {
+                          Integer lineupOrder, String stageName, LocalDate performanceDate) {
         this.artist = artist;
         this.festival = festival;
         this.lineupOrder = lineupOrder;
         this.stageName = stageName;
+        this.performanceDate = performanceDate;
     }
 
     public Long getArtistId() { return artist.getId(); }
@@ -52,8 +56,8 @@ public class ArtistFestival {
     public String getArtistProfileImageKey() { return artist.getProfileImageKey(); }
     public Long getFestivalId() { return festival.getId(); }
 
-    public void updateLineup(Integer lineupOrder, String stageName) {
-        this.lineupOrder = lineupOrder;
+    public void updateLineup(String stageName, LocalDate performanceDate) {
         this.stageName = stageName;
+        this.performanceDate = performanceDate;
     }
 }
