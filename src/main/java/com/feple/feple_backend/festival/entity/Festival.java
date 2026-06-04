@@ -53,7 +53,7 @@ public class Festival {
     @Enumerated(EnumType.STRING)
     @Column(length = 10)
     @Builder.Default
-    private AgeRestriction ageRestriction = AgeRestriction.NONE;
+    private AgeRestriction ageRestriction = AgeRestriction.ALL_AGES;
 
     private Double latitude;
     private Double longitude;

@@ -71,7 +71,7 @@ public class FestivalServiceImpl implements FestivalService {
                 .posterKey(dto.getPosterKey())
                 .genres(dto.getGenres() != null ? dto.getGenres() : new java.util.ArrayList<>())
                 .region(dto.getRegion())
-                .ageRestriction(dto.getAgeRestriction() != null ? dto.getAgeRestriction() : AgeRestriction.NONE)
+                .ageRestriction(dto.getAgeRestriction() != null ? dto.getAgeRestriction() : AgeRestriction.ALL_AGES)
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .build();
