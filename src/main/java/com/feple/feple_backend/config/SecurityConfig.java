@@ -43,9 +43,30 @@ public class SecurityConfig {
     @Value("${app.cdn.base-url:}")
     private String cdnBaseUrl;
 
-    // ── 1. 관리자 페이지용 FilterChain (세션 기반 폼 로그인, CSRF 활성화) ──
+    // ── 0. Swagger UI 전용 FilterChain (로컬 개발 환경에서만 활성화) ──
     @Bean
     @Order(1)
+    public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                    "default-src 'self'; " +
+                    "script-src 'self' 'unsafe-inline'; " +
+                    "style-src 'self' 'unsafe-inline'; " +
+                    "img-src 'self' data:; " +
+                    "connect-src 'self'"))
+                .frameOptions(frame -> frame.sameOrigin()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+
+        return http.build();
+    }
+
+    // ── 1. 관리자 페이지용 FilterChain (세션 기반 폼 로그인, CSRF 활성화) ──
+    @Bean
+    @Order(2)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
@@ -79,7 +100,7 @@ public class SecurityConfig {
 
     // ── 2. API용 FilterChain (JWT Stateless) ──
     @Bean
-    @Order(2)
+    @Order(3)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
             .headers(headers -> headers
@@ -92,7 +113,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                 .requestMatchers("/favicon.ico", "/error").permitAll()
                 // /posts/my/** 전체 및 presigned URL은 인증 필수
