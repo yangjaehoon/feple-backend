@@ -37,6 +37,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.nickname = :nickname AND u.deletedAt IS NULL")
     Optional<User> findByNicknameAndNotDeleted(@Param("nickname") String nickname);
 
+    long countByDeletedAtIsNull();
+
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT FUNCTION('DATE', u.createdAt), COUNT(u) FROM User u " +

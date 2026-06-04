@@ -48,7 +48,7 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
 
     @Override
     public long getTotalUserCount() {
-        return userRepository.count();
+        return userRepository.countByDeletedAtIsNull();
     }
 
     @Override
