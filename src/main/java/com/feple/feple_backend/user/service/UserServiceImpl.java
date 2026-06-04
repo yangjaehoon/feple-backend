@@ -42,18 +42,26 @@ public class UserServiceImpl implements UserService, UserAdminService {
     public Map<String, Object> checkNicknameAvailable(String nickname, Long excludeUserId) {
         try {
             NicknameValidator.validate(nickname);
+        } catch (IllegalArgumentException e) {
+            return Map.of("available", false, "code", "INVALID_FORMAT", "message", e.getMessage());
+        }
+        try {
             badWordFilter.validate(nickname);
+        } catch (IllegalArgumentException e) {
+            return Map.of("available", false, "code", "BAD_WORD", "message", e.getMessage());
+        }
+        try {
             artistNameFilter.validate(nickname);
         } catch (IllegalArgumentException e) {
-            return Map.of("available", false, "message", e.getMessage());
+            return Map.of("available", false, "code", "ARTIST_NAME", "message", e.getMessage());
         }
         boolean taken = excludeUserId != null
                 ? userRepository.existsByNicknameAndIdNot(nickname.trim(), excludeUserId)
                 : userRepository.existsByNickname(nickname.trim());
         if (taken) {
-            return Map.of("available", false, "message", "이미 사용 중인 닉네임입니다.");
+            return Map.of("available", false, "code", "DUPLICATE", "message", "이미 사용 중인 닉네임입니다.");
         }
-        return Map.of("available", true, "message", "사용 가능한 닉네임입니다.");
+        return Map.of("available", true, "code", "AVAILABLE", "message", "사용 가능한 닉네임입니다.");
     }
 
     @Override
