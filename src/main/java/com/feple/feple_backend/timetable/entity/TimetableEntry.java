@@ -37,6 +37,9 @@ public class TimetableEntry {
     @Column(nullable = false)
     private String artistName;
 
+    @Column(name = "stage_name")
+    private String stageName;
+
     @Column(nullable = false)
     private LocalDate festivalDate;
 
@@ -51,6 +54,7 @@ public class TimetableEntry {
     }
 
     public String getStageName() {
+        if (stageName != null) return stageName;
         return stage != null ? stage.getName() : null;
     }
 
