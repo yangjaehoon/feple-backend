@@ -6,6 +6,7 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -23,14 +24,12 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
+    static final String SESSION_KEY = "loginError";
+
     private final Cache<String, Bucket> cache = Caffeine.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .maximumSize(5_000)
             .build();
-
-    public AdminLoginFailureHandler() {
-        setDefaultFailureUrl("/admin/login?error=true");
-    }
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
@@ -49,11 +48,12 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
             return;
         }
 
+        HttpSession session = request.getSession();
         if (exception instanceof DisabledException) {
-            response.sendRedirect("/admin/login?disabled=true");
-            return;
+            session.setAttribute(SESSION_KEY, "disabled");
+        } else {
+            session.setAttribute(SESSION_KEY, "invalid");
         }
-
-        super.onAuthenticationFailure(request, response, exception);
+        response.sendRedirect(request.getContextPath() + "/admin/login");
     }
 }

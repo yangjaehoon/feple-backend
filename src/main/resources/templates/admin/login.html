@@ -212,10 +212,10 @@
     </div>
     <div class="subtitle">관리자 전용 페이지입니다.</div>
 
-    <div th:if="${param.error != null}" class="alert alert-error shake">
+    <div th:if="${loginError == 'invalid'}" class="alert alert-error shake">
       <span>&#9888;</span> 아이디 또는 비밀번호가 올바르지 않습니다.
     </div>
-    <div th:if="${param.disabled != null}" class="alert alert-error shake">
+    <div th:if="${loginError == 'disabled'}" class="alert alert-error shake">
       <span>&#9888;</span> 비활성화된 계정입니다. 최고 관리자에게 문의하세요.
     </div>
     <div th:if="${param.logout != null}" class="alert alert-success">
@@ -229,7 +229,7 @@
           <span class="input-icon">👤</span>
           <input type="text" id="username" name="username"
                  placeholder="관리자 아이디" required autofocus
-                 th:classappend="${param.error != null} ? 'input-error'"/>
+                 th:classappend="${loginError != null} ? 'input-error'"/>
         </div>
       </div>
       <div class="form-group">
@@ -238,7 +238,7 @@
           <span class="input-icon">🔒</span>
           <input type="password" id="password" name="password"
                  placeholder="비밀번호" required
-                 th:classappend="${param.error != null} ? 'input-error'"/>
+                 th:classappend="${loginError != null} ? 'input-error'"/>
         </div>
       </div>
 
