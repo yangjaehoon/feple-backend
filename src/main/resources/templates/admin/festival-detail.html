@@ -208,14 +208,8 @@
                       style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:20px;">
 
                     <input type="hidden" name="stageName" id="autoStageName"/>
+                    <input type="hidden" name="festivalDate" id="autoFestivalDate"/>
 
-                    <div>
-                        <label class="form-label-sm">날짜</label>
-                        <input type="date" name="festivalDate"
-                               th:min="${festival.startDate}" th:max="${festival.endDate}"
-                               th:value="${festival.startDate}" required
-                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
-                    </div>
                     <div>
                         <label class="form-label-sm">아티스트</label>
                         <th:block th:if="${!participatingArtistsByName.isEmpty()}">
@@ -225,13 +219,19 @@
                                 <option th:each="af : ${participatingArtistsByName}"
                                         th:value="${af.artistName}"
                                         th:text="${af.artistName}"
-                                        th:attr="data-stage=${af.stageName}"></option>
+                                        th:attr="data-stage=${af.stageName},data-date=${af.performanceDate}"></option>
                             </select>
                         </th:block>
                         <th:block th:if="${participatingArtistsByName.isEmpty()}">
                             <input type="text" disabled placeholder="참여 아티스트를 먼저 추가하세요"
                                    style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f5f5f5;"/>
                         </th:block>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">날짜 (자동)</label>
+                        <div id="datePreview" style="padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f8f9ff; color:var(--muted); min-height:36px;">
+                            아티스트 선택 시 자동 입력
+                        </div>
                     </div>
                     <div>
                         <label class="form-label-sm">스테이지 (자동)</label>

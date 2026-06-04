@@ -160,6 +160,16 @@ function validateBoothPos() {
 }
 
 function validateTimetable(form) {
+    const festivalDate = document.getElementById('autoFestivalDate').value;
+    if (!festivalDate) {
+        const preview = document.getElementById('datePreview');
+        preview.textContent = '⚠ 참여 아티스트 목록에서 날짜를 먼저 설정해주세요.';
+        preview.style.color = '#e53e3e';
+        preview.style.fontWeight = '600';
+        preview.style.borderColor = '#e53e3e';
+        preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
     const start = form.querySelector('#startTime').value;
     const end = form.querySelector('#endTime').value;
     if (start && end && start >= end) {
@@ -229,16 +239,34 @@ const stageColors = [
 
 function onArtistChange(select) {
     const opt = select.options[select.selectedIndex];
+
+    // 스테이지 자동 입력
     const stage = opt.getAttribute('data-stage') || '';
     document.getElementById('autoStageName').value = stage;
-    const preview = document.getElementById('stagePreview');
+    const stagePreview = document.getElementById('stagePreview');
     if (stage) {
-        preview.textContent = stage;
-        preview.style.color = '#3b5bdb';
-        preview.style.fontWeight = '600';
+        stagePreview.textContent = stage;
+        stagePreview.style.color = '#3b5bdb';
+        stagePreview.style.fontWeight = '600';
     } else {
-        preview.textContent = '스테이지 미지정';
-        preview.style.color = 'var(--muted)';
-        preview.style.fontWeight = 'normal';
+        stagePreview.textContent = '스테이지 미지정';
+        stagePreview.style.color = 'var(--muted)';
+        stagePreview.style.fontWeight = 'normal';
+    }
+
+    // 날짜 자동 입력
+    const date = opt.getAttribute('data-date') || '';
+    document.getElementById('autoFestivalDate').value = date;
+    const datePreview = document.getElementById('datePreview');
+    if (date) {
+        datePreview.textContent = date;
+        datePreview.style.color = 'var(--text)';
+        datePreview.style.fontWeight = '600';
+        datePreview.style.borderColor = 'var(--border)';
+    } else {
+        datePreview.textContent = '⚠ 참여 날짜 미설정 — 위 목록에서 날짜를 먼저 저장하세요.';
+        datePreview.style.color = '#e53e3e';
+        datePreview.style.fontWeight = '500';
+        datePreview.style.borderColor = '#e53e3e';
     }
 }
