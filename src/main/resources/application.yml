@@ -25,6 +25,7 @@ spring:
     baseline-version: 1
     out-of-order: false
     validate-on-migrate: true
+    repair-on-migrate: true     # 실패한 마이그레이션 항목 자동 제거 후 재실행
 
   sql:
     init:
