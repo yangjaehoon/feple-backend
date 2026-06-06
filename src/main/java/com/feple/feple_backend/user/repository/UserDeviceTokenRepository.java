@@ -36,6 +36,10 @@ public interface UserDeviceTokenRepository extends JpaRepository<UserDeviceToken
     @Query("SELECT DISTINCT t.token FROM UserDeviceToken t")
     List<String> findAllTokens();
 
+    @Modifying
+    @Query("DELETE FROM UserDeviceToken t WHERE t.token IN :tokens")
+    void deleteByTokenIn(@Param("tokens") List<String> tokens);
+
     @Query("SELECT COUNT(DISTINCT t.user.id) FROM UserDeviceToken t")
     long countDistinctUsers();
 }

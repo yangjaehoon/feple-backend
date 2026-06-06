@@ -1,7 +1,9 @@
 package com.feple.feple_backend.notification.service;
 
+import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +12,10 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FcmPushService {
+
+    private final DeviceTokenService deviceTokenService;
 
     private static final int BATCH_SIZE = 500; // FCM multicast 최대 500개
 
@@ -60,12 +65,22 @@ public class FcmPushService {
                 log.info("[FCM] 발송 완료 — 성공: {}, 실패: {}",
                         response.getSuccessCount(), response.getFailureCount());
 
-                // 실패 토큰 로깅 (필요 시 DB에서 삭제 가능)
                 List<SendResponse> responses = response.getResponses();
+                List<String> staleTokens = new ArrayList<>();
                 for (int idx = 0; idx < responses.size(); idx++) {
                     if (!responses.get(idx).isSuccessful()) {
-                        log.debug("[FCM] 실패 토큰: {}", batch.get(idx));
+                        FirebaseMessagingException ex = responses.get(idx).getException();
+                        MessagingErrorCode code = ex != null ? ex.getMessagingErrorCode() : null;
+                        log.debug("[FCM] 실패 토큰 ({}): {}", code, batch.get(idx));
+                        if (code == MessagingErrorCode.UNREGISTERED
+                                || code == MessagingErrorCode.INVALID_ARGUMENT) {
+                            staleTokens.add(batch.get(idx));
+                        }
                     }
+                }
+                if (!staleTokens.isEmpty()) {
+                    deviceTokenService.deleteStaleTokens(staleTokens);
+                    log.info("[FCM] 만료 토큰 {}개 삭제", staleTokens.size());
                 }
             } catch (FirebaseMessagingException e) {
                 log.error("[FCM] 발송 오류: {}", e.getMessage());

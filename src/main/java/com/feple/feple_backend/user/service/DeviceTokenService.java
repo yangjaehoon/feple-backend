@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -34,5 +35,12 @@ public class DeviceTokenService {
     @Transactional
     public void unregister(Long userId, String token) {
         tokenRepository.deleteByUserIdAndToken(userId, token);
+    }
+
+    @Transactional
+    public void deleteStaleTokens(List<String> tokens) {
+        if (!tokens.isEmpty()) {
+            tokenRepository.deleteByTokenIn(tokens);
+        }
     }
 }
