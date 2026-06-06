@@ -23,9 +23,9 @@ public class ArtistController {
     private final ArtistScheduleService artistScheduleService;
 
     @GetMapping
-    public List<ArtistResponseDto> getArtists(){
+    public List<ArtistResponseDto> getArtists() {
         return artistService.getAllArtists();
-    };
+    }
 
     @GetMapping("/{id}")
     public ArtistResponseDto getArtistById(@PathVariable Long id){

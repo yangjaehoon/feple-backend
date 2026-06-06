@@ -34,7 +34,7 @@ class ArtistFollowServiceTest {
     @Mock ArtistRepository artistRepository;
     @Mock UserRepository userRepository;
 
-    @InjectMocks ArtistFollowService artistFollowService;
+    @InjectMocks ArtistFollowServiceImpl artistFollowService;
 
     private User user(Long id) {
         return User.builder().id(id).nickname("user" + id)
@@ -145,7 +145,7 @@ class ArtistFollowServiceTest {
     @Test
     void 언팔로우_성공시_delete와_decrementFollowerCount_호출되고_followed_false_반환() {
         ArtistFollow follow = ArtistFollow.of(user(1L), artist(10L, 1));
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 1)));
+        given(artistRepository.existsById(10L)).willReturn(true);
         given(artistFollowRepository.findByUserIdAndArtistId(1L, 10L)).willReturn(Optional.of(follow));
         given(artistRepository.findFollowerCountById(10L)).willReturn(0);
 
@@ -159,7 +159,7 @@ class ArtistFollowServiceTest {
 
     @Test
     void 팔로우_안_했을_때_언팔로우시_delete_미호출_멱등성_보장() {
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 0)));
+        given(artistRepository.existsById(10L)).willReturn(true);
         given(artistFollowRepository.findByUserIdAndArtistId(1L, 10L)).willReturn(Optional.empty());
         given(artistRepository.findFollowerCountById(10L)).willReturn(0);
 
@@ -172,7 +172,7 @@ class ArtistFollowServiceTest {
 
     @Test
     void 존재하지_않는_아티스트_언팔로우시_예외() {
-        given(artistRepository.findById(99L)).willReturn(Optional.empty());
+        given(artistRepository.existsById(99L)).willReturn(false);
 
         assertThatThrownBy(() -> artistFollowService.unfollow(1L, 99L))
                 .isInstanceOf(NoSuchElementException.class);
