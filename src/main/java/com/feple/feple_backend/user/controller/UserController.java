@@ -42,7 +42,7 @@ public class UserController {
 
     @GetMapping("/check-nickname")
     public ResponseEntity<java.util.Map<String, Object>> checkNickname(
-            @RequestParam @NotBlank @Size(min = 2, max = 30) String nickname,
+            @RequestParam @NotBlank @Size(min = 2, max = 8) String nickname,
             @RequestParam(required = false) Long excludeUserId) {
         return ResponseEntity.ok(userService.checkNicknameAvailable(nickname, excludeUserId));
     }
@@ -66,7 +66,7 @@ public class UserController {
     public ResponseEntity<UserResponseDto> updateProfileImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
-            @AuthenticationPrincipal Long userId) throws java.io.IOException {
+            @AuthenticationPrincipal Long userId) {
         requireSelf(id, userId);
         return ResponseEntity.ok(userService.updateProfileImage(id, file));
     }

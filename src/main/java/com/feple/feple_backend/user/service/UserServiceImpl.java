@@ -108,11 +108,15 @@ public class UserServiceImpl implements UserService, UserAdminService {
     }
 
     @Override
-    public UserResponseDto updateProfileImage(@NonNull Long id, MultipartFile file) throws java.io.IOException {
-        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
-        String url = fileStorageService.storeUserProfile(file, user.getNickname());
-        user.changeProfileImage(url);
-        return toUserDto(user);
+    public UserResponseDto updateProfileImage(@NonNull Long id, MultipartFile file) {
+        try {
+            User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+            String url = fileStorageService.storeUserProfile(file, user.getNickname());
+            user.changeProfileImage(url);
+            return toUserDto(user);
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("프로필 이미지 저장에 실패했습니다.", e);
+        }
     }
 
     @Override
