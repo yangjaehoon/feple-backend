@@ -6,7 +6,7 @@ spring:
       keepalive-time: 30000      # 30초마다 유휴 커넥션에 ping — MySQL이 끊기 전에 감지
       max-lifetime: 600000       # 10분 후 커넥션 재생성 (MySQL wait_timeout보다 짧게)
       idle-timeout: 300000       # 5분 이상 유휴 커넥션 제거
-      connection-timeout: 30000  # 커넥션 획득 대기 최대 30초
+      connection-timeout: 5000   # DB 단절 시 빠른 실패 — 30초 대기 스레드 누적 방지
 
   jpa:
     open-in-view: false
@@ -25,7 +25,6 @@ spring:
     baseline-version: 1
     out-of-order: false
     validate-on-migrate: true
-    repair-on-migrate: true     # 실패한 마이그레이션 항목 자동 제거 후 재실행
 
   sql:
     init:
