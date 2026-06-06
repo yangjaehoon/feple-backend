@@ -61,8 +61,8 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
             throw new NoSuchElementException("아티스트");
         }
 
-        if (artistFollowRepository.findByUserIdAndArtistId(userId, artistId).isPresent()) {
-            artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
+        int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
+        if (deleted > 0) {
             artistRepository.decrementFollowerCount(artistId);
         }
 
