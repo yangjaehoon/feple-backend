@@ -23,7 +23,7 @@ public class ArtistScheduleService {
 
     public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
         List<ArtistFestival> myFestivals =
-                artistFestivalRepository.findByArtistIdOrderByFestivalStartDateDesc(artistId);
+                artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId);
 
         // 페스티벌 ID 목록을 한 번에 조회하여 N+1 방지
         List<Long> festivalIds = myFestivals.stream()
