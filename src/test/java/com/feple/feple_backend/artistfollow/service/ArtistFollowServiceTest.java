@@ -6,7 +6,6 @@ import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
 import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
-import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -15,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -64,9 +65,13 @@ class ArtistFollowServiceTest {
     // ── followStatus ─────────────────────────────────────────────────
 
     @Test
-    void followStatus_userId_null이면_예외() {
-        assertThatThrownBy(() -> artistFollowService.followStatus(null, 10L))
-                .isInstanceOf(AuthenticationRequiredException.class);
+    void followStatus_userId_null이면_followed_false_반환() {
+        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 7)));
+
+        FollowStatusDto result = artistFollowService.followStatus(null, 10L);
+
+        assertThat(result.followed()).isFalse();
+        assertThat(result.followerCount()).isEqualTo(7);
     }
 
     @Test
@@ -96,41 +101,33 @@ class ArtistFollowServiceTest {
     // ── follow ───────────────────────────────────────────────────────
 
     @Test
-    void follow_userId_null이면_예외() {
-        assertThatThrownBy(() -> artistFollowService.follow(null, 10L))
-                .isInstanceOf(AuthenticationRequiredException.class);
-    }
-
-    @Test
-    void 팔로우_성공시_save와_incrementFollowerCount_호출되고_followed_true_반환() {
+    void 팔로우_성공시_saveAndFlush와_incrementFollowerCount_호출되고_followed_true_반환() {
         User user = user(1L);
         Artist artist = artist(10L, 0);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
-        given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
         given(artistRepository.findFollowerCountById(10L)).willReturn(1);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 
         assertThat(result.followed()).isTrue();
         assertThat(result.followerCount()).isEqualTo(1);
-        verify(artistFollowRepository).save(any(ArtistFollow.class));
+        verify(artistFollowRepository).saveAndFlush(any(ArtistFollow.class));
         verify(artistRepository).incrementFollowerCount(10L);
     }
 
     @Test
-    void 이미_팔로우_중이면_save_미호출_멱등성_보장() {
+    void 이미_팔로우_중이면_saveAndFlush_예외를_잡아_멱등성_보장() {
         User user = user(1L);
         Artist artist = artist(10L, 5);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
-        given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(true);
+        given(artistFollowRepository.saveAndFlush(any())).willThrow(new DataIntegrityViolationException("duplicate"));
         given(artistRepository.findFollowerCountById(10L)).willReturn(5);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 
         assertThat(result.followed()).isTrue();
-        verify(artistFollowRepository, never()).save(any());
         verify(artistRepository, never()).incrementFollowerCount(any());
     }
 
@@ -144,12 +141,6 @@ class ArtistFollowServiceTest {
     }
 
     // ── unfollow ─────────────────────────────────────────────────────
-
-    @Test
-    void unfollow_userId_null이면_예외() {
-        assertThatThrownBy(() -> artistFollowService.unfollow(null, 10L))
-                .isInstanceOf(AuthenticationRequiredException.class);
-    }
 
     @Test
     void 언팔로우_성공시_delete와_decrementFollowerCount_호출되고_followed_false_반환() {
