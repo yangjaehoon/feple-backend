@@ -79,7 +79,7 @@ public class NotificationService {
         NotificationPreference pref = preferenceService.getOrCreate(userId);
         if (pref.isEnabledFor(NotificationType.CERT_APPROVED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
-            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId), NotificationType.CERT_APPROVED);
         }
     }
 
@@ -96,7 +96,7 @@ public class NotificationService {
         NotificationPreference pref = preferenceService.getOrCreate(userId);
         if (pref.isEnabledFor(NotificationType.CERT_REJECTED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
-            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId));
+            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId), NotificationType.CERT_REJECTED);
         }
     }
 
@@ -114,7 +114,7 @@ public class NotificationService {
         NotificationPreference pref = preferenceService.getOrCreate(event.userId());
         if (pref.isEnabledFor(NotificationType.SONG_REQUEST_APPROVED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-            fcmPushService.sendMulticast(tokens, title, body, null);
+            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.SONG_REQUEST_APPROVED);
         }
     }
 
@@ -132,7 +132,7 @@ public class NotificationService {
         NotificationPreference pref = preferenceService.getOrCreate(event.userId());
         if (pref.isEnabledFor(NotificationType.SONG_REQUEST_REJECTED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-            fcmPushService.sendMulticast(tokens, title, body, null);
+            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.SONG_REQUEST_REJECTED);
         }
     }
 
@@ -149,7 +149,7 @@ public class NotificationService {
         NotificationPreference pref = preferenceService.getOrCreate(event.userId());
         if (pref.isEnabledFor(NotificationType.ARTIST_SUGGESTION_PROCESSED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-            fcmPushService.sendMulticast(tokens, title, body, null);
+            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.ARTIST_SUGGESTION_PROCESSED);
         }
     }
 
@@ -180,7 +180,7 @@ public class NotificationService {
         NotificationPreference pref = preferenceService.getOrCreate(postAuthorId);
         if (pref.isEnabledFor(NotificationType.NEW_COMMENT)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(postAuthorId));
-            fcmPushService.sendMulticast(tokens, title, body, null);
+            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.NEW_COMMENT);
         }
     }
 
@@ -210,7 +210,7 @@ public class NotificationService {
                 .map(User::getId)
                 .toList();
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(enabledUserIds);
-        fcmPushService.sendMulticast(tokens, title, body, linkId);
+        fcmPushService.sendMulticast(tokens, title, body, linkId, type);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.notification.service;
 
+import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
@@ -21,14 +22,12 @@ public class FcmPushService {
 
     /** 관리자 공지 브로드캐스트 */
     public void sendBroadcast(List<String> tokens, String title, String body) {
-        sendMulticast(tokens, title, body, null, "ADMIN_NOTICE");
+        sendMulticast(tokens, title, body, null, NotificationType.ADMIN_BROADCAST.name());
     }
 
-    /**
-     * 여러 FCM 토큰에 푸시 발송
-     */
-    public void sendMulticast(List<String> tokens, String title, String body, String festivalId) {
-        sendMulticast(tokens, title, body, festivalId, "NEW_FESTIVAL");
+    public void sendMulticast(List<String> tokens, String title, String body,
+                               String linkId, NotificationType type) {
+        sendMulticast(tokens, title, body, linkId, type.name());
     }
 
     private void sendMulticast(List<String> tokens, String title, String body,
