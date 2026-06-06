@@ -6,7 +6,7 @@ import com.feple.feple_backend.artist.song.service.SongRequestService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,19 +23,15 @@ public class SongRequestController {
     @PostMapping
     public ResponseEntity<SongRequestResponseDto> submit(
             @PathVariable Long artistId,
-            Authentication authentication,
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody SubmitSongRequestDto dto) {
-        Long userId = (Long) authentication.getPrincipal();
-        SongRequestResponseDto response = songRequestService.submit(artistId, userId, dto);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(songRequestService.submit(artistId, userId, dto));
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<SongRequestResponseDto>> getMyRequests(
             @PathVariable Long artistId,
-            Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
-        List<SongRequestResponseDto> response = songRequestService.getMyRequests(artistId, userId);
-        return ResponseEntity.ok(response);
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(songRequestService.getMyRequests(artistId, userId));
     }
 }

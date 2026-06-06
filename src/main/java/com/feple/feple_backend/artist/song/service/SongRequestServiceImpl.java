@@ -25,8 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -90,8 +92,10 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         SongRequestStatus statusEnum = (status == null || status.isBlank() || status.equals("ALL"))
                 ? null : SongRequestStatus.valueOf(status);
         String kw = (keyword == null || keyword.isBlank()) ? null : LikeEscaper.escape(keyword.trim());
-        return songRequestRepository.findWithFilters(statusEnum, kw, pageable)
-                .map(r -> SongRequestResponseDto.from(r, resolveNickname(r.getUserId())));
+        Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusEnum, kw, pageable);
+        Map<Long, String> nicknameMap = buildNicknameMap(
+                requestsPage.getContent().stream().map(SongRequest::getUserId).toList());
+        return requestsPage.map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), "알 수 없음")));
     }
 
     @Override
@@ -103,10 +107,12 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Override
     @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getPendingRequests(Long artistId) {
-        return songRequestRepository
-                .findByArtistIdAndStatusOrderByCreatedAtDesc(artistId, SongRequestStatus.PENDING)
-                .stream()
-                .map(r -> SongRequestResponseDto.from(r, resolveNickname(r.getUserId())))
+        List<SongRequest> requests = songRequestRepository
+                .findByArtistIdAndStatusOrderByCreatedAtDesc(artistId, SongRequestStatus.PENDING);
+        Map<Long, String> nicknameMap = buildNicknameMap(
+                requests.stream().map(SongRequest::getUserId).toList());
+        return requests.stream()
+                .map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), "알 수 없음")))
                 .toList();
     }
 
@@ -114,7 +120,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Transactional
     public void approve(Long requestId, String youtubeUrl) {
         SongRequest request = songRequestRepository.findById(requestId)
-                .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다: " + requestId));
+                .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다."));
 
         request.approve();
 
@@ -145,7 +151,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Transactional
     public void reject(Long requestId, String reason) {
         SongRequest request = songRequestRepository.findById(requestId)
-                .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다: " + requestId));
+                .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다."));
         request.reject();
         songRequestRepository.save(request);
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
@@ -157,5 +163,13 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 .map(User::getNickname)
                 .filter(n -> n != null && !n.isBlank())
                 .orElse("알 수 없음");
+    }
+
+    private Map<Long, String> buildNicknameMap(List<Long> userIds) {
+        return userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        u -> (u.getNickname() != null && !u.getNickname().isBlank()) ? u.getNickname() : "알 수 없음"
+                ));
     }
 }
