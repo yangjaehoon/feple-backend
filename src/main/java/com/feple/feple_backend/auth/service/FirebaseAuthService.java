@@ -1,5 +1,7 @@
 package com.feple.feple_backend.auth.service;
 
+import com.feple.feple_backend.artist.ArtistNameFilter;
+import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -17,6 +19,8 @@ import reactor.core.scheduler.Schedulers;
 public class FirebaseAuthService implements OAuthLoginService {
 
     private final UserRepository userRepository;
+    private final BadWordFilter badWordFilter;
+    private final ArtistNameFilter artistNameFilter;
 
     @Override
     public Mono<User> authenticate(String idToken) {
@@ -50,10 +54,7 @@ public class FirebaseAuthService implements OAuthLoginService {
                     String raw = (displayName != null && !displayName.isBlank())
                             ? displayName
                             : "User" + uid.substring(0, Math.min(uid.length(), 8));
-                    String sanitized = raw.trim().replaceAll("[^가-힣a-zA-Z0-9_]", "");
-                    String base = sanitized.isBlank()
-                            ? "User" + uid.substring(0, Math.min(uid.length(), 8))
-                            : sanitized;
+                    String base = sanitizeNickname(raw, uid);
                     return userRepository.save(User.builder()
                             .email(email)
                             .nickname(uniqueNickname(base))
@@ -63,8 +64,24 @@ public class FirebaseAuthService implements OAuthLoginService {
                 });
     }
 
+    // displayName은 앱 외부(Firebase SDK)에서 변조 가능 → 금칙어·아티스트명 우회를 막기 위해 검증 후 부적절하면 기본값으로 대체
+    private String sanitizeNickname(String raw, String uid) {
+        String fallback = "User" + uid.substring(0, Math.min(uid.length(), 8));
+        String sanitized = raw.trim().replaceAll("[^가-힣a-zA-Z0-9_]", "");
+        if (sanitized.length() < 2) return fallback;
+        if (sanitized.length() > 8) sanitized = sanitized.substring(0, 8);
+        try {
+            badWordFilter.validate(sanitized);
+            artistNameFilter.validate(sanitized);
+        } catch (Exception ignored) {
+            return fallback;
+        }
+        return sanitized;
+    }
+
     private String uniqueNickname(String base) {
         if (base.length() > 8) base = base.substring(0, 8);
+        if (base.length() < 2) base = "User";  // sanitizeNickname 이후 안전망
         if (!userRepository.existsByNickname(base)) return base;
         for (int i = 2; i <= 999; i++) {
             String candidate = base.substring(0, Math.min(base.length(), 6)) + i;
