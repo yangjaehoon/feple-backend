@@ -62,6 +62,7 @@ public class ArtistGalleryPhotoController {
             @Valid @RequestBody RegisterPhotoRequestDto req,
             @AuthenticationPrincipal Long userId
     ) {
+        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         return artistGalleryPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), userId);
     }
 
@@ -84,6 +85,7 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long artistId,
             @PathVariable Long photoId,
             @AuthenticationPrincipal Long userId) {
+        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         artistGalleryPhotoService.delete(photoId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -94,6 +96,7 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long photoId,
             @Valid @RequestBody UpdatePhotoRequestDto req,
             @AuthenticationPrincipal Long userId) {
+        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         return artistGalleryPhotoService.update(photoId, userId, req);
     }
 
@@ -118,6 +121,7 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long photoId,
             @PathVariable Long artistId,
             @AuthenticationPrincipal Long userId) {
+        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         boolean success = artistGalleryPhotoService.toggleLike(photoId, userId);
         return ResponseEntity.ok(Map.of("success", success));
     }

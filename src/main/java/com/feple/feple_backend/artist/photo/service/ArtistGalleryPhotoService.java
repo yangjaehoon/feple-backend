@@ -51,6 +51,7 @@ public class ArtistGalleryPhotoService {
         return s3PresignService.presignPut(objectKey, contentType);
     }
 
+    @Transactional
     public ArtistGalleryPhotoResponseDto register(
             Long artistId,
             String objectKey,
