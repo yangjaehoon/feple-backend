@@ -11,6 +11,7 @@ import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,9 +47,11 @@ public class ArtistFollowService {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
-        if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
-            artistFollowRepository.save(ArtistFollow.of(user, artist));
+        try {
+            artistFollowRepository.saveAndFlush(ArtistFollow.of(user, artist));
             artistRepository.incrementFollowerCount(artistId);
+        } catch (DataIntegrityViolationException ignored) {
+            // unique(user_id, artist_id): 동시 요청으로 이미 저장됨
         }
 
         return new FollowResponseDto(true, artistRepository.findFollowerCountById(artistId));
