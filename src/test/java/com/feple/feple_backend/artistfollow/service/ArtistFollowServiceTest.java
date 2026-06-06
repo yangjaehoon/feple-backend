@@ -144,9 +144,8 @@ class ArtistFollowServiceTest {
 
     @Test
     void 언팔로우_성공시_delete와_decrementFollowerCount_호출되고_followed_false_반환() {
-        ArtistFollow follow = ArtistFollow.of(user(1L), artist(10L, 1));
         given(artistRepository.existsById(10L)).willReturn(true);
-        given(artistFollowRepository.findByUserIdAndArtistId(1L, 10L)).willReturn(Optional.of(follow));
+        given(artistFollowRepository.deleteByUserIdAndArtistId(1L, 10L)).willReturn(1);
         given(artistRepository.findFollowerCountById(10L)).willReturn(0);
 
         FollowResponseDto result = artistFollowService.unfollow(1L, 10L);
@@ -158,15 +157,15 @@ class ArtistFollowServiceTest {
     }
 
     @Test
-    void 팔로우_안_했을_때_언팔로우시_delete_미호출_멱등성_보장() {
+    void 팔로우_안_했을_때_언팔로우시_decrement_미호출_멱등성_보장() {
         given(artistRepository.existsById(10L)).willReturn(true);
-        given(artistFollowRepository.findByUserIdAndArtistId(1L, 10L)).willReturn(Optional.empty());
+        given(artistFollowRepository.deleteByUserIdAndArtistId(1L, 10L)).willReturn(0);
         given(artistRepository.findFollowerCountById(10L)).willReturn(0);
 
         FollowResponseDto result = artistFollowService.unfollow(1L, 10L);
 
         assertThat(result.followed()).isFalse();
-        verify(artistFollowRepository, never()).deleteByUserIdAndArtistId(any(), any());
+        verify(artistFollowRepository).deleteByUserIdAndArtistId(1L, 10L);
         verify(artistRepository, never()).decrementFollowerCount(any());
     }
 
