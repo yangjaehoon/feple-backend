@@ -17,6 +17,7 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -114,6 +115,7 @@ public class ArtistGalleryPhotoService {
             throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
         }
         String s3Key = photo.getS3Key();
+        artistGalleryPhotoLikeRepository.deleteByPhotoId(photoId);
         artistGalleryPhotoRepository.delete(photo);
         fileStorageService.deleteFile(s3Key); // DB 삭제 성공 후 S3 정리
     }
@@ -126,9 +128,10 @@ public class ArtistGalleryPhotoService {
         }
         photo.updateTitleAndDescription(command.title(), command.description());
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
+        boolean isLiked = artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, userId);
         return new ArtistGalleryPhotoResponseDto(
                 photo.getId(), url, photo.getUploaderId(), photo.getCreatedAt(),
-                photo.getTitle(), photo.getDescription(), photo.getLikeCount(), false);
+                photo.getTitle(), photo.getDescription(), photo.getLikeCount(), isLiked);
     }
 
     private void verifyS3ImageObject(String objectKey) {
@@ -155,7 +158,12 @@ public class ArtistGalleryPhotoService {
             artistGalleryPhotoRepository.decrementLikeCount(photoId);
             return false;
         }
-        artistGalleryPhotoLikeRepository.save(new ArtistGalleryPhotoLike(photo, user));
+        try {
+            artistGalleryPhotoLikeRepository.saveAndFlush(new ArtistGalleryPhotoLike(photo, user));
+        } catch (DataIntegrityViolationException ignored) {
+            // unique(artist_photo_id, user_id): 동시 요청으로 이미 저장됨
+            return true;
+        }
         artistGalleryPhotoRepository.incrementLikeCount(photoId);
         return true;
     }
