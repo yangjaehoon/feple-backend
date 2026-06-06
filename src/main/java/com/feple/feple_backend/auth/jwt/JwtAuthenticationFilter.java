@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long userId = jwtProvider.parseUserId(token);
 
                 var user = userRepository.findById(userId).orElse(null);
-                if (user == null) {
+                if (user == null || user.isDeleted()) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }

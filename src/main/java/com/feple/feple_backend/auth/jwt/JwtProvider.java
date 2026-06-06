@@ -2,7 +2,6 @@ package com.feple.feple_backend.auth.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -10,13 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
-@RequiredArgsConstructor
 public class JwtProvider {
 
     private final JwtProperties props;
+    private final SecretKey key;
 
-    private SecretKey key() {
-        return Keys.hmacShaKeyFor(props.secret().getBytes(StandardCharsets.UTF_8));
+    public JwtProvider(JwtProperties props) {
+        this.props = props;
+        this.key = Keys.hmacShaKeyFor(props.secret().getBytes(StandardCharsets.UTF_8));
     }
 
     public String createAccessToken(Long userId) {
@@ -28,14 +28,14 @@ public class JwtProvider {
                 .claim("type", "access")
                 .issuedAt(now)
                 .expiration(exp)
-                .signWith(key())
+                .signWith(key)
                 .compact();
     }
 
     public boolean isRefreshToken(String token) {
         try {
             String type = Jwts.parser()
-                    .verifyWith(key())
+                    .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload()
@@ -55,7 +55,7 @@ public class JwtProvider {
                 .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(exp)
-                .signWith(key())
+                .signWith(key)
                 .compact();
     }
 
@@ -63,7 +63,7 @@ public class JwtProvider {
     /** access 토큰인 경우에만 userId 반환, 아니면 예외 */
     public Long parseUserId(String token) {
         var payload = Jwts.parser()
-                .verifyWith(key())
+                .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

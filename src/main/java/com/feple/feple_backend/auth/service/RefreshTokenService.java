@@ -38,7 +38,7 @@ public class RefreshTokenService {
     @Transactional
     public void save(Long userId, String rawToken) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+                .orElseThrow(() -> new IllegalStateException("토큰 저장 중 사용자를 찾을 수 없습니다."));
         String tokenHash = hash(rawToken);
         LocalDateTime expiresAt = LocalDateTime.now()
                 .plusSeconds(jwtProperties.refreshTokenExpirationMs() / 1000);
