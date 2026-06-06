@@ -142,7 +142,6 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
             }
         }
 
-        songRequestRepository.save(request);
         eventPublisher.publishEvent(new SongRequestApprovedEvent(
                 request.getUserId(), request.getSongTitle(), request.getArtistName()));
     }
@@ -153,7 +152,6 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         SongRequest request = songRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다."));
         request.reject();
-        songRequestRepository.save(request);
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
                 request.getUserId(), request.getSongTitle(), request.getArtistName(), reason));
     }

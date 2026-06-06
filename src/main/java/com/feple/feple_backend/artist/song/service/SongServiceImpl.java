@@ -54,6 +54,8 @@ public class SongServiceImpl implements SongService, SongAdminService {
                     int count = countMap.getOrDefault(song.getId(), 0L).intValue();
                     return SongResponseDto.from(song, count, List.of());
                 })
+                .sorted(Comparator.comparingInt(SongResponseDto::getFestivalCount).reversed()
+                        .thenComparing(SongResponseDto::getTitle))
                 .toList();
     }
 
