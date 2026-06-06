@@ -20,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Tag(name = "게시글", description = "자유·동행·아티스트·페스티벌 게시글 CRUD, 좋아요, 스크랩")
@@ -192,10 +193,22 @@ public class PostController {
         return ResponseEntity.ok(postService.incrementViewCount(postId));
     }
 
-    @GetMapping("/image-upload-url")
-    public ResponseEntity<PresignResult> getPostImageUploadUrl(@AuthenticationPrincipal Long userId) {
-        String key = "posts/" + userId + "/" + UUID.randomUUID() + ".jpg";
-        return ResponseEntity.ok(s3PresignService.presignPut(key, "image/jpeg"));
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+
+    record PostImagePresignRequest(
+            @NotBlank String contentType,
+            @NotBlank String extension) {}
+
+    @PostMapping("/image-upload-url")
+    public ResponseEntity<PresignResult> getPostImageUploadUrl(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody PostImagePresignRequest req) {
+        if (!ALLOWED_EXTENSIONS.contains(req.extension()) || !ALLOWED_CONTENT_TYPES.contains(req.contentType())) {
+            return ResponseEntity.badRequest().build();
+        }
+        String key = "posts/" + userId + "/" + UUID.randomUUID() + "." + req.extension();
+        return ResponseEntity.ok(s3PresignService.presignPut(key, req.contentType()));
     }
 
 }

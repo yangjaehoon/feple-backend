@@ -116,7 +116,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                 .requestMatchers("/favicon.ico", "/error").permitAll()
                 // /posts/my/** 전체 및 presigned URL은 인증 필수
-                .requestMatchers(HttpMethod.GET, "/posts/my/**", "/posts/image-upload-url").authenticated()
+                .requestMatchers(HttpMethod.GET, "/posts/my/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**").permitAll()
                 .anyRequest().authenticated())
