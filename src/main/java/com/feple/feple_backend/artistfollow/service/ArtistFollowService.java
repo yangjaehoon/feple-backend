@@ -7,7 +7,6 @@ import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
 import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,20 +29,13 @@ public class ArtistFollowService {
 
     @Transactional(readOnly = true)
     public FollowStatusDto followStatus(Long userId, Long artistId) {
-        if (userId == null) {
-            throw new AuthenticationRequiredException("로그인이 필요합니다.");
-        }
-
-        boolean followed = artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        boolean followed = userId != null && artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
         return new FollowStatusDto(followed, artist.getFollowerCount());
     }
 
     @Transactional
     public FollowResponseDto follow(Long userId, Long artistId) {
-        if (userId == null) {
-            throw new AuthenticationRequiredException("로그인이 필요합니다.");
-        }
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
@@ -59,10 +51,6 @@ public class ArtistFollowService {
 
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
-        if (userId == null) {
-            throw new AuthenticationRequiredException("로그인이 필요합니다.");
-        }
-
         EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         if (artistFollowRepository.findByUserIdAndArtistId(userId, artistId).isPresent()) {
