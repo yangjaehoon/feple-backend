@@ -97,7 +97,7 @@ class RefreshTokenServiceTest {
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> refreshTokenService.save(99L, "raw-token"))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 
     // ── validateAndConsume ───────────────────────────────────────────
