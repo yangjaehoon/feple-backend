@@ -5,6 +5,7 @@ import com.feple.feple_backend.notification.dto.UpdateNotificationPreferenceDto;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,15 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     @Transactional
     public NotificationPreference getOrCreate(Long userId) {
         return preferenceRepository.findByUserId(userId)
-                .orElseGet(() -> preferenceRepository.save(
-                        NotificationPreference.defaultFor(userId)));
+                .orElseGet(() -> {
+                    try {
+                        return preferenceRepository.save(
+                                NotificationPreference.defaultFor(userId));
+                    } catch (DataIntegrityViolationException e) {
+                        // 동시 요청으로 다른 트랜잭션이 먼저 insert한 경우
+                        return preferenceRepository.findByUserId(userId)
+                                .orElseThrow(() -> e);
+                    }
+                });
     }
 }

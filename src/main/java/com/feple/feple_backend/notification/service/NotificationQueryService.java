@@ -56,7 +56,6 @@ public class NotificationQueryService {
             throw new IllegalArgumentException("본인의 알림만 읽음 처리할 수 있습니다.");
         }
         n.markRead();
-        notificationRepository.save(n);
     }
 
     @Transactional
