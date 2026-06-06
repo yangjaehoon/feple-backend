@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Tag(name = "페스티벌 인증", description = "페스티벌 참여 인증 제출·조회")
@@ -63,6 +64,14 @@ public class FestivalCertificationController {
             @AuthenticationPrincipal Long userId
     ) {
         return certificationService.getApprovedFestivalIds(userId);
+    }
+
+    @GetMapping("/my/cert-state")
+    public Map<String, String> getMyCertState(
+            @RequestParam Long festivalId,
+            @AuthenticationPrincipal Long userId
+    ) {
+        return Map.of("certState", certificationService.getCertState(userId, festivalId));
     }
 
     public record PresignRequest(

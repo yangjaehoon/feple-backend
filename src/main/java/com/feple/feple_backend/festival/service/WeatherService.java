@@ -7,21 +7,21 @@ import com.feple.feple_backend.festival.entity.FestivalWeather;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
+import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
@@ -64,8 +64,7 @@ public class WeatherService {
 
     @Transactional
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("페스티벌"));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
@@ -107,14 +106,18 @@ public class WeatherService {
     }
 
     private WeatherDto fetchFromApi(int nx, int ny, LocalDate targetDate, String[] baseDatetime) {
-        String url = baseUrl + "/getVilageFcst"
-                + "?serviceKey=" + serviceKey
-                + "&pageNo=1&numOfRows=1000&dataType=JSON"
-                + "&base_date=" + baseDatetime[0]
-                + "&base_time=" + baseDatetime[1]
-                + "&nx=" + nx + "&ny=" + ny;
+        var uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getVilageFcst")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 1000)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", baseDatetime[0])
+                .queryParam("base_time", baseDatetime[1])
+                .queryParam("nx", nx)
+                .queryParam("ny", ny)
+                .build().toUri();
 
-        JsonNode body = restTemplate.getForObject(URI.create(url), JsonNode.class);
+        JsonNode body = restTemplate.getForObject(uri, JsonNode.class);
         JsonNode items = body.path("response").path("body").path("items").path("item");
 
         String resultCode = body.path("response").path("header").path("resultCode").asText();

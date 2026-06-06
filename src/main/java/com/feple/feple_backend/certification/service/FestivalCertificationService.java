@@ -129,6 +129,13 @@ public class FestivalCertificationService {
     }
 
     @Transactional(readOnly = true)
+    public String getCertState(Long userId, Long festivalId) {
+        return certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
+                .map(cert -> cert.getStatus().name())
+                .orElse("NONE");
+    }
+
+    @Transactional(readOnly = true)
     public long getPendingCount() {
         return certificationRepository.countByStatus(CertificationStatus.PENDING);
     }
