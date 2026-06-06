@@ -5,10 +5,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class UpdateNicknameDto {
     @NotBlank(message = "닉네임은 비어 있을 수 없습니다.")

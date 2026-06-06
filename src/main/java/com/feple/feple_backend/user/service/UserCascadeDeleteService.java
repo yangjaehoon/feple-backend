@@ -5,10 +5,13 @@ import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageReposit
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.post.repository.PostLikeRepository;
+import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -32,6 +35,9 @@ public class UserCascadeDeleteService {
     private final FestivalCertificationRepository certificationRepository;
     private final ArtistProfileImageLikeRepository artistImageLikeRepository;
     private final ArtistProfileImageRepository artistImageRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final CommentLikeRepository commentLikeRepository;
+    private final PostScrapRepository postScrapRepository;
     private final FileStorageService fileStorageService;
 
     public void delete(User user) {
@@ -45,6 +51,9 @@ public class UserCascadeDeleteService {
         // 소셜 활동 데이터 삭제
         festivalLikeRepository.deleteByUserId(id);
         artistFollowRepository.deleteByUserId(id);
+        postLikeRepository.deleteByUser(user);
+        commentLikeRepository.deleteByUserId(id);
+        postScrapRepository.deleteByUser(user);
 
         notificationRepository.deleteByUserId(id);
         notificationPreferenceRepository.deleteByUserId(id);

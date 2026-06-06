@@ -20,7 +20,6 @@ import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
@@ -73,7 +72,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getCurrentUser(Authentication auth) {
+    public ResponseEntity<UserResponseDto> getCurrentUser() {
         Long userId = userService.currentUserId();
         UserResponseDto userDto = userService.getUser(userId);
         return ResponseEntity.ok(userDto);
