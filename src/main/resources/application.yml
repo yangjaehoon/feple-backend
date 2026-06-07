@@ -1,8 +1,8 @@
 spring:
   datasource:
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 5
+      minimum-idle: 1
       keepalive-time: 120000     # 2분마다 유휴 커넥션 ping — MySQL wait_timeout(8h) 대비 충분
       max-lifetime: 600000       # 10분 후 커넥션 재생성 (MySQL wait_timeout보다 짧게)
       idle-timeout: 300000       # 5분 이상 유휴 커넥션 제거

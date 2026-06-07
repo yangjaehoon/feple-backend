@@ -76,6 +76,12 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo mv /tmp/*.jar /opt/feple/feple.jar
+            sudo mkdir -p /etc/systemd/system/feple.service.d
+            sudo tee /etc/systemd/system/feple.service.d/jvm.conf > /dev/null << 'EOF'
+            [Service]
+            Environment="JAVA_TOOL_OPTIONS=-Xms128m -Xmx400m -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication"
+            EOF
+            sudo systemctl daemon-reload
             sudo systemctl start feple.service
-            sleep 10
+            sleep 15
             systemctl is-active feple.service
