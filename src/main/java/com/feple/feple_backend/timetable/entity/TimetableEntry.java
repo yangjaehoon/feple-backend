@@ -50,7 +50,8 @@ public class TimetableEntry {
     private LocalTime endTime;
 
     public String getArtistName() {
-        return artist != null ? artist.getName() : artistName;
+        if (artistName != null && !artistName.isBlank()) return artistName;
+        return artist != null ? artist.getName() : "";
     }
 
     public String getStageName() {

@@ -4,6 +4,8 @@ import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.format.DateTimeFormatter;
+
 @Getter
 @Builder
 public class TimetableEntryResponse {
@@ -15,6 +17,8 @@ public class TimetableEntryResponse {
     private String startTime;
     private String endTime;
 
+    private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
+
     public static TimetableEntryResponse from(TimetableEntry e) {
         int order = e.getStage() != null ? e.getStage().getDisplayOrder() : Integer.MAX_VALUE;
         return TimetableEntryResponse.builder()
@@ -23,8 +27,8 @@ public class TimetableEntryResponse {
                 .stageOrder(order)
                 .artistName(e.getArtistName())
                 .festivalDate(e.getFestivalDate().toString())
-                .startTime(e.getStartTime().toString())
-                .endTime(e.getEndTime().toString())
+                .startTime(e.getStartTime().format(HH_MM))
+                .endTime(e.getEndTime().format(HH_MM))
                 .build();
     }
 }
