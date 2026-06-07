@@ -8,6 +8,8 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -17,6 +19,8 @@ import reactor.core.scheduler.Schedulers;
 @RequiredArgsConstructor
 @Transactional
 public class FirebaseAuthService implements OAuthLoginService {
+
+    private static final Logger log = LoggerFactory.getLogger(FirebaseAuthService.class);
 
     private final UserRepository userRepository;
     private final BadWordFilter badWordFilter;
@@ -39,6 +43,7 @@ public class FirebaseAuthService implements OAuthLoginService {
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
+            log.warn("[Firebase Auth] idToken 검증 실패: {} - {}", e.getClass().getSimpleName(), e.getMessage());
             throw new IllegalArgumentException("인증에 실패했습니다. 다시 로그인해주세요.");
         }
     }
