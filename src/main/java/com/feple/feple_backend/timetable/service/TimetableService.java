@@ -24,6 +24,7 @@ public class TimetableService {
     private final FestivalRepository festivalRepository;
     private final StageRepository stageRepository;
 
+    @Transactional(readOnly = true)
     public List<TimetableEntryResponse> getEntries(Long festivalId) {
         return timetableRepository.findByFestivalIdWithStage(festivalId)
                 .stream()
@@ -60,7 +61,12 @@ public class TimetableService {
     }
 
     @Transactional
-    public void deleteEntry(Long id) {
-        timetableRepository.deleteById(id);
+    public void deleteEntry(Long festivalId, Long entryId) {
+        TimetableEntry entry = timetableRepository.findById(entryId)
+                .orElseThrow(() -> new NoSuchElementException("타임테이블 항목을 찾을 수 없습니다."));
+        if (!festivalId.equals(entry.getFestivalId())) {
+            throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
+        }
+        timetableRepository.delete(entry);
     }
 }

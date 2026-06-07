@@ -59,6 +59,10 @@ public class TimetableEntry {
         return stage != null ? stage.getName() : null;
     }
 
+    public Long getFestivalId() {
+        return festival != null ? festival.getId() : null;
+    }
+
     public void updateStage(Stage stage) {
         this.stage = stage;
     }

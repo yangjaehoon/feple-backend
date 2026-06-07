@@ -4,12 +4,14 @@ import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
 @RequiredArgsConstructor
@@ -40,8 +42,15 @@ public class FestivalTimetableAdminController {
     public String deleteTimetableEntry(@PathVariable Long festivalId,
                                        @PathVariable Long entryId,
                                        RedirectAttributes ra) {
-        timetableService.deleteEntry(entryId);
-        ra.addFlashAttribute("successMessage", "항목이 삭제되었습니다.");
+        try {
+            timetableService.deleteEntry(festivalId, entryId);
+            ra.addFlashAttribute("successMessage", "항목이 삭제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("타임테이블 항목 삭제 실패: festivalId={}, entryId={}", festivalId, entryId, e);
+            ra.addFlashAttribute("errorMessage", "항목 삭제에 실패했습니다.");
+        }
         return AdminFestivalRedirects.timetable(festivalId);
     }
 }
