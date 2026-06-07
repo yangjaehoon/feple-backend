@@ -47,6 +47,15 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bootJar -x test
 
+      - name: Stop service before deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo systemctl stop feple.service || true
+
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -56,16 +65,17 @@ jobs:
           source: "build/libs/*.jar"
           target: "/tmp/"
           strip_components: 2
+          timeout: 120s
+          command_timeout: 30m
 
-      - name: Restart Spring Boot service
+      - name: Start Spring Boot service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo systemctl stop feple.service || true
             sudo mv /tmp/*.jar /opt/feple/feple.jar
             sudo systemctl start feple.service
-            sleep 5
+            sleep 10
             systemctl is-active feple.service
