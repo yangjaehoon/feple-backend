@@ -21,7 +21,7 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist WHERE af.festival.id = :festivalId ORDER BY af.lineupOrder ASC")
     List<ArtistFestival> findByFestivalIdOrderByLineupOrderAsc(@Param("festivalId") Long festivalId);
 
-    @Query("SELECT af FROM ArtistFestival af WHERE af.artist.id = :artistId ORDER BY af.festival.startDate ASC")
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival WHERE af.artist.id = :artistId ORDER BY af.festival.startDate ASC")
     List<ArtistFestival> findByArtistIdOrderByFestivalStartDateAsc(@Param("artistId") Long artistId);
 
     // festival JOIN FETCH — getArtistSchedule()에서 af.getFestival() 접근 시 N+1 방지
