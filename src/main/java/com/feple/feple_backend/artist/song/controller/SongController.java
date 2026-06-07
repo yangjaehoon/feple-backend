@@ -26,8 +26,7 @@ public class SongController {
     }
 
     @GetMapping("/{artistId}/songs/{songId}/festivals")
-    public List<SongFestivalDto> getSongFestivals(@PathVariable Long artistId,
-                                                   @PathVariable Long songId) {
+    public List<SongFestivalDto> getSongFestivals(@PathVariable Long songId) {
         return songService.getSongFestivals(songId);
     }
 }

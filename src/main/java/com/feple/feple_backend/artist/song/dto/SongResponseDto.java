@@ -10,6 +10,8 @@ import java.util.List;
 @Builder
 public class SongResponseDto {
 
+    private static final String YOUTUBE_MUSIC_URL_PREFIX = "https://music.youtube.com/watch?v=";
+
     private Long id;
     private String title;
     private String youtubeVideoId;
@@ -24,7 +26,7 @@ public class SongResponseDto {
                 .title(song.getTitle())
                 .youtubeVideoId(song.getYoutubeVideoId())
                 .thumbnailUrl(song.getThumbnailUrl())
-                .youtubeUrl("https://music.youtube.com/watch?v=" + song.getYoutubeVideoId())
+                .youtubeUrl(YOUTUBE_MUSIC_URL_PREFIX + song.getYoutubeVideoId())
                 .festivalCount(0)
                 .festivals(List.of())
                 .build();
@@ -36,7 +38,7 @@ public class SongResponseDto {
                 .title(song.getTitle())
                 .youtubeVideoId(song.getYoutubeVideoId())
                 .thumbnailUrl(song.getThumbnailUrl())
-                .youtubeUrl("https://music.youtube.com/watch?v=" + song.getYoutubeVideoId())
+                .youtubeUrl(YOUTUBE_MUSIC_URL_PREFIX + song.getYoutubeVideoId())
                 .festivalCount(festivalCount)
                 .festivals(festivals)
                 .build();
