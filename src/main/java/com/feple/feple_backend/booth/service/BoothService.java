@@ -49,8 +49,13 @@ public class BoothService {
     }
 
     @Transactional
-    public void deleteBooth(Long boothId) {
-        boothRepository.deleteById(boothId);
+    public void deleteBooth(Long festivalId, Long boothId) {
+        Booth booth = boothRepository.findById(boothId)
+                .orElseThrow(() -> new NoSuchElementException("부스를 찾을 수 없습니다."));
+        if (!festivalId.equals(booth.getFestivalId())) {
+            throw new IllegalArgumentException("해당 페스티벌의 부스가 아닙니다.");
+        }
+        boothRepository.delete(booth);
     }
 
     public String uploadBoothImage(MultipartFile file) throws IOException {
