@@ -180,7 +180,7 @@ public class FestivalServiceImpl implements FestivalService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<FestivalResponseDto> getFestivalsPage(int page, int size) {
         Page<Festival> result = festivalRepository
                 .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")));

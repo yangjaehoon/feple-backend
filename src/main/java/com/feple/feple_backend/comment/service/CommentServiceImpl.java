@@ -11,7 +11,6 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentLike;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
-import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
@@ -35,7 +34,6 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
-    private final CommentReportRepository commentReportRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
