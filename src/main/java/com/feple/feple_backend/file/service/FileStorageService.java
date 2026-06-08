@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -95,13 +98,30 @@ public class FileStorageService {
                 : name.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
     }
 
-    /** S3 오브젝트 삭제 (회원 탈퇴 시 프로필 이미지 정리용) */
+    /** S3 오브젝트 삭제 */
     public void deleteFile(String key) {
         if (key == null || key.isBlank() || key.startsWith("http")) return;
         try {
             s3Template.deleteObject(bucket, key);
         } catch (Exception ignored) {
             // 이미 삭제되었거나 존재하지 않는 경우 무시
+        }
+    }
+
+    /**
+     * 활성 트랜잭션이 있으면 커밋 후 삭제, 없으면 즉시 삭제.
+     * DB 커넥션을 S3 I/O 동안 점유하지 않으면서 롤백 시 파일을 보존한다.
+     */
+    public void deleteFileAfterCommit(String key) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    deleteFile(key);
+                }
+            });
+        } else {
+            deleteFile(key);
         }
     }
 

@@ -106,7 +106,7 @@ class ArtistServiceTest {
         artistService.updateArtist(1L, dto);
 
         // 기존 이미지 삭제 호출 검증
-        verify(fileStorageService).deleteFile("old.jpg");
+        verify(fileStorageService).deleteFileAfterCommit("old.jpg");
     }
 
     @Test
@@ -127,7 +127,7 @@ class ArtistServiceTest {
         artistService.updateArtist(1L, dto);
 
         // 삭제 호출 없어야 함
-        verify(fileStorageService, never()).deleteFile(any());
+        verify(fileStorageService, never()).deleteFileAfterCommit(any());
     }
 
     @Test

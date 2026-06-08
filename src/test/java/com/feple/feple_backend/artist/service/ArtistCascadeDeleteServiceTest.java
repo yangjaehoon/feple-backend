@@ -60,8 +60,8 @@ class ArtistCascadeDeleteServiceTest {
 
         artistCascadeDeleteService.delete(artist);
 
-        verify(fileStorageService).deleteFile("gallery/img1.jpg");
-        verify(fileStorageService).deleteFile("gallery/img2.jpg");
+        verify(fileStorageService).deleteFileAfterCommit("gallery/img1.jpg");
+        verify(fileStorageService).deleteFileAfterCommit("gallery/img2.jpg");
         verify(artistImageLikeRepository).deleteByArtistProfileImageIdIn(List.of(1L, 2L));
         verify(artistImageRepository).deleteAll(images);
     }
@@ -90,7 +90,7 @@ class ArtistCascadeDeleteServiceTest {
         artistCascadeDeleteService.delete(artist);
 
         verify(artistRepository).deleteById(1L);
-        verify(fileStorageService).deleteFile("profile/artist-1.jpg");
+        verify(fileStorageService).deleteFileAfterCommit("profile/artist-1.jpg");
     }
 
     @Test
@@ -114,7 +114,7 @@ class ArtistCascadeDeleteServiceTest {
 
         artistCascadeDeleteService.delete(artist);
 
-        verify(fileStorageService, never()).deleteFile("gallery/img1.jpg");
-        verify(fileStorageService).deleteFile("profile/artist-1.jpg");
+        verify(fileStorageService, never()).deleteFileAfterCommit("gallery/img1.jpg");
+        verify(fileStorageService).deleteFileAfterCommit("profile/artist-1.jpg");
     }
 }

@@ -89,7 +89,7 @@ class UserCascadeDeleteServiceTest {
         userCascadeDeleteService.delete(user);
 
         verify(refreshTokenRepository).deleteByUserId(1L);
-        verify(fileStorageService).deleteFile("profile/user-1.jpg");
+        verify(fileStorageService).deleteFileAfterCommit("profile/user-1.jpg");
         assertThat(user.isDeleted()).isTrue();
         assertThat(user.getNickname()).isEqualTo("(탈퇴한 사용자)");
     }
@@ -109,7 +109,7 @@ class UserCascadeDeleteServiceTest {
 
         userCascadeDeleteService.delete(user);
 
-        verify(fileStorageService).deleteFile(null);
+        verify(fileStorageService).deleteFileAfterCommit(null);
         assertThat(user.isDeleted()).isTrue();
     }
 }
