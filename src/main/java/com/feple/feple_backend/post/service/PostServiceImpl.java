@@ -293,6 +293,14 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getRecentPostsByUser(Long userId, int limit) {
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, limit))
+                .stream().map(PostResponseDto::from).toList();
+    }
+
+    @Override
     public long countMyPosts(Long userId) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.countByUser(user);

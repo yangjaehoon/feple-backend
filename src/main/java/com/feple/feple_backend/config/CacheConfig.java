@@ -50,8 +50,16 @@ public class CacheConfig {
                         .maximumSize(20)
                         .build());
 
+        // 관리자 사이드바 뱃지 카운트: 페이지 이동마다 4+ COUNT 쿼리 방지 — 30초 TTL
+        CaffeineCache adminSidebarCountsCache = new CaffeineCache("adminSidebarCounts",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(30, TimeUnit.SECONDS)
+                        .maximumSize(1)
+                        .build());
+
         SimpleCacheManager manager = new SimpleCacheManager();
-        manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache));
+        manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
+                adminSidebarCountsCache));
         return manager;
     }
 }

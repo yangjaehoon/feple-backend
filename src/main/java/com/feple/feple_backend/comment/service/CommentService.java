@@ -14,6 +14,7 @@ public interface CommentService {
     void deleteOwnComment(Long commentId, Long requestUserId);
     CommentLikeResult toggleLike(Long commentId, Long userId);
     List<MyCommentResponseDto> getMyComments(Long userId);
+    List<MyCommentResponseDto> getRecentCommentsByUser(Long userId, int limit);
     long countMyComments(Long userId);
     void updateOwnComment(Long commentId, Long requestUserId, String content);
     long countCommentsContaining(String word);

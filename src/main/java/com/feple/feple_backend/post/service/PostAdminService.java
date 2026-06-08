@@ -17,4 +17,5 @@ public interface PostAdminService {
     java.util.Map<Long, Long> getPostCountsByUserIds(java.util.List<Long> userIds);
     List<PostResponseDto> getDeletedPosts(int limit);
     void restorePost(Long postId);
+    List<PostResponseDto> getRecentPostsByUser(Long userId, int limit);
 }

@@ -22,13 +22,12 @@ public class UserDetailAggregationService {
     private final PostAdminService postAdminService;
 
     public void populateModel(Long userId, Model model) {
-        var user             = userAdminService.getAdminUser(userId);
-        var stats            = myPageService.getUserStats(userId);
-        var allPosts         = myPageService.getMyPosts(userId);
-        var recentPosts      = allPosts.stream().limit(RECENT_LIMIT).toList();
-        var likedFestivals   = myPageService.getLikedFestivals(userId);
-        var followedArtists  = myPageService.getFollowedArtists(userId);
-        var recentComments   = commentService.getMyComments(userId).stream().limit(RECENT_LIMIT).toList();
+        var user            = userAdminService.getAdminUser(userId);
+        var stats           = myPageService.getUserStats(userId);
+        var recentPosts     = postAdminService.getRecentPostsByUser(userId, RECENT_LIMIT);
+        var likedFestivals  = myPageService.getLikedFestivals(userId);
+        var followedArtists = myPageService.getFollowedArtists(userId);
+        var recentComments  = commentService.getRecentCommentsByUser(userId, RECENT_LIMIT);
 
         model.addAttribute("user",            user);
         model.addAttribute("stats",           stats);

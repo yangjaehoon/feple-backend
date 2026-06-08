@@ -1,28 +1,19 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.admin.service.ReportQueryService;
-import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
-import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
-import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import java.util.List;
 
 @ControllerAdvice(basePackages = "com.feple.feple_backend.admin")
 @RequiredArgsConstructor
 public class AdminSidebarAdvice {
 
-    private final List<ReportQueryService> reportServices;
-    private final FestivalCertificationService certificationService;
-    private final SongRequestAdminService songRequestAdminService;
-    private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final AdminSidebarCountService sidebarCountService;
 
     @ModelAttribute("sidebarReportCount")
     public long sidebarReportCount() {
         try {
-            return reportServices.stream().mapToLong(ReportQueryService::getPendingCount).sum();
+            return sidebarCountService.getCounts().reportCount();
         } catch (Exception e) {
             return 0;
         }
@@ -31,7 +22,7 @@ public class AdminSidebarAdvice {
     @ModelAttribute("sidebarCertCount")
     public long sidebarCertCount() {
         try {
-            return certificationService.getPendingCount();
+            return sidebarCountService.getCounts().certCount();
         } catch (Exception e) {
             return 0;
         }
@@ -40,7 +31,7 @@ public class AdminSidebarAdvice {
     @ModelAttribute("sidebarSongRequestCount")
     public long sidebarSongRequestCount() {
         try {
-            return songRequestAdminService.getPendingCount();
+            return sidebarCountService.getCounts().songRequestCount();
         } catch (Exception e) {
             return 0;
         }
@@ -49,7 +40,7 @@ public class AdminSidebarAdvice {
     @ModelAttribute("sidebarArtistSuggestionCount")
     public long sidebarArtistSuggestionCount() {
         try {
-            return artistSuggestionAdminService.countPending();
+            return sidebarCountService.getCounts().suggestionCount();
         } catch (Exception e) {
             return 0;
         }

@@ -125,6 +125,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<MyCommentResponseDto> getRecentCommentsByUser(Long userId, int limit) {
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        return commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, limit))
+                .stream().map(MyCommentResponseDto::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public long countMyComments(Long userId) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return commentRepository.countByUser(user);
