@@ -44,6 +44,11 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc.user.id FROM FestivalCertification fc WHERE fc.festival.id = :festivalId AND fc.status = 'APPROVED'")
     Set<Long> findApprovedUserIdsByFestivalId(@Param("festivalId") Long festivalId);
 
+    /** 댓글 작성 시 작성자 인증 여부 단건 확인 — 전체 Set 로드 방지 */
+    @Query("SELECT CASE WHEN COUNT(fc) > 0 THEN TRUE ELSE FALSE END FROM FestivalCertification fc " +
+           "WHERE fc.festival.id = :festivalId AND fc.user.id = :userId AND fc.status = 'APPROVED'")
+    boolean existsApprovedCertification(@Param("festivalId") Long festivalId, @Param("userId") Long userId);
+
     @Query("SELECT c FROM FestivalCertification c JOIN c.user u JOIN c.festival f " +
            "WHERE (:status IS NULL OR c.status = :status) " +
            "AND (LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +

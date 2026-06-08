@@ -156,6 +156,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     }
 
     @Override
+    @Transactional
     public void bulkDeleteUsers(List<Long> ids) {
         for (Long id : ids) {
             adminDeleteUser(id);

@@ -62,12 +62,8 @@ public class CommentServiceImpl implements CommentService {
                     new CommentCreatedEvent(postAuthorId, user.getNickname(), post.getTitle(), post.getId()));
         }
 
-        boolean certified = false;
-        if (post.getFestivalId() != null) {
-            certified = certificationRepository
-                    .findApprovedUserIdsByFestivalId(post.getFestivalId())
-                    .contains(userId);
-        }
+        boolean certified = post.getFestivalId() != null &&
+                certificationRepository.existsApprovedCertification(post.getFestivalId(), userId);
 
         return new CommentResponseDto(
                 saved.getId(),

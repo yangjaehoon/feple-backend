@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
@@ -52,7 +53,7 @@ public class ArtistGalleryPhotoService {
         return s3PresignService.presignPut(objectKey, contentType);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ArtistGalleryPhotoResponseDto register(
             Long artistId,
             String objectKey,
@@ -117,7 +118,7 @@ public class ArtistGalleryPhotoService {
         String s3Key = photo.getS3Key();
         artistGalleryPhotoLikeRepository.deleteByPhotoId(photoId);
         artistGalleryPhotoRepository.delete(photo);
-        fileStorageService.deleteFile(s3Key); // DB 삭제 성공 후 S3 정리
+        fileStorageService.deleteFileAfterCommit(s3Key);
     }
 
     @Transactional

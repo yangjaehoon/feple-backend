@@ -9,6 +9,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class NotificationPreferenceServiceImpl implements NotificationPreferenceService {
@@ -44,5 +48,22 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
                                 .orElseThrow(() -> e);
                     }
                 });
+    }
+
+    @Override
+    @Transactional
+    public Map<Long, NotificationPreference> getOrCreateBatch(List<Long> userIds) {
+        Map<Long, NotificationPreference> map = new HashMap<>();
+        preferenceRepository.findAllByUserIdIn(userIds).forEach(p -> map.put(p.getUserId(), p));
+
+        List<NotificationPreference> toCreate = userIds.stream()
+                .filter(id -> !map.containsKey(id))
+                .map(NotificationPreference::defaultFor)
+                .toList();
+
+        if (!toCreate.isEmpty()) {
+            preferenceRepository.saveAll(toCreate).forEach(p -> map.put(p.getUserId(), p));
+        }
+        return map;
     }
 }

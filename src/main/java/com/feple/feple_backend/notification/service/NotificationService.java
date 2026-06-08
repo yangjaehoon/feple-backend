@@ -27,6 +27,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -205,9 +206,11 @@ public class NotificationService {
         notificationRepository.saveAll(users.stream()
                 .map(u -> Notification.of(u, type, title, body, festival))
                 .toList());
-        List<Long> enabledUserIds = users.stream()
-                .filter(u -> preferenceService.getOrCreate(u.getId()).isEnabledFor(type))
-                .map(User::getId)
+        List<Long> allUserIds = users.stream().map(User::getId).toList();
+        Map<Long, com.feple.feple_backend.notification.entity.NotificationPreference> prefMap =
+                preferenceService.getOrCreateBatch(allUserIds);
+        List<Long> enabledUserIds = allUserIds.stream()
+                .filter(id -> prefMap.get(id).isEnabledFor(type))
                 .toList();
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(enabledUserIds);
         fcmPushService.sendMulticast(tokens, title, body, linkId, type);

@@ -11,6 +11,7 @@ public interface ArtistSuggestionAdminService {
     Page<ArtistSuggestionResponseDto> getSuggestionsPage(int page, int size);
     List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit);
     List<ArtistSuggestionResponseDto> getProcessedSuggestions();
+    List<ArtistSuggestionResponseDto> getProcessedSuggestionsPreview(int limit);
     long countPending();
     void dismiss(Long suggestionId, String processNote);
 }
