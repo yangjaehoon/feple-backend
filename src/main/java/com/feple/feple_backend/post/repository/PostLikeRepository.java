@@ -33,7 +33,11 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     void deleteByUser(User user);
 
-    @Query("SELECT pl.post FROM PostLike pl WHERE pl.user.id = :userId ORDER BY pl.id DESC")
+    @Query("SELECT pl.post FROM PostLike pl " +
+           "JOIN FETCH pl.post.user " +
+           "LEFT JOIN FETCH pl.post.artist " +
+           "LEFT JOIN FETCH pl.post.festival " +
+           "WHERE pl.user.id = :userId ORDER BY pl.id DESC")
     List<Post> findPostsByUserId(@Param("userId") Long userId);
 
     @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.user.id = :userId")
