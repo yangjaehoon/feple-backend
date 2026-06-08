@@ -8,6 +8,7 @@ import com.feple.feple_backend.notification.service.FcmPushService;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +33,7 @@ public class AdminPushService {
 
     @Transactional(readOnly = true)
     public List<BroadcastNotification> getBroadcastHistory() {
-        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc();
+        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 100));
     }
 
     @Transactional(readOnly = true)

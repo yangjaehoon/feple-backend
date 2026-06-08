@@ -8,6 +8,7 @@ import com.feple.feple_backend.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,17 +22,21 @@ import java.util.stream.Stream;
 @Transactional(readOnly = true)
 public class NotificationQueryService {
 
+    // 개인 알림 + 공지를 메모리에서 합쳐 정렬하는 구조상, 로드 상한이 없으면 OOM 위험
+    private static final int MAX_PERSONAL = 200;
+    private static final int MAX_BROADCAST = 50;
+
     private final NotificationRepository notificationRepository;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
 
     public Page<NotificationDto> getMyNotifications(Long userId, Pageable pageable) {
         List<NotificationDto> personal = notificationRepository
-                .findByUserIdOrderByCreatedAtDesc(userId)
+                .findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, MAX_PERSONAL))
                 .stream()
                 .map(NotificationDto::from)
                 .toList();
         List<NotificationDto> broadcasts = broadcastNotificationRepository
-                .findAllByOrderByCreatedAtDesc()
+                .findAllByOrderByCreatedAtDesc(PageRequest.of(0, MAX_BROADCAST))
                 .stream()
                 .map(NotificationDto::forBroadcast)
                 .toList();

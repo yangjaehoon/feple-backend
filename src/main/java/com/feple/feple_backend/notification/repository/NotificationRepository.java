@@ -1,6 +1,7 @@
 package com.feple.feple_backend.notification.repository;
 
 import com.feple.feple_backend.notification.entity.Notification;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
     @Query("SELECT n FROM Notification n WHERE n.user.id = :userId ORDER BY n.createdAt DESC")
-    List<Notification> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
+    List<Notification> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.isRead = false")
     long countByUserIdAndIsReadFalse(@Param("userId") Long userId);
