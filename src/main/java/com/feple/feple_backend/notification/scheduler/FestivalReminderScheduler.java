@@ -2,7 +2,6 @@ package com.feple.feple_backend.notification.scheduler;
 
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -43,7 +41,6 @@ public class FestivalReminderScheduler {
         log.info("[ReminderScheduler] D-{} 대상 페스티벌 {}개", dDay, festivals.size());
 
         for (Festival festival : festivals) {
-            // 해당 페스티벌에 출연하는 아티스트 조회
             List<Long> artistIds = artistFestivalRepository
                     .findByFestivalIdOrderByLineupOrderAsc(festival.getId())
                     .stream()
@@ -52,14 +49,7 @@ public class FestivalReminderScheduler {
 
             if (artistIds.isEmpty()) continue;
 
-            // 해당 아티스트들을 팔로우하는 유저 (중복 제거)
-            List<Long> userIds = artistIds.stream()
-                    .flatMap(artistId ->
-                            artistFollowRepository.findByArtistId(artistId)
-                                    .stream()
-                                    .map(ArtistFollow::getUserId))
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<Long> userIds = artistFollowRepository.findUserIdsByArtistIdIn(artistIds);
 
             if (userIds.isEmpty()) continue;
 

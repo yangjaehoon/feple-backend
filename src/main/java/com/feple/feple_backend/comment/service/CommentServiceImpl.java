@@ -132,8 +132,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public long countMyComments(Long userId) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return commentRepository.countByUser(user);
+        return commentRepository.countByUserId(userId);
     }
 
     @Override

@@ -308,8 +308,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     @Override
     public long countMyPosts(Long userId) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.countByUser(user);
+        return postRepository.countByUserId(userId);
     }
 
     @Override

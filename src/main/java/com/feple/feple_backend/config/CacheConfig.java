@@ -71,9 +71,17 @@ public class CacheConfig {
                         .maximumSize(1)
                         .build());
 
+        // 아티스트 이름순 전체 목록: 관리자 폼/드롭다운 4곳에서 매 요청마다 풀스캔 — 5분 TTL
+        CaffeineCache allArtistsSortedByNameCache = new CaffeineCache("allArtistsSortedByName",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .maximumSize(1)
+                        .build());
+
         SimpleCacheManager manager = new SimpleCacheManager();
         manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
-                adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache));
+                adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache,
+                allArtistsSortedByNameCache));
         return manager;
     }
 }

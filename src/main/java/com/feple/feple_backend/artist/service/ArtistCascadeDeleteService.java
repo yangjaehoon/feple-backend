@@ -38,7 +38,7 @@ public class ArtistCascadeDeleteService {
             List<Long> imageIds = images.stream().map(ArtistProfileImage::getId).collect(Collectors.toList());
             artistImageLikeRepository.deleteByArtistProfileImageIdIn(imageIds);
         }
-        artistImageRepository.deleteAll(images);
+        artistImageRepository.deleteAllInBatch(images);
 
         artistFestivalRepository.deleteByArtistId(artist.getId());
         artistFollowRepository.deleteByArtistId(artist.getId());

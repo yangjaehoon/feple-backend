@@ -55,7 +55,8 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true)
+        @CacheEvict(value = "topArtists", allEntries = true),
+        @CacheEvict(value = "allArtistsSortedByName", allEntries = true)
     })
     public Long createArtist(ArtistRequestDto dto) {
         Artist artist = Artist.builder()
@@ -69,6 +70,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable("allArtistsSortedByName")
     public List<ArtistResponseDto> getAllArtistsSortedByName() {
         return artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
                 .map(this::toDto).toList();
@@ -171,7 +173,8 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true)
+        @CacheEvict(value = "topArtists", allEntries = true),
+        @CacheEvict(value = "allArtistsSortedByName", allEntries = true)
     })
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
@@ -226,7 +229,8 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true)
+        @CacheEvict(value = "topArtists", allEntries = true),
+        @CacheEvict(value = "allArtistsSortedByName", allEntries = true)
     })
     public void deleteArtist(Long id) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");

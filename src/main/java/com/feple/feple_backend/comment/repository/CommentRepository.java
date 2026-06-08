@@ -38,6 +38,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     long countByUser(User user);
 
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Comment c SET c.likeCount = c.likeCount + 1 WHERE c.id = :commentId")
     void incrementLikeCount(@Param("commentId") Long commentId);
