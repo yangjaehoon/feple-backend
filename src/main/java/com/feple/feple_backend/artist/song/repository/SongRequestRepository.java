@@ -38,6 +38,6 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
 
     long countByStatus(SongRequestStatus status);
 
-    @Query("SELECT sr FROM SongRequest sr WHERE sr.userId = :userId ORDER BY sr.createdAt DESC")
+    @Query("SELECT sr FROM SongRequest sr JOIN FETCH sr.artist WHERE sr.userId = :userId ORDER BY sr.createdAt DESC")
     List<SongRequest> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 }
