@@ -12,7 +12,7 @@ import java.util.List;
 public interface ArtistProfileImageRepository extends JpaRepository<ArtistProfileImage, Long> {
     List<ArtistProfileImage> findByArtist(Artist artist);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ArtistProfileImage ai SET ai.uploader = null WHERE ai.uploader.id = :userId")
     void nullifyUploaderByUserId(@Param("userId") Long userId);
 }

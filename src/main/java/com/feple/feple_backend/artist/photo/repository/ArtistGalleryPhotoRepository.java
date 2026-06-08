@@ -18,11 +18,11 @@ public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGaller
     @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.id = :id AND p.artist.id = :artistId")
     ArtistGalleryPhoto findByIdAndArtist_Id(@Param("id") Long id, @Param("artistId") Long artistId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount + 1 WHERE p.id = :photoId")
     void incrementLikeCount(@Param("photoId") Long photoId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount - 1 WHERE p.id = :photoId AND p.likeCount > 0")
     void decrementLikeCount(@Param("photoId") Long photoId);
 }
