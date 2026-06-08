@@ -94,7 +94,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
         Long photoId = report.getPhotoId();
 
         // FK 순서: ArtistPhotoReport → ArtistGalleryPhotoLike → ArtistGalleryPhoto
-        reportRepository.deleteAll(reportRepository.findByPhotoId(photoId));
+        reportRepository.deleteAllByPhotoId(photoId);
         photoLikeRepository.deleteByPhotoId(photoId);
         photoRepository.deleteById(photoId);
     }

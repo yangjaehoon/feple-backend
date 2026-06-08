@@ -26,6 +26,10 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
     @Query("DELETE FROM ArtistFollow af WHERE af.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
+    @Modifying
+    @Query("DELETE FROM ArtistFollow af WHERE af.artist.id = :artistId")
+    void deleteByArtistId(@Param("artistId") Long artistId);
+
     @Query("SELECT COUNT(af) FROM ArtistFollow af WHERE af.artist.id = :artistId")
     long countByArtistId(@Param("artistId") Long artistId);
 

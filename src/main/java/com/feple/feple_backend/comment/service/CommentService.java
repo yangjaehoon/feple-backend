@@ -12,6 +12,7 @@ public interface CommentService {
     List<CommentResponseDto> getCommentsByPost(Long postId, Long userId);
     void deleteComment(Long commentId);
     void deleteOwnComment(Long commentId, Long requestUserId);
+    void deleteByPostIds(List<Long> postIds);
     CommentLikeResult toggleLike(Long commentId, Long userId);
     List<MyCommentResponseDto> getMyComments(Long userId);
     List<MyCommentResponseDto> getRecentCommentsByUser(Long userId, int limit);

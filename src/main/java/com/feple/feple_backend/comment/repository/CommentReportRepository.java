@@ -44,6 +44,10 @@ public interface CommentReportRepository extends JpaRepository<CommentReport, Lo
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.id = :commentId")
     void deleteByCommentId(@Param("commentId") Long commentId);
 
+    @Modifying
+    @Query("DELETE FROM CommentReport cr WHERE cr.comment.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
     @Query("SELECT cr.comment.user.id, COUNT(cr) FROM CommentReport cr WHERE cr.comment.user.id IN :userIds GROUP BY cr.comment.user.id")
     List<Object[]> countByCommentAuthorIds(@Param("userIds") Collection<Long> userIds);
 }

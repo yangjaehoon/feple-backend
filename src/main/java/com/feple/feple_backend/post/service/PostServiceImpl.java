@@ -16,8 +16,11 @@ import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.repository.PostReportRepository;
+import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,9 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
+    private final PostScrapRepository postScrapRepository;
+    private final PostReportRepository postReportRepository;
+    private final CommentService commentService;
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
@@ -376,7 +382,10 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     private void deletePostLikesAndPosts(List<Post> posts) {
         if (posts.isEmpty()) return;
         List<Long> postIds = posts.stream().map(Post::getId).toList();
+        commentService.deleteByPostIds(postIds);
         postLikeRepository.deleteByPostIds(postIds);
+        postScrapRepository.deleteByPostIds(postIds);
+        postReportRepository.deleteByPostIds(postIds);
         postRepository.deleteAllByIdInBatch(postIds);
     }
 

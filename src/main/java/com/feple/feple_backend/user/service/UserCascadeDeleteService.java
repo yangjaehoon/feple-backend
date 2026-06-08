@@ -55,9 +55,9 @@ public class UserCascadeDeleteService {
         // 소셜 활동 데이터 삭제
         festivalLikeRepository.deleteByUserId(id);
         artistFollowRepository.deleteByUserId(id);
-        postLikeRepository.deleteByUser(user);
+        postLikeRepository.deleteByUserId(id);
         commentLikeRepository.deleteByUserId(id);
-        postScrapRepository.deleteByUser(user);
+        postScrapRepository.deleteByUserId(id);
 
         notificationRepository.deleteByUserId(id);
         notificationPreferenceRepository.deleteByUserId(id);

@@ -39,6 +39,10 @@ public interface ArtistPhotoReportRepository extends JpaRepository<ArtistPhotoRe
     @Query("SELECT apr FROM ArtistPhotoReport apr WHERE apr.photo.id = :photoId")
     List<ArtistPhotoReport> findByPhotoId(@Param("photoId") Long photoId);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM ArtistPhotoReport apr WHERE apr.photo.id = :photoId")
+    void deleteAllByPhotoId(@Param("photoId") Long photoId);
+
     @Query("SELECT apr.photo.uploader.id, COUNT(apr) FROM ArtistPhotoReport apr WHERE apr.photo.uploader.id IN :userIds GROUP BY apr.photo.uploader.id")
     List<Object[]> countByPhotoUploaderIds(@Param("userIds") Collection<Long> userIds);
 }

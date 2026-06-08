@@ -1,7 +1,6 @@
 package com.feple.feple_backend.post.repository;
 
 import com.feple.feple_backend.post.entity.PostScrap;
-import com.feple.feple_backend.user.entity.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,5 +29,11 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     @Query("DELETE FROM PostScrap ps WHERE ps.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
 
-    void deleteByUser(User user);
+    @Modifying
+    @Query("DELETE FROM PostScrap ps WHERE ps.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
+    @Modifying
+    @Query("DELETE FROM PostScrap ps WHERE ps.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }

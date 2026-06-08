@@ -41,7 +41,7 @@ public class ArtistCascadeDeleteService {
         artistImageRepository.deleteAll(images);
 
         artistFestivalRepository.deleteByArtistId(artist.getId());
-        artistFollowRepository.deleteAll(artistFollowRepository.findByArtistId(artist.getId()));
+        artistFollowRepository.deleteByArtistId(artist.getId());
 
         postCascadeService.deletePostsByArtist(artist);
 

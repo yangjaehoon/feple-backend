@@ -54,6 +54,10 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
     @Query("DELETE FROM PostReport pr WHERE pr.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
 
+    @Modifying
+    @Query("DELETE FROM PostReport pr WHERE pr.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
     @Query("SELECT pr.post.user.id, COUNT(pr) FROM PostReport pr WHERE pr.post.user.id IN :userIds GROUP BY pr.post.user.id")
     List<Object[]> countByPostAuthorIds(@Param("userIds") Collection<Long> userIds);
 }

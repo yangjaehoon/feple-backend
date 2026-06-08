@@ -11,6 +11,7 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentLike;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
+import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
@@ -35,6 +36,7 @@ import java.util.Set;
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final CommentReportRepository commentReportRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -180,6 +182,15 @@ public class CommentServiceImpl implements CommentService {
     private Set<Long> getCertifiedUserIds(Post post) {
         if (post.getFestivalId() == null) return Set.of();
         return certificationRepository.findApprovedUserIdsByFestivalId(post.getFestivalId());
+    }
+
+    @Override
+    @Transactional
+    public void deleteByPostIds(List<Long> postIds) {
+        if (postIds.isEmpty()) return;
+        commentLikeRepository.deleteByPostIds(postIds);
+        commentReportRepository.deleteByPostIds(postIds);
+        commentRepository.deleteByPostIds(postIds);
     }
 
     private Set<Long> getLikedCommentIds(Long userId, List<Long> commentIds) {
