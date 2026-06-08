@@ -19,7 +19,7 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.festival.id = :festivalId")
     Optional<FestivalCertification> findByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
 
-    @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId")
+    @Query("SELECT fc FROM FestivalCertification fc JOIN FETCH fc.festival WHERE fc.user.id = :userId")
     List<FestivalCertification> findByUserId(@Param("userId") Long userId);
 
     @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")
