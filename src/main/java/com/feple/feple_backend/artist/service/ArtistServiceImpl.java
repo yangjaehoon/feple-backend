@@ -20,6 +20,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -179,7 +181,14 @@ public class ArtistServiceImpl implements ArtistService {
         if (dto.getProfileImageKey() != null) {
             String oldKey = artist.getProfileImageKey();
             artist.updateProfileImage(dto.getProfileImageKey());
-            if (oldKey != null) fileStorageService.deleteFile(oldKey);
+            if (oldKey != null) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        fileStorageService.deleteFile(oldKey);
+                    }
+                });
+            }
         }
     }
 
@@ -201,7 +210,14 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         String oldKey = artist.getProfileImageKey();
         artist.updateProfileImage(imageKey);
-        if (oldKey != null) fileStorageService.deleteFile(oldKey);
+        if (oldKey != null) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    fileStorageService.deleteFile(oldKey);
+                }
+            });
+        }
     }
 
     @Override

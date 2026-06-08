@@ -36,7 +36,6 @@ public class AdminPushService {
         return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 100));
     }
 
-    @Transactional(readOnly = true)
     public void sendTest(Long targetUserId, String title, String body) {
         List<String> tokens = deviceTokenRepository.findByUserId(targetUserId)
                 .stream()
@@ -49,7 +48,6 @@ public class AdminPushService {
         fcmPushService.sendBroadcast(tokens, title, body);
     }
 
-    @Transactional(readOnly = true)
     public void sendToArtistFollowers(Long artistId, String title, String body) {
         List<Long> userIds = artistFollowRepository.findByArtistId(artistId)
                 .stream().map(af -> af.getUserId()).toList();
@@ -64,7 +62,6 @@ public class AdminPushService {
         fcmPushService.sendBroadcast(tokens, title, body);
     }
 
-    @Transactional(readOnly = true)
     public void sendToFestivalCertified(Long festivalId, String title, String body) {
         Set<Long> userIds = festivalCertificationRepository.findApprovedUserIdsByFestivalId(festivalId);
         if (userIds.isEmpty()) {

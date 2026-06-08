@@ -20,6 +20,8 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 
 @Service
@@ -68,10 +70,15 @@ public class UserCascadeDeleteService {
         artistImageLikeRepository.deleteByUserId(id);
         artistImageRepository.nullifyUploaderByUserId(id);
 
-        // S3 프로필 이미지 삭제
-        fileStorageService.deleteFile(profileImageKey);
-
         // 게시글·댓글은 익명 처리 후 유지 (작성자 닉네임은 "(탈퇴한 사용자)"로 표시됨)
         user.softDelete();
+
+        // S3 삭제는 커밋 후 실행 — 롤백 시 파일이 남아 있어야 하고, 커넥션을 불필요하게 점유하지 않도록 함
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                fileStorageService.deleteFile(profileImageKey);
+            }
+        });
     }
 }

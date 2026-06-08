@@ -28,6 +28,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -131,7 +133,12 @@ public class FestivalServiceImpl implements FestivalService {
         String oldPosterKey = festival.getPosterKey();
         festival.updatePoster(dto.getPosterKey());
         if (dto.getPosterKey() != null && !dto.getPosterKey().equals(oldPosterKey)) {
-            fileStorageService.deleteFile(oldPosterKey);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    fileStorageService.deleteFile(oldPosterKey);
+                }
+            });
         }
     }
 
@@ -154,7 +161,12 @@ public class FestivalServiceImpl implements FestivalService {
         weatherRepository.deleteByFestivalId(festivalId);
         festivalRepository.deleteById(festivalId);
 
-        fileStorageService.deleteFile(posterKey);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                fileStorageService.deleteFile(posterKey);
+            }
+        });
     }
 
     @Override
