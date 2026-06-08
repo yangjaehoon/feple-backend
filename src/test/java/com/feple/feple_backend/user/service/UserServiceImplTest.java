@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.ArtistNameFilter;
 import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -205,7 +206,7 @@ class UserServiceImplTest {
         given(userRepository.existsByNicknameAndIdNot("중복닉네임", 1L)).willReturn(true);
 
         assertThatThrownBy(() -> userService.updateNickname(1L, "중복닉네임"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("이미 사용 중인");
     }
 
