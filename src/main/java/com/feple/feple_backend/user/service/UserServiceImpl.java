@@ -6,6 +6,7 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
@@ -92,7 +93,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
         badWordFilter.validateField("nickname", nickname);
         artistNameFilter.validate(nickname);
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new ConflictException("이미 사용 중인 닉네임입니다.");
         }
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         user.changeNickname(nickname.trim());
