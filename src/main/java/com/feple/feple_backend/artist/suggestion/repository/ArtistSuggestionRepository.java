@@ -3,6 +3,7 @@ package com.feple.feple_backend.artist.suggestion.repository;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -25,4 +26,8 @@ public interface ArtistSuggestionRepository extends JpaRepository<ArtistSuggesti
     Page<ArtistSuggestion> findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus status, Pageable pageable);
 
     long countByStatus(ArtistSuggestionStatus status);
+
+    @Modifying
+    @Query("DELETE FROM ArtistSuggestion s WHERE s.userId = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }

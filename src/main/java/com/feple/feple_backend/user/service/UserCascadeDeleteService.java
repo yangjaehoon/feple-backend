@@ -2,6 +2,8 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
+import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
+import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
@@ -38,6 +40,8 @@ public class UserCascadeDeleteService {
     private final PostLikeRepository postLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final PostScrapRepository postScrapRepository;
+    private final SongRequestRepository songRequestRepository;
+    private final ArtistSuggestionRepository artistSuggestionRepository;
     private final FileStorageService fileStorageService;
 
     public void delete(User user) {
@@ -58,6 +62,8 @@ public class UserCascadeDeleteService {
         notificationRepository.deleteByUserId(id);
         notificationPreferenceRepository.deleteByUserId(id);
         certificationRepository.deleteByUserId(id);
+        songRequestRepository.deleteByUserId(id);
+        artistSuggestionRepository.deleteByUserId(id);
 
         artistImageLikeRepository.deleteByUserId(id);
         artistImageRepository.nullifyUploaderByUserId(id);

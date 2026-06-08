@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -40,4 +41,8 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
 
     @Query("SELECT sr FROM SongRequest sr JOIN FETCH sr.artist WHERE sr.userId = :userId ORDER BY sr.createdAt DESC")
     List<SongRequest> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM SongRequest sr WHERE sr.userId = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }
