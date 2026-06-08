@@ -46,7 +46,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
         try {
             artistFollowRepository.saveAndFlush(ArtistFollow.of(user, artist));
-            artistRepository.incrementFollowerCount(artistId);
+            artist.incrementFollowerCount();
         } catch (DataIntegrityViolationException ignored) {
             // unique(user_id, artist_id): 동시 요청으로 이미 저장됨
         }
@@ -57,15 +57,13 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     @Override
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
-        if (!artistRepository.existsById(artistId)) {
-            throw new NoSuchElementException("아티스트");
-        }
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
         if (deleted > 0) {
-            artistRepository.decrementFollowerCount(artistId);
+            artist.decrementFollowerCount();
         }
 
-        return new FollowResponseDto(false, artistRepository.findFollowerCountById(artistId));
+        return new FollowResponseDto(false, artist.getFollowerCount());
     }
 }
