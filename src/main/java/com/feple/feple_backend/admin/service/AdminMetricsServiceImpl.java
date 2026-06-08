@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.AdminConstants;
+import org.springframework.cache.annotation.Cacheable;
 import com.feple.feple_backend.admin.ContentTrendDto;
 import com.feple.feple_backend.admin.DailyStatDto;
 import com.feple.feple_backend.admin.TopKeywordDto;
@@ -74,6 +75,7 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
     }
 
     @Override
+    @Cacheable("adminActivityStats")
     public UserActivityStatsDto getUserActivityStats() {
         LocalDate today = LocalDate.now();
         LocalDateTime dayStart = today.atStartOfDay();
@@ -92,6 +94,7 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
     }
 
     @Override
+    @Cacheable("adminContentTrend")
     public ContentTrendDto getContentTrend() {
         LocalDateTime since7days = LocalDate.now().minusDays(6).atStartOfDay();
         LocalDateTime since30days = LocalDate.now().minusDays(29).atStartOfDay();

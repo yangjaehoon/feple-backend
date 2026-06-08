@@ -84,12 +84,10 @@ public class FestivalAdminController {
         Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, 30);
 
         // 체크리스트 탭: 전체 목록 (종료 포함) — 별도 조회
+        LocalDate today = LocalDate.now();
         List<FestivalResponseDto> allFestivals = festivalService.getAllFestivals(null, null, null, true);
         List<Long> ids = allFestivals.stream().map(FestivalResponseDto::getId).toList();
-        LocalDate today = LocalDate.now();
-        long activeFestivalCount = allFestivals.stream()
-                .filter(f -> f.getEndDate() == null || !f.getEndDate().isBefore(today))
-                .count();
+        long activeFestivalCount = festivalService.countActiveFestivals(today);
 
         model.addAttribute("festivalsPage", festivalsPage);
         model.addAttribute("festivals", allFestivals);

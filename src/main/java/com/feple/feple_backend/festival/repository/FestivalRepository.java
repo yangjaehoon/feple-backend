@@ -46,6 +46,9 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             @Param("until") LocalDate until,
             Pageable pageable);
 
+    @Query("SELECT COUNT(f) FROM Festival f WHERE f.endDate IS NULL OR f.endDate >= :today")
+    long countActiveFestivals(@Param("today") LocalDate today);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Festival f SET f.likeCount = f.likeCount + 1 WHERE f.id = :id")
     void incrementLikeCount(@Param("id") Long id);

@@ -41,8 +41,18 @@ public class FestivalDetailAggregationService {
     public void populateModel(Long festivalId, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
 
+        // 타임테이블 1회만 로드 — 아티스트 참여 정보와 타임테이블 그리드 양쪽에서 재사용
+        List<TimetableEntryResponse> timetableEntries = timetableService.getEntries(festivalId);
+
+        Map<String, List<String>> datesByArtistName = timetableEntries.stream()
+                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank())
+                .collect(Collectors.groupingBy(
+                        TimetableEntryResponse::getArtistName,
+                        Collectors.mapping(TimetableEntryResponse::getFestivalDate, Collectors.toList())
+                ));
+
         List<ArtistFestivalResponse> participatingArtists =
-                artistFestivalService.getArtistFestivals(festivalId);
+                artistFestivalService.getArtistFestivals(festivalId, datesByArtistName);
 
         List<ArtistFestivalResponse> participatingArtistsByName = participatingArtists.stream()
                 .sorted(java.util.Comparator.comparing(
@@ -50,7 +60,6 @@ public class FestivalDetailAggregationService {
                         String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
-        List<TimetableEntryResponse> timetableEntries = timetableService.getEntries(festivalId);
         Map<String, List<TimetableEntryResponse>> timetableByArtist = timetableEntries.stream()
                 .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
                              && !ANNOUNCEMENT_STAGE.equals(e.getStageName()))

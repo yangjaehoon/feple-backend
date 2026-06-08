@@ -158,6 +158,12 @@ public class FestivalServiceImpl implements FestivalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long countActiveFestivals(LocalDate today) {
+        return festivalRepository.countActiveFestivals(today);
+    }
+
+    @Override
     public String uploadPosterFile(MultipartFile file, LocalDate startDate) throws IOException {
         return fileStorageService.storeFestivalPoster(file, startDate);
     }

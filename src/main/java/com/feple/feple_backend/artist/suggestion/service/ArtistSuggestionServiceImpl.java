@@ -18,7 +18,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,32 +47,41 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 .build();
 
         ArtistSuggestion saved = suggestionRepository.save(suggestion);
-        return ArtistSuggestionResponseDto.from(saved, resolveNickname(userId));
+        String nick = userRepository.findById(userId)
+                .map(User::getNickname)
+                .filter(n -> n != null && !n.isBlank())
+                .orElse("알 수 없음");
+        return ArtistSuggestionResponseDto.from(saved, nick);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ArtistSuggestionResponseDto> getPendingSuggestions() {
-        return suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.PENDING)
-                .stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, resolveNickname(s.getUserId())))
+        List<ArtistSuggestion> suggestions =
+                suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.PENDING);
+        Map<Long, String> nMap = nicknameMap(suggestions);
+        return suggestions.stream()
+                .map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())))
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<ArtistSuggestionResponseDto> getSuggestionsPage(int page, int size) {
-        return suggestionRepository.findByStatusOrderByCreatedAtDesc(
-                ArtistSuggestionStatus.PENDING, PageRequest.of(page, size))
-                .map(s -> ArtistSuggestionResponseDto.from(s, resolveNickname(s.getUserId())));
+        Page<ArtistSuggestion> pageResult = suggestionRepository.findByStatusOrderByCreatedAtDesc(
+                ArtistSuggestionStatus.PENDING, PageRequest.of(page, size));
+        Map<Long, String> nMap = nicknameMap(pageResult.getContent());
+        return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ArtistSuggestionResponseDto> getProcessedSuggestions() {
-        return suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.DISMISSED)
-                .stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, resolveNickname(s.getUserId())))
+        List<ArtistSuggestion> suggestions =
+                suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.DISMISSED);
+        Map<Long, String> nMap = nicknameMap(suggestions);
+        return suggestions.stream()
+                .map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())))
                 .toList();
     }
 
@@ -83,10 +94,11 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @Override
     @Transactional(readOnly = true)
     public List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit) {
-        return suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.PENDING)
-                .stream()
-                .limit(limit)
-                .map(s -> ArtistSuggestionResponseDto.from(s, resolveNickname(s.getUserId())))
+        List<ArtistSuggestion> suggestions = suggestionRepository.findByStatusOrderByCreatedAtDesc(
+                ArtistSuggestionStatus.PENDING, PageRequest.of(0, limit)).getContent();
+        Map<Long, String> nMap = nicknameMap(suggestions);
+        return suggestions.stream()
+                .map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())))
                 .toList();
     }
 
@@ -101,10 +113,17 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 suggestion.getUserId(), suggestion.getArtistName(), processNote));
     }
 
-    private String resolveNickname(Long userId) {
-        return userRepository.findById(userId)
-                .map(User::getNickname)
-                .filter(n -> n != null && !n.isBlank())
-                .orElse("알 수 없음");
+    private Map<Long, String> nicknameMap(List<ArtistSuggestion> suggestions) {
+        List<Long> ids = suggestions.stream().map(ArtistSuggestion::getUserId).distinct().toList();
+        return userRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        u -> (u.getNickname() != null && !u.getNickname().isBlank())
+                                ? u.getNickname() : "알 수 없음"
+                ));
+    }
+
+    private String nickname(Map<Long, String> map, Long userId) {
+        return map.getOrDefault(userId, "알 수 없음");
     }
 }

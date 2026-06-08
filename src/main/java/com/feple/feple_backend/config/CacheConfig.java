@@ -57,9 +57,23 @@ public class CacheConfig {
                         .maximumSize(1)
                         .build());
 
+        // 통계 페이지 활동 지표: 6개 COUNT 쿼리 — 5분 TTL
+        CaffeineCache adminActivityStatsCache = new CaffeineCache("adminActivityStats",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .maximumSize(1)
+                        .build());
+
+        // 통계 페이지 콘텐츠 트렌드: 5개 집계 쿼리 — 10분 TTL
+        CaffeineCache adminContentTrendCache = new CaffeineCache("adminContentTrend",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(10, TimeUnit.MINUTES)
+                        .maximumSize(1)
+                        .build());
+
         SimpleCacheManager manager = new SimpleCacheManager();
         manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
-                adminSidebarCountsCache));
+                adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache));
         return manager;
     }
 }

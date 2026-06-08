@@ -54,9 +54,21 @@ public class ArtistFestivalService {
                         )
                 ));
 
+        return getArtistFestivals(artistFestivals, datesByArtistName);
+    }
+
+    // 타임테이블을 이미 로드한 경우 재사용 — 중복 쿼리 방지
+    public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId,
+                                                           Map<String, List<String>> datesByArtistName) {
+        return getArtistFestivals(
+                artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId),
+                datesByArtistName);
+    }
+
+    private List<ArtistFestivalResponse> getArtistFestivals(List<ArtistFestival> artistFestivals,
+                                                             Map<String, List<String>> datesByArtistName) {
         return artistFestivals.stream()
-                .map(af -> toResponse(af, datesByArtistName.getOrDefault(
-                        af.getArtistName(), List.of())))
+                .map(af -> toResponse(af, datesByArtistName.getOrDefault(af.getArtistName(), List.of())))
                 .toList();
     }
 
