@@ -23,6 +23,9 @@ import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -56,6 +59,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true)
     public Long createFestival(FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
@@ -103,6 +107,13 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable("allFestivalsForAdmin")
+    public List<FestivalResponseDto> getAllFestivalsForAdmin() {
+        return getAllFestivals(null, null, null, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
         return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
@@ -117,6 +128,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true)
     public void updateFestival(Long id, FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
@@ -137,6 +149,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true)
     public void deleteFestival(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();

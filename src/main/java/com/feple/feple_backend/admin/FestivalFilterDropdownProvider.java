@@ -14,6 +14,6 @@ class FestivalFilterDropdownProvider implements FilterDropdownProvider {
     @Override public String filter() { return "FESTIVAL"; }
 
     @Override public void populate(Model model) {
-        model.addAttribute("festivals", festivalService.getAllFestivals(null, null, null, true));
+        model.addAttribute("festivals", festivalService.getAllFestivalsForAdmin());
     }
 }

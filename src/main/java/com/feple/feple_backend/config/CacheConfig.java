@@ -78,10 +78,24 @@ public class CacheConfig {
                         .maximumSize(1)
                         .build());
 
+        // 페스티벌 전체 목록(체크리스트/드롭다운): getAllFestivalsForAdmin() 풀스캔 — 5분 TTL
+        CaffeineCache allFestivalsForAdminCache = new CaffeineCache("allFestivalsForAdmin",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .maximumSize(1)
+                        .build());
+
+        // 통계 범위 쿼리(날짜별 4개 집계): date-range key 캐싱 — 10분 TTL
+        CaffeineCache adminRangeStatsCache = new CaffeineCache("adminRangeStats",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(10, TimeUnit.MINUTES)
+                        .maximumSize(100)
+                        .build());
+
         SimpleCacheManager manager = new SimpleCacheManager();
         manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
                 adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache,
-                allArtistsSortedByNameCache));
+                allArtistsSortedByNameCache, allFestivalsForAdminCache, adminRangeStatsCache));
         return manager;
     }
 }

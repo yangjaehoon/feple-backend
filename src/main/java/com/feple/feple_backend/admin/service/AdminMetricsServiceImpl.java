@@ -70,6 +70,7 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
     }
 
     @Override
+    @Cacheable(value = "adminRangeStats", key = "#from.toString() + '_' + #to.toString()")
     public List<DailyStatDto> getRangeStats(LocalDate from, LocalDate to) {
         return buildDailyStats(from, to);
     }

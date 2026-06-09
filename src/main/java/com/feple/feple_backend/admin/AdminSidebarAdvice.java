@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -10,39 +11,19 @@ public class AdminSidebarAdvice {
 
     private final AdminSidebarCountService sidebarCountService;
 
-    @ModelAttribute("sidebarReportCount")
-    public long sidebarReportCount() {
+    @ModelAttribute
+    public void sidebarCounts(Model model) {
         try {
-            return sidebarCountService.getCounts().reportCount();
+            AdminSidebarCountService.Counts c = sidebarCountService.getCounts();
+            model.addAttribute("sidebarReportCount", c.reportCount());
+            model.addAttribute("sidebarCertCount", c.certCount());
+            model.addAttribute("sidebarSongRequestCount", c.songRequestCount());
+            model.addAttribute("sidebarArtistSuggestionCount", c.suggestionCount());
         } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    @ModelAttribute("sidebarCertCount")
-    public long sidebarCertCount() {
-        try {
-            return sidebarCountService.getCounts().certCount();
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    @ModelAttribute("sidebarSongRequestCount")
-    public long sidebarSongRequestCount() {
-        try {
-            return sidebarCountService.getCounts().songRequestCount();
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    @ModelAttribute("sidebarArtistSuggestionCount")
-    public long sidebarArtistSuggestionCount() {
-        try {
-            return sidebarCountService.getCounts().suggestionCount();
-        } catch (Exception e) {
-            return 0;
+            model.addAttribute("sidebarReportCount", 0L);
+            model.addAttribute("sidebarCertCount", 0L);
+            model.addAttribute("sidebarSongRequestCount", 0L);
+            model.addAttribute("sidebarArtistSuggestionCount", 0L);
         }
     }
 }

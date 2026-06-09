@@ -85,7 +85,7 @@ public class FestivalAdminController {
 
         // 체크리스트 탭: 전체 목록 (종료 포함) — 별도 조회
         LocalDate today = LocalDate.now();
-        List<FestivalResponseDto> allFestivals = festivalService.getAllFestivals(null, null, null, true);
+        List<FestivalResponseDto> allFestivals = festivalService.getAllFestivalsForAdmin();
         List<Long> ids = allFestivals.stream().map(FestivalResponseDto::getId).toList();
         long activeFestivalCount = festivalService.countActiveFestivals(today);
 
