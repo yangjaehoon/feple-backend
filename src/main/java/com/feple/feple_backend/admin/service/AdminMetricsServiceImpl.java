@@ -48,16 +48,19 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
     private final SearchLogRepository searchLogRepository;
 
     @Override
+    @Cacheable(value = "adminDashboardStats", key = "'totalUsers'")
     public long getTotalUserCount() {
         return userRepository.countByDeletedAtIsNull();
     }
 
     @Override
+    @Cacheable(value = "adminDashboardStats", key = "'recentUsers'")
     public List<User> getRecentUsers() {
         return userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc();
     }
 
     @Override
+    @Cacheable(value = "adminDashboardStats", key = "'dailyStats'")
     public List<DailyStatDto> getDailyStats() {
         LocalDate today = LocalDate.now();
         return buildDailyStats(today.minusDays(AdminConstants.STATS_RECENT_DAYS - 1), today);

@@ -145,11 +145,13 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     @Override
+    @Cacheable(value = "adminDashboardStats", key = "'totalPosts'")
     public long getTotalPostCount() {
         return postRepository.count();
     }
 
     @Override
+    @Cacheable(value = "adminDashboardStats", key = "'recentPosts_' + #days")
     public long countRecentPosts(int days) {
         return postRepository.countByCreatedAtAfter(LocalDateTime.now().minusDays(days));
     }

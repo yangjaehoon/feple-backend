@@ -16,6 +16,7 @@ import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
@@ -53,10 +54,12 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
                 .build());
     }
 
+    @Cacheable(value = "adminReportTypeCounts", key = "'commentPending'")
     public long getPendingCount() {
         return reportRepository.countByStatus(ReportStatus.PENDING);
     }
 
+    @Cacheable(value = "adminReportTypeCounts", key = "'commentTotal'")
     public long getTotalCount() {
         return reportRepository.count();
     }

@@ -10,6 +10,7 @@ import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
     private final SongRequestRepository songRequestRepository;
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'certs_' + #limit")
     public List<FestivalCertification> getPendingCerts(int limit) {
         return certificationRepository
                 .findByStatusOrderByCreatedAtDesc(CertificationStatus.PENDING, PageRequest.of(0, limit))
@@ -33,11 +35,13 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
     }
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'certCount'")
     public long getPendingCertCount() {
         return certificationRepository.countByStatus(CertificationStatus.PENDING);
     }
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'reports_' + #limit")
     public List<PostReport> getPendingReports(int limit) {
         return reportRepository
                 .findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, PageRequest.of(0, limit))
@@ -45,17 +49,20 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
     }
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'reportCount'")
     public long getPendingReportCount() {
         return reportRepository.countByStatus(ReportStatus.PENDING);
     }
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'songs_' + #limit")
     public List<SongRequest> getPendingSongRequests(int limit) {
         return songRequestRepository.findByStatusOrderByCreatedAtDesc(
                 SongRequestStatus.PENDING, PageRequest.of(0, limit));
     }
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'songCount'")
     public long getPendingSongRequestCount() {
         return songRequestRepository.countByStatus(SongRequestStatus.PENDING);
     }

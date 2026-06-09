@@ -92,10 +92,32 @@ public class CacheConfig {
                         .maximumSize(100)
                         .build());
 
+        // 대시보드 집계(총 유저/게시글 수, 최근 유저, 일별 통계): 5분 TTL
+        CaffeineCache adminDashboardStatsCache = new CaffeineCache("adminDashboardStats",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .maximumSize(20)
+                        .build());
+
+        // 대시보드 보류 항목(미승인 인증/신고/노래요청 개수·목록): 2분 TTL
+        CaffeineCache adminPendingCountsCache = new CaffeineCache("adminPendingCounts",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(2, TimeUnit.MINUTES)
+                        .maximumSize(20)
+                        .build());
+
+        // 신고 페이지 타입별 카운트(pending+total × 3종): 30초 TTL
+        CaffeineCache adminReportTypeCountsCache = new CaffeineCache("adminReportTypeCounts",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(30, TimeUnit.SECONDS)
+                        .maximumSize(10)
+                        .build());
+
         SimpleCacheManager manager = new SimpleCacheManager();
         manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
                 adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache,
-                allArtistsSortedByNameCache, allFestivalsForAdminCache, adminRangeStatsCache));
+                allArtistsSortedByNameCache, allFestivalsForAdminCache, adminRangeStatsCache,
+                adminDashboardStatsCache, adminPendingCountsCache, adminReportTypeCountsCache));
         return manager;
     }
 }

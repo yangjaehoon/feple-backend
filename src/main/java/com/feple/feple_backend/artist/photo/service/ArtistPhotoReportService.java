@@ -15,6 +15,7 @@ import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -53,11 +54,13 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     }
 
     @Override
+    @Cacheable(value = "adminReportTypeCounts", key = "'photoPending'")
     public long getPendingCount() {
         return reportRepository.countByStatus(ReportStatus.PENDING);
     }
 
     @Override
+    @Cacheable(value = "adminReportTypeCounts", key = "'photoTotal'")
     public long getTotalCount() {
         return reportRepository.count();
     }
