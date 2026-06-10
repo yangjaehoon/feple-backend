@@ -47,7 +47,7 @@
                              th:text="${af.festival.title}"></div>
                         <div style="font-size:12px; color:var(--muted); margin-top:3px;"
                              th:text="${af.festival.startDate} + ' ~ ' + ${af.festival.endDate}"></div>
-                        <div th:if="${af.stageName != null}"
+                        <div th:if="${!#strings.isEmpty(af.stageName)}"
                              style="font-size:12px; color:var(--muted); margin-top:2px;"
                              th:text="'스테이지: ' + ${af.stageName}"></div>
                     </div>

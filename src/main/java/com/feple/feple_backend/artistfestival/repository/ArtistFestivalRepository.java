@@ -34,6 +34,9 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     @Query("SELECT CASE WHEN COUNT(af) > 0 THEN TRUE ELSE FALSE END FROM ArtistFestival af WHERE af.festival.id = :festivalId AND af.artist.id = :artistId")
     boolean existsByFestivalIdAndArtistId(@Param("festivalId") Long festivalId, @Param("artistId") Long artistId);
 
+    @Query("SELECT CASE WHEN COUNT(af) > 0 THEN TRUE ELSE FALSE END FROM ArtistFestival af WHERE af.id = :id AND af.artist.id = :artistId")
+    boolean existsByIdAndArtistId(@Param("id") Long id, @Param("artistId") Long artistId);
+
     @Modifying
     @Query("DELETE FROM ArtistFestival af WHERE af.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);

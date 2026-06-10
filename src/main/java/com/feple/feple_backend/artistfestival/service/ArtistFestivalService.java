@@ -149,6 +149,18 @@ public class ArtistFestivalService {
                 .orElseThrow(() -> new NoSuchElementException("아티스트 페스티벌을 찾을 수 없습니다."));
     }
 
+    public boolean existsByIdAndArtistId(Long artistFestivalId, Long artistId) {
+        return artistFestivalRepository.existsByIdAndArtistId(artistFestivalId, artistId);
+    }
+
+    public ArtistFestival getArtistFestivalByIdAndArtistId(Long artistFestivalId, Long artistId) {
+        if (!artistFestivalRepository.existsByIdAndArtistId(artistFestivalId, artistId)) {
+            throw new IllegalArgumentException("해당 아티스트의 셋리스트가 아닙니다.");
+        }
+        return artistFestivalRepository.findByIdWithFestival(artistFestivalId)
+                .orElseThrow(() -> new NoSuchElementException("아티스트 페스티벌을 찾을 수 없습니다."));
+    }
+
     @Transactional
     public void removeArtistFromFestival(Long festivalId, Long artistFestivalId) {
         ArtistFestival artistFestival = artistFestivalRepository.findById(artistFestivalId)
