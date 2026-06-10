@@ -16,6 +16,8 @@ import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -105,6 +107,10 @@ public class FestivalCertificationService {
                 .orElseThrow(() -> new NoSuchElementException("인증 신청을 찾을 수 없습니다."));
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts", allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
+    })
     @Transactional
     public void approve(Long certId, String reviewerName) {
         FestivalCertification cert = getById(certId);
@@ -116,6 +122,10 @@ public class FestivalCertificationService {
                 cert.getFestivalId());
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts", allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
+    })
     @Transactional
     public void reject(Long certId, String rejectionMessage, String reviewerName) {
         FestivalCertification cert = getById(certId);

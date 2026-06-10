@@ -14,7 +14,9 @@ import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import java.util.List;
@@ -82,6 +84,11 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
         deletePostAndResolve(reportId);
@@ -96,6 +103,11 @@ public class PostReportService implements ReportAdminService<PostReport> {
                 .forEach(r -> r.resolve(ReportStatus.POST_DELETED));
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void dismissReport(Long reportId) {
         PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
@@ -103,6 +115,11 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;

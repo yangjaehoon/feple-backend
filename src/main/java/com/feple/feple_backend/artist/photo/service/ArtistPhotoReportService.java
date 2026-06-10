@@ -15,7 +15,9 @@ import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -86,6 +88,11 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
         deletePhotoAndResolve(reportId);
@@ -102,6 +109,11 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
         photoRepository.deleteById(photoId);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void dismissReport(Long reportId) {
         ArtistPhotoReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
@@ -109,6 +121,11 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;

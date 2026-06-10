@@ -18,6 +18,8 @@ import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -117,6 +119,10 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts", allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
+    })
     @Transactional
     public void approve(Long requestId, String youtubeUrl) {
         SongRequest request = songRequestRepository.findById(requestId)
@@ -147,6 +153,10 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts", allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
+    })
     @Transactional
     public void reject(Long requestId, String reason) {
         SongRequest request = songRequestRepository.findById(requestId)

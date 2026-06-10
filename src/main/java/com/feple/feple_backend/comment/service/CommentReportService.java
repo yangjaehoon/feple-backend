@@ -16,7 +16,9 @@ import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
@@ -84,6 +86,11 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
         deleteCommentAndResolve(reportId);
@@ -100,6 +107,11 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         post.decrementCommentCount();
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void dismissReport(Long reportId) {
         CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
@@ -107,6 +119,11 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
+        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
+        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
+    })
     @Transactional
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;
