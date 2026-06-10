@@ -41,11 +41,12 @@ public class CertificationAdminController {
         model.addAttribute("status", status != null ? status.name() : "");
         model.addAttribute("keyword", keyword);
         model.addAttribute("page", page);
+        model.addAttribute("pendingCount", certificationService.getPendingCount());
         return "admin/certification-list";
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
+    public String detail(@PathVariable Long id, Model model, RedirectAttributes ra) {
         try {
             FestivalCertification cert = certificationService.getById(id);
             String photoUrl = certificationService.buildPhotoUrl(cert.getPhotoKey());
@@ -53,11 +54,11 @@ public class CertificationAdminController {
             model.addAttribute("photoUrl", photoUrl);
             return "admin/certification-detail";
         } catch (NoSuchElementException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/certifications";
         } catch (Exception e) {
             log.error("인증 상세 조회 실패 id={}", id, e);
-            model.addAttribute("errorMessage", "인증 정보를 불러오지 못했습니다.");
+            ra.addFlashAttribute("errorMessage", "인증 정보를 불러오지 못했습니다.");
             return "redirect:/admin/certifications";
         }
     }

@@ -51,10 +51,14 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
            "WHERE fc.festival.id = :festivalId AND fc.user.id = :userId AND fc.status = 'APPROVED'")
     boolean existsApprovedCertification(@Param("festivalId") Long festivalId, @Param("userId") Long userId);
 
-    @Query("SELECT c FROM FestivalCertification c JOIN c.user u JOIN c.festival f " +
-           "WHERE (:status IS NULL OR c.status = :status) " +
-           "AND (LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
-           "     OR LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")
+    @Query(value = "SELECT c FROM FestivalCertification c JOIN FETCH c.user u JOIN FETCH c.festival f " +
+                   "WHERE (:status IS NULL OR c.status = :status) " +
+                   "AND (LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+                   "     OR LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')",
+           countQuery = "SELECT COUNT(c) FROM FestivalCertification c JOIN c.user u JOIN c.festival f " +
+                        "WHERE (:status IS NULL OR c.status = :status) " +
+                        "AND (LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+                        "     OR LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")
     Page<FestivalCertification> searchByKeyword(@Param("keyword") String keyword,
                                                 @Param("status") CertificationStatus status,
                                                 Pageable pageable);

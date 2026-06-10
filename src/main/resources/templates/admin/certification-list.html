@@ -34,7 +34,10 @@
                 </a>
                 <a th:href="@{/admin/certifications(status='PENDING', page=0)}"
                    th:classappend="${status == 'PENDING'} ? ' active' : ''"
-                   class="type-tab">대기중</a>
+                   class="type-tab">
+                    대기중
+                    <span th:if="${pendingCount > 0}" class="card-count" th:text="${pendingCount}"></span>
+                </a>
                 <a th:href="@{/admin/certifications(status='APPROVED', page=0)}"
                    th:classappend="${status == 'APPROVED'} ? ' active' : ''"
                    class="type-tab">승인됨</a>
