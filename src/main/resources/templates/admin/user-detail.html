@@ -82,7 +82,8 @@
                         <div style="font-size:12px; color:var(--muted); margin-top:2px;">팔로우 아티스트</div>
                     </div>
                     <div style="text-align:center;">
-                        <div th:style="${stats.reportCount > 0} ? 'font-size:22px; font-weight:800; color:var(--danger);' : 'font-size:22px; font-weight:800; color:var(--muted);'"
+                        <div class="stat-num"
+                             th:classappend="${stats.reportCount > 0} ? 'stat-num-danger' : 'stat-num-muted'"
                              th:text="${stats.reportCount}">0</div>
                         <div style="font-size:12px; color:var(--muted); margin-top:2px;">누적 신고</div>
                     </div>
@@ -115,7 +116,7 @@
                         <td>
                             <a th:href="@{/admin/posts/{id}(id=${post.id})}"
                                th:text="${post.title}"
-                               style="max-width:360px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                               class="detail-title-link"></a>
                         </td>
                         <td>
                             <span class="badge"
@@ -156,12 +157,12 @@
                     <tbody>
                     <tr th:each="comment : ${recentComments}">
                         <td class="td-id" th:text="${comment.commentId}"></td>
-                        <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                        <td class="detail-content-cell"
                             th:text="${comment.content}"></td>
                         <td>
                             <a th:href="@{/admin/posts/{id}(id=${comment.postId})}"
                                th:text="${comment.postTitle}"
-                               style="max-width:220px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
+                               class="detail-post-link"></a>
                         </td>
                         <td>
                             <span class="badge badge-genre"
