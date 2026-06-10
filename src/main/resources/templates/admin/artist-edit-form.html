@@ -19,6 +19,10 @@
         </div>
     </div>
     <div class="content-area">
+        <div th:if="${errors}" class="alert alert-danger" style="max-width:560px;">
+            <p th:each="err : ${errors}" style="margin:0 0 4px; font-size:13px;">⚠ <span th:text="${err}"></span></p>
+        </div>
+
         <div class="card" style="max-width:560px;">
             <div class="card-header">
                 <div class="card-title">✏ 아티스트 수정</div>

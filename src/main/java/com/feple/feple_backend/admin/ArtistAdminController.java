@@ -39,18 +39,18 @@ public class ArtistAdminController {
 
     @PostMapping("/new")
     public String createArtist(@Valid @ModelAttribute("artist") ArtistRequestDto dto,
-                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
-                               BindingResult bindingResult
-
-                               ) throws IOException {
+                               BindingResult bindingResult,
+                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
+    ) throws IOException {
 
         if (profileImageFile == null || profileImageFile.isEmpty()) {
             bindingResult.rejectValue("profileImageKey", "profileImageFile.required", "프로필 이미지는 필수입니다.");
+        }
+        if (bindingResult.hasErrors()) {
             return "admin/artist-form";
         }
 
         dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
-
         artistService.createArtist(dto);
         adminLogService.log("ARTIST_CREATE", "ARTIST", null, dto.getName());
         return "redirect:/admin/artists";
@@ -124,6 +124,9 @@ public class ArtistAdminController {
     ) throws IOException {
         if (bindingResult.hasErrors()) {
             model.addAttribute("artistId", id);
+            model.addAttribute("errors", bindingResult.getAllErrors().stream()
+                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList());
             return "admin/artist-edit-form";
         }
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
