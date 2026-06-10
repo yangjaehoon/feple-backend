@@ -106,7 +106,8 @@
                                     <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <input type="text" name="reason"
                                            placeholder="거절 사유 (선택)"
-                                           class="inline-input col-w160"/>
+                                           class="inline-input col-w160"
+                                           maxlength="200"/>
                                     <button type="submit" class="btn btn-danger btn-sm">거절</button>
                                 </form>
                             </div>
@@ -120,7 +121,8 @@
                 </table>
             </div>
 
-            <div th:insert="~{admin/fragments :: pagination(${requests}, '/admin/song-requests', 'status=' + ${status})}"></div>
+            <div th:insert="~{admin/fragments :: pagination(${requests}, '/admin/song-requests',
+                'status=' + ${status} + (${keyword != null and !#strings.isEmpty(keyword)} ? '&keyword=' + ${keyword} : ''))}"></div>
         </div>
     </div>
 </div>
