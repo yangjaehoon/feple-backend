@@ -91,7 +91,8 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .sessionFixation().changeSessionId()
-                .maximumSessions(1))
+                .maximumSessions(1)
+                .expiredUrl("/admin/login?expired=true"))
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/admin/access-denied"));
 

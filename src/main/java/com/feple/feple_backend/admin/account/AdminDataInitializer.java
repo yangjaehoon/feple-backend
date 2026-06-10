@@ -25,7 +25,7 @@ public class AdminDataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (adminAccountRepository.count() > 0) {
+        if (adminAccountRepository.countByRole(AdminRole.SUPER_ADMIN) > 0) {
             return;
         }
 
