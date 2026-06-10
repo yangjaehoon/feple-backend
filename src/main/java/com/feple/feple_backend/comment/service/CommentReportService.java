@@ -14,6 +14,7 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -82,7 +83,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
         PageRequest pageable = PageRequest.of(params.page(), params.size());
         ReportStatus status = "PENDING".equals(params.statusFilter()) ? ReportStatus.PENDING : null;
-        return reportRepository.searchByKeyword(params.keyword(), status, pageable);
+        return reportRepository.searchByKeyword(LikeEscaper.escape(params.keyword().trim()), status, pageable);
     }
 
     @Override

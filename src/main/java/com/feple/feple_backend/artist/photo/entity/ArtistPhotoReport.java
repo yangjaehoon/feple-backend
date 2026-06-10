@@ -61,7 +61,10 @@ public class ArtistPhotoReport {
     }
 
     public Long getPhotoId() { return photo.getId(); }
+    public String getPhotoTitle() { return photo.getTitle(); }
+    public String getPhotoArtistName() { return photo.getArtist().getName(); }
     public Long getReporterId() { return reporter.getId(); }
+    public String getReporterNickname() { return reporter.getNickname(); }
     public Long getPhotoUploaderId() { return photo.getUploaderId(); }
     public String getPhotoUploaderNickname() { return photo.getUploaderNickname(); }
 }

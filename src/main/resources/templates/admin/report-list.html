@@ -11,14 +11,13 @@
 
         <div class="card">
             <!-- 검색 바 -->
-            <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
-                <form th:action="@{/admin/reports}" method="get"
-                      style="display:flex; gap:8px; align-items:center;">
+            <div class="search-wrap">
+                <form th:action="@{/admin/reports}" method="get">
                     <input type="hidden" name="type" th:value="${type}"/>
                     <input type="hidden" name="status" th:value="${status}"/>
                     <input type="text" name="keyword" th:value="${keyword}"
                            placeholder="신고 내용 또는 신고자 닉네임 검색..."
-                           style="flex:1; max-width:360px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                           class="search-input"/>
                     <button type="submit" class="btn btn-secondary btn-sm">검색</button>
                     <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
                        th:href="@{/admin/reports(type=${type}, status=${status}, page=0)}"
@@ -49,7 +48,7 @@
             </div>
 
             <!-- 상태 탭 + CSV 내보내기 -->
-            <div style="padding:0 22px; border-bottom:1px solid var(--border); display:flex; gap:4px; align-items:center;">
+            <div class="status-tab-bar">
                 <a th:href="@{/admin/reports(type=${type}, status='PENDING', page=0)}"
                    th:classappend="${status == 'PENDING'} ? ' active'"
                    class="type-tab">
@@ -64,7 +63,7 @@
                 </a>
                 <a th:if="${type == 'post' or type == 'comment'}"
                    th:href="@{/admin/export/reports.csv(type=${type})}"
-                   class="btn btn-secondary btn-sm" style="margin-left:auto; margin-right:0;">
+                   class="btn btn-secondary btn-sm export-btn-right">
                     CSV 내보내기
                 </a>
             </div>
@@ -75,6 +74,7 @@
                     <input type="hidden" name="type" value="post"/>
                     <input type="hidden" name="page" th:value="${reports.number}"/>
                     <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                 </form>
                 <div class="bulk-toolbar" id="bulk-toolbar">
                     <span class="bulk-count" id="bulk-count">0건 선택됨</span>
@@ -87,14 +87,14 @@
                 <table>
                     <thead>
                     <tr>
-                        <th style="width:36px;"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
-                        <th style="width:52px;">ID</th>
+                        <th class="col-w48"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
+                        <th class="col-w48">ID</th>
                         <th>신고된 게시글</th>
-                        <th style="width:90px;">신고 사유</th>
-                        <th style="width:100px;">신고자</th>
-                        <th style="width:90px;">일시</th>
-                        <th style="width:70px;">상태</th>
-                        <th style="width:200px;">처리</th>
+                        <th class="col-w90">신고 사유</th>
+                        <th class="col-w100">신고자</th>
+                        <th class="col-w90">일시</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w200">처리</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -104,13 +104,11 @@
                         <td>
                             <a th:href="@{/admin/posts/{id}(id=${report.postId})}"
                                th:text="${report.postTitle}"
-                               style="font-size:14px; font-weight:600; max-width:300px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></a>
-                            <div class="cell-secondary" style="margin-top:4px;">
+                               class="report-title-link"></a>
+                            <div class="cell-secondary">
                                 <a th:href="@{/admin/users/{id}(id=${report.postAuthorId})}"
                                    th:text="${report.posterNickname}"
-                                   style="color:var(--text-2); text-decoration:none;"
-                                   onmouseover="this.style.textDecoration='underline'"
-                                   onmouseout="this.style.textDecoration='none'"></a>
+                                   class="td-link"></a>
                                 <span th:with="cnt=${authorReportCounts.get(report.postAuthorId)}"
                                       th:if="${cnt != null}"
                                       th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
@@ -127,7 +125,7 @@
                                   th:text="${report.reason.displayName}">
                             </span>
                         </td>
-                        <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
+                        <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
                         <td>
@@ -137,26 +135,29 @@
                             </span>
                         </td>
                         <td>
-                            <div th:if="${report.pending}"
-                                 style="display:flex; gap:6px;">
+                            <div th:if="${report.pending}" class="cell-actions">
                                 <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
                                     <input type="hidden" name="type" value="post"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             onclick="return confirm('게시글을 삭제하고 신고를 처리할까요?')">
                                         글 삭제
                                     </button>
                                 </form>
                                 <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="post"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <button type="submit" class="btn btn-secondary btn-sm"
                                             onclick="return confirm('이 신고를 기각할까요?')">
                                         기각
                                     </button>
                                 </form>
                             </div>
-                            <span th:unless="${report.pending}"
-                                  style="color:var(--muted); font-size:12px;">처리 완료</span>
+                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${reports.totalElements == 0}">
@@ -173,6 +174,7 @@
                     <input type="hidden" name="type" value="comment"/>
                     <input type="hidden" name="page" th:value="${reports.number}"/>
                     <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                 </form>
                 <div class="bulk-toolbar" id="bulk-toolbar">
                     <span class="bulk-count" id="bulk-count">0건 선택됨</span>
@@ -185,14 +187,14 @@
                 <table>
                     <thead>
                     <tr>
-                        <th style="width:36px;"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
-                        <th style="width:52px;">ID</th>
+                        <th class="col-w48"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
+                        <th class="col-w48">ID</th>
                         <th>신고된 댓글</th>
-                        <th style="width:90px;">신고 사유</th>
-                        <th style="width:100px;">신고자</th>
-                        <th style="width:90px;">일시</th>
-                        <th style="width:70px;">상태</th>
-                        <th style="width:200px;">처리</th>
+                        <th class="col-w90">신고 사유</th>
+                        <th class="col-w100">신고자</th>
+                        <th class="col-w90">일시</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w200">처리</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -200,23 +202,20 @@
                         <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
-                            <div style="font-size:14px; font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                                 th:text="${report.commentContent}"></div>
-                            <div class="cell-secondary" style="margin-top:4px;">
+                            <div class="cell-primary" th:text="${report.commentContent}"></div>
+                            <div class="cell-secondary">
                                 <a th:href="@{/admin/users/{id}(id=${report.commentAuthorId})}"
                                    th:text="${report.commentUserNickname}"
-                                   style="color:var(--text-2); text-decoration:none;"
-                                   onmouseover="this.style.textDecoration='underline'"
-                                   onmouseout="this.style.textDecoration='none'"></a>
+                                   class="td-link"></a>
                                 <span th:with="cnt=${authorReportCounts.get(report.commentAuthorId)}"
                                       th:if="${cnt != null}"
                                       th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
                                       class="report-count-badge"
                                       th:text="'누적 신고 ' + ${cnt} + '건'"></span>
-                                <span style="margin-left:6px;">•</span>
+                                <span class="report-sep">•</span>
                                 <a th:href="@{/admin/posts/{id}(id=${report.commentPostId})}"
                                    th:text="${report.commentPostTitle}"
-                                   style="margin-left:6px; color:var(--muted);"></a>
+                                   class="report-post-link"></a>
                             </div>
                             <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
                                  class="report-detail"
@@ -228,7 +227,7 @@
                                   th:text="${report.reason.displayName}">
                             </span>
                         </td>
-                        <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
+                        <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
                         <td>
@@ -238,11 +237,12 @@
                             </span>
                         </td>
                         <td>
-                            <div th:if="${report.pending}"
-                                 style="display:flex; gap:6px;">
+                            <div th:if="${report.pending}" class="cell-actions">
                                 <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
                                     <input type="hidden" name="type" value="comment"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             onclick="return confirm('댓글을 삭제하고 신고를 처리할까요?')">
                                         댓글 삭제
@@ -251,14 +251,15 @@
                                 <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
                                     <input type="hidden" name="type" value="comment"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <button type="submit" class="btn btn-secondary btn-sm"
                                             onclick="return confirm('이 신고를 기각할까요?')">
                                         기각
                                     </button>
                                 </form>
                             </div>
-                            <span th:unless="${report.pending}"
-                                  style="color:var(--muted); font-size:12px;">처리 완료</span>
+                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${reports.totalElements == 0}">
@@ -268,7 +269,6 @@
                 </table>
                 </div>
             </div>
-            </div>
 
             <!-- 사진 신고 테이블 -->
             <div th:if="${type == 'photo'}">
@@ -276,6 +276,7 @@
                     <input type="hidden" name="type" value="photo"/>
                     <input type="hidden" name="page" th:value="${reports.number}"/>
                     <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                 </form>
                 <div class="bulk-toolbar" id="bulk-toolbar">
                     <span class="bulk-count" id="bulk-count">0건 선택됨</span>
@@ -288,14 +289,14 @@
                 <table>
                     <thead>
                     <tr>
-                        <th style="width:36px;"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
-                        <th style="width:52px;">ID</th>
+                        <th class="col-w48"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
+                        <th class="col-w48">ID</th>
                         <th>신고된 사진</th>
-                        <th style="width:90px;">신고 사유</th>
-                        <th style="width:100px;">신고자</th>
-                        <th style="width:90px;">일시</th>
-                        <th style="width:70px;">상태</th>
-                        <th style="width:200px;">처리</th>
+                        <th class="col-w90">신고 사유</th>
+                        <th class="col-w100">신고자</th>
+                        <th class="col-w90">일시</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w200">처리</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -303,25 +304,22 @@
                         <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
-                            <div style="font-size:14px; font-weight:600;">
-                                사진 #<span th:text="${report.photo.id}"></span>
-                                <span style="font-size:12px; font-weight:400; color:var(--muted); margin-left:6px;"
-                                      th:text="${report.photo.title}"></span>
+                            <div class="cell-primary">
+                                사진 #<span th:text="${report.photoId}"></span>
+                                <span class="report-photo-sub" th:text="${report.photoTitle}"></span>
                             </div>
-                            <div class="cell-secondary" style="margin-top:4px;">
+                            <div class="cell-secondary">
                                 업로더:
                                 <a th:href="@{/admin/users/{id}(id=${report.photoUploaderId})}"
                                    th:text="${report.photoUploaderNickname}"
-                                   style="color:var(--text-2); text-decoration:none;"
-                                   onmouseover="this.style.textDecoration='underline'"
-                                   onmouseout="this.style.textDecoration='none'"></a>
+                                   class="td-link"></a>
                                 <span th:with="cnt=${authorReportCounts.get(report.photoUploaderId)}"
                                       th:if="${cnt != null}"
                                       th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
                                       class="report-count-badge"
                                       th:text="'누적 신고 ' + ${cnt} + '건'"></span>
-                                <span style="margin-left:6px;">•</span>
-                                <span style="margin-left:6px;">아티스트: <span th:text="${report.photo.artist.name}"></span></span>
+                                <span class="report-sep">•</span>
+                                <span>아티스트: <span th:text="${report.photoArtistName}"></span></span>
                             </div>
                             <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
                                  class="report-detail"
@@ -333,7 +331,7 @@
                                   th:text="${report.reason.displayName}">
                             </span>
                         </td>
-                        <td class="cell-secondary" th:text="${report.reporter.nickname}"></td>
+                        <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
                         <td>
@@ -343,11 +341,12 @@
                             </span>
                         </td>
                         <td>
-                            <div th:if="${report.pending}"
-                                 style="display:flex; gap:6px;">
+                            <div th:if="${report.pending}" class="cell-actions">
                                 <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
                                     <input type="hidden" name="type" value="photo"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             onclick="return confirm('사진을 삭제하고 신고를 처리할까요?')">
                                         사진 삭제
@@ -356,14 +355,15 @@
                                 <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
                                     <input type="hidden" name="type" value="photo"/>
                                     <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <button type="submit" class="btn btn-secondary btn-sm"
                                             onclick="return confirm('이 신고를 기각할까요?')">
                                         기각
                                     </button>
                                 </form>
                             </div>
-                            <span th:unless="${report.pending}"
-                                  style="color:var(--muted); font-size:12px;">처리 완료</span>
+                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
                         </td>
                     </tr>
                     <tr class="empty-row" th:if="${reports.totalElements == 0}">
@@ -374,7 +374,8 @@
                 </div>
             </div>
 
-            <div th:insert="~{admin/fragments :: pagination(${reports}, '/admin/reports', 'type=' + type + '&status=' + status)}"></div>
+            <div th:insert="~{admin/fragments :: pagination(${reports}, '/admin/reports',
+                'type=' + ${type} + '&status=' + ${status} + (${keyword != null and !#strings.isEmpty(keyword)} ? '&keyword=' + ${keyword} : ''))}"></div>
         </div>
     </div>
 </div>
