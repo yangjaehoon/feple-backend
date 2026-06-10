@@ -329,7 +329,8 @@
                                     <span th:if="${entry.stageName == '📢'}"
                                           class="ops-label">📢 운영</span>
                                     <span th:unless="${entry.stageName == '📢'}"
-                                          class="badge badge-stage" th:data-stage="${entry.stageName}" th:text="${entry.stageName}"></span>
+                                          class="badge badge-stage" th:data-stage="${entry.stageName}"
+                                          th:text="${!#strings.isEmpty(entry.stageName) ? entry.stageName : '미지정'}"></span>
                                 </td>
                                 <td style="font-size:13px; white-space:nowrap;">
                                     <span style="font-weight:700; color:var(--text);" th:text="${entry.startTime}"></span>

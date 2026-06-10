@@ -44,8 +44,8 @@ public class TimetableService {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
         }
         String rawStageName = req.getStageName();
-        String stageName = (rawStageName == null || rawStageName.isBlank()) ? "main" : rawStageName.trim();
-        Stage stage = stageRepository.findByFestivalIdAndName(festivalId, stageName).orElse(null);
+        String stageName = (rawStageName == null || rawStageName.isBlank()) ? "" : rawStageName.trim();
+        Stage stage = stageName.isEmpty() ? null : stageRepository.findByFestivalIdAndName(festivalId, stageName).orElse(null);
 
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)

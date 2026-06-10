@@ -34,6 +34,9 @@ public class FestivalTimetableAdminController {
             ra.addFlashAttribute("timetableSuccess", "타임테이블 항목이 추가되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("타임테이블 항목 추가 실패: festivalId={}", festivalId, e);
+            ra.addFlashAttribute("errorMessage", "항목 추가 중 오류가 발생했습니다.");
         }
         return AdminFestivalRedirects.timetable(festivalId);
     }

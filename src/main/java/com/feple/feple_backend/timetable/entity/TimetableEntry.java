@@ -65,5 +65,6 @@ public class TimetableEntry {
 
     public void updateStage(Stage stage) {
         this.stage = stage;
+        this.stageName = stage.getName();
     }
 }
