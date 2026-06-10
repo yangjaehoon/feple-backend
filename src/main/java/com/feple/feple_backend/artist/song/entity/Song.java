@@ -27,4 +27,6 @@ public class Song {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
+
+    public Long getArtistId() { return artist.getId(); }
 }

@@ -14,7 +14,7 @@ public interface SongAdminService {
     List<YoutubeVideoDto> searchYoutube(String artistName, String query);
     Optional<YoutubeVideoDto> fetchVideoByUrl(String videoUrlOrId);
     SongResponseDto saveSong(Long artistId, SaveSongRequestDto dto);
-    void deleteSong(Long songId);
+    void deleteSong(Long artistId, Long songId);
 
     List<ArtistFestivalSong> getSetlist(Long artistFestivalId);
     void saveSetlist(Long artistFestivalId, Set<Long> songIds);

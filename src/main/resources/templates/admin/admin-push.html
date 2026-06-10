@@ -154,8 +154,7 @@
                 <div class="card-title">공지 발송 이력</div>
                 <div class="card-count" th:text="${#lists.size(history)} + '건'"></div>
             </div>
-            <div th:if="${#lists.isEmpty(history)}"
-                 style="padding:32px; text-align:center; color:var(--muted); font-size:14px;">
+            <div th:if="${#lists.isEmpty(history)}" class="card-empty">
                 발송 이력이 없습니다.
             </div>
             <div th:unless="${#lists.isEmpty(history)}" class="table-container">

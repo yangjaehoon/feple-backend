@@ -103,8 +103,12 @@ public class SongServiceImpl implements SongService, SongAdminService {
 
     @Override
     @Transactional
-    public void deleteSong(Long songId) {
-        songRepository.deleteById(songId);
+    public void deleteSong(Long artistId, Long songId) {
+        Song song = EntityFinder.getOrThrow(songRepository::findById, songId, "곡");
+        if (!song.getArtistId().equals(artistId)) {
+            throw new IllegalArgumentException("해당 아티스트의 곡이 아닙니다.");
+        }
+        songRepository.delete(song);
     }
 
     @Override

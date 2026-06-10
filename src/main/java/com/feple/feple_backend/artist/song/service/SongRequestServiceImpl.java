@@ -124,12 +124,13 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
     })
     @Transactional
-    public void approve(Long requestId, String youtubeUrl) {
+    public boolean approve(Long requestId, String youtubeUrl) {
         SongRequest request = songRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다."));
 
         request.approve();
 
+        boolean songSaved = false;
         if (youtubeUrl != null && !youtubeUrl.isBlank()) {
             request.updateYoutubeUrl(youtubeUrl);
             Optional<YoutubeVideoDto> videoOpt = youtubeSearchService.fetchVideoByUrl(youtubeUrl);
@@ -144,12 +145,14 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                             .artist(artist)
                             .build();
                     songRepository.save(song);
+                    songSaved = true;
                 }
             }
         }
 
         eventPublisher.publishEvent(new SongRequestApprovedEvent(
                 request.getUserId(), request.getSongTitle(), request.getArtistName()));
+        return songSaved;
     }
 
     @Override

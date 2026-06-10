@@ -76,10 +76,12 @@ public class ArtistSongAdminController {
                              @PathVariable Long songId,
                              RedirectAttributes ra) {
         try {
-            songAdminService.deleteSong(songId);
+            songAdminService.deleteSong(artistId, songId);
             ra.addFlashAttribute("successMessage", "곡이 삭제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            log.error("곡 삭제 실패 songId={}", songId, e);
+            log.error("곡 삭제 실패 artistId={} songId={}", artistId, songId, e);
             ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/artists/" + artistId + "/songs";
@@ -91,8 +93,14 @@ public class ArtistSongAdminController {
                                      @RequestParam(required = false) String youtubeUrl,
                                      RedirectAttributes ra) {
         try {
-            songRequestAdminService.approve(requestId, youtubeUrl);
-            ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
+            boolean songSaved = songRequestAdminService.approve(requestId, youtubeUrl);
+            if (songSaved) {
+                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다. 곡이 등록되었습니다.");
+            } else if (youtubeUrl != null && !youtubeUrl.isBlank()) {
+                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)");
+            } else {
+                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
+            }
         } catch (Exception e) {
             log.error("노래 요청 승인 실패 requestId={}", requestId, e);
             ra.addFlashAttribute("errorMessage", "노래 요청 승인에 실패했습니다. 다시 시도해주세요.");

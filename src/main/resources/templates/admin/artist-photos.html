@@ -31,8 +31,7 @@
                       th:text="${#lists.size(artists.?[profileImageUrl != null])}"></span>
             </div>
 
-            <div th:if="${#lists.isEmpty(artists.?[profileImageUrl != null])}"
-                 style="padding:32px; text-align:center; color:var(--muted); font-size:13px;">
+            <div th:if="${#lists.isEmpty(artists.?[profileImageUrl != null])}" class="card-empty">
                 사진이 등록된 아티스트가 없습니다.
             </div>
 

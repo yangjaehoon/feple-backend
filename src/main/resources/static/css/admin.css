@@ -1212,8 +1212,38 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .photo-upload { padding: 8px 12px 12px; }
 .photo-upload input[type=file] { width: 100%; font-size: 11px; margin-bottom: 6px; color: var(--muted); }
 
+/* ── 카드 공통 ── */
+.card-mb    { margin-bottom: 24px; }
+.card-title-note { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.card-empty { padding: 32px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* ── 리스트 아이템 공통 ── */
+.item-list  { padding: 0 16px 16px; }
+.item-body  { flex: 1; min-width: 0; }
+.item-title { font-size: 13px; font-weight: 600; }
+.item-meta  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.item-yt-url { font-size: 12px; margin-top: 2px; }
+.item-yt-url a { color: var(--primary); }
+
+/* ── 노래 요청 아이템 ── */
+.request-form         { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.request-url-input    { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; width: 200px; }
+.request-reason-input { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; width: 160px; }
+
+/* ── YouTube URL 직접 입력 ── */
+.yt-url-form   { display: flex; gap: 8px; margin-bottom: 6px; }
+.yt-url-input  { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+.yt-hint       { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+.yt-preview    { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--primary); border-radius: 8px; background: var(--surface); }
+.yt-preview-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.yt-error      { color: var(--muted); font-size: 13px; text-align: center; padding: 12px 0; }
+
 /* ── 곡 목록 아이템 ── */
-.song-item-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.song-item-row  { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.song-index     { font-size: 12px; color: var(--muted); width: 20px; text-align: center; flex-shrink: 0; }
+.song-thumb     { width: 48px; height: 48px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.song-title-text { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.song-yt-link   { font-size: 11px; color: var(--primary); }
 
 /* ── 아티스트 목록 ── */
 .genre-active-label { font-size: 12px; font-weight: 500; color: var(--primary); margin-left: 6px; }
