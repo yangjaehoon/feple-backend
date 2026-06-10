@@ -1286,3 +1286,30 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .cell-actions { display: flex; gap: 6px; align-items: center; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 테이블 컬럼 너비 ── */
+.col-w48  { width: 48px; }
+.col-w90  { width: 90px; }
+.col-w100 { width: 100px; }
+.col-w110 { width: 110px; }
+.col-w120 { width: 120px; }
+.col-w130 { width: 130px; }
+.col-w140 { width: 140px; }
+.col-w160 { width: 160px; }
+.col-w200 { width: 200px; }
+.col-w300 { width: 300px; }
+
+/* ── 보조 텍스트 ── */
+.td-note { font-size: 13px; color: var(--text-2); }
+
+/* ── 처리 모달 ── */
+.admin-modal          { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); align-items: center; justify-content: center; }
+.admin-modal-box      { background: #fff; border-radius: 12px; padding: 28px 28px 24px; width: 480px; max-width: calc(100vw - 32px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+.admin-modal-header   { margin-bottom: 18px; }
+.admin-modal-title    { font-size: 16px; font-weight: 700; color: var(--text-1); }
+.admin-modal-subtitle { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+.admin-modal-section  { margin-bottom: 14px; }
+.admin-modal-label    { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+.reason-chip-row      { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.admin-modal-textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; resize: vertical; box-sizing: border-box; font-family: inherit; }
+.admin-modal-actions  { display: flex; gap: 10px; justify-content: flex-end; }

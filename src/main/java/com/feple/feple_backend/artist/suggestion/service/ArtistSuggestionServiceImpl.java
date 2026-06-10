@@ -59,33 +59,11 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
 
     @Override
     @Transactional(readOnly = true)
-    public List<ArtistSuggestionResponseDto> getPendingSuggestions() {
-        List<ArtistSuggestion> suggestions =
-                suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.PENDING);
-        Map<Long, String> nMap = nicknameMap(suggestions);
-        return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())))
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Page<ArtistSuggestionResponseDto> getSuggestionsPage(int page, int size) {
         Page<ArtistSuggestion> pageResult = suggestionRepository.findByStatusOrderByCreatedAtDesc(
                 ArtistSuggestionStatus.PENDING, PageRequest.of(page, size));
         Map<Long, String> nMap = nicknameMap(pageResult.getContent());
         return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ArtistSuggestionResponseDto> getProcessedSuggestions() {
-        List<ArtistSuggestion> suggestions =
-                suggestionRepository.findByStatusOrderByCreatedAtDesc(ArtistSuggestionStatus.DISMISSED);
-        Map<Long, String> nMap = nicknameMap(suggestions);
-        return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())))
-                .toList();
     }
 
     @Override
@@ -134,7 +112,6 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
         ArtistSuggestion suggestion = suggestionRepository.findById(suggestionId)
                 .orElseThrow(() -> new NoSuchElementException("아티스트 신청을 찾을 수 없습니다: " + suggestionId));
         suggestion.dismiss(processNote);
-        suggestionRepository.save(suggestion);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), suggestion.getArtistName(), processNote));
     }

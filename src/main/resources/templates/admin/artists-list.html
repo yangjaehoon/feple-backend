@@ -22,10 +22,10 @@
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <!-- 아티스트 신청 섹션 -->
-        <div th:if="${not #lists.isEmpty(suggestions)}" class="card" style="margin-bottom:20px;">
+        <div th:if="${not #lists.isEmpty(suggestions)}" class="card card-mb">
             <div class="card-header">
                 <div class="card-title">
-                    🙋 아티스트 신청 대기
+                    아티스트 신청 대기
                     <span class="count-badge count-badge-yellow"
                           th:text="${#lists.size(suggestions)}"></span>
                 </div>
@@ -36,17 +36,17 @@
                     <tr>
                         <th>아티스트 이름</th>
                         <th>추가 정보</th>
-                        <th style="width:120px;">신청자</th>
-                        <th style="width:140px;">신청일</th>
-                        <th style="width:100px;">처리</th>
+                        <th class="col-w120">신청자</th>
+                        <th class="col-w140">신청일</th>
+                        <th class="col-w100">처리</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="s : ${suggestions}">
                         <td class="cell-primary" th:text="${s.artistName}"></td>
-                        <td style="font-size:13px; color:var(--text-2);" th:text="${s.note != null ? s.note : '-'}"></td>
-                        <td style="font-size:13px;" th:text="${s.userNickname}"></td>
-                        <td style="font-size:12px; color:var(--muted);"
+                        <td class="td-note" th:text="${s.note != null ? s.note : '-'}"></td>
+                        <td class="td-sub" th:text="${s.userNickname}"></td>
+                        <td class="cell-secondary"
                             th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                         <td>
                             <button type="button" class="btn btn-primary btn-sm"
@@ -61,7 +61,7 @@
         </div>
 
         <!-- 처리 완료 내역 -->
-        <div th:if="${not #lists.isEmpty(processedSuggestions)}" class="card" style="margin-bottom:20px;">
+        <div th:if="${not #lists.isEmpty(processedSuggestions)}" class="card card-mb">
             <details>
                 <summary>
                     <div class="card-title">
@@ -80,21 +80,21 @@
                         <tr>
                             <th>아티스트 이름</th>
                             <th>신청 메모</th>
-                            <th style="width:120px;">신청자</th>
-                            <th style="width:140px;">신청일</th>
-                            <th style="width:300px;">처리 메시지</th>
-                            <th style="width:140px;">처리일</th>
+                            <th class="col-w120">신청자</th>
+                            <th class="col-w140">신청일</th>
+                            <th class="col-w300">처리 메시지</th>
+                            <th class="col-w140">처리일</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="s : ${processedSuggestions}">
                             <td class="cell-primary" th:text="${s.artistName}"></td>
-                            <td style="font-size:13px; color:var(--text-2);" th:text="${s.note != null ? s.note : '-'}"></td>
-                            <td style="font-size:13px;" th:text="${s.userNickname}"></td>
-                            <td style="font-size:12px; color:var(--muted);"
+                            <td class="td-note" th:text="${s.note != null ? s.note : '-'}"></td>
+                            <td class="td-sub" th:text="${s.userNickname}"></td>
+                            <td class="cell-secondary"
                                 th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-                            <td style="font-size:13px; color:var(--text-2);" th:text="${s.processNote != null ? s.processNote : '-'}"></td>
-                            <td style="font-size:12px; color:var(--muted);"
+                            <td class="td-note" th:text="${s.processNote != null ? s.processNote : '-'}"></td>
+                            <td class="cell-secondary"
                                 th:text="${s.processedAt != null ? #temporals.format(s.processedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
                         </tr>
                         </tbody>
@@ -231,31 +231,28 @@
     </div>
 </div>
 <!-- 처리완료 모달 -->
-<div id="dismiss-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45); align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:12px; padding:28px 28px 24px; width:480px; max-width:calc(100vw - 32px); box-shadow:0 8px 32px rgba(0,0,0,.18);">
-        <div style="margin-bottom:18px;">
-            <div style="font-size:16px; font-weight:700; color:var(--text-1);">신청 처리</div>
-            <div id="dismiss-artist-name" style="font-size:13px; color:var(--text-2); margin-top:4px;"></div>
+<div id="dismiss-modal" class="admin-modal">
+    <div class="admin-modal-box">
+        <div class="admin-modal-header">
+            <div class="admin-modal-title">신청 처리</div>
+            <div id="dismiss-artist-name" class="admin-modal-subtitle"></div>
         </div>
-
-        <div style="margin-bottom:14px;">
-            <div style="font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:8px;">처리 사유 (선택)</div>
-            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+        <div class="admin-modal-section">
+            <div class="admin-modal-label">처리 사유 (선택)</div>
+            <div class="reason-chip-row">
                 <button type="button" class="reason-chip" data-reason="요청하신 아티스트를 등록했어요!">등록 완료</button>
                 <button type="button" class="reason-chip" data-reason="이미 등록된 아티스트예요.">이미 등록됨</button>
                 <button type="button" class="reason-chip" data-reason="정보가 부족해서 등록이 어려워요.">정보 부족</button>
                 <button type="button" class="reason-chip" data-reason="활동 이력이 없어서 등록이 어려워요.">비활동 아티스트</button>
                 <button type="button" class="reason-chip" data-reason="">직접 입력</button>
             </div>
-            <textarea id="dismiss-note" rows="3"
-                      placeholder="사용자에게 전달할 메시지를 입력하세요. (미입력 시 기본 메시지로 발송됩니다)"
-                      style="width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:7px; font-size:13px; resize:vertical; box-sizing:border-box;"></textarea>
+            <textarea id="dismiss-note" rows="3" class="admin-modal-textarea"
+                      placeholder="사용자에게 전달할 메시지를 입력하세요. (미입력 시 기본 메시지로 발송됩니다)"></textarea>
         </div>
-
         <form id="dismiss-form" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" name="processNote" id="dismiss-process-note"/>
-            <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <div class="admin-modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeDismissModal()">취소</button>
                 <button type="submit" class="btn btn-primary">처리 완료</button>
             </div>
