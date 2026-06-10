@@ -1316,3 +1316,24 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .reason-chip-row      { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .admin-modal-textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; resize: vertical; box-sizing: border-box; font-family: inherit; }
 .admin-modal-actions  { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── 인증 관리 ── */
+.td-link:hover  { text-decoration: underline; }
+.cell-link      { font-size: 14px; font-weight: 600; text-decoration: none; color: var(--text); }
+.cell-link:hover { text-decoration: underline; }
+.cert-search-bar form { display: flex; gap: 8px; align-items: center; }
+.card-padded    { padding: 24px; }
+.cert-detail-wrap  { display: flex; gap: 32px; flex-wrap: wrap; }
+.cert-photo-col    { flex: 0 0 360px; }
+.cert-photo        { width: 100%; border-radius: 12px; object-fit: cover; max-height: 480px; }
+.cert-info-col     { flex: 1; min-width: 280px; }
+.cert-info-table   { width: 100%; border-collapse: collapse; }
+.cert-border-row   { border-bottom: 1px solid var(--border); }
+.cert-label        { padding: 12px 0; font-weight: 600; width: 100px; color: var(--muted); }
+.cert-value        { padding: 12px 0; }
+.cert-value-danger { padding: 12px 0; color: var(--danger); }
+.cert-actions      { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+.cert-reject-form  { display: flex; gap: 8px; align-items: flex-end; }
+.cert-label-sm     { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+.cert-reject-input { padding: 7px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; width: 280px; font-family: inherit; }
+.cert-back-link    { margin-top: 16px; }

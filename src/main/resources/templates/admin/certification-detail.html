@@ -17,52 +17,51 @@
         </div>
     </div>
     <div class="content-area">
-        <div class="card" style="padding:24px;">
-            <div style="display:flex; gap:32px; flex-wrap:wrap;">
+        <div class="card card-padded">
+            <div class="cert-detail-wrap">
                 <!-- 인증 사진 -->
-                <div style="flex:0 0 360px;">
-                    <img th:src="${photoUrl}" alt="인증 사진"
-                         style="width:100%; border-radius:12px; object-fit:cover; max-height:480px;"/>
+                <div class="cert-photo-col">
+                    <img th:src="${photoUrl}" alt="인증 사진" class="cert-photo"/>
                 </div>
 
                 <!-- 정보 -->
-                <div style="flex:1; min-width:280px;">
-                    <table style="width:100%; border-collapse:collapse;">
-                        <tr style="border-bottom:1px solid var(--border);">
-                            <td style="padding:12px 0; font-weight:600; width:100px; color:var(--muted);">신청자</td>
-                            <td style="padding:12px 0;">
-                                <span th:text="${cert.user.nickname}"></span>
-                                <span class="cell-secondary" th:text="'(' + ${cert.user.email} + ')'"></span>
+                <div class="cert-info-col">
+                    <table class="cert-info-table">
+                        <tr class="cert-border-row">
+                            <td class="cert-label">신청자</td>
+                            <td class="cert-value">
+                                <span th:text="${cert.userNickname}"></span>
+                                <span class="cell-secondary" th:text="'(' + ${cert.userEmail} + ')'"></span>
                             </td>
                         </tr>
-                        <tr style="border-bottom:1px solid var(--border);">
-                            <td style="padding:12px 0; font-weight:600; color:var(--muted);">페스티벌</td>
-                            <td style="padding:12px 0;" th:text="${cert.festival.title}"></td>
+                        <tr class="cert-border-row">
+                            <td class="cert-label">페스티벌</td>
+                            <td class="cert-value" th:text="${cert.festivalTitle}"></td>
                         </tr>
-                        <tr style="border-bottom:1px solid var(--border);">
-                            <td style="padding:12px 0; font-weight:600; color:var(--muted);">상태</td>
-                            <td style="padding:12px 0;">
+                        <tr class="cert-border-row">
+                            <td class="cert-label">상태</td>
+                            <td class="cert-value">
                                 <span class="badge"
                                       th:classappend="${cert.pending} ? 'badge-warning' : (${cert.approved} ? 'badge-success' : 'badge-danger')"
                                       th:text="${cert.status.displayName}"></span>
                             </td>
                         </tr>
-                        <tr style="border-bottom:1px solid var(--border);">
-                            <td style="padding:12px 0; font-weight:600; color:var(--muted);">신청일</td>
-                            <td style="padding:12px 0;" th:text="${#temporals.format(cert.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <tr class="cert-border-row">
+                            <td class="cert-label">신청일</td>
+                            <td class="cert-value" th:text="${#temporals.format(cert.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                         </tr>
-                        <tr th:if="${cert.reviewedAt != null}" style="border-bottom:1px solid var(--border);">
-                            <td style="padding:12px 0; font-weight:600; color:var(--muted);">심사일</td>
-                            <td style="padding:12px 0;" th:text="${#temporals.format(cert.reviewedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <tr th:if="${cert.reviewedAt != null}" class="cert-border-row">
+                            <td class="cert-label">심사일</td>
+                            <td class="cert-value" th:text="${#temporals.format(cert.reviewedAt, 'yyyy-MM-dd HH:mm')}"></td>
                         </tr>
                         <tr th:if="${cert.rejectionMessage != null and !#strings.isEmpty(cert.rejectionMessage)}">
-                            <td style="padding:12px 0; font-weight:600; color:var(--muted);">거절 사유</td>
-                            <td style="padding:12px 0; color:var(--danger);" th:text="${cert.rejectionMessage}"></td>
+                            <td class="cert-label">거절 사유</td>
+                            <td class="cert-value-danger" th:text="${cert.rejectionMessage}"></td>
                         </tr>
                     </table>
 
                     <!-- 액션 버튼 -->
-                    <div th:if="${cert.pending}" style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+                    <div th:if="${cert.pending}" class="cert-actions">
                         <form th:action="@{/admin/certifications/{id}/approve(id=${cert.id})}" method="post">
                             <button type="submit" class="btn btn-primary"
                                     onclick="return confirm('이 인증을 승인할까요?')">
@@ -71,11 +70,11 @@
                         </form>
 
                         <form th:action="@{/admin/certifications/{id}/reject(id=${cert.id})}" method="post"
-                              style="display:flex; gap:8px; align-items:end;">
+                              class="cert-reject-form">
                             <div>
-                                <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">거절 사유</label>
+                                <label class="cert-label-sm">거절 사유</label>
                                 <input type="text" name="rejectionMessage" placeholder="거절 사유를 입력하세요"
-                                       style="padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px; width:280px;"/>
+                                       class="cert-reject-input" maxlength="500"/>
                             </div>
                             <button type="submit" class="btn btn-danger"
                                     onclick="return confirm('이 인증을 거절할까요?')">
@@ -87,7 +86,7 @@
             </div>
         </div>
 
-        <div style="margin-top:16px;">
+        <div class="cert-back-link">
             <a th:href="@{/admin/certifications}" class="btn btn-secondary">← 목록으로</a>
         </div>
     </div>

@@ -25,6 +25,7 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")
     List<FestivalCertification> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") CertificationStatus status);
 
+    @EntityGraph(attributePaths = {"user", "festival"})
     Page<FestivalCertification> findByStatus(CertificationStatus status, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "festival"})
@@ -38,6 +39,7 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT COUNT(fc) FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")
     long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") CertificationStatus status);
 
+    @EntityGraph(attributePaths = {"user", "festival"})
     Page<FestivalCertification> findAll(Pageable pageable);
 
     /** 특정 페스티벌의 승인된 인증 유저 ID 목록 (게시글/댓글 뱃지용) */
