@@ -29,8 +29,7 @@
             <div class="card-header">
                 <div class="card-title">
                     페스티벌 출연 목록
-                    <span style="font-size:13px; font-weight:400; color:var(--muted); margin-left:6px;"
-                          th:text="'— ' + ${artist.name}"></span>
+                    <span class="card-title-note" th:text="'— ' + ${artist.name}"></span>
                 </div>
             </div>
 
@@ -38,16 +37,14 @@
                 등록된 페스티벌 출연 이력이 없습니다.
             </div>
 
-            <div th:unless="${appearances.isEmpty()}" style="padding:0 16px 16px;">
-                <div th:each="af, stat : ${appearances}"
-                     style="display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--border);">
-                    <div style="flex:1;">
-                        <div style="font-size:14px; font-weight:600;"
-                             th:text="${af.festival.title}"></div>
-                        <div style="font-size:12px; color:var(--muted); margin-top:3px;"
+            <div th:unless="${appearances.isEmpty()}" class="item-list">
+                <div th:each="af : ${appearances}" class="song-item-row">
+                    <div class="item-body">
+                        <div class="item-title" th:text="${af.festival.title}"></div>
+                        <div class="item-meta"
                              th:text="${af.festival.startDate} + ' ~ ' + ${af.festival.endDate}"></div>
                         <div th:if="${!#strings.isEmpty(af.stageName)}"
-                             style="font-size:12px; color:var(--muted); margin-top:2px;"
+                             class="item-meta"
                              th:text="'스테이지: ' + ${af.stageName}"></div>
                     </div>
                     <a th:href="@{/admin/artists/{aId}/setlist/{afId}(aId=${artist.id}, afId=${af.id})}"

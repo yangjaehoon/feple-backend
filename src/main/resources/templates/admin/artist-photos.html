@@ -44,17 +44,14 @@
                          th:alt="${artist.name}"/>
                     <div class="photo-info">
                         <div class="photo-name" th:text="${artist.name}"></div>
-                        <span class="badge badge-genre"
-                              style="margin-top:4px; display:inline-block;"
-                              th:text="${artist.genre}"></span>
+                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
                     </div>
                     <form class="photo-upload"
                           th:action="@{/admin/artists/{id}/photo(id=${artist.id})}"
                           method="post"
                           enctype="multipart/form-data">
                         <input type="file" name="profileImageFile" accept="image/*"/>
-                        <button type="submit" class="btn btn-primary btn-sm"
-                                style="width:100%;">사진 교체</button>
+                        <button type="submit" class="btn btn-primary btn-sm">사진 교체</button>
                     </form>
                 </div>
             </div>
@@ -63,7 +60,7 @@
         <!-- 사진 없는 아티스트 -->
         <div class="card" th:unless="${#lists.isEmpty(artists.?[profileImageUrl == null])}">
             <div class="card-header">
-                <div class="card-title" style="color:var(--danger);">⚠ 사진 미등록 아티스트</div>
+                <div class="card-title card-title-danger">사진 미등록 아티스트</div>
                 <span class="card-count"
                       th:text="${#lists.size(artists.?[profileImageUrl == null])}"></span>
             </div>
@@ -75,17 +72,14 @@
                     <div class="photo-placeholder">🎤</div>
                     <div class="photo-info">
                         <div class="photo-name" th:text="${artist.name}"></div>
-                        <span class="badge badge-genre"
-                              style="margin-top:4px; display:inline-block;"
-                              th:text="${artist.genre}"></span>
+                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
                     </div>
                     <form class="photo-upload"
                           th:action="@{/admin/artists/{id}/photo(id=${artist.id})}"
                           method="post"
                           enctype="multipart/form-data">
                         <input type="file" name="profileImageFile" accept="image/*"/>
-                        <button type="submit" class="btn btn-primary btn-sm"
-                                style="width:100%;">사진 등록</button>
+                        <button type="submit" class="btn btn-primary btn-sm">사진 등록</button>
                     </form>
                 </div>
             </div>

@@ -24,7 +24,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.springframework.data.domain.Page;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ public class FestivalAdminController {
                                  BindingResult bindingResult,
                                  @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
                                  @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
-                                 Model model) throws IOException {
+                                 Model model) {
 
         applyPosterFile(posterFile, dto, bindingResult);
 
@@ -145,7 +144,7 @@ public class FestivalAdminController {
                                  @RequestParam(value="posterFile", required=false) MultipartFile posterFile,
                                  Model model,
                                  RedirectAttributes ra
-    ) throws IOException {
+    ) {
         applyPosterFile(posterFile, dto, bindingResult);
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors().stream()
@@ -183,13 +182,17 @@ public class FestivalAdminController {
     }
 
     private void applyPosterFile(MultipartFile posterFile, FestivalRequestDto dto,
-                                  BindingResult bindingResult) throws IOException {
+                                  BindingResult bindingResult) {
         if (posterFile == null || posterFile.isEmpty()) return;
         try {
             dto.setPosterKey(festivalService.uploadPosterFile(posterFile, dto.getStartDate()));
         } catch (IllegalArgumentException e) {
             if (bindingResult != null)
                 bindingResult.rejectValue("posterKey", "upload.failed", e.getMessage());
+        } catch (Exception e) {
+            log.error("포스터 업로드 실패", e);
+            if (bindingResult != null)
+                bindingResult.rejectValue("posterKey", "upload.failed", "포스터 업로드 중 오류가 발생했습니다.");
         }
     }
 
