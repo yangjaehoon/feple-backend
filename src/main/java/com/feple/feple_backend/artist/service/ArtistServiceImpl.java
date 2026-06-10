@@ -23,23 +23,29 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Sort.Direction;
 
 @Service
 @RequiredArgsConstructor
 public class ArtistServiceImpl implements ArtistService {
 
-    private static final Map<String, Function<ArtistRepository, List<Artist>>> SORT_STRATEGIES = Map.of(
-        "name",          repo -> repo.findAll(Sort.by(Sort.Direction.ASC,  "name")),
-        "name_desc",     repo -> repo.findAll(Sort.by(Sort.Direction.DESC, "name")),
-        "followers",     repo -> repo.findAll(Sort.by(Sort.Direction.DESC, "followerCount")),
-        "followers_asc", repo -> repo.findAll(Sort.by(Sort.Direction.ASC,  "followerCount"))
-    );
+    private static final int ADMIN_PAGE_SIZE = 30;
+
+    private static Sort adminSort(String sort) {
+        return switch (sort == null ? "" : sort) {
+            case "name"          -> Sort.by(Direction.ASC,  "name");
+            case "name_desc"     -> Sort.by(Direction.DESC, "name");
+            case "followers"     -> Sort.by(Direction.DESC, "followerCount");
+            case "followers_asc" -> Sort.by(Direction.ASC,  "followerCount");
+            default              -> Sort.by(Direction.DESC, "weeklyScore").and(Sort.by(Direction.ASC, "id"));
+        };
+    }
 
     private final ArtistRepository artistRepository;
     private final ArtistFollowRepository artistFollowRepository;
@@ -110,34 +116,49 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre) {
-        Map<Long, Integer> songCountMap = songRepository.countGroupedByArtist().stream()
+    public Page<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre, int page) {
+        boolean songSort   = "songs".equals(sort) || "songs_asc".equals(sort);
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
+        if (hasKeyword || songSort) {
+            // 키워드 검색·곡수 정렬은 인메모리 처리 후 PageImpl로 슬라이싱
+            Map<Long, Integer> songCountMap = buildSongCountMap();
+            List<Artist> artists = hasKeyword
+                    ? artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(keyword.trim()))
+                    : artistRepository.findAll();
+            if (genre != null) {
+                artists = artists.stream().filter(a -> genre == a.getGenre()).toList();
+            }
+            List<ArtistResponseDto> dtos = artists.stream()
+                    .map(a -> ArtistResponseDto.from(a,
+                            fileStorageService.buildUrl(a.getProfileImageKey()),
+                            songCountMap.getOrDefault(a.getId(), 0)))
+                    .collect(Collectors.toCollection(ArrayList::new));
+            if ("songs".equals(sort)) {
+                dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount).reversed());
+            } else if ("songs_asc".equals(sort)) {
+                dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount));
+            }
+            int start = page * ADMIN_PAGE_SIZE;
+            int end   = Math.min(start + ADMIN_PAGE_SIZE, dtos.size());
+            return new PageImpl<>(start >= dtos.size() ? List.of() : dtos.subList(start, end),
+                    PageRequest.of(page, ADMIN_PAGE_SIZE), dtos.size());
+        }
+
+        // 일반 케이스: DB 레벨 페이지네이션
+        Map<Long, Integer> songCountMap = buildSongCountMap();
+        PageRequest pageable = PageRequest.of(page, ADMIN_PAGE_SIZE, adminSort(sort));
+        Page<Artist> artistPage = (genre != null)
+                ? artistRepository.findByGenre(genre, pageable)
+                : artistRepository.findAll(pageable);
+        return artistPage.map(a -> ArtistResponseDto.from(a,
+                fileStorageService.buildUrl(a.getProfileImageKey()),
+                songCountMap.getOrDefault(a.getId(), 0)));
+    }
+
+    private Map<Long, Integer> buildSongCountMap() {
+        return songRepository.countGroupedByArtist().stream()
                 .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
-
-        Stream<Artist> stream;
-        if (keyword != null && !keyword.isBlank()) {
-            stream = artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(keyword.trim())).stream();
-        } else if ("songs".equals(sort) || "songs_asc".equals(sort)) {
-            stream = artistRepository.findAll().stream();
-        } else {
-            stream = SORT_STRATEGIES.getOrDefault(sort, ArtistRepository::findAllByOrderByWeeklyScoreDescIdAsc)
-                                     .apply(artistRepository).stream();
-        }
-        if (genre != null) {
-            stream = stream.filter(artist -> genre == artist.getGenre());
-        }
-        List<ArtistResponseDto> result = stream
-                .map(artist -> ArtistResponseDto.from(artist,
-                        fileStorageService.buildUrl(artist.getProfileImageKey()),
-                        songCountMap.getOrDefault(artist.getId(), 0)))
-                .collect(Collectors.toCollection(java.util.ArrayList::new));
-
-        if ("songs".equals(sort)) {
-            result.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount).reversed());
-        } else if ("songs_asc".equals(sort)) {
-            result.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount));
-        }
-        return result;
     }
 
     @Override

@@ -1,11 +1,16 @@
 package com.feple.feple_backend.artist.repository;
 
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.entity.ArtistGenre;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ArtistRepository extends JpaRepository<Artist, Long> {
+
+    Page<Artist> findByGenre(ArtistGenre genre, Pageable pageable);
 
     @Query("SELECT a.followerCount FROM Artist a WHERE a.id = :artistId")
     int findFollowerCountById(@Param("artistId") Long artistId);

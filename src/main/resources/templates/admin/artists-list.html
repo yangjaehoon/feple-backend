@@ -224,6 +224,10 @@
                     </tbody>
                 </table>
             </div>
+            <div th:insert="~{admin/fragments :: pagination(${artistsPage}, '/admin/artists',
+                (${keyword != null and !#strings.isEmpty(keyword)} ? 'keyword=' + ${keyword} + '&' : '') +
+                (${sort != null and !#strings.isEmpty(sort)} ? 'sort=' + ${sort} + '&' : '') +
+                (${genre != null} ? 'genre=' + ${genre.name()} : ''))}"></div>
         </div>
     </div>
 </div>

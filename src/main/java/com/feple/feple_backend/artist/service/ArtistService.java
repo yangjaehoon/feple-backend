@@ -14,7 +14,7 @@ public interface ArtistService {
     List<ArtistResponseDto> getAllArtists();
     List<ArtistResponseDto> getAllArtistsSortedByName();
     List<ArtistResponseDto> searchArtists(String keyword);
-    List<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre);
+    Page<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre, int page);
     ArtistResponseDto getArtistById(Long id);
     Page<ArtistResponseDto> getArtistsPage(int page, int size);
     ArtistRequestDto getArtistForEdit(Long id);

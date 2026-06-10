@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -60,8 +61,11 @@ public class ArtistAdminController {
     public String listArtists(@RequestParam(defaultValue = "") String keyword,
                               @RequestParam(defaultValue = "") String sort,
                               @RequestParam(required = false) ArtistGenre genre,
+                              @RequestParam(defaultValue = "0") int page,
                               Model model) {
-        model.addAttribute("artists", artistService.getAdminArtistList(sort, keyword, genre));
+        Page<ArtistResponseDto> artistsPage = artistService.getAdminArtistList(sort, keyword, genre, page);
+        model.addAttribute("artistsPage", artistsPage);
+        model.addAttribute("artists", artistsPage.getContent());
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("genre", genre);
