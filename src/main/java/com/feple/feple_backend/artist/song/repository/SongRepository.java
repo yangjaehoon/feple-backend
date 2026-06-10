@@ -16,4 +16,7 @@ public interface SongRepository extends JpaRepository<Song, Long> {
 
     @Query("SELECT s.artist.id, COUNT(s) FROM Song s GROUP BY s.artist.id")
     List<Object[]> countGroupedByArtist();
+
+    @Query("SELECT s.artist.id, COUNT(s) FROM Song s WHERE s.artist.id IN :artistIds GROUP BY s.artist.id")
+    List<Object[]> countGroupedByArtistIds(@Param("artistIds") List<Long> artistIds);
 }

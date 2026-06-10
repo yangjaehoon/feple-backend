@@ -146,11 +146,12 @@ public class ArtistServiceImpl implements ArtistService {
         }
 
         // 일반 케이스: DB 레벨 페이지네이션
-        Map<Long, Integer> songCountMap = buildSongCountMap();
         PageRequest pageable = PageRequest.of(page, ADMIN_PAGE_SIZE, adminSort(sort));
         Page<Artist> artistPage = (genre != null)
                 ? artistRepository.findByGenre(genre, pageable)
                 : artistRepository.findAll(pageable);
+        List<Long> artistIds = artistPage.getContent().stream().map(Artist::getId).toList();
+        Map<Long, Integer> songCountMap = buildSongCountMapForIds(artistIds);
         return artistPage.map(a -> ArtistResponseDto.from(a,
                 fileStorageService.buildUrl(a.getProfileImageKey()),
                 songCountMap.getOrDefault(a.getId(), 0)));
@@ -158,6 +159,12 @@ public class ArtistServiceImpl implements ArtistService {
 
     private Map<Long, Integer> buildSongCountMap() {
         return songRepository.countGroupedByArtist().stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
+    }
+
+    private Map<Long, Integer> buildSongCountMapForIds(List<Long> artistIds) {
+        if (artistIds.isEmpty()) return Map.of();
+        return songRepository.countGroupedByArtistIds(artistIds).stream()
                 .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
     }
 

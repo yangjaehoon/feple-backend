@@ -108,13 +108,13 @@
                 <div class="card-title">
                     전체 아티스트
                     <span th:if="${genre != null}"
-                          style="font-size:12px; font-weight:500; color:var(--primary); margin-left:6px;"
+                          class="genre-active-label"
                           th:text="'— ' + ${genre.displayName}"></span>
                 </div>
             </div>
 
             <!-- 장르 필터 버튼 -->
-            <div style="padding:12px 22px 0; display:flex; flex-wrap:wrap; gap:8px;">
+            <div class="filter-bar">
                 <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort})}"
                    class="filter-pill"
                    th:classappend="${genre == null} ? ' active'">
@@ -129,15 +129,14 @@
             </div>
 
             <!-- 검색 바 -->
-            <div style="padding:12px 22px; border-bottom:1px solid var(--border);">
-                <form th:action="@{/admin/artists}" method="get"
-                      style="display:flex; gap:8px; align-items:center;">
+            <div class="search-wrap">
+                <form th:action="@{/admin/artists}" method="get">
                     <input type="hidden" name="sort" th:value="${sort}"/>
                     <input type="hidden" name="genre" th:if="${genre != null}" th:value="${genre.name()}"/>
                     <input type="text" name="keyword" th:value="${keyword}"
                            placeholder="아티스트 이름 검색..."
                            autocomplete="off"
-                           style="flex:1; max-width:280px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                           class="search-input"/>
                     <button type="submit" class="btn btn-secondary btn-sm">검색</button>
                     <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
                        th:href="@{/admin/artists(sort=${sort}, genre=${genre != null ? genre.name() : null})}"
@@ -151,47 +150,47 @@
                     <tr>
                         <th>
                             아티스트
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name')}"
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'name'} ? ' active'">↑</a>
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc')}"
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'name_desc'} ? ' active'">↓</a>
                         </th>
                         <th style="width:200px;">영어 이름</th>
                         <th style="width:160px;">
                             팔로워
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers')}"
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'followers'} ? ' active'">↓</a>
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc')}"
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'followers_asc'} ? ' active'">↑</a>
                         </th>
                         <th style="width:100px;">
                             곡 수
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs')}"
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'songs'} ? ' active'">↓</a>
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs_asc')}"
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs_asc', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'songs_asc'} ? ' active'">↑</a>
                         </th>
                         <th style="width:160px;">관리</th>
                     </tr>
                     </thead>
-                    <tbody id="artist-tbody">
-                    <tr th:each="artist : ${artists}" th:attr="data-name=${artist.name}">
+                    <tbody>
+                    <tr th:each="artist : ${artists}">
                         <td>
                             <div class="avatar-cell">
                                 <img th:if="${artist.profileImageUrl != null}"
                                      th:src="${artist.profileImageUrl}"
                                      class="avatar" alt="profile"/>
                                 <div th:if="${artist.profileImageUrl == null}"
-                                     style="width:38px; height:38px; border-radius:50%; background:var(--purple-50); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🎤</div>
+                                     class="avatar-placeholder">🎤</div>
                                 <div>
                                     <div class="cell-primary" th:text="${artist.name}"></div>
-                                    <div class="cell-secondary" style="margin-top:4px;">
+                                    <div class="cell-secondary">
                                         <span class="badge badge-genre" th:text="${artist.genre}"></span>
                                     </div>
                                 </div>
                             </div>
                         </td>
-                        <td style="font-size:13px;"
+                        <td class="td-sub"
                             th:text="${artist.nameEn != null and !artist.nameEn.isEmpty()} ? ${artist.nameEn} : '-'"></td>
                         <td>
                             <div class="cell-primary" th:text="${artist.followerCount}"></div>
@@ -202,7 +201,7 @@
                             <div class="cell-secondary">곡</div>
                         </td>
                         <td>
-                            <div style="display:flex; gap:6px; align-items:center;">
+                            <div class="cell-actions">
                                 <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}"
                                    class="btn btn-secondary btn-sm">곡 관리</a>
                                 <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
