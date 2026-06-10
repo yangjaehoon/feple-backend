@@ -1,16 +1,16 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.artist.song.entity.SongRequest;
-import com.feple.feple_backend.certification.entity.FestivalCertification;
-import com.feple.feple_backend.post.entity.PostReport;
+import com.feple.feple_backend.admin.CertSummaryDto;
+import com.feple.feple_backend.admin.ReportSummaryDto;
+import com.feple.feple_backend.admin.SongRequestSummaryDto;
 
 import java.util.List;
 
 public interface AdminPendingItemsService {
-    List<FestivalCertification> getPendingCerts(int limit);
+    List<CertSummaryDto> getPendingCerts(int limit);
     long getPendingCertCount();
-    List<PostReport> getPendingReports(int limit);
+    List<ReportSummaryDto> getPendingReports(int limit);
     long getPendingReportCount();
-    List<SongRequest> getPendingSongRequests(int limit);
+    List<SongRequestSummaryDto> getPendingSongRequests(int limit);
     long getPendingSongRequestCount();
 }

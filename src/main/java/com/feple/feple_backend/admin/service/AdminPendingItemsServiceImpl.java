@@ -1,12 +1,12 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.artist.song.entity.SongRequest;
+import com.feple.feple_backend.admin.CertSummaryDto;
+import com.feple.feple_backend.admin.ReportSummaryDto;
+import com.feple.feple_backend.admin.SongRequestSummaryDto;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
-import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
-import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +28,11 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
 
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'certs_' + #limit")
-    public List<FestivalCertification> getPendingCerts(int limit) {
+    public List<CertSummaryDto> getPendingCerts(int limit) {
         return certificationRepository
                 .findByStatusOrderByCreatedAtDesc(CertificationStatus.PENDING, PageRequest.of(0, limit))
-                .getContent();
+                .getContent()
+                .stream().map(CertSummaryDto::from).toList();
     }
 
     @Override
@@ -42,10 +43,11 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
 
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'reports_' + #limit")
-    public List<PostReport> getPendingReports(int limit) {
+    public List<ReportSummaryDto> getPendingReports(int limit) {
         return reportRepository
                 .findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, PageRequest.of(0, limit))
-                .getContent();
+                .getContent()
+                .stream().map(ReportSummaryDto::from).toList();
     }
 
     @Override
@@ -56,9 +58,10 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
 
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'songs_' + #limit")
-    public List<SongRequest> getPendingSongRequests(int limit) {
+    public List<SongRequestSummaryDto> getPendingSongRequests(int limit) {
         return songRequestRepository.findByStatusOrderByCreatedAtDesc(
-                SongRequestStatus.PENDING, PageRequest.of(0, limit));
+                        SongRequestStatus.PENDING, PageRequest.of(0, limit))
+                .stream().map(SongRequestSummaryDto::from).toList();
     }
 
     @Override

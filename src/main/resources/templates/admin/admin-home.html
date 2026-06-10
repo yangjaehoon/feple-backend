@@ -176,11 +176,11 @@
                     <div class="stats-summary">
                         <div class="sum-item">
                             <span class="sum-label"><span class="sum-icon">🎵</span>페스티벌</span>
-                            <span class="sum-val" th:text="${dashboard.festivalPage.totalElements}">0</span>
+                            <span class="sum-val" th:text="${dashboard.totalFestivals}">0</span>
                         </div>
                         <div class="sum-item">
                             <span class="sum-label"><span class="sum-icon">🎤</span>아티스트</span>
-                            <span class="sum-val" th:text="${dashboard.artistPage.totalElements}">0</span>
+                            <span class="sum-val" th:text="${dashboard.totalArtists}">0</span>
                         </div>
                         <div class="sum-item">
                             <span class="sum-label"><span class="sum-icon">📝</span>총 게시글</span>
@@ -315,7 +315,7 @@
                     </div>
                     <div class="memo-body">
                         <textarea class="memo-textarea" id="memo-input"
-                                  placeholder="메모를 입력하세요..."></textarea>
+                                  placeholder="메모를 입력하세요..." maxlength="500"></textarea>
                         <div class="memo-btns">
                             <button class="btn btn-primary btn-sm" onclick="addMemo()">저장</button>
                         </div>

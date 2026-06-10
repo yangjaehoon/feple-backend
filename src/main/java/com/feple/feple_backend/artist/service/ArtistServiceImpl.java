@@ -236,4 +236,9 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
     }
+
+    @Override
+    public long getTotalCount() {
+        return artistRepository.count();
+    }
 }

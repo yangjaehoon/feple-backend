@@ -217,4 +217,9 @@ public class FestivalServiceImpl implements FestivalService {
         }
         return festivalRepository.findByTitleKeywordPaged(LikeEscaper.escape(keyword), pageable).map(this::toDto);
     }
+
+    @Override
+    public long getTotalCount() {
+        return festivalRepository.count();
+    }
 }
