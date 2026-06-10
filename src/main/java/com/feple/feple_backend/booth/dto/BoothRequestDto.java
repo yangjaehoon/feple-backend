@@ -17,11 +17,9 @@ public class BoothRequestDto {
     private String name;
     @NotNull(message = "부스 유형은 필수입니다.")
     private BoothType boothType;
-    @NotNull(message = "위도는 필수입니다.")
     @DecimalMin(value = "-90.0")
     @DecimalMax(value = "90.0")
     private Double latitude;
-    @NotNull(message = "경도는 필수입니다.")
     @DecimalMin(value = "-180.0")
     @DecimalMax(value = "180.0")
     private Double longitude;

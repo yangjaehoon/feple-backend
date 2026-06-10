@@ -87,13 +87,16 @@ function initBoothMap() {
             title: booth.name,
             content: createBoothEl(booth)
         });
-        const descHtml = booth.description
-            ? '<br><span style="font-weight:400;font-size:12px;color:#555;">' + booth.description + '</span>'
-            : '';
-        const infoWindow = new google.maps.InfoWindow({
-            content: '<div style="padding:8px 12px;font-size:13px;font-weight:600;">'
-                + booth.boothTypeName + ' · ' + booth.name + descHtml + '</div>'
-        });
+        const infoDiv = document.createElement('div');
+        infoDiv.style.cssText = 'padding:8px 12px;font-size:13px;font-weight:600;';
+        infoDiv.textContent = (booth.boothTypeName || '') + ' · ' + booth.name;
+        if (booth.description) {
+            const descEl = document.createElement('span');
+            descEl.style.cssText = 'display:block;font-weight:400;font-size:12px;color:#555;margin-top:2px;';
+            descEl.textContent = booth.description;
+            infoDiv.appendChild(descEl);
+        }
+        const infoWindow = new google.maps.InfoWindow({ content: infoDiv });
         marker.addListener('click', function() {
             infoWindow.open({ anchor: marker, map: boothMap });
         });

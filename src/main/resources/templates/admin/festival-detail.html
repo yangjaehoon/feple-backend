@@ -424,8 +424,8 @@
                         <tr th:each="booth : ${booths}">
                             <td>
                                 <span class="badge"
-                                      th:classappend="'badge-' + ${booth.boothType.cssName}"
-                                      th:text="${booth.boothTypeName}"
+                                      th:classappend="${booth.boothType != null ? 'badge-' + booth.boothType.cssName : ''}"
+                                      th:text="${booth.boothTypeName ?: '-'}"
                                       style="padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600;"></span>
                             </td>
                             <td style="font-weight:600;" th:text="${booth.name}"></td>
