@@ -59,7 +59,10 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "allFestivalsForAdmin",  allEntries = true),
+        @CacheEvict(value = "activeFestivalCount",    allEntries = true)
+    })
     public Long createFestival(FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
@@ -128,7 +131,10 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "allFestivalsForAdmin",  allEntries = true),
+        @CacheEvict(value = "activeFestivalCount",    allEntries = true)
+    })
     public void updateFestival(Long id, FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
@@ -149,7 +155,10 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "allFestivalsForAdmin",  allEntries = true),
+        @CacheEvict(value = "activeFestivalCount",    allEntries = true)
+    })
     public void deleteFestival(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();
@@ -172,6 +181,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "activeFestivalCount", key = "#today")
     public long countActiveFestivals(LocalDate today) {
         return festivalRepository.countActiveFestivals(today);
     }

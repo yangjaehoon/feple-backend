@@ -113,11 +113,26 @@ public class CacheConfig {
                         .maximumSize(10)
                         .build());
 
+        // 진행 중 페스티벌 COUNT: 목록 페이지 매 로드마다 실행되던 쿼리 — 5분 TTL, 페스티벌 변경 시 evict
+        CaffeineCache activeFestivalCountCache = new CaffeineCache("activeFestivalCount",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .maximumSize(10)
+                        .build());
+
+        // 체크리스트 맵(festivalId → FestivalChecklist): 목록 페이지 매 로드마다 IN 쿼리 — 5분 TTL, toggle/saveMemo 시 evict
+        CaffeineCache festivalChecklistMapCache = new CaffeineCache("festivalChecklistMap",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .maximumSize(1)
+                        .build());
+
         SimpleCacheManager manager = new SimpleCacheManager();
         manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
                 adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache,
                 allArtistsSortedByNameCache, allFestivalsForAdminCache, adminRangeStatsCache,
-                adminDashboardStatsCache, adminPendingCountsCache, adminReportTypeCountsCache));
+                adminDashboardStatsCache, adminPendingCountsCache, adminReportTypeCountsCache,
+                activeFestivalCountCache, festivalChecklistMapCache));
         return manager;
     }
 }

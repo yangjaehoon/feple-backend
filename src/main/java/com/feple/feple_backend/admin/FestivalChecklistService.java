@@ -1,6 +1,8 @@
 package com.feple.feple_backend.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ public class FestivalChecklistService {
     private final FestivalChecklistRepository checklistRepository;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "festivalChecklistMap", key = "'all'")
     public Map<Long, FestivalChecklist> getChecklistMap(List<Long> festivalIds) {
         return checklistRepository.findByFestivalIdIn(festivalIds)
                 .stream()
@@ -22,6 +25,7 @@ public class FestivalChecklistService {
     }
 
     @Transactional
+    @CacheEvict(value = "festivalChecklistMap", allEntries = true)
     public void toggle(Long festivalId, String field) {
         FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
                 .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
@@ -36,6 +40,7 @@ public class FestivalChecklistService {
     }
 
     @Transactional
+    @CacheEvict(value = "festivalChecklistMap", allEntries = true)
     public void saveMemo(Long festivalId, String memo) {
         FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
                 .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
