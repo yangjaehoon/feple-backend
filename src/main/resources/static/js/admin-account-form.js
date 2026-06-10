@@ -1,5 +1,6 @@
 function onRoleChange(role) {
     const section = document.getElementById('perm-section');
+    if (!section) return;
     section.style.display = role === 'SUPER_ADMIN' ? 'none' : '';
 }
 

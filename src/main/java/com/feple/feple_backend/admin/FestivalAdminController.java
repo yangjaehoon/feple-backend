@@ -20,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.springframework.data.domain.Page;
 
@@ -144,9 +145,14 @@ public class FestivalAdminController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteFestival(@PathVariable Long id) {
-        festivalService.deleteFestival(id);
-        adminLogService.log("FESTIVAL_DELETE", "FESTIVAL", id, null);
+    public String deleteFestival(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            festivalService.deleteFestival(id);
+            adminLogService.log("FESTIVAL_DELETE", "FESTIVAL", id, null);
+        } catch (Exception e) {
+            log.error("페스티벌 삭제 실패. id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
+        }
         return "redirect:/admin";
     }
 

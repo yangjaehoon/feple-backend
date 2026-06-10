@@ -52,6 +52,9 @@ public class AdminCsvController {
     @ResponseBody
     public ResponseEntity<byte[]> exportReports(@RequestParam(defaultValue = "post") String type) {
         ReportCsvExporter exporter = reportExporters.getOrDefault(type, reportExporters.get("post"));
+        if (exporter == null) {
+            return ResponseEntity.badRequest().build();
+        }
         return CsvExporter.csvResponse(exporter.buildCsv(), "reports_" + type + "_" + LocalDate.now() + ".csv");
     }
 }
