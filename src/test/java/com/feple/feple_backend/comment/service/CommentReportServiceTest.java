@@ -2,6 +2,7 @@ package com.feple.feple_backend.comment.service;
 
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentReport;
+import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -36,6 +37,7 @@ class CommentReportServiceTest {
 
     @Mock CommentReportRepository reportRepository;
     @Mock CommentRepository commentRepository;
+    @Mock CommentLikeRepository commentLikeRepository;
     @Mock PostRepository postRepository;
     @Mock UserRepository userRepository;
 
@@ -124,6 +126,7 @@ class CommentReportServiceTest {
 
         commentReportService.deleteCommentAndResolve(1L);
 
+        verify(commentLikeRepository).deleteByCommentId(10L);
         verify(reportRepository).deleteByCommentId(10L);
         verify(commentRepository).deleteById(10L);
         verify(post).decrementCommentCount();
