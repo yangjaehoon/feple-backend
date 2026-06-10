@@ -160,16 +160,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
         if (!artistFestival.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("해당 아티스트는 이 페스티벌에 참여하지 않습니다.");
         }
-        artistFestivalSongRepository.deleteByArtistFestivalId(artistFestivalId);
-        if (songIds == null || songIds.isEmpty()) return;
-        List<Song> songs = songRepository.findAllById(songIds);
-        List<ArtistFestivalSong> setlist = songs.stream()
-                .map(song -> ArtistFestivalSong.builder()
-                        .song(song)
-                        .artistFestival(artistFestival)
-                        .build())
-                .toList();
-        artistFestivalSongRepository.saveAll(setlist);
+        doSaveSetlist(artistFestival, songIds);
     }
 
     @Override
@@ -177,11 +168,12 @@ public class SongServiceImpl implements SongService, SongAdminService {
     public void saveSetlist(Long artistFestivalId, Set<Long> songIds) {
         ArtistFestival artistFestival = EntityFinder.getOrThrow(
                 artistFestivalRepository::findById, artistFestivalId, "아티스트 페스티벌");
+        doSaveSetlist(artistFestival, songIds);
+    }
 
-        artistFestivalSongRepository.deleteByArtistFestivalId(artistFestivalId);
-
+    private void doSaveSetlist(ArtistFestival artistFestival, Set<Long> songIds) {
+        artistFestivalSongRepository.deleteByArtistFestivalId(artistFestival.getId());
         if (songIds == null || songIds.isEmpty()) return;
-
         List<Song> songs = songRepository.findAllById(songIds);
         List<ArtistFestivalSong> setlist = songs.stream()
                 .map(song -> ArtistFestivalSong.builder()

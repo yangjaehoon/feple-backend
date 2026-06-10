@@ -477,6 +477,9 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
   display: flex; gap: 10px; align-items: center;
   padding-top: 20px; border-top: 1.5px solid var(--border); margin-top: 22px;
 }
+.song-row { transition: background .15s; cursor: pointer; }
+.song-row:hover { background: var(--hover); }
+.song-row:has(input:checked) { background: #eef2ff; border-color: var(--primary) !important; }
 
 /* ============================================================
    SEARCH BAR

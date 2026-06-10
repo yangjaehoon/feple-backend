@@ -18,5 +18,6 @@ public interface SongAdminService {
 
     List<ArtistFestivalSong> getSetlist(Long artistFestivalId);
     void saveSetlist(Long artistFestivalId, Set<Long> songIds);
+    void updateSetlist(Long festivalId, Long artistFestivalId, Set<Long> songIds);
     Map<Long, Integer> getSetlistCounts(List<Long> artistFestivalIds);
 }

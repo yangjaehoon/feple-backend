@@ -1,6 +1,7 @@
 package com.feple.feple_backend.festival.controller;
 
 import com.feple.feple_backend.artist.song.dto.FestivalSetlistEntryDto;
+import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -33,6 +34,7 @@ public class FestivalController {
     private final FestivalAttendanceService festivalAttendanceService;
     private final WeatherService weatherService;
     private final SongService songService;
+    private final SongAdminService songAdminService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -92,7 +94,7 @@ public class FestivalController {
     public ResponseEntity<Void> updateSetlist(@PathVariable Long id,
                                               @PathVariable Long artistFestivalId,
                                               @RequestBody(required = false) Set<Long> songIds) {
-        songService.updateSetlist(id, artistFestivalId, songIds != null ? songIds : Set.of());
+        songAdminService.updateSetlist(id, artistFestivalId, songIds != null ? songIds : Set.of());
         return ResponseEntity.ok().build();
     }
 }
