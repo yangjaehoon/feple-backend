@@ -1,32 +1,26 @@
 package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.artist.song.entity.SongRequest;
-import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
-import com.feple.feple_backend.certification.entity.FestivalCertification;
-import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
-import com.feple.feple_backend.post.entity.PostReport;
-import com.feple.feple_backend.user.entity.User;
-import org.springframework.data.domain.Page;
+import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
 
 import java.util.List;
 
 public record AdminDashboardDto(
-        Page<FestivalResponseDto> festivalPage,
-        Page<ArtistResponseDto> artistPage,
+        long totalFestivals,
+        long totalArtists,
         long totalPosts,
         long totalUsers,
         long recentPostCount,
         List<PostResponseDto> hotPosts,
         List<ArtistResponseDto> topArtists,
-        List<User> recentUsers,
+        List<UserSummaryDto> recentUsers,
         List<DailyStatDto> dailyStats,
-        List<FestivalCertification> pendingCerts,
+        List<CertSummaryDto> pendingCerts,
         long pendingCertCount,
-        List<PostReport> pendingReports,
+        List<ReportSummaryDto> pendingReports,
         long pendingReportCount,
-        List<SongRequest> pendingSongRequests,
+        List<SongRequestSummaryDto> pendingSongRequests,
         long pendingSongRequestCount,
         List<ArtistSuggestionResponseDto> pendingArtistSuggestions,
         long pendingArtistSuggestionCount

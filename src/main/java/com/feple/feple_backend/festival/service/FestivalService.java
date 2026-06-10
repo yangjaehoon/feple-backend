@@ -28,4 +28,5 @@ public interface FestivalService {
     String uploadPosterFile(MultipartFile file, LocalDate startDate) throws IOException;
     List<FestivalResponseDto> getLikedFestivals(Long userId);
     long countActiveFestivals(LocalDate today);
+    long getTotalCount();
 }

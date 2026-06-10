@@ -15,7 +15,7 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
-import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.admin.UserSummaryDto;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -55,8 +55,9 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
 
     @Override
     @Cacheable(value = "adminDashboardStats", key = "'recentUsers'")
-    public List<User> getRecentUsers() {
-        return userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc();
+    public List<UserSummaryDto> getRecentUsers() {
+        return userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc()
+                .stream().map(UserSummaryDto::from).toList();
     }
 
     @Override
@@ -67,6 +68,7 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
     }
 
     @Override
+    @Cacheable(value = "adminDashboardStats", key = "'monthlyStats'")
     public List<DailyStatDto> getMonthlyStats() {
         LocalDate today = LocalDate.now();
         return buildDailyStats(today.minusDays(AdminConstants.STATS_MONTHLY_DAYS - 1), today);
@@ -151,7 +153,7 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
         Map<LocalDate, Long> map = new HashMap<>();
         for (Object[] row : rows) {
             LocalDate date = row[0] instanceof Date d ? d.toLocalDate() : LocalDate.parse(row[0].toString());
-            map.put(date, ((Number) row[1]).longValue());
+            map.put(date, row[1] != null ? ((Number) row[1]).longValue() : 0L);
         }
         return map;
     }

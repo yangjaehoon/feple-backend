@@ -20,10 +20,10 @@ public class AdminDashboardAssembler {
     private final AdminPendingItemsService adminPendingItemsService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
 
-    public AdminDashboardDto assemble(int festivalPage, int artistPage) {
+    public AdminDashboardDto assemble() {
         return new AdminDashboardDto(
-                festivalService.getFestivalsPage(festivalPage, AdminConstants.DASHBOARD_PAGE_SIZE),
-                artistService.getArtistsPage(artistPage, AdminConstants.DASHBOARD_PAGE_SIZE),
+                festivalService.getTotalCount(),
+                artistService.getTotalCount(),
                 postAdminService.getTotalPostCount(),
                 adminMetricsService.getTotalUserCount(),
                 postAdminService.countRecentPosts(AdminConstants.STATS_RECENT_DAYS),

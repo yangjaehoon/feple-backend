@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -22,11 +21,8 @@ public class AdminHomeController {
     private final AdminAccountService adminAccountService;
 
     @GetMapping
-    public String adminHome(Authentication authentication,
-                            @RequestParam(defaultValue = "0") int festivalPage,
-                            @RequestParam(defaultValue = "0") int artistPage,
-                            Model model) {
-        model.addAttribute("dashboard", dashboardAssembler.assemble(festivalPage, artistPage));
+    public String adminHome(Authentication authentication, Model model) {
+        model.addAttribute("dashboard", dashboardAssembler.assemble());
         model.addAttribute("recentLogs", adminLogService.getRecentLogs());
         adminAccountService.findByUsername(authentication.getName())
                 .ifPresent(admin -> model.addAttribute("currentAdmin", admin));
