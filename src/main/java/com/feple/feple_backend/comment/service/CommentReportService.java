@@ -3,6 +3,7 @@ package com.feple.feple_backend.comment.service;
 import com.feple.feple_backend.admin.service.ReportSearchParams;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentReport;
+import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.post.dto.SubmitReportCommand;
@@ -38,6 +39,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
 
     private final CommentReportRepository reportRepository;
     private final CommentRepository commentRepository;
+    private final CommentLikeRepository commentLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
@@ -103,6 +105,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         Long commentId = report.getCommentId();
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
+        commentLikeRepository.deleteByCommentId(commentId);
         reportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
         post.decrementCommentCount();
