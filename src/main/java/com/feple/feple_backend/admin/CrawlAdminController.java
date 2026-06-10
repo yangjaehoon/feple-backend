@@ -49,6 +49,8 @@ public class CrawlAdminController {
         try {
             ScrapedFestivalDto result = webScraperService.scrape(url.trim(), source);
             return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             log.error("스크래핑 실패: {}", url, e);
             return ResponseEntity.internalServerError()

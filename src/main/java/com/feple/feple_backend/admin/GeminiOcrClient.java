@@ -78,10 +78,15 @@ public class GeminiOcrClient {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private String extractContent(Map response) {
-        List<Map> candidates = (List<Map>) response.get("candidates");
-        Map content = (Map) candidates.get(0).get("content");
-        List<Map> parts = (List<Map>) content.get("parts");
-        return (String) parts.get(0).get("text");
+        try {
+            List<Map> candidates = (List<Map>) response.get("candidates");
+            Map content = (Map) candidates.get(0).get("content");
+            List<Map> parts = (List<Map>) content.get("parts");
+            return (String) parts.get(0).get("text");
+        } catch (Exception e) {
+            log.warn("Gemini OCR 응답 파싱 실패: {}", e.getMessage());
+            return "";
+        }
     }
 
     private List<OcrResultDto> parseJsonArray(String content) {
