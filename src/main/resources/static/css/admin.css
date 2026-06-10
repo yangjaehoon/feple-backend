@@ -1348,3 +1348,4 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .report-post-link:hover { text-decoration: underline; }
 .report-sep          { margin: 0 4px; color: var(--muted); }
 .report-photo-sub    { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.report-content-cell { font-size: 14px; font-weight: 600; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

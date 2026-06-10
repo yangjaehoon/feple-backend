@@ -202,7 +202,7 @@
                         <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
-                            <div class="cell-primary" th:text="${report.commentContent}"></div>
+                            <div class="report-content-cell" th:text="${report.commentContent}"></div>
                             <div class="cell-secondary">
                                 <a th:href="@{/admin/users/{id}(id=${report.commentAuthorId})}"
                                    th:text="${report.commentUserNickname}"
