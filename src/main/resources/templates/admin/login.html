@@ -218,6 +218,9 @@
     <div th:if="${loginError == 'disabled'}" class="alert alert-error shake">
       <span>&#9888;</span> 비활성화된 계정입니다. 최고 관리자에게 문의하세요.
     </div>
+    <div th:if="${loginError == 'locked'}" class="alert alert-error">
+      <span>&#9888;</span> 로그인 시도가 너무 많습니다. 10분 후 다시 시도해주세요.
+    </div>
     <div th:if="${param.logout != null}" class="alert alert-success">
       <span>&#10003;</span> 로그아웃 되었습니다.
     </div>

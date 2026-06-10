@@ -43,12 +43,12 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
                         .build())
                 .build());
 
+        HttpSession session = request.getSession();
         if (!bucket.tryConsume(1)) {
-            response.sendError(429, "로그인 시도가 너무 많습니다. 10분 후 다시 시도해주세요.");
+            session.setAttribute(SESSION_KEY, "locked");
+            response.sendRedirect(request.getContextPath() + "/admin/login");
             return;
         }
-
-        HttpSession session = request.getSession();
         if (exception instanceof DisabledException) {
             session.setAttribute(SESSION_KEY, "disabled");
         } else {
