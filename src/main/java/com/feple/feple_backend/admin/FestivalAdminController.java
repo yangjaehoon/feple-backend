@@ -153,7 +153,7 @@ public class FestivalAdminController {
             log.error("페스티벌 삭제 실패. id={}", id, e);
             ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin";
+        return "redirect:/admin/festivals";
     }
 
     private void applyPosterFile(MultipartFile posterFile, FestivalRequestDto dto,
@@ -176,8 +176,17 @@ public class FestivalAdminController {
     }
 
     @GetMapping("/{id}")
-    public String festivalDetail(@PathVariable Long id, Model model) {
-        festivalDetailAggregationService.populateModel(id, model);
+    public String festivalDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
+        try {
+            festivalDetailAggregationService.populateModel(id, model);
+        } catch (java.util.NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
+            return "redirect:/admin/festivals";
+        } catch (Exception e) {
+            log.error("페스티벌 상세 조회 실패. id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "페스티벌 정보를 불러오는 중 오류가 발생했습니다.");
+            return "redirect:/admin/festivals";
+        }
         return "admin/festival-detail";
     }
 }

@@ -28,10 +28,10 @@
             <div class="card-body">
                 <div class="festival-info">
                     <img class="poster-img"
-                         th:if="${festival.posterUrl != null and !#strings.isEmpty(festival.posterUrl)}"
+                         th:if="${!#strings.isEmpty(festival.posterUrl)}"
                          th:src="${festival.posterUrl}" th:alt="${festival.title}"/>
                     <div class="no-poster"
-                         th:if="${festival.posterUrl == null or #strings.isEmpty(festival.posterUrl)}">
+                         th:unless="${!#strings.isEmpty(festival.posterUrl)}">
                         <span style="font-size:28px;">🖼️</span>
                         <span>포스터 없음</span>
                     </div>
@@ -50,7 +50,7 @@
                                 ❤ <span th:text="${festival.likeCount}">0</span>
                             </div>
                         </div>
-                        <div class="meta-item" th:if="${festival.description != null}">
+                        <div class="meta-item" th:if="${!#strings.isEmpty(festival.description)}">
                             <div class="meta-label">설명</div>
                             <div class="meta-value" th:text="${festival.description}"></div>
                         </div>
@@ -73,7 +73,7 @@
             <div class="card-header">
                 <div class="card-title">
                     참여 아티스트
-                    <span class="card-count" th:text="${participatingArtists.size() ?: 0}"></span>
+                    <span class="card-count" th:text="${#lists.size(participatingArtists)}"></span>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <button type="submit" form="batch-edit-form" class="btn btn-warning btn-sm"
@@ -147,7 +147,7 @@
                                 </form>
                             </td>
                         </tr>
-                        <tr class="empty-row" th:if="${participatingArtists.isEmpty() ?: true}">
+                        <tr class="empty-row" th:if="${#lists.isEmpty(participatingArtists)}">
                             <td colspan="6">참여 아티스트가 없습니다.</td>
                         </tr>
                         </tbody>
@@ -161,7 +161,7 @@
             <div class="card-header">
                 <div class="card-title">
                     🕐 타임테이블
-                    <span class="card-count" th:text="${timetableEntries.size() ?: 0}"></span>
+                    <span class="card-count" th:text="${#lists.size(timetableEntries)}"></span>
                 </div>
             </div>
             <div class="card-body">
@@ -354,7 +354,7 @@
             <div class="card-header">
                 <div class="card-title">
                     🏪 부스 관리
-                    <span class="card-count" th:text="${booths.size() ?: 0}"></span>
+                    <span class="card-count" th:text="${#lists.size(booths)}"></span>
                 </div>
             </div>
             <div class="card-body">
@@ -444,7 +444,7 @@
             <div class="card-header">
                 <div class="card-title">
                     🎵 셋리스트 관리
-                    <span class="card-count" th:text="${participatingArtists.size() ?: 0}"></span>
+                    <span class="card-count" th:text="${#lists.size(participatingArtists)}"></span>
                 </div>
             </div>
             <div class="card-body">
