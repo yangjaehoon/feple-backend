@@ -107,6 +107,12 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long countProcessed() {
+        return suggestionRepository.countByStatus(ArtistSuggestionStatus.DISMISSED);
+    }
+
+    @Override
     @Cacheable(value = "adminPendingCounts", key = "'suggestions_' + #limit")
     @Transactional(readOnly = true)
     public List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit) {

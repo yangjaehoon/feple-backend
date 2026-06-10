@@ -63,15 +63,15 @@
         <!-- 처리 완료 내역 -->
         <div th:if="${not #lists.isEmpty(processedSuggestions)}" class="card" style="margin-bottom:20px;">
             <details>
-                <summary style="padding:16px 22px; cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px;">
-                    <div class="card-title" style="margin:0;">
+                <summary>
+                    <div class="card-title">
                         처리 완료 내역
-                        <span style="display:inline-block; margin-left:6px; padding:1px 8px; background:var(--border); color:var(--text-2); border-radius:20px; font-size:12px; font-weight:700;"
-                              th:text="${#lists.size(processedSuggestions)}"></span>
+                        <span class="count-badge count-badge-neutral"
+                              th:text="${processedSuggestionsTotal}"></span>
                     </div>
-                    <span style="margin-left:auto; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:4px;">
+                    <span class="summary-meta">
                         <span class="summary-text"></span>
-                        <span class="summary-arrow" style="display:inline-block;">▼</span>
+                        <span class="summary-arrow">▼</span>
                     </span>
                 </summary>
                 <div class="table-wrap">

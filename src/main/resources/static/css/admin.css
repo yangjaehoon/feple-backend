@@ -1027,11 +1027,14 @@ select.stage-select { padding: 5px 8px; border: 1px solid var(--border); border-
 /* ============================================================
    ARTISTS LIST — SUGGESTION MODAL
    ============================================================ */
-details > summary { list-style: none; }
+details > summary { list-style: none; padding: 16px 22px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 details > summary::-webkit-details-marker { display: none; }
+details .card-title { margin: 0; }
 .summary-text::before { content: "펼치기"; }
 details[open] .summary-text::before { content: "접기"; }
+.summary-arrow { display: inline-block; transition: transform .2s ease; }
 details[open] .summary-arrow { transform: rotate(180deg); }
+.summary-meta { margin-left: auto; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
 .reason-chip { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 12px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; font-family: inherit; }
 .reason-chip:hover, .reason-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
@@ -1094,7 +1097,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .count-badge        { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .count-badge-yellow { background: var(--accent-lt); color: #856404; }
 .count-badge-red    { background: var(--danger-lt); color: var(--danger); }
-.count-badge-blue   { background: #D1ECF1; color: #0C5460; }
+.count-badge-blue    { background: #D1ECF1; color: #0C5460; }
+.count-badge-neutral { background: var(--border); color: var(--text-2); }
 
 /* ============================================================
    ADMIN ACCOUNTS — 역할 / 권한 배지
