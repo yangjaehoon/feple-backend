@@ -49,11 +49,7 @@
                                  class="artist-item"
                                  th:data-name="${#strings.toLowerCase(artist.name)}"
                                  th:classappend="${participatingIds.contains(artist.id)} ? ' already-in' : ''">
-                                <label th:style="${participatingIds.contains(artist.id)}
-                                            ? 'display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; background:#eef2ff;'
-                                            : 'display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; transition:background .15s;'"
-                                       onmouseover="if(!this.parentElement.classList.contains('already-in')) this.style.background='var(--hover)'"
-                                       onmouseout="if(!this.parentElement.classList.contains('already-in')) this.style.background=''">
+                                <label>
                                     <input type="checkbox" name="artistIds" th:value="${artist.id}"
                                            th:checked="${participatingIds.contains(artist.id)}"
                                            style="width:15px; height:15px; accent-color:var(--primary); flex-shrink:0;"

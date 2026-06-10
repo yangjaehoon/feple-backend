@@ -148,6 +148,9 @@ public class FestivalAdminController {
     ) throws IOException {
         applyPosterFile(posterFile, dto, bindingResult);
         if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors().stream()
+                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList());
             model.addAttribute("festivalId", id);
             model.addAttribute("currentPosterUrl", festivalService.getFestival(id).getPosterUrl());
             populateFestivalFormModel(model);
