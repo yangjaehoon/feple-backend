@@ -60,7 +60,7 @@ public class FestivalArtistAdminController {
             return "redirect:/admin/festivals/" + festivalId + "/artists/new";
         }
 
-        int added = 0, duplicates = 0;
+        int added = 0, duplicates = 0, errors = 0;
         for (Long artistId : artistIds) {
             try {
                 ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
@@ -69,15 +69,21 @@ public class FestivalArtistAdminController {
                 added++;
             } catch (DuplicateArtistFestivalException ignored) {
                 duplicates++;
+            } catch (Exception e) {
+                log.error("아티스트 추가 실패: festivalId={}, artistId={}", festivalId, artistId, e);
+                errors++;
             }
         }
 
-        if (added == 0) {
+        if (added == 0 && errors == 0) {
             ra.addFlashAttribute("errorMessage", "선택한 아티스트가 이미 모두 참여 중입니다.");
-        } else if (duplicates > 0) {
-            ra.addFlashAttribute("successMessage", added + "명 추가 완료. " + duplicates + "명은 이미 참여 중이었습니다.");
+        } else if (added == 0) {
+            ra.addFlashAttribute("errorMessage", "아티스트 추가에 실패했습니다. 다시 시도해주세요.");
         } else {
-            ra.addFlashAttribute("successMessage", added + "명의 아티스트가 추가되었습니다.");
+            StringBuilder msg = new StringBuilder(added + "명의 아티스트가 추가되었습니다.");
+            if (duplicates > 0) msg.append(" (").append(duplicates).append("명은 이미 참여 중)");
+            if (errors > 0) msg.append(" (").append(errors).append("명 추가 실패)");
+            ra.addFlashAttribute("successMessage", msg.toString());
         }
         return AdminFestivalRedirects.detail(festivalId);
     }
@@ -94,8 +100,15 @@ public class FestivalArtistAdminController {
                                @RequestParam(required = false) String stageName,
                                @RequestParam(required = false) String performanceDate,
                                RedirectAttributes ra) {
-        artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate));
-        ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
+        try {
+            artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate));
+            ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("라인업 수정 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e);
+            ra.addFlashAttribute("errorMessage", "라인업 수정 중 오류가 발생했습니다.");
+        }
         return AdminFestivalRedirects.artists(festivalId);
     }
 

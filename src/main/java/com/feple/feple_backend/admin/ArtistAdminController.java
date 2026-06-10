@@ -41,7 +41,8 @@ public class ArtistAdminController {
     @PostMapping("/new")
     public String createArtist(@Valid @ModelAttribute("artist") ArtistRequestDto dto,
                                BindingResult bindingResult,
-                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile
+                               @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
+                               RedirectAttributes ra
     ) throws IOException {
 
         if (profileImageFile == null || profileImageFile.isEmpty()) {
@@ -54,6 +55,7 @@ public class ArtistAdminController {
         dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
         artistService.createArtist(dto);
         adminLogService.log("ARTIST_CREATE", "ARTIST", null, dto.getName());
+        ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
         return "redirect:/admin/artists";
     }
 
@@ -99,7 +101,11 @@ public class ArtistAdminController {
     @PostMapping("/{id}/photo")
     public String updatePhoto(@PathVariable Long id,
                               @RequestParam("profileImageFile") MultipartFile file,
-                              RedirectAttributes ra) throws IOException {
+                              RedirectAttributes ra) {
+        if (file == null || file.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "이미지를 선택해주세요.");
+            return "redirect:/admin/artists/photos";
+        }
         try {
             ArtistResponseDto artist = artistService.getArtistById(id);
             String imageKey = artistService.uploadProfile(file, artist.getName());
@@ -113,9 +119,14 @@ public class ArtistAdminController {
     }
 
     @GetMapping("/{id}/edit")
-    public String showEditForm(@PathVariable Long id, Model model) {
-        model.addAttribute("artistId", id);
-        model.addAttribute("artist", artistService.getArtistForEdit(id));
+    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
+        try {
+            model.addAttribute("artistId", id);
+            model.addAttribute("artist", artistService.getArtistForEdit(id));
+        } catch (java.util.NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
+            return "redirect:/admin/artists";
+        }
         return "admin/artist-edit-form";
     }
 
@@ -124,8 +135,9 @@ public class ArtistAdminController {
                                @Valid @ModelAttribute("artist") ArtistRequestDto dto,
                                BindingResult bindingResult,
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
-                               Model model
-    ) throws IOException {
+                               Model model,
+                               RedirectAttributes ra
+    ) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("artistId", id);
             model.addAttribute("errors", bindingResult.getAllErrors().stream()
@@ -133,11 +145,19 @@ public class ArtistAdminController {
                     .toList());
             return "admin/artist-edit-form";
         }
-        if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
+        try {
+            if (profileImageFile != null && !profileImageFile.isEmpty()) {
+                dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
+            }
+            artistService.updateArtist(id, dto);
+            adminLogService.log("ARTIST_UPDATE", "ARTIST", id, dto.getName());
+            ra.addFlashAttribute("successMessage", "아티스트 정보가 수정되었습니다.");
+        } catch (java.util.NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
+        } catch (Exception e) {
+            log.error("아티스트 수정 실패 id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
         }
-        artistService.updateArtist(id, dto);
-        adminLogService.log("ARTIST_UPDATE", "ARTIST", id, dto.getName());
         return "redirect:/admin/artists";
     }
 

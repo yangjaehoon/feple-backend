@@ -31,15 +31,21 @@ public class ArtistSongAdminController {
     @GetMapping
     public String songsPage(@PathVariable Long artistId,
                             @RequestParam(required = false) String videoUrl,
-                            Model model) {
-        ArtistResponseDto artist = artistService.getArtistById(artistId);
-        model.addAttribute("artist", artist);
-        model.addAttribute("songs", songService.getSongsByArtistId(artistId));
-        model.addAttribute("videoUrl", videoUrl);
-        model.addAttribute("pendingRequests", songRequestAdminService.getPendingRequests(artistId));
-        if (videoUrl != null && !videoUrl.isBlank()) {
-            songAdminService.fetchVideoByUrl(videoUrl)
-                    .ifPresent(v -> model.addAttribute("previewVideo", v));
+                            Model model,
+                            RedirectAttributes ra) {
+        try {
+            ArtistResponseDto artist = artistService.getArtistById(artistId);
+            model.addAttribute("artist", artist);
+            model.addAttribute("songs", songService.getSongsByArtistId(artistId));
+            model.addAttribute("videoUrl", videoUrl);
+            model.addAttribute("pendingRequests", songRequestAdminService.getPendingRequests(artistId));
+            if (videoUrl != null && !videoUrl.isBlank()) {
+                songAdminService.fetchVideoByUrl(videoUrl)
+                        .ifPresent(v -> model.addAttribute("previewVideo", v));
+            }
+        } catch (java.util.NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
+            return "redirect:/admin/artists";
         }
         return "admin/artist-songs";
     }
@@ -58,6 +64,9 @@ public class ArtistSongAdminController {
             ra.addFlashAttribute("successMessage", "'" + dto.getTitle() + "' 곡이 등록되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("곡 등록 실패 artistId={}", artistId, e);
+            ra.addFlashAttribute("errorMessage", "곡 등록 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
@@ -66,8 +75,13 @@ public class ArtistSongAdminController {
     public String deleteSong(@PathVariable Long artistId,
                              @PathVariable Long songId,
                              RedirectAttributes ra) {
-        songAdminService.deleteSong(songId);
-        ra.addFlashAttribute("successMessage", "곡이 삭제되었습니다.");
+        try {
+            songAdminService.deleteSong(songId);
+            ra.addFlashAttribute("successMessage", "곡이 삭제되었습니다.");
+        } catch (Exception e) {
+            log.error("곡 삭제 실패 songId={}", songId, e);
+            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
+        }
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
 

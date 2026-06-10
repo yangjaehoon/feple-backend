@@ -1196,4 +1196,19 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── 인증 목록 검색 바 ── */
 .cert-search-bar { padding: 12px 22px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+
+/* ── 아티스트 사진 관리 ── */
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 20px; }
+.photo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.photo-card.no-photo { border: 2px dashed var(--border); opacity: .85; }
+.photo-thumb { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.photo-placeholder { width: 100%; aspect-ratio: 1 / 1; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 48px; color: var(--muted); }
+.photo-info { padding: 10px 12px 4px; }
+.photo-name { font-weight: 700; font-size: 13.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.photo-upload { padding: 8px 12px 12px; }
+.photo-upload input[type=file] { width: 100%; font-size: 11px; margin-bottom: 6px; color: var(--muted); }
+
+/* ── 곡 목록 아이템 ── */
+.song-item-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+
 @keyframes spin { to { transform: rotate(360deg); } }

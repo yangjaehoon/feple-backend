@@ -135,9 +135,7 @@
             </div>
 
             <div th:unless="${songs.isEmpty()}" style="padding:0 16px 16px;">
-                <div th:each="song, stat : ${songs}"
-                     th:style="${stat.first} ? 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);'
-                                             : 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);'">
+                <div th:each="song, stat : ${songs}" class="song-item-row">
                     <span style="font-size:12px; color:var(--muted); width:20px; text-align:center; flex-shrink:0;"
                           th:text="${stat.index + 1}"></span>
                     <img th:if="${song.thumbnailUrl != null}"
