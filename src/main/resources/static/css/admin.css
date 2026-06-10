@@ -1349,3 +1349,5 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .report-sep          { margin: 0 4px; color: var(--muted); }
 .report-photo-sub    { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
 .report-content-cell { font-size: 14px; font-weight: 600; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-toolbar  { padding: 14px 22px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.list-csv-row  { padding: 8px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; }
