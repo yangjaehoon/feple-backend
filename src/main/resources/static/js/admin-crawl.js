@@ -262,7 +262,7 @@
         document.getElementById('ocrEmptyState').style.display = 'none';
         document.getElementById('ocrPreviewWrap').classList.add('visible');
         document.getElementById('ocrParseBody').innerHTML = '';
-        document.getElementById('applyResult').style.display = 'none';
+        hideToast();
         document.getElementById('btnApplyOcr').disabled = true;
 
         var progressWrap = document.getElementById('ocrProgress');
