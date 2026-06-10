@@ -83,6 +83,13 @@
                 </div>
             </div>
 
+            <!-- 아티스트별 삭제 form — 중첩 form 방지를 위해 batch-edit-form 밖에 배치 -->
+            <th:block th:each="af : ${participatingArtistsByName}">
+                <form th:id="'delete-af-' + ${af.artistFestivalId}"
+                      th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
+                      method="post" style="display:none;"></form>
+            </th:block>
+
             <form id="batch-edit-form"
                   th:action="@{/admin/festivals/{id}/artists/batch-edit(id=${festival.id})}"
                   method="post">
@@ -140,11 +147,10 @@
                                 </th:block>
                             </td>
                             <td>
-                                <form th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
-                                      method="post">
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
-                                </form>
+                                <button type="submit"
+                                        th:attr="form='delete-af-' + ${af.artistFestivalId}"
+                                        class="btn btn-danger btn-sm"
+                                        onclick="return confirm('삭제하시겠습니까?')">삭제</button>
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${#lists.isEmpty(participatingArtists)}">

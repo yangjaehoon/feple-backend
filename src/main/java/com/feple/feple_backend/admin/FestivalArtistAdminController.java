@@ -136,9 +136,16 @@ public class FestivalArtistAdminController {
     @PostMapping("/{artistFestivalId}/delete")
     public String removeArtistFromFestival(
             @PathVariable Long festivalId,
-            @PathVariable Long artistFestivalId) {
-
-        artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
+            @PathVariable Long artistFestivalId,
+            RedirectAttributes ra) {
+        try {
+            artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("아티스트 제거 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e);
+            ra.addFlashAttribute("errorMessage", "아티스트 제거 중 오류가 발생했습니다.");
+        }
         return AdminFestivalRedirects.artists(festivalId);
     }
 }

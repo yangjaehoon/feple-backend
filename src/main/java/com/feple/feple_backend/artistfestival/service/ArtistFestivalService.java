@@ -125,14 +125,16 @@ public class ArtistFestivalService {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
 
-        // 스테이지가 변경되면 해당 아티스트의 타임테이블 스테이지도 함께 업데이트
+        // 빈 문자열("미지정" 선택)은 null로 정규화
+        String resolvedStage = (stageName != null && !stageName.isBlank()) ? stageName : null;
         String oldStage = af.getStageName();
-        af.updateLineup(stageName, performanceDate);
+        af.updateLineup(resolvedStage, performanceDate);
 
-        if (stageName != null && !stageName.equals(oldStage)) {
+        // 스테이지가 변경되면 해당 아티스트의 타임테이블 스테이지도 함께 업데이트
+        if (resolvedStage != null && !resolvedStage.equals(oldStage)) {
             String artistName = af.getArtistName();
-            Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, stageName)
-                    .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + stageName));
+            Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, resolvedStage)
+                    .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + resolvedStage));
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
                     .forEach(entry -> entry.updateStage(newStage));
         }
