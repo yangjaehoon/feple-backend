@@ -26,6 +26,9 @@ public class FestivalStageAdminController {
             ra.addFlashAttribute("successMessage", "스테이지가 추가되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("스테이지 추가 실패: festivalId={}", festivalId, e);
+            ra.addFlashAttribute("errorMessage", "스테이지 추가에 실패했습니다.");
         }
         return AdminFestivalRedirects.timetable(festivalId);
     }

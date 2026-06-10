@@ -102,9 +102,13 @@ public class FestivalAdminController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> toggleChecklist(@PathVariable Long id,
                                                                @RequestParam String field) {
-        festivalChecklistService.toggle(id, field);
-        boolean newValue = festivalChecklistService.isChecked(id, field);
-        return ResponseEntity.ok(Map.of("checked", newValue));
+        try {
+            festivalChecklistService.toggle(id, field);
+            boolean newValue = festivalChecklistService.isChecked(id, field);
+            return ResponseEntity.ok(Map.of("checked", newValue));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/checklist/memo")
@@ -116,12 +120,21 @@ public class FestivalAdminController {
     }
 
     @GetMapping("/{id}/edit")
-    public String showEditForm(@PathVariable Long id, Model model) {
-        FestivalResponseDto festival = festivalService.getFestival(id);
-        model.addAttribute("festivalId", id);
-        model.addAttribute("festival", FestivalRequestDto.from(festival));
-        model.addAttribute("currentPosterUrl", festival.getPosterUrl());
-        populateFestivalFormModel(model);
+    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
+        try {
+            FestivalResponseDto festival = festivalService.getFestival(id);
+            model.addAttribute("festivalId", id);
+            model.addAttribute("festival", FestivalRequestDto.from(festival));
+            model.addAttribute("currentPosterUrl", festival.getPosterUrl());
+            populateFestivalFormModel(model);
+        } catch (java.util.NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
+            return "redirect:/admin/festivals";
+        } catch (Exception e) {
+            log.error("페스티벌 편집 폼 조회 실패. id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "페스티벌 정보를 불러오는 중 오류가 발생했습니다.");
+            return "redirect:/admin/festivals";
+        }
         return "admin/festival-edit-form";
     }
 
@@ -130,7 +143,8 @@ public class FestivalAdminController {
                                  @Valid @ModelAttribute("festival") FestivalRequestDto dto,
                                  BindingResult bindingResult,
                                  @RequestParam(value="posterFile", required=false) MultipartFile posterFile,
-                                 Model model
+                                 Model model,
+                                 RedirectAttributes ra
     ) throws IOException {
         applyPosterFile(posterFile, dto, bindingResult);
         if (bindingResult.hasErrors()) {
@@ -139,8 +153,17 @@ public class FestivalAdminController {
             populateFestivalFormModel(model);
             return "admin/festival-edit-form";
         }
-        festivalService.updateFestival(id, dto);
-        adminLogService.log("FESTIVAL_UPDATE", "FESTIVAL", id, dto.getTitle());
+        try {
+            festivalService.updateFestival(id, dto);
+            adminLogService.log("FESTIVAL_UPDATE", "FESTIVAL", id, dto.getTitle());
+        } catch (java.util.NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
+            return "redirect:/admin/festivals";
+        } catch (Exception e) {
+            log.error("페스티벌 수정 실패. id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
+            return "redirect:/admin/festivals/" + id;
+        }
         return "redirect:/admin/festivals/" + id;
     }
 
