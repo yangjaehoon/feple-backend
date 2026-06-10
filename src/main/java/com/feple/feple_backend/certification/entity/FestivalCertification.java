@@ -10,9 +10,14 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(uniqueConstraints = {
+@Table(
+    uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "festival_id"})
-})
+    },
+    indexes = {
+        @Index(name = "idx_festival_cert_status", columnList = "status")
+    }
+)
 public class FestivalCertification {
 
     @Id

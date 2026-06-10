@@ -10,6 +10,7 @@ import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,12 +98,14 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     }
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'suggestionCount'")
     @Transactional(readOnly = true)
     public long countPending() {
         return suggestionRepository.countByStatus(ArtistSuggestionStatus.PENDING);
     }
 
     @Override
+    @Cacheable(value = "adminPendingCounts", key = "'suggestions_' + #limit")
     @Transactional(readOnly = true)
     public List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit) {
         List<ArtistSuggestion> suggestions = suggestionRepository.findByStatusOrderByCreatedAtDesc(

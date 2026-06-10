@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
     name = "post_report",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"reporter_id", "post_id"})
+    },
+    indexes = {
+        @Index(name = "idx_post_report_status", columnList = "status")
     }
 )
 public class PostReport {

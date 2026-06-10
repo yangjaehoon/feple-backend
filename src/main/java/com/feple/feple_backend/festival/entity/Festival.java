@@ -13,6 +13,10 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Table(indexes = {
+    @Index(name = "idx_festival_like_count", columnList = "like_count DESC"),
+    @Index(name = "idx_festival_start_date", columnList = "start_date")
+})
 public class Festival {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

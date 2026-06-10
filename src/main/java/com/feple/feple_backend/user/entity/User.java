@@ -16,6 +16,10 @@ import java.time.LocalDateTime;
         name = "users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"provider", "oauth_id"})
+        },
+        indexes = {
+                @Index(name = "idx_users_created_at", columnList = "created_at"),
+                @Index(name = "idx_users_deleted_at", columnList = "deleted_at")
         }
         )
 public class User {
