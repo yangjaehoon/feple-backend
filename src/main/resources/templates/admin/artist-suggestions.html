@@ -28,7 +28,7 @@
                         <td class="td-id" th:text="${s.id}"></td>
                         <td class="cell-primary" th:text="${s.artistName}"></td>
                         <td class="cell-secondary" th:text="${s.note != null ? s.note : '—'}"></td>
-                        <td th:text="${s.userNickname}"></td>
+                        <td class="td-sub" th:text="${s.userNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(s.createdAt, 'yy-MM-dd HH:mm')}"></td>
                         <td>

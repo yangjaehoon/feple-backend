@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ArtistSuggestionAdminController {
 
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final AdminLogService adminLogService;
 
     private static final int PAGE_SIZE = 20;
 
@@ -35,6 +37,7 @@ public class ArtistSuggestionAdminController {
                           RedirectAttributes ra) {
         try {
             artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
+            adminLogService.log("ARTIST_SUGGESTION_DISMISS", "ARTIST_SUGGESTION", id, null);
             ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 신청 처리 실패: {}", id, e);
