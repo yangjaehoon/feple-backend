@@ -18,8 +18,6 @@
     </div>
     <div class="content-area">
 
-        <div th:if="${param.success}" class="alert alert-success">✓ 등록이 완료되었습니다.</div>
-
         <div th:if="${errors}" class="alert alert-danger" style="max-width:640px;">
             <p th:each="err : ${errors}" style="margin:0 0 4px; font-size:13px;">⚠ <span th:text="${err}"></span></p>
         </div>
@@ -110,7 +108,9 @@
                             <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
                                 <label th:each="g : ${allGenres}"
                                        style="display:flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;">
-                                    <input type="checkbox" name="genres" th:value="${g}" style="accent-color:var(--primary);"/>
+                                    <input type="checkbox" name="genres" th:value="${g}"
+                                           th:checked="${festival.genres != null and festival.genres.contains(g)}"
+                                           style="accent-color:var(--primary);"/>
                                     <span th:text="${g.displayName}"></span>
                                 </label>
                             </div>

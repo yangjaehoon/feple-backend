@@ -74,7 +74,7 @@ public class FestivalAdminController {
         adminLogService.log("FESTIVAL_CREATE", "FESTIVAL", festivalId, dto.getTitle());
         artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
 
-        return "redirect:/admin";
+        return "redirect:/admin/festivals/" + festivalId;
     }
 
     @GetMapping
@@ -141,7 +141,7 @@ public class FestivalAdminController {
         }
         festivalService.updateFestival(id, dto);
         adminLogService.log("FESTIVAL_UPDATE", "FESTIVAL", id, dto.getTitle());
-        return "redirect:/admin";
+        return "redirect:/admin/festivals/" + id;
     }
 
     @PostMapping("/{id}/delete")
