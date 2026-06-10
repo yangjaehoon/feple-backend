@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.DailyStatDto;
+import com.feple.feple_backend.admin.UserSummaryDto;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -72,9 +73,9 @@ class AdminMetricsServiceImplTest {
         List<User> users = List.of(mock(User.class), mock(User.class));
         given(userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc()).willReturn(users);
 
-        List<User> result = adminMetricsService.getRecentUsers();
+        List<UserSummaryDto> result = adminMetricsService.getRecentUsers();
 
-        assertThat(result).isEqualTo(users);
+        assertThat(result).hasSize(2);
         verify(userRepository).findTop5ByDeletedAtIsNullOrderByIdDesc();
     }
 
