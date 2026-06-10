@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,20 +41,29 @@ public class ArtistAdminController {
     public String createArtist(@Valid @ModelAttribute("artist") ArtistRequestDto dto,
                                BindingResult bindingResult,
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
-                               RedirectAttributes ra
-    ) throws IOException {
+                               Model model,
+                               RedirectAttributes ra) {
 
         if (profileImageFile == null || profileImageFile.isEmpty()) {
             bindingResult.rejectValue("profileImageKey", "profileImageFile.required", "프로필 이미지는 필수입니다.");
         }
         if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors().stream()
+                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList());
             return "admin/artist-form";
         }
 
-        dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
-        artistService.createArtist(dto);
-        adminLogService.log("ARTIST_CREATE", "ARTIST", null, dto.getName());
-        ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
+        try {
+            dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
+            artistService.createArtist(dto);
+            adminLogService.log("ARTIST_CREATE", "ARTIST", null, dto.getName());
+            ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
+        } catch (Exception e) {
+            log.error("아티스트 등록 실패 name={}", dto.getName(), e);
+            model.addAttribute("errors", List.of("등록 중 오류가 발생했습니다. 다시 시도해주세요."));
+            return "admin/artist-form";
+        }
         return "redirect:/admin/artists";
     }
 

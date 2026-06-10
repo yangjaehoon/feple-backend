@@ -1,11 +1,13 @@
 function previewArtistImage(input) {
     if (!input.files || !input.files[0]) return;
     var file = input.files[0];
+    var errorEl = document.getElementById('img-size-error');
     if (file.size > 5 * 1024 * 1024) {
-        alert('파일 크기가 5MB를 초과합니다.');
+        if (errorEl) errorEl.style.display = 'block';
         input.value = '';
         return;
     }
+    if (errorEl) errorEl.style.display = 'none';
     var reader = new FileReader();
     reader.onload = function(e) {
         var img = document.getElementById('preview-img');
