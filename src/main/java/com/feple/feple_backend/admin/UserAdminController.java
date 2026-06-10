@@ -42,31 +42,24 @@ public class UserAdminController {
             @RequestParam(defaultValue = "latest") String sort,
             @RequestParam(defaultValue = "") String filter,
             Model model) {
-        Page<UserResponseDto> users;
-        if ("banned".equals(filter)) {
-            users = userService.getBannedUsersPage(page, PAGE_SIZE, keyword);
-        } else if ("reports".equals(sort)) {
-            users = userService.getUsersPageSortedByReports(page, PAGE_SIZE, keyword);
-        } else {
-            users = userService.getUsersPage(page, PAGE_SIZE, keyword);
-        }
-
+        Page<UserResponseDto> users = fetchUsersPage(page, keyword, sort, filter);
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
-        Map<Long, Long> reportCounts = myPageService.getReportCounts(userIds);
-        Map<Long, Long> postCounts = postAdminService.getPostCountsByUserIds(userIds);
-        Map<Long, Long> commentCounts = commentService.getCommentCountsByUserIds(userIds);
-
-        String extraParams = buildListParams(filter, sort, keyword);
 
         model.addAttribute("users", users);
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("filter", filter);
-        model.addAttribute("reportCounts", reportCounts);
-        model.addAttribute("postCounts", postCounts);
-        model.addAttribute("commentCounts", commentCounts);
-        model.addAttribute("extraParams", extraParams);
+        model.addAttribute("reportCounts",  myPageService.getReportCounts(userIds));
+        model.addAttribute("postCounts",    postAdminService.getPostCountsByUserIds(userIds));
+        model.addAttribute("commentCounts", commentService.getCommentCountsByUserIds(userIds));
+        model.addAttribute("extraParams",   buildListParams(filter, sort, keyword));
         return "admin/user-list";
+    }
+
+    private Page<UserResponseDto> fetchUsersPage(int page, String keyword, String sort, String filter) {
+        if ("banned".equals(filter))   return userService.getBannedUsersPage(page, PAGE_SIZE, keyword);
+        if ("reports".equals(sort))    return userService.getUsersPageSortedByReports(page, PAGE_SIZE, keyword);
+        return userService.getUsersPage(page, PAGE_SIZE, keyword);
     }
 
     @GetMapping("/{id}")

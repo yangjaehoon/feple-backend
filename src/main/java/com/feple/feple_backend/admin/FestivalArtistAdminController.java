@@ -94,9 +94,7 @@ public class FestivalArtistAdminController {
                                @RequestParam(required = false) String stageName,
                                @RequestParam(required = false) String performanceDate,
                                RedirectAttributes ra) {
-        LocalDate date = (performanceDate != null && !performanceDate.isBlank())
-                ? LocalDate.parse(performanceDate) : null;
-        artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, date);
+        artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate));
         ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
         return AdminFestivalRedirects.artists(festivalId);
     }
@@ -109,11 +107,11 @@ public class FestivalArtistAdminController {
                                     RedirectAttributes ra) {
         int errorCount = 0;
         for (int i = 0; i < afIds.size(); i++) {
-            String stage = (i < stageNames.size()) ? stageNames.get(i) : null;
-            String dateStr = (i < performanceDates.size()) ? performanceDates.get(i) : null;
-            LocalDate date = (dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr) : null;
             try {
-                artistFestivalService.updateArtistFestival(festivalId, afIds.get(i), stage, date);
+                artistFestivalService.updateArtistFestival(
+                        festivalId, afIds.get(i),
+                        safeGet(stageNames, i),
+                        parseDate(safeGet(performanceDates, i)));
             } catch (Exception e) {
                 log.warn("batchUpdateLineup 실패: festivalId={}, afId={}, {}", festivalId, afIds.get(i), e.getMessage());
                 errorCount++;
@@ -125,6 +123,14 @@ public class FestivalArtistAdminController {
             ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
         }
         return AdminFestivalRedirects.artists(festivalId);
+    }
+
+    private static String safeGet(List<String> list, int i) {
+        return i < list.size() ? list.get(i) : null;
+    }
+
+    private static LocalDate parseDate(String dateStr) {
+        return (dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr) : null;
     }
 
     @PostMapping("/{artistFestivalId}/delete")
