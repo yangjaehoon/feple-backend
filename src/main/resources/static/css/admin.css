@@ -1050,7 +1050,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ============================================================
    REPORT LIST
    ============================================================ */
-.type-tab-wrap { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 22px; }
+.type-tab-wrap { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); padding: 0 22px; }
 .reason-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .reason-SPAM           { background: var(--accent-lt); color: #856404; }
 .reason-ABUSE          { background: var(--danger-lt); color: var(--danger); }
@@ -1289,6 +1289,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── 테이블 컬럼 너비 ── */
 .col-w48  { width: 48px; }
+.col-w80  { width: 80px; }
 .col-w90  { width: 90px; }
 .col-w100 { width: 100px; }
 .col-w110 { width: 110px; }
@@ -1301,6 +1302,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── 보조 텍스트 ── */
 .td-note { font-size: 13px; color: var(--text-2); }
+.td-link { font-size: 13px; text-decoration: none; color: var(--text-1); font-weight: 600; }
+.td-link-normal { font-size: 13px; text-decoration: none; color: var(--text-1); }
 
 /* ── 처리 모달 ── */
 .admin-modal          { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); align-items: center; justify-content: center; }

@@ -91,8 +91,13 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Transactional(readOnly = true)
     public Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status, String keyword) {
         PageRequest pageable = PageRequest.of(page, size);
-        SongRequestStatus statusEnum = (status == null || status.isBlank() || status.equals("ALL"))
-                ? null : SongRequestStatus.valueOf(status);
+        SongRequestStatus statusEnum;
+        try {
+            statusEnum = (status == null || status.isBlank() || status.equals("ALL"))
+                    ? null : SongRequestStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            statusEnum = SongRequestStatus.PENDING;
+        }
         String kw = (keyword == null || keyword.isBlank()) ? null : LikeEscaper.escape(keyword.trim());
         Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusEnum, kw, pageable);
         Map<Long, String> nicknameMap = buildNicknameMap(

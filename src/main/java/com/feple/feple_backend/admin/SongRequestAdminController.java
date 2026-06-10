@@ -48,9 +48,15 @@ public class SongRequestAdminController {
                           @RequestParam(defaultValue = "") String keyword,
                           RedirectAttributes ra) {
         try {
-            songRequestAdminService.approve(id, youtubeUrl);
+            boolean songSaved = songRequestAdminService.approve(id, youtubeUrl);
             adminLogService.log("SONG_REQUEST_APPROVE", "SONG_REQUEST", id, null);
-            ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
+            if (songSaved) {
+                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다. 곡이 등록되었습니다.");
+            } else if (youtubeUrl != null && !youtubeUrl.isBlank()) {
+                ra.addFlashAttribute("successMessage", "승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)");
+            } else {
+                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
+            }
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
