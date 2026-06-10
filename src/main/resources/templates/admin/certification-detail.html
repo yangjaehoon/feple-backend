@@ -30,13 +30,17 @@
                         <tr class="cert-border-row">
                             <td class="cert-label">신청자</td>
                             <td class="cert-value">
-                                <span th:text="${cert.userNickname}"></span>
+                                <a th:href="@{/admin/users/{id}(id=${cert.userId})}"
+                                   th:text="${cert.userNickname}" class="td-link"></a>
                                 <span class="cell-secondary" th:text="'(' + ${cert.userEmail} + ')'"></span>
                             </td>
                         </tr>
                         <tr class="cert-border-row">
                             <td class="cert-label">페스티벌</td>
-                            <td class="cert-value" th:text="${cert.festivalTitle}"></td>
+                            <td class="cert-value">
+                                <a th:href="@{/admin/festivals/{id}(id=${cert.festivalId})}"
+                                   th:text="${cert.festivalTitle}" class="td-link"></a>
+                            </td>
                         </tr>
                         <tr class="cert-border-row">
                             <td class="cert-label">상태</td>
@@ -73,8 +77,8 @@
                               class="cert-reject-form">
                             <div>
                                 <label class="cert-label-sm">거절 사유</label>
-                                <input type="text" name="rejectionMessage" placeholder="거절 사유를 입력하세요"
-                                       class="cert-reject-input" maxlength="500"/>
+                                <textarea name="rejectionMessage" placeholder="거절 사유를 입력하세요"
+                                          class="cert-reject-input" maxlength="500"></textarea>
                             </div>
                             <button type="submit" class="btn btn-danger"
                                     onclick="return confirm('이 인증을 거절할까요?')">
