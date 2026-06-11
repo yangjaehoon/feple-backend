@@ -94,18 +94,7 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('accounts')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title" th:text="${account != null} ? '관리자 계정 수정' : '새 관리자 추가'">관리자 계정</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <a th:href="@{/admin/accounts}">관리자 계정</a>
-                <span class="bc-sep">›</span>
-                <span th:text="${account != null} ? '수정' : '추가'">폼</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader2(${account != null} ? '관리자 계정 수정' : '새 관리자 추가', '관리자 계정', @{/admin/accounts}, ${account != null} ? '수정' : '추가')}"></div>
     <div class="content-area">
         <div class="card card-padded-lg">
 

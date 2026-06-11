@@ -143,7 +143,7 @@
     <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
 </div>
 
-<!-- ── 페이지 헤더 (page-actions 없는 단순 페이지) ── -->
+<!-- ── 페이지 헤더 (1단계 브레드크럼) ── -->
 <div th:fragment="pageHeader(title, breadcrumb)" class="page-header">
     <div>
         <h1 class="page-title" th:text="${title}"></h1>
@@ -151,6 +151,20 @@
             <a th:href="@{/admin}">대시보드</a>
             <span class="bc-sep">›</span>
             <span th:text="${breadcrumb}"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ── 페이지 헤더 (2단계 브레드크럼) ── -->
+<div th:fragment="pageHeader2(title, parentLabel, parentUrl, current)" class="page-header">
+    <div>
+        <h1 class="page-title" th:text="${title}"></h1>
+        <div class="breadcrumb">
+            <a th:href="@{/admin}">대시보드</a>
+            <span class="bc-sep">›</span>
+            <a th:href="${parentUrl}" th:text="${parentLabel}"></a>
+            <span class="bc-sep">›</span>
+            <span th:text="${current}"></span>
         </div>
     </div>
 </div>

@@ -4,18 +4,7 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('users')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title" th:text="${user.nickname}">회원 닉네임</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <a th:href="@{/admin/users}">회원</a>
-                <span class="bc-sep">›</span>
-                <span>상세</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader2(${user.nickname}, '회원', @{/admin/users}, '상세')}"></div>
     <div class="content-area">
 
         <div th:insert="~{admin/fragments :: alerts}"></div>

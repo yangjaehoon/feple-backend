@@ -4,18 +4,7 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('certifications')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">인증 상세</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <a th:href="@{/admin/certifications}">인증 관리</a>
-                <span class="bc-sep">›</span>
-                <span th:text="'#' + ${cert.id}"></span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader2('인증 상세', '인증 관리', @{/admin/certifications}, '#' + ${cert.id})}"></div>
     <div class="content-area">
         <div class="card card-padded">
             <div class="cert-detail-wrap">

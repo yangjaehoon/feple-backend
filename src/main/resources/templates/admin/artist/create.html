@@ -4,18 +4,7 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('artists')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">아티스트 등록</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <a th:href="@{/admin/artists}">아티스트</a>
-                <span class="bc-sep">›</span>
-                <span>등록</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader2('아티스트 등록', '아티스트', @{/admin/artists}, '등록')}"></div>
     <div class="content-area">
         <div th:if="${errors}" class="alert alert-danger card-narrow">
             <p th:each="err : ${errors}" class="form-error-item" th:text="${err}"></p>

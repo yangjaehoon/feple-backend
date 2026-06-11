@@ -4,18 +4,7 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('posts')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title" th:text="${post.title}">게시글 제목</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <a th:href="${backUrl}">게시글</a>
-                <span class="bc-sep">›</span>
-                <span th:text="${post.boardDisplayName}">상세</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader2(${post.title}, '게시글', ${backUrl}, ${post.boardDisplayName})}"></div>
     <div class="content-area">
 
         <!-- 게시글 본문 -->

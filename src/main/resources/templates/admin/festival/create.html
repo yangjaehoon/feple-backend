@@ -4,18 +4,7 @@
 <body>
 <div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
 <div class="main-content">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">페스티벌 등록</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <a th:href="@{/admin/festivals}">페스티벌</a>
-                <span class="bc-sep">›</span>
-                <span>등록</span>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{admin/fragments :: pageHeader2('페스티벌 등록', '페스티벌', @{/admin/festivals}, '등록')}"></div>
     <div class="content-area">
 
         <div th:if="${errors}" class="alert alert-danger card-form">
