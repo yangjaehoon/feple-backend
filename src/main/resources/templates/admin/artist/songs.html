@@ -69,7 +69,7 @@
                                placeholder="거절 사유 (선택)"
                                class="request-reason-input"/>
                         <button type="submit" class="btn btn-danger btn-sm"
-                                onclick="return confirm('거절하시겠습니까?')">거절</button>
+                                data-confirm="거절하시겠습니까?">거절</button>
                     </form>
                 </div>
             </div>
@@ -101,7 +101,7 @@
                         <div class="item-meta" th:text="${previewVideo.channelTitle}"></div>
                     </div>
                     <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="post"
-                          style="flex-shrink:0;">
+                          class="flex-shrink-0">
                         <input type="hidden" name="youtubeVideoId" th:value="${previewVideo.videoId}"/>
                         <input type="hidden" name="title" th:value="${previewVideo.title}"/>
                         <input type="hidden" name="thumbnailUrl" th:value="${previewVideo.thumbnailUrl}"/>
@@ -140,8 +140,8 @@
                         <a th:href="${song.youtubeUrl}" target="_blank" class="song-yt-link">YouTube Music에서 보기</a>
                     </div>
                     <form th:action="@{/admin/artists/{aId}/songs/{sId}/delete(aId=${artist.id}, sId=${song.id})}"
-                          method="post" style="flex-shrink:0;"
-                          onsubmit="return confirm('삭제하시겠습니까?')">
+                          method="post" class="flex-shrink-0"
+                          data-confirm="삭제하시겠습니까?">
                         <button type="submit" class="btn btn-danger btn-sm">삭제</button>
                     </form>
                 </div>

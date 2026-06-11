@@ -17,11 +17,11 @@
         </div>
     </div>
     <div class="content-area">
-        <div th:if="${errors}" class="alert alert-danger" style="max-width:640px;">
-            <p th:each="err : ${errors}" style="margin:0 0 4px; font-size:13px;">⚠ <span th:text="${err}"></span></p>
+        <div th:if="${errors}" class="alert alert-danger card-narrow">
+            <p th:each="err : ${errors}" class="form-error-item">⚠ <span th:text="${err}"></span></p>
         </div>
 
-        <div class="card" style="max-width:640px;">
+        <div class="card card-narrow">
             <div class="card-header">
                 <div class="card-title">✏ 페스티벌 수정</div>
             </div>
@@ -40,7 +40,7 @@
                         <div class="form-group">
                             <label>제목 (영어, 선택)</label>
                             <input type="text" th:field="*{titleEn}" placeholder="Festival Title in English (optional)"/>
-                            <span style="font-size:11px; color:var(--muted); margin-top:3px; display:block;">영어 모드에서 표시됩니다. 비워두면 한국어 제목이 표시됩니다.</span>
+                            <span class="hint mt-3-block">영어 모드에서 표시됩니다. 비워두면 한국어 제목이 표시됩니다.</span>
                         </div>
 
                         <div class="form-group">
@@ -53,15 +53,15 @@
                             <input type="text" id="locationInput" name="location" th:value="*{location}" required/>
                             <input type="hidden" id="latInput" name="latitude" th:value="*{latitude}"/>
                             <input type="hidden" id="lngInput" name="longitude" th:value="*{longitude}"/>
-                            <div style="margin-top:8px;">
-                                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                            <div class="addr-search-wrap">
+                                <div class="addr-row">
                                     <input type="text" id="addrSearch" placeholder="주소 또는 장소명 검색..."
-                                           style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                                           class="flex-1"/>
                                     <button type="button" onclick="searchAddress()"
-                                            style="padding:8px 14px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-size:13px; cursor:pointer;">검색</button>
+                                            class="btn btn-primary btn-sm">검색</button>
                                 </div>
-                                <div id="kakaoMap" style="width:100%; height:300px; border-radius:10px; border:1px solid var(--border);"></div>
-                                <p style="font-size:11px; color:var(--muted); margin-top:4px;">지도를 클릭하거나 주소를 검색하면 위치가 자동으로 설정됩니다.</p>
+                                <div id="kakaoMap" class="map-canvas-fixed"></div>
+                                <p class="hint mt-4">지도를 클릭하거나 주소를 검색하면 위치가 자동으로 설정됩니다.</p>
                             </div>
                         </div>
 
@@ -80,9 +80,9 @@
                             <label>현재 포스터</label>
                             <div th:if="${currentPosterUrl}">
                                 <img th:src="${currentPosterUrl}" alt="poster" class="poster-preview"/>
-                                <p style="margin-top:6px;">
+                                <p class="mt-6">
                                     <a th:href="${currentPosterUrl}" target="_blank"
-                                       style="font-size:12px; color:var(--primary-600);">원본 보기 →</a>
+                                       class="link-sm">원본 보기 →</a>
                                 </p>
                             </div>
                             <p th:unless="${currentPosterUrl}" class="hint">등록된 포스터가 없습니다.</p>
@@ -96,7 +96,7 @@
 
                         <div class="form-group">
                             <label>지역</label>
-                            <select th:field="*{region}" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                            <select th:field="*{region}">
                                 <option value="">선택 안 함</option>
                                 <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r.displayName}"></option>
                             </select>
@@ -104,19 +104,18 @@
 
                         <div class="form-group">
                             <label>연령 제한</label>
-                            <select th:field="*{ageRestriction}" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                            <select th:field="*{ageRestriction}">
                                 <option th:each="a : ${allAgeRestrictions}" th:value="${a}" th:text="${a.displayName}"></option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label>장르 <span style="font-weight:400; color:var(--muted); font-size:12px;">(복수 선택 가능)</span></label>
-                            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
-                                <label th:each="g : ${allGenres}"
-                                       style="display:flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:13px;">
+                            <label>장르 <span class="label-note">(복수 선택 가능)</span></label>
+                            <div class="genre-check-group">
+                                <label th:each="g : ${allGenres}" class="genre-check-label">
                                     <input type="checkbox" name="genres" th:value="${g}"
                                            th:checked="${festival.genres != null and festival.genres.contains(g)}"
-                                           style="accent-color:var(--primary);"/>
+                                           class="song-check"/>
                                     <span th:text="${g.displayName}"></span>
                                 </label>
                             </div>

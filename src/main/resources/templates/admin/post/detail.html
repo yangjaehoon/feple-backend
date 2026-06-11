@@ -22,20 +22,20 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-title">📄 게시글</div>
-                <div style="display:flex; align-items:center; gap:10px;">
+                <div class="cell-actions">
                     <span class="badge"
                           th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
                           th:text="${post.boardDisplayName}"></span>
                     <form th:action="@{/admin/posts/{id}/delete(id=${post.id})}" method="post">
                         <button type="submit"
                                 class="btn btn-danger btn-sm"
-                                onclick="return confirm('이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">삭제</button>
+                                data-confirm="이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.">삭제</button>
                     </form>
                 </div>
             </div>
             <div class="card-body">
                 <!-- 메타 정보 -->
-                <div style="display:flex; gap:24px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+                <div class="post-meta-row">
                     <div>
                         <div class="meta-label">작성자</div>
                         <div class="meta-value" th:text="${post.nickname}"></div>
@@ -56,12 +56,10 @@
                 </div>
 
                 <!-- 제목 -->
-                <div style="font-size:18px; font-weight:700; color:var(--text); margin-bottom:16px;"
-                     th:text="${post.title}"></div>
+                <div class="post-title" th:text="${post.title}"></div>
 
                 <!-- 본문 -->
-                <div style="font-size:14px; color:var(--text-2); line-height:1.8; white-space:pre-wrap;"
-                     th:text="${post.content}"></div>
+                <div class="post-body" th:text="${post.content}"></div>
             </div>
         </div>
 
@@ -87,19 +85,18 @@
                     <tbody>
                     <tr th:each="comment : ${comments}">
                         <td class="td-id" th:text="${comment.id}"></td>
-                        <td style="font-weight:600; white-space:nowrap;" th:text="${comment.nickname}"></td>
-                        <td style="max-width:480px;">
-                            <span th:text="${comment.content}"
-                                  style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                        <td class="cell-bold-nowrap" th:text="${comment.nickname}"></td>
+                        <td class="col-w480">
+                            <span th:text="${comment.content}" class="td-ellipsis"></span>
                         </td>
-                        <td style="color:var(--muted); white-space:nowrap; font-size:12.5px;"
+                        <td class="td-date"
                             th:text="${comment.createdAt != null ? #temporals.format(comment.createdAt, 'MM-dd HH:mm') : '-'}"></td>
                         <td>
                             <form th:action="@{/admin/posts/comments/{id}/delete(id=${comment.id})}" method="post">
                                 <input type="hidden" name="postId" th:value="${post.id}"/>
                                 <button type="submit"
                                         class="btn btn-danger btn-sm"
-                                        onclick="return confirm('이 댓글을 삭제할까요?')">삭제</button>
+                                        data-confirm="이 댓글을 삭제할까요?">삭제</button>
                             </form>
                         </td>
                     </tr>
@@ -111,7 +108,7 @@
             </div>
         </div>
 
-        <div style="margin-top:8px;">
+        <div class="back-row">
             <a th:href="${backUrl}" class="btn btn-secondary">← 목록으로</a>
         </div>
 

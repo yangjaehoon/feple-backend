@@ -68,7 +68,7 @@
                     <div th:if="${cert.pending}" class="cert-actions">
                         <form th:action="@{/admin/certifications/{id}/approve(id=${cert.id})}" method="post">
                             <button type="submit" class="btn btn-primary"
-                                    onclick="return confirm('이 인증을 승인할까요?')">
+                                    data-confirm="이 인증을 승인할까요?">
                                 승인
                             </button>
                         </form>
@@ -81,7 +81,7 @@
                                           class="cert-reject-input" maxlength="500"></textarea>
                             </div>
                             <button type="submit" class="btn btn-danger"
-                                    onclick="return confirm('이 인증을 거절할까요?')">
+                                    data-confirm="이 인증을 거절할까요?">
                                 거절
                             </button>
                         </form>

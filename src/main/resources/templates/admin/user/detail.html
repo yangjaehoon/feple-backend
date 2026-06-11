@@ -27,7 +27,7 @@
                 <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
                     <button type="submit"
                             class="btn btn-danger btn-sm"
-                            onclick="return confirm('이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">탈퇴</button>
+                            data-confirm="이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.">탈퇴</button>
                 </form>
             </div>
             <div class="card-body">
@@ -157,7 +157,7 @@
                         <th>내용</th>
                         <th>게시글</th>
                         <th>게시판</th>
-                        <th style="width:100px;">작성일</th>
+                        <th class="col-w100">작성일</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -244,7 +244,7 @@
                         <option value="ADMIN"  th:selected="${user.admin}">🛡️ 관리자</option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm"
-                            onclick="return confirm('역할을 변경하시겠습니까?')">역할 변경</button>
+                            data-confirm="역할을 변경하시겠습니까?">역할 변경</button>
                 </form>
             </div>
         </div>
@@ -274,7 +274,7 @@
                     <form th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post"
                           class="form-inline">
                         <button type="submit" class="btn btn-secondary btn-sm"
-                                onclick="return confirm('정지를 해제하시겠습니까?')">정지 해제</button>
+                                data-confirm="정지를 해제하시겠습니까?">정지 해제</button>
                     </form>
                 </div>
 
@@ -304,7 +304,7 @@
                         </div>
                         <button type="submit" class="btn btn-danger btn-sm"
                                 th:text="${user.banned} ? '재정지 (갱신)' : '정지'"
-                                onclick="return confirm('이 회원을 정지하시겠습니까?')">정지</button>
+                                data-confirm="이 회원을 정지하시겠습니까?">정지</button>
                     </form>
                 </div>
                 <div th:if="${user.admin}" class="empty-hint">관리자 계정은 정지할 수 없습니다.</div>

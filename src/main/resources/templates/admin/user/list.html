@@ -60,7 +60,7 @@
                 <span class="bulk-count" id="select-count">0명 선택됨</span>
                 <button type="submit" form="bulk-form"
                         class="btn btn-danger btn-sm"
-                        onclick="return confirm('선택한 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">
+                        data-confirm="선택한 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.">
                     선택 탈퇴
                 </button>
             </div>
@@ -146,7 +146,7 @@
                                 <input type="hidden" th:if="${keyword != null and !#strings.isEmpty(keyword)}" name="keyword" th:value="${keyword}"/>
                                 <button type="submit"
                                         class="btn btn-ghost-danger btn-sm"
-                                        onclick="return confirm('이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.')">탈퇴</button>
+                                        data-confirm="이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.">탈퇴</button>
                             </form>
                         </td>
                     </tr>

@@ -1427,6 +1427,89 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .detail-post-link   { max-width: 220px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; color: var(--muted); font-size: 12.5px; }
 .detail-post-link:hover { text-decoration: underline; }
 
+/* ============================================================
+   UTILITIES — spacing, layout helpers
+   ============================================================ */
+.ml-auto       { margin-left: auto; }
+.ml-4          { margin-left: 4px; }
+.mt-3-block    { margin-top: 3px; display: block; }
+.mt-4          { margin-top: 4px; }
+.mt-6          { margin-top: 6px; }
+.mt-8          { margin-top: 8px; }
+.mt-10         { margin-top: 10px; }
+.mb-6          { margin-bottom: 6px; }
+.mb-8          { margin-bottom: 8px; }
+.pt-4          { padding-top: 4px; }
+.d-none        { display: none !important; }
+.flex-1        { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+.flex-wrap     { flex-wrap: wrap; }
+.justify-end   { justify-content: flex-end; }
+
+/* ── account/list.html — inline styles removed ── */
+.col-w130       { width: 130px; }
+.td-monospace   { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12.5px; color: var(--text-2); }
+.td-sm          { font-size: 13px; }
+.td-self-label  { font-size: 11px; color: var(--muted); align-self: center; }
+.cell-actions-wrap { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* ── sidebar logo link / logout ── */
+.sb-logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.sb-logo-img  { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; flex-shrink: 0; }
+.sb-logout-form { margin: 0; }
+.sb-logout-btn  { width: 100%; justify-content: center; }
+
+/* ── pagination margin ── */
+.pagination.ml-auto { margin-left: auto; }
+
+/* ── post/detail.html — post content ── */
+.post-meta-row  { display: flex; gap: 24px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.post-title     { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+.post-body      { font-size: 14px; color: var(--text-2); line-height: 1.8; white-space: pre-wrap; }
+.col-w480       { max-width: 480px; }
+.cell-bold-nowrap { font-weight: 600; white-space: nowrap; }
+.td-ellipsis    { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── bad-words.html ── */
+.bw-add-form  { display: flex; gap: 10px; align-items: center; }
+.bw-add-input { flex: 1; max-width: 320px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 14px; }
+.bw-word      { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 14px; font-weight: 600; }
+.bw-scan-result { display: none; margin-top: 6px; font-size: 12px; color: var(--text-2); }
+
+/* ── festival/edit.html — map & misc ── */
+.addr-search-wrap { margin-top: 8px; }
+.map-canvas-fixed { width: 100%; height: 300px; border-radius: 10px; border: 1px solid var(--border); }
+.link-sm          { font-size: 12px; color: var(--primary); }
+.label-note       { font-weight: 400; color: var(--muted); font-size: 12px; }
+.genre-check-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.genre-check-label { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 13px; }
+.card-narrow      { max-width: 640px; }
+.card-padded-lg   { padding: 28px; }
+
+/* ── festival/artist-form.html ── */
+.card-narrow-520        { max-width: 520px; }
+.artist-legend-dot      { display: inline-block; width: 10px; height: 10px; background: var(--primary); border-radius: 2px; margin-right: 4px; }
+.artist-list-box        { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 4px 0; }
+.artist-participating-badge { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--primary); background: #dde4ff; border-radius: 20px; padding: 2px 8px; white-space: nowrap; }
+
+/* ── dashboard/home.html — admin profile ── */
+.admin-profile-img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-lt); margin-bottom: 10px; }
+.profile-actions   { margin-top: 14px; display: flex; gap: 8px; }
+
+/* ── account/form.html — profile photo ── */
+.profile-preview-circle      { width: 88px; height: 88px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border); flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+.profile-preview-img         { width: 100%; height: 100%; object-fit: cover; }
+.profile-preview-placeholder { width: 60%; height: 60%; object-fit: contain; opacity: .6; }
+
+/* ── auth/access-denied.html ── */
+.access-denied-wrap        { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+.access-denied-box         { text-align: center; max-width: 420px; }
+.access-denied-icon        { font-size: 56px; margin-bottom: 16px; }
+.access-denied-title       { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.access-denied-desc        { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+.access-denied-perms       { background: #F8FBFD; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; text-align: left; }
+.access-denied-perms-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: .5px; margin-bottom: 8px; }
+
 /* ── 테이블 컬럼 너비 (추가) ── */
 .col-w40 { width: 40px; }
 .col-w55 { width: 55px; }

@@ -155,22 +155,22 @@
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'name_desc'} ? ' active'">↓</a>
                         </th>
-                        <th style="width:200px;">영어 이름</th>
-                        <th style="width:160px;">
+                        <th class="col-w200">영어 이름</th>
+                        <th class="col-w160">
                             팔로워
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'followers'} ? ' active'">↓</a>
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'followers_asc'} ? ' active'">↑</a>
                         </th>
-                        <th style="width:100px;">
+                        <th class="col-w100">
                             곡 수
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'songs'} ? ' active'">↓</a>
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs_asc', genre=${genre != null ? genre.name() : null})}"
                                class="sort-btn" th:classappend="${sort == 'songs_asc'} ? ' active'">↑</a>
                         </th>
-                        <th style="width:160px;">관리</th>
+                        <th class="col-w160">관리</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -209,7 +209,7 @@
                                 <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
                                     <button type="submit"
                                             class="btn btn-ghost-danger btn-sm"
-                                            onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                            data-confirm="삭제하시겠습니까?">삭제</button>
                                 </form>
                             </div>
                         </td>

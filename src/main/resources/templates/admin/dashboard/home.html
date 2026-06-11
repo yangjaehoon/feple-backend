@@ -201,7 +201,7 @@
                     <div class="db-card-header">
                         <span class="db-card-title">📅 일별 지표 (7일)</span>
                     </div>
-                    <div style="overflow-x:auto;">
+                    <div class="table-wrap">
                         <table class="stats-table">
                             <thead>
                             <tr>
@@ -266,8 +266,7 @@
                     </div>
                     <div class="profile-body">
                         <img th:src="${currentAdmin != null and currentAdmin.profileImageUrl != null} ? ${currentAdmin.profileImageUrl} : @{/img/feple_logo.png}"
-                             th:class="${currentAdmin != null and currentAdmin.profileImageUrl != null} ? '' : 'profile-av-xl'"
-                             style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:3px solid var(--primary-lt); margin-bottom:10px;"
+                             th:class="${currentAdmin != null and currentAdmin.profileImageUrl != null} ? 'admin-profile-img' : 'profile-av-xl'"
                              alt="프로필"/>
                         <div class="profile-name"
                              th:text="${currentAdmin?.displayName ?: (currentAdmin?.username ?: 'Admin')}"></div>
@@ -275,7 +274,7 @@
                              th:text="${currentAdmin != null} ? ${currentAdmin.username} : ''"></div>
                         <span class="profile-tag"
                               th:text="${currentAdmin != null} ? ('⭐ ' + ${currentAdmin.role.displayName}) : '⭐ 관리자'"></span>
-                        <div style="margin-top:14px; display:flex; gap:8px;">
+                        <div class="profile-actions">
                             <a class="btn btn-secondary btn-sm" th:href="@{/admin/users}">회원 관리</a>
                             <a class="btn btn-primary btn-sm" th:href="@{/admin/festivals/new}">+ 페스티벌</a>
                         </div>

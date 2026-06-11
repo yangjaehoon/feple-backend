@@ -19,9 +19,8 @@
 
     <!-- 로고 -->
     <div class="sb-logo-section">
-        <a th:href="@{/admin}" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
-            <img th:src="@{/img/feple_logo.png}" alt="feple"
-                 style="width:34px; height:34px; border-radius:8px; object-fit:contain; flex-shrink:0;"/>
+        <a th:href="@{/admin}" class="sb-logo-link">
+            <img th:src="@{/img/feple_logo.png}" alt="feple" class="sb-logo-img"/>
             <div class="sb-logo-name">fe<span>ple</span></div>
             <span class="sb-logo-tag">Admin</span>
         </a>
@@ -126,8 +125,8 @@
 
     <!-- 하단 로그아웃 -->
     <div class="sb-footer">
-        <form th:action="@{/admin/logout}" method="post" style="margin:0;">
-            <button type="submit" class="nb-logout" style="width:100%; justify-content:center;">로그아웃</button>
+        <form th:action="@{/admin/logout}" method="post" class="sb-logout-form">
+            <button type="submit" class="nb-logout sb-logout-btn">로그아웃</button>
         </form>
     </div>
 
@@ -135,6 +134,7 @@
 </aside>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/admin-alert.js}"></script>
+<script th:src="@{/js/admin-confirm.js}"></script>
 </th:block>
 
 <!-- ── 알림 메시지 ── -->
@@ -158,7 +158,7 @@
 <!-- ── 페이지네이션 프래그먼트 ── -->
 <div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">
     <span class="page-info" th:text="'총 ' + ${page.totalElements} + '건'"></span>
-    <div class="pagination" style="margin-left:auto;"
+    <div class="pagination ml-auto"
          th:with="ep=${extraParams != null ? '&' + extraParams : ''},
                   cur=${page.number},
                   tot=${page.totalPages},

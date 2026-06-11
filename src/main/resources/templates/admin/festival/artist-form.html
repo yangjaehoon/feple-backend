@@ -20,12 +20,11 @@
         </div>
     </div>
     <div class="content-area">
-        <div class="card" style="max-width:520px;">
+        <div class="card card-narrow-520">
             <div class="card-header">
                 <div class="card-title">
                     🎤 아티스트 추가
-                    <span style="font-weight:400; color:var(--muted); font-size:13px;"
-                          th:text="'— ' + ${festival.title}"></span>
+                    <span class="card-title-note" th:text="'— ' + ${festival.title}"></span>
                 </div>
             </div>
             <div class="card-body">
@@ -36,15 +35,14 @@
                         <label>아티스트 검색</label>
                         <input type="text" id="artistSearch" placeholder="이름으로 검색..."
                                oninput="filterArtists(this.value)"
-                               style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; width:100%; font-size:13px; margin-bottom:8px;"/>
-                        <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">
+                               class="search-input mb-8"/>
+                        <div class="hint mb-6">
                             <span id="selectedCount">0</span>명 선택됨
                         </div>
-                        <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">
-                            <span style="display:inline-block; width:10px; height:10px; background:var(--primary); border-radius:2px; margin-right:4px;"></span>이미 참여 중인 아티스트
+                        <div class="hint mb-8">
+                            <span class="artist-legend-dot"></span>이미 참여 중인 아티스트
                         </div>
-                        <div id="artistList"
-                             style="max-height:360px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:4px 0;">
+                        <div id="artistList" class="artist-list-box">
                             <div th:each="artist : ${artists}"
                                  class="artist-item"
                                  th:data-name="${#strings.toLowerCase(artist.name)}"
@@ -52,11 +50,11 @@
                                 <label>
                                     <input type="checkbox" name="artistIds" th:value="${artist.id}"
                                            th:checked="${participatingIds.contains(artist.id)}"
-                                           style="width:15px; height:15px; accent-color:var(--primary); flex-shrink:0;"
+                                           class="song-check"
                                            onchange="updateCount()"/>
                                     <span th:text="${artist.name} + (${artist.genre} != null ? ' (' + ${artist.genre} + ')' : '')"></span>
                                     <span th:if="${participatingIds.contains(artist.id)}"
-                                          style="margin-left:auto; font-size:11px; font-weight:700; color:var(--primary); background:#dde4ff; border-radius:20px; padding:2px 8px; white-space:nowrap;">참여 중</span>
+                                          class="artist-participating-badge">참여 중</span>
                                 </label>
                             </div>
                         </div>

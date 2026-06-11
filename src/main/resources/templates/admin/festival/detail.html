@@ -61,7 +61,7 @@
                     <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
                     <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
                     <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
-                          method="post" onsubmit="return confirm('이 페스티벌을 삭제할까요?');">
+                          method="post" data-confirm="이 페스티벌을 삭제할까요?">
                         <button type="submit" class="btn btn-danger">삭제</button>
                     </form>
                 </div>
@@ -150,7 +150,7 @@
                                 <button type="submit"
                                         th:attr="form='delete-af-' + ${af.artistFestivalId}"
                                         class="btn btn-danger btn-sm"
-                                        onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                        data-confirm="삭제하시겠습니까?">삭제</button>
                             </td>
                         </tr>
                         <tr class="empty-row" th:if="${#lists.isEmpty(participatingArtists)}">
@@ -195,7 +195,7 @@
                             <!-- 삭제 -->
                             <form th:action="@{/admin/festivals/{id}/stages/{sid}/delete(id=${festival.id}, sid=${s.id})}"
                                   method="post"
-                                  onsubmit="return confirm('스테이지를 삭제할까요?')">
+                                  data-confirm="스테이지를 삭제할까요?">
                                 <button type="submit" class="stage-btn del" title="삭제">✕</button>
                             </form>
                         </div>
@@ -341,7 +341,7 @@
                                     <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
                                           method="post">
                                         <button type="submit" class="btn btn-danger btn-sm"
-                                                onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                                data-confirm="삭제하시겠습니까?">삭제</button>
                                     </form>
                                 </td>
                             </tr>
@@ -431,7 +431,7 @@
                             <td class="hint" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
                             <td>
                                 <form th:action="@{/admin/festivals/{fId}/booths/{bId}/delete(fId=${festival.id},bId=${booth.id})}" method="post">
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
+                                    <button type="submit" class="btn btn-danger btn-sm" data-confirm="삭제하시겠습니까?">삭제</button>
                                 </form>
                             </td>
                         </tr>

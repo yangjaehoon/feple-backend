@@ -10,11 +10,9 @@
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <div class="card">
-            <div style="padding:14px 22px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:14px; font-weight:600; color:var(--text-1);">
-                    소프트 삭제된 게시글 — 복구 가능
-                </span>
-                <a th:href="@{/admin/posts}" style="font-size:13px; color:var(--primary);">← 게시글 목록으로</a>
+            <div class="list-toolbar">
+                <span class="cell-primary">소프트 삭제된 게시글 — 복구 가능</span>
+                <a th:href="@{/admin/posts}" class="btn-link-inline">← 게시글 목록으로</a>
             </div>
 
             <table class="data-table">
@@ -29,10 +27,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:if="${posts.isEmpty()}">
-                        <td colspan="6" style="text-align:center; color:var(--text-2); padding:40px;">
-                            삭제된 게시글이 없습니다.
-                        </td>
+                    <tr class="empty-row" th:if="${posts.isEmpty()}">
+                        <td colspan="6">삭제된 게시글이 없습니다.</td>
                     </tr>
                     <tr th:each="post : ${posts}">
                         <td th:text="${post.id}"></td>
@@ -44,8 +40,8 @@
                         <td th:text="${post.deletedAt != null ? #temporals.format(post.deletedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
                         <td>
                             <form th:action="@{/admin/posts/{id}/restore(id=${post.id})}" method="post"
-                                  onsubmit="return confirm('이 게시글을 복구하시겠습니까?')">
-                                <button type="submit" class="btn-sm btn-primary">복구</button>
+                                  data-confirm="이 게시글을 복구하시겠습니까?">
+                                <button type="submit" class="btn btn-primary btn-sm">복구</button>
                             </form>
                         </td>
                     </tr>

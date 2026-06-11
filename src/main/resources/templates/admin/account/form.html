@@ -107,7 +107,7 @@
         </div>
     </div>
     <div class="content-area">
-        <div class="card" style="padding: 28px;">
+        <div class="card card-padded-lg">
 
             <!-- 생성 폼 / 수정 폼 -->
             <form th:action="${account != null} ? @{/admin/accounts/{id}/update(id=${account.id})} : @{/admin/accounts}"
@@ -117,23 +117,23 @@
                 <!-- 프로필 사진 -->
                 <div class="form-section">
                     <div class="form-section-title">프로필 사진</div>
-                    <div style="display:flex; gap:20px; align-items:flex-start;">
-                        <div id="photo-preview" style="width:88px; height:88px; border-radius:50%; overflow:hidden; border:2px solid var(--border); flex-shrink:0; background:var(--bg); display:flex; align-items:center; justify-content:center;">
+                    <div class="img-upload-row">
+                        <div id="photo-preview" class="profile-preview-circle">
                             <img th:if="${account != null and account.profileImageUrl != null}"
                                  th:src="${account.profileImageUrl}"
                                  id="photo-img"
-                                 style="width:100%; height:100%; object-fit:cover;" alt="프로필"/>
+                                 class="profile-preview-img" alt="프로필"/>
                             <img th:unless="${account != null and account.profileImageUrl != null}"
                                  th:src="@{/img/feple_logo.png}"
                                  id="photo-placeholder"
-                                 style="width:60%; height:60%; object-fit:contain; opacity:.6;" alt="feple"/>
+                                 class="profile-preview-placeholder" alt="feple"/>
                         </div>
-                        <div style="padding-top:4px;">
+                        <div class="pt-4">
                             <input type="file" name="profileImage" id="profile-image-input"
-                                   accept=".jpg,.jpeg,.png" style="display:none;"
+                                   accept=".jpg,.jpeg,.png" class="d-none"
                                    onchange="previewPhoto(this)"/>
                             <input type="hidden" name="deleteProfileImage" id="delete-profile-image-flag" value="false"/>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <div class="cell-actions flex-wrap">
                                 <button type="button" class="btn btn-secondary btn-sm"
                                         onclick="document.getElementById('profile-image-input').click()">
                                     사진 업로드
@@ -145,7 +145,7 @@
                                     사진 삭제
                                 </button>
                             </div>
-                            <div class="field-hint" style="margin-top:8px;">jpg, jpeg, png · 최대 5MB · 원형으로 표시됩니다</div>
+                            <div class="field-hint mt-8">jpg, jpeg, png · 최대 5MB · 원형으로 표시됩니다</div>
                         </div>
                     </div>
                 </div>
@@ -218,16 +218,16 @@
                             <span th:text="${p.displayName}"></span>
                         </label>
                     </div>
-                    <div style="margin-top:10px;">
+                    <div class="mt-10">
                         <button type="button" class="btn btn-secondary btn-sm"
                                 onclick="document.querySelectorAll('#perm-section input[type=checkbox]').forEach(c=>c.checked=true)">전체 선택</button>
-                        <button type="button" class="btn btn-secondary btn-sm" style="margin-left:4px;"
+                        <button type="button" class="btn btn-secondary btn-sm ml-4"
                                 onclick="document.querySelectorAll('#perm-section input[type=checkbox]').forEach(c=>c.checked=false)">전체 해제</button>
                     </div>
                 </div>
 
                 <!-- 버튼 -->
-                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <div class="form-actions justify-end">
                     <a th:href="@{/admin/accounts}" class="btn btn-secondary">취소</a>
                     <button type="submit" class="btn btn-primary"
                             th:text="${account != null} ? '수정 저장' : '계정 생성'">저장</button>

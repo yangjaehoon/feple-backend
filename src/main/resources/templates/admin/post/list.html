@@ -48,7 +48,7 @@
                 <span class="dropdown-filter-label">아티스트 선택</span>
                 <form th:action="@{/admin/posts}" method="get">
                     <input type="hidden" name="filter" value="ARTIST"/>
-                    <select name="artistId" onchange="this.form.submit()">
+                    <select name="artistId" data-autosubmit>
                         <option value="" th:selected="${artistId == null}">전체 아티스트</option>
                         <option th:each="a : ${artists}"
                                 th:value="${a.id}"
@@ -63,7 +63,7 @@
                 <span class="dropdown-filter-label">페스티벌 선택</span>
                 <form th:action="@{/admin/posts}" method="get">
                     <input type="hidden" name="filter" value="FESTIVAL"/>
-                    <select name="festivalId" onchange="this.form.submit()">
+                    <select name="festivalId" data-autosubmit>
                         <option value="" th:selected="${festivalId == null}">전체 페스티벌</option>
                         <option th:each="f : ${festivals}"
                                 th:value="${f.id}"
@@ -94,7 +94,7 @@
                 <span class="bulk-count" id="select-count">0개 선택됨</span>
                 <button type="submit" form="bulk-form"
                         class="btn btn-danger btn-sm"
-                        onclick="return confirm('선택한 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">
+                        data-confirm="선택한 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.">
                     선택 삭제
                 </button>
             </div>
@@ -148,7 +148,7 @@
                                 <input type="hidden" name="festivalId" th:value="${festivalId}"/>
                                 <button type="submit"
                                         class="btn btn-ghost-danger btn-sm"
-                                        onclick="return confirm('이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.')">삭제</button>
+                                        data-confirm="이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.">삭제</button>
                             </form>
                         </td>
                     </tr>
