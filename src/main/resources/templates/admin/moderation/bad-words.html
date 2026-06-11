@@ -54,9 +54,8 @@
                             th:text="${#temporals.format(bw.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                         <td>
                             <div class="cell-actions">
-                                <button type="button" class="btn btn-secondary btn-sm"
-                                        th:data-word="${bw.word}"
-                                        onclick="scanWord(this)">스캔</button>
+                                <button type="button" class="btn btn-secondary btn-sm scan-word-btn"
+                                        th:data-word="${bw.word}">스캔</button>
                                 <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
                                     <button type="submit" class="btn btn-danger btn-sm"
                                             data-confirm="삭제하시겠습니까?">삭제</button>

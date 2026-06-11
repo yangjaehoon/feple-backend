@@ -78,16 +78,18 @@
                 </form>
                 <div class="bulk-toolbar" id="bulk-toolbar">
                     <span class="bulk-count" id="bulk-count">0건 선택됨</span>
-                    <button type="button" class="btn btn-secondary btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
-                    <button type="button" class="btn btn-danger btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-delete', '선택한 {n}건의 게시글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 글 삭제</button>
+                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-dismiss"
+                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-delete"
+                            data-confirm-tpl="선택한 {n}건의 게시글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 글 삭제</button>
                 </div>
                 <div class="table-wrap">
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w48"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
+                        <th class="col-w48"><input type="checkbox" id="chk-all"/></th>
                         <th class="col-w48">ID</th>
                         <th>신고된 게시글</th>
                         <th class="col-w90">신고 사유</th>
@@ -99,7 +101,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
-                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <a th:href="@{/admin/posts/{id}(id=${report.postId})}"
@@ -178,16 +180,18 @@
                 </form>
                 <div class="bulk-toolbar" id="bulk-toolbar">
                     <span class="bulk-count" id="bulk-count">0건 선택됨</span>
-                    <button type="button" class="btn btn-secondary btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
-                    <button type="button" class="btn btn-danger btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-delete', '선택한 {n}건의 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 댓글 삭제</button>
+                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-dismiss"
+                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-delete"
+                            data-confirm-tpl="선택한 {n}건의 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 댓글 삭제</button>
                 </div>
                 <div class="table-wrap">
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w48"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
+                        <th class="col-w48"><input type="checkbox" id="chk-all"/></th>
                         <th class="col-w48">ID</th>
                         <th>신고된 댓글</th>
                         <th class="col-w90">신고 사유</th>
@@ -199,7 +203,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
-                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <div class="report-content-cell" th:text="${report.commentContent}"></div>
@@ -280,16 +284,18 @@
                 </form>
                 <div class="bulk-toolbar" id="bulk-toolbar">
                     <span class="bulk-count" id="bulk-count">0건 선택됨</span>
-                    <button type="button" class="btn btn-secondary btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-dismiss', '선택한 {n}건을 모두 기각할까요?')">일괄 기각</button>
-                    <button type="button" class="btn btn-danger btn-sm"
-                            onclick="submitBulk('/admin/reports/bulk-delete', '선택한 {n}건의 사진을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')">일괄 사진 삭제</button>
+                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-dismiss"
+                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-delete"
+                            data-confirm-tpl="선택한 {n}건의 사진을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 사진 삭제</button>
                 </div>
                 <div class="table-wrap">
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w48"><input type="checkbox" id="chk-all" onchange="toggleAll(this)"/></th>
+                        <th class="col-w48"><input type="checkbox" id="chk-all"/></th>
                         <th class="col-w48">ID</th>
                         <th>신고된 사진</th>
                         <th class="col-w90">신고 사유</th>
@@ -301,7 +307,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
-                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}" onchange="updateToolbar()"/></td>
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-chk" th:value="${report.id}"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <div class="cell-primary">

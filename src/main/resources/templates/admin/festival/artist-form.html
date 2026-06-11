@@ -34,7 +34,6 @@
                     <div class="form-group">
                         <label>아티스트 검색</label>
                         <input type="text" id="artistSearch" placeholder="이름으로 검색..."
-                               oninput="filterArtists(this.value)"
                                class="search-input mb-8"/>
                         <div class="hint mb-6">
                             <span id="selectedCount">0</span>명 선택됨
@@ -50,8 +49,7 @@
                                 <label>
                                     <input type="checkbox" name="artistIds" th:value="${artist.id}"
                                            th:checked="${participatingIds.contains(artist.id)}"
-                                           class="song-check"
-                                           onchange="updateCount()"/>
+                                           class="song-check"/>
                                     <span th:text="${artist.name} + (${artist.genre} != null ? ' (' + ${artist.genre} + ')' : '')"></span>
                                     <span th:if="${participatingIds.contains(artist.id)}"
                                           class="artist-participating-badge">참여 중</span>

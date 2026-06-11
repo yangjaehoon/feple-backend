@@ -57,7 +57,7 @@
                                 <div class="addr-row">
                                     <input type="text" id="addrSearch" placeholder="주소 또는 장소명 검색..."
                                            class="flex-1"/>
-                                    <button type="button" onclick="searchAddress()"
+                                    <button type="button" id="addr-search-btn"
                                             class="btn btn-primary btn-sm">검색</button>
                                 </div>
                                 <div id="kakaoMap" class="map-canvas-fixed"></div>
@@ -201,6 +201,7 @@
     document.getElementById('addrSearch').addEventListener('keydown', function (e) {
         if (e.key === 'Enter') { e.preventDefault(); searchAddress(); }
     });
+    document.getElementById('addr-search-btn').addEventListener('click', searchAddress);
 </script>
 </body>
 </html>

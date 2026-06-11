@@ -208,9 +208,9 @@
                 </div>
 
                 <!-- 타임테이블 추가 폼 -->
-                <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                <form id="timetable-add-form"
+                      th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                       method="post"
-                      onsubmit="return validateTimetable(this)"
                       class="form-grid-5col">
 
                     <input type="hidden" name="stageName" id="autoStageName"/>
@@ -219,7 +219,7 @@
                     <div>
                         <label class="form-label-sm">아티스트</label>
                         <th:block th:if="${!participatingArtistsByName.isEmpty()}">
-                            <select name="artistName" id="artistSelect" required onchange="onArtistChange(this)"
+                            <select name="artistName" id="artistSelect" required
                                     class="compact-input">
                                 <option value="" disabled selected>아티스트 선택</option>
                                 <option th:each="af : ${participatingArtistsByName}"
@@ -250,13 +250,11 @@
                             <div>
                                 <label class="form-label-sm">시작</label>
                                 <input type="time" name="startTime" id="startTime" required
-                                       oninput="clearTimeError()"
                                        class="compact-input"/>
                             </div>
                             <div>
                                 <label class="form-label-sm">종료</label>
                                 <input type="time" name="endTime" id="endTime" required
-                                       oninput="clearTimeError()"
                                        class="compact-input"/>
                             </div>
                         </div>
@@ -271,9 +269,9 @@
                 <!-- 운영 항목 추가 폼 -->
                 <div class="ops-box">
                     <div class="ops-box-title">📢 운영 항목 추가 (티켓 부스 오픈, 입장 게이트 오픈 등)</div>
-                    <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                    <form id="ops-add-form"
+                          th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                           method="post"
-                          onsubmit="return validateCustomTimetable(this)"
                           class="form-grid-ops">
                         <input type="hidden" name="stageName" value="📢"/>
                         <div>
@@ -367,9 +365,9 @@
                 <p class="card-hint">지도를 클릭하면 해당 위치에 부스를 등록할 수 있습니다.</p>
 
                 <!-- 부스 추가 폼 -->
-                <form th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
+                <form id="booth-add-form"
+                      th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
                       enctype="multipart/form-data"
-                      onsubmit="return validateBoothPos()"
                       class="form-grid-5col">
                     <input type="hidden" id="boothLat" name="latitude"/>
                     <input type="hidden" id="boothLng" name="longitude"/>
@@ -394,7 +392,6 @@
                     <div>
                         <label class="form-label-sm">이미지 (선택)</label>
                         <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
-                               onchange="validateBoothImage(this)"
                                class="file-input-sm"/>
                         <span id="boothImageError" class="input-error"></span>
                     </div>

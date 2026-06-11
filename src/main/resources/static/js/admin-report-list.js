@@ -44,7 +44,16 @@
         form.submit();
     }
 
-    window.toggleAll = toggleAll;
-    window.updateToolbar = updateToolbar;
-    window.submitBulk = submitBulk;
+    /* 일괄 처리 버튼 — 이벤트 위임 */
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.bulk-action-btn');
+        if (!btn) return;
+        submitBulk(btn.dataset.endpoint, btn.dataset.confirmTpl);
+    });
+
+    /* 전체 선택 체크박스 — 이벤트 위임 */
+    document.addEventListener('change', function (e) {
+        if (e.target.id === 'chk-all') toggleAll(e.target);
+        else if (e.target.classList.contains('row-chk')) updateToolbar();
+    });
 })();
