@@ -2,10 +2,6 @@
     /* ── 메모 위젯 (localStorage) ── */
     var MEMO_KEY = 'feple_admin_memos';
 
-    function escHtml(s) {
-        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
     function renderMemos() {
         var memos = JSON.parse(localStorage.getItem(MEMO_KEY) || '[]');
         var saved = document.getElementById('memo-saved');
@@ -15,7 +11,7 @@
         }
         saved.innerHTML = memos.map(function (m) {
             return '<div class="memo-chip">' +
-                '<span class="memo-chip-text">' + escHtml(m.text) + '</span>' +
+                '<span class="memo-chip-text">' + window.AdminUtils.escapeHtml(m.text) + '</span>' +
                 '<button class="memo-chip-del" data-id="' + m.id + '" title="삭제">×</button>' +
                 '</div>';
         }).join('');

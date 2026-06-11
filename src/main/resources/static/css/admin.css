@@ -1133,7 +1133,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .td-link-normal { font-size: 13px; text-decoration: none; color: var(--text-1); }
 
 /* ── 처리 모달 ── */
-.admin-modal          { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); align-items: center; justify-content: center; }
 .admin-modal-box      { background: #fff; border-radius: 12px; padding: 28px 28px 24px; width: 480px; max-width: calc(100vw - 32px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
 .admin-modal-header   { margin-bottom: 18px; }
 .admin-modal-title    { font-size: 16px; font-weight: 700; color: var(--text-1); }

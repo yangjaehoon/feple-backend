@@ -1,6 +1,4 @@
 (function () {
-    var csrf        = document.querySelector('meta[name="_csrf"]').content;
-    var csrfHeader  = document.querySelector('meta[name="_csrf_header"]').content;
     var festivalMap = {}; // id → {title, startDate, endDate}
     var rowIndex    = 0;
     var currentFestivalTitle = '';
@@ -45,8 +43,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span>분석 중...';
 
-        var headers = { 'Content-Type': 'application/json' };
-        headers[csrfHeader] = csrf;
+        var headers = Object.assign({ 'Content-Type': 'application/json' }, window.AdminUtils.getCsrfHeaders());
 
         fetch(CrawlUrls.scrape, {
             method: 'POST', headers: headers,
@@ -67,7 +64,7 @@
             document.getElementById('scrapeEmptyState').style.display = 'block';
             btn.disabled = false;
             btn.innerHTML = '스크래핑 시작';
-            showApplyResult('error', '스크래핑 실패: ' + esc(err.message));
+            showApplyResult('error', '스크래핑 실패: ' + window.AdminUtils.escapeHtml(err.message));
         });
     });
 
@@ -119,8 +116,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span>등록 중...';
 
-        var headers = { 'Content-Type': 'application/json' };
-        headers[csrfHeader] = csrf;
+        var headers = Object.assign({ 'Content-Type': 'application/json' }, window.AdminUtils.getCsrfHeaders());
 
         fetch(CrawlUrls.scrapeApply, {
             method: 'POST', headers: headers,
@@ -285,8 +281,7 @@
 
         var formData = new FormData();
         formData.append('image', file);
-        var headers = {};
-        headers[csrfHeader] = csrf;
+        var headers = window.AdminUtils.getCsrfHeaders();
 
         fetch(CrawlUrls.ocr, { method: 'POST', headers: headers, body: formData })
             .then(function (r) {
@@ -346,7 +341,7 @@
     function makeOptions(options, selectedValue) {
         var html = '<option value="">— 선택 —</option>';
         options.forEach(function (opt) {
-            html += '<option value="' + esc(opt) + '"' + (opt === selectedValue ? ' selected' : '') + '>' + esc(opt) + '</option>';
+            html += '<option value="' + window.AdminUtils.escapeHtml(opt) + '"' + (opt === selectedValue ? ' selected' : '') + '>' + window.AdminUtils.escapeHtml(opt) + '</option>';
         });
         return html;
     }
@@ -375,9 +370,9 @@
             '<td>' + idx + '</td>' +
             '<td><select data-field="artist" style="' + selectStyle + '">' + makeOptions(artistNames, artist) + '</select></td>' +
             '<td><select data-field="stage"  style="' + selectStyle + '">' + makeOptions(stageNames,  stage)  + '</select></td>' +
-            '<td><input type="date" data-field="date" value="' + esc(date) + '"' + dateAttrs + ' style="' + dateStyle + '"/></td>' +
-            '<td><input type="time" data-field="startTime" value="' + esc(startTime) + '" style="' + timeStyle + '"/></td>' +
-            '<td><input type="time" data-field="endTime"   value="' + esc(endTime)   + '" style="' + timeStyle + '"/></td>' +
+            '<td><input type="date" data-field="date" value="' + window.AdminUtils.escapeHtml(date) + '"' + dateAttrs + ' style="' + dateStyle + '"/></td>' +
+            '<td><input type="time" data-field="startTime" value="' + window.AdminUtils.escapeHtml(startTime) + '" style="' + timeStyle + '"/></td>' +
+            '<td><input type="time" data-field="endTime"   value="' + window.AdminUtils.escapeHtml(endTime)   + '" style="' + timeStyle + '"/></td>' +
             '<td>' + confBadge(conf) + '</td>' +
             '<td><button class="row-del">✕</button></td>';
         document.getElementById('ocrParseBody').appendChild(tr);
@@ -434,8 +429,7 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span>저장 중...';
 
-        var headers = { 'Content-Type': 'application/json' };
-        headers[csrfHeader] = csrf;
+        var headers = Object.assign({ 'Content-Type': 'application/json' }, window.AdminUtils.getCsrfHeaders());
 
         fetch(CrawlUrls.ocrApply, {
             method: 'POST',
@@ -498,8 +492,8 @@
         var now = new Date().toLocaleString('ko-KR');
         var tr = document.createElement('tr');
         tr.innerHTML =
-            '<td>' + esc(festivalTitle) + '</td>' +
-            '<td>' + esc(date) + '</td>' +
+            '<td>' + window.AdminUtils.escapeHtml(festivalTitle) + '</td>' +
+            '<td>' + window.AdminUtils.escapeHtml(date) + '</td>' +
             '<td style="color:var(--success); font-weight:700;">' + saved + '</td>' +
             '<td style="color:' + (failed > 0 ? 'var(--danger)' : 'var(--muted)') + '; font-weight:700;">' + failed + '</td>' +
             '<td style="color:var(--muted);">' + now + '</td>';
@@ -512,10 +506,4 @@
 
     document.getElementById('applyToastClose').addEventListener('click', hideToast);
 
-    function esc(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
 })();

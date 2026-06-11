@@ -1,15 +1,15 @@
 (function () {
     function toggleAll(master) {
-        document.querySelectorAll('.row-chk').forEach(function (cb) {
+        document.querySelectorAll('.row-check').forEach(function (cb) {
             cb.checked = master.checked;
         });
         updateToolbar();
     }
 
     function updateToolbar() {
-        var checked = document.querySelectorAll('.row-chk:checked');
+        var checked = document.querySelectorAll('.row-check:checked');
         var toolbar = document.getElementById('bulk-toolbar');
-        var countEl = document.getElementById('bulk-count');
+        var countEl = document.getElementById('select-count');
         if (!toolbar) return;
         if (checked.length > 0) {
             toolbar.classList.add('visible');
@@ -17,8 +17,8 @@
         } else {
             toolbar.classList.remove('visible');
         }
-        var master = document.getElementById('chk-all');
-        var all = document.querySelectorAll('.row-chk');
+        var master = document.getElementById('select-all');
+        var all = document.querySelectorAll('.row-check');
         if (master && all.length > 0) {
             master.indeterminate = checked.length > 0 && checked.length < all.length;
             master.checked = checked.length === all.length;
@@ -26,7 +26,7 @@
     }
 
     function submitBulk(endpoint, confirmTpl) {
-        var checked = document.querySelectorAll('.row-chk:checked');
+        var checked = document.querySelectorAll('.row-check:checked');
         if (checked.length === 0) return;
         var msg = confirmTpl.replace('{n}', checked.length);
         if (!confirm(msg)) return;
@@ -53,7 +53,7 @@
 
     /* 전체 선택 체크박스 — 이벤트 위임 */
     document.addEventListener('change', function (e) {
-        if (e.target.id === 'chk-all') toggleAll(e.target);
-        else if (e.target.classList.contains('row-chk')) updateToolbar();
+        if (e.target.id === 'select-all') toggleAll(e.target);
+        else if (e.target.classList.contains('row-check')) updateToolbar();
     });
 })();

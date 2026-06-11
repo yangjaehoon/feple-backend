@@ -133,9 +133,15 @@
     <script th:src="@{/js/admin-genre-colors.js}"></script>
 </aside>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/admin-utils.js}"></script>
 <script th:src="@{/js/admin-alert.js}"></script>
 <script th:src="@{/js/admin-confirm.js}"></script>
 </th:block>
+
+<!-- ── 폼 유효성 오류 목록 ── -->
+<div th:fragment="formErrors" th:if="${errors}" class="alert alert-danger card-form">
+    <p th:each="err : ${errors}" class="form-error-item" th:text="${err}"></p>
+</div>
 
 <!-- ── 알림 메시지 ── -->
 <div th:fragment="alerts">
@@ -190,6 +196,18 @@
         <span th:text="${current}"></span>
     </div>
 </div>
+
+<!-- ── 검색 입력 (keyword input + 검색 버튼 + 초기화 버튼) ── -->
+<th:block th:fragment="searchInputs(keyword, placeholder, resetHref)">
+    <input type="text" name="keyword" th:value="${keyword}"
+           th:placeholder="${placeholder}"
+           autocomplete="off"
+           class="search-input"/>
+    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+       th:href="${resetHref}"
+       class="btn btn-secondary btn-sm">✕ 초기화</a>
+</th:block>
 
 <!-- ── 페이지네이션 프래그먼트 ── -->
 <div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">

@@ -78,13 +78,7 @@
                     <input type="hidden" name="filter" th:value="${filter}"/>
                     <input type="hidden" name="artistId" th:value="${artistId}"/>
                     <input type="hidden" name="festivalId" th:value="${festivalId}"/>
-                    <input type="text" name="keyword" th:value="${keyword}"
-                           placeholder="제목 검색..."
-                           class="search-input"/>
-                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
-                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                       th:href="@{/admin/posts(filter=${filter}, artistId=${artistId}, festivalId=${festivalId}, page=0)}"
-                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '제목 검색...', @{/admin/posts(filter=${filter}, artistId=${artistId}, festivalId=${festivalId}, page=0)})}"></th:block>
                 </form>
             </div>
 

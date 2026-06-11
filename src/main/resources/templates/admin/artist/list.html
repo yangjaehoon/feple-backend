@@ -125,14 +125,7 @@
                 <form th:action="@{/admin/artists}" method="get">
                     <input type="hidden" name="sort" th:value="${sort}"/>
                     <input type="hidden" name="genre" th:if="${genre != null}" th:value="${genre.name()}"/>
-                    <input type="text" name="keyword" th:value="${keyword}"
-                           placeholder="아티스트 이름 검색..."
-                           autocomplete="off"
-                           class="search-input"/>
-                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
-                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                       th:href="@{/admin/artists(sort=${sort}, genre=${genre != null ? genre.name() : null})}"
-                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '아티스트 이름 검색...', @{/admin/artists(sort=${sort}, genre=${genre != null ? genre.name() : null})})}"></th:block>
                 </form>
             </div>
 
@@ -223,7 +216,7 @@
     </div>
 </div>
 <!-- 처리완료 모달 -->
-<div id="dismiss-modal" class="admin-modal">
+<div id="dismiss-modal" class="modal-overlay">
     <div class="admin-modal-box">
         <div class="admin-modal-header">
             <div class="admin-modal-title">신청 처리</div>

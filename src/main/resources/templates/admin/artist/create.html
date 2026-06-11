@@ -6,9 +6,7 @@
 <div class="main-content">
     <div th:replace="~{admin/fragments :: pageHeader2('아티스트 등록', '아티스트', @{/admin/artists}, '등록')}"></div>
     <div class="content-area">
-        <div th:if="${errors}" class="alert alert-danger card-form">
-            <p th:each="err : ${errors}" class="form-error-item" th:text="${err}"></p>
-        </div>
+        <div th:replace="~{admin/fragments :: formErrors}"></div>
 
         <div class="card card-form">
             <div class="card-header">

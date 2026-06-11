@@ -14,13 +14,7 @@
             <div class="search-bar">
                 <form th:action="@{/admin/song-requests}" method="get">
                     <input type="hidden" name="status" th:value="${status}"/>
-                    <input type="text" name="keyword" th:value="${keyword}"
-                           placeholder="곡명 또는 아티스트 검색..."
-                           class="search-input"/>
-                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
-                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                       th:href="@{/admin/song-requests(status=${status},page=0)}"
-                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '곡명 또는 아티스트 검색...', @{/admin/song-requests(status=${status}, page=0)})}"></th:block>
                 </form>
             </div>
 

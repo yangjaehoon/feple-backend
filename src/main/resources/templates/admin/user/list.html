@@ -31,13 +31,7 @@
                 <form th:action="@{/admin/users}" method="get">
                     <input type="hidden" name="filter" th:value="${filter}"/>
                     <input type="hidden" name="sort" th:value="${sort}"/>
-                    <input type="text" name="keyword" th:value="${keyword}"
-                           placeholder="닉네임 또는 이메일 검색..."
-                           class="search-input"/>
-                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
-                    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                       th:href="@{/admin/users(page=0,filter=${filter},sort=${sort})}"
-                       class="btn btn-secondary btn-sm">✕ 초기화</a>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '닉네임 또는 이메일 검색...', @{/admin/users(page=0, filter=${filter}, sort=${sort})})}"></th:block>
                 </form>
                 <div th:if="${filter != 'banned'}" class="sort-group">
                     <span class="sort-label">정렬:</span>

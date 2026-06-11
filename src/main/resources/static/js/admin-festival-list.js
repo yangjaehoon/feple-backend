@@ -21,9 +21,6 @@ document.querySelectorAll('.header-tab-btn').forEach(function(btn) {
 })();
 
 /* ── 체크박스 AJAX 저장 ── */
-var csrfToken  = document.querySelector('meta[name="_csrf"]').content;
-var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-
 var toastTimer;
 function showToast(isError, msg) {
     var t = document.getElementById('saveToast');
@@ -45,8 +42,7 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
         var field      = cb.dataset.field;
         var checked    = cb.checked;
 
-        var headers = {};
-        headers[csrfHeader] = csrfToken;
+        var headers = window.AdminUtils.getCsrfHeaders();
 
         fetch(FestivalListUrls.festivalBase + '/' + festivalId + '/checklist?field=' + field, {
             method: 'POST',
