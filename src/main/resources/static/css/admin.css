@@ -1097,6 +1097,15 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .ban-box { background: var(--danger-lt); border: 1px solid #fecaca; border-radius: 8px; margin-bottom: 16px; padding: 12px 16px; }
 .ban-box-title { font-weight: 700; color: var(--danger); font-size: 14px; margin-bottom: 8px; }
 .ban-box-grid  { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; color: #b91c1c; margin-bottom: 10px; }
+.ban-label     { font-size: 12px; font-weight: 600; color: var(--text-2); display: block; margin-bottom: 6px; }
+.ban-hint      { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.ban-form-row  { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 10px; }
+.ban-form-reason { flex: 1; min-width: 200px; }
+.ban-textarea  { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; resize: vertical; outline: none; }
+.role-form     { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.select-auto   { width: auto !important; }
+.form-inline   { display: inline; }
+.back-row      { margin-top: 8px; }
 .table-section-sep { padding: 8px 14px; font-size: 12px; font-weight: 700; color: var(--muted); background: var(--bg); border-top: 2px solid var(--border); letter-spacing: 0.3px; }
 .ops-label { font-size: 13px; font-weight: 700; color: #92400e; }
 
