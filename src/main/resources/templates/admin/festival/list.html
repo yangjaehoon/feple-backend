@@ -13,7 +13,7 @@
                 <span>페스티벌</span>
             </div>
         </div>
-        <div style="display:flex; align-items:center; gap:12px;">
+        <div class="page-actions">
             <div class="header-tab-group">
                 <button class="header-tab-btn" data-tab="list">페스티벌 목록</button>
                 <button class="header-tab-btn active" data-tab="checklist">등록 체크리스트</button>
@@ -28,13 +28,14 @@
         <!-- ══ 탭 1: 페스티벌 목록 ══ -->
         <div id="tab-list" class="tab-panel">
             <div class="card">
-                <div class="card-header" style="justify-content:space-between; align-items:center;">
+                <div class="card-header">
                     <div class="card-title">전체 페스티벌</div>
-                    <form th:action="@{/admin/festivals}" method="get"
-                          style="display:flex; gap:8px; align-items:center;">
+                </div>
+                <div class="search-bar">
+                    <form th:action="@{/admin/festivals}" method="get">
                         <input type="text" name="keyword" th:value="${keyword}"
                                placeholder="페스티벌명 검색..."
-                               style="padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px; width:220px;"/>
+                               class="search-input"/>
                         <button type="submit" class="btn btn-secondary btn-sm">검색</button>
                         <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
                            th:href="@{/admin/festivals}"
@@ -46,9 +47,9 @@
                         <thead>
                         <tr>
                             <th>페스티벌</th>
-                            <th style="width:80px;">상태</th>
-                            <th style="width:100px;">❤ 좋아요</th>
-                            <th style="width:80px;">상세</th>
+                            <th class="col-w80">상태</th>
+                            <th class="col-w100">❤ 좋아요</th>
+                            <th class="col-w80">상세</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -62,13 +63,12 @@
                                 <td colspan="4" class="table-section-sep">─── 종료된 페스티벌</td>
                             </tr>
 
-                            <tr th:style="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}
-                                           ? 'opacity:0.55; background:#fafafa;' : ''">
+                            <tr th:classappend="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())} ? 'row-ended' : ''">
                                 <td>
                                     <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
                                        th:text="${festival.title}"
-                                       style="font-size:14px; font-weight:600;"></a>
-                                    <div class="cell-secondary cell-row" style="margin-top:5px;">
+                                       class="table-title-link"></a>
+                                    <div class="cell-secondary cell-row">
                                         <span th:text="${festival.location}"></span>
                                         <span>·</span>
                                         <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span>
@@ -119,20 +119,20 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">등록 체크리스트</div>
-                    <span style="font-size:12px; color:var(--muted);">종료된 페스티벌 제외 · 체크박스 클릭 시 자동 저장</span>
+                    <span class="card-title-note">종료된 페스티벌 제외 · 체크박스 클릭 시 자동 저장</span>
                 </div>
-                <div style="overflow-x:auto;">
+                <div class="table-wrap">
                     <table class="cl-table">
                         <thead>
                         <tr>
-                            <th class="left" style="min-width:200px;">페스티벌</th>
-                            <th style="width:90px;">1차 라인업</th>
-                            <th style="width:90px;">2차 라인업</th>
-                            <th style="width:90px;">3차 라인업</th>
-                            <th style="width:90px;">부스 지도</th>
-                            <th style="width:90px;">타임테이블</th>
-                            <th style="width:80px;">진행률</th>
-                            <th class="left" style="min-width:180px;">메모</th>
+                            <th class="left col-w200">페스티벌</th>
+                            <th class="col-w90">1차 라인업</th>
+                            <th class="col-w90">2차 라인업</th>
+                            <th class="col-w90">3차 라인업</th>
+                            <th class="col-w90">부스 지도</th>
+                            <th class="col-w90">타임테이블</th>
+                            <th class="col-w80">진행률</th>
+                            <th class="left col-w200">메모</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -147,9 +147,8 @@
                                 th:classappend="${cnt == 5} ? ' all-done'">
                                 <td class="left">
                                     <a th:href="@{/admin/festivals/{id}(id=${f.id})}"
-                                       th:text="${f.title}"
-                                       style="font-weight:600; color:var(--primary-dk); text-decoration:none;"></a>
-                                    <div style="font-size:11px; color:var(--muted); margin-top:2px;"
+                                       th:text="${f.title}"></a>
+                                    <div class="cell-secondary"
                                          th:text="${f.startDate != null ? #temporals.format(f.startDate, 'yyyy.M.d') : '?'} + ' ~ ' + ${f.endDate != null ? #temporals.format(f.endDate, 'M.d') : '?'}"></div>
                                 </td>
                                 <td>

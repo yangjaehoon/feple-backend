@@ -40,11 +40,11 @@
                     <div class="activity-list">
                         <div th:each="cert : ${dashboard.pendingCerts}" class="act-item">
                             <div class="act-dot yellow"></div>
-                            <div style="flex:1; overflow:hidden;">
+                            <div class="act-body">
                                 <div class="act-type" th:text="${cert.festivalTitle}"></div>
                                 <div class="act-title" th:text="${cert.userNickname}"></div>
                             </div>
-                            <div class="act-meta" style="white-space:nowrap;"
+                            <div class="act-meta"
                                  th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
                         <div th:if="${#lists.isEmpty(dashboard.pendingCerts)}" class="act-empty">
@@ -66,13 +66,13 @@
                     <div class="activity-list">
                         <div th:each="report : ${dashboard.pendingReports}" class="act-item">
                             <div class="act-dot red"></div>
-                            <div style="flex:1; overflow:hidden;">
+                            <div class="act-body">
                                 <div class="act-type" th:text="${report.reason.displayName}"></div>
                                 <a class="act-title"
                                    th:href="@{/admin/posts/{id}(id=${report.postId})}"
                                    th:text="${report.postTitle}"></a>
                             </div>
-                            <div class="act-meta" style="white-space:nowrap;"
+                            <div class="act-meta"
                                  th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
                         <div th:if="${#lists.isEmpty(dashboard.pendingReports)}" class="act-empty">
@@ -93,14 +93,14 @@
                     </div>
                     <div class="activity-list">
                         <div th:each="req : ${dashboard.pendingSongRequests}" class="act-item">
-                            <div class="act-dot" style="background:var(--primary);"></div>
-                            <div style="flex:1; overflow:hidden;">
+                            <div class="act-dot"></div>
+                            <div class="act-body">
                                 <div class="act-type" th:text="${req.artistName}"></div>
                                 <a class="act-title"
                                    th:href="@{/admin/song-requests(status='PENDING')}"
                                    th:text="${req.songTitle}"></a>
                             </div>
-                            <div class="act-meta" style="white-space:nowrap;"
+                            <div class="act-meta"
                                  th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'MM-dd HH:mm') : ''}"></div>
                         </div>
                         <div th:if="${#lists.isEmpty(dashboard.pendingSongRequests)}" class="act-empty">
@@ -122,11 +122,11 @@
                     <div class="activity-list">
                         <div th:each="s : ${dashboard.pendingArtistSuggestions}" class="act-item">
                             <div class="act-dot yellow"></div>
-                            <div style="flex:1; overflow:hidden;">
+                            <div class="act-body">
                                 <div class="act-title" th:text="${s.artistName}"></div>
                                 <div class="act-type" th:text="${s.userNickname}"></div>
                             </div>
-                            <div class="act-meta" style="white-space:nowrap;"
+                            <div class="act-meta"
                                  th:text="${#temporals.format(s.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
                         <div th:if="${#lists.isEmpty(dashboard.pendingArtistSuggestions)}" class="act-empty">
@@ -148,14 +148,13 @@
                                  class="member-av" alt=""/>
                             <div th:if="${user.profileImageUrl == null}"
                                  class="member-av">👤</div>
-                            <div style="flex:1; overflow:hidden;">
+                            <div class="act-body">
                                 <div class="member-name" th:text="${user.nickname ?: '(닉네임 없음)'}"></div>
                                 <div class="member-email" th:text="${user.email ?: '-'}"></div>
                             </div>
                             <span class="member-date">신규</span>
                         </div>
-                        <div th:if="${#lists.isEmpty(dashboard.recentUsers)}"
-                             style="padding:28px 18px; text-align:center; color:var(--muted); font-size:13px;">
+                        <div th:if="${#lists.isEmpty(dashboard.recentUsers)}" class="act-empty">
                             가입한 회원이 없습니다.
                         </div>
                     </div>
@@ -236,7 +235,7 @@
                         <div th:each="post, stat : ${dashboard.hotPosts}" class="act-item">
                             <div th:classappend="${stat.index % 3 == 0} ? 'red' : (${stat.index % 3 == 1} ? 'green' : 'yellow')"
                                  class="act-dot"></div>
-                            <div style="flex:1; overflow:hidden;">
+                            <div class="act-body">
                                 <div class="act-type">HOT 게시글 #<span th:text="${stat.count}"></span></div>
                                 <a class="act-title"
                                    th:href="@{/admin/posts/{id}(id=${post.id})}"
@@ -294,11 +293,11 @@
                             <div th:class="${#strings.contains(entry.action,'DELETE') or #strings.contains(entry.action,'BAN') or #strings.contains(entry.action,'REJECT')} ? 'act-dot red'
                                          : (${#strings.contains(entry.action,'CREATE') or #strings.contains(entry.action,'ADD') or #strings.contains(entry.action,'APPROVE') or entry.action == 'USER_UNBAN'} ? 'act-dot green'
                                          : 'act-dot yellow')"></div>
-                            <div style="flex:1; overflow:hidden;">
+                            <div class="act-body">
                                 <div class="act-type" th:text="${entry.action}"></div>
                                 <div class="act-title" th:text="${entry.detail != null ? entry.detail : (entry.targetType + (entry.targetId != null ? ' #' + entry.targetId : ''))}"></div>
                             </div>
-                            <div class="act-meta" style="white-space:nowrap;"
+                            <div class="act-meta"
                                  th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
                         <div th:if="${#lists.isEmpty(recentLogs)}" class="act-empty">

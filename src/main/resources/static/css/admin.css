@@ -1347,6 +1347,39 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .cert-reject-input { padding: 7px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; width: 280px; font-family: inherit; resize: vertical; min-height: 60px; }
 .cert-back-link    { margin-top: 16px; }
 
+/* ── 테이블 컬럼 너비 (추가) ── */
+.col-w36  { width: 36px; }
+
+/* ── 검색 바 폼 레이아웃 ── */
+.search-bar form { display: flex; gap: 8px; align-items: center; flex: 1; }
+
+/* ── 드롭다운 필터 바 ── */
+.dropdown-filter-bar {
+  padding: 10px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.dropdown-filter-bar form { display: flex; gap: 8px; align-items: center; }
+.dropdown-filter-label { font-size: 13px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+.dropdown-filter-bar select { width: auto; min-width: 200px; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+
+/* ── 활동 아이템 본문 ── */
+.act-body { flex: 1; overflow: hidden; }
+
+/* ── 테이블 제목 링크 ── */
+.table-title-link { font-size: 14px; font-weight: 600; max-width: 380px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── 종료 행 ── */
+.row-ended { opacity: 0.55; background: #fafafa; }
+
+/* ── 체크박스 입력 ── */
+.cb-input { cursor: pointer; width: 15px; height: 15px; }
+
+/* ── 배지 너비 제한 ── */
+.badge-clamp { max-width: 130px; overflow: hidden; }
+
+/* ── 필터 탭 오른쪽 정렬 ── */
+.type-tab-end { margin-left: auto; }
+
 /* ── 신고 관리 ── */
 .status-tab-bar      { padding: 0 22px; border-bottom: 1px solid var(--border); display: flex; gap: 4px; align-items: center; }
 .export-btn-right    { margin-left: auto; }
