@@ -6,11 +6,11 @@ import com.feple.feple_backend.festival.entity.Region;
 
 import java.time.LocalDate;
 
-final class ScrapedFestivalMapper {
+public final class ScrapedFestivalMapper {
 
     private ScrapedFestivalMapper() {}
 
-    static FestivalRequestDto toFestivalRequestDto(ScraperApplyRequest req) {
+    public static FestivalRequestDto toFestivalRequestDto(ScraperApplyRequest req) {
         FestivalRequestDto dto = new FestivalRequestDto();
         dto.setTitle(req.title().trim());
         dto.setTitleEn(req.titleEn() != null ? req.titleEn().trim() : null);

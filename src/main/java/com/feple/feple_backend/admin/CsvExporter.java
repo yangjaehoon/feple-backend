@@ -8,13 +8,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-final class CsvExporter {
+public final class CsvExporter {
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private CsvExporter() {}
 
-    static String cell(Object value) {
+    public static String cell(Object value) {
         if (value == null) return "";
         String s = value.toString();
         if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {
@@ -23,11 +23,11 @@ final class CsvExporter {
         return s;
     }
 
-    static String formatDt(LocalDateTime dt) {
+    public static String formatDt(LocalDateTime dt) {
         return dt == null ? "" : dt.format(DT_FMT);
     }
 
-    static ResponseEntity<byte[]> csvResponse(String content, String filename) {
+    public static ResponseEntity<byte[]> csvResponse(String content, String filename) {
         byte[] bom    = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
         byte[] body   = content.getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[bom.length + body.length];

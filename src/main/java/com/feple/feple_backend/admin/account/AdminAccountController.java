@@ -27,14 +27,14 @@ public class AdminAccountController {
         model.addAttribute("accounts", accountService.findAll());
         model.addAttribute("allPermissions", AdminPermission.values());
         model.addAttribute("allRoles", AdminRole.values());
-        return "admin/admin-accounts";
+        return "admin/account/list";
     }
 
     @GetMapping("/new")
     public String newForm(Model model) {
         model.addAttribute("allPermissions", AdminPermission.values());
         model.addAttribute("allRoles", AdminRole.values());
-        return "admin/admin-account-form";
+        return "admin/account/form";
     }
 
     @PostMapping(consumes = "multipart/form-data")
@@ -63,7 +63,7 @@ public class AdminAccountController {
         model.addAttribute("account", accountService.findById(id));
         model.addAttribute("allPermissions", AdminPermission.values());
         model.addAttribute("allRoles", AdminRole.values());
-        return "admin/admin-account-form";
+        return "admin/account/form";
     }
 
     @PostMapping(value = "/{id}/update", consumes = "multipart/form-data")

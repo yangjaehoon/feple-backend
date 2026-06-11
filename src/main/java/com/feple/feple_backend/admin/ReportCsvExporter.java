@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin;
 
-interface ReportCsvExporter {
+public interface ReportCsvExporter {
     String getReportType();
     String buildCsv();
 }

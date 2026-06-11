@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    static final String SESSION_KEY = "loginError";
+    public static final String SESSION_KEY = "loginError";
 
     private final Cache<String, Bucket> cache = Caffeine.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES)
