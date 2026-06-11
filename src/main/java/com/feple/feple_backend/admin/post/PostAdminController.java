@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -76,17 +77,27 @@ public class PostAdminController {
                              @RequestParam(defaultValue = "") String filter,
                              @RequestParam(required = false) Long artistId,
                              @RequestParam(required = false) Long festivalId,
-                             Model model) {
-        model.addAttribute("post", postService.getPost(id));
-        model.addAttribute("comments", commentService.getCommentsByPost(id, null));
-        StringBuilder back = new StringBuilder("/admin/posts");
-        if (!filter.isBlank() || artistId != null || festivalId != null) {
-            back.append("?filter=").append(filter);
-            if (artistId != null) back.append("&artistId=").append(artistId);
-            if (festivalId != null) back.append("&festivalId=").append(festivalId);
+                             Model model,
+                             RedirectAttributes ra) {
+        try {
+            model.addAttribute("post", postService.getPost(id));
+            model.addAttribute("comments", commentService.getCommentsByPost(id, null));
+            StringBuilder back = new StringBuilder("/admin/posts");
+            if (!filter.isBlank() || artistId != null || festivalId != null) {
+                back.append("?filter=").append(filter);
+                if (artistId != null) back.append("&artistId=").append(artistId);
+                if (festivalId != null) back.append("&festivalId=").append(festivalId);
+            }
+            model.addAttribute("backUrl", back.toString());
+            return "admin/post/detail";
+        } catch (NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", "존재하지 않는 게시글입니다.");
+            return "redirect:/admin/posts";
+        } catch (Exception e) {
+            log.error("게시글 상세 조회 실패 id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "게시글 정보를 불러오지 못했습니다.");
+            return "redirect:/admin/posts";
         }
-        model.addAttribute("backUrl", back.toString());
-        return "admin/post/detail";
     }
 
     @PostMapping("/bulk-delete")
@@ -97,9 +108,14 @@ public class PostAdminController {
                                   @RequestParam(required = false) Long festivalId,
                                   RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
-            postAdminService.bulkDeletePosts(ids);
-            adminLogService.log("POST_BULK_DELETE", "POST", null, "총 " + ids.size() + "개");
-            ra.addFlashAttribute("successMessage", ids.size() + "개 게시글이 삭제되었습니다.");
+            try {
+                postAdminService.bulkDeletePosts(ids);
+                adminLogService.log("POST_BULK_DELETE", "POST", null, "총 " + ids.size() + "개");
+                ra.addFlashAttribute("successMessage", ids.size() + "개 게시글이 삭제되었습니다.");
+            } catch (Exception e) {
+                log.error("게시글 일괄 삭제 실패 ids={}", ids, e);
+                ra.addFlashAttribute("errorMessage", "일괄 삭제 처리 중 오류가 발생했습니다.");
+            }
         }
         return "redirect:/admin/posts?" + buildRedirectParams(filter, page, artistId, festivalId);
     }
@@ -109,9 +125,16 @@ public class PostAdminController {
                              @RequestParam(defaultValue = "") String filter,
                              @RequestParam(defaultValue = "0") int page,
                              @RequestParam(required = false) Long artistId,
-                             @RequestParam(required = false) Long festivalId) {
-        postAdminService.deletePost(id);
-        adminLogService.log("POST_DELETE", "POST", id, null);
+                             @RequestParam(required = false) Long festivalId,
+                             RedirectAttributes ra) {
+        try {
+            postAdminService.deletePost(id);
+            adminLogService.log("POST_DELETE", "POST", id, null);
+            ra.addFlashAttribute("successMessage", "게시글이 삭제되었습니다.");
+        } catch (Exception e) {
+            log.error("게시글 삭제 실패 id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
+        }
         return "redirect:/admin/posts?" + buildRedirectParams(filter, page, artistId, festivalId);
     }
 
@@ -124,9 +147,15 @@ public class PostAdminController {
 
     @PostMapping("/comments/{id}/delete")
     public String deleteComment(@PathVariable Long id,
-                                @RequestParam Long postId) {
-        commentService.deleteComment(id);
-        adminLogService.log("COMMENT_DELETE", "COMMENT", id, null);
+                                @RequestParam Long postId,
+                                RedirectAttributes ra) {
+        try {
+            commentService.deleteComment(id);
+            adminLogService.log("COMMENT_DELETE", "COMMENT", id, null);
+        } catch (Exception e) {
+            log.error("댓글 삭제 실패 id={}", id, e);
+            ra.addFlashAttribute("errorMessage", "댓글 삭제 중 오류가 발생했습니다.");
+        }
         return "redirect:/admin/posts/" + postId;
     }
 
