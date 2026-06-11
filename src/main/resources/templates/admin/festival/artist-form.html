@@ -65,9 +65,9 @@
                 </form>
             </div>
         </div>
+        <div th:if="${errorMessage}" class="alert alert-danger mt-8" th:text="${errorMessage}"></div>
     </div>
 </div>
-<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 <script th:src="@{/js/admin-festival-artist-form.js}"></script>
 </body>
 </html>

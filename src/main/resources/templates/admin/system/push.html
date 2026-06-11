@@ -170,11 +170,10 @@
                                 <span th:text="${#strings.length(item.body) > 80 ? #strings.substring(item.body, 0, 80) + '…' : item.body}"></span>
                                 <button th:if="${#strings.length(item.body) > 80}"
                                         type="button"
-                                        class="btn-link-inline"
+                                        class="btn-link-inline broadcast-modal-btn"
                                         th:data-title="${item.title}"
                                         th:data-body="${item.body}"
-                                        th:data-created-at="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"
-                                        class="btn-link-inline broadcast-modal-btn">전체보기</button>
+                                        th:data-created-at="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">전체보기</button>
                             </td>
                         </tr>
                     </tbody>

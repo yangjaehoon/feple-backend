@@ -1006,9 +1006,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ============================================================
    ADMIN ACCOUNTS — 역할 / 권한 배지
    ============================================================ */
-.role-badge       { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.role-SUPER_ADMIN { background: var(--accent-bg); color: var(--warning-text); }
-.role-MANAGER     { background: #EFF6FF; color: #1D4ED8; }
+.role-SUPER_ADMIN { background: var(--accent-bg); color: var(--warning-text); border-color: var(--warning-bd) !important; }
+.role-MANAGER     { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE !important; }
 .perm-tag         { display: inline-block; padding: 2px 8px; border-radius: 10px; background: #F1F5F9; color: #475569; font-size: 10px; font-weight: 600; margin: 1px; }
 .status-active    { color: var(--success); font-weight: 700; font-size: 12px; }
 .status-disabled  { color: var(--muted);   font-weight: 700; font-size: 12px; }
@@ -1176,7 +1175,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .td-link-normal { font-size: 13px; text-decoration: none; color: var(--text); }
 
 /* ── 처리 모달 ── */
-.admin-modal-box      { background: #fff; border-radius: 12px; padding: 28px 28px 24px; width: 480px; max-width: calc(100vw - 32px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+.admin-modal-box      { width: 480px; }
 .admin-modal-header   { margin-bottom: 18px; }
 .admin-modal-title    { font-size: 16px; font-weight: 700; color: var(--text); }
 .admin-modal-subtitle { font-size: 13px; color: var(--text-2); margin-top: 4px; }
@@ -1455,7 +1454,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── 모달 ── */
 .modal-overlay  { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); align-items: center; justify-content: center; }
-.modal-box      { background: #fff; border-radius: 12px; padding: 28px 28px 24px; width: 520px; max-width: calc(100vw - 32px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+.modal-box, .admin-modal-box { background: var(--surface); border-radius: 12px; padding: 28px 28px 24px; max-width: calc(100vw - 32px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+.modal-box      { width: 520px; }
 .modal-header   { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
 .modal-title    { font-size: 16px; font-weight: 700; color: var(--text); }
 .modal-date     { font-size: 12px; color: var(--muted); margin-top: 4px; }

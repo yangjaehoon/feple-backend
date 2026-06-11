@@ -43,12 +43,12 @@
                         </td>
                         <td class="td-monospace" th:text="${acc.username}"></td>
                         <td>
-                            <span th:class="'role-badge role-' + ${acc.role.name()}"
+                            <span th:class="'badge role-' + ${acc.role.name()}"
                                   th:text="${acc.role.displayName}"></span>
                         </td>
                         <td>
                             <span th:if="${acc.role.name() == 'SUPER_ADMIN'}"
-                                  class="perm-tag role-SUPER_ADMIN">전체 권한</span>
+                                  class="badge role-SUPER_ADMIN">전체 권한</span>
                             <span th:if="${acc.role.name() != 'SUPER_ADMIN'} and ${acc.permissions.isEmpty()}"
                                   class="td-muted">없음</span>
                             <span th:each="perm : ${acc.permissions}"
