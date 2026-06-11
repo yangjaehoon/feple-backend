@@ -33,15 +33,15 @@
             if (res.ok) {
                 resultEl.style.color = 'var(--primary)';
                 resultEl.textContent = '';
-                var strong = document.createElement('strong');
-                strong.textContent = data.nickname;
+                var nicknameEl = document.createElement('strong');
+                nicknameEl.textContent = data.nickname;
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn btn-secondary';
                 btn.style.cssText = 'font-size:12px; padding:2px 10px;';
                 btn.textContent = '이 ID로 설정';
                 btn.addEventListener('click', function () { fillUserId(data.id); });
-                resultEl.appendChild(strong);
+                resultEl.appendChild(nicknameEl);
                 resultEl.appendChild(document.createTextNode(' (ID: ' + data.id + ')  '));
                 resultEl.appendChild(btn);
             } else {

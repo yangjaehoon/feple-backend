@@ -7,34 +7,34 @@
     }
 
     function updateToolbar() {
-        var checked = document.querySelectorAll('.row-check:checked');
+        var selectedCheckboxes = document.querySelectorAll('.row-check:checked');
         var toolbar = document.getElementById('bulk-toolbar');
         var countEl = document.getElementById('select-count');
         if (!toolbar) return;
-        if (checked.length > 0) {
+        if (selectedCheckboxes.length > 0) {
             toolbar.classList.add('visible');
-            countEl.textContent = checked.length + '건 선택됨';
+            countEl.textContent = selectedCheckboxes.length + '건 선택됨';
         } else {
             toolbar.classList.remove('visible');
         }
         var master = document.getElementById('select-all');
         var all = document.querySelectorAll('.row-check');
         if (master && all.length > 0) {
-            master.indeterminate = checked.length > 0 && checked.length < all.length;
-            master.checked = checked.length === all.length;
+            master.indeterminate = selectedCheckboxes.length > 0 && selectedCheckboxes.length < all.length;
+            master.checked = selectedCheckboxes.length === all.length;
         }
     }
 
     function submitBulk(endpoint, confirmTpl) {
-        var checked = document.querySelectorAll('.row-check:checked');
-        if (checked.length === 0) return;
-        var msg = confirmTpl.replace('{n}', checked.length);
+        var selectedCheckboxes = document.querySelectorAll('.row-check:checked');
+        if (selectedCheckboxes.length === 0) return;
+        var msg = confirmTpl.replace('{n}', selectedCheckboxes.length);
         if (!confirm(msg)) return;
 
         var form = document.getElementById('bulk-form');
         form.action = endpoint;
         form.querySelectorAll('input[name="ids"]').forEach(function (el) { el.remove(); });
-        checked.forEach(function (cb) {
+        selectedCheckboxes.forEach(function (cb) {
             var input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'ids';

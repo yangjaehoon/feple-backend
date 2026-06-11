@@ -123,9 +123,9 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="f : ${festivals}"
-                                  th:if="${f.endDate == null or !f.endDate.isBefore(#temporals.createToday())}">
-                            <tr th:with="cl=${checklistMap[f.id]},
+                        <th:block th:each="festival : ${festivals}"
+                                  th:if="${festival.endDate == null or !festival.endDate.isBefore(#temporals.createToday())}">
+                            <tr th:with="cl=${checklistMap[festival.id]},
                                          cnt=${(cl != null and cl.lineup1 ? 1 : 0)
                                               + (cl != null and cl.lineup2 ? 1 : 0)
                                               + (cl != null and cl.lineup3 ? 1 : 0)
@@ -133,39 +133,39 @@
                                               + (cl != null and cl.timetable ? 1 : 0)}"
                                 th:classappend="${cnt == 5} ? ' all-done'">
                                 <td class="left">
-                                    <a th:href="@{/admin/festivals/{id}(id=${f.id})}"
-                                       th:text="${f.title}"></a>
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                       th:text="${festival.title}"></a>
                                     <div class="cell-secondary"
-                                         th:text="${f.startDate != null ? #temporals.format(f.startDate, 'yyyy.M.d') : '?'} + ' ~ ' + ${f.endDate != null ? #temporals.format(f.endDate, 'M.d') : '?'}"></div>
+                                         th:text="${festival.startDate != null ? #temporals.format(festival.startDate, 'yyyy.M.d') : '?'} + ' ~ ' + ${festival.endDate != null ? #temporals.format(festival.endDate, 'M.d') : '?'}"></div>
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
                                            th:checked="${cl != null and cl.lineup1}"
-                                           th:data-festival-id="${f.id}"
+                                           th:data-festival-id="${festival.id}"
                                            data-field="lineup1" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
                                            th:checked="${cl != null and cl.lineup2}"
-                                           th:data-festival-id="${f.id}"
+                                           th:data-festival-id="${festival.id}"
                                            data-field="lineup2" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
                                            th:checked="${cl != null and cl.lineup3}"
-                                           th:data-festival-id="${f.id}"
+                                           th:data-festival-id="${festival.id}"
                                            data-field="lineup3" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
                                            th:checked="${cl != null and cl.boothMap}"
-                                           th:data-festival-id="${f.id}"
+                                           th:data-festival-id="${festival.id}"
                                            data-field="boothMap" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
                                            th:checked="${cl != null and cl.timetable}"
-                                           th:data-festival-id="${f.id}"
+                                           th:data-festival-id="${festival.id}"
                                            data-field="timetable" />
                                 </td>
                                 <td>
@@ -174,7 +174,7 @@
                                 </td>
                                 <td class="left">
                                     <textarea class="memo-textarea"
-                                              th:data-festival-id="${f.id}"
+                                              th:data-festival-id="${festival.id}"
                                               placeholder="메모 입력 (자동 저장)"
                                               th:text="${cl != null ? cl.memo : ''}"></textarea>
                                 </td>

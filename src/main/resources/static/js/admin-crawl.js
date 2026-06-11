@@ -69,8 +69,8 @@
     });
 
     function renderScrapeResult(data) {
-        var sourceNames = { interpark: '인터파크', yes24: '예스24', melon: '멜론티켓', direct: '직접 입력' };
-        document.getElementById('scrapeSourceLabel').textContent = sourceNames[data.source] || data.source;
+        var sourceDisplayNames = { interpark: '인터파크', yes24: '예스24', melon: '멜론티켓', direct: '직접 입력' };
+        document.getElementById('scrapeSourceLabel').textContent = sourceDisplayNames[data.source] || data.source;
 
         var warnEl = document.getElementById('scrapeWarnMsg');
         if (data.warning) { warnEl.textContent = data.warning; warnEl.classList.remove('d-none'); }
@@ -272,11 +272,11 @@
         progressWrap.classList.add('visible');
         progressLabel.textContent = 'AI 이미지 분석 중...';
 
-        var fakeTimer = null;
-        var fakePct = 10;
-        fakeTimer = setInterval(function () {
-            fakePct = Math.min(fakePct + 5, 85);
-            progressFill.style.width = fakePct + '%';
+        var progressTimer = null;
+        var progressPct = 10;
+        progressTimer = setInterval(function () {
+            progressPct = Math.min(progressPct + 5, 85);
+            progressFill.style.width = progressPct + '%';
         }, 800);
 
         var formData = new FormData();
@@ -285,7 +285,7 @@
 
         fetch(CrawlUrls.ocr, { method: 'POST', headers: headers, body: formData })
             .then(function (r) {
-                clearInterval(fakeTimer);
+                clearInterval(progressTimer);
                 progressFill.style.width = '100%';
                 progressLabel.textContent = '완료!';
                 if (!r.ok) {
@@ -298,7 +298,7 @@
                 renderOcrResults(results);
             })
             .catch(function (err) {
-                clearInterval(fakeTimer);
+                clearInterval(progressTimer);
                 progressWrap.classList.remove('visible');
                 showApplyResult('error', '오류: ' + err.message);
             });

@@ -65,16 +65,16 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
 });
 
 /* ── 메모 자동 저장 (blur) ── */
-var memoTimer = {};
+var memoTimers = {};
 document.querySelectorAll('.memo-textarea').forEach(function(ta) {
     ta.addEventListener('input', function() {
         var festivalId = ta.dataset.festivalId;
-        clearTimeout(memoTimer[festivalId]);
-        memoTimer[festivalId] = setTimeout(function() { saveMemo(festivalId, ta.value); }, 800);
+        clearTimeout(memoTimers[festivalId]);
+        memoTimers[festivalId] = setTimeout(function() { saveMemo(festivalId, ta.value); }, 800);
     });
     ta.addEventListener('blur', function() {
         var festivalId = ta.dataset.festivalId;
-        clearTimeout(memoTimer[festivalId]);
+        clearTimeout(memoTimers[festivalId]);
         saveMemo(festivalId, ta.value);
     });
 });

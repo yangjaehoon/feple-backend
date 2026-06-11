@@ -162,18 +162,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="item : ${history}">
+                        <tr th:each="broadcastEntry : ${history}">
                             <td class="td-date"
-                                th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-                            <td class="td-bold" th:text="${item.title}"></td>
+                                th:text="${#temporals.format(broadcastEntry.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td class="td-bold" th:text="${broadcastEntry.title}"></td>
                             <td class="td-body">
-                                <span th:text="${#strings.length(item.body) > 80 ? #strings.substring(item.body, 0, 80) + '…' : item.body}"></span>
-                                <button th:if="${#strings.length(item.body) > 80}"
+                                <span th:text="${#strings.length(broadcastEntry.body) > 80 ? #strings.substring(broadcastEntry.body, 0, 80) + '…' : broadcastEntry.body}"></span>
+                                <button th:if="${#strings.length(broadcastEntry.body) > 80}"
                                         type="button"
                                         class="btn-link-inline broadcast-modal-btn"
-                                        th:data-title="${item.title}"
-                                        th:data-body="${item.body}"
-                                        th:data-created-at="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">전체보기</button>
+                                        th:data-title="${broadcastEntry.title}"
+                                        th:data-body="${broadcastEntry.body}"
+                                        th:data-created-at="${#temporals.format(broadcastEntry.createdAt, 'yyyy-MM-dd HH:mm')}">전체보기</button>
                             </td>
                         </tr>
                     </tbody>

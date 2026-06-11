@@ -35,16 +35,16 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="s : ${suggestions}">
-                        <td class="cell-primary" th:text="${s.artistName}"></td>
-                        <td class="td-note" th:text="${s.note != null ? s.note : '-'}"></td>
-                        <td class="td-sub" th:text="${s.userNickname}"></td>
+                    <tr th:each="suggestion : ${suggestions}">
+                        <td class="cell-primary" th:text="${suggestion.artistName}"></td>
+                        <td class="td-note" th:text="${suggestion.note != null ? suggestion.note : '-'}"></td>
+                        <td class="td-sub" th:text="${suggestion.userNickname}"></td>
                         <td class="cell-secondary"
-                            th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            th:text="${#temporals.format(suggestion.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
                         <td>
                             <button type="button" class="btn btn-primary btn-sm open-dismiss-btn"
-                                    th:data-id="${s.id}"
-                                    th:data-artist="${s.artistName}">처리하기</button>
+                                    th:data-id="${suggestion.id}"
+                                    th:data-artist="${suggestion.artistName}">처리하기</button>
                         </td>
                     </tr>
                     </tbody>
@@ -79,15 +79,15 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="s : ${processedSuggestions}">
-                            <td class="cell-primary" th:text="${s.artistName}"></td>
-                            <td class="td-note" th:text="${s.note != null ? s.note : '-'}"></td>
-                            <td class="td-sub" th:text="${s.userNickname}"></td>
+                        <tr th:each="suggestion : ${processedSuggestions}">
+                            <td class="cell-primary" th:text="${suggestion.artistName}"></td>
+                            <td class="td-note" th:text="${suggestion.note != null ? suggestion.note : '-'}"></td>
+                            <td class="td-sub" th:text="${suggestion.userNickname}"></td>
                             <td class="cell-secondary"
-                                th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-                            <td class="td-note" th:text="${s.processNote != null ? s.processNote : '-'}"></td>
+                                th:text="${#temporals.format(suggestion.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td class="td-note" th:text="${suggestion.processNote != null ? suggestion.processNote : '-'}"></td>
                             <td class="cell-secondary"
-                                th:text="${s.processedAt != null ? #temporals.format(s.processedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                                th:text="${suggestion.processedAt != null ? #temporals.format(suggestion.processedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
                         </tr>
                         </tbody>
                     </table>
