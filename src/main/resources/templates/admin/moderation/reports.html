@@ -70,7 +70,7 @@
 
             <!-- 게시글 신고 테이블 -->
             <div th:if="${type == 'post'}">
-                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" style="display:none;">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
                     <input type="hidden" name="type" value="post"/>
                     <input type="hidden" name="page" th:value="${reports.number}"/>
                     <input type="hidden" name="status" th:value="${status}"/>
@@ -172,7 +172,7 @@
 
             <!-- 댓글 신고 테이블 -->
             <div th:if="${type == 'comment'}">
-                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" style="display:none;">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
                     <input type="hidden" name="type" value="comment"/>
                     <input type="hidden" name="page" th:value="${reports.number}"/>
                     <input type="hidden" name="status" th:value="${status}"/>
@@ -276,7 +276,7 @@
 
             <!-- 사진 신고 테이블 -->
             <div th:if="${type == 'photo'}">
-                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" style="display:none;">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
                     <input type="hidden" name="type" value="photo"/>
                     <input type="hidden" name="page" th:value="${reports.number}"/>
                     <input type="hidden" name="status" th:value="${status}"/>

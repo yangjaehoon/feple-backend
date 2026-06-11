@@ -59,24 +59,24 @@
                 </div>
 
                 <!-- 로딩 -->
-                <div id="scrapeLoading" class="empty-state" style="display:none;">
+                <div id="scrapeLoading" class="empty-state d-none">
                     <div class="spinner-lg"></div>
                     <div class="scrape-loading-txt">페이지 분석 중...</div>
                 </div>
 
                 <!-- 결과 편집 폼 -->
-                <div id="scrapeResultForm" style="display:none;">
+                <div id="scrapeResultForm" class="d-none">
                     <div class="info-box mb-14">
                         <strong id="scrapeSourceLabel">인터파크</strong>에서 스크래핑된 결과입니다. 내용을 확인하고 수정한 뒤 등록하세요.
                     </div>
-                    <div id="scrapeWarnMsg" class="note-box mb-14" style="display:none;"></div>
+                    <div id="scrapeWarnMsg" class="note-box mb-14 d-none"></div>
 
                     <!-- 포스터 + 필드 2단 -->
                     <div class="scrape-layout">
                         <div class="scrape-poster-col">
                             <div id="scrapePosterWrap" class="poster-wrap">
                                 <img id="scrapePosterImg" src="" alt="포스터"
-                                     class="poster-img-full" style="display:none;"
+                                     class="poster-img-full d-none"
                                      onerror="this.style.display='none'; document.getElementById('scrapePosterEmpty').style.display='flex'"/>
                                 <div id="scrapePosterEmpty" class="poster-empty">
                                     <div class="poster-empty-icon">🖼️</div>
@@ -217,7 +217,7 @@
                     </div>
                 </div>
 
-                <div class="note-box" id="ocrWarnBox" style="display:none;">
+                <div class="note-box d-none" id="ocrWarnBox">
                     ⚠️ 확신도가 낮은 항목(🔴)은 수동으로 검토 후 적용하세요.
                 </div>
 

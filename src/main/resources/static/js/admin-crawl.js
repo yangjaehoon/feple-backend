@@ -37,8 +37,8 @@
         if (!url) return;
 
         document.getElementById('scrapeEmptyState').style.display   = 'none';
-        document.getElementById('scrapeResultForm').style.display   = 'none';
-        document.getElementById('scrapeLoading').style.display      = 'block';
+        document.getElementById('scrapeResultForm').classList.add('d-none');
+        document.getElementById('scrapeLoading').classList.remove('d-none');
         document.getElementById('scrapeApplyResult').style.display  = 'none';
 
         var btn = document.getElementById('btnStartCrawl');
@@ -57,13 +57,13 @@
             return r.json();
         })
         .then(function (data) {
-            document.getElementById('scrapeLoading').style.display = 'none';
+            document.getElementById('scrapeLoading').classList.add('d-none');
             btn.disabled = (document.getElementById('crawlUrl').value.trim().length === 0);
             btn.innerHTML = '스크래핑 시작';
             renderScrapeResult(data);
         })
         .catch(function (err) {
-            document.getElementById('scrapeLoading').style.display = 'none';
+            document.getElementById('scrapeLoading').classList.add('d-none');
             document.getElementById('scrapeEmptyState').style.display = 'block';
             btn.disabled = false;
             btn.innerHTML = '스크래핑 시작';
@@ -76,8 +76,8 @@
         document.getElementById('scrapeSourceLabel').textContent = sourceNames[data.source] || data.source;
 
         var warnEl = document.getElementById('scrapeWarnMsg');
-        if (data.warning) { warnEl.textContent = data.warning; warnEl.style.display = 'block'; }
-        else { warnEl.style.display = 'none'; }
+        if (data.warning) { warnEl.textContent = data.warning; warnEl.classList.remove('d-none'); }
+        else { warnEl.classList.add('d-none'); }
 
         document.getElementById('scrapeTitle').value      = data.title       || '';
         document.getElementById('scrapeTitleEn').value    = '';
@@ -92,14 +92,14 @@
         var emptyDiv = document.getElementById('scrapePosterEmpty');
         if (data.posterImageUrl) {
             img.src           = data.posterImageUrl;
-            img.style.display = 'block';
+            img.classList.remove('d-none');
             emptyDiv.style.display = 'none';
         } else {
-            img.style.display      = 'none';
+            img.classList.add('d-none');
             emptyDiv.style.display = 'flex';
         }
 
-        document.getElementById('scrapeResultForm').style.display  = 'block';
+        document.getElementById('scrapeResultForm').classList.remove('d-none');
         document.getElementById('scrapeApplyResult').style.display = 'none';
     }
 
@@ -159,7 +159,7 @@
 
     /* ── 초기화 ── */
     document.getElementById('btnScrapeReset').addEventListener('click', function () {
-        document.getElementById('scrapeResultForm').style.display  = 'none';
+        document.getElementById('scrapeResultForm').classList.add('d-none');
         document.getElementById('scrapeEmptyState').style.display  = 'block';
     });
 
@@ -324,7 +324,7 @@
             appendRow(matchedArtist, matchedStage, date, row.startTime || '', row.endTime || '', conf);
         });
 
-        document.getElementById('ocrWarnBox').style.display = hasLow ? 'block' : 'none';
+        document.getElementById('ocrWarnBox').classList.toggle('d-none', !hasLow);
         document.getElementById('btnApplyOcr').disabled = results.length === 0;
     }
 

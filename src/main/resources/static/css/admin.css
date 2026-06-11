@@ -388,7 +388,6 @@ tbody td a:hover { text-decoration: underline; color: var(--primary); }
    ============================================================ */
 .form-grid  { display: grid; gap: 18px; }
 .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-section { margin-bottom: 28px; }
@@ -539,19 +538,6 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1.5px solid var(--border); }
 .poster-preview { max-width: 170px; border-radius: var(--r); border: 1.5px solid var(--border); margin-top: 8px; display: block; }
 
-/* ============================================================
-   PHOTO GRID
-   ============================================================ */
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
-  gap: 16px; padding: 20px;
-}
-.photo-card {
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: var(--r); overflow: hidden;
-  display: flex; flex-direction: column;
-}
 .photo-card.no-photo { border: 2px dashed var(--border); opacity: .85; }
 .photo-thumb { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
 .photo-placeholder {
@@ -1315,7 +1301,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ── festival/artist-form.html ── */
 .card-narrow-520        { max-width: 520px; }
 .artist-legend-dot      { display: inline-block; width: 10px; height: 10px; background: var(--primary); border-radius: 2px; margin-right: 4px; }
-.artist-list-box        { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 4px 0; }
 .artist-participating-badge { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--primary); background: #dde4ff; border-radius: 20px; padding: 2px 8px; white-space: nowrap; }
 
 /* ── dashboard/home.html — admin profile ── */
@@ -1461,7 +1446,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .col-w56               { width: 56px; }
 .mb-12                 { margin-bottom: 12px !important; }
 .mb-14                 { margin-bottom: 14px !important; }
-.mt-4                  { margin-top: 4px; }
 .mt-14                 { margin-top: 14px; }
 
 /* ── Stats page ── */
@@ -1484,9 +1468,6 @@ input[type=date]   { cursor: pointer; }
 
 /* ── Festival create form ── */
 .field-hint        { font-size: 11.5px; color: var(--muted); margin-top: 3px; display: block; }
-.flex-1            { flex: 1; }
-.mt-8              { margin-top: 8px; }
-.mb-8              { margin-bottom: 8px; }
 .addr-row          { display: flex; gap: 8px; margin-bottom: 8px; }
 .map-container     { width: 100%; height: 300px; border-radius: 10px; border: 1px solid var(--border); }
 .artist-list-box   { max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; }

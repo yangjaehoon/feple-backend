@@ -6,6 +6,7 @@
 <div class="main-content">
     <div th:replace="~{admin/fragments :: pageHeader2('인증 상세', '인증 관리', @{/admin/certifications}, '#' + ${cert.id})}"></div>
     <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
         <div class="card card-padded">
             <div class="cert-detail-wrap">
                 <!-- 인증 사진 -->

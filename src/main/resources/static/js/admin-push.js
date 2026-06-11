@@ -2,7 +2,7 @@
     function showPushTargetError(msg) {
         var el = document.getElementById('push-target-error');
         el.textContent = msg;
-        el.style.display = 'block';
+        el.classList.remove('d-none');
     }
 
     function fillTargetAndConfirm(type) {
@@ -12,7 +12,7 @@
             showPushTargetError('제목과 내용을 먼저 입력해주세요.');
             return false;
         }
-        document.getElementById('push-target-error').style.display = 'none';
+        document.getElementById('push-target-error').classList.add('d-none');
         document.getElementById('target-title-' + type).value = title;
         document.getElementById('target-body-'  + type).value = body;
         return confirm('해당 그룹에게 발송하시겠습니까?');
@@ -61,7 +61,7 @@
     function showPushTestError(msg) {
         var el = document.getElementById('push-test-error');
         el.textContent = msg;
-        el.style.display = 'block';
+        el.classList.remove('d-none');
     }
 
     function validateTest(testForm) {
@@ -71,7 +71,7 @@
         var uid   = testForm.querySelector('[name="targetUserId"]').value.trim();
         if (!title || !body) { showPushTestError('제목과 내용을 입력해주세요.'); return false; }
         if (!uid)            { showPushTestError('테스트 대상 사용자 ID를 입력해주세요.'); return false; }
-        document.getElementById('push-test-error').style.display = 'none';
+        document.getElementById('push-test-error').classList.add('d-none');
         if (!confirm('테스트 발송하시겠습니까?')) return false;
         testForm.querySelector('[name="title"]').value = title;
         testForm.querySelector('[name="body"]').value  = body;

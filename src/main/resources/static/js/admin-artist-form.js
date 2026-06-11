@@ -14,7 +14,7 @@
             var img = document.getElementById('preview-img');
             var ph  = document.getElementById('preview-ph');
             img.src = e.target.result;
-            img.style.display = '';
+            img.classList.remove('d-none');
             ph.style.display = 'none';
         };
         reader.readAsDataURL(file);
