@@ -1373,7 +1373,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .row-ended { opacity: 0.55; background: #fafafa; }
 
 /* ── 체크박스 입력 ── */
-.cb-input { cursor: pointer; width: 15px; height: 15px; }
+.cb-input { cursor: pointer; width: 15px; height: 15px; accent-color: var(--primary); flex-shrink: 0; }
 
 /* ── 배지 너비 제한 ── */
 .badge-clamp { max-width: 130px; overflow: hidden; }
@@ -1532,7 +1532,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .scrape-region         { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; min-width: 130px; }
 .date-row              { display: flex; gap: 10px; }
 .date-col              { flex: 1; }
-.label-optional        { font-weight: 400; color: var(--muted); }
+.label-optional        { font-weight: 400; color: var(--muted); font-size: 12px; }
 .genre-list            { display: flex; flex-wrap: wrap; gap: 8px; }
 .genre-tag             { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 13px; }
 .genre-tag input[type=checkbox] { accent-color: var(--primary); }
@@ -1540,10 +1540,40 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .ocr-hint              { font-size: 11px; color: var(--muted); margin-top: -6px; margin-bottom: 4px; }
 .crawl-card-title-sb   { justify-content: space-between; }
 .ocr-legend            { margin-top: 8px; font-size: 11px; color: var(--muted); }
-.td-empty-center       { text-align: center; color: var(--muted); padding: 32px; }
+.td-empty-center       { text-align: center; color: var(--muted); padding: 20px; }
 .col-w28               { width: 28px; }
 .col-w56               { width: 56px; }
 .mb-12                 { margin-bottom: 12px !important; }
 .mb-14                 { margin-bottom: 14px !important; }
 .mt-4                  { margin-top: 4px; }
 .mt-14                 { margin-top: 14px; }
+
+/* ── Stats page ── */
+.date-range-label  { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.date-range-form   { display: flex; gap: 6px; align-items: center; }
+.mb-24             { margin-bottom: 24px; }
+.col-w32           { width: 32px; }
+.rank-link         { color: var(--primary-dk); text-decoration: none; font-weight: 500; }
+.rank-link:hover   { text-decoration: underline; }
+.val-danger        { color: var(--danger); }
+.val-purple        { color: var(--purple); }
+.val-primary-dk    { color: var(--primary-dk); }
+.kw-empty          { color: var(--muted); font-size: 13px; padding: 4px 0; }
+
+/* ── Logs page ── */
+.td-mono           { font-size: 11.5px; color: var(--muted); font-family: monospace; }
+.td-text           { color: var(--text); }
+.list-total        { margin-left: auto; font-size: 13px; color: var(--muted); }
+input[type=date]   { cursor: pointer; }
+
+/* ── Festival create form ── */
+.field-hint        { font-size: 11px; color: var(--muted); margin-top: 3px; display: block; }
+.flex-1            { flex: 1; }
+.mt-8              { margin-top: 8px; }
+.mb-8              { margin-bottom: 8px; }
+.addr-row          { display: flex; gap: 8px; margin-bottom: 8px; }
+.map-container     { width: 100%; height: 300px; border-radius: 10px; border: 1px solid var(--border); }
+.artist-list-box   { max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; }
+.artist-item-label { display: flex; align-items: center; gap: 8px; padding: 6px 14px; cursor: pointer; font-size: 13px; }
+.link-primary      { color: var(--primary); text-decoration: none; }
+.link-primary:hover { text-decoration: underline; }

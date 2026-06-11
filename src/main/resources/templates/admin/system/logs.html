@@ -9,9 +9,9 @@
 
         <div class="card">
             <!-- 필터 바 -->
-            <div style="padding:14px 22px; border-bottom:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                <form th:action="@{/admin/logs}" method="get" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                    <select name="targetType" class="form-select" style="width:auto;">
+            <div class="list-toolbar">
+                <form th:action="@{/admin/logs}" method="get" class="list-search-form">
+                    <select name="targetType" class="form-select select-auto">
                         <option value=""           th:selected="${#strings.isEmpty(targetType)}">전체 대상</option>
                         <option value="USER"        th:selected="${targetType == 'USER'}">회원</option>
                         <option value="FESTIVAL"    th:selected="${targetType == 'FESTIVAL'}">페스티벌</option>
@@ -25,22 +25,22 @@
                     </select>
                     <input type="text" name="adminUsername" th:value="${adminUsername}"
                            placeholder="관리자 이름"
-                           style="padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; width:130px;"/>
+                           class="form-input-sm w-130"/>
                     <input type="date" name="from"
                            th:value="${from}"
-                           class="form-select" style="width:auto; cursor:pointer;"
+                           class="form-select select-auto"
                            title="시작일"/>
-                    <span style="font-size:13px; color:var(--muted);">~</span>
+                    <span class="hint">~</span>
                     <input type="date" name="to"
                            th:value="${to}"
-                           class="form-select" style="width:auto; cursor:pointer;"
+                           class="form-select select-auto"
                            title="종료일"/>
                     <button type="submit" class="btn btn-primary btn-sm">조회</button>
                     <a th:if="${!#strings.isEmpty(targetType) or !#strings.isEmpty(adminUsername) or from != null or to != null}"
                        th:href="@{/admin/logs}"
                        class="btn btn-secondary btn-sm">초기화</a>
                 </form>
-                <span style="margin-left:auto; font-size:13px; color:var(--muted);"
+                <span class="list-total"
                       th:text="'총 ' + ${logs.totalElements} + '건'"></span>
             </div>
 
@@ -48,24 +48,24 @@
                 <table>
                     <thead>
                     <tr>
-                        <th style="width:140px;">시각</th>
-                        <th style="width:110px;">관리자</th>
-                        <th style="width:120px;">IP</th>
-                        <th style="width:200px;">액션</th>
-                        <th style="width:90px;">대상</th>
-                        <th style="width:70px;">ID</th>
+                        <th class="col-w140">시각</th>
+                        <th class="col-w110">관리자</th>
+                        <th class="col-w120">IP</th>
+                        <th class="col-w200">액션</th>
+                        <th class="col-w90">대상</th>
+                        <th class="col-w70">ID</th>
                         <th>상세</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="entry : ${logs.content}">
-                        <td style="color:var(--muted); font-size:12px; white-space:nowrap;"
+                        <td class="td-date"
                             th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm:ss')}"></td>
 
-                        <td style="font-size:12.5px; color:var(--text-2);"
+                        <td class="td-body"
                             th:text="${entry.adminUsername != null ? entry.adminUsername : '—'}"></td>
 
-                        <td style="font-size:11.5px; color:var(--muted); font-family:monospace;"
+                        <td class="td-mono"
                             th:text="${entry.ipAddress != null ? entry.ipAddress : '—'}"></td>
 
                         <td>
@@ -103,31 +103,31 @@
                             </span>
                         </td>
 
-                        <td style="font-size:12.5px; color:var(--muted);"
+                        <td class="td-muted"
                             th:text="${entry.targetType != null ? entry.targetType : '—'}"></td>
 
-                        <td style="font-size:12.5px;">
+                        <td>
                             <th:block th:if="${entry.targetId != null}">
                                 <a th:if="${entry.targetType == 'USER'}"
                                    th:href="@{/admin/users/{id}(id=${entry.targetId})}"
                                    th:text="${entry.targetId}"
-                                   style="color:var(--primary);"></a>
+                                   class="link-primary"></a>
                                 <a th:if="${entry.targetType == 'FESTIVAL'}"
                                    th:href="@{/admin/festivals/{id}(id=${entry.targetId})}"
                                    th:text="${entry.targetId}"
-                                   style="color:var(--primary);"></a>
+                                   class="link-primary"></a>
                                 <a th:if="${entry.targetType == 'POST'}"
                                    th:href="@{/admin/posts/{id}(id=${entry.targetId})}"
                                    th:text="${entry.targetId}"
-                                   style="color:var(--primary);"></a>
+                                   class="link-primary"></a>
                                 <span th:if="${entry.targetType != 'USER' and entry.targetType != 'FESTIVAL' and entry.targetType != 'POST'}"
                                       th:text="${entry.targetId}"
-                                      style="color:var(--muted);"></span>
+                                      class="td-muted"></span>
                             </th:block>
-                            <span th:if="${entry.targetId == null}" style="color:var(--muted);">—</span>
+                            <span th:if="${entry.targetId == null}" class="td-muted">—</span>
                         </td>
 
-                        <td style="font-size:13px; color:var(--text);"
+                        <td class="td-text"
                             th:text="${entry.detail != null ? entry.detail : '—'}"></td>
                     </tr>
                     <tr class="empty-row" th:if="${logs.totalElements == 0}">

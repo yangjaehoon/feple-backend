@@ -68,14 +68,14 @@
 
             <!-- 날짜 범위 선택 -->
             <div class="date-range-bar">
-                <span style="font-size:12px; font-weight:700; color:var(--muted); white-space:nowrap;">기간 선택</span>
+                <span class="date-range-label">기간 선택</span>
                 <button type="button" class="preset-btn" data-days="7">7일</button>
                 <button type="button" class="preset-btn" data-days="30">30일</button>
                 <button type="button" class="preset-btn" data-days="90">90일</button>
                 <div class="date-sep"></div>
-                <form id="date-range-form" th:action="@{/admin/stats}" method="get" style="display:flex; gap:6px; align-items:center;">
+                <form id="date-range-form" th:action="@{/admin/stats}" method="get" class="date-range-form">
                     <input type="date" id="from-input" name="from" th:value="${from}" class="date-input"/>
-                    <span style="color:var(--muted); font-size:13px;">~</span>
+                    <span class="hint">~</span>
                     <input type="date" id="to-input" name="to" th:value="${to}" class="date-input"/>
                     <button type="submit" class="btn btn-primary btn-sm">적용</button>
                 </form>
@@ -101,7 +101,7 @@
                 <div class="db-card-header">
                     <span class="db-card-title" th:text="'일별 상세 (' + ${from} + ' ~ ' + ${to} + ')'">일별 상세</span>
                 </div>
-                <div style="overflow-x:auto;">
+                <div class="table-wrap">
                     <table class="stats-table">
                         <thead>
                         <tr>
@@ -133,7 +133,7 @@
         <div id="tab-content-trend" class="tab-panel">
 
             <!-- 인기 검색어 -->
-            <div class="db-card" style="margin-bottom:24px;">
+            <div class="db-card mb-24">
                 <div class="db-card-header">
                     <span class="db-card-title">인기 검색어 TOP 10 (최근 7일)</span>
                 </div>
@@ -144,8 +144,7 @@
                         <span th:text="${stat.count + '. ' + kw.keyword()}"></span>
                         <span class="kw-cnt" th:text="${kw.count() + '회'}"></span>
                     </div>
-                    <div th:if="${#lists.isEmpty(contentTrend.topKeywords())}"
-                         style="color:var(--muted); font-size:13px; padding:4px 0;">
+                    <div th:if="${#lists.isEmpty(contentTrend.topKeywords())}" class="kw-empty">
                         아직 검색 데이터가 없습니다. 유저가 검색하면 자동으로 수집됩니다.
                     </div>
                 </div>
@@ -159,11 +158,11 @@
                     <div class="db-card-header">
                         <span class="db-card-title">페스티벌 좋아요 순위 TOP 10</span>
                     </div>
-                    <div style="overflow-x:auto;">
+                    <div class="table-wrap">
                         <table class="rank-table">
                             <thead>
                             <tr>
-                                <th style="width:32px;">#</th>
+                                <th class="col-w32">#</th>
                                 <th>페스티벌</th>
                                 <th class="r">좋아요</th>
                             </tr>
@@ -171,11 +170,11 @@
                             <tbody>
                             <tr th:each="f, stat : ${contentTrend.topFestivalsByLike()}">
                                 <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
-                                <td><a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
-                                <td class="r" style="color:var(--danger);" th:text="${f.likeCount}"></td>
+                                <td><a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" class="rank-link"></a></td>
+                                <td class="r val-danger" th:text="${f.likeCount}"></td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(contentTrend.topFestivalsByLike())}">
-                                <td colspan="3" style="text-align:center; color:var(--muted); padding:20px;">데이터 없음</td>
+                                <td colspan="3" class="td-empty-center">데이터 없음</td>
                             </tr>
                             </tbody>
                         </table>
@@ -191,7 +190,7 @@
                     <div class="warn-box">
                         좋아요가 많은 페스티벌 시작일 전후로 조회 트래픽이 집중될 수 있습니다.
                     </div>
-                    <div style="overflow-x:auto;">
+                    <div class="table-wrap">
                         <table class="rank-table">
                             <thead>
                             <tr>
@@ -204,12 +203,12 @@
                             <tbody>
                             <tr th:each="f, stat : ${contentTrend.upcomingHotFestivals()}">
                                 <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
-                                <td><a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
+                                <td><a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" class="rank-link"></a></td>
                                 <td class="r"><span class="days-badge" th:text="${#temporals.format(f.startDate, 'M/d') + ' 시작'}"></span></td>
-                                <td class="r" style="color:var(--danger);" th:text="${f.likeCount}"></td>
+                                <td class="r val-danger" th:text="${f.likeCount}"></td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(contentTrend.upcomingHotFestivals())}">
-                                <td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">30일 내 시작 예정 페스티벌이 없습니다.</td>
+                                <td colspan="4" class="td-empty-center">30일 내 시작 예정 페스티벌이 없습니다.</td>
                             </tr>
                             </tbody>
                         </table>
@@ -219,15 +218,15 @@
             </div><!-- /two-col -->
 
             <!-- 아티스트 팔로워 순위 -->
-            <div class="db-card" style="margin-bottom:24px;">
+            <div class="db-card mb-24">
                 <div class="db-card-header">
                     <span class="db-card-title">아티스트 팔로워 순위 TOP 10</span>
                 </div>
-                <div style="overflow-x:auto;">
+                <div class="table-wrap">
                     <table class="rank-table">
                         <thead>
                         <tr>
-                            <th style="width:32px;">#</th>
+                            <th class="col-w32">#</th>
                             <th>아티스트</th>
                             <th class="r">팔로워</th>
                             <th class="r">주간 점수</th>
@@ -236,12 +235,12 @@
                         <tbody>
                         <tr th:each="a, stat : ${contentTrend.topArtistsByFollower()}">
                             <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
-                            <td><a th:href="@{/admin/artists/{id}/edit(id=${a.id})}" th:text="${a.name}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
-                            <td class="r" style="color:var(--purple);" th:text="${a.followerCount}"></td>
-                            <td class="r" style="color:var(--muted);" th:text="${a.weeklyScore}"></td>
+                            <td><a th:href="@{/admin/artists/{id}/edit(id=${a.id})}" th:text="${a.name}" class="rank-link"></a></td>
+                            <td class="r val-purple" th:text="${a.followerCount}"></td>
+                            <td class="r td-muted" th:text="${a.weeklyScore}"></td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(contentTrend.topArtistsByFollower())}">
-                            <td colspan="4" style="text-align:center; color:var(--muted); padding:20px;">데이터 없음</td>
+                            <td colspan="4" class="td-empty-center">데이터 없음</td>
                         </tr>
                         </tbody>
                     </table>
@@ -249,16 +248,16 @@
             </div>
 
             <!-- 인기 게시글 TOP 10 -->
-            <div class="db-card" style="margin-bottom:24px;">
+            <div class="db-card mb-24">
                 <div class="db-card-header">
                     <span class="db-card-title">인기 게시글 TOP 10 (최근 30일 · 좋아요 순)</span>
                     <a class="btn btn-secondary btn-sm" th:href="@{/admin/posts}">전체보기</a>
                 </div>
-                <div style="overflow-x:auto;">
+                <div class="table-wrap">
                     <table class="rank-table">
                         <thead>
                         <tr>
-                            <th style="width:32px;">#</th>
+                            <th class="col-w32">#</th>
                             <th>제목</th>
                             <th>게시판</th>
                             <th class="r">좋아요</th>
@@ -269,14 +268,14 @@
                         <tbody>
                         <tr th:each="p, stat : ${contentTrend.topPostsByLike()}">
                             <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
-                            <td><a th:href="@{/admin/posts/{id}(id=${p.id})}" th:text="${p.title}" style="color:var(--primary-dk); text-decoration:none; font-weight:500;"></a></td>
-                            <td style="color:var(--muted); font-size:11px;" th:text="${p.displayBoardName}"></td>
-                            <td class="r" style="color:var(--danger);" th:text="${p.likeCount}"></td>
-                            <td class="r" style="color:var(--primary-dk);" th:text="${p.scrapCount}"></td>
-                            <td class="r" style="color:var(--muted);" th:text="${p.commentCount}"></td>
+                            <td><a th:href="@{/admin/posts/{id}(id=${p.id})}" th:text="${p.title}" class="rank-link"></a></td>
+                            <td class="hint" th:text="${p.displayBoardName}"></td>
+                            <td class="r val-danger" th:text="${p.likeCount}"></td>
+                            <td class="r val-primary-dk" th:text="${p.scrapCount}"></td>
+                            <td class="r td-muted" th:text="${p.commentCount}"></td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(contentTrend.topPostsByLike())}">
-                            <td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">최근 30일 게시글이 없습니다.</td>
+                            <td colspan="6" class="td-empty-center">최근 30일 게시글이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>
