@@ -1212,8 +1212,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ── 빈 상태 CTA ── */
 .empty-row td a.empty-cta { margin-left: 10px; font-size: 12px; }
 
-/* ── 인증 목록 검색 바 ── */
-.cert-search-bar { padding: 12px 22px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
 
 /* ── 아티스트 사진 관리 ── */
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 20px; }
@@ -1282,8 +1280,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ── 아티스트 목록 ── */
 .genre-active-label { font-size: 12px; font-weight: 500; color: var(--primary); margin-left: 6px; }
 .filter-bar { padding: 12px 22px 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.search-wrap { padding: 12px 22px; border-bottom: 1px solid var(--border); }
-.search-wrap form { display: flex; gap: 8px; align-items: center; }
 .search-input { flex: 1; max-width: 280px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; }
 .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; background: var(--purple-lt); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .avatar-cell .cell-secondary { margin-top: 4px; }
@@ -1326,7 +1322,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .td-link:hover  { text-decoration: underline; }
 .cell-link      { font-size: 14px; font-weight: 600; text-decoration: none; color: var(--text); }
 .cell-link:hover { text-decoration: underline; }
-.cert-search-bar form { display: flex; gap: 8px; align-items: center; }
 .card-padded    { padding: 24px; }
 .cert-detail-wrap  { display: flex; gap: 32px; flex-wrap: wrap; }
 .cert-photo-col    { flex: 0 0 360px; }

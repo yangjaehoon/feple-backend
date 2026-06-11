@@ -14,7 +14,7 @@
 
         <div class="card">
             <!-- 필터 탭 -->
-            <div class="status-tab-bar">
+            <div class="type-tab-wrap">
                 <a th:href="@{/admin/users(page=0,filter='',sort=${sort},keyword=${keyword})}"
                    th:classappend="${filter == '' or filter == null} ? ' active' : ''"
                    class="type-tab">
