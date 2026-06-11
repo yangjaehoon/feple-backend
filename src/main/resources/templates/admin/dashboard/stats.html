@@ -204,7 +204,7 @@
                             <tr th:each="f, stat : ${contentTrend.upcomingHotFestivals()}">
                                 <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
                                 <td><a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" class="rank-link"></a></td>
-                                <td class="r"><span class="days-badge" th:text="${#temporals.format(f.startDate, 'M/d') + ' 시작'}"></span></td>
+                                <td class="r"><span class="badge badge-success" th:text="${#temporals.format(f.startDate, 'M/d') + ' 시작'}"></span></td>
                                 <td class="r val-danger" th:text="${f.likeCount}"></td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(contentTrend.upcomingHotFestivals())}">

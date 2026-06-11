@@ -837,7 +837,6 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 .date-input:focus { border-color: var(--primary); }
 
 .traffic-badge { display: inline-block; padding: 2px 7px; background: var(--danger-lt); color: var(--danger); border-radius: 10px; font-size: 10px; font-weight: 700; }
-.days-badge    { display: inline-block; padding: 2px 7px; background: #DCFCE7; color: #166534; border-radius: 10px; font-size: 10px; font-weight: 700; }
 
 /* ============================================================
    FESTIVAL DETAIL — STAGES
@@ -909,13 +908,13 @@ details[open] .summary-arrow { transform: rotate(180deg); }
    REPORT LIST
    ============================================================ */
 .type-tab-wrap { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); padding: 0 22px; align-items: center; }
-.reason-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.reason-badge,
+.status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .reason-SPAM           { background: var(--accent-lt); color: var(--warning-text); }
 .reason-ABUSE          { background: var(--danger-lt); color: var(--danger); }
 .reason-OBSCENE        { background: #fce7f3; color: #9d174d; }
 .reason-MISINFORMATION { background: #e0f2fe; color: #0c4a6e; }
 .reason-OTHER          { background: var(--border); color: var(--text-2); }
-.status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .status-PENDING      { background: var(--accent-lt); color: var(--warning-text); }
 .status-POST_DELETED { background: var(--success-lt); color: #155724; }
 .status-DISMISSED    { background: var(--border); color: var(--text-2); }
@@ -973,14 +972,14 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .count-badge        { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .count-badge-yellow { background: var(--accent-lt); color: var(--warning-text); }
 .count-badge-red    { background: var(--danger-lt); color: var(--danger); }
-.count-badge-blue    { background: #D1ECF1; color: #0C5460; }
+.count-badge-blue    { background: var(--primary-lt); color: var(--primary-dk); }
 .count-badge-neutral { background: var(--border); color: var(--text-2); }
 
 /* ============================================================
    ADMIN ACCOUNTS — 역할 / 권한 배지
    ============================================================ */
 .role-badge       { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.role-SUPER_ADMIN { background: #FEF3C7; color: var(--warning-text); }
+.role-SUPER_ADMIN { background: var(--accent-lt); color: var(--warning-text); }
 .role-MANAGER     { background: #EFF6FF; color: #1D4ED8; }
 .perm-tag         { display: inline-block; padding: 2px 8px; border-radius: 10px; background: #F1F5F9; color: #475569; font-size: 10px; font-weight: 600; margin: 1px; }
 .status-active    { color: var(--success); font-weight: 700; font-size: 12px; }
@@ -1007,10 +1006,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .url-row input { flex: 1; padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); outline: none; transition: border-color .15s; }
 .url-row input:focus { border-color: var(--primary); }
 .url-hint { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
-.badge-pending  { background: var(--accent-lt); color: var(--warning-text); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.badge-approved { background: #D1FAE5; color: #065F46; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.badge-rejected { background: var(--danger-lt); color: var(--danger-text); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.badge-source   { background: var(--primary-lt); color: var(--primary-dk); padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
 .empty-crawl { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 13px; }
 .empty-crawl .empty-icon { font-size: 36px; margin-bottom: 10px; }
 .ocr-upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 24px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; margin-bottom: 20px; }
