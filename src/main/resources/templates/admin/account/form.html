@@ -52,7 +52,7 @@
                     <div class="form-section-title">기본 정보</div>
                     <div class="form-row">
                         <div class="field-group">
-                            <label class="field-label">아이디<span class="required">*</span></label>
+                            <label class="field-label">아이디<span class="required-star">*</span></label>
                             <input class="form-input"
                                    type="text" name="username"
                                    th:value="${account != null} ? ${account.username} : ''"
@@ -77,7 +77,7 @@
                         <div class="field-group">
                             <label class="field-label">
                                 비밀번호
-                                <span class="required" th:if="${account == null}">*</span>
+                                <span class="required-star" th:if="${account == null}">*</span>
                             </label>
                             <input class="form-input"
                                    type="password" name="password"
