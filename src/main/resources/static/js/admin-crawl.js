@@ -48,7 +48,7 @@
         var headers = { 'Content-Type': 'application/json' };
         headers[csrfHeader] = csrf;
 
-        fetch('/admin/crawl/scrape', {
+        fetch(CrawlUrls.scrape, {
             method: 'POST', headers: headers,
             body: JSON.stringify({ url: url, source: source })
         })
@@ -122,7 +122,7 @@
         var headers = { 'Content-Type': 'application/json' };
         headers[csrfHeader] = csrf;
 
-        fetch('/admin/crawl/scrape/apply', {
+        fetch(CrawlUrls.scrapeApply, {
             method: 'POST', headers: headers,
             body: JSON.stringify({
                 title:       title,
@@ -144,7 +144,7 @@
             btn.innerHTML = '페스티벌 등록하기';
             var el = document.getElementById('scrapeApplyResult');
             el.className = 'apply-result success';
-            el.innerHTML = '페스티벌이 등록되었습니다. <a href="/admin/festivals/' + result.festivalId + '" style="color:#065F46; text-decoration:underline; font-weight:700;">상세 보기 →</a>';
+            el.innerHTML = '페스티벌이 등록되었습니다. <a href="' + CrawlUrls.festivalDetailBase + '/' + result.festivalId + '" style="color:#065F46; text-decoration:underline; font-weight:700;">상세 보기 →</a>';
             el.style.display = 'block';
         })
         .catch(function (err) {
@@ -164,7 +164,7 @@
     });
 
     /* ── 페스티벌 목록 로드 ── */
-    fetch('/admin/crawl/festivals')
+    fetch(CrawlUrls.festivals)
         .then(function (r) { return r.json(); })
         .then(function (festivals) {
             var sel = document.getElementById('selFestival');
@@ -201,8 +201,8 @@
         dateInput.disabled = false;
 
         Promise.all([
-            fetch('/admin/crawl/festivals/' + fid + '/artists').then(function (r) { return r.json(); }),
-            fetch('/admin/crawl/festivals/' + fid + '/stages').then(function (r) { return r.json(); })
+            fetch(CrawlUrls.festivals + '/' + fid + '/artists').then(function (r) { return r.json(); }),
+            fetch(CrawlUrls.festivals + '/' + fid + '/stages').then(function (r) { return r.json(); })
         ]).then(function (results) {
             artistNames = results[0];
             stageNames  = results[1];
@@ -284,7 +284,7 @@
         var headers = {};
         headers[csrfHeader] = csrf;
 
-        fetch('/admin/crawl/ocr', { method: 'POST', headers: headers, body: formData })
+        fetch(CrawlUrls.ocr, { method: 'POST', headers: headers, body: formData })
             .then(function (r) {
                 clearInterval(fakeTimer);
                 progressFill.style.width = '100%';
@@ -426,7 +426,7 @@
         var headers = { 'Content-Type': 'application/json' };
         headers[csrfHeader] = csrf;
 
-        fetch('/admin/crawl/ocr/apply', {
+        fetch(CrawlUrls.ocrApply, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({ festivalId: parseInt(fid), entries: entries })

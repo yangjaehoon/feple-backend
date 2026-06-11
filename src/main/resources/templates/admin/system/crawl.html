@@ -288,6 +288,18 @@
     <button class="toast-close" onclick="hideToast()">&#x2715;</button>
 </div>
 
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.CrawlUrls = {
+    scrape:             /*[[@{/admin/crawl/scrape}]]*/ '',
+    scrapeApply:        /*[[@{/admin/crawl/scrape/apply}]]*/ '',
+    festivals:          /*[[@{/admin/crawl/festivals}]]*/ '',
+    ocr:                /*[[@{/admin/crawl/ocr}]]*/ '',
+    ocrApply:           /*[[@{/admin/crawl/ocr/apply}]]*/ '',
+    festivalDetailBase: /*[[@{/admin/festivals}]]*/ ''
+};
+/*]]>*/
+</script>
 <script th:src="@{/js/admin-crawl.js}"></script>
 </body>
 </html>

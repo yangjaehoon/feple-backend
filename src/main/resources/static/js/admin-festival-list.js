@@ -47,7 +47,7 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
         var headers = {};
         headers[csrfHeader] = csrfToken;
 
-        fetch('/admin/festivals/' + festivalId + '/checklist?field=' + field, {
+        fetch(FestivalListUrls.festivalBase + '/' + festivalId + '/checklist?field=' + field, {
             method: 'POST',
             headers: headers
         })
@@ -87,7 +87,7 @@ function saveMemo(festivalId, memo) {
     headers[csrfHeader] = csrfToken;
     var body = new URLSearchParams();
     body.append('memo', memo);
-    fetch('/admin/festivals/' + festivalId + '/checklist/memo', {
+    fetch(FestivalListUrls.festivalBase + '/' + festivalId + '/checklist/memo', {
         method: 'POST',
         headers: headers,
         body: body

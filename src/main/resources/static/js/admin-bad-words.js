@@ -4,7 +4,7 @@ async function scanWord(btn) {
     resultEl.style.display = 'block';
     resultEl.textContent = '스캔 중...';
     try {
-        const res = await fetch('/admin/bad-words/scan?word=' + encodeURIComponent(word));
+        const res = await fetch(BadWordsUrls.scan + '?word=' + encodeURIComponent(word));
         const data = await res.json();
         if (res.ok) {
             const total = data.postCount + data.commentCount;

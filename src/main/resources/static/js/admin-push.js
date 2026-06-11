@@ -27,7 +27,7 @@ async function searchNickname() {
     resultEl.textContent = '검색 중...';
 
     try {
-        const res = await fetch('/admin/push/search-user?nickname=' + encodeURIComponent(nickname));
+        const res = await fetch(PushUrls.searchUser + '?nickname=' + encodeURIComponent(nickname));
         const data = await res.json();
         if (res.ok) {
             resultEl.style.color = 'var(--primary)';

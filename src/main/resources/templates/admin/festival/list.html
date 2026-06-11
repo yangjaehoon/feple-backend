@@ -207,6 +207,11 @@
 
 <div class="save-toast" id="saveToast">저장됨</div>
 
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.FestivalListUrls = { festivalBase: /*[[@{/admin/festivals}]]*/ '' };
+/*]]>*/
+</script>
 <script th:src="@{/js/admin-festival-list.js}"></script>
 
 </body>

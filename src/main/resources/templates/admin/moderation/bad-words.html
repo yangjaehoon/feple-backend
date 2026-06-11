@@ -74,6 +74,11 @@
         </div>
     </div>
 </div>
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.BadWordsUrls = { scan: /*[[@{/admin/bad-words/scan}]]*/ '' };
+/*]]>*/
+</script>
 <script th:src="@{/js/admin-bad-words.js}"></script>
 </body>
 </html>

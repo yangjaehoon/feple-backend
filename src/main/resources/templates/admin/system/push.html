@@ -205,6 +205,11 @@
     </div>
 </div>
 
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.PushUrls = { searchUser: /*[[@{/admin/push/search-user}]]*/ '' };
+/*]]>*/
+</script>
 <script th:src="@{/js/admin-push.js}"></script>
 </body>
 </html>
