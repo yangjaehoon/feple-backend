@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --primary:    var(--primary);
-  --primary-dk: var(--primary-dk);
-  --accent:     var(--accent);
-  --text:       var(--text);
-  --text-2:     var(--text-2);
-  --muted:      var(--muted);
-  --border:     var(--border);
-  --danger-lt:  var(--danger-lt);
-  --success-lt: var(--success-lt);
+  --primary:    #5BC0EB;
+  --primary-dk: #3AAFD8;
+  --accent:     #FDE74C;
+  --text:       #2D3748;
+  --text-2:     #64748B;
+  --muted:      #A0AEC0;
+  --border:     #E4EDF3;
+  --danger-lt:  #FFF0F4;
+  --success-lt: #E8F9F2;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
