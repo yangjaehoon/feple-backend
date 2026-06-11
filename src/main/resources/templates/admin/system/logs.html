@@ -9,8 +9,8 @@
 
         <div class="card">
             <!-- 필터 바 -->
-            <div class="list-toolbar">
-                <form th:action="@{/admin/logs}" method="get" class="list-search-form">
+            <div class="search-bar">
+                <form th:action="@{/admin/logs}" method="get">
                     <select name="targetType" class="form-select select-auto">
                         <option value=""           th:selected="${#strings.isEmpty(targetType)}">전체 대상</option>
                         <option value="USER"        th:selected="${targetType == 'USER'}">회원</option>

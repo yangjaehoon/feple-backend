@@ -48,7 +48,7 @@
             </div>
 
             <!-- 상태 탭 + CSV 내보내기 -->
-            <div class="status-tab-bar">
+            <div class="type-tab-wrap">
                 <a th:href="@{/admin/reports(type=${type}, status='PENDING', page=0)}"
                    th:classappend="${status == 'PENDING'} ? ' active'"
                    class="type-tab">
@@ -63,7 +63,7 @@
                 </a>
                 <a th:if="${type == 'post' or type == 'comment'}"
                    th:href="@{/admin/export/reports.csv(type=${type})}"
-                   class="btn btn-secondary btn-sm export-btn-right">
+                   class="btn btn-secondary btn-sm type-tab-end">
                     CSV 내보내기
                 </a>
             </div>

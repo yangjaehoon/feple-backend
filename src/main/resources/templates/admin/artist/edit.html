@@ -6,11 +6,11 @@
 <div class="main-content">
     <div th:replace="~{admin/fragments :: pageHeader2(${artist.name} + ' 수정', '아티스트', @{/admin/artists}, '수정')}"></div>
     <div class="content-area">
-        <div th:if="${errors}" class="alert alert-danger card-narrow">
+        <div th:if="${errors}" class="alert alert-danger card-form">
             <p th:each="err : ${errors}" class="form-error-item" th:text="${err}"></p>
         </div>
 
-        <div class="card card-narrow">
+        <div class="card card-form">
             <div class="card-header">
                 <div class="card-title">✏ 아티스트 수정</div>
             </div>

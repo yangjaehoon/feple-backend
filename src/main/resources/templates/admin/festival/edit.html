@@ -6,11 +6,11 @@
 <div class="main-content">
     <div th:replace="~{admin/fragments :: pageHeader2('페스티벌 수정', '페스티벌', @{/admin/festivals}, '수정')}"></div>
     <div class="content-area">
-        <div th:if="${errors}" class="alert alert-danger card-narrow">
+        <div th:if="${errors}" class="alert alert-danger card-form">
             <p th:each="err : ${errors}" class="form-error-item">⚠ <span th:text="${err}"></span></p>
         </div>
 
-        <div class="card card-narrow">
+        <div class="card card-form">
             <div class="card-header">
                 <div class="card-title">✏ 페스티벌 수정</div>
             </div>

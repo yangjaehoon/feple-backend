@@ -888,7 +888,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ============================================================
    REPORT LIST
    ============================================================ */
-.type-tab-wrap { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); padding: 0 22px; }
+.type-tab-wrap { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); padding: 0 22px; align-items: center; }
 .reason-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .reason-SPAM           { background: var(--accent-lt); color: #856404; }
 .reason-ABUSE          { background: var(--danger-lt); color: var(--danger); }
@@ -1068,7 +1068,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── 카드 공통 ── */
 .card-mb     { margin-bottom: 24px; }
-.card-narrow { max-width: 560px; }
 .card-title-note { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 6px; }
 .card-empty  { padding: 32px; text-align: center; color: var(--muted); font-size: 13px; }
 .form-error-item { margin: 0 0 4px; font-size: 13px; }
@@ -1214,8 +1213,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .type-tab-end { margin-left: auto; }
 
 /* ── 신고 관리 ── */
-.status-tab-bar      { padding: 0 22px; border-bottom: 1px solid var(--border); display: flex; gap: 4px; align-items: center; }
-.export-btn-right    { margin-left: auto; }
 .report-title-link   { font-size: 14px; font-weight: 600; max-width: 300px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; color: var(--text); }
 .report-title-link:hover { text-decoration: underline; }
 .report-resolved     { color: var(--muted); font-size: 12px; }
@@ -1224,9 +1221,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .report-sep          { margin: 0 4px; color: var(--muted); }
 .report-photo-sub    { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
 .report-content-cell { font-size: 14px; font-weight: 600; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.list-toolbar       { padding: 14px 22px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
 .list-csv-row       { padding: 8px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; }
-.list-search-form   { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .stat-num           { font-size: 22px; font-weight: 800; }
 .stat-num-primary   { color: var(--primary); }
 .stat-num-danger    { color: var(--danger); }
@@ -1315,7 +1310,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .label-note       { font-weight: 400; color: var(--muted); font-size: 12px; }
 .genre-check-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .genre-check-label { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 13px; }
-.card-narrow      { max-width: 640px; }
 .card-padded-lg   { padding: 28px; }
 
 /* ── festival/artist-form.html ── */

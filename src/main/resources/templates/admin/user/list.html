@@ -27,8 +27,8 @@
             </div>
 
             <!-- 검색 + 정렬 바 -->
-            <div class="list-toolbar">
-                <form th:action="@{/admin/users}" method="get" class="list-search-form">
+            <div class="search-bar">
+                <form th:action="@{/admin/users}" method="get">
                     <input type="hidden" name="filter" th:value="${filter}"/>
                     <input type="hidden" name="sort" th:value="${sort}"/>
                     <input type="text" name="keyword" th:value="${keyword}"
