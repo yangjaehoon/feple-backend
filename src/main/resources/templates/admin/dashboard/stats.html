@@ -5,14 +5,7 @@
 <div th:insert="~{admin/fragments :: navbar('stats')}"></div>
 <div class="main-content">
     <div class="page-header">
-        <div>
-            <h1 class="page-title">데이터 통계</h1>
-            <div class="breadcrumb">
-                <span>Feple Admin</span>
-                <span class="bc-sep">›</span>
-                <span>데이터 통계</span>
-            </div>
-        </div>
+        <div th:replace="~{admin/fragments :: pageHeaderInner('데이터 통계', '데이터 통계')}"></div>
         <div class="header-tab-group">
             <button class="header-tab-btn active" data-tab="user-stats">사용자 통계</button>
             <button class="header-tab-btn" data-tab="content-trend">콘텐츠 트렌드 분석</button>

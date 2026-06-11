@@ -6,12 +6,7 @@
 <div class="main-content">
 
     <div class="page-header">
-        <div>
-            <h1 class="page-title">크롤링 대시보드</h1>
-            <div class="breadcrumb">
-                <span>Feple Admin</span><span class="bc-sep">›</span><span>크롤링 대시보드</span>
-            </div>
-        </div>
+        <div th:replace="~{admin/fragments :: pageHeaderInner('크롤링 대시보드', '크롤링 대시보드')}"></div>
         <div class="header-tab-group">
             <button class="header-tab-btn active" data-tab="scraping">🕸️ 웹 스크래핑</button>
             <button class="header-tab-btn" data-tab="ocr">🖼️ OCR 파싱</button>
@@ -57,14 +52,14 @@
                 <div class="crawl-card-title">2. 수집 결과</div>
 
                 <!-- 초기 빈 상태 -->
-                <div class="empty-crawl" id="scrapeEmptyState">
+                <div class="empty-state" id="scrapeEmptyState">
                     <div class="empty-icon">🕸️</div>
                     <div>아직 수집된 데이터가 없습니다.</div>
                     <div class="hint mt-4">URL을 입력하고 스크래핑을 시작하세요.</div>
                 </div>
 
                 <!-- 로딩 -->
-                <div id="scrapeLoading" class="empty-crawl" style="display:none;">
+                <div id="scrapeLoading" class="empty-state" style="display:none;">
                     <div class="spinner-lg"></div>
                     <div class="scrape-loading-txt">페이지 분석 중...</div>
                 </div>
@@ -226,7 +221,7 @@
                     ⚠️ 확신도가 낮은 항목(🔴)은 수동으로 검토 후 적용하세요.
                 </div>
 
-                <div class="empty-crawl" id="ocrEmptyState">
+                <div class="empty-state" id="ocrEmptyState">
                     <div class="empty-icon">🤖</div>
                     <div>이미지를 업로드하면 AI가 타임테이블을 자동으로 파싱합니다.</div>
                 </div>

@@ -5,14 +5,7 @@
 <div th:insert="~{admin/fragments :: navbar('home')}"></div>
 <div class="main-content">
     <div class="page-header">
-        <div>
-            <h1 class="page-title">대시보드</h1>
-            <div class="breadcrumb">
-                <span>Feple Admin</span>
-                <span class="bc-sep">›</span>
-                <span>대시보드</span>
-            </div>
-        </div>
+        <div th:replace="~{admin/fragments :: pageHeaderInner('대시보드', '대시보드')}"></div>
         <div class="page-actions">
             <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌</a>
             <a class="btn btn-secondary" th:href="@{/admin/artists/new}">+ 아티스트</a>
@@ -47,7 +40,7 @@
                             <div class="act-meta"
                                  th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
-                        <div th:if="${#lists.isEmpty(dashboard.pendingCerts)}" class="act-empty">
+                        <div th:if="${#lists.isEmpty(dashboard.pendingCerts)}" class="empty-state">
                             대기 중인 인증 신청이 없습니다.
                         </div>
                     </div>
@@ -75,7 +68,7 @@
                             <div class="act-meta"
                                  th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
-                        <div th:if="${#lists.isEmpty(dashboard.pendingReports)}" class="act-empty">
+                        <div th:if="${#lists.isEmpty(dashboard.pendingReports)}" class="empty-state">
                             대기 중인 신고가 없습니다.
                         </div>
                     </div>
@@ -103,7 +96,7 @@
                             <div class="act-meta"
                                  th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'MM-dd HH:mm') : ''}"></div>
                         </div>
-                        <div th:if="${#lists.isEmpty(dashboard.pendingSongRequests)}" class="act-empty">
+                        <div th:if="${#lists.isEmpty(dashboard.pendingSongRequests)}" class="empty-state">
                             대기 중인 노래 요청이 없습니다.
                         </div>
                     </div>
@@ -129,7 +122,7 @@
                             <div class="act-meta"
                                  th:text="${#temporals.format(s.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
-                        <div th:if="${#lists.isEmpty(dashboard.pendingArtistSuggestions)}" class="act-empty">
+                        <div th:if="${#lists.isEmpty(dashboard.pendingArtistSuggestions)}" class="empty-state">
                             대기 중인 아티스트 신청이 없습니다.
                         </div>
                     </div>
@@ -154,7 +147,7 @@
                             </div>
                             <span class="member-date">신규</span>
                         </div>
-                        <div th:if="${#lists.isEmpty(dashboard.recentUsers)}" class="act-empty">
+                        <div th:if="${#lists.isEmpty(dashboard.recentUsers)}" class="empty-state">
                             가입한 회원이 없습니다.
                         </div>
                     </div>
@@ -246,7 +239,7 @@
                                 &nbsp;💬 <span th:text="${post.commentCount}"></span>
                             </div>
                         </div>
-                        <div th:if="${#lists.isEmpty(dashboard.hotPosts)}" class="act-empty">
+                        <div th:if="${#lists.isEmpty(dashboard.hotPosts)}" class="empty-state">
                             최근 7일 게시글이 없습니다.
                         </div>
                     </div>
@@ -299,7 +292,7 @@
                             <div class="act-meta"
                                  th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm')}"></div>
                         </div>
-                        <div th:if="${#lists.isEmpty(recentLogs)}" class="act-empty">
+                        <div th:if="${#lists.isEmpty(recentLogs)}" class="empty-state">
                             기록된 활동이 없습니다.
                         </div>
                     </div>
