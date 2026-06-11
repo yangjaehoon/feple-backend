@@ -1,10 +1,8 @@
 /* ============================================================
-   Feple Admin ✨ Cute Dashboard
-   Primary #5BC0EB  |  Accent #FDE74C  |  Font: Nunito
+   Feple Admin Dashboard
+   Primary #5BC0EB  |  Accent #FDE74C
    Bootstrap 5 + Custom Theme
    ============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 
 /* ── Variables ── */
 :root {
@@ -61,7 +59,7 @@
 /* ── Base ── */
 *, *::before, *::after { box-sizing: border-box; }
 body {
-  font-family: 'Nunito', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
