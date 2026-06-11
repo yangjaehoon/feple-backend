@@ -80,7 +80,7 @@
                                 <form th:action="@{/admin/accounts/{id}/delete(id=${acc.id})}"
                                       method="post"
                                       th:if="${acc.username != #authentication.name}">
-                                    <button type="submit" class="btn btn-danger btn-sm"
+                                    <button type="submit" class="btn btn-ghost-danger btn-sm"
                                             data-confirm="이 계정을 삭제하시겠습니까?">삭제</button>
                                 </form>
 

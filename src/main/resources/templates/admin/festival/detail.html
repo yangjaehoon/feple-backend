@@ -138,7 +138,7 @@
                             <td>
                                 <button type="submit"
                                         th:attr="form='delete-af-' + ${af.artistFestivalId}"
-                                        class="btn btn-danger btn-sm"
+                                        class="btn btn-ghost-danger btn-sm"
                                         data-confirm="삭제하시겠습니까?">삭제</button>
                             </td>
                         </tr>
@@ -327,7 +327,7 @@
                                 <td>
                                     <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
                                           method="post">
-                                        <button type="submit" class="btn btn-danger btn-sm"
+                                        <button type="submit" class="btn btn-ghost-danger btn-sm"
                                                 data-confirm="삭제하시겠습니까?">삭제</button>
                                     </form>
                                 </td>
@@ -417,7 +417,7 @@
                             <td class="hint" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
                             <td>
                                 <form th:action="@{/admin/festivals/{fId}/booths/{bId}/delete(fId=${festival.id},bId=${booth.id})}" method="post">
-                                    <button type="submit" class="btn btn-danger btn-sm" data-confirm="삭제하시겠습니까?">삭제</button>
+                                    <button type="submit" class="btn btn-ghost-danger btn-sm" data-confirm="삭제하시겠습니까?">삭제</button>
                                 </form>
                             </td>
                         </tr>
