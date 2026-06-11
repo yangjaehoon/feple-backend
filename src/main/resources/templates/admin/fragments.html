@@ -6,15 +6,22 @@
 <!-- ── 공통 <head> ── -->
 <head th:fragment="head(pageTitle)">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title th:text="'Feple Admin — ' + ${pageTitle}">Feple Admin</title>
+    <link rel="icon" th:href="@{/img/feple_logo.png}" type="image/png">
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 
 <!-- ── 사이드바 네비게이션 + 전역 스크립트 ── -->
 <th:block th:fragment="navbar(active)">
+<div class="topbar">
+    <button class="topbar-menu-btn" aria-label="메뉴">&#9776;</button>
+    <span class="topbar-title">fe<span>ple</span> Admin</span>
+</div>
+<div class="sb-overlay"></div>
 <aside class="sidebar">
 
     <!-- 로고 -->
