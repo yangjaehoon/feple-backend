@@ -36,6 +36,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
     Page<Comment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
+    // 관리자 상세 — userId 직접 사용 (User 엔티티 사전 조회 불필요)
+    @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
+    @Query(value = "SELECT c FROM Comment c WHERE c.user.id = :userId ORDER BY c.createdAt DESC",
+           countQuery = "SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId")
+    Page<Comment> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
+
     long countByUser(User user);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId")

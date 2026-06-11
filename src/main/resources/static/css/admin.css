@@ -1371,6 +1371,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .festival-item     { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); }
 .festival-link     { font-weight: 600; font-size: 13.5px; text-decoration: none; color: var(--text); }
 .festival-link:hover { text-decoration: underline; }
+.td-muted           { color: var(--muted); }
+.td-date            { color: var(--muted); white-space: nowrap; font-size: 12.5px; }
 .detail-title-link  { max-width: 360px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; color: var(--text); }
 .detail-title-link:hover { text-decoration: underline; }
 .detail-content-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
