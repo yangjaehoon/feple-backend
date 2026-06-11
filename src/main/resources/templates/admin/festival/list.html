@@ -5,14 +5,7 @@
 <div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
 <div class="main-content">
     <div class="page-header">
-        <div>
-            <h1 class="page-title">페스티벌 목록</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <span>페스티벌</span>
-            </div>
-        </div>
+        <div th:replace="~{admin/fragments :: pageHeaderInner('페스티벌 목록', '페스티벌')}"></div>
         <div class="page-actions">
             <div class="header-tab-group">
                 <button class="header-tab-btn" data-tab="list">페스티벌 목록</button>

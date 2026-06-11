@@ -6,14 +6,7 @@
 <div th:insert="~{admin/fragments :: navbar('accounts')}"></div>
 <div class="main-content">
     <div class="page-header">
-        <div>
-            <h1 class="page-title">관리자 계정 관리</h1>
-            <div class="breadcrumb">
-                <a th:href="@{/admin}">대시보드</a>
-                <span class="bc-sep">›</span>
-                <span>관리자 계정</span>
-            </div>
-        </div>
+        <div th:replace="~{admin/fragments :: pageHeaderInner('관리자 계정 관리', '관리자 계정')}"></div>
         <a th:href="@{/admin/accounts/new}" class="btn btn-primary">+ 새 관리자 추가</a>
     </div>
     <div class="content-area">

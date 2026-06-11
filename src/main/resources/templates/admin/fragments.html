@@ -155,6 +155,16 @@
     </div>
 </div>
 
+<!-- ── 페이지 헤더 내부 (1단계, outer div 없음 — page-actions 포함 시 사용) ── -->
+<div th:fragment="pageHeaderInner(title, breadcrumb)">
+    <h1 class="page-title" th:text="${title}"></h1>
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">대시보드</a>
+        <span class="bc-sep">›</span>
+        <span th:text="${breadcrumb}"></span>
+    </div>
+</div>
+
 <!-- ── 페이지 헤더 (2단계 브레드크럼) ── -->
 <div th:fragment="pageHeader2(title, parentLabel, parentUrl, current)" class="page-header">
     <div>
@@ -166,6 +176,18 @@
             <span class="bc-sep">›</span>
             <span th:text="${current}"></span>
         </div>
+    </div>
+</div>
+
+<!-- ── 페이지 헤더 내부 (2단계, outer div 없음 — page-actions 포함 시 사용) ── -->
+<div th:fragment="pageHeader2Inner(title, parentLabel, parentUrl, current)">
+    <h1 class="page-title" th:text="${title}"></h1>
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">대시보드</a>
+        <span class="bc-sep">›</span>
+        <a th:href="${parentUrl}" th:text="${parentLabel}"></a>
+        <span class="bc-sep">›</span>
+        <span th:text="${current}"></span>
     </div>
 </div>
 
