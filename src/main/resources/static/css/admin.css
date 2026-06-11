@@ -229,12 +229,6 @@ body {
 .si-green  { background: var(--success-lt); }
 .si-orange { background: var(--warning-lt); }
 .si-yellow { background: var(--accent-lt); }
-/* aliases from old CSS */
-.stat-icon-blue   { background: var(--primary-lt); }
-.stat-icon-pink   { background: var(--purple-lt); }
-.stat-icon-mint   { background: var(--success-lt); }
-.stat-icon-orange { background: var(--warning-lt); }
-.stat-icon-purple { background: var(--purple-lt); }
 .stat-value { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -.5px; }
 .stat-label { font-size: 12px; color: var(--muted); margin-top: 3px; font-weight: 600; }
 
