@@ -39,13 +39,20 @@
                     <div>
                         <div class="user-name-row">
                             <div class="user-name" th:text="${user.nickname}"></div>
-                            <span th:if="${user.admin}" class="badge badge-danger">🛡️ 관리자</span>
+                            <span th:if="${user.admin}"  class="badge badge-danger">🛡️ 관리자</span>
                             <span th:if="${user.artist}" class="badge badge-primary">🎤 아티스트</span>
+                            <span th:if="${user.banned}" class="badge badge-ban">정지</span>
                         </div>
                         <div class="user-meta-lg" th:text="${user.email}"></div>
                         <div class="user-meta">ID: <span th:text="${user.id}"></span></div>
                         <div class="user-meta" th:if="${user.createdAt != null}">
                             가입일: <span th:text="${#temporals.format(user.createdAt, 'yyyy년 MM월 dd일 HH:mm')}"></span>
+                        </div>
+                        <div class="user-meta" th:if="${user.provider != null}">
+                            로그인: <span th:text="${user.provider}"></span>
+                        </div>
+                        <div class="user-meta" th:if="${user.bio != null and !#strings.isEmpty(user.bio)}">
+                            소개: <span th:text="${user.bio}"></span>
                         </div>
                     </div>
                 </div>
@@ -61,12 +68,24 @@
                         <div class="stat-label">댓글</div>
                     </div>
                     <div class="stat-item">
+                        <div class="stat-num stat-num-primary" th:text="${stats.likedPostCount}">0</div>
+                        <div class="stat-label">게시글 좋아요</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num stat-num-primary" th:text="${stats.scrapCount}">0</div>
+                        <div class="stat-label">스크랩</div>
+                    </div>
+                    <div class="stat-item">
                         <div class="stat-num stat-num-primary" th:text="${#lists.size(likedFestivals)}">0</div>
                         <div class="stat-label">페스티벌 좋아요</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-num stat-num-primary" th:text="${#lists.size(followedArtists)}">0</div>
                         <div class="stat-label">팔로우 아티스트</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num stat-num-primary" th:text="${stats.certificationCount}">0</div>
+                        <div class="stat-label">인증</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-num"

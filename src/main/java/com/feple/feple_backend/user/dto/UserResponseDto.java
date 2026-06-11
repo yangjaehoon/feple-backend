@@ -1,6 +1,7 @@
 package com.feple.feple_backend.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.UserRole;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +31,8 @@ public class UserResponseDto {
 
     /** 관리자 페이지에서만 사용. null이면 정상 계정. */
     private LocalDateTime deletedAt;
+    /** 관리자 페이지에서만 사용. */
+    private AuthProvider provider;
 
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
