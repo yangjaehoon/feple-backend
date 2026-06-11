@@ -1,3 +1,4 @@
+(function () {
 /* ── 탭 전환 ── */
 function switchTab(tabName) {
     document.querySelectorAll('.header-tab-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -113,3 +114,4 @@ function updateProgress(row) {
         row.classList.remove('all-done');
     }
 }
+})();

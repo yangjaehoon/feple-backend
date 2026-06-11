@@ -495,6 +495,12 @@
         body.insertBefore(tr, body.firstChild);
     }
 
+    function hideToast() {
+        document.getElementById('applyToast').classList.remove('visible');
+    }
+
+    document.getElementById('applyToastClose').addEventListener('click', hideToast);
+
     function esc(str) {
         if (!str) return '';
         return String(str)
@@ -502,7 +508,3 @@
             .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 })();
-
-function hideToast() {
-    document.getElementById('applyToast').classList.remove('visible');
-}
