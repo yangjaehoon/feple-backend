@@ -11,6 +11,7 @@ import com.feple.feple_backend.post.service.PostService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -46,6 +47,7 @@ public class PostAdminController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public String listPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "") String filter,
@@ -73,6 +75,7 @@ public class PostAdminController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public String postDetail(@PathVariable Long id,
                              @RequestParam(defaultValue = "") String filter,
                              @RequestParam(required = false) Long artistId,

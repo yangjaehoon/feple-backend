@@ -31,10 +31,18 @@ async function searchNickname() {
         const data = await res.json();
         if (res.ok) {
             resultEl.style.color = 'var(--primary)';
-            resultEl.innerHTML =
-                '<strong>' + data.nickname + '</strong> (ID: ' + data.id + ')' +
-                ' &nbsp;<button type="button" onclick="fillUserId(' + data.id + ')" ' +
-                'style="font-size:12px; padding:2px 10px;" class="btn btn-secondary">이 ID로 설정</button>';
+            resultEl.textContent = '';
+            var strong = document.createElement('strong');
+            strong.textContent = data.nickname;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-secondary';
+            btn.style.cssText = 'font-size:12px; padding:2px 10px;';
+            btn.textContent = '이 ID로 설정';
+            btn.addEventListener('click', function () { fillUserId(data.id); });
+            resultEl.appendChild(strong);
+            resultEl.appendChild(document.createTextNode(' (ID: ' + data.id + ')  '));
+            resultEl.appendChild(btn);
         } else {
             resultEl.style.color = 'var(--danger, #dc3545)';
             resultEl.textContent = data.error || '사용자를 찾을 수 없습니다.';

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ public class AdminHomeController {
     private final AdminAccountService adminAccountService;
 
     @GetMapping
+    @Transactional(readOnly = true)
     public String adminHome(Authentication authentication, Model model) {
         model.addAttribute("dashboard", dashboardAssembler.assemble());
         model.addAttribute("recentLogs", adminLogService.getRecentLogs());

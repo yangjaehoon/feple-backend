@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -33,6 +34,7 @@ public class FestivalArtistAdminController {
     private final ArtistFestivalService artistFestivalService;
 
     @GetMapping("/new")
+    @Transactional(readOnly = true)
     public String addArtistForm(@PathVariable Long festivalId, Model model) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
         List<ArtistResponseDto> allArtists = artistService.getAllArtistsSortedByName();

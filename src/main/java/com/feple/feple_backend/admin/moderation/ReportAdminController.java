@@ -8,6 +8,7 @@ import com.feple.feple_backend.admin.service.ReportSearchParams;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,7 @@ public class ReportAdminController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public String list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "PENDING") String status,
