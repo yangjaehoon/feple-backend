@@ -10,45 +10,44 @@
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <!-- 전체 회원 공지 발송 -->
-        <div class="card" style="max-width:640px;">
+        <div class="card card-form">
             <div class="card-header">
                 <div class="card-title">전체 회원 공지 발송</div>
                 <div class="card-count" th:text="${deviceCount} + '명 수신 가능'"></div>
             </div>
-            <div style="padding:24px;">
+            <div class="card-body">
                 <form id="broadcast-form" th:action="@{/admin/push}" method="post"
                       onsubmit="return confirm('전체 ' + document.getElementById('device-count').textContent + '에게 푸시 알림을 발송하시겠습니까?')">
-                    <div style="margin-bottom:16px;">
-                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-1);">제목 *</label>
+                    <div class="form-field">
+                        <label class="form-label">제목 *</label>
                         <input type="text" name="title" required maxlength="100"
                                placeholder="알림 제목 (최대 100자)"
-                               style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px;"/>
+                               class="form-input"/>
                     </div>
-                    <div style="margin-bottom:24px;">
-                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-1);">내용 *</label>
+                    <div class="form-field-lg">
+                        <label class="form-label">내용 *</label>
                         <textarea name="body" required maxlength="300" rows="4"
                                   placeholder="알림 내용 (최대 300자)"
-                                  style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; resize:vertical;"></textarea>
+                                  class="form-textarea"></textarea>
                     </div>
-                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div class="form-footer">
                         <button type="submit" class="btn btn-primary">발송하기</button>
-                        <span id="device-count" style="font-size:13px; color:var(--muted);"
+                        <span id="device-count" class="hint"
                               th:text="${deviceCount} + '명'"></span>
-                        <span style="font-size:12px; color:var(--muted);">의 기기로 발송됩니다.</span>
+                        <span class="hint">의 기기로 발송됩니다.</span>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- 테스트 발송 -->
-        <div class="card" style="max-width:640px; margin-top:16px; border:1px dashed var(--border);">
-            <div class="card-header" style="background:var(--surface, #f8f9fa);">
-                <div class="card-title" style="color:var(--muted);">테스트 발송</div>
-                <span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px;
-                             background:var(--border); color:var(--muted); text-transform:uppercase; letter-spacing:.5px;">TEST</span>
+        <div class="card card-form card-dashed mt-16">
+            <div class="card-header card-header-muted">
+                <div class="card-title card-title-muted">테스트 발송</div>
+                <span class="badge-env">TEST</span>
             </div>
-            <div style="padding:20px 24px;">
-                <div class="note-box" style="margin:0 0 16px;">
+            <div class="card-body">
+                <div class="note-box mb-0">
                     위 카드의 <strong>제목·내용</strong>을 그대로 사용하여 특정 사용자에게만 발송합니다. 이력에 저장되지 않습니다.
                 </div>
                 <form id="test-form" th:action="@{/admin/push/test}" method="post">
@@ -56,24 +55,24 @@
                     <input type="hidden" name="body"/>
 
                     <!-- 닉네임 검색 -->
-                    <div style="margin-bottom:12px;">
-                        <label style="display:block; font-size:12px; font-weight:600; margin-bottom:5px; color:var(--text-2);">닉네임으로 검색</label>
-                        <div style="display:flex; gap:8px; align-items:center;">
+                    <div class="form-field">
+                        <label class="form-label-sub">닉네임으로 검색</label>
+                        <div class="input-flex">
                             <input type="text" id="nickname-search" placeholder="앱 닉네임 입력"
-                                   style="width:200px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px;"
+                                   class="form-input-sm w-200"
                                    onkeydown="if(event.key==='Enter'){event.preventDefault();searchNickname();}"/>
-                            <button type="button" class="btn btn-secondary" style="padding:8px 14px;" onclick="searchNickname()">검색</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="searchNickname()">검색</button>
                         </div>
-                        <div id="search-result" style="margin-top:8px; font-size:13px; display:none;"></div>
+                        <div id="search-result" class="search-result"></div>
                     </div>
 
                     <!-- 사용자 ID + 발송 -->
-                    <div style="display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
+                    <div class="form-footer-end">
                         <div>
-                            <label style="display:block; font-size:12px; font-weight:600; margin-bottom:5px; color:var(--text-2);">앱 사용자 ID</label>
+                            <label class="form-label-sub">앱 사용자 ID</label>
                             <input type="number" name="targetUserId" id="target-user-id" min="1"
                                    placeholder="예) 42"
-                                   style="width:130px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px;"/>
+                                   class="form-input-sm w-130"/>
                         </div>
                         <button type="submit"
                                 onclick="return validateTest(this.form)"
@@ -84,26 +83,23 @@
         </div>
 
         <!-- 타겟 발송 카드 -->
-        <div class="card" style="max-width:640px; margin-top:20px;">
+        <div class="card card-form mt-20">
             <div class="card-header">
                 <div class="card-title">타겟 발송</div>
             </div>
-            <div style="padding:20px 24px; display:flex; flex-direction:column; gap:20px;">
-                <div class="note-box" style="margin:0;">
+            <div class="card-body stack-20">
+                <div class="note-box mb-0">
                     위 카드에서 입력한 <strong>제목·내용</strong>을 그대로 사용합니다. 먼저 제목과 내용을 작성한 후 발송하세요. 감사 로그에 기록되며 발송 이력에는 저장되지 않습니다.
                 </div>
 
                 <!-- 아티스트 팔로워 -->
                 <div>
-                    <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">
-                        아티스트 팔로워에게 발송
-                    </div>
+                    <div class="target-label">아티스트 팔로워에게 발송</div>
                     <form th:action="@{/admin/push/artist-followers}" method="post"
-                          style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                          class="input-flex">
                         <input type="hidden" name="title" id="target-title-artist"/>
                         <input type="hidden" name="body"  id="target-body-artist"/>
-                        <select name="artistId"
-                                style="flex:1; min-width:200px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                        <select name="artistId" class="select-flex">
                             <option value="">아티스트 선택</option>
                             <option th:each="a : ${artists}" th:value="${a.id}" th:text="${a.name}"></option>
                         </select>
@@ -115,15 +111,12 @@
 
                 <!-- 페스티벌 인증자 -->
                 <div>
-                    <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">
-                        페스티벌 인증 참여자에게 발송
-                    </div>
+                    <div class="target-label">페스티벌 인증 참여자에게 발송</div>
                     <form th:action="@{/admin/push/festival-certified}" method="post"
-                          style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                          class="input-flex">
                         <input type="hidden" name="title" id="target-title-festival"/>
                         <input type="hidden" name="body"  id="target-body-festival"/>
-                        <select name="festivalId"
-                                style="flex:1; min-width:220px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                        <select name="festivalId" class="select-flex">
                             <option value="">페스티벌 선택</option>
                             <option th:each="f : ${festivals}" th:value="${f.id}" th:text="${f.title}"></option>
                         </select>
@@ -135,12 +128,13 @@
             </div>
         </div>
 
-        <div class="card" style="max-width:640px; margin-top:20px;">
+        <!-- 주의사항 -->
+        <div class="card card-form mt-20">
             <div class="card-header">
                 <div class="card-title">주의사항</div>
             </div>
-            <div style="padding:20px; font-size:13.5px; line-height:1.8; color:var(--text-2);">
-                <ul style="margin:0; padding-left:18px;">
+            <div class="note-card-body">
+                <ul class="note-list">
                     <li>앱에 로그인하여 알림 권한을 허용한 회원에게만 발송됩니다.</li>
                     <li>발송된 알림은 취소할 수 없습니다.</li>
                     <li>모든 발송 내역은 감사 로그에 기록됩니다.</li>
@@ -149,7 +143,8 @@
             </div>
         </div>
 
-        <div class="card" style="margin-top:32px;">
+        <!-- 공지 발송 이력 -->
+        <div class="card mt-32">
             <div class="card-header">
                 <div class="card-title">공지 발송 이력</div>
                 <div class="card-count" th:text="${#lists.size(history)} + '건'"></div>
@@ -157,21 +152,21 @@
             <div th:if="${#lists.isEmpty(history)}" class="card-empty">
                 발송 이력이 없습니다.
             </div>
-            <div th:unless="${#lists.isEmpty(history)}" class="table-container">
-                <table class="table">
+            <div th:unless="${#lists.isEmpty(history)}" class="table-wrap">
+                <table>
                     <thead>
                         <tr>
-                            <th style="width:160px;">발송 시각</th>
-                            <th style="width:220px;">제목</th>
+                            <th class="col-w160">발송 시각</th>
+                            <th class="col-w220">제목</th>
                             <th>내용</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="item : ${history}">
-                            <td style="color:var(--muted); font-size:13px; white-space:nowrap;"
+                            <td class="td-date"
                                 th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-                            <td style="font-weight:600;" th:text="${item.title}"></td>
-                            <td style="color:var(--text-2); font-size:13px;">
+                            <td class="td-bold" th:text="${item.title}"></td>
+                            <td class="td-body">
                                 <span th:text="${#strings.length(item.body) > 80 ? #strings.substring(item.body, 0, 80) + '…' : item.body}"></span>
                                 <button th:if="${#strings.length(item.body) > 80}"
                                         type="button"
@@ -191,21 +186,18 @@
 </div>
 
 <!-- 공지 내용 전체보기 모달 -->
-<div id="broadcast-modal"
-     style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45); align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:12px; padding:28px 28px 24px; width:520px; max-width:calc(100vw - 32px); box-shadow:0 8px 32px rgba(0,0,0,.18);">
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; gap:12px;">
+<div id="broadcast-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
             <div>
-                <div id="modal-title" style="font-size:16px; font-weight:700; color:var(--text-1);"></div>
-                <div id="modal-date"  style="font-size:12px; color:var(--muted); margin-top:4px;"></div>
+                <div id="modal-title" class="modal-title"></div>
+                <div id="modal-date"  class="modal-date"></div>
             </div>
             <button type="button" onclick="closeBroadcastModal()"
-                    style="background:none; border:none; cursor:pointer; color:var(--muted); font-size:20px; line-height:1; padding:0; flex-shrink:0;">&times;</button>
+                    class="modal-close">&times;</button>
         </div>
-        <div id="modal-body"
-             style="font-size:14px; color:var(--text-2); line-height:1.7; white-space:pre-wrap;
-                    background:var(--surface,#f8f9fa); border-radius:8px; padding:16px; max-height:360px; overflow-y:auto;"></div>
-        <div style="margin-top:20px; text-align:right;">
+        <div id="modal-body" class="modal-body"></div>
+        <div class="modal-footer">
             <button type="button" class="btn btn-secondary" onclick="closeBroadcastModal()">닫기</button>
         </div>
     </div>
