@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.moderation;
 
+import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.admin.service.ReportSearchParams;
@@ -22,8 +24,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/admin/reports")
 public class ReportAdminController {
 
-    private static final int PAGE_SIZE = 20;
-
     private final Map<String, ReportAdminService<?>> handlers;
     private final AdminLogService adminLogService;
 
@@ -41,7 +41,7 @@ public class ReportAdminController {
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
         ReportAdminService<?> handler = resolveHandler(type);
-        Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(page, PAGE_SIZE, status, keyword));
+        Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(page, AdminConstants.LIST_PAGE_SIZE, status, keyword));
         model.addAttribute("reports", reports);
         model.addAttribute("pendingCount", handler.getPendingCount());
         model.addAttribute("totalCount", handler.getTotalCount());
@@ -62,7 +62,7 @@ public class ReportAdminController {
                                 RedirectAttributes ra) {
         try {
             resolveHandler(type).deleteContentAndResolve(id);
-            adminLogService.log("REPORT_DELETE", "REPORT", id, type);
+            adminLogService.log(AdminAction.REPORT_DELETE, "REPORT", id, type);
             ra.addFlashAttribute("successMessage", "콘텐츠를 삭제하고 신고를 처리했습니다.");
         } catch (Exception e) {
             log.error("신고 콘텐츠 삭제 실패 id={} type={}", id, type, e);
@@ -80,7 +80,7 @@ public class ReportAdminController {
                           RedirectAttributes ra) {
         try {
             resolveHandler(type).dismissReport(id);
-            adminLogService.log("REPORT_DISMISS", "REPORT", id, type);
+            adminLogService.log(AdminAction.REPORT_DISMISS, "REPORT", id, type);
             ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
         } catch (Exception e) {
             log.error("신고 기각 실패 id={} type={}", id, type, e);
@@ -99,7 +99,7 @@ public class ReportAdminController {
         if (ids == null || ids.isEmpty()) return emptySelectionRedirect(type, status, page, keyword, ra);
         try {
             resolveHandler(type).bulkDismiss(ids);
-            adminLogService.log("REPORT_BULK_DISMISS", "REPORT", null, type + " " + ids.size() + "건");
+            adminLogService.log(AdminAction.REPORT_BULK_DISMISS, "REPORT", null, type + " " + ids.size() + "건");
             ra.addFlashAttribute("successMessage", ids.size() + "건을 일괄 기각했습니다.");
         } catch (Exception e) {
             log.error("신고 일괄 기각 실패 type={} ids={}", type, ids, e);
@@ -118,7 +118,7 @@ public class ReportAdminController {
         if (ids == null || ids.isEmpty()) return emptySelectionRedirect(type, status, page, keyword, ra);
         try {
             resolveHandler(type).bulkDeleteContent(ids);
-            adminLogService.log("REPORT_BULK_DELETE", "REPORT", null, type + " " + ids.size() + "건");
+            adminLogService.log(AdminAction.REPORT_BULK_DELETE, "REPORT", null, type + " " + ids.size() + "건");
             ra.addFlashAttribute("successMessage", ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다.");
         } catch (Exception e) {
             log.error("신고 일괄 삭제 실패 type={} ids={}", type, ids, e);

@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.FestivalChecklistService;
 import com.feple.feple_backend.admin.FestivalDetailAggregationService;
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +74,7 @@ public class FestivalAdminController {
         }
 
         Long festivalId = festivalService.createFestival(dto);
-        adminLogService.log("FESTIVAL_CREATE", "FESTIVAL", festivalId, dto.getTitle());
+        adminLogService.log(AdminAction.FESTIVAL_CREATE, "FESTIVAL", festivalId, dto.getTitle());
         artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
 
         return "redirect:/admin/festivals/" + festivalId;
@@ -161,7 +162,7 @@ public class FestivalAdminController {
         }
         try {
             festivalService.updateFestival(id, dto);
-            adminLogService.log("FESTIVAL_UPDATE", "FESTIVAL", id, dto.getTitle());
+            adminLogService.log(AdminAction.FESTIVAL_UPDATE, "FESTIVAL", id, dto.getTitle());
         } catch (java.util.NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
             return "redirect:/admin/festivals";
@@ -177,7 +178,7 @@ public class FestivalAdminController {
     public String deleteFestival(@PathVariable Long id, RedirectAttributes ra) {
         try {
             festivalService.deleteFestival(id);
-            adminLogService.log("FESTIVAL_DELETE", "FESTIVAL", id, null);
+            adminLogService.log(AdminAction.FESTIVAL_DELETE, "FESTIVAL", id, null);
         } catch (Exception e) {
             log.error("페스티벌 삭제 실패. id={}", id, e);
             ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");

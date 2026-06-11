@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.moderation;
 
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.badword.service.BadWordService;
 import com.feple.feple_backend.comment.service.CommentService;
@@ -37,7 +38,7 @@ public class BadWordAdminController {
     public String add(@RequestParam String word, RedirectAttributes ra) {
         try {
             badWordService.add(word);
-            adminLogService.log("BAD_WORD_ADD", "BAD_WORD", null, word);
+            adminLogService.log(AdminAction.BAD_WORD_ADD, "BAD_WORD", null, word);
             ra.addFlashAttribute("successMessage", "금칙어가 추가되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -60,7 +61,7 @@ public class BadWordAdminController {
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
             badWordService.delete(id);
-            adminLogService.log("BAD_WORD_DELETE", "BAD_WORD", id, null);
+            adminLogService.log(AdminAction.BAD_WORD_DELETE, "BAD_WORD", id, null);
             ra.addFlashAttribute("successMessage", "삭제되었습니다.");
         } catch (Exception e) {
             log.error("금칙어 삭제 실패: id={}", id, e);

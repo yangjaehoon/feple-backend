@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
@@ -22,11 +24,9 @@ public class ArtistSuggestionAdminController {
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
     private final AdminLogService adminLogService;
 
-    private static final int PAGE_SIZE = 20;
-
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page, Model model) {
-        Page<ArtistSuggestionResponseDto> suggestions = artistSuggestionAdminService.getSuggestionsPage(page, PAGE_SIZE);
+        Page<ArtistSuggestionResponseDto> suggestions = artistSuggestionAdminService.getSuggestionsPage(page, AdminConstants.LIST_PAGE_SIZE);
         model.addAttribute("suggestions", suggestions);
         return "admin/artist/suggestions";
     }
@@ -37,7 +37,7 @@ public class ArtistSuggestionAdminController {
                           RedirectAttributes ra) {
         try {
             artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
-            adminLogService.log("ARTIST_SUGGESTION_DISMISS", "ARTIST_SUGGESTION", id, null);
+            adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST_SUGGESTION", id, null);
             ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 신청 처리 실패: {}", id, e);

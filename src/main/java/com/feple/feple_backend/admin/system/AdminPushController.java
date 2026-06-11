@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.AdminPushService;
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -49,7 +50,7 @@ public class AdminPushController {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendToAll(title.strip(), body.strip());
-            adminLogService.log("PUSH_BROADCAST", null, null, title.strip());
+            adminLogService.log(AdminAction.PUSH_BROADCAST, null, null, title.strip());
             ra.addFlashAttribute("successMessage", "푸시 알림이 발송되었습니다.");
         } catch (Exception e) {
             log.error("푸시 발송 오류", e);
@@ -77,7 +78,7 @@ public class AdminPushController {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendToArtistFollowers(artistId, title.strip(), body.strip());
-            adminLogService.log("PUSH_ARTIST_FOLLOWERS", "ARTIST", artistId, title.strip());
+            adminLogService.log(AdminAction.PUSH_ARTIST_FOLLOWERS, "ARTIST", artistId, title.strip());
             ra.addFlashAttribute("successMessage", "아티스트 팔로워에게 발송되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -96,7 +97,7 @@ public class AdminPushController {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendToFestivalCertified(festivalId, title.strip(), body.strip());
-            adminLogService.log("PUSH_FESTIVAL_CERTIFIED", "FESTIVAL", festivalId, title.strip());
+            adminLogService.log(AdminAction.PUSH_FESTIVAL_CERTIFIED, "FESTIVAL", festivalId, title.strip());
             ra.addFlashAttribute("successMessage", "페스티벌 인증 참여자에게 발송되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -115,7 +116,7 @@ public class AdminPushController {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
         try {
             adminPushService.sendTest(targetUserId, title.strip(), body.strip());
-            adminLogService.log("PUSH_TEST", "USER", targetUserId, title.strip());
+            adminLogService.log(AdminAction.PUSH_TEST, "USER", targetUserId, title.strip());
             ra.addFlashAttribute("successMessage", "테스트 발송 완료 (userId=" + targetUserId + ")");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

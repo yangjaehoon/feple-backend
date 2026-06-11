@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.song;
 
+import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
@@ -22,8 +24,6 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class SongRequestAdminController {
 
-    private static final int PAGE_SIZE = 20;
-
     private final SongRequestAdminService songRequestAdminService;
     private final AdminLogService adminLogService;
 
@@ -32,7 +32,7 @@ public class SongRequestAdminController {
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "") String keyword,
                        Model model) {
-        Page<SongRequestResponseDto> requests = songRequestAdminService.getRequestsPage(page, PAGE_SIZE, status, keyword);
+        Page<SongRequestResponseDto> requests = songRequestAdminService.getRequestsPage(page, AdminConstants.LIST_PAGE_SIZE, status, keyword);
         model.addAttribute("requests", requests);
         model.addAttribute("status", status);
         model.addAttribute("keyword", keyword);
@@ -49,7 +49,7 @@ public class SongRequestAdminController {
                           RedirectAttributes ra) {
         try {
             boolean songSaved = songRequestAdminService.approve(id, youtubeUrl);
-            adminLogService.log("SONG_REQUEST_APPROVE", "SONG_REQUEST", id, null);
+            adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", id, null);
             if (songSaved) {
                 ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다. 곡이 등록되었습니다.");
             } else if (youtubeUrl != null && !youtubeUrl.isBlank()) {
@@ -75,7 +75,7 @@ public class SongRequestAdminController {
                          RedirectAttributes ra) {
         try {
             songRequestAdminService.reject(id, reason);
-            adminLogService.log("SONG_REQUEST_REJECT", "SONG_REQUEST", id, reason);
+            adminLogService.log(AdminAction.SONG_REQUEST_REJECT, "SONG_REQUEST", id, reason);
             ra.addFlashAttribute("successMessage", "노래 요청이 거절되었습니다.");
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.certification;
 
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
@@ -71,7 +72,7 @@ public class CertificationAdminController {
                           RedirectAttributes ra) {
         try {
             certificationService.approve(id, "admin");
-            adminLogService.log("CERTIFICATION_APPROVE", "CERTIFICATION", id, null);
+            adminLogService.log(AdminAction.CERTIFICATION_APPROVE, "CERTIFICATION", id, null);
             ra.addFlashAttribute("successMessage", "인증이 승인되었습니다.");
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -91,7 +92,7 @@ public class CertificationAdminController {
                          RedirectAttributes ra) {
         try {
             certificationService.reject(id, rejectionMessage, "admin");
-            adminLogService.log("CERTIFICATION_REJECT", "CERTIFICATION", id,
+            adminLogService.log(AdminAction.CERTIFICATION_REJECT, "CERTIFICATION", id,
                     rejectionMessage.isBlank() ? null : rejectionMessage);
             ra.addFlashAttribute("successMessage", "인증이 거절되었습니다.");
         } catch (NoSuchElementException e) {

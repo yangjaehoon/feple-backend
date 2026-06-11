@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -57,7 +58,7 @@ public class ArtistAdminController {
         try {
             dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
             artistService.createArtist(dto);
-            adminLogService.log("ARTIST_CREATE", "ARTIST", null, dto.getName());
+            adminLogService.log(AdminAction.ARTIST_CREATE, "ARTIST", null, dto.getName());
             ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 등록 실패 name={}", dto.getName(), e);
@@ -92,7 +93,7 @@ public class ArtistAdminController {
                                     RedirectAttributes ra) {
         try {
             artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
-            adminLogService.log("ARTIST_SUGGESTION_DISMISS", "ARTIST", id, null);
+            adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST", id, null);
             ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 신청 처리 실패: {}", id, e);
@@ -159,7 +160,7 @@ public class ArtistAdminController {
                 dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
             }
             artistService.updateArtist(id, dto);
-            adminLogService.log("ARTIST_UPDATE", "ARTIST", id, dto.getName());
+            adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", id, dto.getName());
             ra.addFlashAttribute("successMessage", "아티스트 정보가 수정되었습니다.");
         } catch (java.util.NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
@@ -188,7 +189,7 @@ public class ArtistAdminController {
     public String deleteArtist(@PathVariable Long id, RedirectAttributes ra) {
         try {
             artistService.deleteArtist(id);
-            adminLogService.log("ARTIST_DELETE", "ARTIST", id, null);
+            adminLogService.log(AdminAction.ARTIST_DELETE, "ARTIST", id, null);
         } catch (Exception e) {
             log.error("아티스트 삭제 실패. id={}", id, e);
             ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");

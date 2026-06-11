@@ -1,6 +1,8 @@
 package com.feple.feple_backend.admin.user;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.UserDetailAggregationService;
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -26,8 +28,6 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class UserAdminController {
 
-    private static final int PAGE_SIZE = 20;
-
     private final UserAdminService userService;
     private final UserDetailAggregationService userDetailAggregationService;
     private final AdminLogService adminLogService;
@@ -51,9 +51,9 @@ public class UserAdminController {
     }
 
     private Page<UserResponseDto> fetchUsersPage(int page, String keyword, String sort, String filter) {
-        if ("banned".equals(filter))   return userService.getBannedUsersPage(page, PAGE_SIZE, keyword);
-        if ("reports".equals(sort))    return userService.getUsersPageSortedByReports(page, PAGE_SIZE, keyword);
-        return userService.getUsersPage(page, PAGE_SIZE, keyword);
+        if ("banned".equals(filter))   return userService.getBannedUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
+        if ("reports".equals(sort))    return userService.getUsersPageSortedByReports(page, AdminConstants.LIST_PAGE_SIZE, keyword);
+        return userService.getUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
     }
 
     @GetMapping("/{id}")
@@ -77,7 +77,7 @@ public class UserAdminController {
         if (ids != null && !ids.isEmpty()) {
             try {
                 userService.bulkDeleteUsers(ids);
-                adminLogService.log("USER_BULK_DELETE", "USER", null, "총 " + ids.size() + "명");
+                adminLogService.log(AdminAction.USER_BULK_DELETE, "USER", null, "총 " + ids.size() + "명");
                 ra.addFlashAttribute("successMessage", ids.size() + "명 회원이 삭제되었습니다.");
             } catch (Exception e) {
                 log.error("회원 일괄 삭제 실패 ids={}", ids, e);
@@ -97,7 +97,7 @@ public class UserAdminController {
         try {
             String nickname = userService.getAdminUser(id).getNickname();
             userService.adminDeleteUser(id);
-            adminLogService.log("USER_DELETE", "USER", id, nickname);
+            adminLogService.log(AdminAction.USER_DELETE, "USER", id, nickname);
             ra.addFlashAttribute("successMessage", "회원이 삭제되었습니다.");
         } catch (Exception e) {
             log.error("회원 삭제 실패 id={}", id, e);
@@ -112,7 +112,7 @@ public class UserAdminController {
                                  RedirectAttributes ra) {
         try {
             userService.updateUserRole(id, role);
-            adminLogService.log("USER_ROLE_CHANGE", "USER", id, role.getDisplayName());
+            adminLogService.log(AdminAction.USER_ROLE_CHANGE, "USER", id, role.getDisplayName());
             ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.getDisplayName());
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "역할 변경에 실패했습니다.");
@@ -129,7 +129,7 @@ public class UserAdminController {
             userService.banUser(id, days, reason);
             String label = days <= 0 ? "영구" : days + "일";
             String detail = label + " 정지" + (reason != null && !reason.isBlank() ? " / " + reason : "");
-            adminLogService.log("USER_BAN", "USER", id, detail);
+            adminLogService.log(AdminAction.USER_BAN, "USER", id, detail);
             ra.addFlashAttribute("successMessage", label + " 정지가 적용되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -144,7 +144,7 @@ public class UserAdminController {
     public String unbanUser(@PathVariable Long id, RedirectAttributes ra) {
         try {
             userService.unbanUser(id);
-            adminLogService.log("USER_UNBAN", "USER", id, null);
+            adminLogService.log(AdminAction.USER_UNBAN, "USER", id, null);
             ra.addFlashAttribute("successMessage", "정지가 해제되었습니다.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

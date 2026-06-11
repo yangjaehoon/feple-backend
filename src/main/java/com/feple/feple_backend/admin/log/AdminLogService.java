@@ -23,7 +23,7 @@ public class AdminLogService {
 
     private final AdminLogRepository repository;
 
-    public void log(String action, String targetType, Long targetId, String detail) {
+    public void log(AdminAction action, String targetType, Long targetId, String detail) {
         String adminUsername = null;
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -34,14 +34,14 @@ public class AdminLogService {
         try {
             repository.save(AdminLog.builder()
                     .adminUsername(adminUsername)
-                    .action(action)
+                    .action(action.name())
                     .targetType(targetType)
                     .targetId(targetId)
                     .detail(detail)
                     .ipAddress(extractClientIp())
                     .build());
         } catch (Exception e) {
-            log.error("감사 로그 저장 실패: action={}, targetType={}, targetId={}", action, targetType, targetId, e);
+            log.error("감사 로그 저장 실패: action={}, targetType={}, targetId={}", action.name(), targetType, targetId, e);
         }
     }
 
