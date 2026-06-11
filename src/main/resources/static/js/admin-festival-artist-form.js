@@ -1,8 +1,4 @@
 (function () {
-    /* 서버에서 data-msg 속성으로 전달된 에러 메시지를 alert으로 표시 */
-    var errEl = document.getElementById('js-page-error');
-    if (errEl) alert(errEl.dataset.msg);
-
     function filterArtists(query) {
         var q = query.toLowerCase();
         document.querySelectorAll('#artistList .artist-item').forEach(function (item) {

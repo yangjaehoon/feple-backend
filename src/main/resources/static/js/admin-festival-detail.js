@@ -191,7 +191,8 @@
         var start = form.querySelector('[name="startTime"]').value;
         var end = form.querySelector('[name="endTime"]').value;
         if (start && end && start >= end) {
-            alert('종료 시간은 시작 시간보다 늦어야 합니다.');
+            var err = document.getElementById('timeError');
+            if (err) err.style.display = 'block';
             return false;
         }
         return true;

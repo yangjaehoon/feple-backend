@@ -67,7 +67,7 @@
         </div>
     </div>
 </div>
-<div id="js-page-error" th:if="${errorMessage}" th:attr="data-msg=${errorMessage}" style="display:none"></div>
+<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 <script th:src="@{/js/admin-festival-artist-form.js}"></script>
 </body>
 </html>

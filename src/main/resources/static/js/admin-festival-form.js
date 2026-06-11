@@ -38,6 +38,7 @@
         var keyword = document.getElementById('addrSearch').value.trim();
         if (!keyword) return;
         var ps = new kakao.maps.services.Places();
+        var addrErr = document.getElementById('addr-search-error');
         ps.keywordSearch(keyword, function (data, status) {
             if (status === kakao.maps.services.Status.OK) {
                 var place = data[0];
@@ -45,6 +46,7 @@
                 var lng = parseFloat(place.x);
                 placeMarker(lat, lng);
                 document.getElementById('locationInput').value = place.place_name;
+                if (addrErr) addrErr.style.display = 'none';
             } else {
                 geocoder.addressSearch(keyword, function (result, status) {
                     if (status === kakao.maps.services.Status.OK) {
@@ -52,8 +54,9 @@
                         var lng = parseFloat(result[0].x);
                         placeMarker(lat, lng);
                         document.getElementById('locationInput').value = result[0].address_name;
+                        if (addrErr) addrErr.style.display = 'none';
                     } else {
-                        alert('검색 결과가 없습니다.');
+                        if (addrErr) addrErr.style.display = 'block';
                     }
                 });
             }

@@ -60,6 +60,7 @@
                                     <button type="button" id="addr-search-btn"
                                             class="btn btn-primary btn-sm">검색</button>
                                 </div>
+                                <div id="addr-search-error" style="display:none; margin-top:4px; font-size:12px; color:var(--danger);">검색 결과가 없습니다.</div>
                                 <div id="kakaoMap" class="map-canvas-fixed"></div>
                                 <p class="hint mt-4">지도를 클릭하거나 주소를 검색하면 위치가 자동으로 설정됩니다.</p>
                             </div>
@@ -176,6 +177,7 @@
         const keyword = document.getElementById('addrSearch').value.trim();
         if (!keyword) return;
         const ps = new kakao.maps.services.Places();
+        const addrErr = document.getElementById('addr-search-error');
         ps.keywordSearch(keyword, function (data, status) {
             if (status === kakao.maps.services.Status.OK) {
                 const place = data[0];
@@ -183,6 +185,7 @@
                 const lng = parseFloat(place.x);
                 placeMarker(lat, lng);
                 document.getElementById('locationInput').value = place.place_name;
+                if (addrErr) addrErr.style.display = 'none';
             } else {
                 geocoder.addressSearch(keyword, function (result, status) {
                     if (status === kakao.maps.services.Status.OK) {
@@ -190,8 +193,9 @@
                         const lng = parseFloat(result[0].x);
                         placeMarker(lat, lng);
                         document.getElementById('locationInput').value = result[0].address_name;
+                        if (addrErr) addrErr.style.display = 'none';
                     } else {
-                        alert('검색 결과가 없습니다.');
+                        if (addrErr) addrErr.style.display = 'block';
                     }
                 });
             }
