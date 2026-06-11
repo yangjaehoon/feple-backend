@@ -48,7 +48,7 @@
                     label: '신규 가입자',
                     data: signupsData,
                     borderColor: 'var(--success)',
-                    backgroundColor: 'var(--success-lt)',
+                    backgroundColor: 'var(--success-bg)',
                     fill: true, tension: 0.3, pointRadius: 3
                 }]
             }
@@ -71,7 +71,7 @@
                         label: '댓글',
                         data: commentsData,
                         borderColor: 'var(--purple)',
-                        backgroundColor: 'var(--purple-lt)',
+                        backgroundColor: 'var(--purple-bg)',
                         fill: true, tension: 0.3, pointRadius: 3
                     }
                 ]

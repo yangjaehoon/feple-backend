@@ -447,8 +447,9 @@
             var msg = result.savedCount + '개 저장 완료';
             if (result.failedCount > 0) {
                 msg += ', ' + result.failedCount + '개 실패';
+                var esc = window.AdminUtils.escapeHtml;
                 var reasons = result.failures.map(function (f) {
-                    return f.artist + '/' + f.stage + ': ' + f.reason;
+                    return esc(f.artist) + '/' + esc(f.stage) + ': ' + esc(f.reason);
                 }).join('<br>');
                 msg += '<br><small>' + reasons + '</small>';
                 showApplyResult('partial', msg);

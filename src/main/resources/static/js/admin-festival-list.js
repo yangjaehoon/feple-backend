@@ -80,8 +80,7 @@ document.querySelectorAll('.memo-textarea').forEach(function(ta) {
 });
 
 function saveMemo(festivalId, memo) {
-    var headers = {};
-    headers[csrfHeader] = csrfToken;
+    var headers = window.AdminUtils.getCsrfHeaders();
     var body = new URLSearchParams();
     body.append('memo', memo);
     fetch(FestivalListUrls.festivalBase + '/' + festivalId + '/checklist/memo', {
