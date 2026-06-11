@@ -47,8 +47,8 @@
                 datasets: [{
                     label: '신규 가입자',
                     data: signupsData,
-                    borderColor: '#22c55e',
-                    backgroundColor: 'rgba(34,197,94,.08)',
+                    borderColor: 'var(--success)',
+                    backgroundColor: 'var(--success-lt)',
                     fill: true, tension: 0.3, pointRadius: 3
                 }]
             }
@@ -63,15 +63,15 @@
                     {
                         label: '게시글',
                         data: postsData,
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59,130,246,.08)',
+                        borderColor: 'var(--primary)',
+                        backgroundColor: 'var(--primary-lt)',
                         fill: true, tension: 0.3, pointRadius: 3
                     },
                     {
                         label: '댓글',
                         data: commentsData,
-                        borderColor: '#8B5CF6',
-                        backgroundColor: 'rgba(139,92,246,.06)',
+                        borderColor: 'var(--purple)',
+                        backgroundColor: 'var(--purple-lt)',
                         fill: true, tension: 0.3, pointRadius: 3
                     }
                 ]

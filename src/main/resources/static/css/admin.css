@@ -854,11 +854,8 @@ select.stage-select { padding: 5px 8px; border: 1px solid var(--border); border-
 .save-toast.error { background: var(--danger); }
 
 /* ============================================================
-   ARTISTS LIST — FILTER PILLS & SORT BUTTONS
+   ARTISTS LIST — SORT BUTTONS
    ============================================================ */
-.filter-pill { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none; background: var(--border); color: var(--text-2); transition: background .14s, color .14s; }
-.filter-pill.active { background: var(--primary); color: #fff; font-weight: 700; }
-.filter-pill:hover:not(.active) { background: var(--primary-lt); color: var(--primary-dk); }
 
 .sort-btn { margin-left: 2px; font-size: 11px; padding: 2px 7px; border-radius: 10px; background: var(--border); color: var(--text-2); text-decoration: none; font-weight: 600; }
 .sort-btn.active { background: var(--purple); color: #fff; }
@@ -1112,7 +1109,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── 아티스트 목록 ── */
 .genre-active-label { font-size: 12px; font-weight: 500; color: var(--primary); margin-left: 6px; }
-.filter-bar { padding: 12px 22px 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .search-input { flex: 1; max-width: 280px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; }
 .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; background: var(--purple-lt); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .avatar-cell .cell-secondary { margin-top: 4px; }

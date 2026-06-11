@@ -87,7 +87,7 @@
         field.addEventListener('invalid', function () {
             var err = this.parentElement.querySelector('.field-error');
             if (err) err.style.display = 'block';
-            this.style.borderColor = '#e74c3c';
+            this.style.borderColor = 'var(--danger)';
         });
         field.addEventListener('input', function () {
             if (this.value.trim()) {

@@ -144,7 +144,7 @@
             btn.innerHTML = '페스티벌 등록하기';
             var el = document.getElementById('scrapeApplyResult');
             el.className = 'apply-result success';
-            el.innerHTML = '페스티벌이 등록되었습니다. <a href="' + CrawlUrls.festivalDetailBase + '/' + result.festivalId + '" style="color:#065F46; text-decoration:underline; font-weight:700;">상세 보기 →</a>';
+            el.innerHTML = '페스티벌이 등록되었습니다. <a href="' + CrawlUrls.festivalDetailBase + '/' + result.festivalId + '" style="color:var(--primary); text-decoration:underline; font-weight:700;">상세 보기 →</a>';
             el.style.display = 'block';
         })
         .catch(function (err) {
@@ -500,8 +500,8 @@
         tr.innerHTML =
             '<td>' + esc(festivalTitle) + '</td>' +
             '<td>' + esc(date) + '</td>' +
-            '<td style="color:#059669; font-weight:700;">' + saved + '</td>' +
-            '<td style="color:' + (failed > 0 ? '#DC2626' : '#6B7280') + '; font-weight:700;">' + failed + '</td>' +
+            '<td style="color:var(--success); font-weight:700;">' + saved + '</td>' +
+            '<td style="color:' + (failed > 0 ? 'var(--danger)' : 'var(--muted)') + '; font-weight:700;">' + failed + '</td>' +
             '<td style="color:var(--muted);">' + now + '</td>';
         body.insertBefore(tr, body.firstChild);
     }
