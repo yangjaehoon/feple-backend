@@ -61,7 +61,7 @@
         el.style.cssText = [
             'width:16px',
             'height:16px',
-            'background:#3b5bdb',
+            'background:var(--primary)',
             'border:3px solid #fff',
             'border-radius:50%',
             'box-shadow:0 2px 6px rgba(0,0,0,0.4)'
@@ -110,7 +110,7 @@
             document.getElementById('boothLng').value = lng;
             var label = document.getElementById('boothPosLabel');
             label.textContent = '선택된 위치: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
-            label.style.color = '#3b5bdb';
+            label.style.color = 'var(--primary)';
             label.style.fontWeight = 'normal';
             document.getElementById('boothMapWrap').style.borderColor = 'var(--border)';
             if (selectedMarker) selectedMarker.map = null;
@@ -154,9 +154,9 @@
         if (!document.getElementById('boothLat').value) {
             var label = document.getElementById('boothPosLabel');
             label.textContent = '⚠ 지도를 클릭하여 부스 위치를 먼저 선택해주세요.';
-            label.style.color = '#e53e3e';
+            label.style.color = 'var(--danger)';
             label.style.fontWeight = '600';
-            document.getElementById('boothMapWrap').style.borderColor = '#e53e3e';
+            document.getElementById('boothMapWrap').style.borderColor = 'var(--danger)';
             document.getElementById('boothMapWrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
@@ -168,9 +168,9 @@
         if (!festivalDate) {
             var preview = document.getElementById('datePreview');
             preview.textContent = '⚠ 참여 아티스트 목록에서 날짜를 먼저 설정해주세요.';
-            preview.style.color = '#e53e3e';
+            preview.style.color = 'var(--danger)';
             preview.style.fontWeight = '600';
-            preview.style.borderColor = '#e53e3e';
+            preview.style.borderColor = 'var(--danger)';
             preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
@@ -179,8 +179,8 @@
         if (start && end && start >= end) {
             var err = document.getElementById('timeError');
             err.style.display = 'block';
-            document.getElementById('startTime').style.borderColor = '#e53e3e';
-            document.getElementById('endTime').style.borderColor = '#e53e3e';
+            document.getElementById('startTime').style.borderColor = 'var(--danger)';
+            document.getElementById('endTime').style.borderColor = 'var(--danger)';
             document.getElementById('endTime').focus();
             return false;
         }
@@ -213,7 +213,7 @@
         var stagePreview = document.getElementById('stagePreview');
         if (stage) {
             stagePreview.textContent = stage;
-            stagePreview.style.color = '#3b5bdb';
+            stagePreview.style.color = 'var(--primary)';
             stagePreview.style.fontWeight = '600';
         } else {
             stagePreview.textContent = '스테이지 미지정';
@@ -231,15 +231,15 @@
             datePreview.style.borderColor = 'var(--border)';
         } else {
             datePreview.textContent = '⚠ 참여 날짜 미설정 — 위 목록에서 날짜를 먼저 저장하세요.';
-            datePreview.style.color = '#e53e3e';
+            datePreview.style.color = 'var(--danger)';
             datePreview.style.fontWeight = '500';
-            datePreview.style.borderColor = '#e53e3e';
+            datePreview.style.borderColor = 'var(--danger)';
         }
     }
 
     /* ── 스테이지 색상 ── */
     var stageColors = [
-        { bg: '#3b5bdb', light: '#eef2ff', border: '#c5d0fa' },
+        { bg: 'var(--primary)', light: '#eef2ff', border: '#c5d0fa' },
         { bg: '#e8590c', light: '#fff4e6', border: '#ffc9a0' },
         { bg: '#2b8a3e', light: '#ebfbee', border: '#b2f2bb' },
         { bg: '#be4bdb', light: '#f8f0fc', border: '#e599f7' },
