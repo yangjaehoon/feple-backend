@@ -1270,7 +1270,16 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .sb-logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .sb-logo-img  { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; flex-shrink: 0; }
 .sb-logout-form { margin: 0; }
-.sb-logout-btn  { width: 100%; justify-content: center; }
+.sb-logout-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 14px; border-radius: var(--r);
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .14s, color .14s, border-color .14s;
+}
+.sb-logout-btn:hover {
+  background: var(--danger-lt); color: var(--danger); border-color: var(--danger-border);
+}
 
 /* ── pagination margin ── */
 .pagination.ml-auto { margin-left: auto; }
