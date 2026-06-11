@@ -779,23 +779,23 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 /* ============================================================
    COMPACT STATS TABLE  (대시보드 일별 지표 · 통계 일별 상세)
    ============================================================ */
-.stats-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.stats-table thead th {
-  padding: 9px 12px;
-  background: var(--bg-2); color: var(--muted);
-  font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .5px;
-  border-bottom: 1.5px solid var(--border);
-  white-space: nowrap; text-align: left;
+/* compact-table: stats / rank / summary 등 밀도 높은 테이블 공통 스타일 */
+.compact-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.compact-table thead tr { background: var(--bg-2); }
+.compact-table thead th {
+  padding: 8px 12px; color: var(--muted); font-weight: 700; text-align: left;
+  border-bottom: 1.5px solid var(--border); font-size: 10px;
+  text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
 }
-.stats-table thead th.r { text-align: right; }
-.stats-table tbody tr { border-bottom: 1px solid var(--border); }
-.stats-table tbody tr:last-child { border-bottom: none; }
-.stats-table tbody td { padding: 8px 12px; color: var(--text-2); font-size: 12px; }
-.stats-table tbody td.r { text-align: right; font-weight: 700; }
-.stats-table tbody td.val-green { color: var(--success); }
-.stats-table tbody td.val-blue  { color: var(--primary-dk); }
-.stats-table tbody td.val-muted { color: var(--muted); font-weight: 400; }
+.compact-table thead th.r { text-align: right; }
+.compact-table tbody tr { border-bottom: 1px solid var(--border); }
+.compact-table tbody tr:last-child { border-bottom: none; }
+.compact-table tbody tr:hover { background: #FAFCFF; }
+.compact-table tbody td { padding: 8px 12px; color: var(--text-2); font-size: 12px; vertical-align: middle; }
+.compact-table tbody td.r { text-align: right; font-weight: 700; }
+.compact-table tbody td.val-green { color: var(--success); }
+.compact-table tbody td.val-blue  { color: var(--primary-dk); }
+.compact-table tbody td.val-muted { color: var(--muted); font-weight: 400; }
 
 /* ============================================================
    STATS PAGE
@@ -816,12 +816,6 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 .note-box { background: var(--accent-lt); border: 1.5px solid var(--warning-border); border-radius: var(--r); padding: 14px 18px; font-size: 13px; color: var(--warning-text); margin-bottom: 24px; }
 .warn-box { background: var(--danger-lt); border: 1.5px solid var(--danger); border-radius: var(--r); padding: 10px 16px; font-size: 12px; color: var(--danger-text); margin-bottom: 12px; }
 
-.rank-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.rank-table thead tr { background: var(--bg-2); }
-.rank-table th { padding: 8px 12px; color: var(--muted); font-weight: 700; text-align: left; border-bottom: 1.5px solid var(--border); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
-.rank-table th.r { text-align: right; }
-.rank-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
-.rank-table td.r { text-align: right; font-weight: 700; }
 .rank-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--border); color: var(--muted); font-size: 10px; font-weight: 800; margin-right: 6px; }
 .rank-num.top3 { background: var(--primary); color: #fff; }
 
@@ -1013,12 +1007,6 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .url-row input { flex: 1; padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); outline: none; transition: border-color .15s; }
 .url-row input:focus { border-color: var(--primary); }
 .url-hint { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
-.result-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.result-table thead tr { background: var(--bg-2); }
-.result-table th { padding: 8px 12px; text-align: left; font-weight: 700; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1.5px solid var(--border); }
-.result-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
-.result-table tr:last-child td { border-bottom: none; }
-.result-table tr:hover td { background: #FAFBFC; }
 .badge-pending  { background: var(--accent-lt); color: var(--warning-text); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .badge-approved { background: #D1FAE5; color: #065F46; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .badge-rejected { background: var(--danger-lt); color: var(--danger-text); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
