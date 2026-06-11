@@ -32,7 +32,7 @@
                          th:src="${festival.posterUrl}" th:alt="${festival.title}"/>
                     <div class="no-poster"
                          th:unless="${!#strings.isEmpty(festival.posterUrl)}">
-                        <span style="font-size:28px;">🖼️</span>
+                        <span class="icon-xl">🖼️</span>
                         <span>포스터 없음</span>
                     </div>
                     <div class="meta-list">
@@ -46,7 +46,7 @@
                         </div>
                         <div class="meta-item">
                             <div class="meta-label">좋아요</div>
-                            <div class="meta-value" style="color:var(--primary);">
+                            <div class="meta-value meta-value-primary">
                                 ❤ <span th:text="${festival.likeCount}">0</span>
                             </div>
                         </div>
@@ -75,7 +75,7 @@
                     참여 아티스트
                     <span class="card-count" th:text="${#lists.size(participatingArtists)}"></span>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center;">
+                <div class="page-actions">
                     <button type="submit" form="batch-edit-form" class="btn btn-warning btn-sm"
                             th:if="${!participatingArtists.isEmpty()}">💾 저장</button>
                     <a class="btn btn-primary btn-sm"
@@ -87,7 +87,7 @@
             <th:block th:each="af : ${participatingArtistsByName}">
                 <form th:id="'delete-af-' + ${af.artistFestivalId}"
                       th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
-                      method="post" style="display:none;"></form>
+                      method="post" hidden></form>
             </th:block>
 
             <form id="batch-edit-form"
@@ -113,17 +113,17 @@
                                        th:value="${af.performanceDate}"
                                        th:min="${festival.startDate}"
                                        th:max="${festival.endDate}"
-                                       style="padding:5px 6px; border:1px solid var(--border); border-radius:6px; font-size:13px;"/>
+                                       class="compact-input-date"/>
                             </td>
-                            <td style="font-weight:600;" th:text="${af.artistName}"></td>
+                            <td class="td-bold" th:text="${af.artistName}"></td>
                             <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
                             <td>
                                 <!-- 타임테이블에 등록된 슬롯 표시 -->
                                 <th:block th:if="${timetableByArtist.containsKey(af.artistName)}">
                                     <div th:each="slot : ${timetableByArtist.get(af.artistName)}"
-                                         style="font-size:11px; white-space:nowrap; margin-bottom:3px;">
-                                        <span style="color:var(--muted);" th:text="${slot.festivalDate}"></span>
-                                        <span style="font-weight:700; color:var(--text); margin-left:4px;"
+                                         class="slot-row">
+                                        <span class="slot-muted" th:text="${slot.festivalDate}"></span>
+                                        <span class="slot-bold"
                                               th:text="${slot.startTime} + ' ~ ' + ${slot.endTime}"></span>
                                     </div>
                                 </th:block>
@@ -142,7 +142,7 @@
                                     </select>
                                 </th:block>
                                 <th:block th:if="${stages.isEmpty()}">
-                                    <span style="font-size:12px; color:var(--muted);">스테이지 없음</span>
+                                    <span class="hint">스테이지 없음</span>
                                     <input type="hidden" name="stageNames" th:value="${af.stageName}"/>
                                 </th:block>
                             </td>
@@ -176,25 +176,25 @@
                 <div class="stage-box">
                     <div class="stage-box-title">📋 스테이지 목록</div>
                     <div th:if="${stages.isEmpty()}" class="stage-empty">등록된 스테이지가 없습니다. 아래에서 추가해주세요.</div>
-                    <div th:if="${!stages.isEmpty()}" style="margin-bottom:10px;">
+                    <div th:if="${!stages.isEmpty()}" class="stage-list">
                         <div th:each="s, stat : ${stages}" class="stage-row" th:data-stage="${s.name}">
                             <div class="stage-order-num" th:text="${stat.index + 1}"></div>
                             <span class="stage-name" th:text="${s.name}"></span>
                             <!-- 위로 -->
                             <form th:action="@{/admin/festivals/{id}/stages/{sid}/up(id=${festival.id}, sid=${s.id})}"
-                                  method="post" style="margin:0;">
+                                  method="post">
                                 <button type="submit" class="stage-btn"
                                         th:disabled="${stat.first}" title="위로">▲</button>
                             </form>
                             <!-- 아래로 -->
                             <form th:action="@{/admin/festivals/{id}/stages/{sid}/down(id=${festival.id}, sid=${s.id})}"
-                                  method="post" style="margin:0;">
+                                  method="post">
                                 <button type="submit" class="stage-btn"
                                         th:disabled="${stat.last}" title="아래로">▼</button>
                             </form>
                             <!-- 삭제 -->
                             <form th:action="@{/admin/festivals/{id}/stages/{sid}/delete(id=${festival.id}, sid=${s.id})}"
-                                  method="post" style="margin:0;"
+                                  method="post"
                                   onsubmit="return confirm('스테이지를 삭제할까요?')">
                                 <button type="submit" class="stage-btn del" title="삭제">✕</button>
                             </form>
@@ -211,7 +211,7 @@
                 <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                       method="post"
                       onsubmit="return validateTimetable(this)"
-                      style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:20px;">
+                      class="form-grid-5col">
 
                     <input type="hidden" name="stageName" id="autoStageName"/>
                     <input type="hidden" name="festivalDate" id="autoFestivalDate"/>
@@ -220,7 +220,7 @@
                         <label class="form-label-sm">아티스트</label>
                         <th:block th:if="${!participatingArtistsByName.isEmpty()}">
                             <select name="artistName" id="artistSelect" required onchange="onArtistChange(this)"
-                                    style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                                    class="compact-input">
                                 <option value="" disabled selected>아티스트 선택</option>
                                 <option th:each="af : ${participatingArtistsByName}"
                                         th:value="${af.artistName}"
@@ -230,44 +230,43 @@
                         </th:block>
                         <th:block th:if="${participatingArtistsByName.isEmpty()}">
                             <input type="text" disabled placeholder="참여 아티스트를 먼저 추가하세요"
-                                   style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f5f5f5;"/>
+                                   class="compact-input"/>
                         </th:block>
                     </div>
                     <div>
                         <label class="form-label-sm">날짜 (자동)</label>
-                        <div id="datePreview" style="padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f8f9ff; color:var(--muted); min-height:36px;">
+                        <div id="datePreview" class="preview-input">
                             아티스트 선택 시 자동 입력
                         </div>
                     </div>
                     <div>
                         <label class="form-label-sm">스테이지 (자동)</label>
-                        <div id="stagePreview" style="padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#f8f9ff; color:var(--muted); min-height:36px;">
+                        <div id="stagePreview" class="preview-input">
                             아티스트 선택 시 자동 입력
                         </div>
                     </div>
                     <div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <div class="form-grid-2col">
                             <div>
                                 <label class="form-label-sm">시작</label>
                                 <input type="time" name="startTime" id="startTime" required
                                        oninput="clearTimeError()"
-                                       style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                                       class="compact-input"/>
                             </div>
                             <div>
                                 <label class="form-label-sm">종료</label>
                                 <input type="time" name="endTime" id="endTime" required
                                        oninput="clearTimeError()"
-                                       style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                                       class="compact-input"/>
                             </div>
                         </div>
-                        <div id="timeError"
-                             style="display:none; margin-top:5px; font-size:12px; color:var(--danger); font-weight:500;">
+                        <div id="timeError" class="time-error">
                             ⚠ 종료 시간은 시작 시간보다 늦어야 합니다.
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
+                    <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
                 </form>
-                <div th:if="${timetableSuccess}" class="alert alert-success" style="margin-bottom:16px;" th:text="${timetableSuccess}"></div>
+                <div th:if="${timetableSuccess}" class="alert alert-success" th:text="${timetableSuccess}"></div>
 
                 <!-- 운영 항목 추가 폼 -->
                 <div class="ops-box">
@@ -275,31 +274,31 @@
                     <form th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                           method="post"
                           onsubmit="return validateCustomTimetable(this)"
-                          style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; align-items:end;">
+                          class="form-grid-ops">
                         <input type="hidden" name="stageName" value="📢"/>
                         <div>
                             <label class="form-label-ops">항목명</label>
                             <input type="text" name="artistName" placeholder="예: 티켓 부스 오픈, 입장 게이트 오픈" required maxlength="50"
-                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                                   class="compact-input-ops"/>
                         </div>
                         <div>
                             <label class="form-label-ops">날짜</label>
                             <input type="date" name="festivalDate"
                                    th:min="${festival.startDate}" th:max="${festival.endDate}"
                                    th:value="${festival.startDate}" required
-                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                                   class="compact-input-ops"/>
                         </div>
                         <div>
                             <label class="form-label-ops">시작</label>
                             <input type="time" name="startTime" required
-                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                                   class="compact-input-ops"/>
                         </div>
                         <div>
                             <label class="form-label-ops">종료</label>
                             <input type="time" name="endTime" required
-                                   style="width:100%; padding:7px 10px; border:1px solid #f6d860; border-radius:8px; font-size:13px;"/>
+                                   class="compact-input-ops"/>
                         </div>
-                        <button type="submit" class="btn btn-warning" style="white-space:nowrap;">+ 추가</button>
+                        <button type="submit" class="btn btn-warning btn-nowrap">+ 추가</button>
                     </form>
                 </div>
 
@@ -332,12 +331,12 @@
                                           class="badge badge-stage" th:data-stage="${entry.stageName}"
                                           th:text="${!#strings.isEmpty(entry.stageName) ? entry.stageName : '미지정'}"></span>
                                 </td>
-                                <td style="font-size:13px; white-space:nowrap;">
-                                    <span style="font-weight:700; color:var(--text);" th:text="${entry.startTime}"></span>
-                                    <span style="color:var(--muted); margin:0 4px;">~</span>
-                                    <span style="font-weight:700; color:var(--text);" th:text="${entry.endTime}"></span>
+                                <td class="td-time">
+                                    <span class="text-bold" th:text="${entry.startTime}"></span>
+                                    <span class="sep-muted">~</span>
+                                    <span class="text-bold" th:text="${entry.endTime}"></span>
                                 </td>
-                                <td style="font-weight:600;" th:text="${entry.artistName}"></td>
+                                <td class="td-bold" th:text="${entry.artistName}"></td>
                                 <td>
                                     <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
                                           method="post">
@@ -365,24 +364,24 @@
                 </div>
             </div>
             <div class="card-body">
-                <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">지도를 클릭하면 해당 위치에 부스를 등록할 수 있습니다.</p>
+                <p class="card-hint">지도를 클릭하면 해당 위치에 부스를 등록할 수 있습니다.</p>
 
                 <!-- 부스 추가 폼 -->
                 <form th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
                       enctype="multipart/form-data"
                       onsubmit="return validateBoothPos()"
-                      style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:8px; align-items:end; margin-bottom:14px;">
+                      class="form-grid-5col">
                     <input type="hidden" id="boothLat" name="latitude"/>
                     <input type="hidden" id="boothLng" name="longitude"/>
                     <div>
                         <label class="form-label-sm">부스명</label>
                         <input type="text" name="name" placeholder="예: 맥주존 A" required
-                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                               class="compact-input"/>
                     </div>
                     <div>
                         <label class="form-label-sm">종류</label>
                         <select name="boothType" required
-                                style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+                                class="compact-input">
                             <option value="" disabled selected>선택</option>
                             <option th:each="bt : ${allBoothTypes}" th:value="${bt}" th:text="${bt.displayName}"></option>
                         </select>
@@ -390,23 +389,23 @@
                     <div>
                         <label class="form-label-sm">설명 (선택)</label>
                         <input type="text" name="description" placeholder="간단한 설명"
-                               style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px;"/>
+                               class="compact-input"/>
                     </div>
                     <div>
                         <label class="form-label-sm">이미지 (선택)</label>
                         <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
                                onchange="validateBoothImage(this)"
-                               style="width:100%; padding:5px 0; font-size:12px;"/>
-                        <span id="boothImageError" style="display:none; font-size:11px; color:var(--danger); font-weight:600; margin-top:3px;"></span>
+                               class="file-input-sm"/>
+                        <span id="boothImageError" class="input-error"></span>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="white-space:nowrap;">+ 추가</button>
+                    <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
                 </form>
 
                 <!-- 지도 -->
-                <div id="boothMapWrap" style="border-radius:12px; border:1px solid var(--border); margin-bottom:8px; overflow:hidden;">
-                    <div id="boothMap" style="width:100%; aspect-ratio:1/1;"></div>
+                <div id="boothMapWrap" class="map-wrap">
+                    <div id="boothMap" class="map-canvas"></div>
                 </div>
-                <p id="boothPosLabel" style="font-size:12px; color:var(--muted); margin-bottom:16px;">지도를 클릭하여 부스 위치를 선택하세요.</p>
+                <p id="boothPosLabel" class="card-hint">지도를 클릭하여 부스 위치를 선택하세요.</p>
 
                 <!-- 부스 목록 -->
                 <div class="table-wrap">
@@ -423,14 +422,13 @@
                         <tbody>
                         <tr th:each="booth : ${booths}">
                             <td>
-                                <span class="badge"
+                                <span class="badge badge-type"
                                       th:classappend="${booth.boothType != null ? 'badge-' + booth.boothType.cssName : ''}"
-                                      th:text="${booth.boothTypeName ?: '-'}"
-                                      style="padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600;"></span>
+                                      th:text="${booth.boothTypeName ?: '-'}"></span>
                             </td>
-                            <td style="font-weight:600;" th:text="${booth.name}"></td>
-                            <td style="color:var(--muted); font-size:13px;" th:text="${booth.description ?: '-'}"></td>
-                            <td style="font-size:12px; color:var(--muted);" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
+                            <td class="td-bold" th:text="${booth.name}"></td>
+                            <td class="td-sub td-muted" th:text="${booth.description ?: '-'}"></td>
+                            <td class="hint" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
                             <td>
                                 <form th:action="@{/admin/festivals/{fId}/booths/{bId}/delete(fId=${festival.id},bId=${booth.id})}" method="post">
                                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
@@ -455,14 +453,14 @@
                 </div>
             </div>
             <div class="card-body">
-                <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">
+                <p class="card-hint">
                     아티스트별로 이 페스티벌에서 부른 곡을 등록하세요. 순서는 라인업 순서를 따릅니다.
                 </p>
                 <div class="table-wrap">
                     <table>
                         <thead>
                         <tr>
-                            <th style="width:40px;">순서</th>
+                            <th class="col-w40">순서</th>
                             <th>아티스트</th>
                             <th>등록된 곡 수</th>
                             <th>편집</th>
@@ -470,16 +468,16 @@
                         </thead>
                         <tbody>
                         <tr th:each="af : ${participatingArtists}">
-                            <td style="text-align:center; color:var(--muted); font-size:13px;"
+                            <td class="td-center td-sub td-muted"
                                 th:text="${af.lineupOrder ?: '-'}"></td>
-                            <td style="font-weight:600;" th:text="${af.artistName}"></td>
+                            <td class="td-bold" th:text="${af.artistName}"></td>
                             <td>
                                 <th:block th:with="cnt=${setlistCounts.get(af.artistFestivalId) ?: 0}">
                                     <span th:if="${cnt > 0}"
-                                          style="font-size:13px; font-weight:700; color:var(--primary);"
+                                          class="setlist-count"
                                           th:text="${cnt} + '곡'"></span>
                                     <span th:if="${cnt == 0}"
-                                          style="font-size:12px; color:var(--muted);">미등록</span>
+                                          class="setlist-none">미등록</span>
                                 </th:block>
                             </td>
                             <td>

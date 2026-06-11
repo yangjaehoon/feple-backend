@@ -1000,6 +1000,7 @@ select.stage-select { padding: 5px 8px; border: 1px solid var(--border); border-
 
 .stage-box { background: #f8f9ff; border: 1px solid var(--primary-soft); border-radius: var(--r); padding: 14px 18px; margin-bottom: 20px; }
 .stage-box-title { font-size: 13px; font-weight: 700; color: var(--primary-dk); margin-bottom: 6px; }
+.stage-list { margin-bottom: 10px; }
 .ops-box { background: var(--accent-lt); border: 1px solid #f6d860; border-radius: var(--r); padding: 14px 18px; margin-bottom: 20px; }
 .ops-box-title { font-size: 13px; font-weight: 700; color: #b7791f; margin-bottom: 10px; }
 .tt-date-row { background: var(--primary-lt) !important; border-top: 2px solid var(--primary-soft); }
@@ -1200,7 +1201,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px; }
 
 /* ── Alert dismissible ── */
-.alert { position: relative; transition: opacity .3s, max-height .3s ease, padding .3s, margin .3s; overflow: hidden; }
+.alert { position: relative; transition: opacity .3s, max-height .3s ease, padding .3s, margin .3s; overflow: hidden; margin-bottom: 16px; }
 .alert-close { position: absolute; top: 8px; right: 12px; background: none; border: none; font-size: 18px; line-height: 1; cursor: pointer; color: inherit; opacity: .55; padding: 0 4px; }
 .alert-close:hover { opacity: 1; }
 
@@ -1427,6 +1428,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .detail-post-link:hover { text-decoration: underline; }
 
 /* ── 테이블 컬럼 너비 (추가) ── */
+.col-w40 { width: 40px; }
 .col-w55 { width: 55px; }
 .col-w60 { width: 60px; }
 .col-w66 { width: 66px; }
@@ -1438,3 +1440,32 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 /* ── 정렬 컨트롤 ── */
 .sort-group { display: flex; gap: 6px; align-items: center; }
 .sort-label { font-size: 12px; color: var(--muted); }
+
+/* ── Festival detail ── */
+.icon-xl             { font-size: 28px; }
+.meta-value-primary  { color: var(--primary); }
+.form-grid-5col      { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 16px; }
+.form-grid-ops       { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; }
+.form-grid-2col      { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.compact-input       { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+.compact-input-date  { padding: 5px 6px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+.compact-input-ops   { width: 100%; padding: 7px 10px; border: 1px solid #f6d860; border-radius: 8px; font-size: 13px; }
+.preview-input       { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: #f8f9ff; color: var(--muted); min-height: 36px; }
+.time-error          { display: none; margin-top: 5px; font-size: 12px; color: var(--danger); font-weight: 500; }
+.stage-row form      { margin: 0; }
+.map-wrap            { border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; overflow: hidden; }
+.map-canvas          { width: 100%; aspect-ratio: 1/1; }
+.card-hint           { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.slot-row            { font-size: 11px; white-space: nowrap; margin-bottom: 3px; }
+.slot-muted          { color: var(--muted); }
+.slot-bold           { font-weight: 700; color: var(--text); margin-left: 4px; }
+.td-bold             { font-weight: 600; }
+.td-time             { font-size: 13px; white-space: nowrap; }
+.sep-muted           { color: var(--muted); margin: 0 4px; }
+.text-bold           { font-weight: 700; color: var(--text); }
+.file-input-sm       { width: 100%; padding: 5px 0; font-size: 12px; }
+.input-error         { display: none; font-size: 11px; color: var(--danger); font-weight: 600; margin-top: 3px; }
+.badge-type          { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.btn-nowrap          { white-space: nowrap; }
+.setlist-count       { font-size: 13px; font-weight: 700; color: var(--primary); }
+.setlist-none        { font-size: 12px; color: var(--muted); }
