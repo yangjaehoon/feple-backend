@@ -33,14 +33,14 @@
                     <input type="hidden" name="sort" th:value="${sort}"/>
                     <input type="text" name="keyword" th:value="${keyword}"
                            placeholder="닉네임 또는 이메일 검색..."
-                           style="flex:1; min-width:200px; max-width:320px; padding:7px 12px; border:1px solid var(--border); border-radius:7px; font-size:13px;"/>
+                           class="search-input"/>
                     <button type="submit" class="btn btn-secondary btn-sm">검색</button>
                     <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
                        th:href="@{/admin/users(page=0,filter=${filter},sort=${sort})}"
                        class="btn btn-secondary btn-sm">✕ 초기화</a>
                 </form>
-                <div th:if="${filter != 'banned'}" style="display:flex; gap:6px; align-items:center;">
-                    <span style="font-size:12px; color:var(--muted);">정렬:</span>
+                <div th:if="${filter != 'banned'}" class="sort-group">
+                    <span class="sort-label">정렬:</span>
                     <a th:href="@{/admin/users(page=0,keyword=${keyword},filter=${filter},sort='latest')}"
                        th:classappend="${sort == 'latest'} ? ' btn-primary' : ' btn-secondary'"
                        class="btn btn-sm">최신순</a>
@@ -69,27 +69,25 @@
                 <table>
                     <thead>
                     <tr>
-                        <th style="width:36px;">
-                            <input type="checkbox" id="select-all" title="전체 선택"
-                                   style="cursor:pointer; width:15px; height:15px;"/>
+                        <th class="col-w36">
+                            <input type="checkbox" id="select-all" title="전체 선택" class="cb-input"/>
                         </th>
                         <th>회원</th>
-                        <th style="width:55px; text-align:center;">역할</th>
-                        <th style="width:70px; text-align:center;">게시글</th>
-                        <th style="width:60px; text-align:center;">댓글</th>
-                        <th style="width:70px; text-align:center;">신고</th>
-                        <th style="width:100px;">가입일</th>
-                        <th style="width:100px;" th:if="${filter == 'banned'}">정지 만료</th>
-                        <th style="width:66px;">상세</th>
-                        <th style="width:66px;">삭제</th>
+                        <th class="col-w55 td-center">역할</th>
+                        <th class="col-w70 td-center">게시글</th>
+                        <th class="col-w60 td-center">댓글</th>
+                        <th class="col-w70 td-center">신고</th>
+                        <th class="col-w100">가입일</th>
+                        <th class="col-w100" th:if="${filter == 'banned'}">정지 만료</th>
+                        <th class="col-w66">상세</th>
+                        <th class="col-w66">삭제</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="user : ${users.content}">
                         <td>
                             <input type="checkbox" name="ids" th:value="${user.id}"
-                                   form="bulk-form" class="row-check"
-                                   style="cursor:pointer; width:15px; height:15px;"/>
+                                   form="bulk-form" class="row-check cb-input"/>
                         </td>
                         <td>
                             <div class="avatar-cell">
@@ -98,7 +96,7 @@
                                      class="avatar" alt="profile"/>
                                 <div th:if="${user.profileImageUrl == null}" class="avatar-ph">👤</div>
                                 <div>
-                                    <div style="display:flex; align-items:center; gap:6px;">
+                                    <div class="cell-actions">
                                         <a th:href="@{/admin/users/{id}(id=${user.id})}"
                                            class="td-link"
                                            th:text="${user.nickname}"></a>
@@ -109,18 +107,18 @@
                             </div>
                         </td>
                         <!-- 역할 -->
-                        <td style="text-align:center;">
+                        <td class="td-center">
                             <span th:if="${user.admin}"  class="badge badge-admin">관리자</span>
                             <span th:if="${user.artist}" class="badge badge-artist">아티스트</span>
                         </td>
                         <!-- 게시글 수 -->
-                        <td style="text-align:center; font-size:13px;"
+                        <td class="td-center td-sub"
                             th:text="${postCounts.getOrDefault(user.id, 0)}"></td>
                         <!-- 댓글 수 -->
-                        <td style="text-align:center; font-size:13px;"
+                        <td class="td-center td-sub"
                             th:text="${commentCounts.getOrDefault(user.id, 0)}"></td>
                         <!-- 신고 수 -->
-                        <td style="text-align:center;">
+                        <td class="td-center">
                             <th:block th:with="cnt=${reportCounts.get(user.id)}">
                                 <span th:if="${cnt != null and cnt > 0}"
                                       th:text="${cnt}"
@@ -130,11 +128,11 @@
                             </th:block>
                         </td>
                         <!-- 가입일 -->
-                        <td style="color:var(--muted); font-size:12.5px; white-space:nowrap;"
+                        <td class="td-date"
                             th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd') : '-'}"></td>
                         <!-- 정지 만료일 (banned 탭에서만 표시) -->
                         <td th:if="${filter == 'banned'}"
-                            style="font-size:12px; white-space:nowrap;"
+                            class="td-date"
                             th:text="${user.permanentBan ? '영구' : (user.bannedUntil != null ? #temporals.format(user.bannedUntil, 'yyyy-MM-dd') : '-')}"></td>
                         <td>
                             <a th:href="@{/admin/users/{id}(id=${user.id})}"

@@ -1425,3 +1425,16 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .detail-content-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-post-link   { max-width: 220px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; color: var(--muted); font-size: 12.5px; }
 .detail-post-link:hover { text-decoration: underline; }
+
+/* ── 테이블 컬럼 너비 (추가) ── */
+.col-w55 { width: 55px; }
+.col-w60 { width: 60px; }
+.col-w66 { width: 66px; }
+.col-w70 { width: 70px; }
+
+/* ── 테이블 셀 가운데 정렬 ── */
+.td-center { text-align: center; }
+
+/* ── 정렬 컨트롤 ── */
+.sort-group { display: flex; gap: 6px; align-items: center; }
+.sort-label { font-size: 12px; color: var(--muted); }
