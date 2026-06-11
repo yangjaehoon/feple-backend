@@ -6,8 +6,8 @@
   --text-2:     #64748B;
   --muted:      #A0AEC0;
   --border:     #E4EDF3;
-  --danger-lt:  #FFF0F4;
-  --success-lt: #E8F9F2;
+  --danger-bg:  #FFF0F4;
+  --success-bg: #E8F9F2;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -186,12 +186,12 @@ input::placeholder { color: #C0CEDD; font-weight: 500; }
   font-weight: 600;
 }
 .alert-error {
-  background: var(--danger-lt);
+  background: var(--danger-bg);
   color: #C53030;
   border: 1px solid #FEB2C2;
 }
 .alert-success {
-  background: var(--success-lt);
+  background: var(--success-bg);
   color: #276749;
   border: 1px solid #9AE6B4;
 }
