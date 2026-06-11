@@ -246,6 +246,11 @@
 </div>
 
 
-<script th:src="@{/js/admin-artists-list.js}"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.ArtistSuggestionUrls = { dismissBase: /*[[@{/admin/artists/suggestions}]]*/ '' };
+/*]]>*/
+</script>
+<script th:src="@{/js/admin-dismiss-modal.js}"></script>
 </body>
 </html>

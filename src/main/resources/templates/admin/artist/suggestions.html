@@ -78,6 +78,11 @@
     </div>
 </div>
 
-<script th:src="@{/js/admin-suggestions.js}"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.ArtistSuggestionUrls = { dismissBase: /*[[@{/admin/artist-suggestions}]]*/ '' };
+/*]]>*/
+</script>
+<script th:src="@{/js/admin-dismiss-modal.js}"></script>
 </body>
 </html>

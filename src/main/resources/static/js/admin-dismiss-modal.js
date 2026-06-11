@@ -3,7 +3,7 @@
         var id     = btn.dataset.id;
         var artist = btn.dataset.artist;
         document.getElementById('dismiss-artist-name').textContent = '아티스트: ' + artist;
-        document.getElementById('dismiss-form').action = '/admin/artist-suggestions/' + id + '/dismiss';
+        document.getElementById('dismiss-form').action = window.ArtistSuggestionUrls.dismissBase + '/' + id + '/dismiss';
         document.getElementById('dismiss-note').value = '';
         document.getElementById('dismiss-process-note').value = '';
         document.querySelectorAll('.reason-chip').forEach(function (c) { c.classList.remove('active'); });
