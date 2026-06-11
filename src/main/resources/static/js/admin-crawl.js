@@ -67,7 +67,7 @@
             document.getElementById('scrapeEmptyState').style.display = 'block';
             btn.disabled = false;
             btn.innerHTML = '스크래핑 시작';
-            alert('스크래핑 실패: ' + err.message);
+            showApplyResult('error', '스크래핑 실패: ' + esc(err.message));
         });
     });
 
@@ -109,8 +109,8 @@
         var startDate = document.getElementById('scrapeStartDate').value;
         var endDate   = document.getElementById('scrapeEndDate').value;
 
-        if (!title)               { alert('제목을 입력해주세요.'); document.getElementById('scrapeTitle').focus(); return; }
-        if (!startDate || !endDate) { alert('시작일과 종료일을 입력해주세요.'); return; }
+        if (!title)               { showApplyResult('error', '제목을 입력해주세요.'); document.getElementById('scrapeTitle').focus(); return; }
+        if (!startDate || !endDate) { showApplyResult('error', '시작일과 종료일을 입력해주세요.'); return; }
 
         var genres = [];
         document.querySelectorAll('input[name="scrapeGenres"]:checked').forEach(function (cb) { genres.push(cb.value); });
@@ -250,8 +250,8 @@
     });
 
     function handleOcrFile(file) {
-        if (!file.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); return; }
-        if (file.size > 10 * 1024 * 1024) { alert('파일 크기는 10MB 이하여야 합니다.'); return; }
+        if (!file.type.startsWith('image/')) { showApplyResult('error', '이미지 파일만 업로드 가능합니다.'); return; }
+        if (file.size > 10 * 1024 * 1024) { showApplyResult('error', '파일 크기는 10MB 이하여야 합니다.'); return; }
 
         var reader = new FileReader();
         reader.onload = function (e) {
@@ -398,7 +398,7 @@
     /* ── 타임테이블에 적용 ── */
     document.getElementById('btnApplyOcr').addEventListener('click', function () {
         var fid = document.getElementById('selFestival').value;
-        if (!fid) { alert('페스티벌을 선택해주세요.'); return; }
+        if (!fid) { showApplyResult('error', '페스티벌을 선택해주세요.'); return; }
 
         var entries = [];
         document.getElementById('ocrParseBody').querySelectorAll('tr').forEach(function (tr) {
@@ -411,11 +411,11 @@
             });
         });
 
-        if (entries.length === 0) { alert('저장할 항목이 없습니다.'); return; }
+        if (entries.length === 0) { showApplyResult('error', '저장할 항목이 없습니다.'); return; }
 
         var missingDate = entries.some(function (e) { return !e.date; });
         if (missingDate) {
-            alert('날짜가 설정되지 않은 항목이 있습니다.\n상단 "날짜 일괄 설정"을 사용하거나 각 행의 날짜를 직접 입력해주세요.');
+            showApplyResult('error', '날짜가 설정되지 않은 항목이 있습니다.<br>상단 "날짜 일괄 설정"을 사용하거나 각 행의 날짜를 직접 입력해주세요.');
             return;
         }
 
