@@ -1,13 +1,5 @@
 (function () {
-    /* ── 탭 전환 ── */
-    document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.header-tab-btn').forEach(function (b) { b.classList.remove('active'); });
-            document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
-            btn.classList.add('active');
-            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-        });
-    });
+    window.AdminUtils.initTabs();
 
     /* ── 날짜 범위 프리셋 ── */
     document.querySelectorAll('.preset-btn').forEach(function (btn) {

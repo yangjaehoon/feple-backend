@@ -12,60 +12,35 @@
         var icon  = boothIcons[booth.boothType]  || '📍';
 
         var card = document.createElement('div');
-        card.style.cssText = [
-            'background:' + color,
-            'color:#fff',
-            'border-radius:8px',
-            'font-size:12px',
-            'font-weight:700',
-            'box-shadow:0 2px 8px rgba(0,0,0,0.35)',
-            'border:2px solid rgba(255,255,255,0.75)',
-            'cursor:pointer',
-            'user-select:none',
-            'overflow:hidden',
-            'width:90px',
-            'text-align:center'
-        ].join(';');
+        card.className = 'booth-marker-card';
+        card.style.background = color;
 
         if (booth.imageUrl) {
             var img = document.createElement('img');
             img.src = booth.imageUrl;
-            img.style.cssText = 'width:90px;height:auto;display:block;';
+            img.className = 'booth-marker-img';
             card.appendChild(img);
         }
 
         var label = document.createElement('div');
-        label.style.padding = '4px 8px';
+        label.className = 'booth-marker-label';
         label.textContent = icon + ' ' + booth.name;
         card.appendChild(label);
 
-        var tail = document.createElement('div');
-        tail.style.cssText = [
-            'width:0',
-            'height:0',
-            'border-left:6px solid transparent',
-            'border-right:6px solid transparent',
-            'border-top:8px solid ' + color,
-            'margin:0 auto'
-        ].join(';');
+        var arrow = document.createElement('div');
+        arrow.className = 'booth-marker-arrow';
+        arrow.style.borderTopColor = color;
 
         var wrapper = document.createElement('div');
-        wrapper.style.textAlign = 'center';
+        wrapper.className = 'booth-marker-wrap';
         wrapper.appendChild(card);
-        wrapper.appendChild(tail);
+        wrapper.appendChild(arrow);
         return wrapper;
     }
 
     function createSelectedEl() {
         var el = document.createElement('div');
-        el.style.cssText = [
-            'width:16px',
-            'height:16px',
-            'background:var(--primary)',
-            'border:3px solid #fff',
-            'border-radius:50%',
-            'box-shadow:0 2px 6px rgba(0,0,0,0.4)'
-        ].join(';');
+        el.className = 'booth-selected-dot';
         return el;
     }
 
@@ -89,11 +64,11 @@
                 content: createBoothEl(booth)
             });
             var infoDiv = document.createElement('div');
-            infoDiv.style.cssText = 'padding:8px 12px;font-size:13px;font-weight:600;';
+            infoDiv.className = 'booth-info-popup';
             infoDiv.textContent = (booth.boothTypeName || '') + ' · ' + booth.name;
             if (booth.description) {
                 var descEl = document.createElement('span');
-                descEl.style.cssText = 'display:block;font-weight:400;font-size:12px;color:#555;margin-top:2px;';
+                descEl.className = 'booth-info-desc';
                 descEl.textContent = booth.description;
                 infoDiv.appendChild(descEl);
             }
@@ -265,11 +240,6 @@
             var c = stageMap[name];
             if (c) {
                 badge.style.background = c.bg;
-                badge.style.color = '#fff';
-                badge.style.padding = '3px 10px';
-                badge.style.borderRadius = '20px';
-                badge.style.fontSize = '12px';
-                badge.style.fontWeight = '600';
             }
         });
     })();

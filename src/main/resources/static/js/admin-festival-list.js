@@ -1,24 +1,5 @@
 (function () {
-/* ── 탭 전환 ── */
-function switchTab(tabName) {
-    document.querySelectorAll('.header-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-    var btn = document.querySelector('.header-tab-btn[data-tab="' + tabName + '"]');
-    if (btn) btn.classList.add('active');
-    var panel = document.getElementById('tab-' + tabName);
-    if (panel) panel.classList.add('active');
-    history.replaceState(null, '', window.location.pathname + window.location.search + '#' + tabName);
-}
-
-document.querySelectorAll('.header-tab-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
-});
-
-/* 페이지 로드 시 해시로 탭 복원 */
-(function() {
-    var hash = window.location.hash.replace('#', '');
-    if (hash === 'list' || hash === 'checklist') switchTab(hash);
-})();
+window.AdminUtils.initTabs(['list', 'checklist']);
 
 /* ── 체크박스 AJAX 저장 ── */
 var toastTimer;

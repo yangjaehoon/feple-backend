@@ -1,5 +1,29 @@
 (function () {
     window.AdminUtils = {
+        initTabs: function (hashKeys) {
+            var validHashes = hashKeys || [];
+
+            function activate(tabName) {
+                document.querySelectorAll('.header-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+                document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+                var btn = document.querySelector('.header-tab-btn[data-tab="' + tabName + '"]');
+                if (btn) btn.classList.add('active');
+                var panel = document.getElementById('tab-' + tabName);
+                if (panel) panel.classList.add('active');
+                if (validHashes.length > 0) {
+                    history.replaceState(null, '', window.location.pathname + window.location.search + '#' + tabName);
+                }
+            }
+
+            document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () { activate(btn.dataset.tab); });
+            });
+
+            if (validHashes.length > 0) {
+                var hash = window.location.hash.replace('#', '');
+                if (validHashes.indexOf(hash) !== -1) activate(hash);
+            }
+        },
         getCsrfHeaders: function () {
             var token  = document.querySelector('meta[name="_csrf"]').content;
             var header = document.querySelector('meta[name="_csrf_header"]').content;

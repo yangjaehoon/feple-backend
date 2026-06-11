@@ -7,15 +7,7 @@
     var festivalStartDate = '';
     var festivalEndDate   = '';
 
-    /* ── 탭 전환 ── */
-    document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.header-tab-btn').forEach(function (b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
-            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-        });
-    });
+    window.AdminUtils.initTabs();
 
     /* ── 소스 카드 선택 ── */
     document.querySelectorAll('.source-card').forEach(function (card) {
