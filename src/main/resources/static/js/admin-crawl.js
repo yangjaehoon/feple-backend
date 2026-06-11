@@ -239,6 +239,10 @@
     var fileInput = document.getElementById('ocrFileInput');
 
     dropZone.addEventListener('click', function () { fileInput.click(); });
+    document.getElementById('ocrFileSelectBtn').addEventListener('click', function (e) {
+        e.stopPropagation();
+        fileInput.click();
+    });
     dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
     dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
     dropZone.addEventListener('drop', function (e) {
@@ -375,7 +379,7 @@
             '<td><input type="time" data-field="startTime" value="' + esc(startTime) + '" style="' + timeStyle + '"/></td>' +
             '<td><input type="time" data-field="endTime"   value="' + esc(endTime)   + '" style="' + timeStyle + '"/></td>' +
             '<td>' + confBadge(conf) + '</td>' +
-            '<td><button class="row-del" onclick="this.closest(\'tr\').remove(); checkEmpty();">✕</button></td>';
+            '<td><button class="row-del">✕</button></td>';
         document.getElementById('ocrParseBody').appendChild(tr);
     }
 
@@ -385,6 +389,13 @@
             document.getElementById('btnApplyOcr').disabled = true;
         }
     }
+
+    document.getElementById('ocrParseBody').addEventListener('click', function (e) {
+        if (e.target.classList.contains('row-del')) {
+            e.target.closest('tr').remove();
+            checkEmpty();
+        }
+    });
 
     /* ── 행 추가 ── */
     document.getElementById('btnAddRow').addEventListener('click', function () {

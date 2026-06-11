@@ -32,8 +32,7 @@
                         <td class="cell-secondary"
                             th:text="${#temporals.format(s.createdAt, 'yy-MM-dd HH:mm')}"></td>
                         <td>
-                            <button type="button" class="btn btn-primary btn-sm"
-                                    onclick="openDismissModal(this)"
+                            <button type="button" class="btn btn-primary btn-sm open-dismiss-btn"
                                     th:data-id="${s.id}"
                                     th:data-artist="${s.artistName}">처리하기</button>
                         </td>
@@ -72,7 +71,7 @@
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" name="processNote" id="dismiss-process-note"/>
             <div class="admin-modal-actions">
-                <button type="button" class="btn btn-secondary" onclick="closeDismissModal()">취소</button>
+                <button type="button" id="dismiss-close-btn" class="btn btn-secondary">취소</button>
                 <button type="submit" class="btn btn-primary">처리 완료</button>
             </div>
         </form>

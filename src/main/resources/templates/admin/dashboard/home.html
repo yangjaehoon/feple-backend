@@ -309,13 +309,14 @@
                 <div class="db-card">
                     <div class="db-card-header">
                         <span class="db-card-title">📝 메모</span>
-                        <button class="btn btn-secondary btn-sm" onclick="clearAllMemos()">전체 삭제</button>
+                        <button id="memo-clear-btn" class="btn btn-secondary btn-sm"
+                                data-confirm="메모를 모두 삭제할까요?">전체 삭제</button>
                     </div>
                     <div class="memo-body">
                         <textarea class="memo-textarea" id="memo-input"
                                   placeholder="메모를 입력하세요..." maxlength="500"></textarea>
                         <div class="memo-btns">
-                            <button class="btn btn-primary btn-sm" onclick="addMemo()">저장</button>
+                            <button id="memo-add-btn" class="btn btn-primary btn-sm">저장</button>
                         </div>
                         <div class="memo-saved" id="memo-saved"></div>
                     </div>

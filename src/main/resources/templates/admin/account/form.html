@@ -130,18 +130,16 @@
                         </div>
                         <div class="pt-4">
                             <input type="file" name="profileImage" id="profile-image-input"
-                                   accept=".jpg,.jpeg,.png" class="d-none"
-                                   onchange="previewPhoto(this)"/>
+                                   accept=".jpg,.jpeg,.png" class="d-none"/>
                             <input type="hidden" name="deleteProfileImage" id="delete-profile-image-flag" value="false"/>
                             <div class="cell-actions flex-wrap">
-                                <button type="button" class="btn btn-secondary btn-sm"
-                                        onclick="document.getElementById('profile-image-input').click()">
+                                <button type="button" id="upload-photo-btn" class="btn btn-secondary btn-sm">
                                     사진 업로드
                                 </button>
                                 <button th:if="${account != null and account.profileImageUrl != null}"
                                         type="button" id="delete-photo-btn"
                                         class="btn btn-ghost-danger btn-sm"
-                                        onclick="confirmDeletePhoto()">
+                                        data-confirm="프로필 사진을 삭제할까요?">
                                     사진 삭제
                                 </button>
                             </div>
@@ -197,8 +195,7 @@
                     <div class="radio-group" id="role-group">
                         <label th:each="r : ${allRoles}" class="radio-card">
                             <input type="radio" name="role" th:value="${r.name()}"
-                                   th:checked="${account != null} ? ${account.role == r} : ${r.name() == 'MANAGER'}"
-                                   onchange="onRoleChange(this.value)"/>
+                                   th:checked="${account != null} ? ${account.role == r} : ${r.name() == 'MANAGER'}"/>
                             <div>
                                 <div class="radio-card-label" th:text="${r.displayName}"></div>
                                 <div class="radio-card-desc"
@@ -219,10 +216,8 @@
                         </label>
                     </div>
                     <div class="mt-10">
-                        <button type="button" class="btn btn-secondary btn-sm"
-                                onclick="document.querySelectorAll('#perm-section input[type=checkbox]').forEach(c=>c.checked=true)">전체 선택</button>
-                        <button type="button" class="btn btn-secondary btn-sm ml-4"
-                                onclick="document.querySelectorAll('#perm-section input[type=checkbox]').forEach(c=>c.checked=false)">전체 해제</button>
+                        <button type="button" id="perm-select-all-btn" class="btn btn-secondary btn-sm">전체 선택</button>
+                        <button type="button" id="perm-deselect-all-btn" class="btn btn-secondary btn-sm ml-4">전체 해제</button>
                     </div>
                 </div>
 

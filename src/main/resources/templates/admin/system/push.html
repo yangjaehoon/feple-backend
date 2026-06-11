@@ -17,7 +17,7 @@
             </div>
             <div class="card-body">
                 <form id="broadcast-form" th:action="@{/admin/push}" method="post"
-                      onsubmit="return confirm('전체 ' + document.getElementById('device-count').textContent + '에게 푸시 알림을 발송하시겠습니까?')">
+                      data-confirm="전체 기기에 푸시 알림을 발송하시겠습니까?">
                     <div class="form-field">
                         <label class="form-label">제목 *</label>
                         <input type="text" name="title" required maxlength="100"
@@ -59,9 +59,8 @@
                         <label class="form-label-sub">닉네임으로 검색</label>
                         <div class="input-flex">
                             <input type="text" id="nickname-search" placeholder="앱 닉네임 입력"
-                                   class="form-input-sm w-200"
-                                   onkeydown="if(event.key==='Enter'){event.preventDefault();searchNickname();}"/>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="searchNickname()">검색</button>
+                                   class="form-input-sm w-200"/>
+                            <button type="button" id="nickname-search-btn" class="btn btn-secondary btn-sm">검색</button>
                         </div>
                         <div id="search-result" class="search-result"></div>
                     </div>
@@ -75,8 +74,7 @@
                                    placeholder="예) 42"
                                    class="form-input-sm w-130"/>
                         </div>
-                        <button type="submit"
-                                onclick="return validateTest(this.form)"
+                        <button type="button" id="test-send-btn"
                                 class="btn btn-secondary">테스트 발송</button>
                     </div>
                 </form>
@@ -106,8 +104,8 @@
                             <option th:each="a : ${artists}" th:value="${a.id}" th:text="${a.name}"></option>
                         </select>
                         <button type="submit"
-                                onclick="return fillTargetAndConfirm('artist')"
-                                class="btn btn-secondary">팔로워에게 발송</button>
+                                class="btn btn-secondary target-send-btn"
+                                data-target="artist">팔로워에게 발송</button>
                     </form>
                 </div>
 
@@ -123,8 +121,8 @@
                             <option th:each="f : ${festivals}" th:value="${f.id}" th:text="${f.title}"></option>
                         </select>
                         <button type="submit"
-                                onclick="return fillTargetAndConfirm('festival')"
-                                class="btn btn-secondary">인증자에게 발송</button>
+                                class="btn btn-secondary target-send-btn"
+                                data-target="festival">인증자에게 발송</button>
                     </form>
                 </div>
             </div>
@@ -176,7 +174,7 @@
                                         th:data-title="${item.title}"
                                         th:data-body="${item.body}"
                                         th:data-created-at="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}"
-                                        onclick="openBroadcastModal(this)">전체보기</button>
+                                        class="btn-link-inline broadcast-modal-btn">전체보기</button>
                             </td>
                         </tr>
                     </tbody>
@@ -195,12 +193,12 @@
                 <div id="modal-title" class="modal-title"></div>
                 <div id="modal-date"  class="modal-date"></div>
             </div>
-            <button type="button" onclick="closeBroadcastModal()"
+            <button type="button" id="modal-close-btn"
                     class="modal-close">&times;</button>
         </div>
         <div id="modal-body" class="modal-body"></div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeBroadcastModal()">닫기</button>
+            <button type="button" id="modal-footer-close-btn" class="btn btn-secondary">닫기</button>
         </div>
     </div>
 </div>
