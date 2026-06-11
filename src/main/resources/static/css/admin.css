@@ -1023,6 +1023,7 @@ select.stage-select { padding: 5px 8px; border: 1px solid var(--border); border-
 .memo-row td { padding: 0 14px 10px; border-bottom: 1px solid var(--border); background: #FAFCFF; }
 .save-toast { position: fixed; bottom: 28px; right: 28px; background: #1a1a2e; color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 9999; }
 .save-toast.show { opacity: 1; }
+.save-toast.error { background: var(--danger); }
 
 /* ============================================================
    ARTISTS LIST — FILTER PILLS & SORT BUTTONS

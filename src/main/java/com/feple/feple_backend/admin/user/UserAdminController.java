@@ -1,12 +1,9 @@
 package com.feple.feple_backend.admin.user;
 
 import com.feple.feple_backend.admin.UserDetailAggregationService;
-import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
-import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +30,6 @@ public class UserAdminController {
 
     private final UserAdminService userService;
     private final UserDetailAggregationService userDetailAggregationService;
-    private final MyPageService myPageService;
-    private final CommentService commentService;
-    private final PostAdminService postAdminService;
     private final AdminLogService adminLogService;
 
     @GetMapping
@@ -51,10 +45,8 @@ public class UserAdminController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("filter", filter);
-        model.addAttribute("reportCounts",  myPageService.getReportCounts(userIds));
-        model.addAttribute("postCounts",    postAdminService.getPostCountsByUserIds(userIds));
-        model.addAttribute("commentCounts", commentService.getCommentCountsByUserIds(userIds));
-        model.addAttribute("extraParams",   buildListParams(filter, sort, keyword));
+        userDetailAggregationService.populateListCountsModel(userIds, model);
+        model.addAttribute("extraParams", buildListParams(filter, sort, keyword));
         return "admin/user/list";
     }
 

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -20,6 +22,12 @@ public class UserDetailAggregationService {
     private final MyPageService myPageService;
     private final CommentService commentService;
     private final PostAdminService postAdminService;
+
+    public void populateListCountsModel(List<Long> userIds, Model model) {
+        model.addAttribute("reportCounts",  myPageService.getReportCounts(userIds));
+        model.addAttribute("postCounts",    postAdminService.getPostCountsByUserIds(userIds));
+        model.addAttribute("commentCounts", commentService.getCommentCountsByUserIds(userIds));
+    }
 
     public void populateModel(Long userId, Model model) {
         var user            = userAdminService.getAdminUser(userId);

@@ -24,8 +24,15 @@ var csrfToken  = document.querySelector('meta[name="_csrf"]').content;
 var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
 var toastTimer;
-function showToast() {
+function showToast(isError, msg) {
     var t = document.getElementById('saveToast');
+    if (isError) {
+        t.textContent = msg || '저장 실패';
+        t.classList.add('error');
+    } else {
+        t.textContent = '저장됨';
+        t.classList.remove('error');
+    }
     t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1500);
@@ -51,10 +58,11 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
         .then(function(data) {
             cb.checked = data.checked;
             updateProgress(cb.closest('tr'));
-            showToast();
+            showToast(false);
         })
         .catch(function() {
-            cb.checked = !checked; // 롤백
+            cb.checked = !checked;
+            showToast(true, '저장 실패. 다시 시도해주세요.');
         });
     });
 });
@@ -84,7 +92,10 @@ function saveMemo(festivalId, memo) {
         headers: headers,
         body: body
     }).then(function(res) {
-        if (res.ok) showToast();
+        if (res.ok) showToast(false);
+        else showToast(true, '메모 저장에 실패했습니다.');
+    }).catch(function() {
+        showToast(true, '메모 저장에 실패했습니다.');
     });
 }
 
