@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -92,14 +93,15 @@ public class ArtistAdminController {
     public String dismissSuggestion(@PathVariable Long id,
                                     @RequestParam(defaultValue = "") String processNote,
                                     RedirectAttributes ra) {
-        try {
-            artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
-            adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST", id, null);
-            ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
-        } catch (Exception e) {
-            log.error("아티스트 신청 처리 실패: {}", id, e);
-            ra.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
+                    adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST", id, null);
+                },
+                "아티스트 신청이 처리되었습니다.",
+                e -> log.error("아티스트 신청 처리 실패: {}", id, e),
+                "처리 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/artists";
     }
 
@@ -174,25 +176,26 @@ public class ArtistAdminController {
     public String batchUpdateNameEn(@RequestParam("artistIds") List<Long> artistIds,
                                     @RequestParam("nameEns") List<String> nameEns,
                                     RedirectAttributes ra) {
-        try {
-            artistService.batchUpdateNameEn(artistIds, nameEns);
-            ra.addFlashAttribute("successMessage", "영어 이름이 저장되었습니다.");
-        } catch (Exception e) {
-            log.error("아티스트 영어 이름 일괄 저장 실패", e);
-            ra.addFlashAttribute("errorMessage", "저장 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> artistService.batchUpdateNameEn(artistIds, nameEns),
+                "영어 이름이 저장되었습니다.",
+                e -> log.error("아티스트 영어 이름 일괄 저장 실패", e),
+                "저장 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/artists";
     }
 
     @PostMapping("/{id}/delete")
     public String deleteArtist(@PathVariable Long id, RedirectAttributes ra) {
-        try {
-            artistService.deleteArtist(id);
-            adminLogService.log(AdminAction.ARTIST_DELETE, "ARTIST", id, null);
-        } catch (Exception e) {
-            log.error("아티스트 삭제 실패. id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    artistService.deleteArtist(id);
+                    adminLogService.log(AdminAction.ARTIST_DELETE, "ARTIST", id, null);
+                },
+                null,
+                e -> log.error("아티스트 삭제 실패. id={}", id, e),
+                "삭제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/artists";
     }
 

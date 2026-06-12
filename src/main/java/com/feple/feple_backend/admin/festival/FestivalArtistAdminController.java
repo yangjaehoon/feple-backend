@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
@@ -108,15 +109,12 @@ public class FestivalArtistAdminController {
                                @RequestParam(required = false) String stageName,
                                @RequestParam(required = false) String performanceDate,
                                RedirectAttributes ra) {
-        try {
-            artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate));
-            ra.addFlashAttribute("successMessage", "라인업이 수정되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("라인업 수정 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e);
-            ra.addFlashAttribute("errorMessage", "라인업 수정 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate)),
+                "라인업이 수정되었습니다.",
+                e -> log.error("라인업 수정 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e),
+                "라인업 수정 중 오류가 발생했습니다.",
+                ra);
         return AdminFestivalRedirects.artists(festivalId);
     }
 
@@ -159,14 +157,12 @@ public class FestivalArtistAdminController {
             @PathVariable Long festivalId,
             @PathVariable Long artistFestivalId,
             RedirectAttributes ra) {
-        try {
-            artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("아티스트 제거 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e);
-            ra.addFlashAttribute("errorMessage", "아티스트 제거 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId),
+                null,
+                e -> log.error("아티스트 제거 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e),
+                "아티스트 제거 중 오류가 발생했습니다.",
+                ra);
         return AdminFestivalRedirects.artists(festivalId);
     }
 

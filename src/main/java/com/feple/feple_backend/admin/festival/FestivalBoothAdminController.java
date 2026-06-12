@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
@@ -47,15 +48,12 @@ public class FestivalBoothAdminController {
                 return AdminFestivalRedirects.booths(festivalId);
             }
         }
-        try {
-            boothService.createBooth(festivalId, dto);
-            ra.addFlashAttribute("successMessage", "부스가 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("부스 추가 실패 festivalId={}", festivalId, e);
-            ra.addFlashAttribute("errorMessage", "부스 추가에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> boothService.createBooth(festivalId, dto),
+                "부스가 추가되었습니다.",
+                e -> log.error("부스 추가 실패 festivalId={}", festivalId, e),
+                "부스 추가에 실패했습니다.",
+                ra);
         return AdminFestivalRedirects.booths(festivalId);
     }
 
@@ -63,15 +61,12 @@ public class FestivalBoothAdminController {
     public String deleteBooth(@PathVariable Long festivalId,
                               @PathVariable Long boothId,
                               RedirectAttributes ra) {
-        try {
-            boothService.deleteBooth(festivalId, boothId);
-            ra.addFlashAttribute("successMessage", "부스가 삭제되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("부스 삭제 실패 festivalId={}, boothId={}", festivalId, boothId, e);
-            ra.addFlashAttribute("errorMessage", "부스 삭제에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> boothService.deleteBooth(festivalId, boothId),
+                "부스가 삭제되었습니다.",
+                e -> log.error("부스 삭제 실패 festivalId={}, boothId={}", festivalId, boothId, e),
+                "부스 삭제에 실패했습니다.",
+                ra);
         return AdminFestivalRedirects.booths(festivalId);
     }
 }

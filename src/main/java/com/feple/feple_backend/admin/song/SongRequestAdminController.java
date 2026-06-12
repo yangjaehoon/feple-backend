@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.song;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -73,16 +74,15 @@ public class SongRequestAdminController {
                          @RequestParam(defaultValue = "0") int page,
                          @RequestParam(defaultValue = "") String keyword,
                          RedirectAttributes ra) {
-        try {
-            songRequestAdminService.reject(id, reason);
-            adminLogService.log(AdminAction.SONG_REQUEST_REJECT, "SONG_REQUEST", id, reason);
-            ra.addFlashAttribute("successMessage", "노래 요청이 거절되었습니다.");
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("노래 요청 거절 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "거절 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    songRequestAdminService.reject(id, reason);
+                    adminLogService.log(AdminAction.SONG_REQUEST_REJECT, "SONG_REQUEST", id, reason);
+                },
+                "노래 요청이 거절되었습니다.",
+                e -> log.error("노래 요청 거절 실패 id={}", id, e),
+                "거절 처리 중 오류가 발생했습니다.",
+                ra);
         return redirectUrl(status, page, keyword);
     }
 

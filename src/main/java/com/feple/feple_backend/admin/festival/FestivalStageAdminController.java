@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +22,12 @@ public class FestivalStageAdminController {
     public String createStage(@PathVariable Long festivalId,
                               @RequestParam String name,
                               RedirectAttributes ra) {
-        try {
-            stageService.createStage(festivalId, name);
-            ra.addFlashAttribute("successMessage", "스테이지가 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("스테이지 추가 실패: festivalId={}", festivalId, e);
-            ra.addFlashAttribute("errorMessage", "스테이지 추가에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> stageService.createStage(festivalId, name),
+                "스테이지가 추가되었습니다.",
+                e -> log.error("스테이지 추가 실패: festivalId={}", festivalId, e),
+                "스테이지 추가에 실패했습니다.",
+                ra);
         return AdminFestivalRedirects.timetable(festivalId);
     }
 
@@ -37,15 +35,12 @@ public class FestivalStageAdminController {
     public String deleteStage(@PathVariable Long festivalId,
                               @PathVariable Long stageId,
                               RedirectAttributes ra) {
-        try {
-            stageService.deleteStage(stageId);
-            ra.addFlashAttribute("successMessage", "스테이지가 삭제되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("스테이지 삭제 실패: festivalId={}, stageId={}", festivalId, stageId, e);
-            ra.addFlashAttribute("errorMessage", "스테이지 삭제에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> stageService.deleteStage(stageId),
+                "스테이지가 삭제되었습니다.",
+                e -> log.error("스테이지 삭제 실패: festivalId={}, stageId={}", festivalId, stageId, e),
+                "스테이지 삭제에 실패했습니다.",
+                ra);
         return AdminFestivalRedirects.timetable(festivalId);
     }
 
@@ -53,12 +48,12 @@ public class FestivalStageAdminController {
     public String moveStageUp(@PathVariable Long festivalId,
                               @PathVariable Long stageId,
                               RedirectAttributes ra) {
-        try {
-            stageService.moveUp(festivalId, stageId);
-        } catch (Exception e) {
-            log.error("스테이지 순서 변경 실패: festivalId={}, stageId={}", festivalId, stageId, e);
-            ra.addFlashAttribute("errorMessage", "순서 변경에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> stageService.moveUp(festivalId, stageId),
+                null,
+                e -> log.error("스테이지 순서 변경 실패: festivalId={}, stageId={}", festivalId, stageId, e),
+                "순서 변경에 실패했습니다.",
+                ra);
         return AdminFestivalRedirects.timetable(festivalId);
     }
 
@@ -66,12 +61,12 @@ public class FestivalStageAdminController {
     public String moveStageDown(@PathVariable Long festivalId,
                                 @PathVariable Long stageId,
                                 RedirectAttributes ra) {
-        try {
-            stageService.moveDown(festivalId, stageId);
-        } catch (Exception e) {
-            log.error("스테이지 순서 변경 실패: festivalId={}, stageId={}", festivalId, stageId, e);
-            ra.addFlashAttribute("errorMessage", "순서 변경에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> stageService.moveDown(festivalId, stageId),
+                null,
+                e -> log.error("스테이지 순서 변경 실패: festivalId={}, stageId={}", festivalId, stageId, e),
+                "순서 변경에 실패했습니다.",
+                ra);
         return AdminFestivalRedirects.timetable(festivalId);
     }
 }

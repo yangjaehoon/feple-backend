@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -35,14 +36,15 @@ public class ArtistSuggestionAdminController {
     public String dismiss(@PathVariable Long id,
                           @RequestParam(defaultValue = "") String processNote,
                           RedirectAttributes ra) {
-        try {
-            artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
-            adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST_SUGGESTION", id, null);
-            ra.addFlashAttribute("successMessage", "아티스트 신청이 처리되었습니다.");
-        } catch (Exception e) {
-            log.error("아티스트 신청 처리 실패: {}", id, e);
-            ra.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
+                    adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST_SUGGESTION", id, null);
+                },
+                "아티스트 신청이 처리되었습니다.",
+                e -> log.error("아티스트 신청 처리 실패: {}", id, e),
+                "처리 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/artist-suggestions";
     }
 }
