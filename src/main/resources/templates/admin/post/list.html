@@ -124,10 +124,9 @@
                             </div>
                         </td>
                         <td>
-                            <span class="badge"
+                            <span class="badge badge-clamp"
                                   th:classappend="${post.artistId != null or post.festivalId != null} ? 'badge-genre' : 'badge-primary'"
-                                  th:text="${post.boardDisplayName}"
-                                  class="badge-clamp"></span>
+                                  th:text="${post.boardDisplayName}"></span>
                         </td>
                         <td>
                             <div class="cell-primary">❤ <span th:text="${post.likeCount}"></span></div>
