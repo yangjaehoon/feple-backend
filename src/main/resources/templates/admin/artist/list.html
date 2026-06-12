@@ -135,25 +135,25 @@
                     <tr>
                         <th>
                             아티스트
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name', genre=${genre != null ? genre.name() : null})}"
-                               class="sort-btn" th:classappend="${sort == 'name'} ? ' active'">↑</a>
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='name_desc', genre=${genre != null ? genre.name() : null})}"
-                               class="sort-btn" th:classappend="${sort == 'name_desc'} ? ' active'">↓</a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'name' ? 'name_desc' : 'name'}, genre=${genre != null ? genre.name() : null})}"
+                               th:text="${sort == 'name'} ? '↑' : (${sort == 'name_desc'} ? '↓' : '↕')"
+                               class="sort-btn"
+                               th:classappend="${sort == 'name' or sort == 'name_desc'} ? ' active'"></a>
                         </th>
                         <th class="col-w200">영어 이름</th>
-                        <th class="col-w160">
+                        <th class="col-w80">
                             팔로워
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers', genre=${genre != null ? genre.name() : null})}"
-                               class="sort-btn" th:classappend="${sort == 'followers'} ? ' active'">↓</a>
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='followers_asc', genre=${genre != null ? genre.name() : null})}"
-                               class="sort-btn" th:classappend="${sort == 'followers_asc'} ? ' active'">↑</a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'followers' ? 'followers_asc' : 'followers'}, genre=${genre != null ? genre.name() : null})}"
+                               th:text="${sort == 'followers'} ? '↓' : (${sort == 'followers_asc'} ? '↑' : '↕')"
+                               class="sort-btn"
+                               th:classappend="${sort == 'followers' or sort == 'followers_asc'} ? ' active'"></a>
                         </th>
-                        <th class="col-w100">
+                        <th class="col-w70">
                             곡 수
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs', genre=${genre != null ? genre.name() : null})}"
-                               class="sort-btn" th:classappend="${sort == 'songs'} ? ' active'">↓</a>
-                            <a th:href="@{/admin/artists(keyword=${keyword}, sort='songs_asc', genre=${genre != null ? genre.name() : null})}"
-                               class="sort-btn" th:classappend="${sort == 'songs_asc'} ? ' active'">↑</a>
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'songs' ? 'songs_asc' : 'songs'}, genre=${genre != null ? genre.name() : null})}"
+                               th:text="${sort == 'songs'} ? '↓' : (${sort == 'songs_asc'} ? '↑' : '↕')"
+                               class="sort-btn"
+                               th:classappend="${sort == 'songs' or sort == 'songs_asc'} ? ' active'"></a>
                         </th>
                         <th class="col-w160">관리</th>
                     </tr>
@@ -177,14 +177,8 @@
                         </td>
                         <td class="td-sub"
                             th:text="${artist.nameEn != null and !artist.nameEn.isEmpty()} ? ${artist.nameEn} : '-'"></td>
-                        <td>
-                            <div class="cell-primary" th:text="${artist.followerCount}"></div>
-                            <div class="cell-secondary">팔로워</div>
-                        </td>
-                        <td>
-                            <div class="cell-primary" th:text="${artist.songCount}"></div>
-                            <div class="cell-secondary">곡</div>
-                        </td>
+                        <td class="td-center" th:text="${artist.followerCount}"></td>
+                        <td class="td-center" th:text="${artist.songCount}"></td>
                         <td>
                             <div class="cell-actions">
                                 <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}"
