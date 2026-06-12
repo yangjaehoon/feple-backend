@@ -258,7 +258,12 @@
     function applyStageBadgeColors(colorMap) {
         document.querySelectorAll('.badge-stage[data-stage]').forEach(function (badge) {
             var c = colorMap[badge.getAttribute('data-stage')];
-            if (c) badge.style.background = c.bg;
+            if (c) {
+                badge.style.background = c.bg;
+            } else {
+                badge.style.background = '#e9ecef';
+                badge.style.color      = '#495057';
+            }
         });
     }
 
