@@ -991,8 +991,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .role-SUPER_ADMIN { background: var(--accent-bg); color: var(--warning-text); border-color: var(--warning-bd) !important; }
 .role-MANAGER     { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE !important; }
 .perm-tag         { display: inline-block; padding: 2px 8px; border-radius: 10px; background: #F1F5F9; color: #475569; font-size: 10px; font-weight: 600; margin: 1px; }
-.status-active    { color: var(--success); font-weight: 700; font-size: 12px; }
-.status-disabled  { color: var(--muted);   font-weight: 700; font-size: 12px; }
+.status-active    { color: var(--success); font-weight: 700; font-size: 12px; white-space: nowrap; }
+.status-disabled  { color: var(--muted);   font-weight: 700; font-size: 12px; white-space: nowrap; }
 
 /* ============================================================
    INFO BOX
