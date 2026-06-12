@@ -40,6 +40,25 @@ public class FestivalTimetableAdminController {
         return AdminFestivalRedirects.timetable(festivalId);
     }
 
+    @PostMapping("/{entryId}/update")
+    public String updateTimetableEntry(@PathVariable Long festivalId,
+                                       @PathVariable Long entryId,
+                                       @Valid @ModelAttribute TimetableEntryRequest req,
+                                       BindingResult bindingResult,
+                                       RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            ra.addFlashAttribute("errorMessage", BindingResultUtils.firstError(bindingResult));
+            return AdminFestivalRedirects.timetable(festivalId);
+        }
+        AdminActionUtils.tryAction(
+                () -> timetableService.updateEntry(festivalId, entryId, req),
+                "타임테이블 항목이 수정되었습니다.",
+                e -> log.error("타임테이블 항목 수정 실패: festivalId={}, entryId={}", festivalId, entryId, e),
+                "항목 수정 중 오류가 발생했습니다.",
+                ra);
+        return AdminFestivalRedirects.timetable(festivalId);
+    }
+
     @PostMapping("/{entryId}/delete")
     public String deleteTimetableEntry(@PathVariable Long festivalId,
                                        @PathVariable Long entryId,

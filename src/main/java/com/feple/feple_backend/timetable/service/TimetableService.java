@@ -61,6 +61,28 @@ public class TimetableService {
     }
 
     @Transactional
+    public void updateEntry(Long festivalId, Long entryId, TimetableEntryRequest req) {
+        TimetableEntry entry = timetableRepository.findById(entryId)
+                .orElseThrow(() -> new NoSuchElementException("타임테이블 항목을 찾을 수 없습니다."));
+        if (!festivalId.equals(entry.getFestivalId())) {
+            throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
+        }
+        if (!req.getStartTime().isBefore(req.getEndTime())) {
+            throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
+        }
+        String stageName = req.getStageName() == null ? "" : req.getStageName().trim();
+        Stage stage = stageName.isEmpty() ? null
+                : stageRepository.findByFestivalIdAndName(festivalId, stageName).orElse(null);
+        entry.update(
+                req.getArtistName() != null ? req.getArtistName().trim() : "",
+                stageName,
+                stage,
+                req.getFestivalDate(),
+                req.getStartTime(),
+                req.getEndTime());
+    }
+
+    @Transactional
     public void deleteEntry(Long festivalId, Long entryId) {
         TimetableEntry entry = timetableRepository.findById(entryId)
                 .orElseThrow(() -> new NoSuchElementException("타임테이블 항목을 찾을 수 없습니다."));

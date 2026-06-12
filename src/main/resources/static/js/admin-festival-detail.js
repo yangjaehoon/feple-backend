@@ -316,4 +316,49 @@
 
     /* Google Maps 초기화 (페이지 로드 후 콜백으로 호출됨) */
     window.initBoothMap = initBoothMap;
+
+    /* ── 타임테이블 수정 모달 ── */
+    function openTimetableEdit(btn) {
+        var modal = document.getElementById('tt-edit-modal');
+        var form  = document.getElementById('tt-edit-form');
+        var festivalId = btn.getAttribute('data-festival');
+        var entryId    = btn.getAttribute('data-id');
+
+        form.action = '/admin/festivals/' + festivalId + '/timetable/' + entryId + '/update';
+        document.getElementById('tt-edit-artistName').value = btn.getAttribute('data-artist') || '';
+        document.getElementById('tt-edit-date').value       = btn.getAttribute('data-date')   || '';
+        document.getElementById('tt-edit-start').value      = btn.getAttribute('data-start')  || '';
+        document.getElementById('tt-edit-end').value        = btn.getAttribute('data-end')    || '';
+        document.getElementById('tt-edit-stageName').value  = btn.getAttribute('data-stage')  || '';
+        document.getElementById('tt-edit-time-error').style.display = 'none';
+
+        modal.style.display = 'flex';
+    }
+
+    function closeTimetableEdit() {
+        document.getElementById('tt-edit-modal').style.display = 'none';
+    }
+
+    document.getElementById('tt-edit-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeTimetableEdit();
+    });
+
+    document.getElementById('tt-edit-form').addEventListener('submit', function (e) {
+        var start = document.getElementById('tt-edit-start').value;
+        var end   = document.getElementById('tt-edit-end').value;
+        if (start && end && start >= end) {
+            document.getElementById('tt-edit-time-error').style.display = 'block';
+            e.preventDefault();
+        }
+    });
+
+    document.getElementById('tt-edit-start').addEventListener('input', function () {
+        document.getElementById('tt-edit-time-error').style.display = 'none';
+    });
+    document.getElementById('tt-edit-end').addEventListener('input', function () {
+        document.getElementById('tt-edit-time-error').style.display = 'none';
+    });
+
+    window.openTimetableEdit  = openTimetableEdit;
+    window.closeTimetableEdit = closeTimetableEdit;
 })();

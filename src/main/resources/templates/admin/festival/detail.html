@@ -297,6 +297,7 @@
                             <th>구분</th>
                             <th>시간</th>
                             <th>아티스트 / 항목</th>
+                            <th>수정</th>
                             <th>삭제</th>
                         </tr>
                         </thead>
@@ -305,7 +306,7 @@
                             <!-- 날짜 구분 헤더: 첫 항목이거나 날짜가 바뀔 때 -->
                             <tr th:if="${stat.first or entry.festivalDate != timetableEntries[stat.index - 1].festivalDate}"
                                 class="tt-date-row">
-                                <td colspan="4" class="tt-date-cell">
+                                <td colspan="5" class="tt-date-cell">
                                     📅 <span th:text="${entry.festivalDate}"></span>
                                 </td>
                             </tr>
@@ -325,6 +326,17 @@
                                 </td>
                                 <td class="td-bold" th:text="${entry.artistName}"></td>
                                 <td>
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                            th:data-id="${entry.id}"
+                                            th:data-festival="${festival.id}"
+                                            th:data-artist="${entry.artistName}"
+                                            th:data-date="${entry.festivalDate}"
+                                            th:data-start="${entry.startTime}"
+                                            th:data-end="${entry.endTime}"
+                                            th:data-stage="${entry.stageName}"
+                                            onclick="openTimetableEdit(this)">수정</button>
+                                </td>
+                                <td>
                                     <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
                                           method="post">
                                         <button type="submit" class="btn btn-ghost-danger btn-sm"
@@ -334,10 +346,51 @@
                             </tr>
                         </th:block>
                         <tr class="empty-row" th:if="${timetableEntries.isEmpty()}">
-                            <td colspan="4">등록된 타임테이블이 없습니다.</td>
+                            <td colspan="5">등록된 타임테이블이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- 타임테이블 수정 모달 -->
+                <div id="tt-edit-modal" class="modal-overlay">
+                    <div class="modal-box">
+                        <div class="modal-header">
+                            <span class="modal-title">타임테이블 항목 수정</span>
+                            <button type="button" class="modal-close" onclick="closeTimetableEdit()">✕</button>
+                        </div>
+                        <form id="tt-edit-form" method="post">
+                            <input type="hidden" name="stageName" id="tt-edit-stageName"/>
+                            <div style="margin-bottom:12px">
+                                <label class="form-label-sm">아티스트 / 항목명</label>
+                                <input type="text" name="artistName" id="tt-edit-artistName"
+                                       class="compact-input" style="width:100%" required maxlength="50"/>
+                            </div>
+                            <div style="margin-bottom:12px">
+                                <label class="form-label-sm">날짜</label>
+                                <input type="date" name="festivalDate" id="tt-edit-date"
+                                       th:min="${festival.startDate}" th:max="${festival.endDate}"
+                                       class="compact-input" style="width:100%" required/>
+                            </div>
+                            <div class="form-grid-2col" style="margin-bottom:4px">
+                                <div>
+                                    <label class="form-label-sm">시작</label>
+                                    <input type="time" name="startTime" id="tt-edit-start"
+                                           class="compact-input" required/>
+                                </div>
+                                <div>
+                                    <label class="form-label-sm">종료</label>
+                                    <input type="time" name="endTime" id="tt-edit-end"
+                                           class="compact-input" required/>
+                                </div>
+                            </div>
+                            <div id="tt-edit-time-error" class="time-error">⚠ 종료 시간은 시작 시간보다 늦어야 합니다.</div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-ghost" onclick="closeTimetableEdit()">취소</button>
+                                <button type="submit" class="btn btn-primary">저장</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
