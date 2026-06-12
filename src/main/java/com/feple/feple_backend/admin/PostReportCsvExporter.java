@@ -18,16 +18,16 @@ class PostReportCsvExporter implements ReportCsvExporter {
     public String buildCsv() {
         StringBuilder sb = new StringBuilder("ID,신고일시,게시글ID,게시글제목,게시자,신고자,사유,상세,상태\n");
         for (PostReport r : postReportService.getAllPostReportsForExport()) {
-            sb.append(CsvExporter.cell(r.getId()))
-              .append(',').append(CsvExporter.cell(CsvExporter.formatDt(r.getCreatedAt())))
-              .append(',').append(CsvExporter.cell(r.getPostId()))
-              .append(',').append(CsvExporter.cell(r.getPostTitle()))
-              .append(',').append(CsvExporter.cell(r.getPosterNickname()))
-              .append(',').append(CsvExporter.cell(r.getReporterNickname()))
-              .append(',').append(CsvExporter.cell(r.getReason().name()))
-              .append(',').append(CsvExporter.cell(r.getDetail()))
-              .append(',').append(CsvExporter.cell(r.getStatus().name()))
-              .append('\n');
+            sb.append(CsvExporter.row(
+                    r.getId(),
+                    CsvExporter.formatDt(r.getCreatedAt()),
+                    r.getPostId(),
+                    r.getPostTitle(),
+                    r.getPosterNickname(),
+                    r.getReporterNickname(),
+                    r.getReason().name(),
+                    r.getDetail(),
+                    r.getStatus().name()));
         }
         return sb.toString();
     }

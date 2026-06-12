@@ -97,27 +97,6 @@ public class FestivalAdminController {
         return "admin/festival/list";
     }
 
-    @PostMapping("/{id}/checklist")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> toggleChecklist(@PathVariable Long id,
-                                                               @RequestParam String field) {
-        try {
-            festivalChecklistService.toggle(id, field);
-            boolean newValue = festivalChecklistService.isChecked(id, field);
-            return ResponseEntity.ok(Map.of("checked", newValue));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/{id}/checklist/memo")
-    @ResponseBody
-    public ResponseEntity<Void> saveMemo(@PathVariable Long id,
-                                         @RequestParam String memo) {
-        festivalChecklistService.saveMemo(id, memo);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
         try {

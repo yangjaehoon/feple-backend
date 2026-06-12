@@ -56,12 +56,16 @@ public class FestivalArtistAdminController {
             @PathVariable Long festivalId,
             @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
             RedirectAttributes ra) {
-
         if (artistIds == null || artistIds.isEmpty()) {
             ra.addFlashAttribute("errorMessage", "아티스트를 한 명 이상 선택해주세요.");
             return "redirect:/admin/festivals/" + festivalId + "/artists/new";
         }
+        ArtistAddResult result = processAdditions(festivalId, artistIds);
+        applyFlashMessage(result, ra);
+        return AdminFestivalRedirects.detail(festivalId);
+    }
 
+    private ArtistAddResult processAdditions(Long festivalId, List<Long> artistIds) {
         int added = 0, duplicates = 0, errors = 0;
         for (Long artistId : artistIds) {
             try {
@@ -76,18 +80,20 @@ public class FestivalArtistAdminController {
                 errors++;
             }
         }
+        return new ArtistAddResult(added, duplicates, errors);
+    }
 
-        if (added == 0 && errors == 0) {
+    private void applyFlashMessage(ArtistAddResult result, RedirectAttributes ra) {
+        if (result.added() == 0 && result.errors() == 0) {
             ra.addFlashAttribute("errorMessage", "선택한 아티스트가 이미 모두 참여 중입니다.");
-        } else if (added == 0) {
+        } else if (result.added() == 0) {
             ra.addFlashAttribute("errorMessage", "아티스트 추가에 실패했습니다. 다시 시도해주세요.");
         } else {
-            StringBuilder msg = new StringBuilder(added + "명의 아티스트가 추가되었습니다.");
-            if (duplicates > 0) msg.append(" (").append(duplicates).append("명은 이미 참여 중)");
-            if (errors > 0) msg.append(" (").append(errors).append("명 추가 실패)");
+            StringBuilder msg = new StringBuilder(result.added() + "명의 아티스트가 추가되었습니다.");
+            if (result.duplicates() > 0) msg.append(" (").append(result.duplicates()).append("명은 이미 참여 중)");
+            if (result.errors() > 0) msg.append(" (").append(result.errors()).append("명 추가 실패)");
             ra.addFlashAttribute("successMessage", msg.toString());
         }
-        return AdminFestivalRedirects.detail(festivalId);
     }
 
     @GetMapping("/list")
@@ -163,4 +169,6 @@ public class FestivalArtistAdminController {
         }
         return AdminFestivalRedirects.artists(festivalId);
     }
+
+    private record ArtistAddResult(int added, int duplicates, int errors) {}
 }

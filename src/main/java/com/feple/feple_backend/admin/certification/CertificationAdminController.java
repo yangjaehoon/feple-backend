@@ -68,9 +68,7 @@ public class CertificationAdminController {
 
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id,
-                          @RequestParam(defaultValue = "") String status,
-                          @RequestParam(defaultValue = "0") int page,
-                          @RequestParam(defaultValue = "") String keyword,
+                          @ModelAttribute CertFilter filter,
                           RedirectAttributes ra) {
         try {
             certificationService.approve(id, "admin");
@@ -82,15 +80,13 @@ public class CertificationAdminController {
             log.error("인증 승인 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "승인 처리 중 오류가 발생했습니다.");
         }
-        return certRedirect(status, page, keyword);
+        return certRedirect(filter);
     }
 
     @PostMapping("/{id}/reject")
     public String reject(@PathVariable Long id,
                          @RequestParam(defaultValue = "") String rejectionMessage,
-                         @RequestParam(defaultValue = "") String status,
-                         @RequestParam(defaultValue = "0") int page,
-                         @RequestParam(defaultValue = "") String keyword,
+                         @ModelAttribute CertFilter filter,
                          RedirectAttributes ra) {
         try {
             certificationService.reject(id, rejectionMessage, "admin");
@@ -103,14 +99,14 @@ public class CertificationAdminController {
             log.error("인증 거절 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "거절 처리 중 오류가 발생했습니다.");
         }
-        return certRedirect(status, page, keyword);
+        return certRedirect(filter);
     }
 
-    private String certRedirect(String status, int page, String keyword) {
+    private String certRedirect(CertFilter filter) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications")
-                .queryParam("status", status)
-                .queryParam("page", page);
-        if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
+                .queryParam("status", filter.status())
+                .queryParam("page", filter.page());
+        if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
         return "redirect:" + builder.build().toUriString();
     }
 }

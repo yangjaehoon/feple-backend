@@ -3,8 +3,6 @@ package com.feple.feple_backend.admin.system;
 import com.feple.feple_backend.admin.AdminPushService;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,15 +29,14 @@ public class AdminPushController {
     private final AdminPushService adminPushService;
     private final AdminLogService adminLogService;
     private final UserAdminService userAdminService;
-    private final ArtistService artistService;
-    private final FestivalService festivalService;
 
     @GetMapping
     public String showForm(Model model) {
-        model.addAttribute("deviceCount", adminPushService.getRegisteredDeviceCount());
-        model.addAttribute("history", adminPushService.getBroadcastHistory());
-        model.addAttribute("artists", artistService.getAllArtistsSortedByName());
-        model.addAttribute("festivals", festivalService.getAllFestivals(null, null, null, true));
+        PushFormData data = adminPushService.getFormData();
+        model.addAttribute("deviceCount", data.deviceCount());
+        model.addAttribute("history",     data.history());
+        model.addAttribute("artists",     data.artists());
+        model.addAttribute("festivals",   data.festivals());
         return "admin/system/push";
     }
 

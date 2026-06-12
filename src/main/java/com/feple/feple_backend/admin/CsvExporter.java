@@ -27,6 +27,15 @@ public final class CsvExporter {
         return dt == null ? "" : dt.format(DT_FMT);
     }
 
+    public static String row(Object... values) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < values.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(cell(values[i]));
+        }
+        return sb.append('\n').toString();
+    }
+
     public static ResponseEntity<byte[]> csvResponse(String content, String filename) {
         byte[] bom    = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
         byte[] body   = content.getBytes(StandardCharsets.UTF_8);

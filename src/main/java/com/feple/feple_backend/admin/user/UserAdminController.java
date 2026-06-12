@@ -39,23 +39,19 @@ public class UserAdminController {
 
     @GetMapping
     @Transactional(readOnly = true)
-    public String listUsers(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "latest") String sort,
-            @RequestParam(defaultValue = "") String filter,
-            Model model) {
-        Page<UserResponseDto> users = fetchUsersPage(page, keyword, sort, filter);
+    public String listUsers(@ModelAttribute UserListFilter listFilter, Model model) {
+        Page<UserResponseDto> users = fetchUsersPage(listFilter.page(), listFilter.keyword(), listFilter.sort(), listFilter.filter());
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
 
         UserListCountsModel counts = userDetailAggregationService.getListCounts(userIds);
-        model.addAttribute("users", users);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("sort", sort);
-        model.addAttribute("filter", filter);
+        model.addAttribute("users",         users);
+        model.addAttribute("keyword",       listFilter.keyword());
+        model.addAttribute("sort",          listFilter.sort());
+        model.addAttribute("filter",        listFilter.filter());
         model.addAttribute("reportCounts",  counts.reportCounts());
         model.addAttribute("postCounts",    counts.postCounts());
         model.addAttribute("commentCounts", counts.commentCounts());
-        model.addAttribute("extraParams", buildListParams(filter, sort, keyword));
+        model.addAttribute("extraParams",   buildListParams(listFilter));
         return "admin/user/list";
     }
 
@@ -104,10 +100,7 @@ public class UserAdminController {
 
     @PostMapping("/{id}/delete")
     public String deleteUser(@PathVariable Long id,
-                             @RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "") String keyword,
-                             @RequestParam(defaultValue = "latest") String sort,
-                             @RequestParam(defaultValue = "") String filter,
+                             @ModelAttribute UserListFilter listFilter,
                              RedirectAttributes ra) {
         try {
             String nickname = userService.getAdminUser(id).getNickname();
@@ -118,7 +111,7 @@ public class UserAdminController {
             log.error("회원 삭제 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "회원 삭제에 실패했습니다.");
         }
-        return userListRedirect(filter, sort, page, keyword);
+        return userListRedirect(listFilter);
     }
 
     @PostMapping("/{id}/role")
@@ -170,20 +163,20 @@ public class UserAdminController {
         return "redirect:/admin/users/" + id;
     }
 
-    private String userListRedirect(String filter, String sort, int page, String keyword) {
+    private String userListRedirect(UserListFilter listFilter) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/users")
-                .queryParam("filter", filter != null ? filter : "")
-                .queryParam("page", page);
-        if (!FILTER_BANNED.equals(filter)) builder.queryParam("sort", sort != null ? sort : "latest");
-        if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
+                .queryParam("filter", listFilter.filter())
+                .queryParam("page", listFilter.page());
+        if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
+        if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
         return "redirect:" + builder.build().toUriString();
     }
 
-    private static String buildListParams(String filter, String sort, String keyword) {
+    private static String buildListParams(UserListFilter listFilter) {
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-                .queryParam("filter", filter);
-        if (!FILTER_BANNED.equals(filter)) builder.queryParam("sort", sort);
-        if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
+                .queryParam("filter", listFilter.filter());
+        if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
+        if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
         String query = builder.build().toUriString();
         return query.startsWith("?") ? query.substring(1) : query;
     }

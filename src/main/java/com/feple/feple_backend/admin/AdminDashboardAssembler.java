@@ -22,23 +22,29 @@ public class AdminDashboardAssembler {
 
     public AdminDashboardDto assemble() {
         return new AdminDashboardDto(
-                festivalService.getTotalCount(),
-                artistService.getTotalCount(),
-                postAdminService.getTotalPostCount(),
-                adminMetricsService.getTotalUserCount(),
-                postAdminService.countRecentPosts(AdminConstants.STATS_RECENT_DAYS),
-                postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminMetricsService.getRecentUsers(),
-                adminMetricsService.getDailyStats(),
-                adminPendingItemsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminPendingItemsService.getPendingCertCount(),
-                adminPendingItemsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminPendingItemsService.getPendingReportCount(),
-                adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                adminPendingItemsService.getPendingSongRequestCount(),
-                artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                artistSuggestionAdminService.countPending()
+                new AdminStatsSummary(
+                        festivalService.getTotalCount(),
+                        artistService.getTotalCount(),
+                        postAdminService.getTotalPostCount(),
+                        adminMetricsService.getTotalUserCount(),
+                        postAdminService.countRecentPosts(AdminConstants.STATS_RECENT_DAYS)
+                ),
+                new AdminPendingItemsSummary(
+                        adminPendingItemsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                        adminPendingItemsService.getPendingCertCount(),
+                        adminPendingItemsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                        adminPendingItemsService.getPendingReportCount(),
+                        adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                        adminPendingItemsService.getPendingSongRequestCount(),
+                        artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                        artistSuggestionAdminService.countPending()
+                ),
+                new AdminContentSummary(
+                        postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                        artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                        adminMetricsService.getRecentUsers(),
+                        adminMetricsService.getDailyStats()
+                )
         );
     }
 }

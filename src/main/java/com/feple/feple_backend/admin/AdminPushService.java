@@ -1,8 +1,11 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.system.PushFormData;
+import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
@@ -27,6 +30,18 @@ public class AdminPushService {
     private final BroadcastNotificationRepository broadcastNotificationRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalCertificationRepository festivalCertificationRepository;
+    private final ArtistService artistService;
+    private final FestivalService festivalService;
+
+    @Transactional(readOnly = true)
+    public PushFormData getFormData() {
+        return new PushFormData(
+                getRegisteredDeviceCount(),
+                getBroadcastHistory(),
+                artistService.getAllArtistsSortedByName(),
+                festivalService.getAllFestivals(null, null, null, true)
+        );
+    }
 
     @Transactional(readOnly = true)
     public long getRegisteredDeviceCount() {
