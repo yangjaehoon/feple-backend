@@ -209,10 +209,7 @@
                            th:text="${festival.title}"></a>
                         <span class="festival-date"
                               th:if="${festival.startDate != null}"
-                              th:text="${#temporals.format(festival.startDate, 'yyyy.MM.dd')}
-                                       + (${festival.endDate != null and !festival.startDate.equals(festival.endDate)}
-                                          ? ' ~ ' + ${#temporals.format(festival.endDate, 'MM.dd')}
-                                          : '')"></span>
+                              th:text="${festival.dateRangeDisplay}"></span>
                     </div>
                 </div>
                 <div th:if="${#lists.isEmpty(likedFestivals)}" class="empty-hint">좋아요한 페스티벌이 없습니다.</div>
@@ -228,7 +225,7 @@
                 <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post"
                       class="role-form">
                     <select name="role" class="form-select select-auto">
-                        <option value="USER"   th:selected="${!user.admin and !user.artist}">일반 사용자</option>
+                        <option value="USER"   th:selected="${user.regularUser}">일반 사용자</option>
                         <option value="ARTIST" th:selected="${user.artist}">🎤 아티스트</option>
                         <option value="ADMIN"  th:selected="${user.admin}">🛡️ 관리자</option>
                     </select>

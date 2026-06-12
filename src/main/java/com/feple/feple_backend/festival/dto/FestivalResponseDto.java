@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static java.time.LocalDate.now;
@@ -48,6 +49,14 @@ public class FestivalResponseDto {
 
     public boolean isUpcoming() {
         return startDate != null && startDate.isAfter(now());
+    }
+
+    public String getDateRangeDisplay() {
+        if (startDate == null) return "";
+        DateTimeFormatter full = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        if (endDate == null || startDate.equals(endDate))
+            return startDate.format(full);
+        return startDate.format(full) + " ~ " + endDate.format(DateTimeFormatter.ofPattern("MM.dd"));
     }
 
     public static FestivalResponseDto from(Festival festival) {

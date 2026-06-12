@@ -36,6 +36,7 @@ public class UserResponseDto {
 
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
+    public boolean isRegularUser() { return !isAdmin() && !isArtist(); }
     public boolean isBanned() { return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now()); }
     public boolean isPermanentBan() { return bannedUntil != null && bannedUntil.getYear() >= 9999; }
 }
