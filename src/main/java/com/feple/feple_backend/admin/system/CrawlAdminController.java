@@ -194,11 +194,12 @@ public class CrawlAdminController {
 
     @GetMapping("/festivals/{festivalId}/artists")
     @ResponseBody
-    public ResponseEntity<List<String>> getArtists(@PathVariable Long festivalId) {
-        return ResponseEntity.ok(artistFestivalService.getArtistFestivals(festivalId).stream()
-                .map(ArtistFestivalResponse::getArtistName)
-                .sorted(String.CASE_INSENSITIVE_ORDER)
-                .toList());
+    public ResponseEntity<List<Map<String, Object>>> getArtists(@PathVariable Long festivalId) {
+        return ResponseEntity.ok(
+                artistFestivalService.getArtistFestivalsWithEnName(festivalId).stream()
+                        .sorted((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(
+                                (String) a.get("name"), (String) b.get("name")))
+                        .toList());
     }
 
     // ── 내부 헬퍼 ────────────────────────────────────────

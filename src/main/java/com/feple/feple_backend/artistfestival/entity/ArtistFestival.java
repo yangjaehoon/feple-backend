@@ -51,7 +51,8 @@ public class ArtistFestival {
     }
 
     public Long getArtistId() { return artist.getId(); }
-    public String getArtistName() { return artist.getName(); }
+    public String getArtistName()   { return artist.getName(); }
+    public String getArtistNameEn() { return artist.getNameEn(); }
     public String getArtistGenreDisplayName() { return artist.getGenre() != null ? artist.getGenre().getDisplayName() : null; }
     public String getArtistProfileImageKey() { return artist.getProfileImageKey(); }
     public Long getFestivalId() { return festival.getId(); }

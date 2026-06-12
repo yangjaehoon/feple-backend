@@ -140,6 +140,18 @@ public class ArtistFestivalService {
         }
     }
 
+    public List<Map<String, Object>> getArtistFestivalsWithEnName(Long festivalId) {
+        return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId)
+                .stream()
+                .map(af -> {
+                    Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("name",   af.getArtistName());
+                    m.put("nameEn", af.getArtistNameEn() != null ? af.getArtistNameEn() : "");
+                    return m;
+                })
+                .toList();
+    }
+
     public List<ArtistFestival> getAppearancesByArtistId(Long artistId) {
         return artistFestivalRepository.findByArtistIdOrderByFestivalStartDateDesc(artistId);
     }

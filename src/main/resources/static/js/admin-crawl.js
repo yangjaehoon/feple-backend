@@ -2,7 +2,8 @@
     var festivalMap = {}; // id → {title, startDate, endDate}
     var rowIndex    = 0;
     var currentFestivalTitle = '';
-    var artistNames      = []; // 선택된 페스티벌의 참여 아티스트 목록
+    var artistNames      = []; // 선택된 페스티벌의 참여 아티스트 한국명 목록
+    var artistNameEnMap  = {}; // 영문명(소문자) → 한국명 역방향 매핑
     var stageNames       = []; // 선택된 페스티벌의 스테이지 목록
     var festivalStartDate = '';
     var festivalEndDate   = '';
@@ -218,8 +219,13 @@
             fetch(CrawlUrls.festivals + '/' + fid + '/artists').then(function (r) { return r.json(); }),
             fetch(CrawlUrls.festivals + '/' + fid + '/stages').then(function (r) { return r.json(); })
         ]).then(function (results) {
-            artistNames = results[0];
-            stageNames  = results[1];
+            var artistData = results[0]; // [{name, nameEn}, ...]
+            artistNames   = artistData.map(function (a) { return a.name; });
+            artistNameEnMap = {};
+            artistData.forEach(function (a) {
+                if (a.nameEn) artistNameEnMap[a.nameEn.toLowerCase()] = a.name;
+            });
+            stageNames = results[1];
             refreshExistingSelects();
         });
     });
@@ -372,16 +378,27 @@
         document.getElementById('btnApplyOcr').disabled = results.length === 0;
     }
 
-    // 대소문자 무시 포함 매칭 — 가장 가까운 항목 반환, 없으면 ''
+    // 대소문자 무시 매칭 — 한국명 완전일치 → 영문명 완전일치 → 부분일치 순으로 탐색
     function findBestMatch(name, options) {
         if (!name || options.length === 0) return '';
         var lower = name.toLowerCase();
+        // 1. 한국명 완전일치
         for (var i = 0; i < options.length; i++) {
             if (options[i].toLowerCase() === lower) return options[i];
         }
+        // 2. 영문명(nameEn) 완전일치 → 해당 한국명 반환
+        if (artistNameEnMap[lower]) return artistNameEnMap[lower];
+        // 3. 한국명/영문명 부분일치
         for (var i = 0; i < options.length; i++) {
             if (options[i].toLowerCase().includes(lower) || lower.includes(options[i].toLowerCase())) {
                 return options[i];
+            }
+        }
+        // 4. 영문명 키 부분일치
+        var enKeys = Object.keys(artistNameEnMap);
+        for (var i = 0; i < enKeys.length; i++) {
+            if (enKeys[i].includes(lower) || lower.includes(enKeys[i])) {
+                return artistNameEnMap[enKeys[i]];
             }
         }
         return '';
