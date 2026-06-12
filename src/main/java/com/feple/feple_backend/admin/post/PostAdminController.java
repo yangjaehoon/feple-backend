@@ -55,13 +55,9 @@ public class PostAdminController {
             @RequestParam(required = false) Long artistId,
             @RequestParam(required = false) Long festivalId,
             Model model) {
-        model.addAttribute("posts", postAdminService.getPostsForAdmin(
-                new PostAdminFilter(page, AdminConstants.LIST_PAGE_SIZE, filter, keyword, artistId, festivalId)));
-        model.addAttribute("filter", filter);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("artistId", artistId);
-        model.addAttribute("festivalId", festivalId);
-        model.addAttribute("extraParams", new PostListParams(filter, keyword, artistId, festivalId).toExtraParams());
+        PostListParams params = new PostListParams(filter, keyword, artistId, festivalId);
+        addListModel(model, postAdminService.getPostsForAdmin(
+                new PostAdminFilter(page, AdminConstants.LIST_PAGE_SIZE, filter, keyword, artistId, festivalId)), params);
 
         FilterDropdownProvider provider = dropdownProviders.get(filter);
         if (provider != null) provider.populate(model);
@@ -142,6 +138,15 @@ public class PostAdminController {
             ra.addFlashAttribute("errorMessage", "댓글 삭제 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/posts/" + postId;
+    }
+
+    private static void addListModel(Model model, Object posts, PostListParams params) {
+        model.addAttribute("posts",       posts);
+        model.addAttribute("filter",      params.filter());
+        model.addAttribute("keyword",     params.keyword());
+        model.addAttribute("artistId",    params.artistId());
+        model.addAttribute("festivalId",  params.festivalId());
+        model.addAttribute("extraParams", params.toExtraParams());
     }
 
     @GetMapping("/deleted")

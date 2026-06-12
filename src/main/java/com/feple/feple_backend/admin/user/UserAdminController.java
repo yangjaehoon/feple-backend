@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.user;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.UserDetailAggregationService;
 import com.feple.feple_backend.admin.UserDetailModel;
@@ -43,15 +44,7 @@ public class UserAdminController {
         Page<UserResponseDto> users = fetchUsersPage(listFilter.page(), listFilter.keyword(), listFilter.sort(), listFilter.filter());
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
 
-        UserListCountsModel counts = userDetailAggregationService.getListCounts(userIds);
-        model.addAttribute("users",         users);
-        model.addAttribute("keyword",       listFilter.keyword());
-        model.addAttribute("sort",          listFilter.sort());
-        model.addAttribute("filter",        listFilter.filter());
-        model.addAttribute("reportCounts",  counts.reportCounts());
-        model.addAttribute("postCounts",    counts.postCounts());
-        model.addAttribute("commentCounts", counts.commentCounts());
-        model.addAttribute("extraParams",   buildListParams(listFilter));
+        addListModel(model, users, userDetailAggregationService.getListCounts(userIds), listFilter);
         return "admin/user/list";
     }
 
@@ -64,13 +57,7 @@ public class UserAdminController {
     @GetMapping("/{id}")
     public String userDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
         try {
-            UserDetailModel detail = userDetailAggregationService.getDetail(id);
-            model.addAttribute("user",            detail.user());
-            model.addAttribute("stats",           detail.stats());
-            model.addAttribute("recentPosts",     detail.recentPosts());
-            model.addAttribute("recentComments",  detail.recentComments());
-            model.addAttribute("likedFestivals",  detail.likedFestivals());
-            model.addAttribute("followedArtists", detail.followedArtists());
+            addDetailModel(model, userDetailAggregationService.getDetail(id));
             return "admin/user/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -163,13 +150,33 @@ public class UserAdminController {
         return "redirect:/admin/users/" + id;
     }
 
+    private void addListModel(Model model, Page<UserResponseDto> users,
+                               UserListCountsModel counts, UserListFilter listFilter) {
+        model.addAttribute("users",         users);
+        model.addAttribute("keyword",       listFilter.keyword());
+        model.addAttribute("sort",          listFilter.sort());
+        model.addAttribute("filter",        listFilter.filter());
+        model.addAttribute("reportCounts",  counts.reportCounts());
+        model.addAttribute("postCounts",    counts.postCounts());
+        model.addAttribute("commentCounts", counts.commentCounts());
+        model.addAttribute("extraParams",   buildListParams(listFilter));
+    }
+
+    private static void addDetailModel(Model model, UserDetailModel detail) {
+        model.addAttribute("user",            detail.user());
+        model.addAttribute("stats",           detail.stats());
+        model.addAttribute("recentPosts",     detail.recentPosts());
+        model.addAttribute("recentComments",  detail.recentComments());
+        model.addAttribute("likedFestivals",  detail.likedFestivals());
+        model.addAttribute("followedArtists", detail.followedArtists());
+    }
+
     private String userListRedirect(UserListFilter listFilter) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/users")
                 .queryParam("filter", listFilter.filter())
                 .queryParam("page", listFilter.page());
         if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
-        if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
-        return "redirect:" + builder.build().toUriString();
+        return AdminActionUtils.toRedirect(builder, listFilter.keyword());
     }
 
     private static String buildListParams(UserListFilter listFilter) {
