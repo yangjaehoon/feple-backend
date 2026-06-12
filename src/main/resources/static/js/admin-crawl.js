@@ -358,21 +358,29 @@
         showOcrPreview(file);
     }
 
+    function setOcrFestivalError(msg) {
+        var sel = document.getElementById('selFestival');
+        var err = document.getElementById('ocrFestivalError');
+        err.textContent = msg;
+        sel.classList.toggle('select-error', msg.length > 0);
+    }
+
     function setOcrStartError(msg) {
         document.getElementById('ocrStartError').textContent = msg;
     }
 
     document.getElementById('selFestival').addEventListener('change', function () {
-        if (this.value) setOcrStartError('');
+        if (this.value) setOcrFestivalError('');
     });
 
     document.getElementById('btnStartOcr').addEventListener('click', function () {
         var fid = document.getElementById('selFestival').value;
         if (!fid) {
-            setOcrStartError('페스티벌을 먼저 선택해주세요.');
+            setOcrFestivalError('페스티벌을 선택해주세요.');
             document.getElementById('selFestival').focus();
             return;
         }
+        setOcrFestivalError('');
         if (!ocrPendingFile) {
             setOcrStartError('이미지를 먼저 업로드해주세요.');
             return;
@@ -692,21 +700,29 @@
             });
     }
 
+    function setLineupFestivalError(msg) {
+        var sel = document.getElementById('selLineupFestival');
+        var err = document.getElementById('lineupFestivalError');
+        err.textContent = msg;
+        sel.classList.toggle('select-error', msg.length > 0);
+    }
+
     function setLineupStartError(msg) {
         document.getElementById('lineupStartError').textContent = msg;
     }
 
     document.getElementById('selLineupFestival').addEventListener('change', function () {
-        if (this.value) setLineupStartError('');
+        if (this.value) setLineupFestivalError('');
     });
 
     document.getElementById('btnStartLineup').addEventListener('click', function () {
         var fid = document.getElementById('selLineupFestival').value;
         if (!fid) {
-            setLineupStartError('페스티벌을 먼저 선택해주세요.');
+            setLineupFestivalError('페스티벌을 선택해주세요.');
             document.getElementById('selLineupFestival').focus();
             return;
         }
+        setLineupFestivalError('');
         if (!lineupPendingFile) {
             setLineupStartError('이미지를 먼저 업로드해주세요.');
             return;

@@ -192,6 +192,7 @@
                     <label title="선택 시 현재 목록의 모든 행 날짜를 일괄 변경합니다">날짜 일괄 설정</label>
                     <input type="date" id="selDate" disabled title="선택 시 모든 행의 날짜가 변경됩니다"/>
                 </div>
+                <p id="ocrFestivalError" class="select-field-error"></p>
                 <div class="ocr-hint">
                     &#8226; 날짜 일괄 설정은 현재 목록의 모든 행에 동일 날짜를 채웁니다. 각 행에서 개별 수정도 가능합니다.
                 </div>
@@ -314,6 +315,7 @@
                         <option value="">— 페스티벌 선택 —</option>
                     </select>
                 </div>
+                <p id="lineupFestivalError" class="select-field-error"></p>
                 <div class="ocr-hint">
                     &#8226; 라인업 포스터 이미지를 업로드하면 AI가 아티스트 이름을 추출합니다.<br>
                     &#8226; DB에 등록된 아티스트와 자동 매칭하며, 매칭되지 않은 아티스트는 직접 확인 후 제외하세요.
