@@ -139,16 +139,42 @@ public class ArtistFestivalService {
         // 빈 문자열("미지정" 선택)은 null로 정규화
         String resolvedStage = (stageName != null && !stageName.isBlank()) ? stageName : null;
         String oldStage = af.getStageName();
+        LocalDate oldDate = af.getPerformanceDate();
         af.updateLineup(resolvedStage, performanceDate);
+
+        String artistName = af.getArtistName();
 
         // 스테이지가 변경되면 해당 아티스트의 타임테이블 스테이지도 함께 업데이트
         if (resolvedStage != null && !resolvedStage.equals(oldStage)) {
-            String artistName = af.getArtistName();
             Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, resolvedStage)
                     .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + resolvedStage));
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
                     .forEach(entry -> entry.updateStage(newStage));
         }
+
+        // 날짜가 변경되면 해당 아티스트의 타임테이블 날짜도 함께 업데이트
+        if (performanceDate != null && !performanceDate.equals(oldDate)) {
+            List<com.feple.feple_backend.timetable.entity.TimetableEntry> entries =
+                    timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName);
+            if (oldDate != null) {
+                entries.stream()
+                        .filter(e -> oldDate.equals(e.getFestivalDate()))
+                        .forEach(e -> e.updateDate(performanceDate));
+            } else {
+                entries.forEach(e -> e.updateDate(performanceDate));
+            }
+        }
+    }
+
+    // 타임테이블 항목 저장 후 ArtistFestival 날짜·스테이지 역방향 동기화
+    @Transactional
+    public void syncFromTimetableEntry(Long festivalId, String artistName, LocalDate date, String stageName) {
+        if (artistName == null || artistName.isBlank()) return;
+        artistFestivalRepository.findByFestivalIdAndArtistName(festivalId, artistName)
+                .ifPresent(af -> {
+                    String resolvedStage = (stageName != null && !stageName.isBlank()) ? stageName : null;
+                    af.updateLineup(resolvedStage, date);
+                });
     }
 
     public List<Map<String, Object>> getArtistFestivalsWithEnName(Long festivalId) {

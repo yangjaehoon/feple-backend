@@ -31,6 +31,9 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist WHERE af.festival.id IN :festivalIds ORDER BY af.lineupOrder ASC")
     List<ArtistFestival> findByFestivalIdInWithArtist(@Param("festivalIds") List<Long> festivalIds);
 
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist WHERE af.festival.id = :festivalId AND af.artist.name = :artistName")
+    java.util.Optional<ArtistFestival> findByFestivalIdAndArtistName(@Param("festivalId") Long festivalId, @Param("artistName") String artistName);
+
     @Query("SELECT CASE WHEN COUNT(af) > 0 THEN TRUE ELSE FALSE END FROM ArtistFestival af WHERE af.festival.id = :festivalId AND af.artist.id = :artistId")
     boolean existsByFestivalIdAndArtistId(@Param("festivalId") Long festivalId, @Param("artistId") Long artistId);
 

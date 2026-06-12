@@ -1,5 +1,6 @@
 package com.feple.feple_backend.timetable.service;
 
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.stage.entity.Stage;
@@ -23,6 +24,7 @@ public class TimetableService {
     private final TimetableRepository timetableRepository;
     private final FestivalRepository festivalRepository;
     private final StageRepository stageRepository;
+    private final ArtistFestivalService artistFestivalService;
 
     @Transactional(readOnly = true)
     public List<TimetableEntryResponse> getEntries(Long festivalId) {
@@ -57,6 +59,8 @@ public class TimetableService {
                 .endTime(req.getEndTime())
                 .build();
         TimetableEntry saved = timetableRepository.save(entry);
+        artistFestivalService.syncFromTimetableEntry(
+                festivalId, saved.getArtistName(), saved.getFestivalDate(), saved.getStageName());
         return TimetableEntryResponse.from(saved);
     }
 
@@ -80,6 +84,8 @@ public class TimetableService {
                 req.getFestivalDate(),
                 req.getStartTime(),
                 req.getEndTime());
+        artistFestivalService.syncFromTimetableEntry(
+                festivalId, entry.getArtistName(), entry.getFestivalDate(), entry.getStageName());
     }
 
     @Transactional

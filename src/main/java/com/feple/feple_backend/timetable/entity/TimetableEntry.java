@@ -68,6 +68,10 @@ public class TimetableEntry {
         this.stageName = stage.getName();
     }
 
+    public void updateDate(java.time.LocalDate newDate) {
+        this.festivalDate = newDate;
+    }
+
     public void update(String artistName, String stageName, Stage stage,
                        java.time.LocalDate festivalDate,
                        java.time.LocalTime startTime, java.time.LocalTime endTime) {
