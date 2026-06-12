@@ -40,4 +40,7 @@ public enum AdminAction {
     PUSH_ARTIST_FOLLOWERS,
     PUSH_FESTIVAL_CERTIFIED,
     PUSH_TEST,
+
+    EXPORT_USERS,
+    EXPORT_REPORTS,
 }

@@ -17,7 +17,11 @@ public final class CsvExporter {
     public static String cell(Object value) {
         if (value == null) return "";
         String s = value.toString();
-        if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {
+        // =, +, @, - 로 시작하는 값은 스프레드시트 수식으로 해석될 수 있으므로 탭 문자를 앞에 붙여 차단
+        if (!s.isEmpty() && "=+-@".indexOf(s.charAt(0)) >= 0) {
+            s = "\t" + s;
+        }
+        if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r") || s.contains("\t")) {
             return "\"" + s.replace("\"", "\"\"") + "\"";
         }
         return s;

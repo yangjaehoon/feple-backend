@@ -3,8 +3,11 @@ package com.feple.feple_backend.admin.system;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.CsvExporter;
 import com.feple.feple_backend.admin.ReportCsvExporter;
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.service.UserAdminService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,11 +29,15 @@ import java.util.stream.Collectors;
 public class AdminCsvController {
 
     private final UserAdminService userAdminService;
+    private final AdminLogService adminLogService;
     private final Map<String, ReportCsvExporter> reportExporters;
 
-    public AdminCsvController(UserAdminService userAdminService, List<ReportCsvExporter> exporters) {
+    public AdminCsvController(UserAdminService userAdminService,
+                               AdminLogService adminLogService,
+                               List<ReportCsvExporter> exporters) {
         this.userAdminService = userAdminService;
-        this.reportExporters = exporters.stream()
+        this.adminLogService  = adminLogService;
+        this.reportExporters  = exporters.stream()
                 .collect(Collectors.toMap(ReportCsvExporter::getReportType, e -> e));
     }
 
@@ -38,6 +45,7 @@ public class AdminCsvController {
     @ResponseBody
     public ResponseEntity<byte[]> exportUsers() {
         List<UserResponseDto> users = userAdminService.getAllUsersForExport();
+        adminLogService.log(AdminAction.EXPORT_USERS, "USER", null, users.size() + "명");
         StringBuilder sb = new StringBuilder("ID,닉네임,이메일,역할,가입일,정지여부\n");
         for (UserResponseDto u : users) {
             sb.append(CsvExporter.cell(u.getId()))
@@ -58,6 +66,7 @@ public class AdminCsvController {
         if (exporter == null) {
             return ResponseEntity.badRequest().build();
         }
+        adminLogService.log(AdminAction.EXPORT_REPORTS, "REPORT", null, type);
         return CsvExporter.csvResponse(exporter.buildCsv(), "reports_" + type + "_" + LocalDate.now() + ".csv");
     }
 }

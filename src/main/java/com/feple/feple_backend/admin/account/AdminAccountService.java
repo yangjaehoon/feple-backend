@@ -61,6 +61,7 @@ public class AdminAccountService {
         validateRoleChange(account, role);
         account.updateProfile(displayName, role, resolvePermissions(role, permissions));
         if (newPassword != null && !newPassword.isBlank()) {
+            validatePasswordComplexity(newPassword);
             account.updatePassword(passwordEncoder.encode(newPassword));
         }
         applyProfileImageUpdate(account, profileImage, deleteProfileImage);
@@ -86,12 +87,21 @@ public class AdminAccountService {
             throw new IllegalArgumentException("아이디를 입력해주세요.");
         if (username.length() > 50)
             throw new IllegalArgumentException("아이디는 50자 이하여야 합니다.");
+        validatePasswordComplexity(password);
+        if (accountRepository.existsByUsername(username))
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
+    }
+
+    private static void validatePasswordComplexity(String password) {
         if (password == null || password.length() < 8)
             throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
         if (password.length() > 100)
             throw new IllegalArgumentException("비밀번호는 100자 이하여야 합니다.");
-        if (accountRepository.existsByUsername(username))
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
+        boolean hasLetter  = password.chars().anyMatch(Character::isLetter);
+        boolean hasDigit   = password.chars().anyMatch(Character::isDigit);
+        boolean hasSpecial = password.chars().anyMatch(c -> !Character.isLetterOrDigit(c));
+        if (!hasLetter || !hasDigit || !hasSpecial)
+            throw new IllegalArgumentException("비밀번호는 영문자, 숫자, 특수문자를 각각 1자 이상 포함해야 합니다.");
     }
 
     private String uploadProfileIfPresent(MultipartFile profileImage, String username) throws IOException {
