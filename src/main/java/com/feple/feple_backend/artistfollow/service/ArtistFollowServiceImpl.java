@@ -10,7 +10,6 @@ import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,11 +43,11 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
-        try {
-            artistFollowRepository.saveAndFlush(ArtistFollow.of(user, artist));
+        // 이미 팔로우한 경우 멱등성 보장 — DataIntegrityViolationException을 @Transactional 내에서
+        // catch하면 트랜잭션이 rollbackOnly로 마킹되어 UnexpectedRollbackException(500) 발생
+        if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
+            artistFollowRepository.save(ArtistFollow.of(user, artist));
             artist.incrementFollowerCount();
-        } catch (DataIntegrityViolationException ignored) {
-            // unique(user_id, artist_id): 동시 요청으로 이미 저장됨
         }
 
         return new FollowResponseDto(true, artistRepository.findFollowerCountById(artistId));
