@@ -2,6 +2,7 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.ArtistNameFilter;
 import com.feple.feple_backend.badword.BadWordFilter;
+import com.feple.feple_backend.nickname.NicknameRestrictionFilter;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     private final UserCascadeDeleteService cascadeDeleteService;
     private final BadWordFilter badWordFilter;
     private final ArtistNameFilter artistNameFilter;
+    private final NicknameRestrictionFilter nicknameRestrictionFilter;
 
     @Override
     @Transactional(readOnly = true)
@@ -56,6 +58,11 @@ public class UserServiceImpl implements UserService, UserAdminService {
             artistNameFilter.validate(nickname);
         } catch (IllegalArgumentException e) {
             return Map.of("available", false, "code", "ARTIST_NAME", "message", e.getMessage());
+        }
+        try {
+            nicknameRestrictionFilter.validate(nickname);
+        } catch (IllegalArgumentException e) {
+            return Map.of("available", false, "code", "RESTRICTED", "message", e.getMessage());
         }
         boolean taken = excludeUserId != null
                 ? userRepository.existsByNicknameAndIdNot(nickname.trim(), excludeUserId)
@@ -93,6 +100,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
         NicknameValidator.validate(nickname);
         badWordFilter.validateField("nickname", nickname);
         artistNameFilter.validate(nickname);
+        nicknameRestrictionFilter.validate(nickname);
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new ConflictException("이미 사용 중인 닉네임입니다.");
         }

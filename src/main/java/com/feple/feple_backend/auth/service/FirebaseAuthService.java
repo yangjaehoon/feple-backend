@@ -2,6 +2,7 @@ package com.feple.feple_backend.auth.service;
 
 import com.feple.feple_backend.artist.ArtistNameFilter;
 import com.feple.feple_backend.badword.BadWordFilter;
+import com.feple.feple_backend.nickname.NicknameRestrictionFilter;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -25,6 +26,7 @@ public class FirebaseAuthService implements OAuthLoginService {
     private final UserRepository userRepository;
     private final BadWordFilter badWordFilter;
     private final ArtistNameFilter artistNameFilter;
+    private final NicknameRestrictionFilter nicknameRestrictionFilter;
 
     @Override
     public Mono<User> authenticate(String idToken) {
@@ -78,6 +80,7 @@ public class FirebaseAuthService implements OAuthLoginService {
         try {
             badWordFilter.validate(sanitized);
             artistNameFilter.validate(sanitized);
+            nicknameRestrictionFilter.validate(sanitized);
         } catch (Exception ignored) {
             return fallback;
         }

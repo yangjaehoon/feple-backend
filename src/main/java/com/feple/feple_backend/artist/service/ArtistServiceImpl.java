@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
+import com.feple.feple_backend.artist.ArtistNameFilter;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -52,6 +53,7 @@ public class ArtistServiceImpl implements ArtistService {
     private final FileStorageService fileStorageService;
     private final ArtistCascadeDeleteService cascadeDeleteService;
     private final SongRepository songRepository;
+    private final ArtistNameFilter artistNameFilter;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -71,7 +73,9 @@ public class ArtistServiceImpl implements ArtistService {
                 .genre(dto.getGenre())
                 .profileImageKey(dto.getProfileImageKey())
                 .build();
-        return artistRepository.save(artist).getId();
+        Long id = artistRepository.save(artist).getId();
+        artistNameFilter.reload();
+        return id;
     }
 
     @Override
@@ -214,6 +218,7 @@ public class ArtistServiceImpl implements ArtistService {
                 fileStorageService.deleteFileAfterCommit(oldKey);
             }
         }
+        artistNameFilter.reload();
     }
 
     @Override
@@ -263,6 +268,7 @@ public class ArtistServiceImpl implements ArtistService {
     public void deleteArtist(Long id) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
+        artistNameFilter.reload();
     }
 
     @Override

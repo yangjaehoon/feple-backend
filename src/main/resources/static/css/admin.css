@@ -1336,6 +1336,31 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .bw-add-form  { display: flex; gap: 10px; align-items: center; }
 .bw-add-input { flex: 1; max-width: 320px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 14px; }
 .bw-word      { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 14px; font-weight: 600; }
+.bw-scan-result { font-size: 12px; margin-top: 4px; }
+
+/* ── 닉네임 제한 위젯 ── */
+.card-section-label {
+  padding: 10px 20px 6px;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .6px;
+  border-top: 1px solid var(--border);
+}
+.artist-name-restriction-wrap {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px 20px 16px;
+}
+.nick-restrict-tag {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  background: var(--primary-lt); color: var(--primary-dk);
+  border: 1px solid var(--primary-bd);
+  white-space: nowrap;
+}
+.nick-restrict-tag-en {
+  background: var(--bg-2); color: var(--text-2);
+  border-color: var(--border);
+}
 .bw-scan-result { display: none; margin-top: 6px; font-size: 12px; color: var(--text-2); }
 
 /* ── festival/edit.html — map & misc ── */
