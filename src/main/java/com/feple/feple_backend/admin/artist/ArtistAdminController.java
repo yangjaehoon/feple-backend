@@ -9,6 +9,8 @@ import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 
 @Slf4j
@@ -50,9 +51,7 @@ public class ArtistAdminController {
             bindingResult.rejectValue("profileImageKey", "profileImageFile.required", "프로필 이미지는 필수입니다.");
         }
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", bindingResult.getAllErrors().stream()
-                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
-                    .toList());
+            model.addAttribute("errors", extractErrorMessages(bindingResult));
             return "admin/artist/create";
         }
 
@@ -152,9 +151,7 @@ public class ArtistAdminController {
     ) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("artistId", id);
-            model.addAttribute("errors", bindingResult.getAllErrors().stream()
-                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
-                    .toList());
+            model.addAttribute("errors", extractErrorMessages(bindingResult));
             return "admin/artist/edit";
         }
         try {
@@ -185,6 +182,12 @@ public class ArtistAdminController {
             ra.addFlashAttribute("errorMessage", "저장 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/artists";
+    }
+
+    private List<String> extractErrorMessages(BindingResult bindingResult) {
+        return bindingResult.getAllErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
     }
 
     @PostMapping("/{id}/delete")

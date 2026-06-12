@@ -241,59 +241,64 @@
         if (fileInput.files.length > 0) handleOcrFile(fileInput.files[0]);
     });
 
-    function handleOcrFile(file) {
-        if (!file.type.startsWith('image/')) { showApplyResult('error', '이미지 파일만 업로드 가능합니다.'); return; }
-        if (file.size > 10 * 1024 * 1024) { showApplyResult('error', '파일 크기는 10MB 이하여야 합니다.'); return; }
+    function validateOcrFile(file) {
+        if (!file.type.startsWith('image/')) { showApplyResult('error', '이미지 파일만 업로드 가능합니다.'); return false; }
+        if (file.size > 10 * 1024 * 1024)   { showApplyResult('error', '파일 크기는 10MB 이하여야 합니다.'); return false; }
+        return true;
+    }
 
+    function showOcrPreview(file) {
         var reader = new FileReader();
-        reader.onload = function (e) {
-            document.getElementById('ocrPreviewImg').src = e.target.result;
-        };
+        reader.onload = function (e) { document.getElementById('ocrPreviewImg').src = e.target.result; };
         reader.readAsDataURL(file);
-
         document.getElementById('ocrEmptyState').style.display = 'none';
         document.getElementById('ocrPreviewWrap').classList.add('visible');
         document.getElementById('ocrParseBody').innerHTML = '';
         hideToast();
         document.getElementById('btnApplyOcr').disabled = true;
+    }
 
-        var progressWrap = document.getElementById('ocrProgress');
-        var progressFill = document.getElementById('ocrProgressFill');
-        var progressLabel = document.getElementById('ocrProgressLabel');
-        progressFill.style.width = '0%';
-        progressWrap.classList.add('visible');
-        progressLabel.textContent = 'AI 이미지 분석 중...';
-
-        var progressTimer = null;
-        var progressPct = 10;
-        progressTimer = setInterval(function () {
-            progressPct = Math.min(progressPct + 5, 85);
-            progressFill.style.width = progressPct + '%';
+    function startOcrProgress() {
+        var fill  = document.getElementById('ocrProgressFill');
+        var label = document.getElementById('ocrProgressLabel');
+        fill.style.width = '0%';
+        document.getElementById('ocrProgress').classList.add('visible');
+        label.textContent = 'AI 이미지 분석 중...';
+        var pct = 10;
+        return setInterval(function () {
+            pct = Math.min(pct + 5, 85);
+            fill.style.width = pct + '%';
         }, 800);
+    }
 
+    function submitOcrRequest(file) {
         var formData = new FormData();
         formData.append('image', file);
-        var headers = window.AdminUtils.getCsrfHeaders();
+        var timer = startOcrProgress();
 
-        fetch(CrawlUrls.ocr, { method: 'POST', headers: headers, body: formData })
+        fetch(CrawlUrls.ocr, { method: 'POST', headers: window.AdminUtils.getCsrfHeaders(), body: formData })
             .then(function (r) {
-                clearInterval(progressTimer);
-                progressFill.style.width = '100%';
-                progressLabel.textContent = '완료!';
-                if (!r.ok) {
-                    return r.json().then(function (e) { throw new Error(e.error || '파싱 실패'); });
-                }
+                clearInterval(timer);
+                document.getElementById('ocrProgressFill').style.width = '100%';
+                document.getElementById('ocrProgressLabel').textContent = '완료!';
+                if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '파싱 실패'); });
                 return r.json();
             })
             .then(function (results) {
-                setTimeout(function () { progressWrap.classList.remove('visible'); }, 500);
+                setTimeout(function () { document.getElementById('ocrProgress').classList.remove('visible'); }, 500);
                 renderOcrResults(results);
             })
             .catch(function (err) {
-                clearInterval(progressTimer);
-                progressWrap.classList.remove('visible');
+                clearInterval(timer);
+                document.getElementById('ocrProgress').classList.remove('visible');
                 showApplyResult('error', '오류: ' + err.message);
             });
+    }
+
+    function handleOcrFile(file) {
+        if (!validateOcrFile(file)) return;
+        showOcrPreview(file);
+        submitOcrRequest(file);
     }
 
     function renderOcrResults(results) {
@@ -347,8 +352,7 @@
 
     var selectStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
     var timeStyle   = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
-
-    var dateStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
+    var dateStyle   = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
 
     function appendRow(artist, stage, date, startTime, endTime, conf) {
         rowIndex++;
@@ -371,8 +375,7 @@
     }
 
     function checkEmpty() {
-        var rows = document.getElementById('ocrParseBody').querySelectorAll('tr');
-        if (rows.length === 0) {
+        if (document.getElementById('ocrParseBody').querySelectorAll('tr').length === 0) {
             document.getElementById('btnApplyOcr').disabled = true;
         }
     }
@@ -393,11 +396,7 @@
         document.getElementById('btnApplyOcr').disabled = false;
     });
 
-    /* ── 타임테이블에 적용 ── */
-    document.getElementById('btnApplyOcr').addEventListener('click', function () {
-        var fid = document.getElementById('selFestival').value;
-        if (!fid) { showApplyResult('error', '페스티벌을 선택해주세요.'); return; }
-
+    function collectOcrEntries() {
         var entries = [];
         document.getElementById('ocrParseBody').querySelectorAll('tr').forEach(function (tr) {
             entries.push({
@@ -408,14 +407,52 @@
                 endTime:   tr.querySelector('[data-field="endTime"]').value
             });
         });
+        return entries;
+    }
 
-        if (entries.length === 0) { showApplyResult('error', '저장할 항목이 없습니다.'); return; }
-
-        var missingDate = entries.some(function (e) { return !e.date; });
-        if (missingDate) {
-            showApplyResult('error', '날짜가 설정되지 않은 항목이 있습니다.<br>상단 "날짜 일괄 설정"을 사용하거나 각 행의 날짜를 직접 입력해주세요.');
-            return;
+    function validateOcrEntries(entries) {
+        if (entries.length === 0) {
+            showApplyResult('error', '저장할 항목이 없습니다.');
+            return false;
         }
+        if (entries.some(function (e) { return !e.date; })) {
+            showApplyResult('error', '날짜가 설정되지 않은 항목이 있습니다.<br>상단 "날짜 일괄 설정"을 사용하거나 각 행의 날짜를 직접 입력해주세요.');
+            return false;
+        }
+        return true;
+    }
+
+    function formatDateRange(entries) {
+        var uniqueDates = entries
+            .map(function (e) { return e.date; })
+            .filter(function (d, i, arr) { return d && arr.indexOf(d) === i; })
+            .sort();
+        if (uniqueDates.length === 0) return '—';
+        if (uniqueDates.length === 1) return uniqueDates[0];
+        return uniqueDates[0] + ' 외 ' + (uniqueDates.length - 1) + '일';
+    }
+
+    function renderOcrApplyResult(result) {
+        var msg = result.savedCount + '개 저장 완료';
+        if (result.failedCount > 0) {
+            var esc = window.AdminUtils.escapeHtml;
+            var reasons = result.failures.map(function (f) {
+                return esc(f.artist) + '/' + esc(f.stage) + ': ' + esc(f.reason);
+            }).join('<br>');
+            msg += ', ' + result.failedCount + '개 실패<br><small>' + reasons + '</small>';
+            showApplyResult('partial', msg);
+        } else {
+            showApplyResult('success', msg);
+        }
+    }
+
+    /* ── 타임테이블에 적용 ── */
+    document.getElementById('btnApplyOcr').addEventListener('click', function () {
+        var fid = document.getElementById('selFestival').value;
+        if (!fid) { showApplyResult('error', '페스티벌을 선택해주세요.'); return; }
+
+        var entries = collectOcrEntries();
+        if (!validateOcrEntries(entries)) return;
 
         var btn = document.getElementById('btnApplyOcr');
         btn.disabled = true;
@@ -435,30 +472,8 @@
         .then(function (result) {
             btn.disabled = false;
             btn.innerHTML = '타임테이블에 적용';
-
-            var msg = result.savedCount + '개 저장 완료';
-            if (result.failedCount > 0) {
-                msg += ', ' + result.failedCount + '개 실패';
-                var esc = window.AdminUtils.escapeHtml;
-                var reasons = result.failures.map(function (f) {
-                    return esc(f.artist) + '/' + esc(f.stage) + ': ' + esc(f.reason);
-                }).join('<br>');
-                msg += '<br><small>' + reasons + '</small>';
-                showApplyResult('partial', msg);
-            } else {
-                showApplyResult('success', msg);
-            }
-
-            var uniqueDates = entries
-                .map(function (e) { return e.date; })
-                .filter(function (d, i, arr) { return d && arr.indexOf(d) === i; })
-                .sort();
-            var dateLabel = uniqueDates.length === 1
-                ? uniqueDates[0]
-                : uniqueDates.length > 1
-                    ? uniqueDates[0] + ' 외 ' + (uniqueDates.length - 1) + '일'
-                    : '—';
-            addHistory(currentFestivalTitle, dateLabel, result.savedCount, result.failedCount);
+            renderOcrApplyResult(result);
+            addHistory(currentFestivalTitle, formatDateRange(entries), result.savedCount, result.failedCount);
         })
         .catch(function (err) {
             btn.disabled = false;
