@@ -66,7 +66,7 @@
                 content: createBoothEl(booth)
             });
             var infoWindow = createBoothInfoWindow(booth);
-            marker.addListener('click', function () {
+            marker.addEventListener('gmp-click', function () {
                 infoWindow.open({ anchor: marker, map: map });
             });
         });
