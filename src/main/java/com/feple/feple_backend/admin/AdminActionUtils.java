@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.function.Consumer;
 
@@ -33,5 +34,10 @@ public final class AdminActionUtils {
             onError.accept(e);
             ra.addFlashAttribute("errorMessage", failMsg);
         }
+    }
+
+    public static String toRedirect(UriComponentsBuilder builder, String keyword) {
+        if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
+        return "redirect:" + builder.build().toUriString();
     }
 }

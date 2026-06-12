@@ -87,10 +87,10 @@ public class SongRequestAdminController {
     }
 
     private String redirectUrl(String status, int page, String keyword) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/song-requests")
-                .queryParam("status", status)
-                .queryParam("page", page);
-        if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
-        return "redirect:" + builder.build().toUriString();
+        return AdminActionUtils.toRedirect(
+                UriComponentsBuilder.fromPath("/admin/song-requests")
+                        .queryParam("status", status)
+                        .queryParam("page", page),
+                keyword);
     }
 }

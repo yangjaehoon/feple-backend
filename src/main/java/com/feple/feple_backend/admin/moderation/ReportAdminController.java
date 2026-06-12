@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.moderation;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -130,11 +131,11 @@ public class ReportAdminController {
     private String redirectReports(ReportFilter filter) {
         String safeType   = handlers.containsKey(filter.type()) ? filter.type() : "post";
         String safeStatus = "PENDING".equals(filter.status()) ? "PENDING" : "ALL";
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/reports")
-                .queryParam("type", safeType)
-                .queryParam("status", safeStatus)
-                .queryParam("page", filter.page());
-        if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
-        return "redirect:" + builder.build().toUriString();
+        return AdminActionUtils.toRedirect(
+                UriComponentsBuilder.fromPath("/admin/reports")
+                        .queryParam("type", safeType)
+                        .queryParam("status", safeStatus)
+                        .queryParam("page", filter.page()),
+                filter.keyword());
     }
 }

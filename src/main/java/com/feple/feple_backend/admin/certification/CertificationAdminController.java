@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.certification;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
@@ -103,10 +104,10 @@ public class CertificationAdminController {
     }
 
     private String certRedirect(CertFilter filter) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications")
-                .queryParam("status", filter.status())
-                .queryParam("page", filter.page());
-        if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
-        return "redirect:" + builder.build().toUriString();
+        return AdminActionUtils.toRedirect(
+                UriComponentsBuilder.fromPath("/admin/certifications")
+                        .queryParam("status", filter.status())
+                        .queryParam("page", filter.page()),
+                filter.keyword());
     }
 }
