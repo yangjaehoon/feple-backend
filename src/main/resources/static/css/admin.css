@@ -490,8 +490,8 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 /* ============================================================
    CELL HELPERS
    ============================================================ */
-.cell-primary   { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.4; }
-.cell-secondary { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.cell-primary   { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.4; word-break: break-word; overflow-wrap: break-word; min-width: 80px; }
+.cell-secondary { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; word-break: break-word; overflow-wrap: break-word; }
 .cell-row       { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .avatar-cell    { display: flex; align-items: center; gap: 12px; }
 .avatar, .avatar-img {
@@ -1149,7 +1149,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .search-input { flex: 1; max-width: 280px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; }
 .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; background: var(--purple-bg); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .avatar-cell .cell-secondary { margin-top: 4px; }
-.td-sub { font-size: 13px; }
+.td-sub { font-size: 13px; word-break: break-word; overflow-wrap: break-word; }
 .cell-actions { display: flex; gap: 6px; align-items: center; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -1168,7 +1168,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .col-w300 { width: 300px; }
 
 /* ── 보조 텍스트 ── */
-.td-note { font-size: 13px; color: var(--text-2); }
+.td-note { font-size: 13px; color: var(--text-2); word-break: break-word; overflow-wrap: break-word; min-width: 100px; }
 .td-link { font-size: 13px; text-decoration: none; color: var(--text); font-weight: 600; }
 .td-link-normal { font-size: 13px; text-decoration: none; color: var(--text); }
 
@@ -1401,7 +1401,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .slot-row            { font-size: 11px; white-space: nowrap; margin-bottom: 3px; }
 .slot-muted          { color: var(--muted); }
 .slot-bold           { font-weight: 700; color: var(--text); margin-left: 4px; }
-.td-bold             { font-weight: 600; }
+.td-bold             { font-weight: 600; word-break: break-word; overflow-wrap: break-word; min-width: 100px; }
 .td-time             { font-size: 13px; white-space: nowrap; }
 .sep-muted           { color: var(--muted); margin: 0 4px; }
 .text-bold           { font-weight: 700; color: var(--text); }
@@ -1448,7 +1448,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .note-card-body      { padding: 20px; font-size: 13.5px; line-height: 1.8; color: var(--text-2); }
 .note-list           { margin: 0; padding-left: 18px; }
 .col-w220            { width: 220px; }
-.td-body             { color: var(--text-2); font-size: 13px; }
+.td-body             { color: var(--text-2); font-size: 13px; word-break: break-word; overflow-wrap: break-word; min-width: 100px; }
 
 /* ── 모달 ── */
 .modal-overlay  { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); align-items: center; justify-content: center; }
