@@ -43,60 +43,27 @@ public class AdminAccountService {
     public void create(String username, String password, String displayName,
                        AdminRole role, Set<AdminPermission> permissions,
                        MultipartFile profileImage) throws IOException {
-        if (username == null || username.isBlank())
-            throw new IllegalArgumentException("아이디를 입력해주세요.");
-        if (username.length() > 50)
-            throw new IllegalArgumentException("아이디는 50자 이하여야 합니다.");
-        if (password == null || password.length() < 8)
-            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
-        if (password.length() > 100)
-            throw new IllegalArgumentException("비밀번호는 100자 이하여야 합니다.");
-        if (accountRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
-        }
-
-        Set<AdminPermission> effectivePerms = resolvePermissions(role, permissions);
-
-        String imageUrl = (profileImage != null && !profileImage.isEmpty())
-                ? fileStorageService.storeAdminProfile(profileImage, username)
-                : null;
-
-        AdminAccount account = AdminAccount.builder()
+        validateNewAccount(username, password);
+        accountRepository.save(AdminAccount.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
                 .displayName(displayName)
                 .role(role)
-                .permissions(effectivePerms)
-                .profileImageUrl(imageUrl)
-                .build();
-
-        accountRepository.save(account);
+                .permissions(resolvePermissions(role, permissions))
+                .profileImageUrl(uploadProfileIfPresent(profileImage, username))
+                .build());
     }
 
     public void update(Long id, String displayName, AdminRole role,
                        Set<AdminPermission> permissions, String newPassword,
                        MultipartFile profileImage, boolean deleteProfileImage) throws IOException {
         AdminAccount account = findById(id);
-
-        if (account.getRole() == AdminRole.SUPER_ADMIN
-                && role == AdminRole.MANAGER
-                && accountRepository.countByRole(AdminRole.SUPER_ADMIN) <= 1) {
-            throw new IllegalArgumentException("마지막 최고 관리자의 역할을 변경할 수 없습니다.");
-        }
-
-        Set<AdminPermission> effectivePerms = resolvePermissions(role, permissions);
-
-        account.updateProfile(displayName, role, effectivePerms);
-
+        validateRoleChange(account, role);
+        account.updateProfile(displayName, role, resolvePermissions(role, permissions));
         if (newPassword != null && !newPassword.isBlank()) {
             account.updatePassword(passwordEncoder.encode(newPassword));
         }
-
-        if (deleteProfileImage) {
-            account.updateProfileImage(null);
-        } else if (profileImage != null && !profileImage.isEmpty()) {
-            account.updateProfileImage(fileStorageService.storeAdminProfile(profileImage, account.getUsername()));
-        }
+        applyProfileImageUpdate(account, profileImage, deleteProfileImage);
     }
 
     public void delete(Long id, String currentUsername) {
@@ -112,6 +79,42 @@ public class AdminAccountService {
         }
 
         accountRepository.delete(account);
+    }
+
+    private void validateNewAccount(String username, String password) {
+        if (username == null || username.isBlank())
+            throw new IllegalArgumentException("아이디를 입력해주세요.");
+        if (username.length() > 50)
+            throw new IllegalArgumentException("아이디는 50자 이하여야 합니다.");
+        if (password == null || password.length() < 8)
+            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
+        if (password.length() > 100)
+            throw new IllegalArgumentException("비밀번호는 100자 이하여야 합니다.");
+        if (accountRepository.existsByUsername(username))
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
+    }
+
+    private String uploadProfileIfPresent(MultipartFile profileImage, String username) throws IOException {
+        return (profileImage != null && !profileImage.isEmpty())
+                ? fileStorageService.storeAdminProfile(profileImage, username)
+                : null;
+    }
+
+    private void validateRoleChange(AdminAccount account, AdminRole newRole) {
+        if (account.getRole() == AdminRole.SUPER_ADMIN
+                && newRole == AdminRole.MANAGER
+                && accountRepository.countByRole(AdminRole.SUPER_ADMIN) <= 1) {
+            throw new IllegalArgumentException("마지막 최고 관리자의 역할을 변경할 수 없습니다.");
+        }
+    }
+
+    private void applyProfileImageUpdate(AdminAccount account, MultipartFile profileImage,
+                                          boolean deleteProfileImage) throws IOException {
+        if (deleteProfileImage) {
+            account.updateProfileImage(null);
+        } else if (profileImage != null && !profileImage.isEmpty()) {
+            account.updateProfileImage(fileStorageService.storeAdminProfile(profileImage, account.getUsername()));
+        }
     }
 
     private static Set<AdminPermission> resolvePermissions(AdminRole role, Set<AdminPermission> permissions) {
