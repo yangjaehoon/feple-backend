@@ -260,6 +260,7 @@
             var c = colorMap[badge.getAttribute('data-stage')];
             if (c) {
                 badge.style.background = c.bg;
+                badge.style.color      = '#fff';
             } else {
                 badge.style.background = '#e9ecef';
                 badge.style.color      = '#495057';
