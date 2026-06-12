@@ -363,8 +363,19 @@
                             <input type="hidden" name="stageName" id="tt-edit-stageName"/>
                             <div style="margin-bottom:12px">
                                 <label class="form-label-sm">아티스트 / 항목명</label>
+                                <th:block th:if="${!participatingArtistsByName.isEmpty()}">
+                                    <select id="tt-edit-artistSelect" class="compact-input"
+                                            style="width:100%; margin-bottom:6px"
+                                            onchange="onTtEditArtistChange(this)">
+                                        <option th:each="af : ${participatingArtistsByName}"
+                                                th:value="${af.artistName}"
+                                                th:text="${af.artistName}"></option>
+                                        <option value="__direct__">-- 직접 입력 --</option>
+                                    </select>
+                                </th:block>
                                 <input type="text" name="artistName" id="tt-edit-artistName"
-                                       class="compact-input" style="width:100%" required maxlength="50"/>
+                                       class="compact-input" style="width:100%" required maxlength="50"
+                                       placeholder="항목명 직접 입력"/>
                             </div>
                             <div style="margin-bottom:12px">
                                 <label class="form-label-sm">날짜</label>

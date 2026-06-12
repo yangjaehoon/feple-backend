@@ -323,19 +323,57 @@
     window.initBoothMap = initBoothMap;
 
     /* ── 타임테이블 수정 모달 ── */
+    function onTtEditArtistChange(select) {
+        var nameInput = document.getElementById('tt-edit-artistName');
+        if (select.value === '__direct__') {
+            nameInput.style.display = 'block';
+            nameInput.value = '';
+            nameInput.focus();
+        } else {
+            nameInput.style.display = 'none';
+            nameInput.value = select.value;
+        }
+    }
+
     function openTimetableEdit(btn) {
         var modal = document.getElementById('tt-edit-modal');
         var form  = document.getElementById('tt-edit-form');
-        var festivalId = btn.getAttribute('data-festival');
-        var entryId    = btn.getAttribute('data-id');
+        var festivalId  = btn.getAttribute('data-festival');
+        var entryId     = btn.getAttribute('data-id');
+        var artistName  = btn.getAttribute('data-artist') || '';
 
         form.action = '/admin/festivals/' + festivalId + '/timetable/' + entryId + '/update';
-        document.getElementById('tt-edit-artistName').value = btn.getAttribute('data-artist') || '';
-        document.getElementById('tt-edit-date').value       = btn.getAttribute('data-date')   || '';
-        document.getElementById('tt-edit-start').value      = btn.getAttribute('data-start')  || '';
-        document.getElementById('tt-edit-end').value        = btn.getAttribute('data-end')    || '';
-        document.getElementById('tt-edit-stageName').value  = btn.getAttribute('data-stage')  || '';
+        document.getElementById('tt-edit-date').value      = btn.getAttribute('data-date')  || '';
+        document.getElementById('tt-edit-start').value     = btn.getAttribute('data-start') || '';
+        document.getElementById('tt-edit-end').value       = btn.getAttribute('data-end')   || '';
+        document.getElementById('tt-edit-stageName').value = btn.getAttribute('data-stage') || '';
         document.getElementById('tt-edit-time-error').style.display = 'none';
+
+        var select    = document.getElementById('tt-edit-artistSelect');
+        var nameInput = document.getElementById('tt-edit-artistName');
+
+        if (select) {
+            var found = false;
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].value !== '__direct__' && select.options[i].value === artistName) {
+                    select.selectedIndex = i;
+                    nameInput.value = artistName;
+                    nameInput.style.display = 'none';
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                for (var j = 0; j < select.options.length; j++) {
+                    if (select.options[j].value === '__direct__') { select.selectedIndex = j; break; }
+                }
+                nameInput.value = artistName;
+                nameInput.style.display = 'block';
+            }
+        } else {
+            nameInput.value = artistName;
+            nameInput.style.display = 'block';
+        }
 
         modal.style.display = 'flex';
     }
@@ -364,6 +402,7 @@
         document.getElementById('tt-edit-time-error').style.display = 'none';
     });
 
-    window.openTimetableEdit  = openTimetableEdit;
-    window.closeTimetableEdit = closeTimetableEdit;
+    window.openTimetableEdit     = openTimetableEdit;
+    window.closeTimetableEdit    = closeTimetableEdit;
+    window.onTtEditArtistChange  = onTtEditArtistChange;
 })();
