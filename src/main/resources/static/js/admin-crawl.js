@@ -268,8 +268,8 @@
     });
 
     function validateOcrFile(file) {
-        if (!file.type.startsWith('image/')) { showApplyResult('error', '이미지 파일만 업로드 가능합니다.'); return false; }
-        if (file.size > 10 * 1024 * 1024)   { showApplyResult('error', '파일 크기는 10MB 이하여야 합니다.'); return false; }
+        if (!file.type.startsWith('image/')) { setOcrStartError('이미지 파일만 업로드 가능합니다.'); return false; }
+        if (file.size > 10 * 1024 * 1024)   { setOcrStartError('파일 크기는 10MB 이하여야 합니다.'); return false; }
         return true;
     }
 
@@ -326,20 +326,30 @@
         if (!validateOcrFile(file)) return;
         ocrPendingFile = file;
         document.getElementById('ocrSelectedFileName').textContent = file.name;
+        setOcrStartError('');
         showOcrPreview(file);
     }
+
+    function setOcrStartError(msg) {
+        document.getElementById('ocrStartError').textContent = msg;
+    }
+
+    document.getElementById('selFestival').addEventListener('change', function () {
+        if (this.value) setOcrStartError('');
+    });
 
     document.getElementById('btnStartOcr').addEventListener('click', function () {
         var fid = document.getElementById('selFestival').value;
         if (!fid) {
-            showApplyResult('error', '페스티벌을 먼저 선택해주세요.');
+            setOcrStartError('페스티벌을 먼저 선택해주세요.');
             document.getElementById('selFestival').focus();
             return;
         }
         if (!ocrPendingFile) {
-            showApplyResult('error', '이미지를 먼저 업로드해주세요.');
+            setOcrStartError('이미지를 먼저 업로드해주세요.');
             return;
         }
+        setOcrStartError('');
         submitOcrRequest(ocrPendingFile);
     });
 
@@ -592,10 +602,11 @@
     });
 
     function handleLineupFile(file) {
-        if (!file.type.startsWith('image/')) { showApplyResult('error', '이미지 파일만 업로드 가능합니다.'); return; }
-        if (file.size > 10 * 1024 * 1024)   { showApplyResult('error', '파일 크기는 10MB 이하여야 합니다.'); return; }
+        if (!file.type.startsWith('image/')) { setLineupStartError('이미지 파일만 업로드 가능합니다.'); return; }
+        if (file.size > 10 * 1024 * 1024)   { setLineupStartError('파일 크기는 10MB 이하여야 합니다.'); return; }
         lineupPendingFile = file;
         document.getElementById('lineupSelectedFileName').textContent = file.name;
+        setLineupStartError('');
 
         var reader = new FileReader();
         reader.onload = function (e) { document.getElementById('lineupPreviewImg').src = e.target.result; };
@@ -641,17 +652,26 @@
             });
     }
 
+    function setLineupStartError(msg) {
+        document.getElementById('lineupStartError').textContent = msg;
+    }
+
+    document.getElementById('selLineupFestival').addEventListener('change', function () {
+        if (this.value) setLineupStartError('');
+    });
+
     document.getElementById('btnStartLineup').addEventListener('click', function () {
         var fid = document.getElementById('selLineupFestival').value;
         if (!fid) {
-            showApplyResult('error', '페스티벌을 먼저 선택해주세요.');
+            setLineupStartError('페스티벌을 먼저 선택해주세요.');
             document.getElementById('selLineupFestival').focus();
             return;
         }
         if (!lineupPendingFile) {
-            showApplyResult('error', '이미지를 먼저 업로드해주세요.');
+            setLineupStartError('이미지를 먼저 업로드해주세요.');
             return;
         }
+        setLineupStartError('');
         submitLineupRequest(lineupPendingFile);
     });
 
