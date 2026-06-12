@@ -55,18 +55,13 @@ public class PostAdminController {
             @RequestParam(required = false) Long artistId,
             @RequestParam(required = false) Long festivalId,
             Model model) {
-        StringBuilder extra = new StringBuilder("filter=").append(filter);
-        if (keyword != null && !keyword.isBlank()) extra.append("&keyword=").append(keyword);
-        if (artistId != null) extra.append("&artistId=").append(artistId);
-        if (festivalId != null) extra.append("&festivalId=").append(festivalId);
-
         model.addAttribute("posts", postAdminService.getPostsForAdmin(
                 new PostAdminFilter(page, AdminConstants.LIST_PAGE_SIZE, filter, keyword, artistId, festivalId)));
         model.addAttribute("filter", filter);
         model.addAttribute("keyword", keyword);
         model.addAttribute("artistId", artistId);
         model.addAttribute("festivalId", festivalId);
-        model.addAttribute("extraParams", extra.toString());
+        model.addAttribute("extraParams", new PostListParams(filter, keyword, artistId, festivalId).toExtraParams());
 
         FilterDropdownProvider provider = dropdownProviders.get(filter);
         if (provider != null) provider.populate(model);
@@ -85,13 +80,7 @@ public class PostAdminController {
         try {
             model.addAttribute("post", postService.getPost(id));
             model.addAttribute("comments", commentService.getCommentsByPost(id, null));
-            StringBuilder back = new StringBuilder("/admin/posts");
-            if (!filter.isBlank() || artistId != null || festivalId != null) {
-                back.append("?filter=").append(filter);
-                if (artistId != null) back.append("&artistId=").append(artistId);
-                if (festivalId != null) back.append("&festivalId=").append(festivalId);
-            }
-            model.addAttribute("backUrl", back.toString());
+            model.addAttribute("backUrl", new PostListParams(filter, null, artistId, festivalId).toBackUrl());
             return "admin/post/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", "존재하지 않는 게시글입니다.");
@@ -120,7 +109,7 @@ public class PostAdminController {
                 ra.addFlashAttribute("errorMessage", "일괄 삭제 처리 중 오류가 발생했습니다.");
             }
         }
-        return "redirect:/admin/posts?" + buildRedirectParams(filter, page, artistId, festivalId);
+        return "redirect:/admin/posts?" + new PostListParams(filter, null, artistId, festivalId).toRedirectParams(page);
     }
 
     @PostMapping("/{id}/delete")
@@ -138,14 +127,7 @@ public class PostAdminController {
             log.error("게시글 삭제 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin/posts?" + buildRedirectParams(filter, page, artistId, festivalId);
-    }
-
-    private String buildRedirectParams(String filter, int page, Long artistId, Long festivalId) {
-        StringBuilder sb = new StringBuilder("filter=").append(filter).append("&page=").append(page);
-        if (artistId != null) sb.append("&artistId=").append(artistId);
-        if (festivalId != null) sb.append("&festivalId=").append(festivalId);
-        return sb.toString();
+        return "redirect:/admin/posts?" + new PostListParams(filter, null, artistId, festivalId).toRedirectParams(page);
     }
 
     @PostMapping("/comments/{id}/delete")

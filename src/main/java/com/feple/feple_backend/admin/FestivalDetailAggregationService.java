@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,7 +39,7 @@ public class FestivalDetailAggregationService {
     @Value("${app.google.maps.key:}")
     private String googleMapsKey;
 
-    public void populateModel(Long festivalId, Model model) {
+    public FestivalDetailModel getDetail(Long festivalId) {
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
         List<TimetableEntryResponse> entries = timetableService.getEntries(festivalId);
 
@@ -48,17 +47,19 @@ public class FestivalDetailAggregationService {
         Map<String, List<String>> datesByArtistName = buildDatesByArtistName(entries);
         List<ArtistFestivalResponse> artists = artistFestivalService.getArtistFestivals(festivalId, datesByArtistName);
 
-        model.addAttribute("festival",                   festival);
-        model.addAttribute("participatingArtists",       artists);
-        model.addAttribute("participatingArtistsByName", sortArtistsByName(artists));
-        model.addAttribute("timetableEntries",           entries);
-        model.addAttribute("timetableByArtist",          buildTimetableByArtist(artists, entries));
-        model.addAttribute("stages",                     stageService.getStages(festivalId));
-        model.addAttribute("booths",                     boothService.getBooths(festivalId));
-        model.addAttribute("allBoothTypes",              BoothType.values());
-        model.addAttribute("googleMapsKey",              googleMapsKey);
-        model.addAttribute("setlistCounts",              buildSetlistCounts(artists));
-        model.addAttribute("opsStageIndicator",          ANNOUNCEMENT_STAGE);
+        return new FestivalDetailModel(
+                festival,
+                artists,
+                sortArtistsByName(artists),
+                entries,
+                buildTimetableByArtist(artists, entries),
+                stageService.getStages(festivalId),
+                boothService.getBooths(festivalId),
+                BoothType.values(),
+                googleMapsKey,
+                buildSetlistCounts(artists),
+                ANNOUNCEMENT_STAGE
+        );
     }
 
     private Map<String, List<String>> buildDatesByArtistName(List<TimetableEntryResponse> entries) {

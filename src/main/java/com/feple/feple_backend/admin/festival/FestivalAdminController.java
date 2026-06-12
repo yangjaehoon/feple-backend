@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.feple.feple_backend.admin.BindingResultUtils;
+import com.feple.feple_backend.admin.FestivalDetailModel;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -204,7 +205,18 @@ public class FestivalAdminController {
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
         try {
-            festivalDetailAggregationService.populateModel(id, model);
+            FestivalDetailModel detail = festivalDetailAggregationService.getDetail(id);
+            model.addAttribute("festival",                   detail.festival());
+            model.addAttribute("participatingArtists",       detail.participatingArtists());
+            model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());
+            model.addAttribute("timetableEntries",           detail.timetableEntries());
+            model.addAttribute("timetableByArtist",          detail.timetableByArtist());
+            model.addAttribute("stages",                     detail.stages());
+            model.addAttribute("booths",                     detail.booths());
+            model.addAttribute("allBoothTypes",              detail.allBoothTypes());
+            model.addAttribute("googleMapsKey",              detail.googleMapsKey());
+            model.addAttribute("setlistCounts",              detail.setlistCounts());
+            model.addAttribute("opsStageIndicator",          detail.opsStageIndicator());
         } catch (java.util.NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
             return "redirect:/admin/festivals";

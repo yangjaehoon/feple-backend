@@ -7,7 +7,6 @@ import com.feple.feple_backend.user.service.UserAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 
 import java.util.List;
 
@@ -23,25 +22,22 @@ public class UserDetailAggregationService {
     private final CommentService commentService;
     private final PostAdminService postAdminService;
 
-    public void populateListCountsModel(List<Long> userIds, Model model) {
-        model.addAttribute("reportCounts",  myPageService.getReportCounts(userIds));
-        model.addAttribute("postCounts",    postAdminService.getPostCountsByUserIds(userIds));
-        model.addAttribute("commentCounts", commentService.getCommentCountsByUserIds(userIds));
+    public UserListCountsModel getListCounts(List<Long> userIds) {
+        return new UserListCountsModel(
+                myPageService.getReportCounts(userIds),
+                postAdminService.getPostCountsByUserIds(userIds),
+                commentService.getCommentCountsByUserIds(userIds)
+        );
     }
 
-    public void populateModel(Long userId, Model model) {
-        var user            = userAdminService.getAdminUser(userId);
-        var stats           = myPageService.getUserStats(userId);
-        var recentPosts     = postAdminService.getRecentPostsByUser(userId, RECENT_LIMIT);
-        var likedFestivals  = myPageService.getLikedFestivals(userId);
-        var followedArtists = myPageService.getFollowedArtists(userId);
-        var recentComments  = commentService.getRecentCommentsByUser(userId, RECENT_LIMIT);
-
-        model.addAttribute("user",            user);
-        model.addAttribute("stats",           stats);
-        model.addAttribute("recentPosts",     recentPosts);
-        model.addAttribute("recentComments",  recentComments);
-        model.addAttribute("likedFestivals",  likedFestivals);
-        model.addAttribute("followedArtists", followedArtists);
+    public UserDetailModel getDetail(Long userId) {
+        return new UserDetailModel(
+                userAdminService.getAdminUser(userId),
+                myPageService.getUserStats(userId),
+                postAdminService.getRecentPostsByUser(userId, RECENT_LIMIT),
+                commentService.getRecentCommentsByUser(userId, RECENT_LIMIT),
+                myPageService.getLikedFestivals(userId),
+                myPageService.getFollowedArtists(userId)
+        );
     }
 }

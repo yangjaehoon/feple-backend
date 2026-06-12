@@ -2,6 +2,8 @@ package com.feple.feple_backend.admin.user;
 
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.UserDetailAggregationService;
+import com.feple.feple_backend.admin.UserDetailModel;
+import com.feple.feple_backend.admin.UserListCountsModel;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -45,11 +47,14 @@ public class UserAdminController {
         Page<UserResponseDto> users = fetchUsersPage(page, keyword, sort, filter);
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
 
+        UserListCountsModel counts = userDetailAggregationService.getListCounts(userIds);
         model.addAttribute("users", users);
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("filter", filter);
-        userDetailAggregationService.populateListCountsModel(userIds, model);
+        model.addAttribute("reportCounts",  counts.reportCounts());
+        model.addAttribute("postCounts",    counts.postCounts());
+        model.addAttribute("commentCounts", counts.commentCounts());
         model.addAttribute("extraParams", buildListParams(filter, sort, keyword));
         return "admin/user/list";
     }
@@ -63,7 +68,13 @@ public class UserAdminController {
     @GetMapping("/{id}")
     public String userDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
         try {
-            userDetailAggregationService.populateModel(id, model);
+            UserDetailModel detail = userDetailAggregationService.getDetail(id);
+            model.addAttribute("user",            detail.user());
+            model.addAttribute("stats",           detail.stats());
+            model.addAttribute("recentPosts",     detail.recentPosts());
+            model.addAttribute("recentComments",  detail.recentComments());
+            model.addAttribute("likedFestivals",  detail.likedFestivals());
+            model.addAttribute("followedArtists", detail.followedArtists());
             return "admin/user/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
