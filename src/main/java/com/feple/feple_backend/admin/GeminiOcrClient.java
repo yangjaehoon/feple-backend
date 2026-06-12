@@ -50,9 +50,18 @@ public class GeminiOcrClient {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final GeminiUsageTracker usageTracker;
 
     boolean isConfigured() {
         return apiKey != null && !apiKey.isBlank();
+    }
+
+    int getTodayUsage() {
+        return usageTracker.getTodayCount();
+    }
+
+    int getDailyLimit() {
+        return usageTracker.getDailyLimit();
     }
 
     public List<OcrResultDto> parseTimeTable(MultipartFile image) throws IOException {
@@ -88,6 +97,7 @@ public class GeminiOcrClient {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
+        usageTracker.increment();
         return webClient.post()
                 .uri(GEMINI_BASE_URL + "?key=" + apiKey)
                 .header("Content-Type", "application/json")

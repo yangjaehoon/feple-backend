@@ -11,6 +11,30 @@
 
     window.AdminUtils.initTabs();
 
+    /* ── Gemini 사용량 ── */
+    function loadQuota() {
+        fetch(CrawlUrls.quota)
+            .then(function (r) { return r.json(); })
+            .then(function (q) { renderQuota(q); });
+    }
+
+    function renderQuota(q) {
+        var pct = q.limit > 0 ? Math.min(100, Math.round(q.used / q.limit * 100)) : 0;
+        var text = q.used + ' / ' + q.limit + '회 사용 (' + q.remaining + '회 남음)';
+        var color = pct >= 90 ? 'var(--danger)' : (pct >= 70 ? 'var(--warning-text)' : 'var(--success)');
+
+        ['quotaFill', 'quotaFillLineup'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { el.style.width = pct + '%'; el.style.background = color; }
+        });
+        ['quotaText', 'quotaTextLineup'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { el.textContent = text; el.style.color = color; }
+        });
+    }
+
+    loadQuota();
+
     /* ── 소스 카드 선택 ── */
     document.querySelectorAll('.source-card').forEach(function (card) {
         card.addEventListener('click', function () {
@@ -289,6 +313,7 @@
             .then(function (results) {
                 setTimeout(function () { document.getElementById('ocrProgress').classList.remove('visible'); }, 500);
                 renderOcrResults(results);
+                loadQuota();
             })
             .catch(function (err) {
                 clearInterval(timer);
@@ -607,6 +632,7 @@
             .then(function (results) {
                 setTimeout(function () { document.getElementById('lineupProgress').classList.remove('visible'); }, 500);
                 renderLineupResults(results);
+                loadQuota();
             })
             .catch(function (err) {
                 clearInterval(timer);

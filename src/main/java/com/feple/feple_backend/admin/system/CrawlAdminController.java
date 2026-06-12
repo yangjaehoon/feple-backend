@@ -156,6 +156,18 @@ public class CrawlAdminController {
         }
     }
 
+    // ── Gemini 사용량 ────────────────────────────────────
+
+    @GetMapping("/quota")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getQuota() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("used",  ocrService.getTodayUsage());
+        result.put("limit", ocrService.getDailyLimit());
+        result.put("remaining", Math.max(0, ocrService.getDailyLimit() - ocrService.getTodayUsage()));
+        return ResponseEntity.ok(result);
+    }
+
     // ── 드롭다운 데이터 ──────────────────────────────────
 
     @GetMapping("/festivals")

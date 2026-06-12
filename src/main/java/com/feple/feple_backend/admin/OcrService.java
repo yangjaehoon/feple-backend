@@ -34,6 +34,14 @@ public class OcrService {
         return geminiOcrClient.isConfigured();
     }
 
+    public int getTodayUsage() {
+        return geminiOcrClient.getTodayUsage();
+    }
+
+    public int getDailyLimit() {
+        return geminiOcrClient.getDailyLimit();
+    }
+
     public List<OcrResultDto> parseTimeTable(MultipartFile image) throws IOException {
         return geminiOcrClient.parseTimeTable(image);
     }

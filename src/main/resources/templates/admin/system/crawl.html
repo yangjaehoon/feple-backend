@@ -170,6 +170,16 @@
              ══════════════════════════════════ -->
         <div id="tab-ocr" class="tab-panel">
 
+            <!-- Gemini 사용량 -->
+            <div class="quota-bar" id="quotaBar">
+                <span class="quota-label">Gemini 무료 API</span>
+                <div class="quota-track">
+                    <div class="quota-fill" id="quotaFill" style="width:0%"></div>
+                </div>
+                <span class="quota-text" id="quotaText">로딩 중...</span>
+                <span class="quota-reset">태평양 자정 리셋</span>
+            </div>
+
             <!-- 1. 설정 -->
             <div class="crawl-card">
                 <div class="crawl-card-title">1. 적용 대상 설정</div>
@@ -284,6 +294,16 @@
              ══════════════════════════════════ -->
         <div id="tab-lineup" class="tab-panel">
 
+            <!-- Gemini 사용량 (공유) -->
+            <div class="quota-bar" id="quotaBarLineup">
+                <span class="quota-label">Gemini 무료 API</span>
+                <div class="quota-track">
+                    <div class="quota-fill" id="quotaFillLineup" style="width:0%"></div>
+                </div>
+                <span class="quota-text" id="quotaTextLineup">로딩 중...</span>
+                <span class="quota-reset">태평양 자정 리셋</span>
+            </div>
+
             <!-- 1. 설정 -->
             <div class="crawl-card">
                 <div class="crawl-card-title">1. 적용 대상 설정</div>
@@ -383,6 +403,7 @@ window.CrawlUrls = {
     ocrApply:           /*[[@{/admin/crawl/ocr/apply}]]*/ '',
     lineupOcr:          /*[[@{/admin/crawl/ocr/lineup}]]*/ '',
     lineupOcrApply:     /*[[@{/admin/crawl/ocr/lineup/apply}]]*/ '',
+    quota:              /*[[@{/admin/crawl/quota}]]*/ '',
     festivalDetailBase: /*[[@{/admin/festivals}]]*/ ''
 };
 /*]]>*/
