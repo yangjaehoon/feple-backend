@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,39 +35,49 @@ public class OcrService {
         int savedCount = 0;
 
         for (OcrResultDto entry : request.entries()) {
-            String artistLabel = entry.artist() != null ? entry.artist() : "—";
+            Optional<String> error = validateEntry(entry);
+            if (error.isPresent()) {
+                failures.add(buildFailureMap(entry, error.get()));
+                continue;
+            }
             try {
-                if (entry.date() == null || entry.date().isBlank()) {
-                    failures.add(Map.of("artist", artistLabel, "stage", entry.stage() != null ? entry.stage() : "—", "reason", "날짜 누락"));
-                    continue;
-                }
-                if (entry.startTime() == null || entry.endTime() == null) {
-                    failures.add(Map.of("artist", artistLabel, "stage", entry.stage() != null ? entry.stage() : "—", "reason", "시작/종료 시간 누락"));
-                    continue;
-                }
-                java.time.LocalDate festivalDate;
-                try {
-                    festivalDate = java.time.LocalDate.parse(entry.date());
-                } catch (java.time.format.DateTimeParseException ex) {
-                    failures.add(Map.of("artist", artistLabel, "stage", entry.stage() != null ? entry.stage() : "—", "reason", "날짜 형식 오류: " + entry.date()));
-                    continue;
-                }
-                TimetableEntryRequest req = new TimetableEntryRequest();
-                req.setStageName(entry.stage() != null ? entry.stage().trim() : "");
-                req.setArtistName(entry.artist() != null ? entry.artist().trim() : "");
-                req.setFestivalDate(festivalDate);
-                req.setStartTime(LocalTime.parse(entry.startTime()));
-                req.setEndTime(LocalTime.parse(entry.endTime()));
-                timetableService.createEntry(request.festivalId(), req);
+                timetableService.createEntry(request.festivalId(), toTimetableRequest(entry));
                 savedCount++;
             } catch (Exception e) {
-                Map<String, String> failure = new HashMap<>();
-                failure.put("artist", artistLabel);
-                failure.put("stage",  entry.stage()  != null ? entry.stage()  : "—");
-                failure.put("reason", e.getMessage());
-                failures.add(failure);
+                failures.add(buildFailureMap(entry, e.getMessage()));
             }
         }
         return new OcrApplyResultDto(savedCount, failures.size(), failures);
+    }
+
+    private Optional<String> validateEntry(OcrResultDto entry) {
+        if (entry.date() == null || entry.date().isBlank())
+            return Optional.of("날짜 누락");
+        if (entry.startTime() == null || entry.endTime() == null)
+            return Optional.of("시작/종료 시간 누락");
+        try {
+            LocalDate.parse(entry.date());
+        } catch (java.time.format.DateTimeParseException ex) {
+            return Optional.of("날짜 형식 오류: " + entry.date());
+        }
+        return Optional.empty();
+    }
+
+    private TimetableEntryRequest toTimetableRequest(OcrResultDto entry) {
+        TimetableEntryRequest req = new TimetableEntryRequest();
+        req.setStageName(entry.stage()  != null ? entry.stage().trim()  : "");
+        req.setArtistName(entry.artist() != null ? entry.artist().trim() : "");
+        req.setFestivalDate(LocalDate.parse(entry.date()));
+        req.setStartTime(LocalTime.parse(entry.startTime()));
+        req.setEndTime(LocalTime.parse(entry.endTime()));
+        return req;
+    }
+
+    private Map<String, String> buildFailureMap(OcrResultDto entry, String reason) {
+        Map<String, String> map = new HashMap<>();
+        map.put("artist", entry.artist() != null ? entry.artist() : "—");
+        map.put("stage",  entry.stage()  != null ? entry.stage()  : "—");
+        map.put("reason", reason != null ? reason : "알 수 없는 오류");
+        return map;
     }
 }

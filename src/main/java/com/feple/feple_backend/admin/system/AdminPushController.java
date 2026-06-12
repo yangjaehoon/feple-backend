@@ -48,15 +48,10 @@ public class AdminPushController {
                        @RequestParam String body,
                        RedirectAttributes ra) {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
-        try {
+        return executePush(() -> {
             adminPushService.sendToAll(title.strip(), body.strip());
             adminLogService.log(AdminAction.PUSH_BROADCAST, null, null, title.strip());
-            ra.addFlashAttribute("successMessage", "푸시 알림이 발송되었습니다.");
-        } catch (Exception e) {
-            log.error("푸시 발송 오류", e);
-            ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
-        }
-        return PUSH_REDIRECT;
+        }, "푸시 알림이 발송되었습니다.", "전체 발송", ra);
     }
 
     @GetMapping("/search-user")
@@ -76,17 +71,10 @@ public class AdminPushController {
                                         @RequestParam Long artistId,
                                         RedirectAttributes ra) {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
-        try {
+        return executePush(() -> {
             adminPushService.sendToArtistFollowers(artistId, title.strip(), body.strip());
             adminLogService.log(AdminAction.PUSH_ARTIST_FOLLOWERS, "ARTIST", artistId, title.strip());
-            ra.addFlashAttribute("successMessage", "아티스트 팔로워에게 발송되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("아티스트 팔로워 발송 오류", e);
-            ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
-        }
-        return PUSH_REDIRECT;
+        }, "아티스트 팔로워에게 발송되었습니다.", "아티스트 팔로워 발송", ra);
     }
 
     @PostMapping("/festival-certified")
@@ -95,17 +83,10 @@ public class AdminPushController {
                                           @RequestParam Long festivalId,
                                           RedirectAttributes ra) {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
-        try {
+        return executePush(() -> {
             adminPushService.sendToFestivalCertified(festivalId, title.strip(), body.strip());
             adminLogService.log(AdminAction.PUSH_FESTIVAL_CERTIFIED, "FESTIVAL", festivalId, title.strip());
-            ra.addFlashAttribute("successMessage", "페스티벌 인증 참여자에게 발송되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("페스티벌 인증자 발송 오류", e);
-            ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
-        }
-        return PUSH_REDIRECT;
+        }, "페스티벌 인증 참여자에게 발송되었습니다.", "페스티벌 인증자 발송", ra);
     }
 
     @PostMapping("/test")
@@ -114,14 +95,20 @@ public class AdminPushController {
                            @RequestParam Long targetUserId,
                            RedirectAttributes ra) {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
-        try {
+        return executePush(() -> {
             adminPushService.sendTest(targetUserId, title.strip(), body.strip());
             adminLogService.log(AdminAction.PUSH_TEST, "USER", targetUserId, title.strip());
-            ra.addFlashAttribute("successMessage", "테스트 발송 완료 (userId=" + targetUserId + ")");
+        }, "테스트 발송 완료 (userId=" + targetUserId + ")", "테스트 발송", ra);
+    }
+
+    private String executePush(Runnable action, String successMsg, String errorContext, RedirectAttributes ra) {
+        try {
+            action.run();
+            ra.addFlashAttribute("successMessage", successMsg);
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            log.error("테스트 발송 오류", e);
+            log.error("푸시 발송 오류 [{}]", errorContext, e);
             ra.addFlashAttribute("errorMessage", SEND_ERROR_MSG);
         }
         return PUSH_REDIRECT;

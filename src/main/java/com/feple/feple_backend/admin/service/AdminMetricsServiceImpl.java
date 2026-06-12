@@ -106,11 +106,8 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
         LocalDateTime since30days = LocalDate.now().minusDays(29).atStartOfDay();
         LocalDate today = LocalDate.now();
 
-        List<TopKeywordDto> topKeywords = searchLogRepository
-                .findTopKeywordsSince(since7days, 10)
-                .stream()
-                .map(row -> new TopKeywordDto((String) row[0], ((Number) row[1]).longValue()))
-                .toList();
+        List<TopKeywordDto> topKeywords = mapTopKeywords(
+                searchLogRepository.findTopKeywordsSince(since7days, 10));
 
         List<Festival> topFestivalsByLike = festivalRepository.findTop10ByOrderByLikeCountDesc();
 
@@ -147,6 +144,12 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
             date = date.plusDays(1);
         }
         return stats;
+    }
+
+    private static List<TopKeywordDto> mapTopKeywords(List<Object[]> rows) {
+        return rows.stream()
+                .map(row -> new TopKeywordDto((String) row[0], ((Number) row[1]).longValue()))
+                .toList();
     }
 
     private static Map<LocalDate, Long> toDateMap(List<Object[]> rows) {

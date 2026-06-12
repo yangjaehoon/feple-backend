@@ -44,41 +44,36 @@
         return el;
     }
 
-    function initBoothMap() {
-        var centerLat = festivalLat != null ? festivalLat : 37.5665;
-        var centerLng = festivalLng != null ? festivalLng : 126.9780;
+    function createBoothInfoWindow(booth) {
+        var infoDiv = document.createElement('div');
+        infoDiv.className = 'booth-info-popup';
+        infoDiv.textContent = (booth.boothTypeName || '') + ' · ' + booth.name;
+        if (booth.description) {
+            var descEl = document.createElement('span');
+            descEl.className = 'booth-info-desc';
+            descEl.textContent = booth.description;
+            infoDiv.appendChild(descEl);
+        }
+        return new google.maps.InfoWindow({ content: infoDiv });
+    }
 
-        boothMap = new google.maps.Map(document.getElementById('boothMap'), {
-            center: { lat: centerLat, lng: centerLng },
-            zoom: 18,
-            mapTypeControl: false,
-            streetViewControl: false,
-            mapId: 'DEMO_MAP_ID'
-        });
-
+    function placeExistingBooths(map) {
         existingBooths.forEach(function (booth) {
             var marker = new google.maps.marker.AdvancedMarkerElement({
                 position: { lat: booth.latitude, lng: booth.longitude },
-                map: boothMap,
+                map: map,
                 title: booth.name,
                 content: createBoothEl(booth)
             });
-            var infoDiv = document.createElement('div');
-            infoDiv.className = 'booth-info-popup';
-            infoDiv.textContent = (booth.boothTypeName || '') + ' · ' + booth.name;
-            if (booth.description) {
-                var descEl = document.createElement('span');
-                descEl.className = 'booth-info-desc';
-                descEl.textContent = booth.description;
-                infoDiv.appendChild(descEl);
-            }
-            var infoWindow = new google.maps.InfoWindow({ content: infoDiv });
+            var infoWindow = createBoothInfoWindow(booth);
             marker.addListener('click', function () {
-                infoWindow.open({ anchor: marker, map: boothMap });
+                infoWindow.open({ anchor: marker, map: map });
             });
         });
+    }
 
-        boothMap.addListener('click', function (e) {
+    function setupMapClickToPlace(map) {
+        map.addListener('click', function (e) {
             var lat = e.latLng.lat();
             var lng = e.latLng.lng();
             document.getElementById('boothLat').value = lat;
@@ -91,10 +86,26 @@
             if (selectedMarker) selectedMarker.map = null;
             selectedMarker = new google.maps.marker.AdvancedMarkerElement({
                 position: e.latLng,
-                map: boothMap,
+                map: map,
                 content: createSelectedEl()
             });
         });
+    }
+
+    function initBoothMap() {
+        var centerLat = festivalLat != null ? festivalLat : 37.5665;
+        var centerLng = festivalLng != null ? festivalLng : 126.9780;
+
+        boothMap = new google.maps.Map(document.getElementById('boothMap'), {
+            center: { lat: centerLat, lng: centerLng },
+            zoom: 18,
+            mapTypeControl: false,
+            streetViewControl: false,
+            mapId: 'DEMO_MAP_ID'
+        });
+
+        placeExistingBooths(boothMap);
+        setupMapClickToPlace(boothMap);
     }
 
     function validateBoothImage(input) {
@@ -180,36 +191,48 @@
         document.getElementById('endTime').style.borderColor = '';
     }
 
-    function onArtistChange(select) {
+    function extractArtistSelection(select) {
         var opt = select.options[select.selectedIndex];
+        return {
+            stage: opt.getAttribute('data-stage') || '',
+            date:  opt.getAttribute('data-date')  || ''
+        };
+    }
 
-        var stage = opt.getAttribute('data-stage') || '';
+    function applyStagePreview(stage) {
         document.getElementById('autoStageName').value = stage;
-        var stagePreview = document.getElementById('stagePreview');
+        var preview = document.getElementById('stagePreview');
         if (stage) {
-            stagePreview.textContent = stage;
-            stagePreview.style.color = 'var(--primary)';
-            stagePreview.style.fontWeight = '600';
+            preview.textContent      = stage;
+            preview.style.color      = 'var(--primary)';
+            preview.style.fontWeight = '600';
         } else {
-            stagePreview.textContent = '스테이지 미지정';
-            stagePreview.style.color = 'var(--muted)';
-            stagePreview.style.fontWeight = 'normal';
+            preview.textContent      = '스테이지 미지정';
+            preview.style.color      = 'var(--muted)';
+            preview.style.fontWeight = 'normal';
         }
+    }
 
-        var date = opt.getAttribute('data-date') || '';
+    function applyDatePreview(date) {
         document.getElementById('autoFestivalDate').value = date;
-        var datePreview = document.getElementById('datePreview');
+        var preview = document.getElementById('datePreview');
         if (date) {
-            datePreview.textContent = date;
-            datePreview.style.color = 'var(--text)';
-            datePreview.style.fontWeight = '600';
-            datePreview.style.borderColor = 'var(--border)';
+            preview.textContent       = date;
+            preview.style.color       = 'var(--text)';
+            preview.style.fontWeight  = '600';
+            preview.style.borderColor = 'var(--border)';
         } else {
-            datePreview.textContent = '⚠ 참여 날짜 미설정 — 위 목록에서 날짜를 먼저 저장하세요.';
-            datePreview.style.color = 'var(--danger)';
-            datePreview.style.fontWeight = '500';
-            datePreview.style.borderColor = 'var(--danger)';
+            preview.textContent       = '⚠ 참여 날짜 미설정 — 위 목록에서 날짜를 먼저 저장하세요.';
+            preview.style.color       = 'var(--danger)';
+            preview.style.fontWeight  = '500';
+            preview.style.borderColor = 'var(--danger)';
         }
+    }
+
+    function onArtistChange(select) {
+        var sel = extractArtistSelection(select);
+        applyStagePreview(sel.stage);
+        applyDatePreview(sel.date);
     }
 
     /* ── 스테이지 색상 ── */
@@ -223,25 +246,31 @@
         { bg: '#d6336c', light: '#fff0f6', border: '#fcc2d7' },
         { bg: '#495057', light: '#f1f3f5', border: '#ced4da' },
     ];
+
+    function applyStageRowStyle(row, c) {
+        row.style.borderLeft      = '4px solid ' + c.bg;
+        row.style.background      = c.light;
+        row.style.borderColor     = c.border;
+        row.style.borderLeftColor = c.bg;
+        row.querySelector('.stage-order-num').style.background = c.bg;
+    }
+
+    function applyStageBadgeColors(colorMap) {
+        document.querySelectorAll('.badge-stage[data-stage]').forEach(function (badge) {
+            var c = colorMap[badge.getAttribute('data-stage')];
+            if (c) badge.style.background = c.bg;
+        });
+    }
+
     (function applyStageColors() {
-        var stageMap = {};
+        var colorMap = {};
         document.querySelectorAll('.stage-row[data-stage]').forEach(function (row, i) {
             var name = row.getAttribute('data-stage');
-            var c = stageColors[i % stageColors.length];
-            stageMap[name] = c;
-            row.style.borderLeft = '4px solid ' + c.bg;
-            row.style.background = c.light;
-            row.style.borderColor = c.border;
-            row.style.borderLeftColor = c.bg;
-            row.querySelector('.stage-order-num').style.background = c.bg;
+            var c    = stageColors[i % stageColors.length];
+            colorMap[name] = c;
+            applyStageRowStyle(row, c);
         });
-        document.querySelectorAll('.badge-stage[data-stage]').forEach(function (badge) {
-            var name = badge.getAttribute('data-stage');
-            var c = stageMap[name];
-            if (c) {
-                badge.style.background = c.bg;
-            }
-        });
+        applyStageBadgeColors(colorMap);
     })();
 
     /* ── 이벤트 리스너 ── */
