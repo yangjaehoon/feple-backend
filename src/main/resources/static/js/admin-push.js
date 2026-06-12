@@ -6,8 +6,8 @@
     }
 
     function fillTargetAndConfirm(type) {
-        var title = document.querySelector('[name="title"]').value.trim();
-        var body  = document.querySelector('[name="body"]').value.trim();
+        var title = document.getElementById('target-card-title').value.trim();
+        var body  = document.getElementById('target-card-body').value.trim();
         if (!title || !body) {
             showPushTargetError('제목과 내용을 먼저 입력해주세요.');
             return false;
@@ -72,17 +72,13 @@
     }
 
     function validateTest(testForm) {
-        var broadcastForm = document.getElementById('broadcast-form');
-        var title = broadcastForm.querySelector('[name="title"]').value.trim();
-        var body  = broadcastForm.querySelector('[name="body"]').value.trim();
+        var title = testForm.querySelector('[name="title"]').value.trim();
+        var body  = testForm.querySelector('[name="body"]').value.trim();
         var uid   = testForm.querySelector('[name="targetUserId"]').value.trim();
         if (!title || !body) { showPushTestError('제목과 내용을 입력해주세요.'); return false; }
         if (!uid)            { showPushTestError('테스트 대상 사용자 ID를 입력해주세요.'); return false; }
         document.getElementById('push-test-error').classList.add('d-none');
-        if (!confirm('테스트 발송하시겠습니까?')) return false;
-        testForm.querySelector('[name="title"]').value = title;
-        testForm.querySelector('[name="body"]').value  = body;
-        return true;
+        return confirm('테스트 발송하시겠습니까?');
     }
 
     function openBroadcastModal(btn) {

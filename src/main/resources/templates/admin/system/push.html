@@ -47,12 +47,19 @@
                 <span class="badge-env">TEST</span>
             </div>
             <div class="card-body">
-                <div class="note-box mb-0">
-                    위 카드의 <strong>제목·내용</strong>을 그대로 사용하여 특정 사용자에게만 발송합니다. 이력에 저장되지 않습니다.
-                </div>
                 <form id="test-form" th:action="@{/admin/push/test}" method="post">
-                    <input type="hidden" name="title"/>
-                    <input type="hidden" name="body"/>
+                    <div class="form-field">
+                        <label class="form-label">제목 *</label>
+                        <input type="text" name="title" required maxlength="100"
+                               placeholder="알림 제목 (최대 100자)"
+                               class="form-input"/>
+                    </div>
+                    <div class="form-field-lg">
+                        <label class="form-label">내용 *</label>
+                        <textarea name="body" required maxlength="300" rows="3"
+                                  placeholder="알림 내용 (최대 300자)"
+                                  class="form-textarea"></textarea>
+                    </div>
 
                     <!-- 닉네임 검색 -->
                     <div class="form-field">
@@ -74,7 +81,7 @@
                                    placeholder="예) 42"
                                    class="form-input-sm w-130"/>
                         </div>
-                        <button type="button" id="test-send-btn"
+                        <button type="submit" id="test-send-btn"
                                 class="btn btn-secondary">테스트 발송</button>
                     </div>
                 </form>
@@ -87,8 +94,17 @@
                 <div class="card-title">타겟 발송</div>
             </div>
             <div class="card-body stack-20">
-                <div class="note-box mb-0">
-                    위 카드에서 입력한 <strong>제목·내용</strong>을 그대로 사용합니다. 먼저 제목과 내용을 작성한 후 발송하세요. 감사 로그에 기록되며 발송 이력에는 저장되지 않습니다.
+                <div class="form-field">
+                    <label class="form-label">제목 *</label>
+                    <input type="text" id="target-card-title" maxlength="100"
+                           placeholder="알림 제목 (최대 100자)"
+                           class="form-input"/>
+                </div>
+                <div class="form-field-lg">
+                    <label class="form-label">내용 *</label>
+                    <textarea id="target-card-body" maxlength="300" rows="3"
+                              placeholder="알림 내용 (최대 300자)"
+                              class="form-textarea"></textarea>
                 </div>
                 <div id="push-target-error" class="alert alert-danger d-none"></div>
 
