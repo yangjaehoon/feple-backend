@@ -68,13 +68,6 @@ public class AdminMetricsServiceImpl implements AdminMetricsService {
     }
 
     @Override
-    @Cacheable(value = "adminDashboardStats", key = "'monthlyStats'")
-    public List<DailyStatDto> getMonthlyStats() {
-        LocalDate today = LocalDate.now();
-        return buildDailyStats(today.minusDays(AdminConstants.STATS_MONTHLY_DAYS - 1), today);
-    }
-
-    @Override
     @Cacheable(value = "adminRangeStats", key = "#from.toString() + '_' + #to.toString()")
     public List<DailyStatDto> getRangeStats(LocalDate from, LocalDate to) {
         return buildDailyStats(from, to);

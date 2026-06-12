@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -75,9 +76,9 @@ public class OcrService {
 
     private Map<String, String> buildFailureMap(OcrResultDto entry, String reason) {
         Map<String, String> map = new HashMap<>();
-        map.put("artist", entry.artist() != null ? entry.artist() : "—");
-        map.put("stage",  entry.stage()  != null ? entry.stage()  : "—");
-        map.put("reason", reason != null ? reason : "알 수 없는 오류");
+        map.put("artist", Objects.requireNonNullElse(entry.artist(), "—"));
+        map.put("stage",  Objects.requireNonNullElse(entry.stage(),  "—"));
+        map.put("reason", Objects.requireNonNullElse(reason, "알 수 없는 오류"));
         return map;
     }
 }

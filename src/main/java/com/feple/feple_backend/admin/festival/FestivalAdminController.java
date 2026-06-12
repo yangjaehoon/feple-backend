@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -65,9 +66,7 @@ public class FestivalAdminController {
         applyPosterFile(posterFile, dto, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", bindingResult.getAllErrors().stream()
-                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
-                    .toList());
+            model.addAttribute("errors", extractErrorMessages(bindingResult));
             populateFestivalFormModel(model);
             return "admin/festival/create";
         }
@@ -152,9 +151,7 @@ public class FestivalAdminController {
     ) {
         applyPosterFile(posterFile, dto, bindingResult);
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", bindingResult.getAllErrors().stream()
-                    .map(org.springframework.context.support.DefaultMessageSourceResolvable::getDefaultMessage)
-                    .toList());
+            model.addAttribute("errors", extractErrorMessages(bindingResult));
             model.addAttribute("festivalId", id);
             model.addAttribute("currentPosterUrl", festivalService.getFestival(id).getPosterUrl());
             populateFestivalFormModel(model);
@@ -199,6 +196,12 @@ public class FestivalAdminController {
             if (bindingResult != null)
                 bindingResult.rejectValue("posterKey", "upload.failed", "포스터 업로드 중 오류가 발생했습니다.");
         }
+    }
+
+    private List<String> extractErrorMessages(BindingResult bindingResult) {
+        return bindingResult.getAllErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
     }
 
     private void populateFestivalFormModel(Model model) {

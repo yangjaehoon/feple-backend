@@ -350,9 +350,8 @@
         return '<span class="conf-low">🔴 ' + conf + '</span>';
     }
 
-    var selectStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
-    var timeStyle   = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
-    var dateStyle   = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
+    var fieldStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
+    var selectStyle = fieldStyle, timeStyle = fieldStyle, dateStyle = fieldStyle;
 
     function appendRow(artist, stage, date, startTime, endTime, conf) {
         rowIndex++;

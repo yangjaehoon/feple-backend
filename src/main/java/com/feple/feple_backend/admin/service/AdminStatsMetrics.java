@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AdminStatsMetrics {
-    List<DailyStatDto> getMonthlyStats();
     List<DailyStatDto> getRangeStats(LocalDate from, LocalDate to);
     UserActivityStatsDto getUserActivityStats();
     ContentTrendDto getContentTrend();

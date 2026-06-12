@@ -1,7 +1,9 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.service.PushNotificationClient;
@@ -39,7 +41,7 @@ public class AdminPushService {
     public void sendTest(Long targetUserId, String title, String body) {
         List<String> tokens = deviceTokenRepository.findByUserId(targetUserId)
                 .stream()
-                .map(t -> t.getToken())
+                .map(UserDeviceToken::getToken)
                 .toList();
         if (tokens.isEmpty()) {
             throw new IllegalArgumentException("해당 사용자에게 등록된 디바이스 토큰이 없습니다. (userId=" + targetUserId + ")");
@@ -50,7 +52,7 @@ public class AdminPushService {
 
     public void sendToArtistFollowers(Long artistId, String title, String body) {
         List<Long> userIds = artistFollowRepository.findByArtistId(artistId)
-                .stream().map(af -> af.getUserId()).toList();
+                .stream().map(ArtistFollow::getUserId).toList();
         if (userIds.isEmpty()) {
             throw new IllegalArgumentException("해당 아티스트의 팔로워가 없습니다.");
         }

@@ -26,9 +26,13 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
 
     public static final String SESSION_KEY = "loginError";
 
+    private static final int  MAX_FAILURES   = 5;
+    private static final int  WINDOW_MINUTES = 10;
+    private static final long CACHE_MAX_SIZE = 5_000;
+
     private final Cache<String, Bucket> cache = Caffeine.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES)
-            .maximumSize(5_000)
+            .expireAfterAccess(WINDOW_MINUTES, TimeUnit.MINUTES)
+            .maximumSize(CACHE_MAX_SIZE)
             .build();
 
     @Override
@@ -38,8 +42,8 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
         String ip = request.getRemoteAddr();
         Bucket bucket = cache.get(ip, k -> Bucket.builder()
                 .addLimit(Bandwidth.builder()
-                        .capacity(5)
-                        .refillGreedy(5, Duration.ofMinutes(10))
+                        .capacity(MAX_FAILURES)
+                        .refillGreedy(MAX_FAILURES, Duration.ofMinutes(WINDOW_MINUTES))
                         .build())
                 .build());
 
