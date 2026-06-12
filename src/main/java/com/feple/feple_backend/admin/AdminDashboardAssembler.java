@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.admin.service.AdminMetricsService;
+import com.feple.feple_backend.admin.service.AdminDashboardMetrics;
 import com.feple.feple_backend.admin.service.AdminPendingItemsService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
@@ -16,7 +16,7 @@ public class AdminDashboardAssembler {
     private final FestivalService festivalService;
     private final ArtistService artistService;
     private final PostAdminService postAdminService;
-    private final AdminMetricsService adminMetricsService;
+    private final AdminDashboardMetrics adminMetricsService;
     private final AdminPendingItemsService adminPendingItemsService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
 

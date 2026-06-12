@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.dashboard;
 
-import com.feple.feple_backend.admin.service.AdminMetricsService;
+import com.feple.feple_backend.admin.service.AdminStatsMetrics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +22,7 @@ public class StatsAdminController {
     private static final int DEFAULT_RANGE_DAYS = 30;
     private static final int MAX_RANGE_DAYS     = 90;
 
-    private final AdminMetricsService adminStatsService;
+    private final AdminStatsMetrics adminStatsService;
 
     @GetMapping
     @Transactional(readOnly = true)
