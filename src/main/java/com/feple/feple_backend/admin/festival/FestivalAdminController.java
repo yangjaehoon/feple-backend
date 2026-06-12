@@ -26,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import org.springframework.context.support.DefaultMessageSourceResolvable;
+import com.feple.feple_backend.admin.BindingResultUtils;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -66,7 +66,7 @@ public class FestivalAdminController {
         applyPosterFile(posterFile, dto, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", extractErrorMessages(bindingResult));
+            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             populateFestivalFormModel(model);
             return "admin/festival/create";
         }
@@ -83,7 +83,6 @@ public class FestivalAdminController {
     public String listFestivals(@RequestParam(defaultValue = "") String keyword,
                                 @RequestParam(defaultValue = "0") int page,
                                 Model model) {
-        // 목록 탭: 페이지네이션 적용
         Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, 30);
 
         List<FestivalResponseDto> activeFestivals = festivalService.getAllActiveFestivalsForAdmin();
@@ -147,7 +146,7 @@ public class FestivalAdminController {
     ) {
         applyPosterFile(posterFile, dto, bindingResult);
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", extractErrorMessages(bindingResult));
+            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             model.addAttribute("festivalId", id);
             model.addAttribute("currentPosterUrl", festivalService.getFestival(id).getPosterUrl());
             populateFestivalFormModel(model);
@@ -192,12 +191,6 @@ public class FestivalAdminController {
             if (bindingResult != null)
                 bindingResult.rejectValue("posterKey", "upload.failed", "포스터 업로드 중 오류가 발생했습니다.");
         }
-    }
-
-    private List<String> extractErrorMessages(BindingResult bindingResult) {
-        return bindingResult.getAllErrors().stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .toList();
     }
 
     private void populateFestivalFormModel(Model model) {

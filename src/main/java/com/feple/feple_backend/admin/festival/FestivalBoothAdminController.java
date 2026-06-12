@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
 import jakarta.validation.Valid;
@@ -30,7 +31,7 @@ public class FestivalBoothAdminController {
                               @RequestParam(value = "boothImageFile", required = false) MultipartFile boothImageFile,
                               RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            ra.addFlashAttribute("errorMessage", firstError(bindingResult));
+            ra.addFlashAttribute("errorMessage", BindingResultUtils.firstError(bindingResult));
             return AdminFestivalRedirects.booths(festivalId);
         }
         if (dto.getLatitude() == null || dto.getLongitude() == null) {
@@ -72,9 +73,5 @@ public class FestivalBoothAdminController {
             ra.addFlashAttribute("errorMessage", "부스 삭제에 실패했습니다.");
         }
         return AdminFestivalRedirects.booths(festivalId);
-    }
-
-    private static String firstError(BindingResult br) {
-        return br.getAllErrors().get(0).getDefaultMessage();
     }
 }

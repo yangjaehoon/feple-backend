@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
@@ -10,7 +11,6 @@ import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminSe
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +51,7 @@ public class ArtistAdminController {
             bindingResult.rejectValue("profileImageKey", "profileImageFile.required", "프로필 이미지는 필수입니다.");
         }
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", extractErrorMessages(bindingResult));
+            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             return "admin/artist/create";
         }
 
@@ -151,7 +151,7 @@ public class ArtistAdminController {
     ) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("artistId", id);
-            model.addAttribute("errors", extractErrorMessages(bindingResult));
+            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             return "admin/artist/edit";
         }
         try {
@@ -182,12 +182,6 @@ public class ArtistAdminController {
             ra.addFlashAttribute("errorMessage", "저장 중 오류가 발생했습니다.");
         }
         return "redirect:/admin/artists";
-    }
-
-    private List<String> extractErrorMessages(BindingResult bindingResult) {
-        return bindingResult.getAllErrors().stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .toList();
     }
 
     @PostMapping("/{id}/delete")

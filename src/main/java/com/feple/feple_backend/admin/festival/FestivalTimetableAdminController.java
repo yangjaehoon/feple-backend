@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import jakarta.validation.Valid;
@@ -26,7 +27,7 @@ public class FestivalTimetableAdminController {
                                        BindingResult bindingResult,
                                        RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            ra.addFlashAttribute("errorMessage", firstError(bindingResult));
+            ra.addFlashAttribute("errorMessage", BindingResultUtils.firstError(bindingResult));
             return AdminFestivalRedirects.timetable(festivalId);
         }
         try {
@@ -55,9 +56,5 @@ public class FestivalTimetableAdminController {
             ra.addFlashAttribute("errorMessage", "항목 삭제에 실패했습니다.");
         }
         return AdminFestivalRedirects.timetable(festivalId);
-    }
-
-    private static String firstError(BindingResult br) {
-        return br.getAllErrors().get(0).getDefaultMessage();
     }
 }

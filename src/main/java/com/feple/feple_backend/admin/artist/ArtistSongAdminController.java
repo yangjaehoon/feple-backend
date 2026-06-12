@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
@@ -56,7 +57,7 @@ public class ArtistSongAdminController {
                            BindingResult bindingResult,
                            RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            ra.addFlashAttribute("errorMessage", firstError(bindingResult));
+            ra.addFlashAttribute("errorMessage", BindingResultUtils.firstError(bindingResult));
             return "redirect:/admin/artists/" + artistId + "/songs";
         }
         try {
@@ -122,8 +123,5 @@ public class ArtistSongAdminController {
         }
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
-
-    private static String firstError(BindingResult br) {
-        return br.getAllErrors().get(0).getDefaultMessage();
-    }
 }
+

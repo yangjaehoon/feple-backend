@@ -55,9 +55,7 @@ public class AdminAccountService {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
         }
 
-        Set<AdminPermission> effectivePerms = (role == AdminRole.SUPER_ADMIN)
-                ? new HashSet<>()
-                : new HashSet<>(permissions);
+        Set<AdminPermission> effectivePerms = resolvePermissions(role, permissions);
 
         String imageUrl = (profileImage != null && !profileImage.isEmpty())
                 ? fileStorageService.storeAdminProfile(profileImage, username)
@@ -86,9 +84,7 @@ public class AdminAccountService {
             throw new IllegalArgumentException("마지막 최고 관리자의 역할을 변경할 수 없습니다.");
         }
 
-        Set<AdminPermission> effectivePerms = (role == AdminRole.SUPER_ADMIN)
-                ? new HashSet<>()
-                : new HashSet<>(permissions);
+        Set<AdminPermission> effectivePerms = resolvePermissions(role, permissions);
 
         account.updateProfile(displayName, role, effectivePerms);
 
@@ -116,6 +112,10 @@ public class AdminAccountService {
         }
 
         accountRepository.delete(account);
+    }
+
+    private static Set<AdminPermission> resolvePermissions(AdminRole role, Set<AdminPermission> permissions) {
+        return role == AdminRole.SUPER_ADMIN ? new HashSet<>() : new HashSet<>(permissions);
     }
 
     public void toggleEnabled(Long id, String currentUsername) {
