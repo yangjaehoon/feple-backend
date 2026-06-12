@@ -132,10 +132,13 @@ public class ArtistAdminController {
     }
 
     @GetMapping("/{id}/edit")
-    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
+    public String showEditForm(@PathVariable Long id,
+                               @RequestParam(defaultValue = "0") int page,
+                               Model model, RedirectAttributes ra) {
         try {
             model.addAttribute("artistId", id);
             model.addAttribute("artist", artistService.getArtistForEdit(id));
+            model.addAttribute("page", page);
         } catch (java.util.NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
             return "redirect:/admin/artists";
@@ -148,11 +151,13 @@ public class ArtistAdminController {
                                @Valid @ModelAttribute("artist") ArtistRequestDto dto,
                                BindingResult bindingResult,
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
+                               @RequestParam(defaultValue = "0") int page,
                                Model model,
                                RedirectAttributes ra
     ) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("artistId", id);
+            model.addAttribute("page", page);
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             return "admin/artist/edit";
         }
@@ -169,7 +174,7 @@ public class ArtistAdminController {
             log.error("아티스트 수정 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin/artists";
+        return "redirect:/admin/artists?page=" + page;
     }
 
     @PostMapping("/batch-name-en")

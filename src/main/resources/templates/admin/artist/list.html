@@ -189,7 +189,7 @@
                             <div class="cell-actions">
                                 <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}"
                                    class="btn btn-secondary btn-sm">곡 관리</a>
-                                <a th:href="@{/admin/artists/{id}/edit(id=${artist.id})}"
+                                <a th:href="@{/admin/artists/{id}/edit(id=${artist.id}, page=${artistsPage.number})}"
                                    class="btn btn-warning btn-sm">수정</a>
                                 <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
                                     <button type="submit"

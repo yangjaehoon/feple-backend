@@ -17,6 +17,7 @@
                       th:object="${artist}"
                       method="post"
                       enctype="multipart/form-data">
+                    <input type="hidden" name="page" th:value="${page}"/>
 
                     <div class="form-grid">
                         <div class="form-group">
@@ -59,7 +60,7 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">수정 저장</button>
-                        <a th:href="@{/admin/artists}" class="btn btn-secondary">취소</a>
+                        <a th:href="@{/admin/artists(page=${page})}" class="btn btn-secondary">취소</a>
                     </div>
                 </form>
             </div>
