@@ -1,5 +1,10 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +27,8 @@ public class OcrService {
 
     private final GeminiOcrClient geminiOcrClient;
     private final TimetableService timetableService;
+    private final ArtistRepository artistRepository;
+    private final ArtistFestivalService artistFestivalService;
 
     public boolean isConfigured() {
         return geminiOcrClient.isConfigured();
@@ -73,6 +80,44 @@ public class OcrService {
         req.setEndTime(LocalTime.parse(entry.endTime()));
         return req;
     }
+
+    // ── 라인업 OCR ──────────────────────────────────────────
+
+    public List<ArtistLineupOcrResult> parseArtistLineup(MultipartFile image) throws IOException {
+        List<LineupRawResult> raw = geminiOcrClient.parseLineup(image);
+        return raw.stream().map(this::matchArtist).toList();
+    }
+
+    private ArtistLineupOcrResult matchArtist(LineupRawResult raw) {
+        int conf = raw.confidence() != null ? raw.confidence() : 0;
+        Optional<Artist> exact = artistRepository.findExactByNameIgnoreCase(raw.name());
+        if (exact.isPresent()) {
+            return new ArtistLineupOcrResult(raw.name(), exact.get().getId(), exact.get().getName(), conf);
+        }
+        List<Artist> partial = artistRepository.findByNameOrNameEnContainingIgnoreCase(raw.name());
+        if (partial.size() == 1) {
+            return new ArtistLineupOcrResult(raw.name(), partial.get(0).getId(), partial.get(0).getName(), conf);
+        }
+        return new ArtistLineupOcrResult(raw.name(), null, null, conf);
+    }
+
+    public LineupApplyResult applyArtistLineup(Long festivalId, List<Long> artistIds) {
+        int added = 0;
+        int duplicates = 0;
+        for (Long id : artistIds) {
+            try {
+                ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
+                req.setArtistId(id);
+                artistFestivalService.addArtistToFestival(festivalId, req);
+                added++;
+            } catch (DuplicateArtistFestivalException e) {
+                duplicates++;
+            }
+        }
+        return new LineupApplyResult(artistIds.size(), added, duplicates);
+    }
+
+    // ── 타임테이블 OCR ──────────────────────────────────────
 
     private Map<String, String> buildFailureMap(OcrResultDto entry, String reason) {
         Map<String, String> map = new HashMap<>();

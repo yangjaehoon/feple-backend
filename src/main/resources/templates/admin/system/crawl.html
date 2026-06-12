@@ -9,7 +9,8 @@
         <div th:replace="~{admin/fragments :: pageHeaderInner('크롤링 대시보드', '크롤링 대시보드')}"></div>
         <div class="header-tab-group">
             <button class="header-tab-btn active" data-tab="scraping">🕸️ 웹 스크래핑</button>
-            <button class="header-tab-btn" data-tab="ocr">🖼️ OCR 파싱</button>
+            <button class="header-tab-btn" data-tab="ocr">🖼️ 타임테이블 OCR</button>
+            <button class="header-tab-btn" data-tab="lineup">👥 라인업 OCR</button>
         </div>
     </div>
 
@@ -274,6 +275,87 @@
             </div>
 
         </div><!-- /tab-ocr -->
+
+        <!-- ══════════════════════════════════
+             탭 3 — 라인업 OCR
+             ══════════════════════════════════ -->
+        <div id="tab-lineup" class="tab-panel">
+
+            <!-- 1. 설정 -->
+            <div class="crawl-card">
+                <div class="crawl-card-title">1. 적용 대상 설정</div>
+                <div class="select-row">
+                    <label>페스티벌</label>
+                    <select id="selLineupFestival">
+                        <option value="">— 페스티벌 선택 —</option>
+                    </select>
+                </div>
+                <div class="ocr-hint">
+                    &#8226; 라인업 포스터 이미지를 업로드하면 AI가 아티스트 이름을 추출합니다.<br>
+                    &#8226; DB에 등록된 아티스트와 자동 매칭하며, 매칭되지 않은 아티스트는 직접 확인 후 제외하세요.
+                </div>
+                <div class="ocr-upload-zone" id="lineupDropZone">
+                    <input type="file" id="lineupFileInput" accept="image/*">
+                    <div class="upload-icon">👥</div>
+                    <div class="upload-title">라인업 포스터 이미지를 드래그하거나 클릭하여 업로드</div>
+                    <div class="upload-sub">JPG, PNG, WEBP 지원 · 최대 10MB</div>
+                    <div class="mt-14">
+                        <button id="lineupFileSelectBtn" class="btn btn-primary btn-sm">파일 선택</button>
+                    </div>
+                </div>
+                <div class="progress-bar-wrap" id="lineupProgress">
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="lineupProgressFill" style="width:0%"></div>
+                    </div>
+                    <div class="progress-label" id="lineupProgressLabel">AI 분석 중...</div>
+                </div>
+            </div>
+
+            <!-- 2. 결과 검토 -->
+            <div class="crawl-card">
+                <div class="crawl-card-title crawl-card-title-sb">
+                    <span>2. 파싱 결과 검토</span>
+                    <div class="action-row">
+                        <span id="lineupSelectCount" class="hint"></span>
+                        <button class="btn btn-primary" id="btnApplyLineup" disabled>참여 아티스트로 등록</button>
+                    </div>
+                </div>
+
+                <div class="note-box d-none" id="lineupWarnBox">
+                    ⚠️ DB에 없는 아티스트(미매칭)는 등록되지 않습니다. 먼저 아티스트를 DB에 등록하거나 체크를 해제하세요.
+                </div>
+
+                <div class="empty-state" id="lineupEmptyState">
+                    <div class="empty-icon">👥</div>
+                    <div>라인업 포스터를 업로드하면 AI가 아티스트 목록을 자동으로 추출합니다.</div>
+                </div>
+
+                <div id="lineupResultArea" class="d-none">
+                    <div class="ocr-preview-wrap">
+                        <div class="ocr-image-preview">
+                            <img id="lineupPreviewImg" src="" alt="라인업 이미지">
+                        </div>
+                        <div class="ocr-result-area">
+                            <table class="parse-table">
+                                <thead>
+                                <tr>
+                                    <th class="col-w28"><input type="checkbox" id="lineupCheckAll" title="전체 선택"/></th>
+                                    <th>이미지에서 추출한 이름</th>
+                                    <th>DB 매칭 아티스트</th>
+                                    <th class="col-w56">확신도</th>
+                                </tr>
+                                </thead>
+                                <tbody id="lineupParseBody"></tbody>
+                            </table>
+                            <div class="ocr-legend">
+                                ✅ DB 매칭됨 &nbsp; ❌ 미매칭 (등록 불가) &nbsp;&nbsp; 🟢 90+ &nbsp; 🟡 70~89 &nbsp; 🔴 ~69
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /tab-lineup -->
     </div>
 </div>
 
@@ -290,6 +372,8 @@ window.CrawlUrls = {
     festivals:          /*[[@{/admin/crawl/festivals}]]*/ '',
     ocr:                /*[[@{/admin/crawl/ocr}]]*/ '',
     ocrApply:           /*[[@{/admin/crawl/ocr/apply}]]*/ '',
+    lineupOcr:          /*[[@{/admin/crawl/ocr/lineup}]]*/ '',
+    lineupOcrApply:     /*[[@{/admin/crawl/ocr/lineup/apply}]]*/ '',
     festivalDetailBase: /*[[@{/admin/festivals}]]*/ ''
 };
 /*]]>*/

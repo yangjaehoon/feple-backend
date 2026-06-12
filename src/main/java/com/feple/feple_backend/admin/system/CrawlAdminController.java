@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.ArtistLineupOcrResult;
+import com.feple.feple_backend.admin.LineupApplyResult;
 import com.feple.feple_backend.admin.OcrApplyRequest;
 import com.feple.feple_backend.admin.OcrApplyResultDto;
 import com.feple.feple_backend.admin.OcrResultDto;
@@ -113,6 +115,44 @@ public class CrawlAdminController {
         } catch (Exception e) {
             log.error("OCR 타임테이블 적용 실패", e);
             return serverError("타임테이블 저장에 실패했습니다.");
+        }
+    }
+
+    @PostMapping("/ocr/lineup")
+    @ResponseBody
+    public ResponseEntity<?> parseLineupOcr(@RequestParam("image") MultipartFile image) {
+        if (image.isEmpty()) return badRequest("이미지를 업로드해주세요.");
+        if (!ocrService.isConfigured()) {
+            return ResponseEntity.status(503).body(Map.of("error",
+                    "Gemini API 키가 설정되지 않았습니다. application-local.yaml에 app.gemini.api-key를 설정하세요."));
+        }
+        try {
+            List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            log.error("라인업 OCR 파싱 실패", e);
+            return serverError("이미지 파싱에 실패했습니다. 다시 시도해주세요.");
+        }
+    }
+
+    @PostMapping("/ocr/lineup/apply")
+    @ResponseBody
+    public ResponseEntity<?> applyLineupOcr(@RequestBody Map<String, Object> body) {
+        Object fidObj = body.get("festivalId");
+        Object idsObj = body.get("artistIds");
+        if (fidObj == null) return badRequest("페스티벌을 선택해주세요.");
+        if (idsObj == null || ((List<?>) idsObj).isEmpty()) return badRequest("등록할 아티스트가 없습니다.");
+        Long festivalId = Long.parseLong(fidObj.toString());
+        @SuppressWarnings("unchecked")
+        List<Long> artistIds = ((List<?>) idsObj).stream()
+                .map(id -> Long.parseLong(id.toString()))
+                .toList();
+        try {
+            LineupApplyResult result = ocrService.applyArtistLineup(festivalId, artistIds);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("라인업 OCR 적용 실패: festivalId={}", fidObj, e);
+            return serverError("아티스트 등록에 실패했습니다.");
         }
     }
 

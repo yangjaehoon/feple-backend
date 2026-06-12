@@ -513,4 +513,180 @@
 
     document.getElementById('applyToastClose').addEventListener('click', hideToast);
 
+    // ════════════════════════════════════════════════════════
+    //  라인업 OCR
+    // ════════════════════════════════════════════════════════
+
+    /* ── 페스티벌 드롭다운 공유 ── */
+    fetch(CrawlUrls.festivals)
+        .then(function (r) { return r.json(); })
+        .then(function (festivals) {
+            var sel = document.getElementById('selLineupFestival');
+            festivals.forEach(function (f) {
+                var opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.title;
+                sel.appendChild(opt);
+            });
+        });
+
+    /* ── 파일 업로드 ── */
+    var lineupDropZone  = document.getElementById('lineupDropZone');
+    var lineupFileInput = document.getElementById('lineupFileInput');
+
+    lineupDropZone.addEventListener('click', function () { lineupFileInput.click(); });
+    document.getElementById('lineupFileSelectBtn').addEventListener('click', function (e) {
+        e.stopPropagation();
+        lineupFileInput.click();
+    });
+    lineupDropZone.addEventListener('dragover', function (e) { e.preventDefault(); lineupDropZone.classList.add('drag-over'); });
+    lineupDropZone.addEventListener('dragleave', function () { lineupDropZone.classList.remove('drag-over'); });
+    lineupDropZone.addEventListener('drop', function (e) {
+        e.preventDefault(); lineupDropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleLineupFile(e.dataTransfer.files[0]);
+    });
+    lineupFileInput.addEventListener('change', function () {
+        if (lineupFileInput.files.length > 0) handleLineupFile(lineupFileInput.files[0]);
+    });
+
+    function handleLineupFile(file) {
+        if (!file.type.startsWith('image/')) { showApplyResult('error', '이미지 파일만 업로드 가능합니다.'); return; }
+        if (file.size > 10 * 1024 * 1024)   { showApplyResult('error', '파일 크기는 10MB 이하여야 합니다.'); return; }
+
+        var reader = new FileReader();
+        reader.onload = function (e) { document.getElementById('lineupPreviewImg').src = e.target.result; };
+        reader.readAsDataURL(file);
+
+        document.getElementById('lineupEmptyState').style.display = 'none';
+        document.getElementById('lineupResultArea').classList.remove('d-none');
+        document.getElementById('lineupParseBody').innerHTML = '';
+        document.getElementById('btnApplyLineup').disabled = true;
+        document.getElementById('lineupSelectCount').textContent = '';
+        hideToast();
+
+        var fill  = document.getElementById('lineupProgressFill');
+        var label = document.getElementById('lineupProgressLabel');
+        fill.style.width = '0%';
+        document.getElementById('lineupProgress').classList.add('visible');
+        label.textContent = 'AI 이미지 분석 중...';
+        var pct = 10;
+        var timer = setInterval(function () { pct = Math.min(pct + 5, 85); fill.style.width = pct + '%'; }, 800);
+
+        var formData = new FormData();
+        formData.append('image', file);
+
+        fetch(CrawlUrls.lineupOcr, { method: 'POST', headers: window.AdminUtils.getCsrfHeaders(), body: formData })
+            .then(function (r) {
+                clearInterval(timer);
+                fill.style.width = '100%';
+                label.textContent = '완료!';
+                if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '파싱 실패'); });
+                return r.json();
+            })
+            .then(function (results) {
+                setTimeout(function () { document.getElementById('lineupProgress').classList.remove('visible'); }, 500);
+                renderLineupResults(results);
+            })
+            .catch(function (err) {
+                clearInterval(timer);
+                document.getElementById('lineupProgress').classList.remove('visible');
+                showApplyResult('error', '오류: ' + err.message);
+            });
+    }
+
+    function renderLineupResults(results) {
+        var body = document.getElementById('lineupParseBody');
+        body.innerHTML = '';
+        var hasUnmatched = false;
+
+        results.forEach(function (row) {
+            var matched = row.artistId != null;
+            if (!matched) hasUnmatched = true;
+            var conf = row.confidence != null ? row.confidence : 0;
+            var tr = document.createElement('tr');
+            if (!matched) tr.classList.add('row-unmatched');
+
+            var confBadgeHtml = conf >= 90
+                ? '<span class="conf-high">🟢 ' + conf + '</span>'
+                : (conf >= 70 ? '<span class="conf-mid">🟡 ' + conf + '</span>'
+                             : '<span class="conf-low">🔴 ' + conf + '</span>');
+
+            var matchedHtml = matched
+                ? '<span style="color:var(--success); font-weight:600;">✅ ' + window.AdminUtils.escapeHtml(row.matchedName) + '</span>'
+                : '<span style="color:var(--danger);">❌ 미매칭</span>';
+
+            tr.innerHTML =
+                '<td><input type="checkbox" class="lineup-chk" data-artist-id="' + (row.artistId || '') + '"' +
+                (matched ? ' checked' : ' disabled') + '></td>' +
+                '<td>' + window.AdminUtils.escapeHtml(row.parsedName) + '</td>' +
+                '<td>' + matchedHtml + '</td>' +
+                '<td>' + confBadgeHtml + '</td>';
+            body.appendChild(tr);
+        });
+
+        document.getElementById('lineupWarnBox').classList.toggle('d-none', !hasUnmatched);
+        updateLineupCount();
+    }
+
+    function updateLineupCount() {
+        var checked = document.querySelectorAll('.lineup-chk:checked:not([disabled])').length;
+        document.getElementById('lineupSelectCount').textContent = checked + '명 선택됨';
+        document.getElementById('btnApplyLineup').disabled = checked === 0;
+    }
+
+    document.getElementById('lineupParseBody').addEventListener('change', function (e) {
+        if (e.target.classList.contains('lineup-chk')) updateLineupCount();
+    });
+
+    document.getElementById('lineupCheckAll').addEventListener('change', function () {
+        var checked = this.checked;
+        document.querySelectorAll('.lineup-chk:not([disabled])').forEach(function (chk) {
+            chk.checked = checked;
+        });
+        updateLineupCount();
+    });
+
+    /* ── 등록 실행 ── */
+    document.getElementById('btnApplyLineup').addEventListener('click', function () {
+        var fid = document.getElementById('selLineupFestival').value;
+        if (!fid) { showApplyResult('error', '페스티벌을 선택해주세요.'); return; }
+
+        var artistIds = [];
+        document.querySelectorAll('.lineup-chk:checked:not([disabled])').forEach(function (chk) {
+            var id = parseInt(chk.getAttribute('data-artist-id'));
+            if (id) artistIds.push(id);
+        });
+        if (artistIds.length === 0) { showApplyResult('error', '등록할 아티스트를 선택해주세요.'); return; }
+
+        var btn = document.getElementById('btnApplyLineup');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>등록 중...';
+
+        var headers = Object.assign({ 'Content-Type': 'application/json' }, window.AdminUtils.getCsrfHeaders());
+
+        fetch(CrawlUrls.lineupOcrApply, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ festivalId: parseInt(fid), artistIds: artistIds })
+        })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '등록 실패'); });
+            return r.json();
+        })
+        .then(function (result) {
+            btn.disabled = false;
+            btn.innerHTML = '참여 아티스트로 등록';
+            var msg = result.added + '명 등록 완료';
+            if (result.duplicates > 0) msg += ' (' + result.duplicates + '명 이미 등록됨)';
+            var fTitle = document.getElementById('selLineupFestival').selectedOptions[0].textContent;
+            msg += '. <a href="' + CrawlUrls.festivalDetailBase + '/' + fid + '#artists" style="color:var(--primary);text-decoration:underline;font-weight:700;">페스티벌 확인 →</a>';
+            showApplyResult('success', msg);
+        })
+        .catch(function (err) {
+            btn.disabled = false;
+            btn.innerHTML = '참여 아티스트로 등록';
+            showApplyResult('error', '오류: ' + err.message);
+        });
+    });
+
 })();
