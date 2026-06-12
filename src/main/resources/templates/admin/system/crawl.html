@@ -193,10 +193,13 @@
                     <div class="upload-title">타임테이블 이미지를 드래그하거나 클릭하여 업로드</div>
                     <div class="upload-sub">JPG, PNG, WEBP 지원 · 최대 10MB</div>
                     <div class="mt-14">
-                        <button id="ocrFileSelectBtn" class="btn btn-primary btn-sm">
-                            파일 선택
-                        </button>
+                        <button id="ocrFileSelectBtn" class="btn btn-secondary btn-sm">파일 선택</button>
                     </div>
+                </div>
+
+                <div class="parse-start-row">
+                    <span id="ocrSelectedFileName" class="hint"></span>
+                    <button id="btnStartOcr" class="btn btn-primary">파싱 시작</button>
                 </div>
 
                 <!-- 진행 표시 -->
@@ -300,9 +303,15 @@
                     <div class="upload-title">라인업 포스터 이미지를 드래그하거나 클릭하여 업로드</div>
                     <div class="upload-sub">JPG, PNG, WEBP 지원 · 최대 10MB</div>
                     <div class="mt-14">
-                        <button id="lineupFileSelectBtn" class="btn btn-primary btn-sm">파일 선택</button>
+                        <button id="lineupFileSelectBtn" class="btn btn-secondary btn-sm">파일 선택</button>
                     </div>
                 </div>
+
+                <div class="parse-start-row">
+                    <span id="lineupSelectedFileName" class="hint"></span>
+                    <button id="btnStartLineup" class="btn btn-primary">파싱 시작</button>
+                </div>
+
                 <div class="progress-bar-wrap" id="lineupProgress">
                     <div class="progress-bar-track">
                         <div class="progress-bar-fill" id="lineupProgressFill" style="width:0%"></div>

@@ -1020,6 +1020,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .ocr-upload-zone .upload-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 .ocr-upload-zone .upload-sub   { font-size: 12px; color: var(--muted); }
 .ocr-upload-zone input[type=file] { display: none; }
+.parse-start-row { display: flex; align-items: center; justify-content: space-between; margin-top: -8px; margin-bottom: 16px; min-height: 36px; }
 .ocr-preview-wrap         { display: none; gap: 20px; }
 .ocr-preview-wrap.visible { display: flex; }
 .ocr-image-preview     { width: 260px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 1.5px solid var(--border); }

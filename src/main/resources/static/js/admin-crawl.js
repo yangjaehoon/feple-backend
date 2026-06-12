@@ -6,6 +6,8 @@
     var stageNames       = []; // 선택된 페스티벌의 스테이지 목록
     var festivalStartDate = '';
     var festivalEndDate   = '';
+    var ocrPendingFile    = null; // 타임테이블 OCR: 파싱 대기 중인 파일
+    var lineupPendingFile = null; // 라인업 OCR: 파싱 대기 중인 파일
 
     window.AdminUtils.initTabs();
 
@@ -297,9 +299,24 @@
 
     function handleOcrFile(file) {
         if (!validateOcrFile(file)) return;
+        ocrPendingFile = file;
+        document.getElementById('ocrSelectedFileName').textContent = file.name;
         showOcrPreview(file);
-        submitOcrRequest(file);
     }
+
+    document.getElementById('btnStartOcr').addEventListener('click', function () {
+        var fid = document.getElementById('selFestival').value;
+        if (!fid) {
+            showApplyResult('error', '페스티벌을 먼저 선택해주세요.');
+            document.getElementById('selFestival').focus();
+            return;
+        }
+        if (!ocrPendingFile) {
+            showApplyResult('error', '이미지를 먼저 업로드해주세요.');
+            return;
+        }
+        submitOcrRequest(ocrPendingFile);
+    });
 
     function renderOcrResults(results) {
         var body = document.getElementById('ocrParseBody');
@@ -552,17 +569,21 @@
     function handleLineupFile(file) {
         if (!file.type.startsWith('image/')) { showApplyResult('error', '이미지 파일만 업로드 가능합니다.'); return; }
         if (file.size > 10 * 1024 * 1024)   { showApplyResult('error', '파일 크기는 10MB 이하여야 합니다.'); return; }
+        lineupPendingFile = file;
+        document.getElementById('lineupSelectedFileName').textContent = file.name;
 
         var reader = new FileReader();
         reader.onload = function (e) { document.getElementById('lineupPreviewImg').src = e.target.result; };
         reader.readAsDataURL(file);
+        hideToast();
+    }
 
+    function submitLineupRequest(file) {
         document.getElementById('lineupEmptyState').style.display = 'none';
         document.getElementById('lineupResultArea').classList.remove('d-none');
         document.getElementById('lineupParseBody').innerHTML = '';
         document.getElementById('btnApplyLineup').disabled = true;
         document.getElementById('lineupSelectCount').textContent = '';
-        hideToast();
 
         var fill  = document.getElementById('lineupProgressFill');
         var label = document.getElementById('lineupProgressLabel');
@@ -593,6 +614,20 @@
                 showApplyResult('error', '오류: ' + err.message);
             });
     }
+
+    document.getElementById('btnStartLineup').addEventListener('click', function () {
+        var fid = document.getElementById('selLineupFestival').value;
+        if (!fid) {
+            showApplyResult('error', '페스티벌을 먼저 선택해주세요.');
+            document.getElementById('selLineupFestival').focus();
+            return;
+        }
+        if (!lineupPendingFile) {
+            showApplyResult('error', '이미지를 먼저 업로드해주세요.');
+            return;
+        }
+        submitLineupRequest(lineupPendingFile);
+    });
 
     function renderLineupResults(results) {
         var body = document.getElementById('lineupParseBody');
