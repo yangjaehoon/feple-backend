@@ -15,8 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.dao.DataIntegrityViolationException;
-
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -101,34 +99,36 @@ class ArtistFollowServiceTest {
     // ── follow ───────────────────────────────────────────────────────
 
     @Test
-    void 팔로우_성공시_saveAndFlush와_followerCount_증가하고_followed_true_반환() {
+    void 팔로우_성공시_save와_followerCount_증가하고_followed_true_반환() {
         User user = user(1L);
         Artist artist = artist(10L, 0);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
+        given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
         given(artistRepository.findFollowerCountById(10L)).willReturn(1);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 
         assertThat(result.followed()).isTrue();
         assertThat(result.followerCount()).isEqualTo(1);
-        verify(artistFollowRepository).saveAndFlush(any(ArtistFollow.class));
+        verify(artistFollowRepository).save(any(ArtistFollow.class));
         assertThat(artist.getFollowerCount()).isEqualTo(1);
     }
 
     @Test
-    void 이미_팔로우_중이면_saveAndFlush_예외를_잡아_멱등성_보장() {
+    void 이미_팔로우_중이면_save_생략하고_멱등성_보장() {
         User user = user(1L);
         Artist artist = artist(10L, 5);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
-        given(artistFollowRepository.saveAndFlush(any())).willThrow(new DataIntegrityViolationException("duplicate"));
+        given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(true);
         given(artistRepository.findFollowerCountById(10L)).willReturn(5);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 
         assertThat(result.followed()).isTrue();
-        assertThat(artist.getFollowerCount()).isEqualTo(5); // 예외로 인해 증가하지 않음
+        assertThat(artist.getFollowerCount()).isEqualTo(5); // 중복이므로 증가하지 않음
+        verify(artistFollowRepository, never()).save(any());
     }
 
     @Test
