@@ -328,11 +328,33 @@
             });
     }
 
+    function showUploadedPreview(zoneId, fileInputId, file) {
+        var zone = document.getElementById(zoneId);
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            zone.innerHTML =
+                '<div class="upload-preview-state">' +
+                '<img class="upload-preview-thumb" src="' + e.target.result + '" alt="미리보기">' +
+                '<div class="upload-preview-info">' +
+                '<div class="upload-preview-name">' + window.AdminUtils.escapeHtml(file.name) + '</div>' +
+                '<div class="upload-preview-size">' + (file.size / 1024).toFixed(0) + ' KB</div>' +
+                '</div>' +
+                '<button type="button" class="btn btn-secondary btn-sm upload-preview-reselect">다시 선택</button>' +
+                '</div>';
+            zone.querySelector('.upload-preview-reselect').addEventListener('click', function (evt) {
+                evt.stopPropagation();
+                document.getElementById(fileInputId).click();
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
     function handleOcrFile(file) {
         if (!validateOcrFile(file)) return;
         ocrPendingFile = file;
-        document.getElementById('ocrSelectedFileName').textContent = file.name;
+        document.getElementById('ocrSelectedFileName').textContent = '';
         setOcrStartError('');
+        showUploadedPreview('ocrDropZone', 'ocrFileInput', file);
         showOcrPreview(file);
     }
 
@@ -622,8 +644,9 @@
         if (!file.type.startsWith('image/')) { setLineupStartError('이미지 파일만 업로드 가능합니다.'); return; }
         if (file.size > 10 * 1024 * 1024)   { setLineupStartError('파일 크기는 10MB 이하여야 합니다.'); return; }
         lineupPendingFile = file;
-        document.getElementById('lineupSelectedFileName').textContent = file.name;
+        document.getElementById('lineupSelectedFileName').textContent = '';
         setLineupStartError('');
+        showUploadedPreview('lineupDropZone', 'lineupFileInput', file);
 
         var reader = new FileReader();
         reader.onload = function (e) { document.getElementById('lineupPreviewImg').src = e.target.result; };
