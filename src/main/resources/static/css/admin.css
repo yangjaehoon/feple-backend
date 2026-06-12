@@ -1593,4 +1593,23 @@ input[type=date]   { cursor: pointer; }
   .admin-modal-box  { width: 100%; }
   .modal-box,
   .admin-modal-box  { padding: 20px 16px 18px; }
+
+  /* 5. 검색 바 — form 내 요소 줄바꿈 허용 */
+  .search-bar       { flex-wrap: wrap; padding: 10px 14px; gap: 6px; }
+  .search-bar form  { flex-wrap: wrap; }
+  .search-bar input { max-width: 100%; }
+
+  /* 6. 드롭다운 필터 바 — 줄바꿈 허용, select 전체 너비 */
+  .dropdown-filter-bar        { flex-wrap: wrap; padding: 8px 14px; gap: 8px; }
+  .dropdown-filter-bar form   { flex-wrap: wrap; width: 100%; }
+  .dropdown-filter-bar select { width: 100%; min-width: 0; }
+
+  /* 7. 타임테이블 입력 폼 (5열/연산) → 2열 그리드 */
+  .form-grid-5col { grid-template-columns: 1fr 1fr; }
+  .form-grid-ops  { grid-template-columns: 1fr 1fr; }
+
+  /* 8. 페스티벌 포스터 + 정보 — 세로 스택 */
+  .festival-info { flex-direction: column; }
+  .poster-img    { width: 100%; max-width: 180px; }
+  .no-poster     { width: 100%; max-width: 180px; }
 }
