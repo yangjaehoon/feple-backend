@@ -45,7 +45,8 @@ public class FestivalDetailAggregationService {
 
         // 타임테이블 1회만 로드 — 아티스트 참여 정보와 타임테이블 그리드 양쪽에서 재사용
         Map<String, List<String>> datesByArtistName = buildDatesByArtistName(entries);
-        List<ArtistFestivalResponse> artists = artistFestivalService.getArtistFestivals(festivalId, datesByArtistName);
+        Map<String, String> stageByArtistName = buildStageByArtistName(entries);
+        List<ArtistFestivalResponse> artists = artistFestivalService.getArtistFestivals(festivalId, datesByArtistName, stageByArtistName);
 
         return new FestivalDetailModel(
                 festival,
@@ -60,6 +61,17 @@ public class FestivalDetailAggregationService {
                 buildSetlistCounts(artists),
                 ANNOUNCEMENT_STAGE
         );
+    }
+
+    private Map<String, String> buildStageByArtistName(List<TimetableEntryResponse> entries) {
+        return entries.stream()
+                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
+                             && e.getStageName() != null && !e.getStageName().isBlank())
+                .collect(Collectors.toMap(
+                        TimetableEntryResponse::getArtistName,
+                        TimetableEntryResponse::getStageName,
+                        (s1, s2) -> s1
+                ));
     }
 
     private Map<String, List<String>> buildDatesByArtistName(List<TimetableEntryResponse> entries) {

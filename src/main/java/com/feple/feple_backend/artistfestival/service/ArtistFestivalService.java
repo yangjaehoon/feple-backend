@@ -65,6 +65,17 @@ public class ArtistFestivalService {
                 datesByArtistName);
     }
 
+    // 관리자 상세 페이지 전용 — 타임테이블 기반 스테이지/날짜 폴백 적용
+    public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId,
+                                                           Map<String, List<String>> datesByArtistName,
+                                                           Map<String, String> stageByArtistName) {
+        return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId).stream()
+                .map(af -> toResponse(af,
+                        datesByArtistName.getOrDefault(af.getArtistName(), List.of()),
+                        stageByArtistName.getOrDefault(af.getArtistName(), null)))
+                .toList();
+    }
+
     private List<ArtistFestivalResponse> getArtistFestivals(List<ArtistFestival> artistFestivals,
                                                              Map<String, List<String>> datesByArtistName) {
         return artistFestivals.stream()
@@ -187,6 +198,14 @@ public class ArtistFestivalService {
 
 
     private ArtistFestivalResponse toResponse(ArtistFestival af, List<String> dates) {
+        return toResponse(af, dates, null);
+    }
+
+    private ArtistFestivalResponse toResponse(ArtistFestival af, List<String> dates, String stageFallback) {
+        String stage = af.getStageName() != null ? af.getStageName() : stageFallback;
+        String date = af.getPerformanceDate() != null
+                ? af.getPerformanceDate().toString()
+                : (dates.isEmpty() ? null : dates.get(0));
         return ArtistFestivalResponse.builder()
                 .artistFestivalId(af.getId())
                 .artistId(af.getArtistId())
@@ -194,8 +213,8 @@ public class ArtistFestivalService {
                 .artistGenre(af.getArtistGenreDisplayName())
                 .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
                 .lineupOrder(af.getLineupOrder())
-                .stageName(af.getStageName())
-                .performanceDate(af.getPerformanceDate() != null ? af.getPerformanceDate().toString() : null)
+                .stageName(stage)
+                .performanceDate(date)
                 .performanceDates(dates)
                 .build();
     }
