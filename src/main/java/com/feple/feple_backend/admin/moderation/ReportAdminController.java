@@ -115,7 +115,7 @@ public class ReportAdminController {
 
     private ReportAdminService<?> resolveHandler(String type) {
         ReportAdminService<?> handler = handlers.get(type);
-        return handler != null ? handler : handlers.get("post");
+        return handler != null ? handler : handlers.get(AdminConstants.REPORT_TYPE_POST);
     }
 
     @SuppressWarnings("unchecked")
@@ -129,8 +129,8 @@ public class ReportAdminController {
     }
 
     private String redirectReports(ReportFilter filter) {
-        String safeType   = handlers.containsKey(filter.type()) ? filter.type() : "post";
-        String safeStatus = "PENDING".equals(filter.status()) ? "PENDING" : "ALL";
+        String safeType   = handlers.containsKey(filter.type()) ? filter.type() : AdminConstants.REPORT_TYPE_POST;
+        String safeStatus = AdminConstants.STATUS_PENDING.equals(filter.status()) ? AdminConstants.STATUS_PENDING : AdminConstants.STATUS_ALL;
         return AdminActionUtils.toRedirect(
                 UriComponentsBuilder.fromPath("/admin/reports")
                         .queryParam("type", safeType)

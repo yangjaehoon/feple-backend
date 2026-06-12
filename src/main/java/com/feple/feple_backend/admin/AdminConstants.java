@@ -7,4 +7,9 @@ public final class AdminConstants {
     public static final int LOG_PAGE_SIZE          = 50;
     public static final int DASHBOARD_PREVIEW_SIZE = 5;
     public static final int STATS_RECENT_DAYS      = 7;
+
+    public static final String REPORT_TYPE_POST    = "post";
+    public static final String REPORT_TYPE_COMMENT = "comment";
+    public static final String STATUS_PENDING      = "PENDING";
+    public static final String STATUS_ALL          = "ALL";
 }

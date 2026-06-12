@@ -12,7 +12,7 @@ class PostReportCsvExporter implements ReportCsvExporter {
     private final PostReportService postReportService;
 
     @Override
-    public String getReportType() { return "post"; }
+    public String getReportType() { return AdminConstants.REPORT_TYPE_POST; }
 
     @Override
     public String buildCsv() {

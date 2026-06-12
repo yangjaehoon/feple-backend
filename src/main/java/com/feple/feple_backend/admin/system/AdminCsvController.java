@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.CsvExporter;
 import com.feple.feple_backend.admin.ReportCsvExporter;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -52,8 +53,8 @@ public class AdminCsvController {
 
     @GetMapping("/reports.csv")
     @ResponseBody
-    public ResponseEntity<byte[]> exportReports(@RequestParam(defaultValue = "post") String type) {
-        ReportCsvExporter exporter = reportExporters.getOrDefault(type, reportExporters.get("post"));
+    public ResponseEntity<byte[]> exportReports(@RequestParam(defaultValue = AdminConstants.REPORT_TYPE_POST) String type) {
+        ReportCsvExporter exporter = reportExporters.getOrDefault(type, reportExporters.get(AdminConstants.REPORT_TYPE_POST));
         if (exporter == null) {
             return ResponseEntity.badRequest().build();
         }

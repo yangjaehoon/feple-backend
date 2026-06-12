@@ -12,7 +12,7 @@ class CommentReportCsvExporter implements ReportCsvExporter {
     private final CommentReportService commentReportService;
 
     @Override
-    public String getReportType() { return "comment"; }
+    public String getReportType() { return AdminConstants.REPORT_TYPE_COMMENT; }
 
     @Override
     public String buildCsv() {

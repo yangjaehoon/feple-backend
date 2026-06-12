@@ -29,7 +29,7 @@ public class SongRequestAdminController {
     private final AdminLogService adminLogService;
 
     @GetMapping
-    public String list(@RequestParam(defaultValue = "PENDING") String status,
+    public String list(@RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "") String keyword,
                        Model model) {
@@ -44,7 +44,7 @@ public class SongRequestAdminController {
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id,
                           @RequestParam(required = false) String youtubeUrl,
-                          @RequestParam(defaultValue = "PENDING") String status,
+                          @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
                           @RequestParam(defaultValue = "0") int page,
                           @RequestParam(defaultValue = "") String keyword,
                           RedirectAttributes ra) {
@@ -70,7 +70,7 @@ public class SongRequestAdminController {
     @PostMapping("/{id}/reject")
     public String reject(@PathVariable Long id,
                          @RequestParam(required = false) String reason,
-                         @RequestParam(defaultValue = "PENDING") String status,
+                         @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
                          @RequestParam(defaultValue = "0") int page,
                          @RequestParam(defaultValue = "") String keyword,
                          RedirectAttributes ra) {
