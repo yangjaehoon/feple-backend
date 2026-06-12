@@ -113,12 +113,12 @@
                             th:text="${commentCounts.getOrDefault(user.id, 0)}"></td>
                         <!-- 신고 수 -->
                         <td class="td-center">
-                            <th:block th:with="cnt=${reportCounts.get(user.id)}">
-                                <span th:if="${cnt != null and cnt > 0}"
+                            <th:block th:with="cnt=${reportCounts.getOrDefault(user.id, 0)}">
+                                <span th:if="${cnt > 0}"
                                       th:text="${cnt}"
                                       class="badge"
                                       th:classappend="${cnt >= 5} ? ' badge-report-high' : ' badge-report-low'"></span>
-                                <span th:if="${cnt == null or cnt == 0}" class="cell-secondary">0</span>
+                                <span th:unless="${cnt > 0}" class="cell-secondary">0</span>
                             </th:block>
                         </td>
                         <!-- 가입일 -->

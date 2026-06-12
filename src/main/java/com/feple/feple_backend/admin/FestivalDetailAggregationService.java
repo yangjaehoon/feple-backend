@@ -57,6 +57,7 @@ public class FestivalDetailAggregationService {
         model.addAttribute("allBoothTypes",              BoothType.values());
         model.addAttribute("googleMapsKey",              googleMapsKey);
         model.addAttribute("setlistCounts",              buildSetlistCounts(artists));
+        model.addAttribute("opsStageIndicator",          ANNOUNCEMENT_STAGE);
     }
 
     private Map<String, List<String>> buildDatesByArtistName(List<TimetableEntryResponse> entries) {

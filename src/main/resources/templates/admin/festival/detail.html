@@ -262,7 +262,7 @@
                           th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                           method="post"
                           class="form-grid-ops">
-                        <input type="hidden" name="stageName" value="📢"/>
+                        <input type="hidden" name="stageName" th:value="${opsStageIndicator}"/>
                         <div>
                             <label class="form-label-ops">항목명</label>
                             <input type="text" name="artistName" placeholder="예: 티켓 부스 오픈, 입장 게이트 오픈" required maxlength="50"
@@ -309,12 +309,12 @@
                                     📅 <span th:text="${entry.festivalDate}"></span>
                                 </td>
                             </tr>
-                            <!-- 항목 행: 운영 항목(📢)은 노란 배경 -->
-                            <tr th:classappend="${entry.stageName == '📢'} ? 'bg-warning-subtle' : ''">
+                            <!-- 항목 행: 운영 항목은 노란 배경 -->
+                            <tr th:classappend="${entry.stageName == opsStageIndicator} ? 'bg-warning-subtle' : ''">
                                 <td>
-                                    <span th:if="${entry.stageName == '📢'}"
-                                          class="ops-label">📢 운영</span>
-                                    <span th:unless="${entry.stageName == '📢'}"
+                                    <span th:if="${entry.stageName == opsStageIndicator}"
+                                          class="ops-label" th:text="${opsStageIndicator + ' 운영'}"></span>
+                                    <span th:unless="${entry.stageName == opsStageIndicator}"
                                           class="badge badge-stage" th:data-stage="${entry.stageName}"
                                           th:text="${!#strings.isEmpty(entry.stageName) ? entry.stageName : '미지정'}"></span>
                                 </td>

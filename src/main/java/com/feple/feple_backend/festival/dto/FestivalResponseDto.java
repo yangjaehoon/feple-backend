@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.List;
 
+import static java.time.LocalDate.now;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,6 +35,20 @@ public class FestivalResponseDto {
     private AgeRestriction ageRestriction;
     private Double latitude;
     private Double longitude;
+
+    public boolean isEnded() {
+        return endDate != null && endDate.isBefore(now());
+    }
+
+    public boolean isOngoing() {
+        LocalDate today = now();
+        return (endDate == null || !endDate.isBefore(today))
+                && startDate != null && !startDate.isAfter(today);
+    }
+
+    public boolean isUpcoming() {
+        return startDate != null && startDate.isAfter(now());
+    }
 
     public static FestivalResponseDto from(Festival festival) {
         return from(festival, festival.getPosterKey());

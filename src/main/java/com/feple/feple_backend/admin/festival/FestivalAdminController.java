@@ -28,7 +28,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.springframework.data.domain.Page;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -88,17 +87,18 @@ public class FestivalAdminController {
         // 목록 탭: 페이지네이션 적용
         Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, 30);
 
-        // 체크리스트 탭: 전체 목록 (종료 포함) — 별도 조회
-        LocalDate today = LocalDate.now();
+        // 체크리스트 탭: 종료되지 않은 페스티벌만 — 컨트롤러에서 필터링
         List<FestivalResponseDto> allFestivals = festivalService.getAllFestivalsForAdmin();
-        List<Long> ids = allFestivals.stream().map(FestivalResponseDto::getId).toList();
-        long activeFestivalCount = festivalService.countActiveFestivals(today);
+        List<FestivalResponseDto> activeFestivals = allFestivals.stream()
+                .filter(f -> !f.isEnded())
+                .toList();
+        List<Long> activeIds = activeFestivals.stream().map(FestivalResponseDto::getId).toList();
 
         model.addAttribute("festivalsPage", festivalsPage);
-        model.addAttribute("festivals", allFestivals);
+        model.addAttribute("festivals", activeFestivals);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap(ids));
-        model.addAttribute("activeFestivalCount", activeFestivalCount);
+        model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap(activeIds));
+        model.addAttribute("activeFestivalCount", (long) activeFestivals.size());
         return "admin/festival/list";
     }
 

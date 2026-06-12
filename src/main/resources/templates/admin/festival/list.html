@@ -42,15 +42,12 @@
                         <tbody>
                         <th:block th:each="festival, stat : ${festivalsPage.content}">
                             <!-- 종료 구분선: 첫 번째 종료 항목 앞에만 표시 -->
-                            <tr th:if="${festival.endDate != null
-                                         and festival.endDate.isBefore(#temporals.createToday())
-                                         and (stat.first
-                                              or festivalsPage.content[stat.index - 1].endDate == null
-                                              or !festivalsPage.content[stat.index - 1].endDate.isBefore(#temporals.createToday()))}">
+                            <tr th:if="${festival.ended
+                                         and (stat.first or !festivalsPage.content[stat.index - 1].ended)}">
                                 <td colspan="4" class="table-section-sep">─── 종료된 페스티벌</td>
                             </tr>
 
-                            <tr th:classappend="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())} ? 'row-ended' : ''">
+                            <tr th:classappend="${festival.ended} ? 'row-ended' : ''">
                                 <td>
                                     <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
                                        th:text="${festival.title}"
@@ -62,16 +59,9 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <!-- 종료 -->
-                                    <span th:if="${festival.endDate != null and festival.endDate.isBefore(#temporals.createToday())}"
-                                          class="badge badge-ended">종료</span>
-                                    <!-- 진행 중 -->
-                                    <span th:if="${(festival.endDate == null or !festival.endDate.isBefore(#temporals.createToday()))
-                                                   and festival.startDate != null and !festival.startDate.isAfter(#temporals.createToday())}"
-                                          class="badge badge-ongoing">진행 중</span>
-                                    <!-- 예정 -->
-                                    <span th:if="${festival.startDate != null and festival.startDate.isAfter(#temporals.createToday())}"
-                                          class="badge badge-upcoming">예정</span>
+                                    <span th:if="${festival.ended}"    class="badge badge-ended">종료</span>
+                                    <span th:if="${festival.ongoing}"  class="badge badge-ongoing">진행 중</span>
+                                    <span th:if="${festival.upcoming}" class="badge badge-upcoming">예정</span>
                                 </td>
                                 <td>
                                     <span class="badge badge-primary"
@@ -123,15 +113,9 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="festival : ${festivals}"
-                                  th:if="${festival.endDate == null or !festival.endDate.isBefore(#temporals.createToday())}">
-                            <tr th:with="cl=${checklistMap[festival.id]},
-                                         cnt=${(cl != null and cl.lineup1 ? 1 : 0)
-                                              + (cl != null and cl.lineup2 ? 1 : 0)
-                                              + (cl != null and cl.lineup3 ? 1 : 0)
-                                              + (cl != null and cl.boothMap ? 1 : 0)
-                                              + (cl != null and cl.timetable ? 1 : 0)}"
-                                th:classappend="${cnt == 5} ? ' all-done'">
+                        <th:block th:each="festival : ${festivals}">
+                            <tr th:with="cl=${checklistMap[festival.id]}"
+                                th:classappend="${cl != null and cl.allCompleted} ? ' all-done'">
                                 <td class="left">
                                     <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
                                        th:text="${festival.title}"></a>
@@ -169,8 +153,8 @@
                                            data-field="timetable" />
                                 </td>
                                 <td>
-                                    <span th:classappend="${cnt == 5} ? ' status-done' : ' status-pend'"
-                                          th:text="${cnt} + '/5'"></span>
+                                    <span th:classappend="${cl != null and cl.allCompleted} ? ' status-done' : ' status-pend'"
+                                          th:text="${cl != null ? cl.completedCount : 0} + '/5'"></span>
                                 </td>
                                 <td class="left">
                                     <textarea class="memo-textarea"

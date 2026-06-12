@@ -50,6 +50,20 @@ public class FestivalChecklist {
         }
     }
 
+    public int getCompletedCount() {
+        int count = 0;
+        if (lineup1)   count++;
+        if (lineup2)   count++;
+        if (lineup3)   count++;
+        if (boothMap)  count++;
+        if (timetable) count++;
+        return count;
+    }
+
+    public boolean isAllCompleted() {
+        return lineup1 && lineup2 && lineup3 && boothMap && timetable;
+    }
+
     public void updateMemo(String memo) {
         this.memo = memo;
     }
