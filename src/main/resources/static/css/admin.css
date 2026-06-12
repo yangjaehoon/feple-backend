@@ -1612,4 +1612,19 @@ input[type=date]   { cursor: pointer; }
   .festival-info { flex-direction: column; }
   .poster-img    { width: 100%; max-width: 180px; }
   .no-poster     { width: 100%; max-width: 180px; }
+
+  /* 9. 테이블 헤더 — 패딩 축소, 강제 한 줄 해제 */
+  thead th {
+    padding: 9px 12px;
+    white-space: normal;
+    font-size: 10px;
+  }
+  tbody td { padding: 11px 12px; }
+
+  /* 10. 버튼 터치 타겟 — 최소 높이 36px */
+  .btn    { min-height: 36px; }
+  .btn-sm { min-height: 32px; padding: 7px 12px !important; }
+
+  /* 11. 체크박스 터치 타겟 확대 */
+  .cb-input { width: 18px; height: 18px; }
 }
