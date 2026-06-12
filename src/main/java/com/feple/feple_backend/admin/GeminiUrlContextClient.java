@@ -31,29 +31,8 @@ public class GeminiUrlContextClient {
     }
 
     ScrapedFestivalDto scrape(String url, String source) {
-        String prompt = """
-            아래 URL의 공연/페스티벌 페이지에서 정보를 추출하세요.
-            다음 형식의 JSON 객체만 반환하세요 (마크다운·설명 텍스트 없이):
-            {"title":"공연명","description":"설명(200자 이내)","location":"공연장소","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","posterImageUrl":"포스터 이미지 URL"}
-            값을 찾을 수 없는 필드는 빈 문자열("")로 설정하세요.
-            URL: """ + url;
-
-        Map<String, Object> request = Map.of(
-            "tools", List.of(Map.of("url_context", Map.of())),
-            "contents", List.of(Map.of(
-                "parts", List.of(Map.of("text", prompt))
-            )),
-            "generationConfig", Map.of("maxOutputTokens", 512, "temperature", 0)
-        );
-
-        @SuppressWarnings("unchecked")
-        Map<?, ?> response = webClient.post()
-            .uri(GEMINI_URL + "?key=" + geminiApiKey)
-            .header("Content-Type", "application/json")
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(Map.class)
-            .block(Duration.ofSeconds(60));
+        Map<String, Object> request = buildUrlContextRequest(url);
+        Map<?, ?> response = callGeminiApi(request);
 
         if (isUrlBlocked(response)) {
             log.warn("Gemini URL context blocked for: {}", url);
@@ -65,6 +44,34 @@ public class GeminiUrlContextClient {
         log.debug("Gemini URL context raw: {}", raw);
 
         return parseGeminiFestivalJson(raw, url, source);
+    }
+
+    private Map<String, Object> buildUrlContextRequest(String url) {
+        String prompt = """
+            아래 URL의 공연/페스티벌 페이지에서 정보를 추출하세요.
+            다음 형식의 JSON 객체만 반환하세요 (마크다운·설명 텍스트 없이):
+            {"title":"공연명","description":"설명(200자 이내)","location":"공연장소","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","posterImageUrl":"포스터 이미지 URL"}
+            값을 찾을 수 없는 필드는 빈 문자열("")로 설정하세요.
+            URL: """ + url;
+
+        return Map.of(
+            "tools", List.of(Map.of("url_context", Map.of())),
+            "contents", List.of(Map.of(
+                "parts", List.of(Map.of("text", prompt))
+            )),
+            "generationConfig", Map.of("maxOutputTokens", 512, "temperature", 0)
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<?, ?> callGeminiApi(Map<String, Object> request) {
+        return webClient.post()
+            .uri(GEMINI_URL + "?key=" + geminiApiKey)
+            .header("Content-Type", "application/json")
+            .bodyValue(request)
+            .retrieve()
+            .bodyToMono(Map.class)
+            .block(Duration.ofSeconds(60));
     }
 
     private boolean isUrlBlocked(Map<?, ?> response) {

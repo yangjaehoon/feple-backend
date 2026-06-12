@@ -45,12 +45,20 @@ public class GeminiOcrClient {
         return apiKey != null && !apiKey.isBlank();
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public List<OcrResultDto> parseTimeTable(MultipartFile image) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
 
-        Map<String, Object> request = Map.of(
+        Map<String, Object> request = buildOcrRequest(base64, mimeType);
+        Map<?, ?> response = callGeminiApi(request);
+
+        String content = extractContent(response);
+        log.debug("Gemini OCR raw response: {}", content);
+        return parseJsonArray(content);
+    }
+
+    private Map<String, Object> buildOcrRequest(String base64, String mimeType) {
+        return Map.of(
                 "contents", List.of(Map.of(
                         "parts", List.of(
                                 Map.of("text", PROMPT),
@@ -62,18 +70,17 @@ public class GeminiOcrClient {
                 )),
                 "generationConfig", Map.of("maxOutputTokens", 8192)
         );
+    }
 
-        Map response = webClient.post()
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Map<?, ?> callGeminiApi(Map<String, Object> request) {
+        return webClient.post()
                 .uri(GEMINI_BASE_URL + "?key=" + apiKey)
                 .header("Content-Type", "application/json")
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block(Duration.ofSeconds(90));
-
-        String content = extractContent(response);
-        log.debug("Gemini OCR raw response: {}", content);
-        return parseJsonArray(content);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
