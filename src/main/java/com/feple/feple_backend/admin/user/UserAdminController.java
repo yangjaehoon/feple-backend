@@ -64,7 +64,7 @@ public class UserAdminController {
             return "redirect:/admin/users";
         } catch (Exception e) {
             log.error("회원 상세 조회 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "회원 정보를 불러오지 못했습니다.");
+            ra.addFlashAttribute("errorMessage", "회원 정보를 불러오는 중 오류가 발생했습니다.");
             return "redirect:/admin/users";
         }
     }

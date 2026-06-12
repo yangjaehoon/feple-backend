@@ -62,7 +62,7 @@ public class CertificationAdminController {
             return "redirect:/admin/certifications";
         } catch (Exception e) {
             log.error("인증 상세 조회 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "인증 정보를 불러오지 못했습니다.");
+            ra.addFlashAttribute("errorMessage", "인증 정보를 불러오는 중 오류가 발생했습니다.");
             return "redirect:/admin/certifications";
         }
     }

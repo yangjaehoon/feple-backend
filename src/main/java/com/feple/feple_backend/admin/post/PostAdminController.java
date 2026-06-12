@@ -83,7 +83,7 @@ public class PostAdminController {
             return "redirect:/admin/posts";
         } catch (Exception e) {
             log.error("게시글 상세 조회 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "게시글 정보를 불러오지 못했습니다.");
+            ra.addFlashAttribute("errorMessage", "게시글 정보를 불러오는 중 오류가 발생했습니다.");
             return "redirect:/admin/posts";
         }
     }
