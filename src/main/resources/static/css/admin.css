@@ -1570,3 +1570,27 @@ input[type=date]   { cursor: pointer; }
     background: #e9ecef;
     color: #495057;
 }
+
+/* ============================================================
+   모바일 반응형 보정 (768px 이하)
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* 1. 대시보드 3열 → 1열 */
+  .db-grid { grid-template-columns: 1fr; }
+
+  /* 2. 노래 요청 등 액션 열 — min-width 해제, 버튼 세로 배치 유지 */
+  .action-cell { min-width: 0; }
+  .inline-form { flex-wrap: wrap; }
+  .inline-input { flex: 1; min-width: 80px; }
+
+  /* 3. 인증 상세 — 사진 열 고정 너비 해제, 세로 스택 */
+  .cert-detail-wrap { flex-direction: column; }
+  .cert-photo-col   { flex: 0 0 auto; width: 100%; max-width: 320px; }
+  .cert-info-col    { min-width: 0; }
+
+  /* 4. 처리 모달 — 모바일 패딩 축소 */
+  .admin-modal-box  { width: 100%; }
+  .modal-box,
+  .admin-modal-box  { padding: 20px 16px 18px; }
+}
