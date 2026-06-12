@@ -35,7 +35,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminMetricsServiceImpl implements AdminMetricsService {
+public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStatsMetrics {
 
     private static final DateTimeFormatter STAT_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d");
 

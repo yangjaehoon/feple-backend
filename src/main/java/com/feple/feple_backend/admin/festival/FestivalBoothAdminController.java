@@ -30,7 +30,7 @@ public class FestivalBoothAdminController {
                               @RequestParam(value = "boothImageFile", required = false) MultipartFile boothImageFile,
                               RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            ra.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("errorMessage", firstError(bindingResult));
             return AdminFestivalRedirects.booths(festivalId);
         }
         if (dto.getLatitude() == null || dto.getLongitude() == null) {
@@ -74,5 +74,7 @@ public class FestivalBoothAdminController {
         return AdminFestivalRedirects.booths(festivalId);
     }
 
-
+    private static String firstError(BindingResult br) {
+        return br.getAllErrors().get(0).getDefaultMessage();
+    }
 }

@@ -51,6 +51,9 @@ public class FestivalResponseDto {
         return startDate != null && startDate.isAfter(now());
     }
 
+    public String getStartDateIso() { return startDate != null ? startDate.toString() : null; }
+    public String getEndDateIso()   { return endDate   != null ? endDate.toString()   : null; }
+
     public String getDateRangeDisplay() {
         if (startDate == null) return "";
         DateTimeFormatter full = DateTimeFormatter.ofPattern("yyyy.MM.dd");

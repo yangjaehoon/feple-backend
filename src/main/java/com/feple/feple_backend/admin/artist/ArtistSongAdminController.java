@@ -56,7 +56,7 @@ public class ArtistSongAdminController {
                            BindingResult bindingResult,
                            RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            ra.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("errorMessage", firstError(bindingResult));
             return "redirect:/admin/artists/" + artistId + "/songs";
         }
         try {
@@ -121,5 +121,9 @@ public class ArtistSongAdminController {
             ra.addFlashAttribute("errorMessage", "노래 요청 거절에 실패했습니다. 다시 시도해주세요.");
         }
         return "redirect:/admin/artists/" + artistId + "/songs";
+    }
+
+    private static String firstError(BindingResult br) {
+        return br.getAllErrors().get(0).getDefaultMessage();
     }
 }

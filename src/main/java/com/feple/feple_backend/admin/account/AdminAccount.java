@@ -82,4 +82,8 @@ public class AdminAccount {
     public void disable() {
         this.enabled = false;
     }
+
+    public void toggle() {
+        this.enabled = !this.enabled;
+    }
 }

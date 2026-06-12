@@ -18,6 +18,7 @@ public interface FestivalService {
     List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions,
                                               List<AgeRestriction> ageRestrictions, boolean includeEnded);
     List<FestivalResponseDto> getAllFestivalsForAdmin();
+    List<FestivalResponseDto> getAllActiveFestivalsForAdmin();
     FestivalDetailResponseDto getFestivalDetail(Long id);
     FestivalResponseDto getFestival(Long id);
     void updateFestival(Long id, FestivalRequestDto dto);

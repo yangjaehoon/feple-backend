@@ -141,8 +141,8 @@ public class CrawlAdminController {
             Map<String, Object> m = new HashMap<>();
             m.put("id",        f.getId());
             m.put("title",     f.getTitle());
-            m.put("startDate", f.getStartDate() != null ? f.getStartDate().toString() : null);
-            m.put("endDate",   f.getEndDate()   != null ? f.getEndDate().toString()   : null);
+            m.put("startDate", f.getStartDateIso());
+            m.put("endDate",   f.getEndDateIso());
             return m;
         }).toList();
         return ResponseEntity.ok(result);

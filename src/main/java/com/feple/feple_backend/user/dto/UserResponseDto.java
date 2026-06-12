@@ -34,6 +34,7 @@ public class UserResponseDto {
     /** 관리자 페이지에서만 사용. */
     private AuthProvider provider;
 
+    public String getRoleDisplayName() { return role != null ? role.getDisplayName() : ""; }
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
     public boolean isRegularUser() { return !isAdmin() && !isArtist(); }

@@ -86,11 +86,7 @@ public class FestivalAdminController {
         // 목록 탭: 페이지네이션 적용
         Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, 30);
 
-        // 체크리스트 탭: 종료되지 않은 페스티벌만 — 컨트롤러에서 필터링
-        List<FestivalResponseDto> allFestivals = festivalService.getAllFestivalsForAdmin();
-        List<FestivalResponseDto> activeFestivals = allFestivals.stream()
-                .filter(f -> !f.isEnded())
-                .toList();
+        List<FestivalResponseDto> activeFestivals = festivalService.getAllActiveFestivalsForAdmin();
         List<Long> activeIds = activeFestivals.stream().map(FestivalResponseDto::getId).toList();
 
         model.addAttribute("festivalsPage", festivalsPage);

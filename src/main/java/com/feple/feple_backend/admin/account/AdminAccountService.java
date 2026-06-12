@@ -131,10 +131,6 @@ public class AdminAccountService {
             throw new IllegalArgumentException("마지막 활성 최고 관리자 계정은 비활성화할 수 없습니다.");
         }
 
-        if (account.isEnabled()) {
-            account.disable();
-        } else {
-            account.enable();
-        }
+        account.toggle();
     }
 }

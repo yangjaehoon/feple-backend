@@ -42,7 +42,7 @@ public class AdminCsvController {
             sb.append(CsvExporter.cell(u.getId()))
               .append(',').append(CsvExporter.cell(u.getNickname()))
               .append(',').append(CsvExporter.cell(u.getEmail()))
-              .append(',').append(CsvExporter.cell(u.getRole().getDisplayName()))
+              .append(',').append(CsvExporter.cell(u.getRoleDisplayName()))
               .append(',').append(CsvExporter.cell(CsvExporter.formatDt(u.getCreatedAt())))
               .append(',').append(CsvExporter.cell(u.isBanned() ? (u.isPermanentBan() ? "영구정지" : "정지중") : ""))
               .append('\n');

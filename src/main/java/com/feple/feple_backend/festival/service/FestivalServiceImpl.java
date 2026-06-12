@@ -117,6 +117,14 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<FestivalResponseDto> getAllActiveFestivalsForAdmin() {
+        return getAllFestivalsForAdmin().stream()
+                .filter(f -> !f.isEnded())
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
         return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));

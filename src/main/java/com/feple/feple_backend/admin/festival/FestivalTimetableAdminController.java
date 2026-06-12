@@ -26,7 +26,7 @@ public class FestivalTimetableAdminController {
                                        BindingResult bindingResult,
                                        RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            ra.addFlashAttribute("errorMessage", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("errorMessage", firstError(bindingResult));
             return AdminFestivalRedirects.timetable(festivalId);
         }
         try {
@@ -55,5 +55,9 @@ public class FestivalTimetableAdminController {
             ra.addFlashAttribute("errorMessage", "항목 삭제에 실패했습니다.");
         }
         return AdminFestivalRedirects.timetable(festivalId);
+    }
+
+    private static String firstError(BindingResult br) {
+        return br.getAllErrors().get(0).getDefaultMessage();
     }
 }
