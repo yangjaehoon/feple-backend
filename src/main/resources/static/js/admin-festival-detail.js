@@ -10,27 +10,22 @@
     function createBoothEl(booth) {
         var color = markerColors[booth.boothType] || '#555';
         var icon  = boothIcons[booth.boothType]  || '📍';
-
         var card = document.createElement('div');
         card.className = 'booth-marker-card';
         card.style.background = color;
-
         if (booth.imageUrl) {
             var img = document.createElement('img');
             img.src = booth.imageUrl;
             img.className = 'booth-marker-img';
             card.appendChild(img);
         }
-
         var label = document.createElement('div');
         label.className = 'booth-marker-label';
         label.textContent = icon + ' ' + booth.name;
         card.appendChild(label);
-
         var arrow = document.createElement('div');
         arrow.className = 'booth-marker-arrow';
         arrow.style.borderTopColor = color;
-
         var wrapper = document.createElement('div');
         wrapper.className = 'booth-marker-wrap';
         wrapper.appendChild(card);
@@ -95,7 +90,6 @@
     function initBoothMap() {
         var centerLat = festivalLat != null ? festivalLat : 37.5665;
         var centerLng = festivalLng != null ? festivalLng : 126.9780;
-
         boothMap = new google.maps.Map(document.getElementById('boothMap'), {
             center: { lat: centerLat, lng: centerLng },
             zoom: 18,
@@ -103,7 +97,6 @@
             streetViewControl: false,
             mapId: 'DEMO_MAP_ID'
         });
-
         placeExistingBooths(boothMap);
         setupMapClickToPlace(boothMap);
     }
@@ -149,92 +142,6 @@
         return true;
     }
 
-    function validateTimetable(form) {
-        var festivalDate = document.getElementById('autoFestivalDate').value;
-        if (!festivalDate) {
-            var preview = document.getElementById('datePreview');
-            preview.textContent = '⚠ 참여 아티스트 목록에서 날짜를 먼저 설정해주세요.';
-            preview.style.color = 'var(--danger)';
-            preview.style.fontWeight = '600';
-            preview.style.borderColor = 'var(--danger)';
-            preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return false;
-        }
-        var start = form.querySelector('#startTime').value;
-        var end = form.querySelector('#endTime').value;
-        if (start && end && start >= end) {
-            var err = document.getElementById('timeError');
-            err.style.display = 'block';
-            document.getElementById('startTime').style.borderColor = 'var(--danger)';
-            document.getElementById('endTime').style.borderColor = 'var(--danger)';
-            document.getElementById('endTime').focus();
-            return false;
-        }
-        return true;
-    }
-
-    function validateCustomTimetable(form) {
-        var start = form.querySelector('[name="startTime"]').value;
-        var end = form.querySelector('[name="endTime"]').value;
-        if (start && end && start >= end) {
-            var err = document.getElementById('timeError');
-            if (err) err.style.display = 'block';
-            return false;
-        }
-        return true;
-    }
-
-    function clearTimeError() {
-        var err = document.getElementById('timeError');
-        if (err) err.style.display = 'none';
-        document.getElementById('startTime').style.borderColor = '';
-        document.getElementById('endTime').style.borderColor = '';
-    }
-
-    function extractArtistSelection(select) {
-        var opt = select.options[select.selectedIndex];
-        return {
-            stage: opt.getAttribute('data-stage') || '',
-            date:  opt.getAttribute('data-date')  || ''
-        };
-    }
-
-    function applyStagePreview(stage) {
-        document.getElementById('autoStageName').value = stage;
-        var preview = document.getElementById('stagePreview');
-        if (stage) {
-            preview.textContent      = stage;
-            preview.style.color      = 'var(--primary)';
-            preview.style.fontWeight = '600';
-        } else {
-            preview.textContent      = '스테이지 미지정';
-            preview.style.color      = 'var(--muted)';
-            preview.style.fontWeight = 'normal';
-        }
-    }
-
-    function applyDatePreview(date) {
-        document.getElementById('autoFestivalDate').value = date;
-        var preview = document.getElementById('datePreview');
-        if (date) {
-            preview.textContent       = date;
-            preview.style.color       = 'var(--text)';
-            preview.style.fontWeight  = '600';
-            preview.style.borderColor = 'var(--border)';
-        } else {
-            preview.textContent       = '⚠ 참여 날짜 미설정 — 위 목록에서 날짜를 먼저 저장하세요.';
-            preview.style.color       = 'var(--danger)';
-            preview.style.fontWeight  = '500';
-            preview.style.borderColor = 'var(--danger)';
-        }
-    }
-
-    function onArtistChange(select) {
-        var sel = extractArtistSelection(select);
-        applyStagePreview(sel.stage);
-        applyDatePreview(sel.date);
-    }
-
     /* ── 스테이지 색상 ── */
     var stageColors = [
         { bg: 'var(--primary)', light: '#eef2ff', border: '#c5d0fa' },
@@ -278,32 +185,56 @@
         applyStageBadgeColors(colorMap);
     })();
 
-    /* ── 이벤트 리스너 ── */
-    var artistSelect = document.getElementById('artistSelect');
-    if (artistSelect) {
-        artistSelect.addEventListener('change', function () {
-            onArtistChange(this);
+    /* ── 슬롯 추가 폼 시간 유효성 검사 ── */
+    document.querySelectorAll('[id^="slot-add-"]').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            var formId  = this.id;
+            var startEl = document.querySelector('[name="startTime"][form="' + formId + '"]');
+            var endEl   = document.querySelector('[name="endTime"][form="' + formId + '"]');
+            if (!startEl || !endEl || !startEl.value || !endEl.value) return;
+            if (startEl.value >= endEl.value) {
+                var cell = startEl.closest('.tt-slots-cell');
+                if (cell) {
+                    var errDiv = cell.querySelector('.slot-time-error');
+                    if (errDiv) errDiv.style.display = 'block';
+                }
+                e.preventDefault();
+            }
+        });
+    });
+
+    document.querySelectorAll('.compact-input-xs').forEach(function (input) {
+        input.addEventListener('input', function () {
+            var cell = this.closest('.tt-slots-cell');
+            if (cell) {
+                var errDiv = cell.querySelector('.slot-time-error');
+                if (errDiv) errDiv.style.display = 'none';
+            }
+        });
+    });
+
+    /* ── 운영 항목 추가 폼 시간 유효성 검사 ── */
+    var opsForm = document.getElementById('ops-add-form');
+    if (opsForm) {
+        opsForm.addEventListener('submit', function (e) {
+            var start = document.getElementById('opsStart');
+            var end   = document.getElementById('opsEnd');
+            if (start && end && start.value && end.value && start.value >= end.value) {
+                document.getElementById('opsTimeError').style.display = 'block';
+                e.preventDefault();
+            }
         });
     }
+    var opsStart = document.getElementById('opsStart');
+    var opsEnd   = document.getElementById('opsEnd');
+    if (opsStart) opsStart.addEventListener('input', function () { document.getElementById('opsTimeError').style.display = 'none'; });
+    if (opsEnd)   opsEnd.addEventListener('input',   function () { document.getElementById('opsTimeError').style.display = 'none'; });
 
+    /* ── 이벤트 리스너 ── */
     var boothImageFile = document.getElementById('boothImageFile');
     if (boothImageFile) {
         boothImageFile.addEventListener('change', function () {
             validateBoothImage(this);
-        });
-    }
-
-    var timetableForm = document.getElementById('timetable-add-form');
-    if (timetableForm) {
-        timetableForm.addEventListener('submit', function (e) {
-            if (!validateTimetable(this)) e.preventDefault();
-        });
-    }
-
-    var opsForm = document.getElementById('ops-add-form');
-    if (opsForm) {
-        opsForm.addEventListener('submit', function (e) {
-            if (!validateCustomTimetable(this)) e.preventDefault();
         });
     }
 
@@ -313,14 +244,6 @@
             if (!validateBoothPos()) e.preventDefault();
         });
     }
-
-    var startTime = document.getElementById('startTime');
-    var endTime   = document.getElementById('endTime');
-    if (startTime) startTime.addEventListener('input', clearTimeError);
-    if (endTime)   endTime.addEventListener('input', clearTimeError);
-
-    /* Google Maps 초기화 (페이지 로드 후 콜백으로 호출됨) */
-    window.initBoothMap = initBoothMap;
 
     /* ── 타임테이블 수정 모달 ── */
     function onTtEditArtistChange(select) {
@@ -402,7 +325,8 @@
         document.getElementById('tt-edit-time-error').style.display = 'none';
     });
 
-    window.openTimetableEdit     = openTimetableEdit;
-    window.closeTimetableEdit    = closeTimetableEdit;
-    window.onTtEditArtistChange  = onTtEditArtistChange;
+    window.initBoothMap       = initBoothMap;
+    window.openTimetableEdit  = openTimetableEdit;
+    window.closeTimetableEdit = closeTimetableEdit;
+    window.onTtEditArtistChange = onTtEditArtistChange;
 })();
