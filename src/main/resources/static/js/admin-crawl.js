@@ -665,6 +665,7 @@
     function submitLineupRequest(file) {
         document.getElementById('lineupEmptyState').style.display = 'none';
         document.getElementById('lineupResultArea').classList.remove('d-none');
+        document.getElementById('lineupPreviewWrap').classList.add('visible');
         document.getElementById('lineupParseBody').innerHTML = '';
         document.getElementById('btnApplyLineup').disabled = true;
         document.getElementById('lineupSelectCount').textContent = '';
