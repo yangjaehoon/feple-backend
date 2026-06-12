@@ -1511,7 +1511,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── Logs page ── */
 .td-mono           { font-size: 11.5px; color: var(--muted); font-family: monospace; }
-.td-text           { color: var(--text); }
+/* min-width로 열이 극단적으로 좁아지는 것을 방지, 한글처럼 공백 없는 텍스트도 줄바꿈 허용 */
+.td-text           { color: var(--text); min-width: 160px; word-break: break-word; overflow-wrap: break-word; }
 .list-total        { margin-left: auto; font-size: 13px; color: var(--muted); }
 input[type=date]   { cursor: pointer; }
 
