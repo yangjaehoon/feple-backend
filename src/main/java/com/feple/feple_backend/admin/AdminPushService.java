@@ -4,7 +4,7 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
-import com.feple.feple_backend.notification.service.FcmPushService;
+import com.feple.feple_backend.notification.service.PushNotificationClient;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.Set;
 public class AdminPushService {
 
     private final UserDeviceTokenRepository deviceTokenRepository;
-    private final FcmPushService fcmPushService;
+    private final PushNotificationClient fcmPushService;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalCertificationRepository festivalCertificationRepository;

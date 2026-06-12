@@ -14,17 +14,18 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FcmPushService {
+public class FcmPushService implements PushNotificationClient {
 
     private final DeviceTokenService deviceTokenService;
 
     private static final int BATCH_SIZE = 500; // FCM multicast 최대 500개
 
-    /** 관리자 공지 브로드캐스트 */
+    @Override
     public void sendBroadcast(List<String> tokens, String title, String body) {
         sendMulticast(tokens, title, body, null, NotificationType.ADMIN_BROADCAST.name());
     }
 
+    @Override
     public void sendMulticast(List<String> tokens, String title, String body,
                                String linkId, NotificationType type) {
         sendMulticast(tokens, title, body, linkId, type.name());

@@ -40,7 +40,7 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
     private final PostRepository postRepository;
-    private final FcmPushService fcmPushService;
+    private final PushNotificationClient fcmPushService;
     private final NotificationPreferenceService preferenceService;
 
     /**
