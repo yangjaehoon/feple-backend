@@ -154,7 +154,7 @@
                                 </td>
                                 <td>
                                     <span th:classappend="${cl != null and cl.allCompleted} ? ' status-done' : ' status-pend'"
-                                          th:text="${cl != null ? cl.completedCount : 0} + '/5'"></span>
+                                          th:text="${cl != null ? cl.completedCount : 0} + '/' + ${cl != null ? cl.fieldCount : 5}"></span>
                                 </td>
                                 <td class="left">
                                     <textarea class="memo-textarea"

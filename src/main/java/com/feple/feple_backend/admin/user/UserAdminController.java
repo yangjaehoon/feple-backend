@@ -29,6 +29,8 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class UserAdminController {
 
+    private static final String FILTER_BANNED = "banned";
+
     private final UserAdminService userService;
     private final UserDetailAggregationService userDetailAggregationService;
     private final AdminLogService adminLogService;
@@ -53,7 +55,7 @@ public class UserAdminController {
     }
 
     private Page<UserResponseDto> fetchUsersPage(int page, String keyword, String sort, String filter) {
-        if ("banned".equals(filter))   return userService.getBannedUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
+        if (FILTER_BANNED.equals(filter))   return userService.getBannedUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
         if ("reports".equals(sort))    return userService.getUsersPageSortedByReports(page, AdminConstants.LIST_PAGE_SIZE, keyword);
         return userService.getUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
     }
@@ -161,7 +163,7 @@ public class UserAdminController {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/users")
                 .queryParam("filter", filter != null ? filter : "")
                 .queryParam("page", page);
-        if (!"banned".equals(filter)) builder.queryParam("sort", sort != null ? sort : "latest");
+        if (!FILTER_BANNED.equals(filter)) builder.queryParam("sort", sort != null ? sort : "latest");
         if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
         return "redirect:" + builder.build().toUriString();
     }
@@ -169,7 +171,7 @@ public class UserAdminController {
     private static String buildListParams(String filter, String sort, String keyword) {
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
                 .queryParam("filter", filter);
-        if (!"banned".equals(filter)) builder.queryParam("sort", sort);
+        if (!FILTER_BANNED.equals(filter)) builder.queryParam("sort", sort);
         if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
         String query = builder.build().toUriString();
         return query.startsWith("?") ? query.substring(1) : query;

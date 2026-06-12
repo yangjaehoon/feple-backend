@@ -6,12 +6,15 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @Table(name = "festival_checklist")
 public class FestivalChecklist {
+
+    static final List<String> ALL_FIELDS = List.of("lineup1", "lineup2", "lineup3", "boothMap", "timetable");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,18 +53,16 @@ public class FestivalChecklist {
         }
     }
 
+    public int getFieldCount() {
+        return ALL_FIELDS.size();
+    }
+
     public int getCompletedCount() {
-        int count = 0;
-        if (lineup1)   count++;
-        if (lineup2)   count++;
-        if (lineup3)   count++;
-        if (boothMap)  count++;
-        if (timetable) count++;
-        return count;
+        return (int) ALL_FIELDS.stream().filter(this::valueOf).count();
     }
 
     public boolean isAllCompleted() {
-        return lineup1 && lineup2 && lineup3 && boothMap && timetable;
+        return ALL_FIELDS.stream().allMatch(this::valueOf);
     }
 
     public void updateMemo(String memo) {
