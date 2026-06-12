@@ -18,6 +18,7 @@ import org.springframework.ui.Model;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ public class FestivalDetailAggregationService {
         model.addAttribute("participatingArtists",       artists);
         model.addAttribute("participatingArtistsByName", sortArtistsByName(artists));
         model.addAttribute("timetableEntries",           entries);
-        model.addAttribute("timetableByArtist",          buildTimetableByArtist(entries));
+        model.addAttribute("timetableByArtist",          buildTimetableByArtist(artists, entries));
         model.addAttribute("stages",                     stageService.getStages(festivalId));
         model.addAttribute("booths",                     boothService.getBooths(festivalId));
         model.addAttribute("allBoothTypes",              BoothType.values());
@@ -69,11 +70,15 @@ public class FestivalDetailAggregationService {
                 ));
     }
 
-    private Map<String, List<TimetableEntryResponse>> buildTimetableByArtist(List<TimetableEntryResponse> entries) {
-        return entries.stream()
+    private Map<String, List<TimetableEntryResponse>> buildTimetableByArtist(
+            List<ArtistFestivalResponse> artists, List<TimetableEntryResponse> entries) {
+        Map<String, List<TimetableEntryResponse>> result = entries.stream()
                 .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
                              && !ANNOUNCEMENT_STAGE.equals(e.getStageName()))
-                .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName));
+                .collect(Collectors.groupingBy(TimetableEntryResponse::getArtistName,
+                        HashMap::new, Collectors.toList()));
+        artists.forEach(a -> result.putIfAbsent(a.getArtistName(), List.of()));
+        return result;
     }
 
     private List<ArtistFestivalResponse> sortArtistsByName(List<ArtistFestivalResponse> artists) {

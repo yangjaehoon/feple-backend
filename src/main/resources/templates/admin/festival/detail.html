@@ -108,7 +108,7 @@
                             <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
                             <td>
                                 <!-- 타임테이블에 등록된 슬롯 표시 -->
-                                <th:block th:if="${timetableByArtist.containsKey(af.artistName)}">
+                                <th:block th:if="${!timetableByArtist.get(af.artistName).isEmpty()}">
                                     <div th:each="slot : ${timetableByArtist.get(af.artistName)}"
                                          class="slot-row">
                                         <span class="slot-muted" th:text="${slot.festivalDate}"></span>
@@ -117,7 +117,7 @@
                                     </div>
                                 </th:block>
                                 <!-- 타임테이블 미입력 -->
-                                <span th:unless="${timetableByArtist.containsKey(af.artistName)}"
+                                <span th:if="${timetableByArtist.get(af.artistName).isEmpty()}"
                                       class="badge badge-danger">미입력</span>
                             </td>
                             <td>

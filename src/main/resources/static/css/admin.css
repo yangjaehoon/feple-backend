@@ -188,25 +188,6 @@ body {
 .stat-label { font-size: 12px; color: var(--muted); margin-top: 3px; font-weight: 600; }
 
 /* ============================================================
-   QUICK CARDS
-   ============================================================ */
-.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
-.quick-card {
-  background: var(--surface); border-radius: var(--r-lg);
-  padding: 18px 20px; border: 1.5px solid var(--border);
-  text-decoration: none;
-  display: flex; align-items: center; gap: 14px;
-  transition: transform .18s, box-shadow .2s, border-color .15s;
-  box-shadow: var(--shadow-sm);
-}
-.quick-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary-bd); }
-.quick-icon { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 21px; }
-.icon-festival, .qi-festival { background: var(--primary-lt); }
-.icon-artist,   .qi-artist   { background: var(--purple-bg); }
-.quick-label { font-size: 14px; font-weight: 700; color: var(--text); }
-.quick-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-/* ============================================================
    CARD  (Bootstrap compat)
    ============================================================ */
 .card {
