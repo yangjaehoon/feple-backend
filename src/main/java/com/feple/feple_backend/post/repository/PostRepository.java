@@ -18,6 +18,11 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+    // ── 단건 조회 (user/artist/festival 연관 즉시 로딩) ─────────────────────
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.id = :id")
+    java.util.Optional<Post> findWithAssociationsById(@Param("id") Long id);
+
     // ── 아티스트 게시글 ──────────────────────────────────────────────────────
     List<Post> findByBoardType(BoardType boardType);
     List<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType);

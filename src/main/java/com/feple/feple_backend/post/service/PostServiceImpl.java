@@ -65,7 +65,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     @Override
     public PostResponseDto getPost(Long postId) {
-        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        Post post = EntityFinder.getOrThrow(postRepository::findWithAssociationsById, postId, "게시글");
         return PostResponseDto.from(post);
     }
 
