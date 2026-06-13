@@ -8,6 +8,7 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
+import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
@@ -30,6 +31,7 @@ public class UserCascadeDeleteService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final FestivalLikeRepository festivalLikeRepository;
+    private final FestivalAttendanceRepository festivalAttendanceRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationPreferenceRepository notificationPreferenceRepository;
@@ -52,11 +54,18 @@ public class UserCascadeDeleteService {
         refreshTokenRepository.deleteByUserId(id);
         userDeviceTokenRepository.deleteByUserId(id);
 
-        // 소셜 활동 데이터 삭제
+        // 소셜 활동 데이터 삭제 — 카운터 먼저 감소 후 행 삭제
+        festivalLikeRepository.decrementFestivalLikeCountByUserId(id);
         festivalLikeRepository.deleteByUserId(id);
+        festivalAttendanceRepository.decrementAttendingCountByUserId(id);
+        festivalAttendanceRepository.deleteByUserId(id);
+        artistFollowRepository.decrementFollowerCountByUserId(id);
         artistFollowRepository.deleteByUserId(id);
+        postLikeRepository.decrementPostLikeCountByUserId(id);
         postLikeRepository.deleteByUserId(id);
+        commentLikeRepository.decrementCommentLikeCountByUserId(id);
         commentLikeRepository.deleteByUserId(id);
+        postScrapRepository.decrementPostScrapCountByUserId(id);
         postScrapRepository.deleteByUserId(id);
 
         notificationRepository.deleteByUserId(id);

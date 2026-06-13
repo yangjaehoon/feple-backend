@@ -8,6 +8,7 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
+import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
@@ -33,6 +34,7 @@ class UserCascadeDeleteServiceTest {
     @Mock UserRepository userRepository;
     @Mock RefreshTokenRepository refreshTokenRepository;
     @Mock FestivalLikeRepository festivalLikeRepository;
+    @Mock FestivalAttendanceRepository festivalAttendanceRepository;
     @Mock ArtistFollowRepository artistFollowRepository;
     @Mock NotificationRepository notificationRepository;
     @Mock NotificationPreferenceRepository notificationPreferenceRepository;
@@ -101,6 +103,30 @@ class UserCascadeDeleteServiceTest {
         userCascadeDeleteService.delete(user);
 
         verify(userRepository, never()).delete(user);
+    }
+
+    @Test
+    void 사용자_삭제시_카운터_감소_후_행_삭제됨() {
+        User user = userWithImage(1L);
+        org.mockito.InOrder inOrder = org.mockito.Mockito.inOrder(
+                festivalLikeRepository, festivalAttendanceRepository,
+                artistFollowRepository, postLikeRepository,
+                commentLikeRepository, postScrapRepository);
+
+        userCascadeDeleteService.delete(user);
+
+        inOrder.verify(festivalLikeRepository).decrementFestivalLikeCountByUserId(1L);
+        inOrder.verify(festivalLikeRepository).deleteByUserId(1L);
+        inOrder.verify(festivalAttendanceRepository).decrementAttendingCountByUserId(1L);
+        inOrder.verify(festivalAttendanceRepository).deleteByUserId(1L);
+        inOrder.verify(artistFollowRepository).decrementFollowerCountByUserId(1L);
+        inOrder.verify(artistFollowRepository).deleteByUserId(1L);
+        inOrder.verify(postLikeRepository).decrementPostLikeCountByUserId(1L);
+        inOrder.verify(postLikeRepository).deleteByUserId(1L);
+        inOrder.verify(commentLikeRepository).decrementCommentLikeCountByUserId(1L);
+        inOrder.verify(commentLikeRepository).deleteByUserId(1L);
+        inOrder.verify(postScrapRepository).decrementPostScrapCountByUserId(1L);
+        inOrder.verify(postScrapRepository).deleteByUserId(1L);
     }
 
     @Test

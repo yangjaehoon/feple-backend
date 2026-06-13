@@ -15,6 +15,14 @@ public interface FestivalAttendanceRepository extends JpaRepository<FestivalAtte
     @Query("DELETE FROM FestivalAttendance fa WHERE fa.user.id = :userId AND fa.festival.id = :festivalId")
     int deleteByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
 
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE festival SET attending_count = GREATEST(attending_count - 1, 0) WHERE id IN (SELECT festival_id FROM festival_attendance WHERE user_id = :userId)", nativeQuery = true)
+    void decrementAttendingCountByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM FestivalAttendance fa WHERE fa.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
+
     @Modifying
     @Query("DELETE FROM FestivalAttendance fa WHERE fa.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);

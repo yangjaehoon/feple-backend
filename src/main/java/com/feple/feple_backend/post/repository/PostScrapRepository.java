@@ -33,6 +33,10 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     @Query("DELETE FROM PostScrap ps WHERE ps.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE post SET scrap_count = GREATEST(scrap_count - 1, 0) WHERE id IN (SELECT post_id FROM post_scrap WHERE user_id = :userId)", nativeQuery = true)
+    void decrementPostScrapCountByUserId(@Param("userId") Long userId);
+
     @Modifying
     @Query("DELETE FROM PostScrap ps WHERE ps.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);

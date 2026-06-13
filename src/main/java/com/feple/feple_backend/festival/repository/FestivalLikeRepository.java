@@ -21,6 +21,10 @@ public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long
     @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
     List<FestivalLike> findByUserId(@Param("userId") Long userId);
 
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE festival SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT festival_id FROM festival_like WHERE user_id = :userId)", nativeQuery = true)
+    void decrementFestivalLikeCountByUserId(@Param("userId") Long userId);
+
     @Modifying
     @Query("DELETE FROM FestivalLike fl WHERE fl.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);

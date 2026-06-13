@@ -30,6 +30,10 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     @Query("DELETE FROM PostLike pl WHERE pl.user.id = :userId AND pl.post.id = :postId")
     int deleteByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE post SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT post_id FROM post_like WHERE user_id = :userId)", nativeQuery = true)
+    void decrementPostLikeCountByUserId(@Param("userId") Long userId);
+
     @Modifying
     @Query("DELETE FROM PostLike pl WHERE pl.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
