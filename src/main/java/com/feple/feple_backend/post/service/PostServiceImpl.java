@@ -19,6 +19,7 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
@@ -50,6 +51,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
     private final FestivalCertificationRepository certificationRepository;
+    private final NotificationRepository notificationRepository;
     private final BadWordFilter badWordFilter;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
@@ -285,12 +287,14 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     @Transactional
     public void deletePostsByArtist(Artist artist) {
+        postRepository.nullifyArtistIdForSoftDeleted(artist.getId());
         deletePostLikesAndPosts(postRepository.findByArtist(artist));
     }
 
     @Override
     @Transactional
     public void deletePostsByFestival(Festival festival) {
+        postRepository.nullifyFestivalIdForSoftDeleted(festival.getId());
         deletePostLikesAndPosts(postRepository.findByFestival(festival));
     }
 
@@ -387,6 +391,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
         postLikeRepository.deleteByPostIds(postIds);
         postScrapRepository.deleteByPostIds(postIds);
         postReportRepository.deleteByPostIds(postIds);
+        notificationRepository.deleteByPostIdIn(postIds);
         postRepository.deleteAllByIdInBatch(postIds);
     }
 
