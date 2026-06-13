@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +29,7 @@ public class FestivalReminderScheduler {
     /** 매일 오전 9시 실행 */
     @Scheduled(cron = "0 0 9 * * *")
     @SchedulerLock(name = "festivalReminderScheduler", lockAtMostFor = "5m", lockAtLeastFor = "1m")
+    @Transactional(readOnly = true)
     public void sendReminders() {
         sendReminderForDDay(7);
         sendReminderForDDay(1);
