@@ -2,6 +2,7 @@ package com.feple.feple_backend.search.repository;
 
 import com.feple.feple_backend.search.entity.SearchLog;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,4 +20,8 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long> {
             LIMIT :lim
             """, nativeQuery = true)
     List<Object[]> findTopKeywordsSince(@Param("since") LocalDateTime since, @Param("lim") int lim);
+
+    @Modifying
+    @Query("DELETE FROM SearchLog sl WHERE sl.createdAt < :cutoff")
+    void deleteByCreatedAtBefore(@Param("cutoff") LocalDateTime cutoff);
 }

@@ -63,7 +63,7 @@ public class Festival {
     private Double longitude;
 
     @Builder.Default
-    @OneToMany(mappedBy = "festival", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "festival")
     private List<ArtistFestival> artistFestivals = new ArrayList<>();
 
     public void update(String title, String titleEn, String description, String location,

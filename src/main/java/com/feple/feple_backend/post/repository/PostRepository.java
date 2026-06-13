@@ -144,9 +144,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     long countByTitleOrContentContaining(@Param("word") String word);
 
     // ── 통계 ─────────────────────────────────────────────────────────────────
-    long countByCreatedAtAfter(LocalDateTime since);
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.createdAt > :since AND p.deletedAt IS NULL")
+    long countByCreatedAtAfter(@Param("since") LocalDateTime since);
 
-    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.createdAt >= :start AND p.createdAt < :end AND p.deletedAt IS NULL")
+    long countByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("SELECT FUNCTION('DATE', p.createdAt), COUNT(p) FROM Post p " +
            "WHERE p.createdAt >= :from AND p.createdAt < :to GROUP BY FUNCTION('DATE', p.createdAt)")

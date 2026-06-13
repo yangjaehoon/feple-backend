@@ -125,7 +125,7 @@ public class Post {
     }
 
     @Builder.Default
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
     public String getDisplayBoardName() {

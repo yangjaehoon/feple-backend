@@ -47,9 +47,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = """
             SELECT COUNT(*) FROM (
-                SELECT DISTINCT user_id FROM post WHERE created_at >= :start AND created_at < :end
+                SELECT DISTINCT user_id FROM post WHERE created_at >= :start AND created_at < :end AND deleted_at IS NULL
                 UNION
-                SELECT DISTINCT user_id FROM comment WHERE created_at >= :start AND created_at < :end
+                SELECT DISTINCT user_id FROM comment WHERE created_at >= :start AND created_at < :end AND deleted_at IS NULL
             ) AS active_users
             """, nativeQuery = true)
     Long countActiveUsersBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
