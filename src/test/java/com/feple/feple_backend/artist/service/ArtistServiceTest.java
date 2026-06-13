@@ -1,10 +1,12 @@
 package com.feple.feple_backend.artist.service;
 
+import com.feple.feple_backend.artist.ArtistNameFilter;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,8 @@ class ArtistServiceTest {
     @Mock ArtistFollowRepository artistFollowRepository;
     @Mock FileStorageService fileStorageService;
     @Mock ArtistCascadeDeleteService cascadeDeleteService;
+    @Mock SongRepository songRepository;
+    @Mock ArtistNameFilter artistNameFilter;
 
     @InjectMocks ArtistServiceImpl artistService;
 

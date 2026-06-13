@@ -2,6 +2,7 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.ArtistNameFilter;
 import com.feple.feple_backend.badword.BadWordFilter;
+import com.feple.feple_backend.nickname.NicknameRestrictionFilter;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -36,6 +37,7 @@ class UserServiceImplTest {
     @Mock UserCascadeDeleteService cascadeDeleteService;
     @Mock BadWordFilter badWordFilter;
     @Mock ArtistNameFilter artistNameFilter;
+    @Mock NicknameRestrictionFilter nicknameRestrictionFilter;
 
     @InjectMocks UserServiceImpl userService;
 
