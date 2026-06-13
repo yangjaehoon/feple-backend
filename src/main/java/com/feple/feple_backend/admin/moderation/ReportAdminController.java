@@ -55,14 +55,15 @@ public class ReportAdminController {
     public String deleteContent(@PathVariable Long id,
                                 @ModelAttribute ReportFilter filter,
                                 RedirectAttributes ra) {
-        try {
-            resolveHandler(filter.type()).deleteContentAndResolve(id);
-            adminLogService.log(AdminAction.REPORT_DELETE, "REPORT", id, filter.type());
-            ra.addFlashAttribute("successMessage", "콘텐츠를 삭제하고 신고를 처리했습니다.");
-        } catch (Exception e) {
-            log.error("신고 콘텐츠 삭제 실패 id={} type={}", id, filter.type(), e);
-            ra.addFlashAttribute("errorMessage", "삭제 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    resolveHandler(filter.type()).deleteContentAndResolve(id);
+                    adminLogService.log(AdminAction.REPORT_DELETE, "REPORT", id, filter.type());
+                },
+                "콘텐츠를 삭제하고 신고를 처리했습니다.",
+                e -> log.error("신고 콘텐츠 삭제 실패 id={} type={}", id, filter.type(), e),
+                "삭제 처리 중 오류가 발생했습니다.",
+                ra);
         return redirectReports(filter);
     }
 
@@ -70,14 +71,15 @@ public class ReportAdminController {
     public String dismiss(@PathVariable Long id,
                           @ModelAttribute ReportFilter filter,
                           RedirectAttributes ra) {
-        try {
-            resolveHandler(filter.type()).dismissReport(id);
-            adminLogService.log(AdminAction.REPORT_DISMISS, "REPORT", id, filter.type());
-            ra.addFlashAttribute("successMessage", "신고를 기각했습니다.");
-        } catch (Exception e) {
-            log.error("신고 기각 실패 id={} type={}", id, filter.type(), e);
-            ra.addFlashAttribute("errorMessage", "기각 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    resolveHandler(filter.type()).dismissReport(id);
+                    adminLogService.log(AdminAction.REPORT_DISMISS, "REPORT", id, filter.type());
+                },
+                "신고를 기각했습니다.",
+                e -> log.error("신고 기각 실패 id={} type={}", id, filter.type(), e),
+                "기각 처리 중 오류가 발생했습니다.",
+                ra);
         return redirectReports(filter);
     }
 
@@ -86,14 +88,15 @@ public class ReportAdminController {
                               @ModelAttribute ReportFilter filter,
                               RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) return emptySelectionRedirect(filter, ra);
-        try {
-            resolveHandler(filter.type()).bulkDismiss(ids);
-            adminLogService.log(AdminAction.REPORT_BULK_DISMISS, "REPORT", null, filter.type() + " " + ids.size() + "건");
-            ra.addFlashAttribute("successMessage", ids.size() + "건을 일괄 기각했습니다.");
-        } catch (Exception e) {
-            log.error("신고 일괄 기각 실패 type={} ids={}", filter.type(), ids, e);
-            ra.addFlashAttribute("errorMessage", "일괄 기각 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    resolveHandler(filter.type()).bulkDismiss(ids);
+                    adminLogService.log(AdminAction.REPORT_BULK_DISMISS, "REPORT", null, filter.type() + " " + ids.size() + "건");
+                },
+                ids.size() + "건을 일괄 기각했습니다.",
+                e -> log.error("신고 일괄 기각 실패 type={} ids={}", filter.type(), ids, e),
+                "일괄 기각 처리 중 오류가 발생했습니다.",
+                ra);
         return redirectReports(filter);
     }
 
@@ -102,14 +105,15 @@ public class ReportAdminController {
                              @ModelAttribute ReportFilter filter,
                              RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) return emptySelectionRedirect(filter, ra);
-        try {
-            resolveHandler(filter.type()).bulkDeleteContent(ids);
-            adminLogService.log(AdminAction.REPORT_BULK_DELETE, "REPORT", null, filter.type() + " " + ids.size() + "건");
-            ra.addFlashAttribute("successMessage", ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다.");
-        } catch (Exception e) {
-            log.error("신고 일괄 삭제 실패 type={} ids={}", filter.type(), ids, e);
-            ra.addFlashAttribute("errorMessage", "일괄 삭제 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    resolveHandler(filter.type()).bulkDeleteContent(ids);
+                    adminLogService.log(AdminAction.REPORT_BULK_DELETE, "REPORT", null, filter.type() + " " + ids.size() + "건");
+                },
+                ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다.",
+                e -> log.error("신고 일괄 삭제 실패 type={} ids={}", filter.type(), ids, e),
+                "일괄 삭제 처리 중 오류가 발생했습니다.",
+                ra);
         return redirectReports(filter);
     }
 

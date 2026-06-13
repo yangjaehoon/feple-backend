@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.post;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.FilterDropdownProvider;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -96,14 +97,15 @@ public class PostAdminController {
                                   @RequestParam(required = false) Long festivalId,
                                   RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
-            try {
-                postAdminService.bulkDeletePosts(ids);
-                adminLogService.log(AdminAction.POST_BULK_DELETE, "POST", null, "총 " + ids.size() + "개");
-                ra.addFlashAttribute("successMessage", ids.size() + "개 게시글이 삭제되었습니다.");
-            } catch (Exception e) {
-                log.error("게시글 일괄 삭제 실패 ids={}", ids, e);
-                ra.addFlashAttribute("errorMessage", "일괄 삭제 처리 중 오류가 발생했습니다.");
-            }
+            AdminActionUtils.tryAction(
+                    () -> {
+                        postAdminService.bulkDeletePosts(ids);
+                        adminLogService.log(AdminAction.POST_BULK_DELETE, "POST", null, "총 " + ids.size() + "개");
+                    },
+                    ids.size() + "개 게시글이 삭제되었습니다.",
+                    e -> log.error("게시글 일괄 삭제 실패 ids={}", ids, e),
+                    "일괄 삭제 처리 중 오류가 발생했습니다.",
+                    ra);
         }
         return "redirect:/admin/posts?" + new PostListParams(filter, null, artistId, festivalId).toRedirectParams(page);
     }
@@ -115,14 +117,15 @@ public class PostAdminController {
                              @RequestParam(required = false) Long artistId,
                              @RequestParam(required = false) Long festivalId,
                              RedirectAttributes ra) {
-        try {
-            postAdminService.deletePost(id);
-            adminLogService.log(AdminAction.POST_DELETE, "POST", id, null);
-            ra.addFlashAttribute("successMessage", "게시글이 삭제되었습니다.");
-        } catch (Exception e) {
-            log.error("게시글 삭제 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    postAdminService.deletePost(id);
+                    adminLogService.log(AdminAction.POST_DELETE, "POST", id, null);
+                },
+                "게시글이 삭제되었습니다.",
+                e -> log.error("게시글 삭제 실패 id={}", id, e),
+                "삭제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/posts?" + new PostListParams(filter, null, artistId, festivalId).toRedirectParams(page);
     }
 
@@ -130,13 +133,15 @@ public class PostAdminController {
     public String deleteComment(@PathVariable Long id,
                                 @RequestParam Long postId,
                                 RedirectAttributes ra) {
-        try {
-            commentService.deleteComment(id);
-            adminLogService.log(AdminAction.COMMENT_DELETE, "COMMENT", id, null);
-        } catch (Exception e) {
-            log.error("댓글 삭제 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "댓글 삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    commentService.deleteComment(id);
+                    adminLogService.log(AdminAction.COMMENT_DELETE, "COMMENT", id, null);
+                },
+                null,
+                e -> log.error("댓글 삭제 실패 id={}", id, e),
+                "댓글 삭제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/posts/" + postId;
     }
 
@@ -157,14 +162,15 @@ public class PostAdminController {
 
     @PostMapping("/{id}/restore")
     public String restorePost(@PathVariable Long id, RedirectAttributes ra) {
-        try {
-            postAdminService.restorePost(id);
-            adminLogService.log(AdminAction.POST_RESTORE, "POST", id, null);
-            ra.addFlashAttribute("successMessage", "게시글이 복구되었습니다.");
-        } catch (Exception e) {
-            log.error("게시글 복구 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "복구 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    postAdminService.restorePost(id);
+                    adminLogService.log(AdminAction.POST_RESTORE, "POST", id, null);
+                },
+                "게시글이 복구되었습니다.",
+                e -> log.error("게시글 복구 실패 id={}", id, e),
+                "복구 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/posts/deleted";
     }
 }

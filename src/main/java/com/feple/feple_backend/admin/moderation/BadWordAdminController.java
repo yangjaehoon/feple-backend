@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.moderation;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -42,13 +43,15 @@ public class BadWordAdminController {
 
     @PostMapping("/add")
     public String add(@RequestParam String word, RedirectAttributes ra) {
-        try {
-            badWordService.add(word);
-            adminLogService.log(AdminAction.BAD_WORD_ADD, "BAD_WORD", null, word);
-            ra.addFlashAttribute("successMessage", "금칙어가 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    badWordService.add(word);
+                    adminLogService.log(AdminAction.BAD_WORD_ADD, "BAD_WORD", null, word);
+                },
+                "금칙어가 추가되었습니다.",
+                e -> log.error("금칙어 추가 실패: word={}", word, e),
+                "금칙어 추가 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/bad-words";
     }
 
@@ -65,37 +68,37 @@ public class BadWordAdminController {
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
-        try {
-            badWordService.delete(id);
-            adminLogService.log(AdminAction.BAD_WORD_DELETE, "BAD_WORD", id, null);
-            ra.addFlashAttribute("successMessage", "삭제되었습니다.");
-        } catch (Exception e) {
-            log.error("금칙어 삭제 실패: id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    badWordService.delete(id);
+                    adminLogService.log(AdminAction.BAD_WORD_DELETE, "BAD_WORD", id, null);
+                },
+                "삭제되었습니다.",
+                e -> log.error("금칙어 삭제 실패: id={}", id, e),
+                "삭제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/bad-words";
     }
 
     @PostMapping("/nickname-restrictions/add")
     public String addNicknameRestriction(@RequestParam String word, RedirectAttributes ra) {
-        try {
-            nicknameRestrictionService.add(word);
-            ra.addFlashAttribute("successMessage", "닉네임 제한 단어가 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        }
+        AdminActionUtils.tryAction(
+                () -> nicknameRestrictionService.add(word),
+                "닉네임 제한 단어가 추가되었습니다.",
+                e -> log.error("닉네임 제한 단어 추가 실패: word={}", word, e),
+                "닉네임 제한 단어 추가 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/bad-words#nickname-restrictions";
     }
 
     @PostMapping("/nickname-restrictions/{id}/delete")
     public String deleteNicknameRestriction(@PathVariable Long id, RedirectAttributes ra) {
-        try {
-            nicknameRestrictionService.delete(id);
-            ra.addFlashAttribute("successMessage", "삭제되었습니다.");
-        } catch (Exception e) {
-            log.error("닉네임 제한 단어 삭제 실패: id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> nicknameRestrictionService.delete(id),
+                "삭제되었습니다.",
+                e -> log.error("닉네임 제한 단어 삭제 실패: id={}", id, e),
+                "삭제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/bad-words#nickname-restrictions";
     }
 }

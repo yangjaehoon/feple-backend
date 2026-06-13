@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.festival.AdminFestivalRedirects;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -87,17 +88,17 @@ public class ArtistSetlistAdminController {
                               @RequestParam(value = "songIds", required = false) Set<Long> songIds,
                               @RequestParam(required = false) Long festivalId,
                               RedirectAttributes ra) {
-        try {
-            if (!artistFestivalService.existsByIdAndArtistId(artistFestivalId, artistId)) {
-                ra.addFlashAttribute("errorMessage", "해당 아티스트의 셋리스트가 아닙니다.");
-                return "redirect:/admin/artists/" + artistId + "/setlist";
-            }
-            songAdminService.saveSetlist(artistFestivalId, songIds != null ? songIds : Set.of());
-            ra.addFlashAttribute("successMessage", "셋리스트가 저장되었습니다.");
-        } catch (Exception e) {
-            log.error("셋리스트 저장 실패: artistId={}, afId={}", artistId, artistFestivalId, e);
-            ra.addFlashAttribute("errorMessage", "저장 중 오류가 발생했습니다.");
+        if (!artistFestivalService.existsByIdAndArtistId(artistFestivalId, artistId)) {
+            ra.addFlashAttribute("errorMessage", "해당 아티스트의 셋리스트가 아닙니다.");
+            return "redirect:/admin/artists/" + artistId + "/setlist";
         }
+        Set<Long> ids = songIds != null ? songIds : Set.of();
+        AdminActionUtils.tryAction(
+                () -> songAdminService.saveSetlist(artistFestivalId, ids),
+                "셋리스트가 저장되었습니다.",
+                e -> log.error("셋리스트 저장 실패: artistId={}, afId={}", artistId, artistFestivalId, e),
+                "저장 중 오류가 발생했습니다.",
+                ra);
         if (festivalId != null) {
             return AdminFestivalRedirects.setlist(festivalId);
         }

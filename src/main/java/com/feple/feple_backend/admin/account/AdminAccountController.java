@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.account;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,16 +46,13 @@ public class AdminAccountController {
                          @RequestParam(required = false) Set<AdminPermission> permissions,
                          @RequestParam(required = false) MultipartFile profileImage,
                          RedirectAttributes redirectAttributes) {
-        try {
-            Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-            accountService.create(username, password, displayName, role, perms, profileImage);
-            redirectAttributes.addFlashAttribute("successMessage", "관리자 계정이 생성되었습니다.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("관리자 계정 생성 중 오류 발생", e);
-            redirectAttributes.addFlashAttribute("errorMessage", "계정 생성 중 오류가 발생했습니다.");
-        }
+        Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
+        AdminActionUtils.tryAction(
+                () -> accountService.create(username, password, displayName, role, perms, profileImage),
+                "관리자 계정이 생성되었습니다.",
+                e -> log.error("관리자 계정 생성 중 오류 발생", e),
+                "계정 생성 중 오류가 발생했습니다.",
+                redirectAttributes);
         return "redirect:/admin/accounts";
     }
 
@@ -75,16 +73,13 @@ public class AdminAccountController {
                          @RequestParam(required = false) MultipartFile profileImage,
                          @RequestParam(defaultValue = "false") boolean deleteProfileImage,
                          RedirectAttributes redirectAttributes) {
-        try {
-            Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-            accountService.update(id, displayName, role, perms, password, profileImage, deleteProfileImage);
-            redirectAttributes.addFlashAttribute("successMessage", "관리자 계정이 수정되었습니다.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("관리자 계정 수정 중 오류 발생, id={}", id, e);
-            redirectAttributes.addFlashAttribute("errorMessage", "계정 수정 중 오류가 발생했습니다.");
-        }
+        Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
+        AdminActionUtils.tryAction(
+                () -> accountService.update(id, displayName, role, perms, password, profileImage, deleteProfileImage),
+                "관리자 계정이 수정되었습니다.",
+                e -> log.error("관리자 계정 수정 중 오류 발생, id={}", id, e),
+                "계정 수정 중 오류가 발생했습니다.",
+                redirectAttributes);
         return "redirect:/admin/accounts";
     }
 
@@ -92,15 +87,12 @@ public class AdminAccountController {
     public String delete(@PathVariable Long id,
                          Authentication auth,
                          RedirectAttributes redirectAttributes) {
-        try {
-            accountService.delete(id, auth.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "관리자 계정이 삭제되었습니다.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("관리자 계정 삭제 중 오류 발생, id={}", id, e);
-            redirectAttributes.addFlashAttribute("errorMessage", "계정 삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> accountService.delete(id, auth.getName()),
+                "관리자 계정이 삭제되었습니다.",
+                e -> log.error("관리자 계정 삭제 중 오류 발생, id={}", id, e),
+                "계정 삭제 중 오류가 발생했습니다.",
+                redirectAttributes);
         return "redirect:/admin/accounts";
     }
 
@@ -108,15 +100,12 @@ public class AdminAccountController {
     public String toggleEnabled(@PathVariable Long id,
                                 Authentication auth,
                                 RedirectAttributes redirectAttributes) {
-        try {
-            accountService.toggleEnabled(id, auth.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "계정 활성화 상태가 변경되었습니다.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("관리자 계정 상태 변경 중 오류 발생, id={}", id, e);
-            redirectAttributes.addFlashAttribute("errorMessage", "계정 상태 변경 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> accountService.toggleEnabled(id, auth.getName()),
+                "계정 활성화 상태가 변경되었습니다.",
+                e -> log.error("관리자 계정 상태 변경 중 오류 발생, id={}", id, e),
+                "계정 상태 변경 중 오류가 발생했습니다.",
+                redirectAttributes);
         return "redirect:/admin/accounts";
     }
 }

@@ -71,16 +71,15 @@ public class CertificationAdminController {
     public String approve(@PathVariable Long id,
                           @ModelAttribute CertFilter filter,
                           RedirectAttributes ra) {
-        try {
-            certificationService.approve(id, "admin");
-            adminLogService.log(AdminAction.CERTIFICATION_APPROVE, "CERTIFICATION", id, null);
-            ra.addFlashAttribute("successMessage", "인증이 승인되었습니다.");
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("인증 승인 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "승인 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    certificationService.approve(id, "admin");
+                    adminLogService.log(AdminAction.CERTIFICATION_APPROVE, "CERTIFICATION", id, null);
+                },
+                "인증이 승인되었습니다.",
+                e -> log.error("인증 승인 실패 id={}", id, e),
+                "승인 처리 중 오류가 발생했습니다.",
+                ra);
         return certRedirect(filter);
     }
 
@@ -89,17 +88,16 @@ public class CertificationAdminController {
                          @RequestParam(defaultValue = "") String rejectionMessage,
                          @ModelAttribute CertFilter filter,
                          RedirectAttributes ra) {
-        try {
-            certificationService.reject(id, rejectionMessage, "admin");
-            adminLogService.log(AdminAction.CERTIFICATION_REJECT, "CERTIFICATION", id,
-                    rejectionMessage.isBlank() ? null : rejectionMessage);
-            ra.addFlashAttribute("successMessage", "인증이 거절되었습니다.");
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("인증 거절 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "거절 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    certificationService.reject(id, rejectionMessage, "admin");
+                    adminLogService.log(AdminAction.CERTIFICATION_REJECT, "CERTIFICATION", id,
+                            rejectionMessage.isBlank() ? null : rejectionMessage);
+                },
+                "인증이 거절되었습니다.",
+                e -> log.error("인증 거절 실패 id={}", id, e),
+                "거절 처리 중 오류가 발생했습니다.",
+                ra);
         return certRedirect(filter);
     }
 

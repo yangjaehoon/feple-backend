@@ -73,14 +73,15 @@ public class UserAdminController {
     public String bulkDeleteUsers(@RequestParam(required = false) List<Long> ids,
             RedirectAttributes ra) {
         if (ids != null && !ids.isEmpty()) {
-            try {
-                userService.bulkDeleteUsers(ids);
-                adminLogService.log(AdminAction.USER_BULK_DELETE, "USER", null, "총 " + ids.size() + "명");
-                ra.addFlashAttribute("successMessage", ids.size() + "명 회원이 삭제되었습니다.");
-            } catch (Exception e) {
-                log.error("회원 일괄 삭제 실패 ids={}", ids, e);
-                ra.addFlashAttribute("errorMessage", "일괄 삭제 처리 중 오류가 발생했습니다.");
-            }
+            AdminActionUtils.tryAction(
+                    () -> {
+                        userService.bulkDeleteUsers(ids);
+                        adminLogService.log(AdminAction.USER_BULK_DELETE, "USER", null, "총 " + ids.size() + "명");
+                    },
+                    ids.size() + "명 회원이 삭제되었습니다.",
+                    e -> log.error("회원 일괄 삭제 실패 ids={}", ids, e),
+                    "일괄 삭제 처리 중 오류가 발생했습니다.",
+                    ra);
         }
         return "redirect:/admin/users";
     }
@@ -89,15 +90,16 @@ public class UserAdminController {
     public String deleteUser(@PathVariable Long id,
                              @ModelAttribute UserListFilter listFilter,
                              RedirectAttributes ra) {
-        try {
-            String nickname = userService.getAdminUser(id).getNickname();
-            userService.adminDeleteUser(id);
-            adminLogService.log(AdminAction.USER_DELETE, "USER", id, nickname);
-            ra.addFlashAttribute("successMessage", "회원이 삭제되었습니다.");
-        } catch (Exception e) {
-            log.error("회원 삭제 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "회원 삭제에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    String nickname = userService.getAdminUser(id).getNickname();
+                    userService.adminDeleteUser(id);
+                    adminLogService.log(AdminAction.USER_DELETE, "USER", id, nickname);
+                },
+                "회원이 삭제되었습니다.",
+                e -> log.error("회원 삭제 실패 id={}", id, e),
+                "회원 삭제에 실패했습니다.",
+                ra);
         return userListRedirect(listFilter);
     }
 
@@ -105,13 +107,15 @@ public class UserAdminController {
     public String updateUserRole(@PathVariable Long id,
                                  @RequestParam UserRole role,
                                  RedirectAttributes ra) {
-        try {
-            userService.updateUserRole(id, role);
-            adminLogService.log(AdminAction.USER_ROLE_CHANGE, "USER", id, role.getDisplayName());
-            ra.addFlashAttribute("successMessage", "역할이 변경되었습니다: " + role.getDisplayName());
-        } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "역할 변경에 실패했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    userService.updateUserRole(id, role);
+                    adminLogService.log(AdminAction.USER_ROLE_CHANGE, "USER", id, role.getDisplayName());
+                },
+                "역할이 변경되었습니다: " + role.getDisplayName(),
+                e -> log.error("회원 역할 변경 실패 id={}", id, e),
+                "역할 변경에 실패했습니다.",
+                ra);
         return "redirect:/admin/users/" + id;
     }
 
@@ -120,33 +124,31 @@ public class UserAdminController {
                           @RequestParam(defaultValue = "7") int days,
                           @RequestParam(required = false) String reason,
                           RedirectAttributes ra) {
-        try {
-            userService.banUser(id, days, reason);
-            String label = days <= 0 ? "영구" : days + "일";
-            String detail = label + " 정지" + (reason != null && !reason.isBlank() ? " / " + reason : "");
-            adminLogService.log(AdminAction.USER_BAN, "USER", id, detail);
-            ra.addFlashAttribute("successMessage", label + " 정지가 적용되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("회원 정지 처리 중 오류. userId={}", id, e);
-            ra.addFlashAttribute("errorMessage", "정지 처리 중 오류가 발생했습니다.");
-        }
+        String label = days <= 0 ? "영구" : days + "일";
+        String detail = label + " 정지" + (reason != null && !reason.isBlank() ? " / " + reason : "");
+        AdminActionUtils.tryAction(
+                () -> {
+                    userService.banUser(id, days, reason);
+                    adminLogService.log(AdminAction.USER_BAN, "USER", id, detail);
+                },
+                label + " 정지가 적용되었습니다.",
+                e -> log.error("회원 정지 처리 중 오류. userId={}", id, e),
+                "정지 처리 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/users/" + id;
     }
 
     @PostMapping("/{id}/unban")
     public String unbanUser(@PathVariable Long id, RedirectAttributes ra) {
-        try {
-            userService.unbanUser(id);
-            adminLogService.log(AdminAction.USER_UNBAN, "USER", id, null);
-            ra.addFlashAttribute("successMessage", "정지가 해제되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("회원 정지 해제 중 오류. userId={}", id, e);
-            ra.addFlashAttribute("errorMessage", "정지 해제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    userService.unbanUser(id);
+                    adminLogService.log(AdminAction.USER_UNBAN, "USER", id, null);
+                },
+                "정지가 해제되었습니다.",
+                e -> log.error("회원 정지 해제 중 오류. userId={}", id, e),
+                "정지 해제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/users/" + id;
     }
 

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -60,15 +61,12 @@ public class ArtistSongAdminController {
             ra.addFlashAttribute("errorMessage", BindingResultUtils.firstError(bindingResult));
             return "redirect:/admin/artists/" + artistId + "/songs";
         }
-        try {
-            songAdminService.saveSong(artistId, dto);
-            ra.addFlashAttribute("successMessage", "'" + dto.getTitle() + "' 곡이 등록되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("곡 등록 실패 artistId={}", artistId, e);
-            ra.addFlashAttribute("errorMessage", "곡 등록 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> songAdminService.saveSong(artistId, dto),
+                "'" + dto.getTitle() + "' 곡이 등록되었습니다.",
+                e -> log.error("곡 등록 실패 artistId={}", artistId, e),
+                "곡 등록 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
 
@@ -76,15 +74,12 @@ public class ArtistSongAdminController {
     public String deleteSong(@PathVariable Long artistId,
                              @PathVariable Long songId,
                              RedirectAttributes ra) {
-        try {
-            songAdminService.deleteSong(artistId, songId);
-            ra.addFlashAttribute("successMessage", "곡이 삭제되었습니다.");
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("곡 삭제 실패 artistId={} songId={}", artistId, songId, e);
-            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> songAdminService.deleteSong(artistId, songId),
+                "곡이 삭제되었습니다.",
+                e -> log.error("곡 삭제 실패 artistId={} songId={}", artistId, songId, e),
+                "삭제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
 
@@ -114,13 +109,12 @@ public class ArtistSongAdminController {
                                     @PathVariable Long requestId,
                                     @RequestParam(required = false) String reason,
                                     RedirectAttributes ra) {
-        try {
-            songRequestAdminService.reject(requestId, reason);
-            ra.addFlashAttribute("successMessage", "노래 요청이 거절되었습니다.");
-        } catch (Exception e) {
-            log.error("노래 요청 거절 실패 requestId={}", requestId, e);
-            ra.addFlashAttribute("errorMessage", "노래 요청 거절에 실패했습니다. 다시 시도해주세요.");
-        }
+        AdminActionUtils.tryAction(
+                () -> songRequestAdminService.reject(requestId, reason),
+                "노래 요청이 거절되었습니다.",
+                e -> log.error("노래 요청 거절 실패 requestId={}", requestId, e),
+                "노래 요청 거절에 실패했습니다. 다시 시도해주세요.",
+                ra);
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
 }

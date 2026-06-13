@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.FestivalChecklistService;
 import com.feple.feple_backend.admin.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -148,13 +149,15 @@ public class FestivalAdminController {
 
     @PostMapping("/{id}/delete")
     public String deleteFestival(@PathVariable Long id, RedirectAttributes ra) {
-        try {
-            festivalService.deleteFestival(id);
-            adminLogService.log(AdminAction.FESTIVAL_DELETE, "FESTIVAL", id, null);
-        } catch (Exception e) {
-            log.error("페스티벌 삭제 실패. id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    festivalService.deleteFestival(id);
+                    adminLogService.log(AdminAction.FESTIVAL_DELETE, "FESTIVAL", id, null);
+                },
+                null,
+                e -> log.error("페스티벌 삭제 실패. id={}", id, e),
+                "삭제 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/festivals";
     }
 
