@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import com.feple.feple_backend.global.EntityFinder;
+
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -109,8 +111,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     })
     @Transactional
     public void dismiss(Long suggestionId, String processNote) {
-        ArtistSuggestion suggestion = suggestionRepository.findById(suggestionId)
-                .orElseThrow(() -> new NoSuchElementException("아티스트 신청을 찾을 수 없습니다: " + suggestionId));
+        ArtistSuggestion suggestion = EntityFinder.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
         suggestion.dismiss(processNote);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), suggestion.getArtistName(), processNote));

@@ -103,8 +103,7 @@ public class FestivalCertificationService {
 
     @Transactional(readOnly = true)
     public FestivalCertification getById(Long id) {
-        return certificationRepository.findWithUserAndFestivalById(id)
-                .orElseThrow(() -> new NoSuchElementException("인증 신청을 찾을 수 없습니다."));
+        return EntityFinder.getOrThrow(certificationRepository::findWithUserAndFestivalById, id, "인증 신청");
     }
 
     @Caching(evict = {

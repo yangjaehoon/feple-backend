@@ -9,8 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.feple.feple_backend.global.EntityFinder;
+
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +28,7 @@ public class DeviceTokenService {
         if (tokenRepository.findByUserIdAndToken(userId, token).isPresent()) {
             return;
         }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         tokenRepository.save(UserDeviceToken.of(user, token, DevicePlatform.from(platform)));
     }
 

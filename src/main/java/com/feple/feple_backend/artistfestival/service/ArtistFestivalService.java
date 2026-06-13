@@ -19,10 +19,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.feple.feple_backend.global.EntityFinder;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,11 +86,8 @@ public class ArtistFestivalService {
 
     @Transactional
     public Long addArtistToFestival(Long festivalId, ArtistFestivalCreateRequest request) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
-
-        Artist artist = artistRepository.findById(request.getArtistId())
-                .orElseThrow(() -> new NoSuchElementException("아티스트를 찾을 수 없습니다."));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, request.getArtistId(), "아티스트");
 
         if (artistFestivalRepository.existsByFestivalIdAndArtistId(festivalId, request.getArtistId())) {
             throw new DuplicateArtistFestivalException();
@@ -130,8 +128,7 @@ public class ArtistFestivalService {
     @Transactional
     public void updateArtistFestival(Long festivalId, Long artistFestivalId,
                                      String stageName, LocalDate performanceDate) {
-        ArtistFestival af = artistFestivalRepository.findById(artistFestivalId)
-                .orElseThrow(() -> new NoSuchElementException("참여 정보가 없습니다."));
+        ArtistFestival af = EntityFinder.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
         if (!af.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
@@ -146,8 +143,8 @@ public class ArtistFestivalService {
 
         // 스테이지가 변경되면 해당 아티스트의 타임테이블 스테이지도 함께 업데이트
         if (resolvedStage != null && !resolvedStage.equals(oldStage)) {
-            Stage newStage = stageRepository.findByFestivalIdAndName(festivalId, resolvedStage)
-                    .orElseThrow(() -> new NoSuchElementException("존재하지 않는 스테이지입니다: " + resolvedStage));
+            Stage newStage = EntityFinder.getOrThrow(
+                    name -> stageRepository.findByFestivalIdAndName(festivalId, name), resolvedStage, "스테이지");
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
                     .forEach(entry -> entry.updateStage(newStage));
         }
@@ -194,8 +191,7 @@ public class ArtistFestivalService {
     }
 
     public ArtistFestival getArtistFestivalById(Long id) {
-        return artistFestivalRepository.findByIdWithFestival(id)
-                .orElseThrow(() -> new NoSuchElementException("아티스트 페스티벌을 찾을 수 없습니다."));
+        return EntityFinder.getOrThrow(artistFestivalRepository::findByIdWithFestival, id, "아티스트 페스티벌");
     }
 
     public boolean existsByIdAndArtistId(Long artistFestivalId, Long artistId) {
@@ -206,14 +202,12 @@ public class ArtistFestivalService {
         if (!artistFestivalRepository.existsByIdAndArtistId(artistFestivalId, artistId)) {
             throw new IllegalArgumentException("해당 아티스트의 셋리스트가 아닙니다.");
         }
-        return artistFestivalRepository.findByIdWithFestival(artistFestivalId)
-                .orElseThrow(() -> new NoSuchElementException("아티스트 페스티벌을 찾을 수 없습니다."));
+        return EntityFinder.getOrThrow(artistFestivalRepository::findByIdWithFestival, artistFestivalId, "아티스트 페스티벌");
     }
 
     @Transactional
     public void removeArtistFromFestival(Long festivalId, Long artistFestivalId) {
-        ArtistFestival artistFestival = artistFestivalRepository.findById(artistFestivalId)
-                .orElseThrow(() -> new NoSuchElementException("참여 정보가 없습니다."));
+        ArtistFestival artistFestival = EntityFinder.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
 
         if (!artistFestival.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");

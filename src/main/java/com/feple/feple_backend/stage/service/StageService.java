@@ -9,8 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.feple.feple_backend.global.EntityFinder;
+
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +33,7 @@ public class StageService {
         }
         if (name.trim().length() > 50)
             throw new IllegalArgumentException("스테이지 이름은 50자 이하여야 합니다.");
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         int nextOrder = stageRepository.findMaxDisplayOrderByFestivalId(festivalId) + 1;
         Stage stage = Stage.builder()
                 .festival(festival)
@@ -50,8 +50,7 @@ public class StageService {
 
     /** 위로 이동: 바로 앞 스테이지와 순서를 교환 */
     public void moveUp(Long festivalId, Long stageId) {
-        Stage current = stageRepository.findById(stageId)
-                .orElseThrow(() -> new NoSuchElementException("스테이지를 찾을 수 없습니다."));
+        Stage current = EntityFinder.getOrThrow(stageRepository::findById, stageId, "스테이지");
         stageRepository
                 .findFirstByFestivalIdAndDisplayOrderLessThanOrderByDisplayOrderDesc(
                         festivalId, current.getDisplayOrder())
@@ -60,8 +59,7 @@ public class StageService {
 
     /** 아래로 이동: 바로 뒤 스테이지와 순서를 교환 */
     public void moveDown(Long festivalId, Long stageId) {
-        Stage current = stageRepository.findById(stageId)
-                .orElseThrow(() -> new NoSuchElementException("스테이지를 찾을 수 없습니다."));
+        Stage current = EntityFinder.getOrThrow(stageRepository::findById, stageId, "스테이지");
         stageRepository
                 .findFirstByFestivalIdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc(
                         festivalId, current.getDisplayOrder())

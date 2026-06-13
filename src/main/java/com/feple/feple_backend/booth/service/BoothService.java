@@ -12,9 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.feple.feple_backend.global.EntityFinder;
+
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +35,7 @@ public class BoothService {
 
     @Transactional
     public Long createBooth(Long festivalId, BoothRequestDto dto) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 페스티벌입니다."));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Booth booth = Booth.builder()
                 .festival(festival)
                 .name(dto.getName())
@@ -50,8 +50,7 @@ public class BoothService {
 
     @Transactional
     public void deleteBooth(Long festivalId, Long boothId) {
-        Booth booth = boothRepository.findById(boothId)
-                .orElseThrow(() -> new NoSuchElementException("부스를 찾을 수 없습니다."));
+        Booth booth = EntityFinder.getOrThrow(boothRepository::findById, boothId, "부스");
         if (!festivalId.equals(booth.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 부스가 아닙니다.");
         }

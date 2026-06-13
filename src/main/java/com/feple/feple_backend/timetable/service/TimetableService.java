@@ -13,9 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.feple.feple_backend.global.EntityFinder;
+
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +41,7 @@ public class TimetableService {
 
     @Transactional
     public TimetableEntryResponse createEntry(Long festivalId, TimetableEntryRequest req) {
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new NoSuchElementException("페스티벌을 찾을 수 없습니다."));
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         if (!req.getStartTime().isBefore(req.getEndTime())) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
         }
@@ -66,8 +66,7 @@ public class TimetableService {
 
     @Transactional
     public void updateEntry(Long festivalId, Long entryId, TimetableEntryRequest req) {
-        TimetableEntry entry = timetableRepository.findById(entryId)
-                .orElseThrow(() -> new NoSuchElementException("타임테이블 항목을 찾을 수 없습니다."));
+        TimetableEntry entry = EntityFinder.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         if (!festivalId.equals(entry.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
         }
@@ -95,8 +94,7 @@ public class TimetableService {
 
     @Transactional
     public void deleteEntry(Long festivalId, Long entryId) {
-        TimetableEntry entry = timetableRepository.findById(entryId)
-                .orElseThrow(() -> new NoSuchElementException("타임테이블 항목을 찾을 수 없습니다."));
+        TimetableEntry entry = EntityFinder.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         if (!festivalId.equals(entry.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
         }

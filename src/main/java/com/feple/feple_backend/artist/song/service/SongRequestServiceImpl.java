@@ -130,8 +130,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     })
     @Transactional
     public boolean approve(Long requestId, String youtubeUrl) {
-        SongRequest request = songRequestRepository.findById(requestId)
-                .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다."));
+        SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
 
         request.approve();
 
@@ -167,8 +166,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     })
     @Transactional
     public void reject(Long requestId, String reason) {
-        SongRequest request = songRequestRepository.findById(requestId)
-                .orElseThrow(() -> new NoSuchElementException("노래 요청을 찾을 수 없습니다."));
+        SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
         request.reject();
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
                 request.getUserId(), request.getSongTitle(), request.getArtistName(), reason));
