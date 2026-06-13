@@ -36,7 +36,7 @@ public interface CommentReportRepository extends JpaRepository<CommentReport, Lo
 
     @EntityGraph(attributePaths = {"comment", "comment.user", "comment.post", "reporter"})
     @Query("SELECT cr FROM CommentReport cr ORDER BY cr.createdAt DESC")
-    List<CommentReport> findAllForExport();
+    List<CommentReport> findAllForExport(org.springframework.data.domain.Pageable pageable);
 
     long countByStatus(ReportStatus status);
 

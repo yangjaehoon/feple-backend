@@ -142,8 +142,10 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
                 .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
     }
 
+    private static final int MAX_EXPORT_ROWS = 50_000;
+
     public List<CommentReport> getAllCommentReportsForExport() {
-        return reportRepository.findAllForExport();
+        return reportRepository.findAllForExport(PageRequest.of(0, MAX_EXPORT_ROWS));
     }
 
     public long getReportCountForUser(Long userId) {

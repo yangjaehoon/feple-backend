@@ -36,7 +36,7 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
 
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     @Query("SELECT pr FROM PostReport pr ORDER BY pr.createdAt DESC")
-    List<PostReport> findAllForExport();
+    List<PostReport> findAllForExport(org.springframework.data.domain.Pageable pageable);
 
     long countByStatus(ReportStatus status);
 
