@@ -5,10 +5,14 @@ import com.feple.feple_backend.artist.photo.entity.ArtistProfileImage;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
+import com.feple.feple_backend.artist.song.repository.SongRepository;
+import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.service.PostCascadeService;
+import com.feple.feple_backend.timetable.service.TimetableService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +33,11 @@ class ArtistCascadeDeleteServiceTest {
     @Mock ArtistProfileImageRepository artistImageRepository;
     @Mock ArtistProfileImageLikeRepository artistImageLikeRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;
+    @Mock ArtistFestivalSongRepository artistFestivalSongRepository;
     @Mock ArtistFollowRepository artistFollowRepository;
+    @Mock SongRepository songRepository;
+    @Mock SongRequestRepository songRequestRepository;
+    @Mock TimetableService timetableService;
     @Mock PostCascadeService postCascadeService;
     @Mock FileStorageService fileStorageService;
 
@@ -54,6 +62,7 @@ class ArtistCascadeDeleteServiceTest {
         List<ArtistProfileImage> images = List.of(img1, img2);
 
         given(artistImageRepository.findByArtist(artist)).willReturn(images);
+        given(artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(1L)).willReturn(List.of());
 
         artistCascadeDeleteService.delete(artist);
 
@@ -67,6 +76,7 @@ class ArtistCascadeDeleteServiceTest {
     void 아티스트_삭제시_페스티벌연결_팔로우_게시글_삭제됨() {
         Artist artist = artist(1L);
         given(artistImageRepository.findByArtist(artist)).willReturn(List.of());
+        given(artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(1L)).willReturn(List.of());
 
         artistCascadeDeleteService.delete(artist);
 
@@ -79,6 +89,7 @@ class ArtistCascadeDeleteServiceTest {
     void 아티스트_삭제시_아티스트_레코드와_프로필_이미지_파일_삭제됨() {
         Artist artist = artist(1L);
         given(artistImageRepository.findByArtist(artist)).willReturn(List.of());
+        given(artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(1L)).willReturn(List.of());
 
         artistCascadeDeleteService.delete(artist);
 
@@ -90,6 +101,7 @@ class ArtistCascadeDeleteServiceTest {
     void 갤러리_이미지_없는_아티스트도_정상_삭제됨() {
         Artist artist = artist(1L);
         given(artistImageRepository.findByArtist(artist)).willReturn(List.of());
+        given(artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(1L)).willReturn(List.of());
 
         artistCascadeDeleteService.delete(artist);
 
@@ -102,6 +114,7 @@ class ArtistCascadeDeleteServiceTest {
     void 갤러리_이미지_없을때_파일_삭제는_프로필_이미지만_호출됨() {
         Artist artist = artist(1L);
         given(artistImageRepository.findByArtist(artist)).willReturn(List.of());
+        given(artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(1L)).willReturn(List.of());
 
         artistCascadeDeleteService.delete(artist);
 

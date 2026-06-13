@@ -261,7 +261,6 @@ class CommentServiceImplTest {
         Comment c = comment(100L, post, author);
 
         given(commentRepository.findById(100L)).willReturn(Optional.of(c));
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         commentService.deleteOwnComment(100L, 1L);
 

@@ -115,7 +115,7 @@ class PostServiceImplTest {
     void 게시글_단건_조회_성공() {
         User author = user(1L);
         Post post = freePost(10L, author);
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findWithAssociationsById(10L)).willReturn(Optional.of(post));
 
         PostResponseDto result = postService.getPost(10L);
 
@@ -133,7 +133,7 @@ class PostServiceImplTest {
                 .likeCount(0).scrapCount(0)
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build();
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findWithAssociationsById(10L)).willReturn(Optional.of(post));
 
         PostResponseDto result = postService.getPost(10L);
 
@@ -143,7 +143,7 @@ class PostServiceImplTest {
 
     @Test
     void 존재하지_않는_게시글_조회시_예외() {
-        given(postRepository.findById(99L)).willReturn(Optional.empty());
+        given(postRepository.findWithAssociationsById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> postService.getPost(99L))
                 .isInstanceOf(NoSuchElementException.class)

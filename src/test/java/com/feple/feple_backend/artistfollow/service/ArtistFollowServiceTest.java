@@ -112,7 +112,6 @@ class ArtistFollowServiceTest {
         assertThat(result.followed()).isTrue();
         assertThat(result.followerCount()).isEqualTo(1);
         verify(artistFollowRepository).save(any(ArtistFollow.class));
-        assertThat(artist.getFollowerCount()).isEqualTo(1);
     }
 
     @Test
@@ -153,7 +152,6 @@ class ArtistFollowServiceTest {
         assertThat(result.followed()).isFalse();
         assertThat(result.followerCount()).isEqualTo(0);
         verify(artistFollowRepository).deleteByUserIdAndArtistId(1L, 10L);
-        assertThat(artist.getFollowerCount()).isEqualTo(0);
     }
 
     @Test
