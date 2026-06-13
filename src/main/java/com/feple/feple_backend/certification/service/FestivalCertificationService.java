@@ -119,6 +119,7 @@ public class FestivalCertificationService {
         notificationService.notifyCertApproved(
                 cert.getUserId(),
                 cert.getFestivalTitle(),
+                cert.getFestivalTitleEn(),
                 cert.getFestivalId());
     }
 
@@ -134,6 +135,7 @@ public class FestivalCertificationService {
         notificationService.notifyCertRejected(
                 cert.getUserId(),
                 cert.getFestivalTitle(),
+                cert.getFestivalTitleEn(),
                 cert.getFestivalId(),
                 rejectionMessage);
     }

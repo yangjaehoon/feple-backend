@@ -107,8 +107,8 @@ public class ArtistFestivalService {
         // 비동기 알림 발송 — 아직 시작 전인 페스티벌에만 발송
         if (festival.getStartDate() != null && festival.getStartDate().isAfter(java.time.LocalDate.now())) {
             notificationService.notifyNewFestivalForArtist(
-                    artist.getId(), artist.getName(),
-                    festival.getId(), festival.getTitle());
+                    artist.getId(), artist.getName(), artist.getNameEn(),
+                    festival.getId(), festival.getTitle(), festival.getTitleEn());
         }
 
         return saved.getId();

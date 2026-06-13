@@ -11,6 +11,8 @@ public record NotificationDto(
         NotificationType type,
         String title,
         String body,
+        String titleEn,
+        String bodyEn,
         Long referenceId,
         boolean read,
         LocalDateTime createdAt
@@ -21,6 +23,8 @@ public record NotificationDto(
                 n.getType(),
                 n.getTitle(),
                 n.getBody(),
+                n.getTitleEn(),
+                n.getBodyEn(),
                 n.getReferenceId(),
                 n.isRead(),
                 n.getCreatedAt()
@@ -33,6 +37,8 @@ public record NotificationDto(
                 NotificationType.ADMIN_BROADCAST,
                 b.getTitle(),
                 b.getBody(),
+                null,
+                null,
                 null,
                 true,
                 b.getCreatedAt()

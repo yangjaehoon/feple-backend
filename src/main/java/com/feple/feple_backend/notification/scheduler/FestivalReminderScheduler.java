@@ -54,7 +54,7 @@ public class FestivalReminderScheduler {
             if (userIds.isEmpty()) continue;
 
             notificationService.sendFestivalReminders(
-                    festival.getId(), festival.getTitle(), userIds, dDay);
+                    festival.getId(), festival.getTitle(), festival.getTitleEn(), userIds, dDay);
         }
     }
 }

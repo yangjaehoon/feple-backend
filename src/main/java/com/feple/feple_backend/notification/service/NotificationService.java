@@ -49,8 +49,8 @@ public class NotificationService {
      */
     @Async
     @Transactional
-    public void notifyNewFestivalForArtist(Long artistId, String artistName,
-                                            Long festivalId, String festivalTitle) {
+    public void notifyNewFestivalForArtist(Long artistId, String artistName, String artistNameEn,
+                                            Long festivalId, String festivalTitle, String festivalTitleEn) {
         List<ArtistFollow> follows = artistFollowRepository.findByArtistId(artistId);
         if (follows.isEmpty()) return;
 
@@ -59,24 +59,28 @@ public class NotificationService {
 
         String title = NotificationMessages.newFestivalTitle(artistName);
         String body = NotificationMessages.newFestivalBody(festivalTitle);
+        String titleEn = NotificationMessages.newFestivalTitleEn(artistNameEn);
+        String bodyEn = NotificationMessages.newFestivalBodyEn(festivalTitleEn);
 
         List<Long> userIds = follows.stream().map(ArtistFollow::getUserId).toList();
         List<User> users = userRepository.findAllById(userIds);
 
-        saveAndPush(users, NotificationType.NEW_FESTIVAL, title, body, festival, String.valueOf(festivalId));
+        saveAndPush(users, NotificationType.NEW_FESTIVAL, title, body, titleEn, bodyEn, festival, String.valueOf(festivalId));
         log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})", users.size(), artistId, festivalId);
     }
 
     /** 인증 승인 알림 */
     @Async
     @Transactional
-    public void notifyCertApproved(Long userId, String festivalTitle, Long festivalId) {
+    public void notifyCertApproved(Long userId, String festivalTitle, String festivalTitleEn, Long festivalId) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
         String title = NotificationMessages.CERT_APPROVED_TITLE;
         String body = NotificationMessages.certApprovedBody(festivalTitle);
-        notificationRepository.save(Notification.of(user, NotificationType.CERT_APPROVED, title, body, festival));
+        String titleEn = NotificationMessages.CERT_APPROVED_TITLE_EN;
+        String bodyEn = NotificationMessages.certApprovedBodyEn(festivalTitleEn);
+        notificationRepository.save(Notification.of(user, NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, festival));
         NotificationPreference pref = preferenceService.getOrCreate(userId);
         if (pref.isEnabledFor(NotificationType.CERT_APPROVED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
@@ -87,13 +91,15 @@ public class NotificationService {
     /** 인증 거절 알림 */
     @Async
     @Transactional
-    public void notifyCertRejected(Long userId, String festivalTitle, Long festivalId, String reason) {
+    public void notifyCertRejected(Long userId, String festivalTitle, String festivalTitleEn, Long festivalId, String reason) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) return;
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
         String title = NotificationMessages.CERT_REJECTED_TITLE;
         String body = NotificationMessages.certRejectedBody(festivalTitle, reason);
-        notificationRepository.save(Notification.of(user, NotificationType.CERT_REJECTED, title, body, festival));
+        String titleEn = NotificationMessages.CERT_REJECTED_TITLE_EN;
+        String bodyEn = NotificationMessages.certRejectedBodyEn(festivalTitleEn, reason);
+        notificationRepository.save(Notification.of(user, NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, festival));
         NotificationPreference pref = preferenceService.getOrCreate(userId);
         if (pref.isEnabledFor(NotificationType.CERT_REJECTED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
@@ -109,9 +115,11 @@ public class NotificationService {
         if (user == null) return;
         String title = NotificationMessages.SONG_REQUEST_APPROVED_TITLE;
         String body = NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName());
+        String titleEn = NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN;
+        String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistName());
         Festival noFestival = null;
         notificationRepository.save(
-                Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, noFestival));
+                Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, noFestival));
         NotificationPreference pref = preferenceService.getOrCreate(event.userId());
         if (pref.isEnabledFor(NotificationType.SONG_REQUEST_APPROVED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
@@ -127,9 +135,11 @@ public class NotificationService {
         if (user == null) return;
         String title = NotificationMessages.SONG_REQUEST_REJECTED_TITLE;
         String body = NotificationMessages.songRequestRejectedBody(event.songTitle(), event.reason());
+        String titleEn = NotificationMessages.SONG_REQUEST_REJECTED_TITLE_EN;
+        String bodyEn = NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason());
         Festival noFestival = null;
         notificationRepository.save(
-                Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, noFestival));
+                Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, noFestival));
         NotificationPreference pref = preferenceService.getOrCreate(event.userId());
         if (pref.isEnabledFor(NotificationType.SONG_REQUEST_REJECTED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
@@ -145,8 +155,10 @@ public class NotificationService {
         if (user == null) return;
         String title = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE;
         String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
+        String titleEn = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN;
+        String bodyEn = NotificationMessages.artistSuggestionProcessedBodyEn(event.artistName(), event.note());
         notificationRepository.save(
-                Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, (Festival) null));
+                Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, (Festival) null));
         NotificationPreference pref = preferenceService.getOrCreate(event.userId());
         if (pref.isEnabledFor(NotificationType.ARTIST_SUGGESTION_PROCESSED)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
@@ -173,10 +185,12 @@ public class NotificationService {
 
         String title = NotificationMessages.newCommentTitle(commenterNickname);
         String body = NotificationMessages.newCommentBody(postTitle);
+        String titleEn = NotificationMessages.newCommentTitleEn(commenterNickname);
+        String bodyEn = NotificationMessages.newCommentBodyEn(postTitle);
 
         Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
-                Notification.of(author, NotificationType.NEW_COMMENT, title, body, post));
+                Notification.of(author, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, post));
 
         NotificationPreference pref = preferenceService.getOrCreate(postAuthorId);
         if (pref.isEnabledFor(NotificationType.NEW_COMMENT)) {
@@ -187,24 +201,26 @@ public class NotificationService {
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
     @Transactional
-    public void sendFestivalReminders(Long festivalId, String festivalTitle,
+    public void sendFestivalReminders(Long festivalId, String festivalTitle, String festivalTitleEn,
                                        List<Long> userIds, int dDay) {
         if (userIds.isEmpty()) return;
 
         String title = NotificationMessages.festivalReminderTitle(dDay);
         String body = NotificationMessages.festivalReminderBody(festivalTitle, dDay);
+        String titleEn = NotificationMessages.festivalReminderTitleEn(dDay);
+        String bodyEn = NotificationMessages.festivalReminderBodyEn(festivalTitleEn, dDay);
 
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
         List<User> users = userRepository.findAllById(userIds);
-        saveAndPush(users, NotificationType.FESTIVAL_REMINDER, title, body, festival, String.valueOf(festivalId));
+        saveAndPush(users, NotificationType.FESTIVAL_REMINDER, title, body, titleEn, bodyEn, festival, String.valueOf(festivalId));
         log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, users.size(), festivalId);
     }
 
     private void saveAndPush(List<User> users, NotificationType type,
-                              String title, String body,
+                              String title, String body, String titleEn, String bodyEn,
                               Festival festival, String linkId) {
         notificationRepository.saveAll(users.stream()
-                .map(u -> Notification.of(u, type, title, body, festival))
+                .map(u -> Notification.of(u, type, title, body, titleEn, bodyEn, festival))
                 .toList());
         List<Long> allUserIds = users.stream().map(User::getId).toList();
         Map<Long, com.feple.feple_backend.notification.entity.NotificationPreference> prefMap =

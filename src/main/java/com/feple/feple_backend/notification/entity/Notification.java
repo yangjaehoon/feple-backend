@@ -34,6 +34,12 @@ public class Notification {
     @Column(nullable = false, length = 255)
     private String body;
 
+    @Column(length = 100)
+    private String titleEn;
+
+    @Column(length = 255)
+    private String bodyEn;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "festival_id")
     private Festival festival;
@@ -55,23 +61,31 @@ public class Notification {
     private LocalDateTime createdAt;
 
     public static Notification of(User user, NotificationType type,
-                                   String title, String body, Festival festival) {
+                                   String title, String body,
+                                   String titleEn, String bodyEn,
+                                   Festival festival) {
         Notification n = new Notification();
         n.user = user;
         n.type = type;
         n.title = title;
         n.body = body;
+        n.titleEn = titleEn;
+        n.bodyEn = bodyEn;
         n.festival = festival;
         return n;
     }
 
     public static Notification of(User user, NotificationType type,
-                                   String title, String body, Post post) {
+                                   String title, String body,
+                                   String titleEn, String bodyEn,
+                                   Post post) {
         Notification n = new Notification();
         n.user = user;
         n.type = type;
         n.title = title;
         n.body = body;
+        n.titleEn = titleEn;
+        n.bodyEn = bodyEn;
         n.post = post;
         return n;
     }
