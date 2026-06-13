@@ -6,6 +6,7 @@ import com.feple.feple_backend.file.S3Keys;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
@@ -19,8 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,7 +88,7 @@ public class FestivalCertificationService {
 
     @Transactional(readOnly = true)
     public Page<FestivalCertification> getByStatus(CertificationStatus status, int page) {
-        PageRequest pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageableFactory.latestFirst(page, 20);
         if (status == null) {
             return certificationRepository.findAll(pageable);
         }
@@ -97,7 +97,7 @@ public class FestivalCertificationService {
 
     @Transactional(readOnly = true)
     public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
-        PageRequest pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageableFactory.latestFirst(page, 20);
         return certificationRepository.searchByKeyword(LikeEscaper.escape(keyword.trim()), status, pageable);
     }
 

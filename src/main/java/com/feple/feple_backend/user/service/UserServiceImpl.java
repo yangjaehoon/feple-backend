@@ -17,7 +17,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import com.feple.feple_backend.global.PageableFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -139,7 +140,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageableFactory.newestId(page, size);
         if (keyword != null && !keyword.isBlank()) {
             return userRepository.findActiveByKeyword(LikeEscaper.escape(keyword.trim()), pageable).map(this::toAdminUserDto);
         }
@@ -236,7 +237,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
         Page<User> batch;
         do {
             batch = userRepository.findAllByDeletedAtIsNull(
-                    PageRequest.of(page++, batchSize, Sort.by(Sort.Direction.DESC, "id")));
+                    PageableFactory.newestId(page++, batchSize));
             batch.forEach(u -> result.add(toAdminUserDto(u)));
         } while (batch.hasNext());
         return result;

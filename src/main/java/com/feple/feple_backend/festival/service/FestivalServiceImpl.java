@@ -31,7 +31,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import com.feple.feple_backend.global.PageableFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -229,7 +229,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Transactional(readOnly = true)
     public Page<FestivalResponseDto> getFestivalsPage(int page, int size) {
         Page<Festival> result = festivalRepository
-                .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")));
+                .findAll(PageableFactory.latestStartDate(page, size));
         return result.map(this::toDto);
     }
 
@@ -239,7 +239,7 @@ public class FestivalServiceImpl implements FestivalService {
         PageRequest pageable = PageRequest.of(page, size);
         if (keyword == null || keyword.isBlank()) {
             return festivalRepository.findAll(
-                    PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate")))
+                    PageableFactory.latestStartDate(page, size))
                     .map(this::toDto);
         }
         return festivalRepository.findByTitleKeywordPaged(LikeEscaper.escape(keyword), pageable).map(this::toDto);

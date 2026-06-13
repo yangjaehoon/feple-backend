@@ -19,6 +19,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import com.feple.feple_backend.global.PageableFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -183,7 +184,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional(readOnly = true)
     public Page<ArtistResponseDto> getArtistsPage(int page, int size) {
         Page<Artist> result = artistRepository
-                .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
+                .findAll(PageableFactory.newestId(page, size));
         return result.map(this::toDto);
     }
 
