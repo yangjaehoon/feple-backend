@@ -6,9 +6,8 @@ import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
+import com.feple.feple_backend.global.UserNicknameResolver;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -24,15 +23,13 @@ import com.feple.feple_backend.global.EntityFinder;
 
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, ArtistSuggestionAdminService {
 
     private final ArtistSuggestionRepository suggestionRepository;
-    private final UserRepository userRepository;
+    private final UserNicknameResolver nicknameResolver;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -52,11 +49,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 .build();
 
         ArtistSuggestion saved = suggestionRepository.save(suggestion);
-        String nick = userRepository.findById(userId)
-                .map(User::getNickname)
-                .filter(n -> n != null && !n.isBlank())
-                .orElse("알 수 없음");
-        return ArtistSuggestionResponseDto.from(saved, nick);
+        return ArtistSuggestionResponseDto.from(saved, nicknameResolver.resolve(userId));
     }
 
     @Override
@@ -65,7 +58,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
         Page<ArtistSuggestion> pageResult = suggestionRepository.findByStatusOrderByCreatedAtDesc(
                 ArtistSuggestionStatus.PENDING, PageRequest.of(page, size));
         Map<Long, String> nMap = nicknameMap(pageResult.getContent());
-        return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())));
+        return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)));
     }
 
     @Override
@@ -75,7 +68,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 ArtistSuggestionStatus.DISMISSED, PageRequest.of(0, limit)).getContent();
         Map<Long, String> nMap = nicknameMap(suggestions);
         return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())))
+                .map(s -> ArtistSuggestionResponseDto.from(s, nMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
                 .toList();
     }
 
@@ -100,7 +93,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 ArtistSuggestionStatus.PENDING, PageRequest.of(0, limit)).getContent();
         Map<Long, String> nMap = nicknameMap(suggestions);
         return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nickname(nMap, s.getUserId())))
+                .map(s -> ArtistSuggestionResponseDto.from(s, nMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
                 .toList();
     }
 
@@ -118,16 +111,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     }
 
     private Map<Long, String> nicknameMap(List<ArtistSuggestion> suggestions) {
-        List<Long> ids = suggestions.stream().map(ArtistSuggestion::getUserId).distinct().toList();
-        return userRepository.findAllById(ids).stream()
-                .collect(Collectors.toMap(
-                        User::getId,
-                        u -> (u.getNickname() != null && !u.getNickname().isBlank())
-                                ? u.getNickname() : "알 수 없음"
-                ));
-    }
-
-    private String nickname(Map<Long, String> map, Long userId) {
-        return map.getOrDefault(userId, "알 수 없음");
+        return nicknameResolver.buildMap(
+                suggestions.stream().map(ArtistSuggestion::getUserId).distinct().toList());
     }
 }

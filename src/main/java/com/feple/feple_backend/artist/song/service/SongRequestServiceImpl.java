@@ -14,9 +14,8 @@ import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.UserNicknameResolver;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -28,9 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +35,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
 
     private final SongRequestRepository songRequestRepository;
     private final ArtistRepository artistRepository;
-    private final UserRepository userRepository;
+    private final UserNicknameResolver nicknameResolver;
     private final YoutubeSearchService youtubeSearchService;
     private final SongRepository songRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -63,14 +60,14 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 .build();
 
         SongRequest saved = songRequestRepository.save(request);
-        String nickname = resolveNickname(userId);
+        String nickname = nicknameResolver.resolve(userId);
         return SongRequestResponseDto.from(saved, nickname);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getMyAllRequests(Long userId) {
-        String nickname = resolveNickname(userId);
+        String nickname = nicknameResolver.resolve(userId);
         return songRequestRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(r -> SongRequestResponseDto.from(r, nickname))
@@ -80,7 +77,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Override
     @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getMyRequests(Long artistId, Long userId) {
-        String nickname = resolveNickname(userId);
+        String nickname = nicknameResolver.resolve(userId);
         return songRequestRepository.findByArtistIdAndUserIdOrderByCreatedAtDesc(artistId, userId)
                 .stream()
                 .map(r -> SongRequestResponseDto.from(r, nickname))
@@ -100,7 +97,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         }
         String kw = (keyword == null || keyword.isBlank()) ? null : LikeEscaper.escape(keyword.trim());
         Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusEnum, kw, pageable);
-        Map<Long, String> nicknameMap = buildNicknameMap(
+        Map<Long, String> nicknameMap = nicknameResolver.buildMap(
                 requestsPage.getContent().stream().map(SongRequest::getUserId).toList());
         return requestsPage.map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), "알 수 없음")));
     }
@@ -116,7 +113,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     public List<SongRequestResponseDto> getPendingRequests(Long artistId) {
         List<SongRequest> requests = songRequestRepository
                 .findByArtistIdAndStatusOrderByCreatedAtDesc(artistId, SongRequestStatus.PENDING);
-        Map<Long, String> nicknameMap = buildNicknameMap(
+        Map<Long, String> nicknameMap = nicknameResolver.buildMap(
                 requests.stream().map(SongRequest::getUserId).toList());
         return requests.stream()
                 .map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), "알 수 없음")))
@@ -172,18 +169,4 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 request.getUserId(), request.getSongTitle(), request.getArtistName(), reason));
     }
 
-    private String resolveNickname(Long userId) {
-        return userRepository.findById(userId)
-                .map(User::getNickname)
-                .filter(n -> n != null && !n.isBlank())
-                .orElse("알 수 없음");
-    }
-
-    private Map<Long, String> buildNicknameMap(List<Long> userIds) {
-        return userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(
-                        User::getId,
-                        u -> (u.getNickname() != null && !u.getNickname().isBlank()) ? u.getNickname() : "알 수 없음"
-                ));
-    }
 }
