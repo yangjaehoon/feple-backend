@@ -193,12 +193,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(artists)}">
-                        <td colspan="5">
-                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
-                            <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}">등록된 아티스트가 없습니다.</span>
-                        </td>
-                    </tr>
+                    <tr th:if="${#lists.isEmpty(artists)}" th:replace="~{admin/fragments :: emptyRowSearch(5, ${keyword}, '등록된 아티스트가 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>

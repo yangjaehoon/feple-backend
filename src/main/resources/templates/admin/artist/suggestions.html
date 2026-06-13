@@ -37,9 +37,7 @@
                                     th:data-artist="${s.artistName}">처리하기</button>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${suggestions.totalElements == 0}">
-                        <td colspan="6">대기 중인 아티스트 신청이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${suggestions.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(6, '대기 중인 아티스트 신청이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>

@@ -216,6 +216,19 @@
        class="btn btn-secondary btn-sm">✕ 초기화</a>
 </th:block>
 
+<!-- ── 빈 테이블 행 ── -->
+<tr th:fragment="emptyRow(colspan, message)" class="empty-row">
+    <td th:colspan="${colspan}" th:text="${message}"></td>
+</tr>
+
+<!-- ── 빈 테이블 행 (키워드 검색 결과 없음) ── -->
+<tr th:fragment="emptyRowSearch(colspan, keyword, message)" class="empty-row">
+    <td th:colspan="${colspan}">
+        <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+        <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}" th:text="${message}"></span>
+    </td>
+</tr>
+
 <!-- ── 페이지네이션 프래그먼트 ── -->
 <div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">
     <span class="page-info" th:text="'총 ' + ${page.totalElements} + '건'"></span>

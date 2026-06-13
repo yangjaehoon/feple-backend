@@ -164,9 +164,7 @@
                                 </td>
                             </tr>
                         </th:block>
-                        <tr class="empty-row" th:if="${activeFestivalCount == 0}">
-                            <td colspan="8">진행 중이거나 예정된 페스티벌이 없습니다.</td>
-                        </tr>
+                        <tr th:if="${activeFestivalCount == 0}" th:replace="~{admin/fragments :: emptyRow(8, '진행 중이거나 예정된 페스티벌이 없습니다.')}"></tr>
                         </tbody>
                     </table>
                 </div>

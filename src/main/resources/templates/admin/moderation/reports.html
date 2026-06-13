@@ -156,9 +156,7 @@
                             <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${reports.totalElements == 0}">
-                        <td colspan="8">신고 내역이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
                     </tbody>
                 </table>
                 </div>
@@ -260,9 +258,7 @@
                             <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${reports.totalElements == 0}">
-                        <td colspan="8">신고 내역이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
                     </tbody>
                 </table>
                 </div>
@@ -366,9 +362,7 @@
                             <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${reports.totalElements == 0}">
-                        <td colspan="8">사진 신고 내역이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '사진 신고 내역이 없습니다.')}"></tr>
                     </tbody>
                 </table>
                 </div>

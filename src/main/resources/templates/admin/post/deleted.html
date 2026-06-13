@@ -28,9 +28,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="empty-row" th:if="${posts.isEmpty()}">
-                        <td colspan="6">삭제된 게시글이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${posts.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(6, '삭제된 게시글이 없습니다.')}"></tr>
                     <tr th:each="post : ${posts}">
                         <td th:text="${post.id}"></td>
                         <td>

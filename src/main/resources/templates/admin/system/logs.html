@@ -130,9 +130,7 @@
                         <td class="td-text"
                             th:text="${entry.detail != null ? entry.detail : '—'}"></td>
                     </tr>
-                    <tr class="empty-row" th:if="${logs.totalElements == 0}">
-                        <td colspan="7">기록된 로그가 없습니다.</td>
-                    </tr>
+                    <tr th:if="${logs.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(7, '기록된 로그가 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>

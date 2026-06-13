@@ -38,6 +38,25 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
+        },
+        /**
+         * input[type=file] 선택 파일을 Data URL로 읽어 callback(dataUrl)을 호출.
+         * maxSizeMb 초과 시 errorElId 요소를 표시하고 input을 초기화한 뒤 callback 미호출.
+         */
+        readImageAsDataUrl: function (input, callback, maxSizeMb, errorElId) {
+            if (!input.files || !input.files[0]) return;
+            var file = input.files[0];
+            var maxBytes = (maxSizeMb || 5) * 1024 * 1024;
+            var errorEl = errorElId ? document.getElementById(errorElId) : null;
+            if (file.size > maxBytes) {
+                if (errorEl) errorEl.style.display = 'block';
+                input.value = '';
+                return;
+            }
+            if (errorEl) errorEl.style.display = 'none';
+            var reader = new FileReader();
+            reader.onload = function (e) { callback(e.target.result); };
+            reader.readAsDataURL(file);
         }
     };
 

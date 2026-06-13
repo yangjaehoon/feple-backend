@@ -89,9 +89,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(comments)}">
-                        <td colspan="5">댓글이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${#lists.isEmpty(comments)}" th:replace="~{admin/fragments :: emptyRow(5, '댓글이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>

@@ -64,9 +64,7 @@
                             <div class="scan-result bw-scan-result"></div>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(badWords)}">
-                        <td colspan="3">등록된 금칙어가 없습니다.</td>
-                    </tr>
+                    <tr th:if="${#lists.isEmpty(badWords)}" th:replace="~{admin/fragments :: emptyRow(3, '등록된 금칙어가 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>
@@ -113,9 +111,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(nicknameRestrictions)}">
-                        <td colspan="3">추가된 닉네임 제한 단어가 없습니다.</td>
-                    </tr>
+                    <tr th:if="${#lists.isEmpty(nicknameRestrictions)}" th:replace="~{admin/fragments :: emptyRow(3, '추가된 닉네임 제한 단어가 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>

@@ -6,14 +6,11 @@
     }
 
     function previewPhoto(input) {
-        if (!input.files || !input.files[0]) return;
         document.getElementById('delete-profile-image-flag').value = 'false';
-        var reader = new FileReader();
-        reader.onload = function (e) {
+        AdminUtils.readImageAsDataUrl(input, function (dataUrl) {
             var preview = document.getElementById('photo-preview');
-            preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover;" alt="미리보기"/>';
-        };
-        reader.readAsDataURL(input.files[0]);
+            preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%; height:100%; object-fit:cover;" alt="미리보기"/>';
+        });
     }
 
     function deletePhoto() {

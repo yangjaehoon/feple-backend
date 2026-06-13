@@ -108,9 +108,7 @@
                         </td>
                         <td th:unless="${req.status == 'PENDING'}"></td>
                     </tr>
-                    <tr class="empty-row" th:if="${requests.totalElements == 0}">
-                        <td colspan="7">노래 요청이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${requests.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(7, '노래 요청이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>

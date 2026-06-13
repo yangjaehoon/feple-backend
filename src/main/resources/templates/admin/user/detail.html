@@ -122,9 +122,7 @@
                         <td class="td-date"
                             th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></td>
                     </tr>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(recentPosts)}">
-                        <td colspan="5">게시글이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentPosts)}" th:replace="~{admin/fragments :: emptyRow(5, '게시글이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>
@@ -166,9 +164,7 @@
                         <td class="td-date"
                             th:text="${comment.createdAt != null ? #temporals.format(comment.createdAt, 'MM-dd HH:mm') : '-'}"></td>
                     </tr>
-                    <tr class="empty-row" th:if="${#lists.isEmpty(recentComments)}">
-                        <td colspan="5">댓글이 없습니다.</td>
-                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentComments)}" th:replace="~{admin/fragments :: emptyRow(5, '댓글이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>
