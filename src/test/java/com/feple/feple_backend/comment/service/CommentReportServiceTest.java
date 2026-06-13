@@ -7,7 +7,6 @@ import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.post.dto.SubmitReportCommand;
-import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -117,19 +116,17 @@ class CommentReportServiceTest {
     void 댓글_삭제처리시_신고와_댓글_모두_삭제됨() {
         Comment comment = mockCommentWithId(10L);
         given(comment.getPostId()).willReturn(5L);
-        Post post = mock(Post.class);
         User reporter = user(1L);
         CommentReport report = pendingReport(1L, comment, reporter);
         given(reportRepository.findById(1L)).willReturn(Optional.of(report));
         given(commentRepository.findById(10L)).willReturn(Optional.of(comment));
-        given(postRepository.findById(5L)).willReturn(Optional.of(post));
 
         commentReportService.deleteCommentAndResolve(1L);
 
         verify(commentLikeRepository).deleteByCommentId(10L);
         verify(reportRepository).deleteByCommentId(10L);
         verify(commentRepository).deleteById(10L);
-        verify(post).decrementCommentCount();
+        verify(postRepository).decrementCommentCount(5L);
     }
 
     // ── dismissReport ────────────────────────────────────────────────
