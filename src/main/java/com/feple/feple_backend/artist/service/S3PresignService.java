@@ -18,6 +18,9 @@ public class S3PresignService {
 
     @Value("${app.s3.bucket}") private String bucket;
     @Value("${app.s3.presign-minutes:10}") private long presignMinutes;
+    // GET presigned URL TTL — 7일(최대값). CachedNetworkImage가 URL을 키로 캐시하므로
+    // TTL이 짧으면 만료 후 재시도 시 403 발생
+    @Value("${app.s3.get-presign-hours:168}") private long getPresignHours;
 
     public PresignResult presignPut(String objectKey, String contentType) {
         PutObjectRequest putReq = PutObjectRequest.builder()
@@ -36,7 +39,7 @@ public class S3PresignService {
 
     public String presignGetUrl(String objectKey) {
         PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(r -> r
-                .signatureDuration(Duration.ofMinutes(5))
+                .signatureDuration(Duration.ofHours(getPresignHours))
                 .getObjectRequest(go -> go.bucket(bucket).key(objectKey))
         );
         return presigned.url().toString();
