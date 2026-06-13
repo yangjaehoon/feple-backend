@@ -43,11 +43,9 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
-        // 이미 팔로우한 경우 멱등성 보장 — DataIntegrityViolationException을 @Transactional 내에서
-        // catch하면 트랜잭션이 rollbackOnly로 마킹되어 UnexpectedRollbackException(500) 발생
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
-            artist.incrementFollowerCount();
+            artistRepository.incrementFollowerCount(artistId);
         }
 
         return new FollowResponseDto(true, artistRepository.findFollowerCountById(artistId));
@@ -56,13 +54,13 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     @Override
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
         if (deleted > 0) {
-            artist.decrementFollowerCount();
+            artistRepository.decrementFollowerCount(artistId);
         }
 
-        return new FollowResponseDto(false, artist.getFollowerCount());
+        return new FollowResponseDto(false, artistRepository.findFollowerCountById(artistId));
     }
 }

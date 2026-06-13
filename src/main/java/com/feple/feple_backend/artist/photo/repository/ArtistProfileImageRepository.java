@@ -15,4 +15,12 @@ public interface ArtistProfileImageRepository extends JpaRepository<ArtistProfil
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ArtistProfileImage ai SET ai.uploader = null WHERE ai.uploader.id = :userId")
     void nullifyUploaderByUserId(@Param("userId") Long userId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ArtistProfileImage ai SET ai.likeCount = ai.likeCount + 1 WHERE ai.id = :imageId")
+    void incrementLikeCount(@Param("imageId") Long imageId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ArtistProfileImage ai SET ai.likeCount = ai.likeCount - 1 WHERE ai.id = :imageId AND ai.likeCount > 0")
+    void decrementLikeCount(@Param("imageId") Long imageId);
 }

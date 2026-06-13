@@ -159,6 +159,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            "GROUP BY p.artist.id")
     List<Object[]> countAndSumByArtistSince(@Param("since") LocalDateTime since);
 
+    // ── 댓글 카운트 ─────────────────────────────────────────────────────────
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Post p SET p.commentCount = p.commentCount + 1 WHERE p.id = :postId")
+    void incrementCommentCount(@Param("postId") Long postId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Post p SET p.commentCount = p.commentCount - 1 WHERE p.id = :postId AND p.commentCount > 0")
+    void decrementCommentCount(@Param("postId") Long postId);
+
     // ── 조회수 카운트 ─────────────────────────────────────────────────────────
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
