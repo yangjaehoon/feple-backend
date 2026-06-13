@@ -78,15 +78,7 @@ public class ArtistGalleryPhotoService {
                 new ArtistGalleryPhoto(artist, uploader, objectKey, contentType, title, description));
 
         String url = s3PresignService.presignGetUrl(saved.getS3Key());
-        return new ArtistGalleryPhotoResponseDto(
-                saved.getId(),
-                url,
-                saved.getUploaderId(),
-                saved.getCreatedAt(),
-                saved.getTitle(),
-                saved.getDescription(),
-                saved.getLikeCount(),
-                false);
+        return ArtistGalleryPhotoResponseDto.from(saved, url, false);
     }
 
     @Transactional(readOnly = true)
@@ -97,14 +89,9 @@ public class ArtistGalleryPhotoService {
                         currentUserId, photos.stream().map(ArtistGalleryPhoto::getId).toList())
                 : Set.of();
         return photos.stream()
-                .map(photo -> new ArtistGalleryPhotoResponseDto(
-                        photo.getId(),
+                .map(photo -> ArtistGalleryPhotoResponseDto.from(
+                        photo,
                         s3PresignService.presignGetUrl(photo.getS3Key()),
-                        photo.getUploaderId(),
-                        photo.getCreatedAt(),
-                        photo.getTitle(),
-                        photo.getDescription(),
-                        photo.getLikeCount(),
                         likedPhotoIds.contains(photo.getId())))
                 .toList();
     }
@@ -130,9 +117,7 @@ public class ArtistGalleryPhotoService {
         photo.updateTitleAndDescription(command.title(), command.description());
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
         boolean isLiked = artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, userId);
-        return new ArtistGalleryPhotoResponseDto(
-                photo.getId(), url, photo.getUploaderId(), photo.getCreatedAt(),
-                photo.getTitle(), photo.getDescription(), photo.getLikeCount(), isLiked);
+        return ArtistGalleryPhotoResponseDto.from(photo, url, isLiked);
     }
 
     private void verifyS3ImageObject(String objectKey) {

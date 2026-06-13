@@ -67,21 +67,7 @@ public class CommentServiceImpl implements CommentService {
         boolean certified = post.getFestivalId() != null &&
                 certificationRepository.existsApprovedCertification(post.getFestivalId(), userId);
 
-        return new CommentResponseDto(
-                saved.getId(),
-                post.getId(),
-                user.getId(),
-                user.getNickname(),
-                saved.getContent(),
-                saved.getCreatedAt(),
-                saved.getUpdatedAt(),
-                certified,
-                user.getRole(),
-                saved.getParentId(),
-                0,
-                false,
-                user.getProfileImageUrl()
-        );
+        return CommentResponseDto.from(saved, certified, false);
     }
 
     @Override
@@ -95,21 +81,10 @@ public class CommentServiceImpl implements CommentService {
         Set<Long> likedCommentIds = getLikedCommentIds(userId, commentIds);
 
         return comments.stream()
-                .map(c -> new CommentResponseDto(
-                        c.getId(),
-                        c.getPostId(),
-                        c.getUserId(),
-                        c.getUserNickname(),
-                        c.getContent(),
-                        c.getCreatedAt(),
-                        c.getUpdatedAt(),
+                .map(c -> CommentResponseDto.from(
+                        c,
                         certifiedUserIds.contains(c.getUserId()),
-                        c.getUserRole(),
-                        c.getParentId(),
-                        c.getLikeCount(),
-                        likedCommentIds.contains(c.getId()),
-                        c.getUserProfileImageUrl()
-                ))
+                        likedCommentIds.contains(c.getId())))
                 .toList();
     }
 

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.comment.dto;
 
+import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.user.entity.UserRole;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,5 +41,23 @@ public class CommentResponseDto {
         this.likeCount = likeCount;
         this.liked = liked;
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public static CommentResponseDto from(Comment comment, boolean certified, boolean liked) {
+        return new CommentResponseDto(
+                comment.getId(),
+                comment.getPostId(),
+                comment.getUserId(),
+                comment.getUserNickname(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt(),
+                certified,
+                comment.getUserRole(),
+                comment.getParentId(),
+                comment.getLikeCount(),
+                liked,
+                comment.getUserProfileImageUrl()
+        );
     }
 }
