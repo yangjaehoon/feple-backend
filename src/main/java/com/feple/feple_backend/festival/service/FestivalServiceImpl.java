@@ -1,5 +1,6 @@
 package com.feple.feple_backend.festival.service;
 
+import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.booth.repository.BoothRepository;
@@ -17,6 +18,7 @@ import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.service.PostCascadeService;
@@ -43,6 +45,8 @@ public class FestivalServiceImpl implements FestivalService {
 
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
+    private final ArtistFestivalSongRepository artistFestivalSongRepository;
+    private final NotificationRepository notificationRepository;
     private final FestivalLikeRepository festivalLikeRepository;
     private final FestivalAttendanceRepository festivalAttendanceRepository;
     private final FileStorageService fileStorageService;
@@ -180,7 +184,9 @@ public class FestivalServiceImpl implements FestivalService {
 
         postCascadeService.deletePostsByFestival(festival);
 
+        artistFestivalSongRepository.deleteByFestivalId(festivalId);
         artistFestivalRepository.deleteByFestivalId(festivalId);
+        notificationRepository.deleteByFestivalId(festivalId);
         weatherRepository.deleteByFestivalId(festivalId);
         festivalRepository.deleteById(festivalId);
 

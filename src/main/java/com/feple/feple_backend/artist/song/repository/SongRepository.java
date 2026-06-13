@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.song.repository;
 
 import com.feple.feple_backend.artist.song.entity.Song;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,4 +20,8 @@ public interface SongRepository extends JpaRepository<Song, Long> {
 
     @Query("SELECT s.artist.id, COUNT(s) FROM Song s WHERE s.artist.id IN :artistIds GROUP BY s.artist.id")
     List<Object[]> countGroupedByArtistIds(@Param("artistIds") List<Long> artistIds);
+
+    @Modifying
+    @Query("DELETE FROM Song s WHERE s.artist.id = :artistId")
+    void deleteByArtistId(@Param("artistId") Long artistId);
 }

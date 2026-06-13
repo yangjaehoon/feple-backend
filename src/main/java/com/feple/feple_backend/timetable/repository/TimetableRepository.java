@@ -18,4 +18,12 @@ public interface TimetableRepository extends JpaRepository<TimetableEntry, Long>
     @Modifying
     @Query("DELETE FROM TimetableEntry t WHERE t.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE TimetableEntry t SET t.artist = null WHERE t.artist.id = :artistId")
+    void nullifyArtistId(@Param("artistId") Long artistId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE TimetableEntry t SET t.stage = null WHERE t.stage.id = :stageId")
+    void nullifyStageId(@Param("stageId") Long stageId);
 }

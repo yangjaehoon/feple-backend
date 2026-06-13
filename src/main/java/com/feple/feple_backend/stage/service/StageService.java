@@ -4,6 +4,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.repository.StageRepository;
+import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ public class StageService {
 
     private final StageRepository stageRepository;
     private final FestivalRepository festivalRepository;
+    private final TimetableRepository timetableRepository;
 
     @Transactional(readOnly = true)
     public List<Stage> getStages(Long festivalId) {
@@ -42,6 +44,7 @@ public class StageService {
     }
 
     public void deleteStage(Long stageId) {
+        timetableRepository.nullifyStageId(stageId);
         stageRepository.deleteById(stageId);
     }
 

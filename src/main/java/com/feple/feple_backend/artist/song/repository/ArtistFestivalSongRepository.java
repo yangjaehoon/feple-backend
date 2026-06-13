@@ -28,4 +28,12 @@ public interface ArtistFestivalSongRepository extends JpaRepository<ArtistFestiv
     @Modifying
     @Query("DELETE FROM ArtistFestivalSong afs WHERE afs.artistFestival.id = :artistFestivalId")
     void deleteByArtistFestivalId(@Param("artistFestivalId") Long artistFestivalId);
+
+    @Modifying
+    @Query("DELETE FROM ArtistFestivalSong afs WHERE afs.artistFestival.id IN :artistFestivalIds")
+    void deleteByArtistFestivalIdIn(@Param("artistFestivalIds") List<Long> artistFestivalIds);
+
+    @Modifying
+    @Query("DELETE FROM ArtistFestivalSong afs WHERE afs.artistFestival.festival.id = :festivalId")
+    void deleteByFestivalId(@Param("festivalId") Long festivalId);
 }

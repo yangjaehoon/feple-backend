@@ -89,6 +89,11 @@ public class TimetableService {
     }
 
     @Transactional
+    public void nullifyArtistId(Long artistId) {
+        timetableRepository.nullifyArtistId(artistId);
+    }
+
+    @Transactional
     public void deleteEntry(Long festivalId, Long entryId) {
         TimetableEntry entry = timetableRepository.findById(entryId)
                 .orElseThrow(() -> new NoSuchElementException("타임테이블 항목을 찾을 수 없습니다."));
