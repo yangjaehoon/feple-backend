@@ -140,7 +140,7 @@ public class ArtistAdminController {
             model.addAttribute("artist", artistService.getArtistForEdit(id));
             model.addAttribute("page", page);
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
         }
         return "admin/artist/edit";
@@ -169,7 +169,7 @@ public class ArtistAdminController {
             adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", id, dto.getName());
             ra.addFlashAttribute("successMessage", "아티스트 정보가 수정되었습니다.");
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("아티스트 수정 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");

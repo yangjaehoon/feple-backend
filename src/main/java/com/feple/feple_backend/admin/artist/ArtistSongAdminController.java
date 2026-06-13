@@ -46,7 +46,7 @@ public class ArtistSongAdminController {
                         .ifPresent(v -> model.addAttribute("previewVideo", v));
             }
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
         }
         return "admin/artist/songs";

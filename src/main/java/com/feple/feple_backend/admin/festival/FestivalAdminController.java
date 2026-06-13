@@ -107,7 +107,7 @@ public class FestivalAdminController {
             model.addAttribute("currentPosterUrl", festival.getPosterUrl());
             populateFestivalFormModel(model);
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/festivals";
         } catch (Exception e) {
             log.error("페스티벌 편집 폼 조회 실패. id={}", id, e);
@@ -137,7 +137,7 @@ public class FestivalAdminController {
             festivalService.updateFestival(id, dto);
             adminLogService.log(AdminAction.FESTIVAL_UPDATE, "FESTIVAL", id, dto.getTitle());
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/festivals";
         } catch (Exception e) {
             log.error("페스티벌 수정 실패. id={}", id, e);
@@ -200,7 +200,7 @@ public class FestivalAdminController {
             model.addAttribute("setlistCounts",              detail.setlistCounts());
             model.addAttribute("opsStageIndicator",          detail.opsStageIndicator());
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 페스티벌입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/festivals";
         } catch (Exception e) {
             log.error("페스티벌 상세 조회 실패. id={}", id, e);

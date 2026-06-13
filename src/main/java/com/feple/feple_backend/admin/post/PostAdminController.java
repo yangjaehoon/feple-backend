@@ -80,7 +80,7 @@ public class PostAdminController {
             model.addAttribute("backUrl", new PostListParams(filter, null, artistId, festivalId).toBackUrl());
             return "admin/post/detail";
         } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 게시글입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/posts";
         } catch (Exception e) {
             log.error("게시글 상세 조회 실패 id={}", id, e);

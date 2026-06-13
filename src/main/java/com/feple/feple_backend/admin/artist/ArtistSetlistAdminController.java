@@ -40,7 +40,7 @@ public class ArtistSetlistAdminController {
             model.addAttribute("artist", artist);
             model.addAttribute("appearances", appearances);
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
         } catch (Exception e) {
             log.error("셋리스트 목록 조회 실패: artistId={}", artistId, e);
@@ -72,7 +72,7 @@ public class ArtistSetlistAdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists/" + artistId + "/setlist";
         } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", "존재하지 않는 아티스트 또는 셋리스트입니다.");
+            ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
         } catch (Exception e) {
             log.error("셋리스트 편집 조회 실패: artistId={}, afId={}", artistId, artistFestivalId, e);

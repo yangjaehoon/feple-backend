@@ -44,6 +44,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FestivalServiceImpl implements FestivalService {
 
+    private static final String ERR_END_BEFORE_START = "종료일은 시작일보다 이전일 수 없습니다.";
+
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFestivalSongRepository artistFestivalSongRepository;
@@ -72,7 +74,7 @@ public class FestivalServiceImpl implements FestivalService {
     public Long createFestival(FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new IllegalArgumentException("종료일은 시작일보다 이전일 수 없습니다.");
+            throw new IllegalArgumentException(ERR_END_BEFORE_START);
         }
         Festival festival = Festival.builder()
                 .title(dto.getTitle())
@@ -152,7 +154,7 @@ public class FestivalServiceImpl implements FestivalService {
     public void updateFestival(Long id, FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new IllegalArgumentException("종료일은 시작일보다 이전일 수 없습니다.");
+            throw new IllegalArgumentException(ERR_END_BEFORE_START);
         }
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
 
