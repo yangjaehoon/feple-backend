@@ -32,12 +32,8 @@ public class BadWordFilter {
         Set<String> snapshot = badWords;
         if (snapshot.isEmpty()) return;
         for (String text : texts) {
-            if (text == null) continue;
-            String normalized = text.toLowerCase().replaceAll("\\s+", "");
-            for (String word : snapshot) {
-                if (normalized.contains(word)) {
-                    throw new IllegalArgumentException("금칙어가 포함되어 있습니다.");
-                }
+            if (text != null && containsBadWord(text, snapshot)) {
+                throw new IllegalArgumentException("금칙어가 포함되어 있습니다.");
             }
         }
     }
@@ -46,11 +42,13 @@ public class BadWordFilter {
         if (text == null) return;
         Set<String> snapshot = badWords;
         if (snapshot.isEmpty()) return;
-        String normalized = text.toLowerCase().replaceAll("\\s+", "");
-        for (String word : snapshot) {
-            if (normalized.contains(word)) {
-                throw new BadWordException(field);
-            }
+        if (containsBadWord(text, snapshot)) {
+            throw new BadWordException(field);
         }
+    }
+
+    private boolean containsBadWord(String text, Set<String> snapshot) {
+        String normalized = text.toLowerCase().replaceAll("\\s+", "");
+        return snapshot.stream().anyMatch(normalized::contains);
     }
 }
