@@ -10,6 +10,7 @@ import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
@@ -121,10 +122,8 @@ public class PostReportService implements ReportAdminService<PostReport> {
         return CountRowMapper.toLongMap(reportRepository.countByPostAuthorIds(userIds));
     }
 
-    private static final int MAX_EXPORT_ROWS = 50_000;
-
     public List<PostReport> getAllPostReportsForExport() {
-        return reportRepository.findAllForExport(PageRequest.of(0, MAX_EXPORT_ROWS));
+        return reportRepository.findAllForExport(PageRequest.of(0, AdminConstants.MAX_EXPORT_ROWS));
     }
 
     public long getReportCountForUser(Long userId) {
