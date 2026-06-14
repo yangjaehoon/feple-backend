@@ -84,8 +84,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     public Page<ArtistPhotoReport> searchReportsForAdmin(ReportSearchParams params) {
         if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
         PageRequest pageable = PageRequest.of(params.page(), params.size());
-        ReportStatus status = "PENDING".equals(params.statusFilter()) ? ReportStatus.PENDING : null;
-        return reportRepository.searchByKeyword(LikeEscaper.escape(params.keyword().trim()), status, pageable);
+        return reportRepository.searchByKeyword(LikeEscaper.escapeOrNull(params.keyword()), ReportStatus.fromFilter(params.statusFilter()), pageable);
     }
 
     @Override
