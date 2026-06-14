@@ -7,11 +7,11 @@
         document.getElementById('dismiss-note').value = '';
         document.getElementById('dismiss-process-note').value = '';
         document.querySelectorAll('.reason-chip').forEach(function (c) { c.classList.remove('active'); });
-        document.getElementById('dismiss-modal').style.display = 'flex';
+        document.getElementById('dismiss-modal').classList.add('is-open');
     }
 
     function closeDismissModal() {
-        document.getElementById('dismiss-modal').style.display = 'none';
+        document.getElementById('dismiss-modal').classList.remove('is-open');
     }
 
     /* 처리하기 버튼 — 이벤트 위임 */

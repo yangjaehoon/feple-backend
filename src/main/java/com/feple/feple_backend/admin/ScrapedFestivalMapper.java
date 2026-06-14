@@ -20,12 +20,21 @@ public final class ScrapedFestivalMapper {
         dto.setEndDate(LocalDate.parse(req.endDate()));
 
         if (req.region() != null && !req.region().isBlank()) {
-            dto.setRegion(Region.valueOf(req.region()));
+            try {
+                dto.setRegion(Region.valueOf(req.region()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("유효하지 않은 지역 값입니다: " + req.region());
+            }
         }
         if (req.genres() != null && !req.genres().isEmpty()) {
             dto.setGenres(req.genres().stream()
                 .filter(g -> g != null && !g.isBlank())
-                .map(Genre::valueOf)
+                .map(g -> {
+                    try { return Genre.valueOf(g); }
+                    catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("유효하지 않은 장르 값입니다: " + g);
+                    }
+                })
                 .toList());
         }
         return dto;

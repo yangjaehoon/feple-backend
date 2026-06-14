@@ -66,7 +66,8 @@ public class GeminiUrlContextClient {
     @SuppressWarnings("unchecked")
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
         return webClient.post()
-            .uri(GEMINI_URL + "?key=" + geminiApiKey)
+            .uri(GEMINI_URL)
+            .header("x-goog-api-key", geminiApiKey)
             .header("Content-Type", "application/json")
             .bodyValue(request)
             .retrieve()

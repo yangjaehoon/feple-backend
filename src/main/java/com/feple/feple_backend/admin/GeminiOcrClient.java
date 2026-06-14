@@ -99,7 +99,8 @@ public class GeminiOcrClient {
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
         usageTracker.increment();
         return webClient.post()
-                .uri(GEMINI_BASE_URL + "?key=" + apiKey)
+                .uri(GEMINI_BASE_URL)
+                .header("x-goog-api-key", apiKey)
                 .header("Content-Type", "application/json")
                 .bodyValue(request)
                 .retrieve()

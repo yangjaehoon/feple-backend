@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin;
 
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public final class BindingResultUtils {
     }
 
     public static String firstError(BindingResult br) {
-        return br.getAllErrors().get(0).getDefaultMessage();
+        List<ObjectError> errors = br.getAllErrors();
+        return errors.isEmpty() ? "" : errors.get(0).getDefaultMessage();
     }
 }

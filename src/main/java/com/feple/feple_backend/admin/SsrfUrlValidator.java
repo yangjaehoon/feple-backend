@@ -31,7 +31,8 @@ final class SsrfUrlValidator {
             throw new IllegalArgumentException("호스트를 찾을 수 없습니다: " + host);
         }
         if (addr.isLoopbackAddress() || addr.isLinkLocalAddress()
-                || addr.isSiteLocalAddress() || addr.isAnyLocalAddress()) {
+                || addr.isSiteLocalAddress() || addr.isAnyLocalAddress()
+                || addr.isMulticastAddress()) {
             throw new IllegalArgumentException("내부 네트워크 주소는 허용되지 않습니다.");
         }
     }

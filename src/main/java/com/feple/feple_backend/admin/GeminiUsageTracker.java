@@ -32,7 +32,7 @@ public class GeminiUsageTracker {
         return dailyLimit;
     }
 
-    private void resetIfNewDay() {
+    private synchronized void resetIfNewDay() {
         LocalDate today = LocalDate.now(PACIFIC);
         if (!today.equals(trackingDate)) {
             trackingDate = today;

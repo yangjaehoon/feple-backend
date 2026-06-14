@@ -13,5 +13,6 @@ document.addEventListener('submit', function (e) {
 document.addEventListener('change', function (e) {
     var sel = e.target;
     if (sel.tagName !== 'SELECT' || !sel.hasAttribute('data-autosubmit')) return;
-    sel.closest('form').submit();
+    var form = sel.closest('form');
+    if (form) form.submit();
 });

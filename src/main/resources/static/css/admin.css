@@ -1481,6 +1481,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 
 /* ── 모달 ── */
 .modal-overlay  { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); align-items: center; justify-content: center; }
+.modal-overlay.is-open { display: flex; }
 .modal-box, .admin-modal-box { background: var(--surface); border-radius: 12px; padding: 28px 28px 24px; max-width: calc(100vw - 32px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
 .modal-box      { width: 520px; }
 .modal-header   { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
