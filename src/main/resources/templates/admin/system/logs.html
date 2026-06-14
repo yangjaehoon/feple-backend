@@ -20,8 +20,9 @@
                         <option value="COMMENT"     th:selected="${targetType == 'COMMENT'}">댓글</option>
                         <option value="REPORT"      th:selected="${targetType == 'REPORT'}">신고</option>
                         <option value="CERTIFICATION" th:selected="${targetType == 'CERTIFICATION'}">인증</option>
-                        <option value="BAD_WORD"    th:selected="${targetType == 'BAD_WORD'}">금칙어</option>
-                        <option value="SONG_REQUEST" th:selected="${targetType == 'SONG_REQUEST'}">노래 요청</option>
+                        <option value="BAD_WORD"              th:selected="${targetType == 'BAD_WORD'}">금칙어</option>
+                        <option value="NICKNAME_RESTRICTION" th:selected="${targetType == 'NICKNAME_RESTRICTION'}">닉네임 제한</option>
+                        <option value="SONG_REQUEST"         th:selected="${targetType == 'SONG_REQUEST'}">노래 요청</option>
                     </select>
                     <input type="text" name="adminUsername" th:value="${adminUsername}"
                            placeholder="관리자 이름"
@@ -75,31 +76,7 @@
                                            : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'}
                                               ? 'log-badge log-success'
                                               : 'log-badge log-info')"
-                                  th:text="${a == 'FESTIVAL_CREATE'} ? '페스티벌 등록'
-                                         : (${a == 'FESTIVAL_UPDATE'} ? '페스티벌 수정'
-                                         : (${a == 'FESTIVAL_DELETE'} ? '페스티벌 삭제'
-                                         : (${a == 'ARTIST_CREATE'} ? '아티스트 등록'
-                                         : (${a == 'ARTIST_UPDATE'} ? '아티스트 수정'
-                                         : (${a == 'ARTIST_DELETE'} ? '아티스트 삭제'
-                                         : (${a == 'USER_BAN'} ? '회원 정지'
-                                         : (${a == 'USER_UNBAN'} ? '정지 해제'
-                                         : (${a == 'USER_DELETE'} ? '회원 탈퇴'
-                                         : (${a == 'REPORT_DISMISS'} ? '신고 기각'
-                                         : (${a == 'REPORT_POST_DELETE'} ? '신고 글 삭제'
-                                         : (${a == 'REPORT_COMMENT_DELETE'} ? '신고 댓글 삭제'
-                                         : (${a == 'REPORT_PHOTO_DELETE'} ? '신고 사진 삭제'
-                                         : (${a == 'REPORT_BULK_DISMISS'} ? '일괄 신고 기각'
-                                         : (${a == 'REPORT_BULK_POST_DELETE'} ? '일괄 글 삭제'
-                                         : (${a == 'REPORT_BULK_COMMENT_DELETE'} ? '일괄 댓글 삭제'
-                                         : (${a == 'REPORT_BULK_PHOTO_DELETE'} ? '일괄 사진 삭제'
-                                         : (${a == 'BAD_WORD_ADD'} ? '금칙어 추가'
-                                         : (${a == 'BAD_WORD_DELETE'} ? '금칙어 삭제'
-                                         : (${a == 'ARTIST_SUGGESTION_DISMISS'} ? '아티스트 신청 처리'
-                                         : (${a == 'SONG_REQUEST_APPROVE'} ? '노래 요청 승인'
-                                         : (${a == 'SONG_REQUEST_REJECT'} ? '노래 요청 거절'
-                                         : (${a == 'CERTIFICATION_APPROVE'} ? '인증 승인'
-                                         : (${a == 'CERTIFICATION_REJECT'} ? '인증 거절'
-                                         : ${#strings.replace(a, '_', ' ')})))))))))))))))))))))))">
+                                  th:text="${actionLabels.getOrDefault(entry.action, #strings.replace(entry.action, '_', ' '))}">
                             </span>
                         </td>
 

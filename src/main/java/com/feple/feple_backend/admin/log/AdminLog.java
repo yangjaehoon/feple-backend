@@ -1,10 +1,8 @@
 package com.feple.feple_backend.admin.log;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "admin_logs", indexes = {
@@ -14,8 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-public class AdminLog {
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+public class AdminLog extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,8 +36,4 @@ public class AdminLog {
 
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 }
