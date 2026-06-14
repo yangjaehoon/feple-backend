@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -75,7 +74,7 @@ public class CertificationAdminController {
                 e -> log.error("인증 승인 실패 id={}", id, e),
                 "승인 처리 중 오류가 발생했습니다.",
                 ra);
-        return certRedirect(filter);
+        return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
     }
 
     @PostMapping("/{id}/reject")
@@ -93,14 +92,6 @@ public class CertificationAdminController {
                 e -> log.error("인증 거절 실패 id={}", id, e),
                 "거절 처리 중 오류가 발생했습니다.",
                 ra);
-        return certRedirect(filter);
-    }
-
-    private String certRedirect(CertFilter filter) {
-        return AdminActionUtils.toRedirect(
-                UriComponentsBuilder.fromPath("/admin/certifications")
-                        .queryParam("status", filter.status())
-                        .queryParam("page", filter.page()),
-                filter.keyword());
+        return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
     }
 }

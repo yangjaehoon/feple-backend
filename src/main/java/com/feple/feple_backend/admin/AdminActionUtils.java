@@ -66,4 +66,16 @@ public final class AdminActionUtils {
         if (keyword != null && !keyword.isBlank()) builder.queryParam("keyword", keyword);
         return "redirect:" + builder.build().toUriString();
     }
+
+    /**
+     * status + page + keyword 조합의 목록 페이지 redirect URL을 생성한다.
+     * status 파라미터 값이 없는 경우(null/빈 문자열)도 그대로 전달된다.
+     */
+    public static String listRedirect(String basePath, Object status, int page, String keyword) {
+        return toRedirect(
+                UriComponentsBuilder.fromPath(basePath)
+                        .queryParam("status", status)
+                        .queryParam("page", page),
+                keyword);
+    }
 }

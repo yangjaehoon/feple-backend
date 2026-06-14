@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -56,7 +55,7 @@ public class SongRequestAdminController {
                 e -> log.error("노래 요청 승인 실패 id={}", id, e),
                 "승인 처리 중 오류가 발생했습니다.",
                 ra);
-        return redirectUrl(status, page, keyword);
+        return AdminActionUtils.listRedirect("/admin/song-requests", status, page, keyword);
     }
 
     private static String approveMessage(boolean songSaved, String youtubeUrl) {
@@ -81,14 +80,7 @@ public class SongRequestAdminController {
                 e -> log.error("노래 요청 거절 실패 id={}", id, e),
                 "거절 처리 중 오류가 발생했습니다.",
                 ra);
-        return redirectUrl(status, page, keyword);
+        return AdminActionUtils.listRedirect("/admin/song-requests", status, page, keyword);
     }
 
-    private String redirectUrl(String status, int page, String keyword) {
-        return AdminActionUtils.toRedirect(
-                UriComponentsBuilder.fromPath("/admin/song-requests")
-                        .queryParam("status", status)
-                        .queryParam("page", page),
-                keyword);
-    }
 }
