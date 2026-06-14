@@ -35,21 +35,22 @@ public class ArtistSongAdminController {
                             @RequestParam(required = false) String videoUrl,
                             Model model,
                             RedirectAttributes ra) {
-        try {
-            ArtistResponseDto artist = artistService.getArtistById(artistId);
-            model.addAttribute("artist", artist);
-            model.addAttribute("songs", songService.getSongsByArtistId(artistId));
-            model.addAttribute("videoUrl", videoUrl);
-            model.addAttribute("pendingRequests", songRequestAdminService.getPendingRequests(artistId));
-            if (videoUrl != null && !videoUrl.isBlank()) {
-                songAdminService.fetchVideoByUrl(videoUrl)
-                        .ifPresent(v -> model.addAttribute("previewVideo", v));
-            }
-        } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/artists";
-        }
-        return "admin/artist/songs";
+        return AdminActionUtils.tryRender(
+                () -> {
+                    model.addAttribute("artist", artistService.getArtistById(artistId));
+                    model.addAttribute("songs", songService.getSongsByArtistId(artistId));
+                    model.addAttribute("videoUrl", videoUrl);
+                    model.addAttribute("pendingRequests", songRequestAdminService.getPendingRequests(artistId));
+                    if (videoUrl != null && !videoUrl.isBlank()) {
+                        songAdminService.fetchVideoByUrl(videoUrl)
+                                .ifPresent(v -> model.addAttribute("previewVideo", v));
+                    }
+                },
+                "admin/artist/songs",
+                e -> log.error("아티스트 곡 목록 조회 실패 artistId={}", artistId, e),
+                "곡 목록을 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/artists",
+                ra);
     }
 
     @PostMapping
@@ -88,20 +89,22 @@ public class ArtistSongAdminController {
                                      @PathVariable Long requestId,
                                      @RequestParam(required = false) String youtubeUrl,
                                      RedirectAttributes ra) {
-        try {
-            boolean songSaved = songRequestAdminService.approve(requestId, youtubeUrl);
-            if (songSaved) {
-                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다. 곡이 등록되었습니다.");
-            } else if (youtubeUrl != null && !youtubeUrl.isBlank()) {
-                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)");
-            } else {
-                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
-            }
-        } catch (Exception e) {
-            log.error("노래 요청 승인 실패 requestId={}", requestId, e);
-            ra.addFlashAttribute("errorMessage", "노래 요청 승인에 실패했습니다. 다시 시도해주세요.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    boolean songSaved = songRequestAdminService.approve(requestId, youtubeUrl);
+                    ra.addFlashAttribute("successMessage", approveMessage(songSaved, youtubeUrl));
+                },
+                null,
+                e -> log.error("노래 요청 승인 실패 requestId={}", requestId, e),
+                "노래 요청 승인에 실패했습니다. 다시 시도해주세요.",
+                ra);
         return "redirect:/admin/artists/" + artistId + "/songs";
+    }
+
+    private static String approveMessage(boolean songSaved, String youtubeUrl) {
+        if (songSaved) return "노래 요청이 승인되었습니다. 곡이 등록되었습니다.";
+        if (youtubeUrl != null && !youtubeUrl.isBlank()) return "노래 요청이 승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)";
+        return "노래 요청이 승인되었습니다.";
     }
 
     @PostMapping("/song-requests/{requestId}/reject")

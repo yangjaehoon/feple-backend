@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.NoSuchElementException;
-
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -51,20 +49,17 @@ public class CertificationAdminController {
 
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model, RedirectAttributes ra) {
-        try {
-            FestivalCertification cert = certificationService.getById(id);
-            String photoUrl = certificationService.buildPhotoUrl(cert.getPhotoKey());
-            model.addAttribute("cert", cert);
-            model.addAttribute("photoUrl", photoUrl);
-            return "admin/certification/detail";
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/certifications";
-        } catch (Exception e) {
-            log.error("인증 상세 조회 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "인증 정보를 불러오는 중 오류가 발생했습니다.");
-            return "redirect:/admin/certifications";
-        }
+        return AdminActionUtils.tryRender(
+                () -> {
+                    FestivalCertification cert = certificationService.getById(id);
+                    model.addAttribute("cert", cert);
+                    model.addAttribute("photoUrl", certificationService.buildPhotoUrl(cert.getPhotoKey()));
+                },
+                "admin/certification/detail",
+                e -> log.error("인증 상세 조회 실패 id={}", id, e),
+                "인증 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/certifications",
+                ra);
     }
 
     @PostMapping("/{id}/approve")

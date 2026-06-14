@@ -33,6 +33,7 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -100,21 +101,19 @@ public class FestivalAdminController {
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
-        try {
-            FestivalResponseDto festival = festivalService.getFestival(id);
-            model.addAttribute("festivalId", id);
-            model.addAttribute("festival", FestivalRequestDto.from(festival));
-            model.addAttribute("currentPosterUrl", festival.getPosterUrl());
-            populateFestivalFormModel(model);
-        } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/festivals";
-        } catch (Exception e) {
-            log.error("페스티벌 편집 폼 조회 실패. id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "페스티벌 정보를 불러오는 중 오류가 발생했습니다.");
-            return "redirect:/admin/festivals";
-        }
-        return "admin/festival/edit";
+        return AdminActionUtils.tryRender(
+                () -> {
+                    FestivalResponseDto festival = festivalService.getFestival(id);
+                    model.addAttribute("festivalId", id);
+                    model.addAttribute("festival", FestivalRequestDto.from(festival));
+                    model.addAttribute("currentPosterUrl", festival.getPosterUrl());
+                    populateFestivalFormModel(model);
+                },
+                "admin/festival/edit",
+                e -> log.error("페스티벌 편집 폼 조회 실패. id={}", id, e),
+                "페스티벌 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/festivals",
+                ra);
     }
 
     @PostMapping("/{id}/edit")
@@ -136,7 +135,7 @@ public class FestivalAdminController {
         try {
             festivalService.updateFestival(id, dto);
             adminLogService.log(AdminAction.FESTIVAL_UPDATE, "FESTIVAL", id, dto.getTitle());
-        } catch (java.util.NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/festivals";
         } catch (Exception e) {
@@ -186,27 +185,25 @@ public class FestivalAdminController {
 
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
-        try {
-            FestivalDetailModel detail = festivalDetailAggregationService.getDetail(id);
-            model.addAttribute("festival",                   detail.festival());
-            model.addAttribute("participatingArtists",       detail.participatingArtists());
-            model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());
-            model.addAttribute("timetableEntries",           detail.timetableEntries());
-            model.addAttribute("timetableByArtist",          detail.timetableByArtist());
-            model.addAttribute("stages",                     detail.stages());
-            model.addAttribute("booths",                     detail.booths());
-            model.addAttribute("allBoothTypes",              detail.allBoothTypes());
-            model.addAttribute("googleMapsKey",              detail.googleMapsKey());
-            model.addAttribute("setlistCounts",              detail.setlistCounts());
-            model.addAttribute("opsStageIndicator",          detail.opsStageIndicator());
-        } catch (java.util.NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/festivals";
-        } catch (Exception e) {
-            log.error("페스티벌 상세 조회 실패. id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "페스티벌 정보를 불러오는 중 오류가 발생했습니다.");
-            return "redirect:/admin/festivals";
-        }
-        return "admin/festival/detail";
+        return AdminActionUtils.tryRender(
+                () -> {
+                    FestivalDetailModel detail = festivalDetailAggregationService.getDetail(id);
+                    model.addAttribute("festival",                   detail.festival());
+                    model.addAttribute("participatingArtists",       detail.participatingArtists());
+                    model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());
+                    model.addAttribute("timetableEntries",           detail.timetableEntries());
+                    model.addAttribute("timetableByArtist",          detail.timetableByArtist());
+                    model.addAttribute("stages",                     detail.stages());
+                    model.addAttribute("booths",                     detail.booths());
+                    model.addAttribute("allBoothTypes",              detail.allBoothTypes());
+                    model.addAttribute("googleMapsKey",              detail.googleMapsKey());
+                    model.addAttribute("setlistCounts",              detail.setlistCounts());
+                    model.addAttribute("opsStageIndicator",          detail.opsStageIndicator());
+                },
+                "admin/festival/detail",
+                e -> log.error("페스티벌 상세 조회 실패. id={}", id, e),
+                "페스티벌 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/festivals",
+                ra);
     }
 }

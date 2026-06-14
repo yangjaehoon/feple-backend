@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.NoSuchElementException;
-
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -48,23 +46,23 @@ public class SongRequestAdminController {
                           @RequestParam(defaultValue = "0") int page,
                           @RequestParam(defaultValue = "") String keyword,
                           RedirectAttributes ra) {
-        try {
-            boolean songSaved = songRequestAdminService.approve(id, youtubeUrl);
-            adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", id, null);
-            if (songSaved) {
-                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다. 곡이 등록되었습니다.");
-            } else if (youtubeUrl != null && !youtubeUrl.isBlank()) {
-                ra.addFlashAttribute("successMessage", "승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)");
-            } else {
-                ra.addFlashAttribute("successMessage", "노래 요청이 승인되었습니다.");
-            }
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            log.error("노래 요청 승인 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "승인 처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    boolean songSaved = songRequestAdminService.approve(id, youtubeUrl);
+                    adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", id, null);
+                    ra.addFlashAttribute("successMessage", approveMessage(songSaved, youtubeUrl));
+                },
+                null,
+                e -> log.error("노래 요청 승인 실패 id={}", id, e),
+                "승인 처리 중 오류가 발생했습니다.",
+                ra);
         return redirectUrl(status, page, keyword);
+    }
+
+    private static String approveMessage(boolean songSaved, String youtubeUrl) {
+        if (songSaved) return "노래 요청이 승인되었습니다. 곡이 등록되었습니다.";
+        if (youtubeUrl != null && !youtubeUrl.isBlank()) return "승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)";
+        return "노래 요청이 승인되었습니다.";
     }
 
     @PostMapping("/{id}/reject")
