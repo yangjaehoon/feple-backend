@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.dashboard;
 
 import com.feple.feple_backend.admin.AdminDashboardAssembler;
 import com.feple.feple_backend.admin.account.AdminAccountService;
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +28,7 @@ public class AdminHomeController {
     public String adminHome(Authentication authentication, Model model) {
         model.addAttribute("dashboard", dashboardAssembler.assemble());
         model.addAttribute("recentLogs", adminLogService.getRecentLogs());
+        model.addAttribute("actionLabels", AdminAction.actionLabelMap());
         adminAccountService.findByUsername(authentication.getName())
                 .ifPresent(admin -> model.addAttribute("currentAdmin", admin));
         return "admin/dashboard/home";

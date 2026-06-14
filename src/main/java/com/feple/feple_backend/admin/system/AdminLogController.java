@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogFilter;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,7 +33,7 @@ public class AdminLogController {
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                        Model model) {
-        model.addAttribute("logs", adminLogService.getLogs(page, AdminConstants.LOG_PAGE_SIZE, targetType, adminUsername, from, to));
+        model.addAttribute("logs", adminLogService.getLogs(page, new AdminLogFilter(targetType, adminUsername, from, to)));
         model.addAttribute("targetType", targetType);
         model.addAttribute("adminUsername", adminUsername);
         model.addAttribute("from", from);

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.log;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.global.LikeEscaper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Slf4j
@@ -61,12 +62,12 @@ public class AdminLogService {
         }
     }
 
-    public Page<AdminLog> getLogs(int page, int size, String targetType, String adminUsername, LocalDate from, LocalDate to) {
-        PageRequest pageable = PageRequest.of(page, size);
-        String type     = (targetType     != null && !targetType.isBlank())     ? targetType     : null;
-        String username = LikeEscaper.escapeOrNull(adminUsername);
-        LocalDateTime fromDt = from != null ? from.atStartOfDay()      : null;
-        LocalDateTime toDt   = to   != null ? to.atTime(23, 59, 59)    : null;
+    public Page<AdminLog> getLogs(int page, AdminLogFilter filter) {
+        PageRequest pageable = PageRequest.of(page, AdminConstants.LOG_PAGE_SIZE);
+        String type     = !filter.targetType().isBlank() ? filter.targetType() : null;
+        String username = LikeEscaper.escapeOrNull(filter.adminUsername());
+        LocalDateTime fromDt = filter.from() != null ? filter.from().atStartOfDay() : null;
+        LocalDateTime toDt   = filter.to()   != null ? filter.to().atTime(LocalTime.MAX) : null;
         return repository.findWithFilters(type, username, fromDt, toDt, pageable);
     }
 

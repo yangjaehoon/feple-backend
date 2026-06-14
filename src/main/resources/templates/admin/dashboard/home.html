@@ -286,8 +286,8 @@
                                          : (${#strings.contains(entry.action,'CREATE') or #strings.contains(entry.action,'ADD') or #strings.contains(entry.action,'APPROVE') or entry.action == 'USER_UNBAN'} ? 'act-dot green'
                                          : 'act-dot yellow')"></div>
                             <div class="act-body">
-                                <div class="act-type" th:text="${entry.action}"></div>
-                                <div class="act-title" th:text="${entry.detail != null ? entry.detail : (entry.targetType + (entry.targetId != null ? ' #' + entry.targetId : ''))}"></div>
+                                <div class="act-type" th:text="${actionLabels.getOrDefault(entry.action, #strings.replace(entry.action, '_', ' '))}"></div>
+                                <div class="act-title" th:text="${entry.detail != null ? entry.detail : (entry.targetType != null ? entry.targetType + (entry.targetId != null ? ' #' + entry.targetId : '') : '—')}"></div>
                             </div>
                             <div class="act-meta"
                                  th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm')}"></div>
