@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('셋리스트 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">셋리스트 관리</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists}">아티스트</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}" th:text="${artist.name}"></a>
+                <span class="bc-sep">›</span>
+                <span>셋리스트</span>
+            </div>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-secondary" th:href="@{/admin/artists/{id}/songs(id=${artist.id})}">← 곡 관리</a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    페스티벌 출연 목록
+                    <span class="card-title-note" th:text="'— ' + ${artist.name}"></span>
+                </div>
+            </div>
+
+            <div th:if="${appearances.isEmpty()}" class="card-empty">
+                등록된 페스티벌 출연 이력이 없습니다.
+            </div>
+
+            <div th:unless="${appearances.isEmpty()}" class="item-list">
+                <div th:each="af : ${appearances}" class="song-item-row">
+                    <div class="item-body">
+                        <div class="item-title" th:text="${af.festival.title}"></div>
+                        <div class="item-meta"
+                             th:text="${af.festival.startDate} + ' ~ ' + ${af.festival.endDate}"></div>
+                        <div th:if="${!#strings.isEmpty(af.stageName)}"
+                             class="item-meta"
+                             th:text="'스테이지: ' + ${af.stageName}"></div>
+                    </div>
+                    <a th:href="@{/admin/artists/{aId}/setlist/{afId}(aId=${artist.id}, afId=${af.id})}"
+                       class="btn btn-primary btn-sm">셋리스트 수정</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

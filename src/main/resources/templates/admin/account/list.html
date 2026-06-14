@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{admin/fragments :: head('관리자 계정 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('accounts')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div th:replace="~{admin/fragments :: pageHeaderInner('관리자 계정 관리', '관리자 계정')}"></div>
+        <a th:href="@{/admin/accounts/new}" class="btn btn-primary">+ 새 관리자 추가</a>
+    </div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48">ID</th>
+                        <th>이름</th>
+                        <th class="col-w130">아이디</th>
+                        <th class="col-w110">역할</th>
+                        <th>권한</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w110">생성일</th>
+                        <th class="col-w160">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="acc : ${accounts}">
+                        <td class="td-id" th:text="${acc.id}"></td>
+                        <td>
+                            <div class="avatar-cell">
+                                <img th:if="${acc.profileImageUrl != null}"
+                                     th:src="${acc.profileImageUrl}"
+                                     class="avatar" alt="프로필"/>
+                                <img th:unless="${acc.profileImageUrl != null}"
+                                     th:src="@{/img/feple_logo.png}" class="avatar" alt="feple"/>
+                                <span class="cell-primary" th:text="${acc.displayName ?: acc.username}"></span>
+                            </div>
+                        </td>
+                        <td class="td-monospace" th:text="${acc.username}"></td>
+                        <td>
+                            <span th:class="'badge role-' + ${acc.role.name()}"
+                                  th:text="${acc.role.displayName}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${acc.role.name() == 'SUPER_ADMIN'}"
+                                  class="badge role-SUPER_ADMIN">전체 권한</span>
+                            <span th:if="${acc.role.name() != 'SUPER_ADMIN'} and ${acc.permissions.isEmpty()}"
+                                  class="td-muted">없음</span>
+                            <span th:each="perm : ${acc.permissions}"
+                                  th:if="${acc.role.name() != 'SUPER_ADMIN'}"
+                                  class="perm-tag" th:text="${perm.displayName}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${acc.enabled}"  class="status-active">활성</span>
+                            <span th:unless="${acc.enabled}" class="status-disabled">비활성</span>
+                        </td>
+                        <td class="td-date"
+                            th:text="${#temporals.format(acc.createdAt, 'yy-MM-dd')}"></td>
+                        <td>
+                            <div class="cell-actions-wrap">
+                                <a th:href="@{/admin/accounts/{id}/edit(id=${acc.id})}"
+                                   class="btn btn-secondary btn-sm">수정</a>
+
+                                <form th:action="@{/admin/accounts/{id}/toggle-enabled(id=${acc.id})}"
+                                      method="post"
+                                      th:if="${acc.username != #authentication.name}">
+                                    <button type="submit" class="btn btn-sm"
+                                            th:class="${acc.enabled} ? 'btn btn-secondary btn-sm' : 'btn btn-primary btn-sm'"
+                                            th:text="${acc.enabled} ? '비활성화' : '활성화'"
+                                            th:attr="${acc.enabled} ? 'data-confirm=비활성화 하시겠습니까?' : null">
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/admin/accounts/{id}/delete(id=${acc.id})}"
+                                      method="post"
+                                      th:if="${acc.username != #authentication.name}">
+                                    <button type="submit" class="btn btn-ghost-danger btn-sm"
+                                            data-confirm="이 계정을 삭제하시겠습니까?">삭제</button>
+                                </form>
+
+                                <span th:if="${acc.username == #authentication.name}"
+                                      class="td-self-label">내 계정</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${accounts.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(8, '등록된 관리자 계정이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

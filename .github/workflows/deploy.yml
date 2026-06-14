@@ -1,0 +1,87 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Create application-local.yaml
+        env:
+          APPLICATION_LOCAL_YAML: ${{ secrets.APPLICATION_LOCAL_YAML }}
+        run: |
+          mkdir -p src/main/resources
+          printf '%s' "$APPLICATION_LOCAL_YAML" > src/main/resources/application-local.yaml
+
+      - name: Test with Gradle
+        run: ./gradlew cleanTest test
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: build/reports/jacoco/test/html/
+          retention-days: 14
+
+      - name: Build with Gradle
+        run: ./gradlew bootJar -x test
+
+      - name: Stop service before deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo systemctl stop feple.service || true
+
+      - name: Deploy to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "build/libs/*.jar"
+          target: "/tmp/"
+          strip_components: 2
+          timeout: 120s
+          command_timeout: 30m
+
+      - name: Start Spring Boot service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo mv /tmp/*.jar /opt/feple/feple.jar
+            sudo mkdir -p /etc/systemd/system/feple.service.d
+            sudo tee /etc/systemd/system/feple.service.d/jvm.conf > /dev/null << 'EOF'
+            [Service]
+            Environment="JAVA_TOOL_OPTIONS=-Xms128m -Xmx400m -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication"
+            EOF
+            sudo systemctl daemon-reload
+            sudo systemctl start feple.service
+            sleep 15
+            systemctl is-active feple.service

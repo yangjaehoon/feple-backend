@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head(${festival.title})}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader2(${festival.title}, '페스티벌', @{/admin/festivals}, ${festival.title})}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 기본 정보 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🎵 페스티벌 정보</div>
+            </div>
+            <div class="card-body">
+                <div class="festival-info">
+                    <img class="poster-img"
+                         th:if="${!#strings.isEmpty(festival.posterUrl)}"
+                         th:src="${festival.posterUrl}" th:alt="${festival.title}"/>
+                    <div class="no-poster"
+                         th:unless="${!#strings.isEmpty(festival.posterUrl)}">
+                        <span class="icon-xl">🖼️</span>
+                        <span>포스터 없음</span>
+                    </div>
+                    <div class="meta-list">
+                        <div class="meta-item">
+                            <div class="meta-label">기간</div>
+                            <div class="meta-value" th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">장소</div>
+                            <div class="meta-value" th:text="${festival.location}"></div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">좋아요</div>
+                            <div class="meta-value meta-value-primary">
+                                ❤ <span th:text="${festival.likeCount}">0</span>
+                            </div>
+                        </div>
+                        <div class="meta-item" th:if="${!#strings.isEmpty(festival.description)}">
+                            <div class="meta-label">설명</div>
+                            <div class="meta-value" th:text="${festival.description}"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-warning">✏ 수정</a>
+                    <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
+                    <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
+                    <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
+                          method="post" data-confirm="이 페스티벌을 삭제할까요?">
+                        <button type="submit" class="btn btn-danger">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 참여 아티스트 -->
+        <div id="artists" class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    참여 아티스트
+                    <span class="card-count" th:text="${#lists.size(participatingArtists)}"></span>
+                </div>
+                <div class="page-actions">
+                    <button type="submit" form="batch-edit-form" class="btn btn-warning btn-sm"
+                            th:if="${!participatingArtists.isEmpty()}">💾 저장</button>
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}">+ 추가</a>
+                </div>
+            </div>
+
+            <!-- 아티스트별 삭제 form — 중첩 form 방지를 위해 batch-edit-form 밖에 배치 -->
+            <th:block th:each="af : ${participatingArtistsByName}">
+                <form th:id="'delete-af-' + ${af.artistFestivalId}"
+                      th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
+                      method="post" hidden></form>
+            </th:block>
+
+            <form id="batch-edit-form"
+                  th:action="@{/admin/festivals/{id}/artists/batch-edit(id=${festival.id})}"
+                  method="post">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>참여 날짜</th>
+                            <th>아티스트</th>
+                            <th>장르</th>
+                            <th>공연 시간</th>
+                            <th>스테이지</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="af : ${participatingArtistsByName}">
+                            <td>
+                                <input type="hidden" name="afIds" th:value="${af.artistFestivalId}"/>
+                                <input type="date" name="performanceDates"
+                                       th:value="${af.performanceDate}"
+                                       th:min="${festival.startDate}"
+                                       th:max="${festival.endDate}"
+                                       class="compact-input-date"/>
+                            </td>
+                            <td class="td-bold" th:text="${af.artistName}"></td>
+                            <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
+                            <td>
+                                <!-- 타임테이블에 등록된 슬롯 표시 -->
+                                <th:block th:if="${!timetableByArtist.get(af.artistName).isEmpty()}">
+                                    <div th:each="slot : ${timetableByArtist.get(af.artistName)}"
+                                         class="slot-row">
+                                        <span class="slot-muted" th:text="${slot.festivalDate}"></span>
+                                        <span class="slot-bold"
+                                              th:text="${slot.startTime} + ' ~ ' + ${slot.endTime}"></span>
+                                    </div>
+                                </th:block>
+                                <!-- 타임테이블 미입력 -->
+                                <span th:if="${timetableByArtist.get(af.artistName).isEmpty()}"
+                                      class="badge badge-danger">미입력</span>
+                            </td>
+                            <td>
+                                <th:block th:if="${!stages.isEmpty()}">
+                                    <select name="stageNames" class="stage-select">
+                                        <option value="">— 미지정 —</option>
+                                        <option th:each="s : ${stages}"
+                                                th:value="${s.name}"
+                                                th:text="${s.name}"
+                                                th:selected="${s.name == af.stageName}"></option>
+                                    </select>
+                                </th:block>
+                                <th:block th:if="${stages.isEmpty()}">
+                                    <span class="hint">스테이지 없음</span>
+                                    <input type="hidden" name="stageNames" th:value="${af.stageName}"/>
+                                </th:block>
+                            </td>
+                            <td>
+                                <button type="submit"
+                                        th:attr="form='delete-af-' + ${af.artistFestivalId}"
+                                        class="btn btn-ghost-danger btn-sm"
+                                        data-confirm="삭제하시겠습니까?">삭제</button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(participatingArtists)}" th:replace="~{admin/fragments :: emptyRow(6, '참여 아티스트가 없습니다.')}"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+
+        <!-- 타임테이블 -->
+        <div id="timetable" class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🕐 타임테이블
+                    <span class="card-count" th:text="${#lists.size(timetableEntries)}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <!-- ── 스테이지 관리 영역 ── -->
+                <div class="stage-box">
+                    <div class="stage-box-title">📋 스테이지 목록</div>
+                    <div th:if="${stages.isEmpty()}" class="stage-empty">등록된 스테이지가 없습니다. 아래에서 추가해주세요.</div>
+                    <div th:if="${!stages.isEmpty()}" class="stage-list">
+                        <div th:each="s, stat : ${stages}" class="stage-row" th:data-stage="${s.name}">
+                            <div class="stage-order-num" th:text="${stat.index + 1}"></div>
+                            <span class="stage-name" th:text="${s.name}"></span>
+                            <!-- 위로 -->
+                            <form th:action="@{/admin/festivals/{id}/stages/{sid}/up(id=${festival.id}, sid=${s.id})}"
+                                  method="post">
+                                <button type="submit" class="stage-btn"
+                                        th:disabled="${stat.first}" title="위로">▲</button>
+                            </form>
+                            <!-- 아래로 -->
+                            <form th:action="@{/admin/festivals/{id}/stages/{sid}/down(id=${festival.id}, sid=${s.id})}"
+                                  method="post">
+                                <button type="submit" class="stage-btn"
+                                        th:disabled="${stat.last}" title="아래로">▼</button>
+                            </form>
+                            <!-- 삭제 -->
+                            <form th:action="@{/admin/festivals/{id}/stages/{sid}/delete(id=${festival.id}, sid=${s.id})}"
+                                  method="post"
+                                  data-confirm="스테이지를 삭제할까요?">
+                                <button type="submit" class="stage-btn del" title="삭제">✕</button>
+                            </form>
+                        </div>
+                    </div>
+                    <form th:action="@{/admin/festivals/{id}/stages(id=${festival.id})}"
+                          method="post" class="stage-add-inline">
+                        <input type="text" name="name" placeholder="스테이지명 (예: Main, Sub1)" maxlength="30"/>
+                        <button type="submit" class="btn btn-primary btn-sm">+ 스테이지 추가</button>
+                    </form>
+                </div>
+
+                <!-- 타임테이블 추가 폼 -->
+                <form id="timetable-add-form"
+                      th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                      method="post"
+                      class="form-grid-5col">
+
+                    <input type="hidden" name="stageName" id="autoStageName"/>
+                    <input type="hidden" name="festivalDate" id="autoFestivalDate"/>
+
+                    <div>
+                        <label class="form-label-sm">아티스트</label>
+                        <th:block th:if="${!participatingArtistsByName.isEmpty()}">
+                            <select name="artistName" id="artistSelect" required
+                                    class="compact-input">
+                                <option value="" disabled selected>아티스트 선택</option>
+                                <option th:each="af : ${participatingArtistsByName}"
+                                        th:value="${af.artistName}"
+                                        th:text="${af.artistName}"
+                                        th:attr="data-stage=${af.stageName},data-date=${af.performanceDate}"></option>
+                            </select>
+                        </th:block>
+                        <th:block th:if="${participatingArtistsByName.isEmpty()}">
+                            <input type="text" disabled placeholder="참여 아티스트를 먼저 추가하세요"
+                                   class="compact-input"/>
+                        </th:block>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">날짜 (자동)</label>
+                        <div id="datePreview" class="preview-input">
+                            아티스트 선택 시 자동 입력
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">스테이지 (자동)</label>
+                        <div id="stagePreview" class="preview-input">
+                            아티스트 선택 시 자동 입력
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-grid-2col">
+                            <div>
+                                <label class="form-label-sm">시작</label>
+                                <input type="time" name="startTime" id="startTime" required
+                                       class="compact-input"/>
+                            </div>
+                            <div>
+                                <label class="form-label-sm">종료</label>
+                                <input type="time" name="endTime" id="endTime" required
+                                       class="compact-input"/>
+                            </div>
+                        </div>
+                        <div id="timeError" class="time-error">
+                            ⚠ 종료 시간은 시작 시간보다 늦어야 합니다.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
+                </form>
+                <div th:if="${timetableSuccess}" class="alert alert-success" th:text="${timetableSuccess}"></div>
+
+                <!-- 운영 항목 추가 폼 -->
+                <div class="ops-box">
+                    <div class="ops-box-title">📢 운영 항목 추가 (티켓 부스 오픈, 입장 게이트 오픈 등)</div>
+                    <form id="ops-add-form"
+                          th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
+                          method="post"
+                          class="form-grid-ops">
+                        <input type="hidden" name="stageName" th:value="${opsStageIndicator}"/>
+                        <div>
+                            <label class="form-label-ops">항목명</label>
+                            <input type="text" name="artistName" placeholder="예: 티켓 부스 오픈, 입장 게이트 오픈" required maxlength="50"
+                                   class="compact-input-ops"/>
+                        </div>
+                        <div>
+                            <label class="form-label-ops">날짜</label>
+                            <input type="date" name="festivalDate"
+                                   th:min="${festival.startDate}" th:max="${festival.endDate}"
+                                   th:value="${festival.startDate}" required
+                                   class="compact-input-ops"/>
+                        </div>
+                        <div>
+                            <label class="form-label-ops">시작</label>
+                            <input type="time" name="startTime" required
+                                   class="compact-input-ops"/>
+                        </div>
+                        <div>
+                            <label class="form-label-ops">종료</label>
+                            <input type="time" name="endTime" required
+                                   class="compact-input-ops"/>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-nowrap">+ 추가</button>
+                    </form>
+                </div>
+
+                <!-- 목록 테이블 -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>구분</th>
+                            <th>시간</th>
+                            <th>아티스트 / 항목</th>
+                            <th>수정</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="entry, stat : ${timetableEntries}">
+                            <!-- 날짜 구분 헤더: 첫 항목이거나 날짜가 바뀔 때 -->
+                            <tr th:if="${stat.first or entry.festivalDate != timetableEntries[stat.index - 1].festivalDate}"
+                                class="tt-date-row">
+                                <td colspan="5" class="tt-date-cell">
+                                    📅 <span th:text="${entry.festivalDate}"></span>
+                                </td>
+                            </tr>
+                            <!-- 항목 행: 운영 항목은 노란 배경 -->
+                            <tr th:classappend="${entry.stageName == opsStageIndicator} ? 'bg-warning-subtle' : ''">
+                                <td>
+                                    <span th:if="${entry.stageName == opsStageIndicator}"
+                                          class="ops-label" th:text="${opsStageIndicator + ' 운영'}"></span>
+                                    <span th:unless="${entry.stageName == opsStageIndicator}"
+                                          class="badge badge-stage" th:data-stage="${entry.stageName}"
+                                          th:text="${!#strings.isEmpty(entry.stageName) ? entry.stageName : '미지정'}"></span>
+                                </td>
+                                <td class="td-time">
+                                    <span class="text-bold" th:text="${entry.startTime}"></span>
+                                    <span class="sep-muted">~</span>
+                                    <span class="text-bold" th:text="${entry.endTime}"></span>
+                                </td>
+                                <td class="td-bold" th:text="${entry.artistName}"></td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                            th:data-id="${entry.id}"
+                                            th:data-festival="${festival.id}"
+                                            th:data-artist="${entry.artistName}"
+                                            th:data-date="${entry.festivalDate}"
+                                            th:data-start="${entry.startTime}"
+                                            th:data-end="${entry.endTime}"
+                                            th:data-stage="${entry.stageName}"
+                                            onclick="openTimetableEdit(this)">수정</button>
+                                </td>
+                                <td>
+                                    <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
+                                          method="post">
+                                        <button type="submit" class="btn btn-ghost-danger btn-sm"
+                                                data-confirm="삭제하시겠습니까?">삭제</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </th:block>
+                        <tr th:if="${timetableEntries.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(5, '등록된 타임테이블이 없습니다.')}"></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 타임테이블 수정 모달 -->
+                <div id="tt-edit-modal" class="modal-overlay">
+                    <div class="modal-box">
+                        <div class="modal-header">
+                            <span class="modal-title">타임테이블 항목 수정</span>
+                            <button type="button" class="modal-close" onclick="closeTimetableEdit()">✕</button>
+                        </div>
+                        <form id="tt-edit-form" method="post">
+                            <input type="hidden" name="stageName" id="tt-edit-stageName"/>
+                            <div style="margin-bottom:12px">
+                                <label class="form-label-sm">아티스트 / 항목명</label>
+                                <th:block th:if="${!participatingArtistsByName.isEmpty()}">
+                                    <select id="tt-edit-artistSelect" class="compact-input"
+                                            style="width:100%; margin-bottom:6px"
+                                            onchange="onTtEditArtistChange(this)">
+                                        <option th:each="af : ${participatingArtistsByName}"
+                                                th:value="${af.artistName}"
+                                                th:text="${af.artistName}"></option>
+                                        <option value="__direct__">-- 직접 입력 --</option>
+                                    </select>
+                                </th:block>
+                                <input type="text" name="artistName" id="tt-edit-artistName"
+                                       class="compact-input" style="width:100%" required maxlength="50"
+                                       placeholder="항목명 직접 입력"/>
+                            </div>
+                            <div style="margin-bottom:12px">
+                                <label class="form-label-sm">날짜</label>
+                                <input type="date" name="festivalDate" id="tt-edit-date"
+                                       th:min="${festival.startDate}" th:max="${festival.endDate}"
+                                       class="compact-input" style="width:100%" required/>
+                            </div>
+                            <div class="form-grid-2col" style="margin-bottom:4px">
+                                <div>
+                                    <label class="form-label-sm">시작</label>
+                                    <input type="time" name="startTime" id="tt-edit-start"
+                                           class="compact-input" required/>
+                                </div>
+                                <div>
+                                    <label class="form-label-sm">종료</label>
+                                    <input type="time" name="endTime" id="tt-edit-end"
+                                           class="compact-input" required/>
+                                </div>
+                            </div>
+                            <div id="tt-edit-time-error" class="time-error">⚠ 종료 시간은 시작 시간보다 늦어야 합니다.</div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-ghost" onclick="closeTimetableEdit()">취소</button>
+                                <button type="submit" class="btn btn-primary">저장</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 부스 관리 -->
+        <div id="booths" class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🏪 부스 관리
+                    <span class="card-count" th:text="${#lists.size(booths)}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-hint">지도를 클릭하면 해당 위치에 부스를 등록할 수 있습니다.</p>
+
+                <!-- 부스 추가 폼 -->
+                <form id="booth-add-form"
+                      th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
+                      enctype="multipart/form-data"
+                      class="form-grid-5col">
+                    <input type="hidden" id="boothLat" name="latitude"/>
+                    <input type="hidden" id="boothLng" name="longitude"/>
+                    <div>
+                        <label class="form-label-sm">부스명</label>
+                        <input type="text" name="name" placeholder="예: 맥주존 A" required
+                               class="compact-input"/>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">종류</label>
+                        <select name="boothType" required
+                                class="compact-input">
+                            <option value="" disabled selected>선택</option>
+                            <option th:each="bt : ${allBoothTypes}" th:value="${bt}" th:text="${bt.displayName}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">설명 (선택)</label>
+                        <input type="text" name="description" placeholder="간단한 설명"
+                               class="compact-input"/>
+                    </div>
+                    <div>
+                        <label class="form-label-sm">이미지 (선택)</label>
+                        <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
+                               class="file-input-sm"/>
+                        <span id="boothImageError" class="input-error"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
+                </form>
+
+                <!-- 지도 -->
+                <div id="boothMapWrap" class="map-wrap">
+                    <div id="boothMap" class="map-canvas"></div>
+                </div>
+                <p id="boothPosLabel" class="card-hint">지도를 클릭하여 부스 위치를 선택하세요.</p>
+
+                <!-- 부스 목록 -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>종류</th>
+                            <th>부스명</th>
+                            <th>설명</th>
+                            <th>위치</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="booth : ${booths}">
+                            <td>
+                                <span class="badge badge-type"
+                                      th:classappend="${booth.boothType != null ? 'badge-' + booth.boothType.cssName : ''}"
+                                      th:text="${booth.boothTypeName ?: '-'}"></span>
+                            </td>
+                            <td class="td-bold" th:text="${booth.name}"></td>
+                            <td class="td-sub td-muted" th:text="${booth.description ?: '-'}"></td>
+                            <td class="hint" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
+                            <td>
+                                <form th:action="@{/admin/festivals/{fId}/booths/{bId}/delete(fId=${festival.id},bId=${booth.id})}" method="post">
+                                    <button type="submit" class="btn btn-ghost-danger btn-sm" data-confirm="삭제하시겠습니까?">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${booths.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(5, '등록된 부스가 없습니다.')}"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 셋리스트 관리 -->
+        <div id="setlist" class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🎵 셋리스트 관리
+                    <span class="card-count" th:text="${#lists.size(participatingArtists)}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-hint">
+                    아티스트별로 이 페스티벌에서 부른 곡을 등록하세요. 순서는 라인업 순서를 따릅니다.
+                </p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th class="col-w40">순서</th>
+                            <th>아티스트</th>
+                            <th>등록된 곡 수</th>
+                            <th>편집</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="af : ${participatingArtists}">
+                            <td class="td-center td-sub td-muted"
+                                th:text="${af.lineupOrder ?: '-'}"></td>
+                            <td class="td-bold" th:text="${af.artistName}"></td>
+                            <td>
+                                <th:block th:with="cnt=${setlistCounts.get(af.artistFestivalId) ?: 0}">
+                                    <span th:if="${cnt > 0}"
+                                          class="setlist-count"
+                                          th:text="${cnt} + '곡'"></span>
+                                    <span th:if="${cnt == 0}"
+                                          class="setlist-none">미등록</span>
+                                </th:block>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/artists/{aId}/setlist/{afId}(aId=${af.artistId}, afId=${af.artistFestivalId}, festivalId=${festival.id})}"
+                                   class="btn btn-warning btn-sm">편집</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${participatingArtists.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(4, '참여 아티스트가 없습니다. 먼저 아티스트를 추가해주세요.')}"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script th:inline="javascript">
+var _geoData = {lat: /*[[${festival.latitude}]]*/ 0, lng: /*[[${festival.longitude}]]*/ 0, booths: /*[[${booths}]]*/ []};
+</script>
+<script th:src="@{/js/admin-festival-detail.js}"></script>
+<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap&loading=async'}" async defer></script>
+</body>
+</html>

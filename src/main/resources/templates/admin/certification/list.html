@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('인증 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('certifications')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('인증 관리', '인증 관리')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <!-- 검색 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/certifications}" method="get">
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '신청자 닉네임 또는 페스티벌명 검색...', @{/admin/certifications(status=${status})})}"></th:block>
+                </form>
+            </div>
+
+            <!-- 필터 탭 -->
+            <div class="type-tab-wrap">
+                <a th:href="@{/admin/certifications(status='', page=0)}"
+                   th:classappend="${status == '' or status == null} ? ' active' : ''"
+                   class="type-tab">
+                    전체
+                    <span class="card-count" th:text="${certifications.totalElements}"></span>
+                </a>
+                <a th:href="@{/admin/certifications(status='PENDING', page=0)}"
+                   th:classappend="${status == 'PENDING'} ? ' active' : ''"
+                   class="type-tab">
+                    대기중
+                    <span th:if="${pendingCount > 0}" class="card-count" th:text="${pendingCount}"></span>
+                </a>
+                <a th:href="@{/admin/certifications(status='APPROVED', page=0)}"
+                   th:classappend="${status == 'APPROVED'} ? ' active' : ''"
+                   class="type-tab">승인됨</a>
+                <a th:href="@{/admin/certifications(status='REJECTED', page=0)}"
+                   th:classappend="${status == 'REJECTED'} ? ' active' : ''"
+                   class="type-tab">거절됨</a>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48">ID</th>
+                        <th>신청자</th>
+                        <th>페스티벌</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w120">신청일</th>
+                        <th class="col-w100">액션</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="cert : ${certifications.content}">
+                        <td class="td-id" th:text="${cert.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${cert.userId})}"
+                               th:text="${cert.userNickname}"
+                               class="td-link"></a>
+                            <div class="cell-secondary" th:text="${cert.userEmail}"></div>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/certifications/{id}(id=${cert.id})}"
+                               th:text="${cert.festivalTitle}"
+                               class="cell-primary cell-link"></a>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${cert.pending} ? 'badge-warning' : (${cert.approved} ? 'badge-success' : 'badge-danger')"
+                                  th:text="${cert.status.displayName}"></span>
+                        </td>
+                        <td class="cell-secondary" th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td>
+                            <a th:href="@{/admin/certifications/{id}(id=${cert.id})}"
+                               class="btn btn-secondary btn-sm">상세</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${certifications.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(6, '인증 신청이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${certifications}, '/admin/certifications',
+                'status=' + ${status} + (${keyword != null and !#strings.isEmpty(keyword)} ? '&keyword=' + ${keyword} : ''))}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

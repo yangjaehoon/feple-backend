@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<body>
+
+<!-- ── 공통 <head> ── -->
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title th:text="'Feple Admin — ' + ${pageTitle}">Feple Admin</title>
+    <link rel="icon" th:href="@{/img/feple_logo.png}" type="image/png">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+
+<!-- ── 사이드바 네비게이션 + 전역 스크립트 ── -->
+<th:block th:fragment="navbar(active)">
+<div class="topbar">
+    <button class="topbar-menu-btn" aria-label="메뉴">&#9776;</button>
+    <a th:href="@{/admin}" class="topbar-title">fe<span>ple</span> Admin</a>
+</div>
+<div class="sb-overlay"></div>
+<aside class="sidebar">
+
+    <!-- 로고 -->
+    <div class="sb-logo-section">
+        <a th:href="@{/admin}" class="sb-logo-link">
+            <img th:src="@{/img/feple_logo.png}" alt="feple" class="sb-logo-img"/>
+            <div class="sb-logo-name">fe<span>ple</span></div>
+            <span class="sb-logo-tag">Admin</span>
+        </a>
+    </div>
+
+    <!-- 메뉴 -->
+    <nav class="sb-nav">
+
+        <div class="sb-section-label">대시보드</div>
+        <a th:href="@{/admin}" class="sb-link"
+           th:classappend="${active == 'home'} ? ' active'">
+            <span class="sb-icon">📊</span> 대시보드
+        </a>
+        <a sec:authorize="hasAuthority('PERM_STATS')"
+           th:href="@{/admin/stats}" class="sb-link"
+           th:classappend="${active == 'stats'} ? ' active'">
+            <span class="sb-icon">📈</span> 통계
+        </a>
+
+        <div class="sb-section-label">콘텐츠</div>
+        <a sec:authorize="hasAuthority('PERM_FESTIVALS')"
+           th:href="@{/admin/festivals}" class="sb-link"
+           th:classappend="${active == 'festivals'} ? ' active'">
+            <span class="sb-icon">🎪</span> 페스티벌
+        </a>
+        <a sec:authorize="hasAuthority('PERM_ARTISTS')"
+           th:href="@{/admin/artists}" class="sb-link"
+           th:classappend="${active == 'artists'} ? ' active'">
+            <span class="sb-icon">🎤</span> 아티스트
+        </a>
+        <a sec:authorize="hasAuthority('PERM_POSTS')"
+           th:href="@{/admin/posts}" class="sb-link"
+           th:classappend="${active == 'posts'} ? ' active'">
+            <span class="sb-icon">📝</span> 게시글
+        </a>
+        <a sec:authorize="hasAuthority('PERM_CRAWL')"
+           th:href="@{/admin/crawl}" class="sb-link"
+           th:classappend="${active == 'crawl'} ? ' active'">
+            <span class="sb-icon">🕸️</span> 크롤링
+        </a>
+
+        <div class="sb-section-label">사용자 요청</div>
+        <a sec:authorize="hasAuthority('PERM_ARTISTS')"
+           th:href="@{/admin/artist-suggestions}" class="sb-link"
+           th:classappend="${active == 'artist-suggestions'} ? ' active'">
+            <span class="sb-icon">💡</span> 아티스트 신청
+            <span th:if="${sidebarArtistSuggestionCount != null and sidebarArtistSuggestionCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarArtistSuggestionCount}"></span>
+        </a>
+        <a sec:authorize="hasAuthority('PERM_SONG_REQUESTS')"
+           th:href="@{/admin/song-requests}" class="sb-link"
+           th:classappend="${active == 'song-requests'} ? ' active'">
+            <span class="sb-icon">🎵</span> 노래 요청
+            <span th:if="${sidebarSongRequestCount != null and sidebarSongRequestCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarSongRequestCount}"></span>
+        </a>
+        <a sec:authorize="hasAuthority('PERM_CERTIFICATIONS')"
+           th:href="@{/admin/certifications}" class="sb-link"
+           th:classappend="${active == 'certifications'} ? ' active'">
+            <span class="sb-icon">🏅</span> 인증 관리
+            <span th:if="${sidebarCertCount != null and sidebarCertCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarCertCount}"></span>
+        </a>
+        <a sec:authorize="hasAuthority('PERM_REPORTS')"
+           th:href="@{/admin/reports}" class="sb-link"
+           th:classappend="${active == 'reports'} ? ' active'">
+            <span class="sb-icon">🚨</span> 신고 관리
+            <span th:if="${sidebarReportCount != null and sidebarReportCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarReportCount}"></span>
+        </a>
+
+        <div class="sb-section-label">회원 · 운영</div>
+        <a sec:authorize="hasAuthority('PERM_USERS')"
+           th:href="@{/admin/users}" class="sb-link"
+           th:classappend="${active == 'users'} ? ' active'">
+            <span class="sb-icon">👤</span> 회원 관리
+        </a>
+        <a sec:authorize="hasAuthority('PERM_BAD_WORDS')"
+           th:href="@{/admin/bad-words}" class="sb-link"
+           th:classappend="${active == 'bad-words'} ? ' active'">
+            <span class="sb-icon">🚫</span> 금칙어
+        </a>
+
+        <div class="sb-section-label">시스템</div>
+        <a sec:authorize="hasRole('SUPER_ADMIN')"
+           th:href="@{/admin/push}" class="sb-link"
+           th:classappend="${active == 'push'} ? ' active'">
+            <span class="sb-icon">📣</span> 푸시 발송
+        </a>
+        <a sec:authorize="hasAuthority('PERM_LOGS')"
+           th:href="@{/admin/logs}" class="sb-link"
+           th:classappend="${active == 'logs'} ? ' active'">
+            <span class="sb-icon">📋</span> 감사 로그
+        </a>
+        <a sec:authorize="hasRole('SUPER_ADMIN')"
+           th:href="@{/admin/accounts}" class="sb-link"
+           th:classappend="${active == 'accounts'} ? ' active'">
+            <span class="sb-icon">🔑</span> 관리자 계정
+        </a>
+
+    </nav>
+
+    <!-- 하단 로그아웃 -->
+    <div class="sb-footer">
+        <form th:action="@{/admin/logout}" method="post" class="sb-logout-form">
+            <button type="submit" class="sb-logout-btn">로그아웃</button>
+        </form>
+    </div>
+
+    <script th:src="@{/js/admin-genre-colors.js}"></script>
+</aside>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/admin-utils.js}"></script>
+<script th:src="@{/js/admin-alert.js}"></script>
+<script th:src="@{/js/admin-confirm.js}"></script>
+</th:block>
+
+<!-- ── 폼 유효성 오류 목록 ── -->
+<div th:fragment="formErrors" th:if="${errors}" class="alert alert-danger card-form">
+    <p th:each="err : ${errors}" class="form-error-item" th:text="${err}"></p>
+</div>
+
+<!-- ── 알림 메시지 ── -->
+<div th:fragment="alerts">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+</div>
+
+<!-- ── 페이지 헤더 (1단계 브레드크럼) ── -->
+<div th:fragment="pageHeader(title, breadcrumb)" class="page-header">
+    <div>
+        <h1 class="page-title" th:text="${title}"></h1>
+        <div class="breadcrumb">
+            <a th:href="@{/admin}">대시보드</a>
+            <span class="bc-sep">›</span>
+            <span th:text="${breadcrumb}"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ── 페이지 헤더 내부 (1단계, outer div 없음 — page-actions 포함 시 사용) ── -->
+<div th:fragment="pageHeaderInner(title, breadcrumb)">
+    <h1 class="page-title" th:text="${title}"></h1>
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">대시보드</a>
+        <span class="bc-sep">›</span>
+        <span th:text="${breadcrumb}"></span>
+    </div>
+</div>
+
+<!-- ── 페이지 헤더 (2단계 브레드크럼) ── -->
+<div th:fragment="pageHeader2(title, parentLabel, parentUrl, current)" class="page-header">
+    <div>
+        <h1 class="page-title" th:text="${title}"></h1>
+        <div class="breadcrumb">
+            <a th:href="@{/admin}">대시보드</a>
+            <span class="bc-sep">›</span>
+            <a th:href="${parentUrl}" th:text="${parentLabel}"></a>
+            <span class="bc-sep">›</span>
+            <span th:text="${current}"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ── 페이지 헤더 내부 (2단계, outer div 없음 — page-actions 포함 시 사용) ── -->
+<div th:fragment="pageHeader2Inner(title, parentLabel, parentUrl, current)">
+    <h1 class="page-title" th:text="${title}"></h1>
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">대시보드</a>
+        <span class="bc-sep">›</span>
+        <a th:href="${parentUrl}" th:text="${parentLabel}"></a>
+        <span class="bc-sep">›</span>
+        <span th:text="${current}"></span>
+    </div>
+</div>
+
+<!-- ── 검색 입력 (keyword input + 검색 버튼 + 초기화 버튼) ── -->
+<th:block th:fragment="searchInputs(keyword, placeholder, resetHref)">
+    <input type="text" name="keyword" th:value="${keyword}"
+           th:placeholder="${placeholder}"
+           autocomplete="off"
+           class="search-input"/>
+    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+    <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+       th:href="${resetHref}"
+       class="btn btn-secondary btn-sm">✕ 초기화</a>
+</th:block>
+
+<!-- ── 빈 테이블 행 ── -->
+<tr th:fragment="emptyRow(colspan, message)" class="empty-row">
+    <td th:colspan="${colspan}" th:text="${message}"></td>
+</tr>
+
+<!-- ── 빈 테이블 행 (키워드 검색 결과 없음) ── -->
+<tr th:fragment="emptyRowSearch(colspan, keyword, message)" class="empty-row">
+    <td th:colspan="${colspan}">
+        <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+        <span th:unless="${keyword != null and !#strings.isEmpty(keyword)}" th:text="${message}"></span>
+    </td>
+</tr>
+
+<!-- ── 페이지네이션 프래그먼트 ── -->
+<div th:fragment="pagination(page, baseUrl, extraParams)" class="table-footer">
+    <span class="page-info" th:text="'총 ' + ${page.totalElements} + '건'"></span>
+    <div class="pagination ml-auto"
+         th:with="ep=${extraParams != null ? '&' + extraParams : ''},
+                  cur=${page.number},
+                  tot=${page.totalPages},
+                  s=${cur > 2 ? cur - 2 : 0},
+                  e=${cur + 2 < tot ? cur + 2 : tot - 1}">
+        <a th:if="${page.hasPrevious()}"
+           th:href="${baseUrl + '?page=' + (cur - 1) + ep}">← 이전</a>
+        <a th:each="i : ${#numbers.sequence(s, e >= s ? e : s)}"
+           th:href="${baseUrl + '?page=' + i + ep}"
+           th:text="${i + 1}"
+           th:classappend="${i == cur} ? 'pg-num current' : 'pg-num'"></a>
+        <a th:if="${page.hasNext()}"
+           th:href="${baseUrl + '?page=' + (cur + 1) + ep}">다음 →</a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('회원 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('users')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('회원 관리', '회원')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 일괄 삭제 폼 (테이블 바깥) -->
+        <form id="bulk-form" th:action="@{/admin/users/bulk-delete}" method="post"></form>
+
+        <div class="card">
+            <!-- 필터 탭 -->
+            <div class="type-tab-wrap">
+                <a th:href="@{/admin/users(page=0,filter='',sort=${sort},keyword=${keyword})}"
+                   th:classappend="${filter == '' or filter == null} ? ' active' : ''"
+                   class="type-tab">
+                    전체
+                    <span class="card-count" th:text="${users.totalElements}"></span>
+                </a>
+                <a th:href="@{/admin/users(page=0,filter='banned',keyword=${keyword})}"
+                   th:classappend="${filter == 'banned'} ? ' active' : ''"
+                   class="type-tab">정지된 회원</a>
+            </div>
+
+            <!-- 검색 + 정렬 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/users}" method="get">
+                    <input type="hidden" name="filter" th:value="${filter}"/>
+                    <input type="hidden" name="sort" th:value="${sort}"/>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '닉네임 또는 이메일 검색...', @{/admin/users(page=0, filter=${filter}, sort=${sort})})}"></th:block>
+                </form>
+                <div th:if="${filter != 'banned'}" class="sort-group">
+                    <span class="sort-label">정렬:</span>
+                    <a th:href="@{/admin/users(page=0,keyword=${keyword},filter=${filter},sort='latest')}"
+                       th:classappend="${sort == 'latest'} ? ' btn-primary' : ' btn-secondary'"
+                       class="btn btn-sm">최신순</a>
+                    <a th:href="@{/admin/users(page=0,keyword=${keyword},filter=${filter},sort='reports')}"
+                       th:classappend="${sort == 'reports'} ? ' btn-primary' : ' btn-secondary'"
+                       class="btn btn-sm">신고 많은 순</a>
+                </div>
+            </div>
+
+            <!-- CSV 내보내기 -->
+            <div class="list-csv-row">
+                <a th:href="@{/admin/export/users.csv}" class="btn btn-secondary btn-sm">CSV 내보내기</a>
+            </div>
+
+            <!-- 일괄 삭제 툴바 (선택 시에만 표시) -->
+            <div class="bulk-toolbar" id="bulk-toolbar" data-unit="명">
+                <span class="bulk-count" id="select-count">0명 선택됨</span>
+                <button type="submit" form="bulk-form"
+                        class="btn btn-danger btn-sm"
+                        data-confirm="선택한 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.">
+                    선택 탈퇴
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w36">
+                            <input type="checkbox" id="select-all" title="전체 선택" class="cb-input"/>
+                        </th>
+                        <th>회원</th>
+                        <th class="col-w55 td-center">역할</th>
+                        <th class="col-w70 td-center">게시글</th>
+                        <th class="col-w60 td-center">댓글</th>
+                        <th class="col-w70 td-center">신고</th>
+                        <th class="col-w100">가입일</th>
+                        <th class="col-w100" th:if="${filter == 'banned'}">정지 만료</th>
+                        <th class="col-w66">상세</th>
+                        <th class="col-w66">삭제</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users.content}">
+                        <td>
+                            <input type="checkbox" name="ids" th:value="${user.id}"
+                                   form="bulk-form" class="row-check cb-input"/>
+                        </td>
+                        <td>
+                            <div class="avatar-cell">
+                                <img th:if="${user.profileImageUrl != null}"
+                                     th:src="${user.profileImageUrl}"
+                                     class="avatar" alt="profile"/>
+                                <div th:if="${user.profileImageUrl == null}" class="avatar-ph">👤</div>
+                                <div>
+                                    <div class="cell-actions">
+                                        <a th:href="@{/admin/users/{id}(id=${user.id})}"
+                                           class="td-link"
+                                           th:text="${user.nickname}"></a>
+                                        <span th:if="${user.banned}" class="badge badge-ban">정지</span>
+                                    </div>
+                                    <div class="cell-secondary" th:text="${user.email}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- 역할 -->
+                        <td class="td-center">
+                            <span th:if="${user.admin}"  class="badge badge-admin">관리자</span>
+                            <span th:if="${user.artist}" class="badge badge-artist">아티스트</span>
+                        </td>
+                        <!-- 게시글 수 -->
+                        <td class="td-center td-sub"
+                            th:text="${postCounts.getOrDefault(user.id, 0)}"></td>
+                        <!-- 댓글 수 -->
+                        <td class="td-center td-sub"
+                            th:text="${commentCounts.getOrDefault(user.id, 0)}"></td>
+                        <!-- 신고 수 -->
+                        <td class="td-center">
+                            <th:block th:with="cnt=${reportCounts.getOrDefault(user.id, 0)}">
+                                <span th:if="${cnt > 0}"
+                                      th:text="${cnt}"
+                                      class="badge"
+                                      th:classappend="${cnt >= 5} ? ' badge-report-high' : ' badge-report-low'"></span>
+                                <span th:unless="${cnt > 0}" class="cell-secondary">0</span>
+                            </th:block>
+                        </td>
+                        <!-- 가입일 -->
+                        <td class="td-date"
+                            th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd') : '-'}"></td>
+                        <!-- 정지 만료일 (banned 탭에서만 표시) -->
+                        <td th:if="${filter == 'banned'}"
+                            class="td-date"
+                            th:text="${user.permanentBan ? '영구' : (user.bannedUntil != null ? #temporals.format(user.bannedUntil, 'yyyy-MM-dd') : '-')}"></td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${user.id})}"
+                               class="btn btn-secondary btn-sm">상세</a>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
+                                <input type="hidden" name="page" th:value="${users.number}"/>
+                                <input type="hidden" name="filter" th:value="${filter}"/>
+                                <input type="hidden" name="sort" th:value="${sort}"/>
+                                <input type="hidden" th:if="${keyword != null and !#strings.isEmpty(keyword)}" name="keyword" th:value="${keyword}"/>
+                                <button type="submit"
+                                        class="btn btn-ghost-danger btn-sm"
+                                        data-confirm="이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.">탈퇴</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${users.totalElements == 0}" th:replace="~{admin/fragments :: emptyRowSearch(${filter == 'banned' ? 10 : 9}, ${keyword}, '가입한 회원이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${users}, '/admin/users', ${extraParams})}"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/admin-bulk.js}"></script>
+</body>
+</html>

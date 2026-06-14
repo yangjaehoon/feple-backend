@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('감사 로그')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('logs')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('감사 로그', '감사 로그')}"></div>
+    <div class="content-area">
+
+        <div class="card">
+            <!-- 필터 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/logs}" method="get">
+                    <select name="targetType" class="form-select select-auto">
+                        <option value=""           th:selected="${#strings.isEmpty(targetType)}">전체 대상</option>
+                        <option value="USER"        th:selected="${targetType == 'USER'}">회원</option>
+                        <option value="FESTIVAL"    th:selected="${targetType == 'FESTIVAL'}">페스티벌</option>
+                        <option value="ARTIST"      th:selected="${targetType == 'ARTIST'}">아티스트</option>
+                        <option value="POST"        th:selected="${targetType == 'POST'}">게시글</option>
+                        <option value="COMMENT"     th:selected="${targetType == 'COMMENT'}">댓글</option>
+                        <option value="REPORT"      th:selected="${targetType == 'REPORT'}">신고</option>
+                        <option value="CERTIFICATION" th:selected="${targetType == 'CERTIFICATION'}">인증</option>
+                        <option value="BAD_WORD"              th:selected="${targetType == 'BAD_WORD'}">금칙어</option>
+                        <option value="NICKNAME_RESTRICTION" th:selected="${targetType == 'NICKNAME_RESTRICTION'}">닉네임 제한</option>
+                        <option value="SONG_REQUEST"         th:selected="${targetType == 'SONG_REQUEST'}">노래 요청</option>
+                    </select>
+                    <input type="text" name="adminUsername" th:value="${adminUsername}"
+                           placeholder="관리자 이름"
+                           class="form-input-sm w-130"/>
+                    <input type="date" name="from"
+                           th:value="${from}"
+                           class="form-select select-auto"
+                           title="시작일"/>
+                    <span class="hint">~</span>
+                    <input type="date" name="to"
+                           th:value="${to}"
+                           class="form-select select-auto"
+                           title="종료일"/>
+                    <button type="submit" class="btn btn-primary btn-sm">조회</button>
+                    <a th:if="${!#strings.isEmpty(targetType) or !#strings.isEmpty(adminUsername) or from != null or to != null}"
+                       th:href="@{/admin/logs}"
+                       class="btn btn-secondary btn-sm">초기화</a>
+                </form>
+                <span class="list-total"
+                      th:text="'총 ' + ${logs.totalElements} + '건'"></span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w140">시각</th>
+                        <th class="col-w110">관리자</th>
+                        <th class="col-w120">IP</th>
+                        <th class="col-w200">액션</th>
+                        <th class="col-w90">대상</th>
+                        <th class="col-w70">ID</th>
+                        <th class="col-w220">상세</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="entry : ${logs.content}">
+                        <td class="td-date"
+                            th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm:ss')}"></td>
+
+                        <td class="td-body"
+                            th:text="${entry.adminUsername != null ? entry.adminUsername : '—'}"></td>
+
+                        <td class="td-mono"
+                            th:text="${entry.ipAddress != null ? entry.ipAddress : '—'}"></td>
+
+                        <td>
+                            <span th:with="a=${entry.action}"
+                                  th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT')}
+                                           ? 'log-badge log-danger'
+                                           : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'}
+                                              ? 'log-badge log-success'
+                                              : 'log-badge log-info')"
+                                  th:text="${actionLabels.getOrDefault(entry.action, #strings.replace(entry.action, '_', ' '))}">
+                            </span>
+                        </td>
+
+                        <td class="td-muted"
+                            th:text="${entry.targetType != null ? entry.targetType : '—'}"></td>
+
+                        <td>
+                            <th:block th:if="${entry.targetId != null}">
+                                <a th:if="${entry.targetType == 'USER'}"
+                                   th:href="@{/admin/users/{id}(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   class="link-primary"></a>
+                                <a th:if="${entry.targetType == 'FESTIVAL'}"
+                                   th:href="@{/admin/festivals/{id}(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   class="link-primary"></a>
+                                <a th:if="${entry.targetType == 'POST'}"
+                                   th:href="@{/admin/posts/{id}(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   class="link-primary"></a>
+                                <span th:if="${entry.targetType != 'USER' and entry.targetType != 'FESTIVAL' and entry.targetType != 'POST'}"
+                                      th:text="${entry.targetId}"
+                                      class="td-muted"></span>
+                            </th:block>
+                            <span th:if="${entry.targetId == null}" class="td-muted">—</span>
+                        </td>
+
+                        <td class="td-text"
+                            th:text="${entry.detail != null ? entry.detail : '—'}"></td>
+                    </tr>
+                    <tr th:if="${logs.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(7, '기록된 로그가 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${logs}, '/admin/logs', ${extraParams})}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

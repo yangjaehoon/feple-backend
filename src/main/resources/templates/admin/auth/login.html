@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 로그인 - Feple</title>
+  <link rel="icon" th:href="@{/favicon.ico}"/>
+  <link rel="stylesheet" th:href="@{/css/admin-login.css}"/>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-wrap">
+      <img class="logo-img" th:src="@{/img/feple_logo.png}" alt="Feple Logo"/>
+      <span class="logo-text">feple</span>
+      <span class="badge-admin">ADMIN</span>
+    </div>
+    <div class="subtitle">관리자 전용 페이지입니다.</div>
+
+    <div th:if="${loginError == 'invalid'}" class="alert alert-error shake">
+      <span>&#9888;</span> 아이디 또는 비밀번호가 올바르지 않습니다.
+    </div>
+    <div th:if="${loginError == 'disabled'}" class="alert alert-error shake">
+      <span>&#9888;</span> 비활성화된 계정입니다. 최고 관리자에게 문의하세요.
+    </div>
+    <div th:if="${loginError == 'locked'}" class="alert alert-error">
+      <span>&#9888;</span> 로그인 시도가 너무 많습니다. 10분 후 다시 시도해주세요.
+    </div>
+    <div th:if="${param.expired != null}" class="alert alert-error">
+      <span>&#9888;</span> 다른 기기에서 로그인하여 현재 세션이 만료되었습니다.
+    </div>
+    <div th:if="${param.logout != null}" class="alert alert-success">
+      <span>&#10003;</span> 로그아웃 되었습니다.
+    </div>
+
+    <form th:action="@{/admin/login}" method="post">
+      <div class="form-group">
+        <label for="username">아이디</label>
+        <div class="input-wrap">
+          <span class="input-icon">&#128100;</span>
+          <input type="text" id="username" name="username"
+                 placeholder="관리자 아이디" required autofocus
+                 autocomplete="username"
+                 th:classappend="${loginError != null} ? 'input-error'"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <div class="input-wrap">
+          <span class="input-icon">&#128274;</span>
+          <input type="password" id="password" name="password"
+                 placeholder="비밀번호" required
+                 autocomplete="current-password"
+                 th:classappend="${loginError != null} ? 'input-error'"/>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login">로그인</button>
+    </form>
+
+    <div class="footer-note"
+         th:text="'© ' + ${#temporals.year(#temporals.createNow())} + ' Feple. All rights reserved.'">
+      © Feple. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
