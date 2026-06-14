@@ -64,7 +64,7 @@ public class AdminLogService {
     public Page<AdminLog> getLogs(int page, int size, String targetType, String adminUsername, LocalDate from, LocalDate to) {
         PageRequest pageable = PageRequest.of(page, size);
         String type     = (targetType     != null && !targetType.isBlank())     ? targetType     : null;
-        String username = (adminUsername  != null && !adminUsername.isBlank())  ? LikeEscaper.escape(adminUsername.trim())  : null;
+        String username = LikeEscaper.escapeOrNull(adminUsername);
         LocalDateTime fromDt = from != null ? from.atStartOfDay()      : null;
         LocalDateTime toDt   = to   != null ? to.atTime(23, 59, 59)    : null;
         return repository.findWithFilters(type, username, fromDt, toDt, pageable);

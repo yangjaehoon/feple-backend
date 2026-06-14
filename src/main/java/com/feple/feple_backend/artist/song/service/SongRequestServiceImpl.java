@@ -95,7 +95,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         } catch (IllegalArgumentException e) {
             statusEnum = SongRequestStatus.PENDING;
         }
-        String kw = (keyword == null || keyword.isBlank()) ? null : LikeEscaper.escape(keyword.trim());
+        String kw = LikeEscaper.escapeOrNull(keyword);
         Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusEnum, kw, pageable);
         Map<Long, String> nicknameMap = nicknameResolver.buildMap(
                 requestsPage.getContent().stream().map(SongRequest::getUserId).toList());

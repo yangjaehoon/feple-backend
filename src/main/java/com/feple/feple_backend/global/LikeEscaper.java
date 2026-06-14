@@ -15,4 +15,14 @@ public final class LikeEscaper {
                 .replace("%", "!%")
                 .replace("_", "!_");
     }
+
+    /** null 또는 공백이면 "", 아니면 trim 후 escape. */
+    public static String escapeOrEmpty(String keyword) {
+        return (keyword == null || keyword.isBlank()) ? "" : escape(keyword.trim());
+    }
+
+    /** null 또는 공백이면 null, 아니면 trim 후 escape. */
+    public static String escapeOrNull(String keyword) {
+        return (keyword == null || keyword.isBlank()) ? null : escape(keyword.trim());
+    }
 }

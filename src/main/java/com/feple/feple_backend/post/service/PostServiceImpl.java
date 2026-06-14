@@ -111,7 +111,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public Page<PostResponseDto> getPostsForAdmin(PostAdminFilter params) {
         PageRequest pageable = PageRequest.of(params.page(), params.size());
         boolean hasKeyword = params.keyword() != null && !params.keyword().isBlank();
-        String kw = hasKeyword ? LikeEscaper.escape(params.keyword().trim()) : "";
+        String kw = LikeEscaper.escapeOrEmpty(params.keyword());
 
         // BoardType enum에 해당하는 필터(FREE, MATE, FESTIVAL_COMPANION 등)는 enum이 직접 처리.
         // 새 BoardType을 추가해도 이 메서드를 수정할 필요 없음.

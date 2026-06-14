@@ -150,7 +150,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword) {
-        String kw = (keyword == null) ? "" : LikeEscaper.escape(keyword.trim());
+        String kw = LikeEscaper.escapeOrEmpty(keyword);
         return userRepository.findAllOrderByTotalReportCountDesc(kw, PageRequest.of(page, size))
                 .map(this::toAdminUserDto);
     }
@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword) {
-        String kw = (keyword == null) ? "" : LikeEscaper.escape(keyword.trim());
+        String kw = LikeEscaper.escapeOrEmpty(keyword);
         return userRepository.findBannedUsers(LocalDateTime.now(), kw, PageRequest.of(page, size))
                 .map(this::toAdminUserDto);
     }
