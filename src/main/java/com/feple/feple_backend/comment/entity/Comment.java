@@ -51,19 +51,25 @@ public class Comment {
     @Column(nullable = false)
     private int likeCount = 0;
 
-    public Comment(String content, Post post, User user) {
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean anonymous = false;
+
+    public Comment(String content, Post post, User user, boolean anonymous) {
         this.content = content;
         this.post = post;
         this.user = user;
+        this.anonymous = anonymous;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Comment(String content, Post post, User user, Comment parent) {
+    public Comment(String content, Post post, User user, Comment parent, boolean anonymous) {
         this.content = content;
         this.post = post;
         this.user = user;
         this.parent = parent;
+        this.anonymous = anonymous;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

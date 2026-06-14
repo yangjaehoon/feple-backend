@@ -23,11 +23,12 @@ public class CommentResponseDto {
     private int likeCount;
     private boolean liked;
     private String profileImageUrl;
+    private boolean anonymous;
 
     public CommentResponseDto(Long id, Long postId, Long userId, String nickname,
                               String content, LocalDateTime createdAt, LocalDateTime updatedAt,
                               boolean certified, UserRole userRole, Long parentId,
-                              int likeCount, boolean liked, String profileImageUrl) {
+                              int likeCount, boolean liked, String profileImageUrl, boolean anonymous) {
         this.id = id;
         this.postId = postId;
         this.userId = userId;
@@ -41,23 +42,26 @@ public class CommentResponseDto {
         this.likeCount = likeCount;
         this.liked = liked;
         this.profileImageUrl = profileImageUrl;
+        this.anonymous = anonymous;
     }
 
     public static CommentResponseDto from(Comment comment, boolean certified, boolean liked) {
+        boolean anon = comment.isAnonymous();
         return new CommentResponseDto(
                 comment.getId(),
                 comment.getPostId(),
                 comment.getUserId(),
-                comment.getUserNickname(),
+                anon ? "익명" : comment.getUserNickname(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
-                certified,
-                comment.getUserRole(),
+                anon ? false : certified,
+                anon ? null : comment.getUserRole(),
                 comment.getParentId(),
                 comment.getLikeCount(),
                 liked,
-                comment.getUserProfileImageUrl()
+                anon ? null : comment.getUserProfileImageUrl(),
+                anon
         );
     }
 }

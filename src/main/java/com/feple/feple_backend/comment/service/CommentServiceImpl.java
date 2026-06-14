@@ -55,7 +55,7 @@ public class CommentServiceImpl implements CommentService {
         if (dto.getParentId() != null) {
             parent = EntityFinder.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
         }
-        Comment comment = new Comment(dto.getContent(), post, user, parent);
+        Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
         Comment saved = commentRepository.save(comment);
         postRepository.incrementCommentCount(post.getId());
 
