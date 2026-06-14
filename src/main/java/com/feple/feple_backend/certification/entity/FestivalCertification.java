@@ -1,6 +1,7 @@
 package com.feple.feple_backend.certification.entity;
 
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_festival_cert_status", columnList = "status")
     }
 )
-public class FestivalCertification {
+public class FestivalCertification extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,17 +43,9 @@ public class FestivalCertification {
     @Column(length = 500)
     private String rejectionMessage;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     private LocalDateTime reviewedAt;
 
     private String reviewedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 
     public Long getFestivalId() { return festival.getId(); }
     public String getFestivalTitle() { return festival.getTitle(); }

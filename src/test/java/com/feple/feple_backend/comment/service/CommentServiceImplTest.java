@@ -12,11 +12,9 @@ import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +39,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static com.feple.feple_backend.support.TestEntityFactory.freePost;
+import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,20 +56,6 @@ class CommentServiceImplTest {
     @Mock BadWordFilter badWordFilter;
 
     @InjectMocks CommentServiceImpl commentService;
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
-    }
-
-    private Post freePost(Long id, User author) {
-        return Post.builder()
-                .id(id).title("제목" + id).content("내용")
-                .user(author).boardType(BoardType.FREE)
-                .likeCount(0).scrapCount(0)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
-                .build();
-    }
 
     private Comment comment(Long id, Post post, User author) {
         return Comment.builder()

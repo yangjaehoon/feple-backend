@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.suggestion.entity;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class ArtistSuggestion {
+public class ArtistSuggestion extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,13 +32,10 @@ public class ArtistSuggestion {
     @Column(nullable = false)
     private ArtistSuggestionStatus status;
 
-    private LocalDateTime createdAt;
-
     private LocalDateTime processedAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
         if (this.status == null) this.status = ArtistSuggestionStatus.PENDING;
     }
 

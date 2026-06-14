@@ -1,13 +1,11 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.post.dto.PostResponseDto;
-import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostScrap;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -24,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static com.feple.feple_backend.support.TestEntityFactory.freePost;
+import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -35,20 +34,6 @@ class PostScrapServiceTest {
     @Mock UserRepository userRepository;
 
     @InjectMocks PostScrapService postScrapService;
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
-    }
-
-    private Post post(Long id, User author) {
-        return Post.builder()
-                .id(id).title("제목" + id).content("내용")
-                .user(author).boardType(BoardType.FREE)
-                .likeCount(0).scrapCount(0)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
-                .build();
-    }
 
     // ── isScrapedByUser ──────────────────────────────────────────────
 
@@ -79,7 +64,7 @@ class PostScrapServiceTest {
     @Test
     void 스크랩_취소시_delete와_decrement_쿼리가_호출되고_false_반환() {
         User user = user(1L);
-        Post post = post(10L, user);
+        Post post = freePost(10L, user);
         PostScrap existing = PostScrap.builder().user(user).post(post).build();
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -96,7 +81,7 @@ class PostScrapServiceTest {
     @Test
     void 스크랩_추가시_save와_increment_쿼리가_호출되고_true_반환() {
         User user = user(1L);
-        Post post = post(10L, user);
+        Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postScrapRepository.findByUserIdAndPostId(1L, 10L)).willReturn(Optional.empty());
@@ -119,7 +104,7 @@ class PostScrapServiceTest {
     @Test
     void 존재하지_않는_사용자가_스크랩시_예외() {
         User user = user(1L);
-        Post post = post(10L, user);
+        Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
@@ -132,8 +117,8 @@ class PostScrapServiceTest {
     @Test
     void 스크랩_목록_조회시_게시글_DTO_목록_반환() {
         User user = user(1L);
-        Post post1 = post(10L, user);
-        Post post2 = post(11L, user);
+        Post post1 = freePost(10L, user);
+        Post post2 = freePost(11L, user);
         PostScrap scrap1 = PostScrap.builder().user(user).post(post1).build();
         PostScrap scrap2 = PostScrap.builder().user(user).post(post2).build();
         given(postScrapRepository.findByUserIdOrderByIdDesc(1L)).willReturn(List.of(scrap1, scrap2));

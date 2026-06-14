@@ -1,13 +1,12 @@
 package com.feple.feple_backend.artist.photo.entity;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.entity.Resolvable;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,7 +19,7 @@ import java.time.LocalDateTime;
         @UniqueConstraint(columnNames = {"reporter_id", "photo_id"})
     }
 )
-public class ArtistPhotoReport implements Resolvable {
+public class ArtistPhotoReport extends BaseTimeEntity implements Resolvable {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,14 +43,6 @@ public class ArtistPhotoReport implements Resolvable {
 
     @Column
     private String detail;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 
     public void resolve(ReportStatus newStatus) {
         this.status = newStatus;

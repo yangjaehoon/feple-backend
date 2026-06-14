@@ -11,8 +11,9 @@ import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
+
+import static com.feple.feple_backend.support.TestEntityFactory.user;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,11 +42,6 @@ class CommentReportServiceTest {
     @Mock UserRepository userRepository;
 
     @InjectMocks CommentReportService commentReportService;
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
-    }
 
     private Comment mockComment() {
         return mock(Comment.class);

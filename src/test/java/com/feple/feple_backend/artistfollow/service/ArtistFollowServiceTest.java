@@ -7,8 +7,9 @@ import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
+
+import static com.feple.feple_backend.support.TestEntityFactory.user;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,11 +34,6 @@ class ArtistFollowServiceTest {
     @Mock UserRepository userRepository;
 
     @InjectMocks ArtistFollowServiceImpl artistFollowService;
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
-    }
 
     private Artist artist(Long id, int followerCount) {
         return Artist.builder().id(id).name("아티스트" + id)

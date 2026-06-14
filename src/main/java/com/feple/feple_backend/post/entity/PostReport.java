@@ -1,10 +1,9 @@
 package com.feple.feple_backend.post.entity;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,7 +19,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_post_report_status", columnList = "status")
     }
 )
-public class PostReport implements Resolvable {
+public class PostReport extends BaseTimeEntity implements Resolvable {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,14 +43,6 @@ public class PostReport implements Resolvable {
 
     @Column
     private String detail; // 기타 사유 상세
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 
     public Long getPostId() { return post.getId(); }
     public String getPostTitle() { return post.getTitle(); }

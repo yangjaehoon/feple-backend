@@ -5,8 +5,9 @@ import com.feple.feple_backend.festival.entity.FestivalLike;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
+
+import static com.feple.feple_backend.support.TestEntityFactory.user;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,11 +32,6 @@ class FestivalLikeServiceTest {
     @Mock UserRepository userRepository;
 
     @InjectMocks FestivalLikeService festivalLikeService;
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
-    }
 
     private Festival festival(Long id) {
         return Festival.builder().id(id).title("페스티벌" + id).build();

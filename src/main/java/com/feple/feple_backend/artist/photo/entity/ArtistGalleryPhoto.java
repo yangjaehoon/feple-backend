@@ -1,12 +1,11 @@
 package com.feple.feple_backend.artist.photo.entity;
 
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_gallery_photo_artist_id", columnList = "artist_id"),
         @Index(name = "idx_gallery_photo_uploader_id", columnList = "uploader_user_id")
 })
-public class ArtistGalleryPhoto {
+public class ArtistGalleryPhoto extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,14 +33,6 @@ public class ArtistGalleryPhoto {
 
     @Column(nullable = false, length = 100)
     private String contentType;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 
     @Column(length = 100, nullable = false)
     private String title;

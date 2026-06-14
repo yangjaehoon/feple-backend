@@ -1,10 +1,9 @@
 package com.feple.feple_backend.artist.song.entity;
 
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(indexes = {
     @Index(name = "idx_song_request_status", columnList = "status")
 })
-public class SongRequest {
+public class SongRequest extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,11 +35,8 @@ public class SongRequest {
     @Column(nullable = false)
     private SongRequestStatus status;
 
-    private LocalDateTime createdAt;
-
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = SongRequestStatus.PENDING;
         }

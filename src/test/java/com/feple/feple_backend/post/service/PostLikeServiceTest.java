@@ -1,12 +1,10 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static com.feple.feple_backend.support.TestEntityFactory.freePost;
+import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -38,20 +37,6 @@ class PostLikeServiceTest {
     @Mock UserRepository userRepository;
 
     @InjectMocks PostLikeService postLikeService;
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
-    }
-
-    private Post post(Long id, User author) {
-        return Post.builder()
-                .id(id).title("제목").content("내용")
-                .user(author).boardType(BoardType.FREE)
-                .likeCount(0).scrapCount(0)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
-                .build();
-    }
 
     // ── isLikedByUser ────────────────────────────────────────────────
 
@@ -82,7 +67,7 @@ class PostLikeServiceTest {
     @Test
     void 좋아요_취소시_decrementLikeCount_호출되고_false_반환() {
         User user = user(1L);
-        Post post = post(10L, user);
+        Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postLikeRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(1);
@@ -97,7 +82,7 @@ class PostLikeServiceTest {
     @Test
     void 좋아요_추가시_save와_incrementLikeCount_호출되고_true_반환() {
         User user = user(1L);
-        Post post = post(10L, user);
+        Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postLikeRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
@@ -114,7 +99,7 @@ class PostLikeServiceTest {
         // 두 스레드가 동시에 toggleLike 호출 — 서비스 레이어에서는 예외 없이 완료
         // 실제 중복 삽입 방지는 PostLike(user_id, post_id) DB unique 제약이 담당
         User user = user(1L);
-        Post post = post(10L, user);
+        Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postLikeRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
@@ -152,7 +137,7 @@ class PostLikeServiceTest {
     @Test
     void 존재하지_않는_사용자가_좋아요시_예외() {
         User user = user(1L);
-        Post post = post(10L, user);
+        Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 

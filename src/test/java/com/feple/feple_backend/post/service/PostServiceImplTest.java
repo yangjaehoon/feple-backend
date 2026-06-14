@@ -13,7 +13,6 @@ import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +35,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static com.feple.feple_backend.support.TestEntityFactory.freePost;
+import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -51,20 +52,6 @@ class PostServiceImplTest {
     @Mock BadWordFilter badWordFilter;
 
     @InjectMocks PostServiceImpl postService;
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
-    }
-
-    private Post freePost(Long id, User author) {
-        return Post.builder()
-                .id(id).title("제목" + id).content("내용")
-                .user(author).boardType(BoardType.FREE)
-                .likeCount(0).scrapCount(0)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
-                .build();
-    }
 
     // ── createPost ──────────────────────────────────────────────────
 

@@ -1,9 +1,9 @@
 package com.feple.feple_backend.admin.account;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +16,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 @Builder
 @AllArgsConstructor
-public class AdminAccount {
+public class AdminAccount extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,14 +51,6 @@ public class AdminAccount {
     @Column(nullable = false)
     @Builder.Default
     private boolean enabled = true;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 
     public void updateProfileImage(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
