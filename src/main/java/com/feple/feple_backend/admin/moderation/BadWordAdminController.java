@@ -83,7 +83,10 @@ public class BadWordAdminController {
     @PostMapping("/nickname-restrictions/add")
     public String addNicknameRestriction(@RequestParam String word, RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> nicknameRestrictionService.add(word),
+                () -> {
+                    nicknameRestrictionService.add(word);
+                    adminLogService.log(AdminAction.NICKNAME_RESTRICTION_ADD, "NICKNAME_RESTRICTION", null, word);
+                },
                 "닉네임 제한 단어가 추가되었습니다.",
                 e -> log.error("닉네임 제한 단어 추가 실패: word={}", word, e),
                 "닉네임 제한 단어 추가 중 오류가 발생했습니다.",
@@ -94,7 +97,10 @@ public class BadWordAdminController {
     @PostMapping("/nickname-restrictions/{id}/delete")
     public String deleteNicknameRestriction(@PathVariable Long id, RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> nicknameRestrictionService.delete(id),
+                () -> {
+                    nicknameRestrictionService.delete(id);
+                    adminLogService.log(AdminAction.NICKNAME_RESTRICTION_DELETE, "NICKNAME_RESTRICTION", id, null);
+                },
                 "삭제되었습니다.",
                 e -> log.error("닉네임 제한 단어 삭제 실패: id={}", id, e),
                 "삭제 중 오류가 발생했습니다.",
