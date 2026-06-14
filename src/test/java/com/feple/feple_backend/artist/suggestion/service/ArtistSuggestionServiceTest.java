@@ -5,10 +5,8 @@ import com.feple.feple_backend.artist.suggestion.dto.SubmitArtistSuggestionDto;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
+import com.feple.feple_backend.global.UserNicknameResolver;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
-import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +27,7 @@ import static org.mockito.Mockito.verify;
 class ArtistSuggestionServiceTest {
 
     @Mock ArtistSuggestionRepository suggestionRepository;
-    @Mock UserRepository userRepository;
+    @Mock UserNicknameResolver nicknameResolver;
     @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks ArtistSuggestionServiceImpl suggestionService;
@@ -39,11 +37,6 @@ class ArtistSuggestionServiceTest {
         dto.setArtistName(artistName);
         dto.setNote("꼭 추가해주세요");
         return dto;
-    }
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
     }
 
     private ArtistSuggestion savedSuggestion(Long id, Long userId, String artistName) {
@@ -69,7 +62,7 @@ class ArtistSuggestionServiceTest {
     void 신규_아티스트_신청시_저장됨() {
         given(suggestionRepository.existsByUserIdAndArtistNameIgnoreCaseAndStatus(
                 1L, "뉴진스", ArtistSuggestionStatus.PENDING)).willReturn(false);
-        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(nicknameResolver.resolve(1L)).willReturn("user1");
         ArtistSuggestion saved = savedSuggestion(10L, 1L, "뉴진스");
         given(suggestionRepository.save(any(ArtistSuggestion.class))).willReturn(saved);
 
@@ -84,7 +77,7 @@ class ArtistSuggestionServiceTest {
     void 신청_저장_후_닉네임_조회됨() {
         given(suggestionRepository.existsByUserIdAndArtistNameIgnoreCaseAndStatus(
                 2L, "BTS", ArtistSuggestionStatus.PENDING)).willReturn(false);
-        given(userRepository.findById(2L)).willReturn(Optional.of(user(2L)));
+        given(nicknameResolver.resolve(2L)).willReturn("user2");
         given(suggestionRepository.save(any(ArtistSuggestion.class)))
                 .willReturn(savedSuggestion(11L, 2L, "BTS"));
 

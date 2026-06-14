@@ -8,10 +8,8 @@ import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
+import com.feple.feple_backend.global.UserNicknameResolver;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
-import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,7 +34,7 @@ class SongRequestServiceTest {
 
     @Mock SongRequestRepository songRequestRepository;
     @Mock ArtistRepository artistRepository;
-    @Mock UserRepository userRepository;
+    @Mock UserNicknameResolver nicknameResolver;
     @Mock YoutubeSearchService youtubeSearchService;
     @Mock SongRepository songRepository;
     @Mock ApplicationEventPublisher eventPublisher;
@@ -45,11 +43,6 @@ class SongRequestServiceTest {
 
     private Artist artist(Long id) {
         return Artist.builder().id(id).name("아이유").build();
-    }
-
-    private User user(Long id) {
-        return User.builder().id(id).nickname("user" + id)
-                .oauthId("o" + id).role(UserRole.USER).build();
     }
 
     private SubmitSongRequestDto dto(String title) {
@@ -84,7 +77,7 @@ class SongRequestServiceTest {
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
         given(songRequestRepository.existsByArtistIdAndUserIdAndSongTitleIgnoreCaseAndStatus(
                 1L, 10L, "Lilac", SongRequestStatus.PENDING)).willReturn(false);
-        given(userRepository.findById(10L)).willReturn(Optional.of(user(10L)));
+        given(nicknameResolver.resolve(10L)).willReturn("user10");
         SongRequest saved = savedRequest(5L, artist, 10L, "Lilac");
         given(songRequestRepository.save(any(SongRequest.class))).willReturn(saved);
 
