@@ -1,10 +1,13 @@
 package com.feple.feple_backend.badword;
 
+import com.feple.feple_backend.badword.event.BadWordChangedEvent;
 import com.feple.feple_backend.badword.repository.BadWordRepository;
 import com.feple.feple_backend.global.exception.BadWordException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 
 import java.util.Set;
 
@@ -18,6 +21,11 @@ public class BadWordFilter {
     @PostConstruct
     public void reload() {
         badWords = Set.copyOf(badWordRepository.findAllWords());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleChange(BadWordChangedEvent event) {
+        reload();
     }
 
     public void validate(String... texts) {

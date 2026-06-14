@@ -1,9 +1,10 @@
 package com.feple.feple_backend.badword.service;
 
-import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.badword.entity.BadWord;
+import com.feple.feple_backend.badword.event.BadWordChangedEvent;
 import com.feple.feple_backend.badword.repository.BadWordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.List;
 public class BadWordService {
 
     private final BadWordRepository badWordRepository;
-    private final BadWordFilter badWordFilter;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<BadWord> findAll() {
         return badWordRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -34,12 +35,12 @@ public class BadWordService {
             throw new IllegalArgumentException("이미 등록된 금칙어입니다: " + trimmed);
         }
         badWordRepository.save(new BadWord(trimmed));
-        badWordFilter.reload();
+        eventPublisher.publishEvent(new BadWordChangedEvent());
     }
 
     @Transactional
     public void delete(Long id) {
         badWordRepository.deleteById(id);
-        badWordFilter.reload();
+        eventPublisher.publishEvent(new BadWordChangedEvent());
     }
 }

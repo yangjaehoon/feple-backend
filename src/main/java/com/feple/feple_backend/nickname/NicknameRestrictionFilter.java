@@ -1,9 +1,12 @@
 package com.feple.feple_backend.nickname;
 
+import com.feple.feple_backend.nickname.event.NicknameRestrictionChangedEvent;
 import com.feple.feple_backend.nickname.repository.NicknameRestrictionRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 
 import java.util.Set;
 
@@ -18,6 +21,11 @@ public class NicknameRestrictionFilter {
     @PostConstruct
     public void reload() {
         restricted = Set.copyOf(repository.findAllWords());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleChange(NicknameRestrictionChangedEvent event) {
+        reload();
     }
 
     public void validate(String nickname) {

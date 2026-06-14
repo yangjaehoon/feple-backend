@@ -1,9 +1,10 @@
 package com.feple.feple_backend.nickname.service;
 
-import com.feple.feple_backend.nickname.NicknameRestrictionFilter;
 import com.feple.feple_backend.nickname.entity.NicknameRestriction;
+import com.feple.feple_backend.nickname.event.NicknameRestrictionChangedEvent;
 import com.feple.feple_backend.nickname.repository.NicknameRestrictionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.List;
 public class NicknameRestrictionService {
 
     private final NicknameRestrictionRepository repository;
-    private final NicknameRestrictionFilter filter;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<NicknameRestriction> findAll() {
         return repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -29,12 +30,12 @@ public class NicknameRestrictionService {
         if (trimmed.length() > 50) throw new IllegalArgumentException("50자 이하여야 합니다.");
         if (repository.existsByWord(trimmed)) throw new IllegalArgumentException("이미 등록된 단어입니다: " + trimmed);
         repository.save(new NicknameRestriction(trimmed));
-        filter.reload();
+        eventPublisher.publishEvent(new NicknameRestrictionChangedEvent());
     }
 
     @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
-        filter.reload();
+        eventPublisher.publishEvent(new NicknameRestrictionChangedEvent());
     }
 }
