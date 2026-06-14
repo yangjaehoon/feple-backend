@@ -12,6 +12,7 @@ import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminSe
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import org.springframework.data.domain.Page;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -58,8 +59,8 @@ public class ArtistAdminController {
 
         try {
             dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
-            artistService.createArtist(dto);
-            adminLogService.log(AdminAction.ARTIST_CREATE, "ARTIST", null, dto.getName());
+            Long artistId = artistService.createArtist(dto);
+            adminLogService.log(AdminAction.ARTIST_CREATE, "ARTIST", artistId, dto.getName());
             ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 등록 실패 name={}", dto.getName(), e);
@@ -123,6 +124,7 @@ public class ArtistAdminController {
             ArtistResponseDto artist = artistService.getArtistById(id);
             String imageKey = artistService.uploadProfile(file, artist.getName());
             artistService.updateArtistPhoto(id, imageKey);
+            adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", id, artist.getName() + " 사진 변경");
             ra.addFlashAttribute("successMessage", "사진이 업데이트되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 프로필 사진 업로드 실패 artistId={}", id, e);
@@ -139,7 +141,7 @@ public class ArtistAdminController {
             model.addAttribute("artistId", id);
             model.addAttribute("artist", artistService.getArtistForEdit(id));
             model.addAttribute("page", page);
-        } catch (java.util.NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
         }
@@ -153,8 +155,7 @@ public class ArtistAdminController {
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
                                @RequestParam(defaultValue = "0") int page,
                                Model model,
-                               RedirectAttributes ra
-    ) {
+                               RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("artistId", id);
             model.addAttribute("page", page);
@@ -168,7 +169,7 @@ public class ArtistAdminController {
             artistService.updateArtist(id, dto);
             adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", id, dto.getName());
             ra.addFlashAttribute("successMessage", "아티스트 정보가 수정되었습니다.");
-        } catch (java.util.NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("아티스트 수정 실패 id={}", id, e);
@@ -182,7 +183,10 @@ public class ArtistAdminController {
                                     @RequestParam("nameEns") List<String> nameEns,
                                     RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> artistService.batchUpdateNameEn(artistIds, nameEns),
+                () -> {
+                    artistService.batchUpdateNameEn(artistIds, nameEns);
+                    adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", null, "영어 이름 일괄 수정 " + artistIds.size() + "건");
+                },
                 "영어 이름이 저장되었습니다.",
                 e -> log.error("아티스트 영어 이름 일괄 저장 실패", e),
                 "저장 중 오류가 발생했습니다.",
@@ -203,5 +207,4 @@ public class ArtistAdminController {
                 ra);
         return "redirect:/admin/artists";
     }
-
 }

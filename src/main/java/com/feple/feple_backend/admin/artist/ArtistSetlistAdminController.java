@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Slf4j
@@ -39,7 +40,7 @@ public class ArtistSetlistAdminController {
             List<ArtistFestival> appearances = artistFestivalService.getAppearancesByArtistId(artistId);
             model.addAttribute("artist", artist);
             model.addAttribute("appearances", appearances);
-        } catch (java.util.NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
         } catch (Exception e) {
@@ -71,7 +72,7 @@ public class ArtistSetlistAdminController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists/" + artistId + "/setlist";
-        } catch (java.util.NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
         } catch (Exception e) {

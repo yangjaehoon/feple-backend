@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -64,10 +65,11 @@ public class CertificationAdminController {
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id,
                           @ModelAttribute CertFilter filter,
+                          Authentication auth,
                           RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
-                    certificationService.approve(id, "admin");
+                    certificationService.approve(id, auth.getName());
                     adminLogService.log(AdminAction.CERTIFICATION_APPROVE, "CERTIFICATION", id, null);
                 },
                 "인증이 승인되었습니다.",
@@ -81,10 +83,11 @@ public class CertificationAdminController {
     public String reject(@PathVariable Long id,
                          @RequestParam(defaultValue = "") String rejectionMessage,
                          @ModelAttribute CertFilter filter,
+                         Authentication auth,
                          RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
-                    certificationService.reject(id, rejectionMessage, "admin");
+                    certificationService.reject(id, rejectionMessage, auth.getName());
                     adminLogService.log(AdminAction.CERTIFICATION_REJECT, "CERTIFICATION", id,
                             rejectionMessage.isBlank() ? null : rejectionMessage);
                 },

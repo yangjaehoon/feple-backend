@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.ArtistLineupOcrResult;
+import com.feple.feple_backend.admin.LineupApplyOcrRequest;
 import com.feple.feple_backend.admin.LineupApplyResult;
 import com.feple.feple_backend.admin.OcrApplyRequest;
 import com.feple.feple_backend.admin.OcrApplyResultDto;
@@ -137,21 +138,14 @@ public class CrawlAdminController {
 
     @PostMapping("/ocr/lineup/apply")
     @ResponseBody
-    public ResponseEntity<?> applyLineupOcr(@RequestBody Map<String, Object> body) {
-        Object fidObj = body.get("festivalId");
-        Object idsObj = body.get("artistIds");
-        if (fidObj == null) return badRequest("페스티벌을 선택해주세요.");
-        if (idsObj == null || ((List<?>) idsObj).isEmpty()) return badRequest("등록할 아티스트가 없습니다.");
-        Long festivalId = Long.parseLong(fidObj.toString());
-        @SuppressWarnings("unchecked")
-        List<Long> artistIds = ((List<?>) idsObj).stream()
-                .map(id -> Long.parseLong(id.toString()))
-                .toList();
+    public ResponseEntity<?> applyLineupOcr(@RequestBody LineupApplyOcrRequest request) {
+        if (request.festivalId() == null)                            return badRequest("페스티벌을 선택해주세요.");
+        if (request.artistIds() == null || request.artistIds().isEmpty()) return badRequest("등록할 아티스트가 없습니다.");
         try {
-            LineupApplyResult result = ocrService.applyArtistLineup(festivalId, artistIds);
+            LineupApplyResult result = ocrService.applyArtistLineup(request.festivalId(), request.artistIds());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("라인업 OCR 적용 실패: festivalId={}", fidObj, e);
+            log.error("라인업 OCR 적용 실패: festivalId={}", request.festivalId(), e);
             return serverError("아티스트 등록에 실패했습니다.");
         }
     }

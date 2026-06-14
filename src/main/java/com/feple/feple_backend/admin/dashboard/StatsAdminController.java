@@ -31,24 +31,24 @@ public class StatsAdminController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             Model model) {
 
-        LocalDate[] range = clampDateRange(from, to);
-        LocalDate start   = range[0];
-        LocalDate end     = range[1];
+        DateRange range = clampDateRange(from, to);
 
         model.addAttribute("activityStats", adminStatsService.getUserActivityStats());
-        model.addAttribute("rangeStats", adminStatsService.getRangeStats(start, end));
+        model.addAttribute("rangeStats", adminStatsService.getRangeStats(range.start(), range.end()));
         model.addAttribute("contentTrend", adminStatsService.getContentTrend());
-        model.addAttribute("from", start.toString());
-        model.addAttribute("to", end.toString());
+        model.addAttribute("from", range.start().toString());
+        model.addAttribute("to", range.end().toString());
         return "admin/dashboard/stats";
     }
 
-    private static LocalDate[] clampDateRange(LocalDate from, LocalDate to) {
+    private static DateRange clampDateRange(LocalDate from, LocalDate to) {
         LocalDate today = LocalDate.now();
         LocalDate end   = (to == null || to.isAfter(today)) ? today : to;
         LocalDate start = (from == null) ? end.minusDays(DEFAULT_RANGE_DAYS - 1) : from;
-        if (start.isAfter(end))                              start = end;
-        if (start.isBefore(end.minusDays(MAX_RANGE_DAYS - 1))) start = end.minusDays(MAX_RANGE_DAYS - 1);
-        return new LocalDate[]{start, end};
+        if (start.isAfter(end))                                  start = end;
+        if (start.isBefore(end.minusDays(MAX_RANGE_DAYS - 1)))  start = end.minusDays(MAX_RANGE_DAYS - 1);
+        return new DateRange(start, end);
     }
+
+    private record DateRange(LocalDate start, LocalDate end) {}
 }
