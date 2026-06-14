@@ -25,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -115,6 +113,10 @@ public class PostReportService implements ReportAdminService<PostReport> {
                 .forEach(r -> r.resolve(ReportStatus.DISMISSED));
     }
 
+    @Override
+    public Long extractAuthorId(PostReport report) { return report.getPostAuthorId(); }
+
+    @Override
     public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
         return CountRowMapper.toLongMap(reportRepository.countByPostAuthorIds(userIds));
@@ -125,14 +127,6 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     public long getReportCountForUser(Long userId) {
-        List<Object[]> result = reportRepository.countByPostAuthorIds(List.of(userId));
-        return result.isEmpty() ? 0L : (Long) result.get(0)[1];
-    }
-
-    @Override
-    public Map<Long, Long> buildAuthorReportCounts(Page<PostReport> reports) {
-        Set<Long> ids = reports.getContent().stream()
-                .map(PostReport::getPostAuthorId).collect(Collectors.toSet());
-        return getAuthorReportCounts(ids);
+        return CountRowMapper.extractSingleCount(reportRepository.countByPostAuthorIds(List.of(userId)));
     }
 }

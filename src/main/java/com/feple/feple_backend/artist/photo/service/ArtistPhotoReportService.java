@@ -25,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -119,20 +117,16 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
                 .forEach(r -> r.resolve(ReportStatus.DISMISSED));
     }
 
-    public Map<Long, Long> getUploaderReportCounts(Collection<Long> userIds) {
+    @Override
+    public Long extractAuthorId(ArtistPhotoReport report) { return report.getPhotoUploaderId(); }
+
+    @Override
+    public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
         return CountRowMapper.toLongMap(reportRepository.countByPhotoUploaderIds(userIds));
     }
 
     public long getReportCountForUser(Long userId) {
-        List<Object[]> result = reportRepository.countByPhotoUploaderIds(List.of(userId));
-        return result.isEmpty() ? 0L : (Long) result.get(0)[1];
-    }
-
-    @Override
-    public Map<Long, Long> buildAuthorReportCounts(Page<ArtistPhotoReport> reports) {
-        Set<Long> ids = reports.getContent().stream()
-                .map(ArtistPhotoReport::getPhotoUploaderId).collect(Collectors.toSet());
-        return getUploaderReportCounts(ids);
+        return CountRowMapper.extractSingleCount(reportRepository.countByPhotoUploaderIds(List.of(userId)));
     }
 }

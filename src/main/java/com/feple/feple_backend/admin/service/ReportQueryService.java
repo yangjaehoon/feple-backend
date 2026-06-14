@@ -5,7 +5,10 @@ import com.feple.feple_backend.post.entity.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public interface ReportQueryService<T> {
     String getReportType();
@@ -14,7 +17,14 @@ public interface ReportQueryService<T> {
     Page<T> searchReportsByKeyword(String escapedKeyword, ReportStatus status, PageRequest pageable);
     long getPendingCount();
     long getTotalCount();
-    Map<Long, Long> buildAuthorReportCounts(Page<T> reports);
+    Long extractAuthorId(T report);
+    Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds);
+
+    default Map<Long, Long> buildAuthorReportCounts(Page<T> reports) {
+        Set<Long> ids = reports.getContent().stream()
+                .map(this::extractAuthorId).collect(Collectors.toSet());
+        return getAuthorReportCounts(ids);
+    }
 
     default Page<T> getReportsForAdmin(int page, int size, String statusFilter) {
         PageRequest pageable = PageRequest.of(page, size);

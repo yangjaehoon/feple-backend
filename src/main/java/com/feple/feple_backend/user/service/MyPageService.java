@@ -63,7 +63,7 @@ public class MyPageService {
         Map<Long, Long> counts = new HashMap<>();
         postReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
         commentReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
-        photoReportService.getUploaderReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
+        photoReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
         return counts;
     }
 

@@ -17,4 +17,8 @@ public class CountRowMapper {
         return rows.stream()
                 .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
     }
+
+    public static long extractSingleCount(List<Object[]> rows) {
+        return rows.isEmpty() ? 0L : (Long) rows.get(0)[1];
+    }
 }
