@@ -58,7 +58,7 @@ public class BadWordAdminController {
     @GetMapping("/scan")
     @ResponseBody
     public ResponseEntity<?> scan(@RequestParam String word) {
-        if (word == null || word.isBlank()) {
+        if (word.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "단어를 입력해주세요."));
         }
         long postCount    = postAdminService.countPostsContaining(word.strip());

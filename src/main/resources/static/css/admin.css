@@ -1431,6 +1431,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .td-time             { font-size: 13px; white-space: nowrap; }
 .sep-muted           { color: var(--muted); margin: 0 4px; }
 .text-bold           { font-weight: 700; color: var(--text); }
+.text-muted          { color: var(--muted); }
+.text-danger         { color: var(--danger); }
 .file-input-sm       { width: 100%; padding: 5px 0; font-size: 12px; }
 .input-error         { display: none; font-size: 11px; color: var(--danger); font-weight: 600; margin-top: 3px; }
 .badge-type          { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
