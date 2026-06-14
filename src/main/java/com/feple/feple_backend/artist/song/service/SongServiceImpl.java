@@ -19,8 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.feple.feple_backend.global.CountRowMapper;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.Optional;
 
 @Service
@@ -41,13 +41,8 @@ public class SongServiceImpl implements SongService, SongAdminService {
         if (songs.isEmpty()) return List.of();
 
         // 한 번의 쿼리로 전체 카운트 조회
-        Map<Long, Long> countMap = artistFestivalSongRepository
-                .countGroupedBySongForArtist(artistId)
-                .stream()
-                .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> (Long) row[1]
-                ));
+        Map<Long, Long> countMap = CountRowMapper.toLongMap(
+                artistFestivalSongRepository.countGroupedBySongForArtist(artistId));
 
         return songs.stream()
                 .map(song -> {
@@ -142,12 +137,8 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Transactional(readOnly = true)
     public Map<Long, Integer> getSetlistCounts(List<Long> artistFestivalIds) {
         if (artistFestivalIds.isEmpty()) return Map.of();
-        return artistFestivalSongRepository.countGroupedByArtistFestivalIds(artistFestivalIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> ((Long) row[1]).intValue()
-                ));
+        return CountRowMapper.toIntMap(
+                artistFestivalSongRepository.countGroupedByArtistFestivalIds(artistFestivalIds));
     }
 
     @Override

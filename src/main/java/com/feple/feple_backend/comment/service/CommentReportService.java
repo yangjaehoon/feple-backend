@@ -13,6 +13,7 @@ import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -122,8 +123,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
 
     public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
-        return reportRepository.countByCommentAuthorIds(userIds).stream()
-                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+        return CountRowMapper.toLongMap(reportRepository.countByCommentAuthorIds(userIds));
     }
 
     private static final int MAX_EXPORT_ROWS = 50_000;

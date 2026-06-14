@@ -6,6 +6,7 @@ import com.feple.feple_backend.badword.BadWordFilter;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.PageSize;
@@ -207,8 +208,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Transactional(readOnly = true)
     public Map<Long, Long> getPostCountsByUserIds(List<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
-        return postRepository.countGroupByUserId(userIds).stream()
-                .collect(java.util.stream.Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+        return CountRowMapper.toLongMap(postRepository.countGroupByUserId(userIds));
     }
 
     @Override

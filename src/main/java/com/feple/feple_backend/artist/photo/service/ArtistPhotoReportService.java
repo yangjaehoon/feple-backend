@@ -7,6 +7,7 @@ import com.feple.feple_backend.artist.photo.entity.ArtistPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
+import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -123,8 +124,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
 
     public Map<Long, Long> getUploaderReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
-        return reportRepository.countByPhotoUploaderIds(userIds).stream()
-                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+        return CountRowMapper.toLongMap(reportRepository.countByPhotoUploaderIds(userIds));
     }
 
     public long getReportCountForUser(Long userId) {

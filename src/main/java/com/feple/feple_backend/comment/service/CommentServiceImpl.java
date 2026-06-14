@@ -13,6 +13,7 @@ import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PermissionValidator;
@@ -137,8 +138,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public java.util.Map<Long, Long> getCommentCountsByUserIds(java.util.List<Long> userIds) {
         if (userIds.isEmpty()) return java.util.Map.of();
-        return commentRepository.countGroupByUserId(userIds).stream()
-                .collect(java.util.stream.Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+        return CountRowMapper.toLongMap(commentRepository.countGroupByUserId(userIds));
     }
 
     @Override

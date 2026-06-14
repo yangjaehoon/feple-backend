@@ -10,6 +10,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
@@ -160,14 +161,12 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     private Map<Long, Integer> buildSongCountMap() {
-        return songRepository.countGroupedByArtist().stream()
-                .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
+        return CountRowMapper.toIntMap(songRepository.countGroupedByArtist());
     }
 
     private Map<Long, Integer> buildSongCountMapForIds(List<Long> artistIds) {
         if (artistIds.isEmpty()) return Map.of();
-        return songRepository.countGroupedByArtistIds(artistIds).stream()
-                .collect(Collectors.toMap(row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
+        return CountRowMapper.toIntMap(songRepository.countGroupedByArtistIds(artistIds));
     }
 
     @Override
