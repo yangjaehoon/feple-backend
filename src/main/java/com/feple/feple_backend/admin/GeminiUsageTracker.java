@@ -18,12 +18,12 @@ public class GeminiUsageTracker {
     private final AtomicInteger todayCount = new AtomicInteger(0);
     private volatile LocalDate trackingDate = LocalDate.now(PACIFIC);
 
-    public void increment() {
+    public synchronized void increment() {
         resetIfNewDay();
         todayCount.incrementAndGet();
     }
 
-    public int getTodayCount() {
+    public synchronized int getTodayCount() {
         resetIfNewDay();
         return todayCount.get();
     }
@@ -32,7 +32,8 @@ public class GeminiUsageTracker {
         return dailyLimit;
     }
 
-    private synchronized void resetIfNewDay() {
+    // 호출자가 이미 synchronized 메서드 안에 있을 때만 사용
+    private void resetIfNewDay() {
         LocalDate today = LocalDate.now(PACIFIC);
         if (!today.equals(trackingDate)) {
             trackingDate = today;
