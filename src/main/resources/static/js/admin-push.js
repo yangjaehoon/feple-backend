@@ -18,22 +18,26 @@
         return confirm('해당 그룹에게 발송하시겠습니까?');
     }
 
+    function setSearchState(el, stateClass) {
+        el.classList.remove('text-muted', 'text-primary', 'text-danger');
+        if (stateClass) el.classList.add(stateClass);
+    }
+
     function showSearchLoading(el) {
+        setSearchState(el, 'text-muted');
         el.style.display = 'block';
-        el.style.color   = 'var(--muted)';
         el.textContent   = '검색 중...';
     }
 
     function renderSearchSuccess(el, data) {
-        el.style.color = 'var(--primary)';
+        setSearchState(el, 'text-primary');
         el.textContent = '';
         var nicknameEl = document.createElement('strong');
         nicknameEl.textContent = data.nickname;
         var btn = document.createElement('button');
-        btn.type          = 'button';
-        btn.className     = 'btn btn-secondary';
-        btn.style.cssText = 'font-size:12px; padding:2px 10px;';
-        btn.textContent   = '이 ID로 설정';
+        btn.type        = 'button';
+        btn.className   = 'btn btn-secondary btn-sm';
+        btn.textContent = '이 ID로 설정';
         btn.addEventListener('click', function () { fillUserId(data.id); });
         el.appendChild(nicknameEl);
         el.appendChild(document.createTextNode(' (ID: ' + data.id + ')  '));
@@ -41,7 +45,7 @@
     }
 
     function renderSearchError(el, msg) {
-        el.style.color = 'var(--danger, #dc3545)';
+        setSearchState(el, 'text-danger');
         el.textContent = msg;
     }
 

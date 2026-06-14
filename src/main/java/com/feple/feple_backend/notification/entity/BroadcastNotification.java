@@ -1,18 +1,16 @@
 package com.feple.feple_backend.notification.entity;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "broadcast_notifications")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BroadcastNotification {
+public class BroadcastNotification extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +21,6 @@ public class BroadcastNotification {
 
     @Column(nullable = false, length = 500)
     private String body;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
 
     public static BroadcastNotification of(String title, String body) {
         BroadcastNotification b = new BroadcastNotification();

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.system.BroadcastNotificationView;
 import com.feple.feple_backend.admin.system.PushFormData;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
@@ -43,14 +44,13 @@ public class AdminPushService {
         );
     }
 
-    @Transactional(readOnly = true)
-    public long getRegisteredDeviceCount() {
+    private long getRegisteredDeviceCount() {
         return deviceTokenRepository.countDistinctUsers();
     }
 
-    @Transactional(readOnly = true)
-    public List<BroadcastNotification> getBroadcastHistory() {
-        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 100));
+    private List<BroadcastNotificationView> getBroadcastHistory() {
+        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 100))
+                .stream().map(BroadcastNotificationView::from).toList();
     }
 
     public void sendTest(Long targetUserId, String title, String body) {
