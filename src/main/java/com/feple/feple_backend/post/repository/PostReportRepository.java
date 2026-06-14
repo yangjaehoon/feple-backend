@@ -1,11 +1,11 @@
 package com.feple.feple_backend.post.repository;
 
+import com.feple.feple_backend.global.repository.BaseReportRepository;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,17 +13,20 @@ import org.springframework.data.repository.query.Param;
 import java.util.Collection;
 import java.util.List;
 
-public interface PostReportRepository extends JpaRepository<PostReport, Long> {
+public interface PostReportRepository extends BaseReportRepository<PostReport> {
 
     @Query("SELECT CASE WHEN COUNT(pr) > 0 THEN TRUE ELSE FALSE END FROM PostReport pr WHERE pr.reporter.id = :reporterId AND pr.post.id = :postId")
     boolean existsByReporterIdAndPostId(@Param("reporterId") Long reporterId, @Param("postId") Long postId);
 
+    @Override
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     Page<PostReport> findByStatusOrderByCreatedAtDesc(ReportStatus status, Pageable pageable);
 
+    @Override
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     Page<PostReport> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    @Override
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     @Query("SELECT pr FROM PostReport pr WHERE " +
            "(:status IS NULL OR pr.status = :status) AND " +
@@ -37,8 +40,6 @@ public interface PostReportRepository extends JpaRepository<PostReport, Long> {
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     @Query("SELECT pr FROM PostReport pr ORDER BY pr.createdAt DESC")
     List<PostReport> findAllForExport(org.springframework.data.domain.Pageable pageable);
-
-    long countByStatus(ReportStatus status);
 
     long countByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
 
