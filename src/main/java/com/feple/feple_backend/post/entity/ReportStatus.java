@@ -11,4 +11,8 @@ public enum ReportStatus {
     DISMISSED("기각");
 
     private final String displayName;
+
+    public static ReportStatus fromFilter(String statusFilter) {
+        return "PENDING".equals(statusFilter) ? PENDING : null;
+    }
 }
