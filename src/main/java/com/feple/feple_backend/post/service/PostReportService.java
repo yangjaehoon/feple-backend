@@ -15,9 +15,8 @@ import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
+import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import java.util.List;
@@ -80,16 +79,11 @@ public class PostReportService implements ReportAdminService<PostReport> {
     public Page<PostReport> searchReportsForAdmin(ReportSearchParams params) {
         if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
         PageRequest pageable = PageRequest.of(params.page(), params.size());
-        ReportStatus status = "PENDING".equals(params.statusFilter()) ? ReportStatus.PENDING : null;
-        return reportRepository.searchByKeyword(LikeEscaper.escape(params.keyword().trim()), status, pageable);
+        return reportRepository.searchByKeyword(LikeEscaper.escapeOrNull(params.keyword()), ReportStatus.fromFilter(params.statusFilter()), pageable);
     }
 
     @Override
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
-        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
-    })
+    @EvictAdminReportCaches
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
         deletePostAndResolve(reportId);
@@ -104,11 +98,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
                 .forEach(r -> r.resolve(ReportStatus.POST_DELETED));
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
-        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
-    })
+    @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
         PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
@@ -116,11 +106,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     @Override
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts",    allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",    allEntries = true),
-        @CacheEvict(value = "adminReportTypeCounts", allEntries = true)
-    })
+    @EvictAdminReportCaches
     @Transactional
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;

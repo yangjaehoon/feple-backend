@@ -26,9 +26,8 @@ import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
+import com.feple.feple_backend.global.cache.EvictFestivalCaches;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import com.feple.feple_backend.global.PageableFactory;
@@ -67,10 +66,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "allFestivalsForAdmin",  allEntries = true),
-        @CacheEvict(value = "activeFestivalCount",    allEntries = true)
-    })
+    @EvictFestivalCaches
     public Long createFestival(FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
@@ -147,10 +143,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "allFestivalsForAdmin",  allEntries = true),
-        @CacheEvict(value = "activeFestivalCount",    allEntries = true)
-    })
+    @EvictFestivalCaches
     public void updateFestival(Long id, FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
@@ -171,10 +164,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "allFestivalsForAdmin",  allEntries = true),
-        @CacheEvict(value = "activeFestivalCount",    allEntries = true)
-    })
+    @EvictFestivalCaches
     public void deleteFestival(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();

@@ -17,8 +17,7 @@ import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.UserNicknameResolver;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
+import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -121,10 +120,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     }
 
     @Override
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts", allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
-    })
+    @EvictAdminPendingCaches
     @Transactional
     public boolean approve(Long requestId, String youtubeUrl) {
         SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
@@ -157,10 +153,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     }
 
     @Override
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts", allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
-    })
+    @EvictAdminPendingCaches
     @Transactional
     public void reject(Long requestId, String reason) {
         SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");

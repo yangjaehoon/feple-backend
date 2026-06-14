@@ -9,9 +9,8 @@ import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepo
 import com.feple.feple_backend.global.UserNicknameResolver;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
+import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,10 +97,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     }
 
     @Override
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts", allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
-    })
+    @EvictAdminPendingCaches
     @Transactional
     public void dismiss(Long suggestionId, String processNote) {
         ArtistSuggestion suggestion = EntityFinder.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");

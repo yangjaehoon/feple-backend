@@ -13,6 +13,7 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
+import com.feple.feple_backend.global.cache.EvictArtistCaches;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -62,11 +63,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true),
-        @CacheEvict(value = "allArtistsSortedByName", allEntries = true)
-    })
+    @EvictArtistCaches
     public Long createArtist(ArtistRequestDto dto) {
         Artist artist = Artist.builder()
                 .name(dto.getName())
@@ -204,11 +201,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true),
-        @CacheEvict(value = "allArtistsSortedByName", allEntries = true)
-    })
+    @EvictArtistCaches
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenre());
@@ -261,11 +254,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true),
-        @CacheEvict(value = "allArtistsSortedByName", allEntries = true)
-    })
+    @EvictArtistCaches
     public void deleteArtist(Long id) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);

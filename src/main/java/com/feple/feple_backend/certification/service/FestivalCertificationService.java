@@ -17,8 +17,7 @@ import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
+import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -106,10 +105,7 @@ public class FestivalCertificationService {
         return EntityFinder.getOrThrow(certificationRepository::findWithUserAndFestivalById, id, "인증 신청");
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts", allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
-    })
+    @EvictAdminPendingCaches
     @Transactional
     public void approve(Long certId, String reviewerName) {
         FestivalCertification cert = getById(certId);
@@ -122,10 +118,7 @@ public class FestivalCertificationService {
                 cert.getFestivalId());
     }
 
-    @Caching(evict = {
-        @CacheEvict(value = "adminPendingCounts", allEntries = true),
-        @CacheEvict(value = "adminSidebarCounts",  allEntries = true)
-    })
+    @EvictAdminPendingCaches
     @Transactional
     public void reject(Long certId, String rejectionMessage, String reviewerName) {
         FestivalCertification cert = getById(certId);
