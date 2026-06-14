@@ -234,6 +234,16 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     @Override
+    public CursorPage<PostResponseDto> getPostsByArtistIdPaged(Long artistId, Long cursor, int size) {
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        int page = (cursor == null) ? 0 : cursor.intValue();
+        Page<Post> result = postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(page, size));
+        List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
+        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
+        return new CursorPage<>(content, nextCursor, result.hasNext());
+    }
+
+    @Override
     @Transactional
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
@@ -251,6 +261,19 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     @Override
+    public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, Long cursor, int size) {
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        int page = (cursor == null) ? 0 : cursor.intValue();
+        Page<Post> result = postRepository.findGeneralFestivalPosts(festival, PageRequest.of(page, size));
+        List<PostResponseDto> content = result.getContent().stream()
+                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
+                .toList();
+        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
+        return new CursorPage<>(content, nextCursor, result.hasNext());
+    }
+
+    @Override
     @Transactional
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
@@ -265,6 +288,19 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
         return postRepository.findByFestivalAndBoardTypeOrderByCreatedAtDesc(festival, boardType, PageRequest.of(0, PageSize.POSTS))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();
+    }
+
+    @Override
+    public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, Long cursor, int size) {
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        int page = (cursor == null) ? 0 : cursor.intValue();
+        Page<Post> result = postRepository.findByFestivalAndBoardTypeOrderByCreatedAtDesc(festival, boardType, PageRequest.of(page, size));
+        List<PostResponseDto> content = result.getContent().stream()
+                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
+                .toList();
+        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
+        return new CursorPage<>(content, nextCursor, result.hasNext());
     }
 
     @Override
@@ -303,6 +339,16 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream().map(PostResponseDto::from).toList();
+    }
+
+    @Override
+    public CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size) {
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        int page = (cursor == null) ? 0 : cursor.intValue();
+        Page<Post> result = postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(page, size));
+        List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
+        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
+        return new CursorPage<>(content, nextCursor, result.hasNext());
     }
 
     @Override

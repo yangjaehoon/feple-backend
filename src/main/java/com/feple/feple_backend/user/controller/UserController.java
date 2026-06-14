@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
+import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.user.dto.UpdateBioDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
@@ -103,11 +104,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}/posts")
-    public ResponseEntity<List<PostResponseDto>> getMyPosts(
+    public ResponseEntity<CursorPage<PostResponseDto>> getMyPosts(
             @PathVariable Long id,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal Long userId) {
         requireSelf(id, userId);
-        return ResponseEntity.ok(myPageService.getMyPosts(id));
+        return ResponseEntity.ok(myPageService.getMyPostsPaged(id, cursor, Math.min(size, 50)));
     }
 
     @GetMapping("/{id}/comments")

@@ -9,6 +9,7 @@ import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostReportService;
 import com.feple.feple_backend.post.service.PostScrapService;
@@ -40,6 +41,10 @@ public class MyPageService {
 
     public List<PostResponseDto> getMyPosts(@NonNull Long userId) {
         return postService.getMyPosts(userId);
+    }
+
+    public CursorPage<PostResponseDto> getMyPostsPaged(@NonNull Long userId, Long cursor, int size) {
+        return postService.getMyPostsPaged(userId, cursor, size);
     }
 
     public List<PostResponseDto> getLikedPosts(@NonNull Long userId) {

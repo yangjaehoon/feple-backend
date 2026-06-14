@@ -136,8 +136,11 @@ public class PostController {
     }
 
     @GetMapping("/artist/{artistId}")
-    public ResponseEntity<List<PostResponseDto>> getArtistPosts(@PathVariable Long artistId) {
-        return ResponseEntity.ok(postService.getPostsByArtistId(artistId));
+    public ResponseEntity<CursorPage<PostResponseDto>> getArtistPosts(
+            @PathVariable Long artistId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(postService.getPostsByArtistIdPaged(artistId, cursor, Math.min(size, 50)));
     }
 
     @PostMapping("/artist/{artistId}")
@@ -148,8 +151,11 @@ public class PostController {
     }
 
     @GetMapping("/festival/{festivalId}")
-    public ResponseEntity<List<PostResponseDto>> getFestivalPosts(@PathVariable Long festivalId) {
-        return ResponseEntity.ok(postService.getPostsByFestivalId(festivalId));
+    public ResponseEntity<CursorPage<PostResponseDto>> getFestivalPosts(
+            @PathVariable Long festivalId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdPaged(festivalId, cursor, Math.min(size, 50)));
     }
 
     @PostMapping("/festival/{festivalId}")
@@ -165,8 +171,11 @@ public class PostController {
     }
 
     @GetMapping("/festival/{festivalId}/companion")
-    public ResponseEntity<List<PostResponseDto>> getFestivalCompanionPosts(@PathVariable Long festivalId) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardType(festivalId, BoardType.FESTIVAL_COMPANION));
+    public ResponseEntity<CursorPage<PostResponseDto>> getFestivalCompanionPosts(
+            @PathVariable Long festivalId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_COMPANION, cursor, Math.min(size, 50)));
     }
 
     @PostMapping("/festival/{festivalId}/companion")
@@ -177,8 +186,11 @@ public class PostController {
     }
 
     @GetMapping("/festival/{festivalId}/ticket")
-    public ResponseEntity<List<PostResponseDto>> getFestivalTicketPosts(@PathVariable Long festivalId) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardType(festivalId, BoardType.FESTIVAL_TICKET));
+    public ResponseEntity<CursorPage<PostResponseDto>> getFestivalTicketPosts(
+            @PathVariable Long festivalId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_TICKET, cursor, Math.min(size, 50)));
     }
 
     @PostMapping("/festival/{festivalId}/ticket")
