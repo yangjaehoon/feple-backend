@@ -182,7 +182,7 @@ public class CommentServiceImpl implements CommentService {
             commentRepository.decrementLikeCount(commentId);
             return new CommentLikeResult(false, currentCount - 1);
         } else {
-            commentLikeRepository.save(CommentLike.builder().comment(comment).user(user).build());
+            commentLikeRepository.save(new CommentLike(comment, user));
             commentRepository.incrementLikeCount(commentId);
             return new CommentLikeResult(true, currentCount + 1);
         }

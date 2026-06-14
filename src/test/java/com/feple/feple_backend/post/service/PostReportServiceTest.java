@@ -81,7 +81,7 @@ class PostReportServiceTest {
         verify(reportRepository).save(any(PostReport.class));
     }
 
-    // ── deletePostAndResolve ─────────────────────────────────────────
+    // ── deleteContentAndResolve ──────────────────────────────────────
 
     @Test
     void 게시글_삭제처리시_postAdminService_deletePost_호출됨() {
@@ -91,7 +91,7 @@ class PostReportServiceTest {
         given(reportRepository.findById(1L)).willReturn(Optional.of(report));
         given(reportRepository.findByPostId(10L)).willReturn(List.of(report));
 
-        postReportService.deletePostAndResolve(1L);
+        postReportService.deleteContentAndResolve(1L);
 
         verify(postAdminService).deletePost(10L);
     }
@@ -105,7 +105,7 @@ class PostReportServiceTest {
         given(reportRepository.findById(1L)).willReturn(Optional.of(report1));
         given(reportRepository.findByPostId(10L)).willReturn(List.of(report1, report2));
 
-        postReportService.deletePostAndResolve(1L);
+        postReportService.deleteContentAndResolve(1L);
 
         assertThat(report1.getStatus()).isEqualTo(ReportStatus.POST_DELETED);
         assertThat(report2.getStatus()).isEqualTo(ReportStatus.POST_DELETED);

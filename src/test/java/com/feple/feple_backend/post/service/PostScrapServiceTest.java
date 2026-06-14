@@ -65,7 +65,7 @@ class PostScrapServiceTest {
     void 스크랩_취소시_delete와_decrement_쿼리가_호출되고_false_반환() {
         User user = user(1L);
         Post post = freePost(10L, user);
-        PostScrap existing = PostScrap.builder().user(user).post(post).build();
+        PostScrap existing = new PostScrap(user, post);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postScrapRepository.findByUserIdAndPostId(1L, 10L)).willReturn(Optional.of(existing));
@@ -119,8 +119,8 @@ class PostScrapServiceTest {
         User user = user(1L);
         Post post1 = freePost(10L, user);
         Post post2 = freePost(11L, user);
-        PostScrap scrap1 = PostScrap.builder().user(user).post(post1).build();
-        PostScrap scrap2 = PostScrap.builder().user(user).post(post2).build();
+        PostScrap scrap1 = new PostScrap(user, post1);
+        PostScrap scrap2 = new PostScrap(user, post2);
         given(postScrapRepository.findByUserIdOrderByIdDesc(1L)).willReturn(List.of(scrap1, scrap2));
 
         List<PostResponseDto> result = postScrapService.getMyScraps(1L);

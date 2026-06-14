@@ -84,11 +84,6 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @EvictAdminReportCaches
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
-        deletePostAndResolve(reportId);
-    }
-
-    @Transactional
-    public void deletePostAndResolve(Long reportId) {
         PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         Long postId = report.getPostId();
         postAdminService.deletePost(postId);

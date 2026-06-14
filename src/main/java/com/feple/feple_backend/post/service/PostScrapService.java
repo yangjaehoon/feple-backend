@@ -43,7 +43,7 @@ public class PostScrapService {
             postRepository.decrementScrapCount(postId);
             return false;
         } else {
-            postScrapRepository.save(PostScrap.builder().user(user).post(post).build());
+            postScrapRepository.save(new PostScrap(user, post));
             postRepository.incrementScrapCount(postId);
             return true;
         }

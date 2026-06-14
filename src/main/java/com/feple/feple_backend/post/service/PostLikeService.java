@@ -35,7 +35,7 @@ public class PostLikeService {
             postRepository.decrementLikeCount(postId);
             return false;
         }
-        postLikeRepository.save(PostLike.builder().user(user).post(post).build());
+        postLikeRepository.save(new PostLike(user, post));
         postRepository.incrementLikeCount(postId);
         return true;
     }

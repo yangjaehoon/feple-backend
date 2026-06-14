@@ -87,11 +87,6 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @EvictAdminReportCaches
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
-        deleteCommentAndResolve(reportId);
-    }
-
-    @Transactional
-    public void deleteCommentAndResolve(Long reportId) {
         CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
         Long commentId = report.getCommentId();
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");

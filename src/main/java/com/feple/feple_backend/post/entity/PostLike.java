@@ -2,19 +2,18 @@ package com.feple.feple_backend.post.entity;
 
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 @Table(
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"user_id", "post_id"})
         }
 )
-
 public class PostLike {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +26,9 @@ public class PostLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+    public PostLike(User user, Post post) {
+        this.user = user;
+        this.post = post;
+    }
 }

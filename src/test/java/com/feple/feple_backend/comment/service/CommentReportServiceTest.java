@@ -106,7 +106,7 @@ class CommentReportServiceTest {
         verify(reportRepository).save(any(CommentReport.class));
     }
 
-    // ── deleteCommentAndResolve ──────────────────────────────────────
+    // ── deleteContentAndResolve ──────────────────────────────────────
 
     @Test
     void 댓글_삭제처리시_신고와_댓글_모두_삭제됨() {
@@ -117,7 +117,7 @@ class CommentReportServiceTest {
         given(reportRepository.findById(1L)).willReturn(Optional.of(report));
         given(commentRepository.findById(10L)).willReturn(Optional.of(comment));
 
-        commentReportService.deleteCommentAndResolve(1L);
+        commentReportService.deleteContentAndResolve(1L);
 
         verify(commentLikeRepository).deleteByCommentId(10L);
         verify(reportRepository).deleteByCommentId(10L);
