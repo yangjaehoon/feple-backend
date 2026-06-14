@@ -1,6 +1,5 @@
 package com.feple.feple_backend.comment.service;
 
-import com.feple.feple_backend.admin.service.ReportSearchParams;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
@@ -16,7 +15,6 @@ import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
@@ -72,19 +70,19 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @Override
     public String getReportType() { return "comment"; }
 
-    public Page<CommentReport> getReportsForAdmin(int page, int size, String statusFilter) {
-        PageRequest pageable = PageRequest.of(page, size);
-        if ("PENDING".equals(statusFilter)) {
-            return reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable);
-        }
+    @Override
+    public Page<CommentReport> findPendingReports(PageRequest pageable) {
+        return reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable);
+    }
+
+    @Override
+    public Page<CommentReport> findAllReports(PageRequest pageable) {
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     @Override
-    public Page<CommentReport> searchReportsForAdmin(ReportSearchParams params) {
-        if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
-        PageRequest pageable = PageRequest.of(params.page(), params.size());
-        return reportRepository.searchByKeyword(LikeEscaper.escapeOrNull(params.keyword()), ReportStatus.fromFilter(params.statusFilter()), pageable);
+    public Page<CommentReport> searchReportsByKeyword(String keyword, ReportStatus status, PageRequest pageable) {
+        return reportRepository.searchByKeyword(keyword, status, pageable);
     }
 
     @Override

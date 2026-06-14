@@ -1,7 +1,6 @@
 package com.feple.feple_backend.artist.photo.service;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.admin.service.ReportSearchParams;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
@@ -9,7 +8,6 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReposit
 import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
 import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportReason;
@@ -72,19 +70,18 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     public String getReportType() { return "photo"; }
 
     @Override
-    public Page<ArtistPhotoReport> getReportsForAdmin(int page, int size, String statusFilter) {
-        PageRequest pageable = PageRequest.of(page, size);
-        if ("PENDING".equals(statusFilter)) {
-            return reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable);
-        }
+    public Page<ArtistPhotoReport> findPendingReports(PageRequest pageable) {
+        return reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable);
+    }
+
+    @Override
+    public Page<ArtistPhotoReport> findAllReports(PageRequest pageable) {
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     @Override
-    public Page<ArtistPhotoReport> searchReportsForAdmin(ReportSearchParams params) {
-        if (params.keyword() == null || params.keyword().isBlank()) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
-        PageRequest pageable = PageRequest.of(params.page(), params.size());
-        return reportRepository.searchByKeyword(LikeEscaper.escapeOrNull(params.keyword()), ReportStatus.fromFilter(params.statusFilter()), pageable);
+    public Page<ArtistPhotoReport> searchReportsByKeyword(String keyword, ReportStatus status, PageRequest pageable) {
+        return reportRepository.searchByKeyword(keyword, status, pageable);
     }
 
     @Override
