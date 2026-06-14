@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.photo.entity;
 
 import com.feple.feple_backend.post.entity.ReportReason;
+import com.feple.feple_backend.post.entity.Resolvable;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
         @UniqueConstraint(columnNames = {"reporter_id", "photo_id"})
     }
 )
-public class ArtistPhotoReport {
+public class ArtistPhotoReport implements Resolvable {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

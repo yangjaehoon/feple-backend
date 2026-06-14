@@ -1,6 +1,7 @@
 package com.feple.feple_backend.comment.entity;
 
 import com.feple.feple_backend.post.entity.ReportReason;
+import com.feple.feple_backend.post.entity.Resolvable;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
@@ -22,7 +23,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_comment_report_status", columnList = "status")
     }
 )
-public class CommentReport {
+public class CommentReport implements Resolvable {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

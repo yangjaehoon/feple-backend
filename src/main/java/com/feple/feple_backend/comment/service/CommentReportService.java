@@ -6,7 +6,6 @@ import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.post.dto.SubmitReportCommand;
-import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
@@ -15,6 +14,7 @@ import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.ReportDismissHelper;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
@@ -104,18 +104,14 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
-        report.resolve(ReportStatus.DISMISSED);
+        ReportDismissHelper.dismiss(reportRepository, reportId);
     }
 
     @Override
     @EvictAdminReportCaches
     @Transactional
     public void bulkDismiss(List<Long> ids) {
-        if (ids.isEmpty()) return;
-        reportRepository.findAllById(ids).stream()
-                .filter(CommentReport::isPending)
-                .forEach(r -> r.resolve(ReportStatus.DISMISSED));
+        ReportDismissHelper.bulkDismiss(reportRepository, ids);
     }
 
     @Override

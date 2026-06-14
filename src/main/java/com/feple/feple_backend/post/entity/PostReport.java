@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_post_report_status", columnList = "status")
     }
 )
-public class PostReport {
+public class PostReport implements Resolvable {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
