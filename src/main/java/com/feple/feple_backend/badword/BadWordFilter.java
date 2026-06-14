@@ -3,24 +3,23 @@ package com.feple.feple_backend.badword;
 import com.feple.feple_backend.badword.event.BadWordChangedEvent;
 import com.feple.feple_backend.badword.repository.BadWordRepository;
 import com.feple.feple_backend.global.exception.BadWordException;
-import jakarta.annotation.PostConstruct;
+import com.feple.feple_backend.global.filter.WordSetFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.event.TransactionPhase;
 
-import java.util.Set;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class BadWordFilter {
+public class BadWordFilter extends WordSetFilter {
 
     private final BadWordRepository badWordRepository;
-    private volatile Set<String> badWords = Set.of();
 
-    @PostConstruct
-    public void reload() {
-        badWords = Set.copyOf(badWordRepository.findAllWords());
+    @Override
+    protected List<String> loadWords() {
+        return badWordRepository.findAllWords();
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -29,10 +28,8 @@ public class BadWordFilter {
     }
 
     public void validate(String... texts) {
-        Set<String> snapshot = badWords;
-        if (snapshot.isEmpty()) return;
         for (String text : texts) {
-            if (text != null && containsBadWord(text, snapshot)) {
+            if (text != null && containsRestrictedWord(text)) {
                 throw new IllegalArgumentException("금칙어가 포함되어 있습니다.");
             }
         }
@@ -40,15 +37,8 @@ public class BadWordFilter {
 
     public void validateField(String field, String text) {
         if (text == null) return;
-        Set<String> snapshot = badWords;
-        if (snapshot.isEmpty()) return;
-        if (containsBadWord(text, snapshot)) {
+        if (containsRestrictedWord(text)) {
             throw new BadWordException(field);
         }
-    }
-
-    private boolean containsBadWord(String text, Set<String> snapshot) {
-        String normalized = text.toLowerCase().replaceAll("\\s+", "");
-        return snapshot.stream().anyMatch(normalized::contains);
     }
 }
