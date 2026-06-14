@@ -58,7 +58,7 @@
                                    th:value="${account != null} ? ${account.username} : ''"
                                    th:disabled="${account != null}"
                                    placeholder="로그인 아이디"
-                                   required="true" maxlength="50"
+                                   maxlength="50"
                                    th:attr="required=${account == null ? 'required' : null}"/>
                             <div class="field-hint" th:if="${account != null}">아이디는 변경할 수 없습니다.</div>
                         </div>

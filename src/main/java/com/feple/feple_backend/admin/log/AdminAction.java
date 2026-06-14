@@ -49,7 +49,12 @@ public enum AdminAction {
     PUSH_TEST("테스트 발송"),
 
     EXPORT_USERS("회원 내보내기"),
-    EXPORT_REPORTS("신고 내보내기");
+    EXPORT_REPORTS("신고 내보내기"),
+
+    ADMIN_ACCOUNT_CREATE("관리자 계정 생성"),
+    ADMIN_ACCOUNT_UPDATE("관리자 계정 수정"),
+    ADMIN_ACCOUNT_DELETE("관리자 계정 삭제"),
+    ADMIN_ACCOUNT_TOGGLE("계정 활성화 상태 변경");
 
     private final String label;
 

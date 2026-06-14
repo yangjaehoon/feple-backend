@@ -1,12 +1,14 @@
 package com.feple.feple_backend.admin.account;
 
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -22,12 +24,11 @@ public class AdminAccountService {
     private final AdminAccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageService;
+    private final AdminLogService adminLogService;
 
     @Transactional(readOnly = true)
     public List<AdminAccount> findAll() {
-        return accountRepository.findAll(
-                org.springframework.data.domain.Sort.by(
-                        org.springframework.data.domain.Sort.Direction.ASC, "createdAt"));
+        return accountRepository.findAll(Sort.by(Sort.Direction.ASC, "createdAt"));
     }
 
     @Transactional(readOnly = true)
@@ -40,31 +41,29 @@ public class AdminAccountService {
         return EntityFinder.getOrThrow(accountRepository::findById, id, "관리자 계정");
     }
 
-    public void create(String username, String password, String displayName,
-                       AdminRole role, Set<AdminPermission> permissions,
-                       MultipartFile profileImage) throws IOException {
-        validateNewAccount(username, password);
-        accountRepository.save(AdminAccount.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .displayName(displayName)
-                .role(role)
-                .permissions(resolvePermissions(role, permissions))
-                .profileImageUrl(uploadProfileIfPresent(profileImage, username))
+    public void create(AdminAccountCreateRequest req) throws IOException {
+        validateNewAccount(req.username(), req.password());
+        AdminAccount account = accountRepository.save(AdminAccount.builder()
+                .username(req.username())
+                .password(passwordEncoder.encode(req.password()))
+                .displayName(req.displayName())
+                .role(req.role())
+                .permissions(resolvePermissions(req.role(), req.permissions()))
+                .profileImageUrl(uploadProfileIfPresent(req.profileImage(), req.username()))
                 .build());
+        adminLogService.log(AdminAction.ADMIN_ACCOUNT_CREATE, "ADMIN_ACCOUNT", account.getId(), req.username());
     }
 
-    public void update(Long id, String displayName, AdminRole role,
-                       Set<AdminPermission> permissions, String newPassword,
-                       MultipartFile profileImage, boolean deleteProfileImage) throws IOException {
+    public void update(Long id, AdminAccountUpdateRequest req) throws IOException {
         AdminAccount account = findById(id);
-        validateRoleChange(account, role);
-        account.updateProfile(displayName, role, resolvePermissions(role, permissions));
-        if (newPassword != null && !newPassword.isBlank()) {
-            validatePasswordComplexity(newPassword);
-            account.updatePassword(passwordEncoder.encode(newPassword));
+        validateRoleChange(account, req.role());
+        account.updateProfile(req.displayName(), req.role(), resolvePermissions(req.role(), req.permissions()));
+        if (req.newPassword() != null && !req.newPassword().isBlank()) {
+            validatePasswordComplexity(req.newPassword());
+            account.updatePassword(passwordEncoder.encode(req.newPassword()));
         }
-        applyProfileImageUpdate(account, profileImage, deleteProfileImage);
+        applyProfileImageUpdate(account, req);
+        adminLogService.log(AdminAction.ADMIN_ACCOUNT_UPDATE, "ADMIN_ACCOUNT", id, account.getUsername());
     }
 
     public void delete(Long id, String currentUsername) {
@@ -79,7 +78,26 @@ public class AdminAccountService {
             throw new IllegalArgumentException("마지막 최고 관리자 계정은 삭제할 수 없습니다.");
         }
 
+        adminLogService.log(AdminAction.ADMIN_ACCOUNT_DELETE, "ADMIN_ACCOUNT", id, account.getUsername());
         accountRepository.delete(account);
+    }
+
+    public void toggleEnabled(Long id, String currentUsername) {
+        AdminAccount account = findById(id);
+
+        if (account.getUsername().equals(currentUsername) && account.isEnabled()) {
+            throw new IllegalArgumentException("자신의 계정을 비활성화할 수 없습니다.");
+        }
+
+        if (account.isEnabled()
+                && account.getRole() == AdminRole.SUPER_ADMIN
+                && accountRepository.countByRoleAndEnabled(AdminRole.SUPER_ADMIN, true) <= 1) {
+            throw new IllegalArgumentException("마지막 활성 최고 관리자 계정은 비활성화할 수 없습니다.");
+        }
+
+        account.toggle();
+        String detail = account.getUsername() + " → " + (account.isEnabled() ? "활성" : "비활성");
+        adminLogService.log(AdminAction.ADMIN_ACCOUNT_TOGGLE, "ADMIN_ACCOUNT", id, detail);
     }
 
     private void validateNewAccount(String username, String password) {
@@ -104,7 +122,8 @@ public class AdminAccountService {
             throw new IllegalArgumentException("비밀번호는 영문자, 숫자, 특수문자를 각각 1자 이상 포함해야 합니다.");
     }
 
-    private String uploadProfileIfPresent(MultipartFile profileImage, String username) throws IOException {
+    private String uploadProfileIfPresent(org.springframework.web.multipart.MultipartFile profileImage,
+                                          String username) throws IOException {
         return (profileImage != null && !profileImage.isEmpty())
                 ? fileStorageService.storeAdminProfile(profileImage, username)
                 : null;
@@ -118,32 +137,16 @@ public class AdminAccountService {
         }
     }
 
-    private void applyProfileImageUpdate(AdminAccount account, MultipartFile profileImage,
-                                          boolean deleteProfileImage) throws IOException {
-        if (deleteProfileImage) {
+    private void applyProfileImageUpdate(AdminAccount account, AdminAccountUpdateRequest req) throws IOException {
+        if (req.deleteProfileImage()) {
             account.updateProfileImage(null);
-        } else if (profileImage != null && !profileImage.isEmpty()) {
-            account.updateProfileImage(fileStorageService.storeAdminProfile(profileImage, account.getUsername()));
+        } else if (req.profileImage() != null && !req.profileImage().isEmpty()) {
+            account.updateProfileImage(
+                    fileStorageService.storeAdminProfile(req.profileImage(), account.getUsername()));
         }
     }
 
     private static Set<AdminPermission> resolvePermissions(AdminRole role, Set<AdminPermission> permissions) {
         return role == AdminRole.SUPER_ADMIN ? new HashSet<>() : new HashSet<>(permissions);
-    }
-
-    public void toggleEnabled(Long id, String currentUsername) {
-        AdminAccount account = findById(id);
-
-        if (account.getUsername().equals(currentUsername) && account.isEnabled()) {
-            throw new IllegalArgumentException("자신의 계정을 비활성화할 수 없습니다.");
-        }
-
-        if (account.isEnabled()
-                && account.getRole() == AdminRole.SUPER_ADMIN
-                && accountRepository.countByRoleAndEnabled(AdminRole.SUPER_ADMIN, true) <= 1) {
-            throw new IllegalArgumentException("마지막 활성 최고 관리자 계정은 비활성화할 수 없습니다.");
-        }
-
-        account.toggle();
     }
 }

@@ -5,19 +5,27 @@
         section.style.display = role === 'SUPER_ADMIN' ? 'none' : '';
     }
 
+    function setPreviewImage(src, className, alt) {
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = alt;
+        img.className = className;
+        var preview = document.getElementById('photo-preview');
+        preview.innerHTML = '';
+        preview.appendChild(img);
+    }
+
     function previewPhoto(input) {
         document.getElementById('delete-profile-image-flag').value = 'false';
         AdminUtils.readImageAsDataUrl(input, function (dataUrl) {
-            var preview = document.getElementById('photo-preview');
-            preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%; height:100%; object-fit:cover;" alt="미리보기"/>';
+            setPreviewImage(dataUrl, 'profile-preview-img', '미리보기');
         });
     }
 
     function deletePhoto() {
         document.getElementById('delete-profile-image-flag').value = 'true';
         document.getElementById('profile-image-input').value = '';
-        var preview = document.getElementById('photo-preview');
-        preview.innerHTML = '<img src="/img/feple_logo.png" style="width:60%; height:60%; object-fit:contain; opacity:.6;" alt="feple"/>';
+        setPreviewImage('/img/feple_logo.png', 'profile-preview-placeholder', 'feple');
         var btn = document.getElementById('delete-photo-btn');
         if (btn) btn.style.display = 'none';
     }

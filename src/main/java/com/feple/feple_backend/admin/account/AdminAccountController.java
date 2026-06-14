@@ -8,9 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Set;
 
@@ -47,8 +46,9 @@ public class AdminAccountController {
                          @RequestParam(required = false) MultipartFile profileImage,
                          RedirectAttributes redirectAttributes) {
         Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
+        AdminAccountCreateRequest req = new AdminAccountCreateRequest(username, password, displayName, role, perms, profileImage);
         AdminActionUtils.tryAction(
-                () -> accountService.create(username, password, displayName, role, perms, profileImage),
+                () -> accountService.create(req),
                 "관리자 계정이 생성되었습니다.",
                 e -> log.error("관리자 계정 생성 중 오류 발생", e),
                 "계정 생성 중 오류가 발생했습니다.",
@@ -74,8 +74,9 @@ public class AdminAccountController {
                          @RequestParam(defaultValue = "false") boolean deleteProfileImage,
                          RedirectAttributes redirectAttributes) {
         Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
+        AdminAccountUpdateRequest req = new AdminAccountUpdateRequest(displayName, role, perms, password, profileImage, deleteProfileImage);
         AdminActionUtils.tryAction(
-                () -> accountService.update(id, displayName, role, perms, password, profileImage, deleteProfileImage),
+                () -> accountService.update(id, req),
                 "관리자 계정이 수정되었습니다.",
                 e -> log.error("관리자 계정 수정 중 오류 발생, id={}", id, e),
                 "계정 수정 중 오류가 발생했습니다.",

@@ -68,7 +68,6 @@
 
                                 <form th:action="@{/admin/accounts/{id}/toggle-enabled(id=${acc.id})}"
                                       method="post"
-                                      th:with="currentUser=${#authentication.name}"
                                       th:if="${acc.username != #authentication.name}">
                                     <button type="submit" class="btn btn-sm"
                                             th:class="${acc.enabled} ? 'btn btn-secondary btn-sm' : 'btn btn-primary btn-sm'"
