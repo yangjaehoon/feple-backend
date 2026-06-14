@@ -1,16 +1,16 @@
 package com.feple.feple_backend.nickname.entity;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "nickname_restrictions")
 @Getter
-@NoArgsConstructor
-public class NicknameRestriction {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class NicknameRestriction extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,10 +19,7 @@ public class NicknameRestriction {
     @Column(nullable = false, unique = true, length = 50)
     private String word;
 
-    private LocalDateTime createdAt;
-
     public NicknameRestriction(String word) {
         this.word = word;
-        this.createdAt = LocalDateTime.now();
     }
 }

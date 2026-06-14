@@ -1,17 +1,16 @@
 package com.feple.feple_backend.badword.entity;
 
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "bad_words")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BadWord {
+public class BadWord extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +19,7 @@ public class BadWord {
     @Column(nullable = false, unique = true, length = 50)
     private String word;
 
-    private LocalDateTime createdAt;
-
     public BadWord(String word) {
         this.word = word;
-        this.createdAt = LocalDateTime.now();
     }
 }
