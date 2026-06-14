@@ -60,7 +60,7 @@ public class ArtistSongAdminController {
                            RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
             ra.addFlashAttribute("errorMessage", BindingResultUtils.firstError(bindingResult));
-            return "redirect:/admin/artists/" + artistId + "/songs";
+            return songsRedirect(artistId);
         }
         AdminActionUtils.tryAction(
                 () -> songAdminService.saveSong(artistId, dto),
@@ -68,7 +68,7 @@ public class ArtistSongAdminController {
                 e -> log.error("곡 등록 실패 artistId={}", artistId, e),
                 "곡 등록 중 오류가 발생했습니다.",
                 ra);
-        return "redirect:/admin/artists/" + artistId + "/songs";
+        return songsRedirect(artistId);
     }
 
     @PostMapping("/{songId}/delete")
@@ -81,7 +81,7 @@ public class ArtistSongAdminController {
                 e -> log.error("곡 삭제 실패 artistId={} songId={}", artistId, songId, e),
                 "삭제 중 오류가 발생했습니다.",
                 ra);
-        return "redirect:/admin/artists/" + artistId + "/songs";
+        return songsRedirect(artistId);
     }
 
     @PostMapping("/song-requests/{requestId}/approve")
@@ -98,7 +98,7 @@ public class ArtistSongAdminController {
                 e -> log.error("노래 요청 승인 실패 requestId={}", requestId, e),
                 "노래 요청 승인에 실패했습니다. 다시 시도해주세요.",
                 ra);
-        return "redirect:/admin/artists/" + artistId + "/songs";
+        return songsRedirect(artistId);
     }
 
     private static String approveMessage(boolean songSaved, String youtubeUrl) {
@@ -118,6 +118,10 @@ public class ArtistSongAdminController {
                 e -> log.error("노래 요청 거절 실패 requestId={}", requestId, e),
                 "노래 요청 거절에 실패했습니다. 다시 시도해주세요.",
                 ra);
+        return songsRedirect(artistId);
+    }
+
+    private static String songsRedirect(Long artistId) {
         return "redirect:/admin/artists/" + artistId + "/songs";
     }
 }

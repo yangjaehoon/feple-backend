@@ -132,7 +132,7 @@ public class FestivalArtistAdminController {
                         safeGet(stageNames, i),
                         parseDate(safeGet(performanceDates, i)));
             } catch (Exception e) {
-                log.warn("batchUpdateLineup 실패: festivalId={}, afId={}, {}", festivalId, afIds.get(i), e.getMessage());
+                log.warn("batchUpdateLineup 실패: festivalId={}, afId={}", festivalId, afIds.get(i), e);
                 errorCount++;
             }
         }

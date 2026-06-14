@@ -6,7 +6,7 @@
         var memos = JSON.parse(localStorage.getItem(MEMO_KEY) || '[]');
         var saved = document.getElementById('memo-saved');
         if (!memos.length) {
-            saved.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">저장된 메모가 없습니다.</div>';
+            saved.innerHTML = '<div class="memo-empty">저장된 메모가 없습니다.</div>';
             return;
         }
         saved.innerHTML = memos.map(function (m) {

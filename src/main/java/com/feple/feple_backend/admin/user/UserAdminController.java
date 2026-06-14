@@ -33,6 +33,7 @@ import java.util.NoSuchElementException;
 public class UserAdminController {
 
     private static final String FILTER_BANNED = "banned";
+    private static final String SORT_REPORTS  = "reports";
 
     private final UserAdminService userService;
     private final UserDetailAggregationService userDetailAggregationService;
@@ -50,7 +51,7 @@ public class UserAdminController {
 
     private Page<UserResponseDto> fetchUsersPage(int page, String keyword, String sort, String filter) {
         if (FILTER_BANNED.equals(filter))   return userService.getBannedUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
-        if ("reports".equals(sort))    return userService.getUsersPageSortedByReports(page, AdminConstants.LIST_PAGE_SIZE, keyword);
+        if (SORT_REPORTS.equals(sort))    return userService.getUsersPageSortedByReports(page, AdminConstants.LIST_PAGE_SIZE, keyword);
         return userService.getUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
     }
 

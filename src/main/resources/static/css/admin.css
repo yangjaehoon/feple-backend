@@ -743,6 +743,7 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 .memo-chip-text { flex: 1; line-height: 1.5; word-break: break-word; }
 .memo-chip-del  { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 0; flex-shrink: 0; line-height: 1; }
 .memo-chip-del:hover { color: var(--danger); }
+.memo-empty { color: var(--muted); font-size: 12px; text-align: center; padding: 8px 0; }
 
 /* ── 공통 필터 탭 ── */
 .type-tab {
