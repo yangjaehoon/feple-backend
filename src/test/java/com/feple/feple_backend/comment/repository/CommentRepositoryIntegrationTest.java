@@ -53,9 +53,9 @@ class CommentRepositoryIntegrationTest {
 
     @Test
     void 댓글_생성순_정렬() {
-        commentRepository.save(new Comment("첫번째", post, user));
-        commentRepository.save(new Comment("두번째", post, user));
-        commentRepository.save(new Comment("세번째", post, user));
+        commentRepository.save(new Comment("첫번째", post, user, false));
+        commentRepository.save(new Comment("두번째", post, user, false));
+        commentRepository.save(new Comment("세번째", post, user, false));
         em.flush(); em.clear();
 
         List<Comment> result = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
@@ -71,8 +71,8 @@ class CommentRepositoryIntegrationTest {
                 .title("다른게시글").content("다른내용").user(user)
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build());
-        commentRepository.save(new Comment("이 게시글 댓글", post, user));
-        commentRepository.save(new Comment("다른 게시글 댓글", otherPost, user));
+        commentRepository.save(new Comment("이 게시글 댓글", post, user, false));
+        commentRepository.save(new Comment("다른 게시글 댓글", otherPost, user, false));
         em.flush(); em.clear();
 
         List<Comment> result = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
@@ -89,8 +89,8 @@ class CommentRepositoryIntegrationTest {
 
     @Test
     void 유저별_댓글수_카운트() {
-        commentRepository.save(new Comment("댓글1", post, user));
-        commentRepository.save(new Comment("댓글2", post, user));
+        commentRepository.save(new Comment("댓글1", post, user, false));
+        commentRepository.save(new Comment("댓글2", post, user, false));
         em.flush();
 
         long count = commentRepository.countByUser(user);
@@ -101,7 +101,7 @@ class CommentRepositoryIntegrationTest {
 
     @Test
     void 댓글_좋아요_증가() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user));
+        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush();
 
         commentRepository.incrementLikeCount(comment.getId()); // clearAutomatically=true
@@ -112,7 +112,7 @@ class CommentRepositoryIntegrationTest {
 
     @Test
     void 댓글_좋아요_감소() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user));
+        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush();
         commentRepository.incrementLikeCount(comment.getId());
         commentRepository.incrementLikeCount(comment.getId());
@@ -125,7 +125,7 @@ class CommentRepositoryIntegrationTest {
 
     @Test
     void 댓글_좋아요_0_이하_감소_불가() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user));
+        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush(); // likeCount = 0
 
         // CASE WHEN likeCount > 0 THEN likeCount - 1 ELSE 0 END
@@ -137,7 +137,7 @@ class CommentRepositoryIntegrationTest {
 
     @Test
     void 댓글_좋아요_연속_0_이하_감소_불가() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user));
+        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush();
 
         // 3번 감소 시도해도 0 유지
@@ -153,8 +153,8 @@ class CommentRepositoryIntegrationTest {
 
     @Test
     void 금칙어_포함_댓글_카운트() {
-        commentRepository.save(new Comment("이 댓글은 금칙어포함", post, user));
-        commentRepository.save(new Comment("정상 댓글", post, user));
+        commentRepository.save(new Comment("이 댓글은 금칙어포함", post, user, false));
+        commentRepository.save(new Comment("정상 댓글", post, user, false));
         em.flush();
 
         long count = commentRepository.countByContentContaining("금칙어");
