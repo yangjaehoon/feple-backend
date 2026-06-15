@@ -63,7 +63,8 @@ public class ArtistGalleryPhotoController {
             @AuthenticationPrincipal Long userId
     ) {
         if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
-        return artistGalleryPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), userId);
+        boolean anonymous = Boolean.TRUE.equals(req.isAnonymous());
+        return artistGalleryPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), anonymous, userId);
     }
 
     /** 비인증 사용자도 사진 목록 조회 가능 (좋아요 여부는 false로 반환) */

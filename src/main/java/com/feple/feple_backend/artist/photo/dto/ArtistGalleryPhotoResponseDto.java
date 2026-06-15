@@ -12,18 +12,25 @@ public record ArtistGalleryPhotoResponseDto(
         String title,
         String description,
         int likeCount,
-        boolean isLiked
+        boolean isLiked,
+        boolean isAnonymous
 ) {
-    public static ArtistGalleryPhotoResponseDto from(ArtistGalleryPhoto photo, String url, boolean isLiked) {
+    /**
+     * @param currentUserId 현재 요청자 ID — 본인 글은 익명이어도 uploaderUserId를 그대로 반환해 수정/삭제 가능하게 함
+     */
+    public static ArtistGalleryPhotoResponseDto from(ArtistGalleryPhoto photo, String url, boolean isLiked, Long currentUserId) {
+        boolean isOwner = currentUserId != null && currentUserId.equals(photo.getUploaderId());
+        Long exposedUploaderId = (photo.isAnonymous() && !isOwner) ? null : photo.getUploaderId();
         return new ArtistGalleryPhotoResponseDto(
                 photo.getId(),
                 url,
-                photo.getUploaderId(),
+                exposedUploaderId,
                 photo.getCreatedAt(),
                 photo.getTitle(),
                 photo.getDescription(),
                 photo.getLikeCount(),
-                isLiked
+                isLiked,
+                photo.isAnonymous()
         );
     }
 }

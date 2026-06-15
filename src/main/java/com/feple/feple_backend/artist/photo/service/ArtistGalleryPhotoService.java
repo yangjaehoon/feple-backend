@@ -60,6 +60,7 @@ public class ArtistGalleryPhotoService {
             String contentType,
             String title,
             String description,
+            boolean isAnonymous,
             Long userId) {
 
         String prefix = S3Keys.artistPhotoPrefix(artistId);
@@ -75,10 +76,10 @@ public class ArtistGalleryPhotoService {
         User uploader = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         ArtistGalleryPhoto saved = artistGalleryPhotoRepository.save(
-                new ArtistGalleryPhoto(artist, uploader, objectKey, contentType, title, description));
+                new ArtistGalleryPhoto(artist, uploader, objectKey, contentType, title, description, isAnonymous));
 
         String url = s3PresignService.presignGetUrl(saved.getS3Key());
-        return ArtistGalleryPhotoResponseDto.from(saved, url, false);
+        return ArtistGalleryPhotoResponseDto.from(saved, url, false, userId);
     }
 
     @Transactional(readOnly = true)
@@ -92,7 +93,8 @@ public class ArtistGalleryPhotoService {
                 .map(photo -> ArtistGalleryPhotoResponseDto.from(
                         photo,
                         s3PresignService.presignGetUrl(photo.getS3Key()),
-                        likedPhotoIds.contains(photo.getId())))
+                        likedPhotoIds.contains(photo.getId()),
+                        currentUserId))
                 .toList();
     }
 
@@ -117,7 +119,7 @@ public class ArtistGalleryPhotoService {
         photo.updateTitleAndDescription(command.title(), command.description());
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
         boolean isLiked = artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, userId);
-        return ArtistGalleryPhotoResponseDto.from(photo, url, isLiked);
+        return ArtistGalleryPhotoResponseDto.from(photo, url, isLiked, userId);
     }
 
     private void verifyS3ImageObject(String objectKey) {
