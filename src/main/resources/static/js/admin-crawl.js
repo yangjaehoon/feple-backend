@@ -468,6 +468,7 @@
             '<td><input type="time" data-field="startTime" value="' + window.AdminUtils.escapeHtml(startTime) + '" style="' + timeStyle + '"/></td>' +
             '<td><input type="time" data-field="endTime"   value="' + window.AdminUtils.escapeHtml(endTime)   + '" style="' + timeStyle + '"/></td>' +
             '<td>' + confBadge(conf) + '</td>' +
+            '<td class="row-error-cell"></td>' +
             '<td><button class="row-del">✕</button></td>';
         document.getElementById('ocrParseBody').appendChild(tr);
     }
@@ -530,18 +531,39 @@
         return uniqueDates[0] + ' 외 ' + (uniqueDates.length - 1) + '일';
     }
 
-    function renderOcrApplyResult(result) {
-        var msg = result.savedCount + '개 저장 완료';
-        if (result.failedCount > 0) {
-            var esc = window.AdminUtils.escapeHtml;
-            var reasons = result.failures.map(function (f) {
-                return esc(f.artist) + '/' + esc(f.stage) + ': ' + esc(f.reason);
-            }).join('<br>');
-            msg += ', ' + result.failedCount + '개 실패<br><small>' + reasons + '</small>';
-            showApplyResult('partial', msg);
-        } else {
-            showApplyResult('success', msg);
+    function renderOcrApplyResult(result, allRows) {
+        if (result.failedCount === 0) {
+            // 전체 성공 — 테이블 비우기
+            document.getElementById('ocrParseBody').innerHTML = '';
+            checkEmpty();
+            showApplyResult('success', result.savedCount + '개 모두 저장 완료');
+            return;
         }
+
+        // 실패 인덱스 맵 구성
+        var failedMap = {};
+        result.failures.forEach(function (f) {
+            failedMap[parseInt(f.index)] = f.reason;
+        });
+
+        // 성공 행 제거, 실패 행 강조 + 사유 인라인 표시
+        allRows.forEach(function (tr, i) {
+            if (failedMap.hasOwnProperty(i)) {
+                tr.style.backgroundColor = 'rgba(220,53,69,0.08)';
+                var cell = tr.querySelector('.row-error-cell');
+                if (cell) {
+                    cell.innerHTML =
+                        '<span style="color:var(--danger);font-size:11px;font-weight:600;white-space:pre-wrap;">' +
+                        window.AdminUtils.escapeHtml(failedMap[i]) + '</span>';
+                }
+            } else {
+                tr.remove();
+            }
+        });
+
+        checkEmpty();
+        var msg = result.savedCount + '개 저장, ' + result.failedCount + '개 실패 — 아래 빨간 행을 수정 후 다시 적용하세요.';
+        showApplyResult('partial', msg);
     }
 
     /* ── 타임테이블에 적용 ── */
@@ -551,6 +573,9 @@
 
         var entries = collectOcrEntries();
         if (!validateOcrEntries(entries)) return;
+
+        // 현재 DOM 행 순서를 스냅샷으로 유지 (apply 후 성공/실패 구분에 사용)
+        var allRows = Array.from(document.getElementById('ocrParseBody').querySelectorAll('tr'));
 
         var btn = document.getElementById('btnApplyOcr');
         btn.disabled = true;
@@ -570,7 +595,7 @@
         .then(function (result) {
             btn.disabled = false;
             btn.innerHTML = '타임테이블에 적용';
-            renderOcrApplyResult(result);
+            renderOcrApplyResult(result, allRows);
             addHistory(currentFestivalTitle, formatDateRange(entries), result.savedCount, result.failedCount);
         })
         .catch(function (err) {

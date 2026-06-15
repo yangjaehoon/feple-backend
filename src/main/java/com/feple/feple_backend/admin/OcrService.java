@@ -50,17 +50,19 @@ public class OcrService {
         List<Map<String, String>> failures = new ArrayList<>();
         int savedCount = 0;
 
-        for (OcrResultDto entry : request.entries()) {
+        List<OcrResultDto> entries = request.entries();
+        for (int i = 0; i < entries.size(); i++) {
+            OcrResultDto entry = entries.get(i);
             Optional<String> error = validateEntry(entry);
             if (error.isPresent()) {
-                failures.add(buildFailureMap(entry, error.get()));
+                failures.add(buildFailureMap(entry, error.get(), i));
                 continue;
             }
             try {
                 timetableService.createEntry(request.festivalId(), toTimetableRequest(entry));
                 savedCount++;
             } catch (Exception e) {
-                failures.add(buildFailureMap(entry, e.getMessage()));
+                failures.add(buildFailureMap(entry, e.getMessage(), i));
             }
         }
         return new OcrApplyResultDto(savedCount, failures.size(), failures);
@@ -127,8 +129,9 @@ public class OcrService {
 
     // ── 타임테이블 OCR ──────────────────────────────────────
 
-    private Map<String, String> buildFailureMap(OcrResultDto entry, String reason) {
+    private Map<String, String> buildFailureMap(OcrResultDto entry, String reason, int index) {
         Map<String, String> map = new HashMap<>();
+        map.put("index",  String.valueOf(index));
         map.put("artist", Objects.requireNonNullElse(entry.artist(), "—"));
         map.put("stage",  Objects.requireNonNullElse(entry.stage(),  "—"));
         map.put("reason", Objects.requireNonNullElse(reason, "알 수 없는 오류"));
