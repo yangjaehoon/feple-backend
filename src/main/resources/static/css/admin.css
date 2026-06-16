@@ -1416,9 +1416,9 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .form-grid-5col      { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 16px; }
 .form-grid-ops       { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; }
 .form-grid-2col      { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.compact-input       { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
-.compact-input-date  { padding: 5px 6px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
-.compact-input-ops   { width: 100%; padding: 7px 10px; border: 1px solid var(--warning-bd); border-radius: 8px; font-size: 13px; }
+.compact-input       { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; }
+.compact-input-date  { padding: 5px 6px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; }
+.compact-input-ops   { width: 100%; padding: 7px 10px; border: 1px solid var(--warning-bd); border-radius: 8px; font-size: 13px; font-family: inherit; }
 .preview-input       { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: #f8f9ff; color: var(--muted); min-height: 36px; }
 .time-error          { display: none; margin-top: 5px; font-size: 12px; color: var(--danger); font-weight: 500; }
 .stage-row form      { margin: 0; }

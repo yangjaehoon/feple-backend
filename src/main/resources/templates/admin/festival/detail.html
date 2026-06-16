@@ -262,9 +262,9 @@
                           class="form-grid-ops">
                         <input type="hidden" name="stageName" th:value="${opsStageIndicator}"/>
                         <div>
-                            <label class="form-label-ops">항목명</label>
-                            <input type="text" name="artistName" placeholder="예: 티켓 부스 오픈, 입장 게이트 오픈" required maxlength="50"
-                                   class="compact-input-ops"/>
+                            <label class="form-label-ops">항목명 (엔터로 줄바꿈)</label>
+                            <textarea name="artistName" placeholder="예: 티켓 부스 오픈&#10;입장 게이트 오픈" required maxlength="200"
+                                      class="compact-input-ops" rows="2" style="resize: none;"></textarea>
                         </div>
                         <div>
                             <label class="form-label-ops">날짜</label>
@@ -322,7 +322,7 @@
                                     <span class="sep-muted">~</span>
                                     <span class="text-bold" th:text="${entry.endTime}"></span>
                                 </td>
-                                <td class="td-bold" th:text="${entry.artistName}"></td>
+                                <td class="td-bold" th:text="${entry.artistName}" style="white-space: pre-line;"></td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm"
                                             th:data-id="${entry.id}"
@@ -370,9 +370,9 @@
                                         <option value="__direct__">-- 직접 입력 --</option>
                                     </select>
                                 </th:block>
-                                <input type="text" name="artistName" id="tt-edit-artistName"
-                                       class="compact-input" style="width:100%" required maxlength="50"
-                                       placeholder="항목명 직접 입력"/>
+                                <textarea name="artistName" id="tt-edit-artistName"
+                                          class="compact-input" style="width:100%; resize: none;" required maxlength="200"
+                                          rows="2" placeholder="항목명 직접 입력"></textarea>
                             </div>
                             <div style="margin-bottom:12px">
                                 <label class="form-label-sm">날짜</label>
