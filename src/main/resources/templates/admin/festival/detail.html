@@ -356,6 +356,7 @@
                             <button type="button" class="modal-close" onclick="closeTimetableEdit()">✕</button>
                         </div>
                         <form id="tt-edit-form" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <input type="hidden" name="stageName" id="tt-edit-stageName"/>
                             <div style="margin-bottom:12px">
                                 <label class="form-label-sm">아티스트 / 항목명</label>
