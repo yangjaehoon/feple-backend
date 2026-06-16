@@ -16,6 +16,7 @@ public class TimetableEntryResponse {
     private String festivalDate;
     private String startTime;
     private String endTime;
+    private String color;
 
     private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -29,6 +30,7 @@ public class TimetableEntryResponse {
                 .festivalDate(e.getFestivalDate().toString())
                 .startTime(e.getStartTime().format(HH_MM))
                 .endTime(e.getEndTime().format(HH_MM))
+                .color(e.getColor())
                 .build();
     }
 }

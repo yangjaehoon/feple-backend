@@ -261,6 +261,7 @@
                           method="post"
                           class="form-grid-ops">
                         <input type="hidden" name="stageName" th:value="${opsStageIndicator}"/>
+                        <input type="hidden" name="color" id="ops-color-value"/>
                         <div>
                             <label class="form-label-ops">항목명 (엔터로 줄바꿈)</label>
                             <textarea name="artistName" placeholder="예: 티켓 부스 오픈&#10;입장 게이트 오픈" required maxlength="200"
@@ -284,6 +285,35 @@
                                    class="compact-input-ops"/>
                         </div>
                         <button type="submit" class="btn btn-warning btn-nowrap">+ 추가</button>
+                        <!-- 색상 선택 (전체 너비) -->
+                        <div class="ops-color-section">
+                            <label class="form-label-ops">색상</label>
+                            <div class="color-picker-row">
+                                <button type="button" class="color-swatch swatch-none active"
+                                        data-color="" data-target="ops-color-value" title="없음">없음</button>
+                                <button type="button" class="color-swatch" style="background:#EF4444"
+                                        data-color="#EF4444" data-target="ops-color-value" title="빨강"></button>
+                                <button type="button" class="color-swatch" style="background:#F97316"
+                                        data-color="#F97316" data-target="ops-color-value" title="주황"></button>
+                                <button type="button" class="color-swatch" style="background:#F59E0B"
+                                        data-color="#F59E0B" data-target="ops-color-value" title="노랑"></button>
+                                <button type="button" class="color-swatch" style="background:#22C55E"
+                                        data-color="#22C55E" data-target="ops-color-value" title="초록"></button>
+                                <button type="button" class="color-swatch" style="background:#3B82F6"
+                                        data-color="#3B82F6" data-target="ops-color-value" title="파랑"></button>
+                                <button type="button" class="color-swatch" style="background:#8B5CF6"
+                                        data-color="#8B5CF6" data-target="ops-color-value" title="보라"></button>
+                                <button type="button" class="color-swatch" style="background:#EC4899"
+                                        data-color="#EC4899" data-target="ops-color-value" title="핑크"></button>
+                                <button type="button" class="color-swatch" style="background:#6B7280"
+                                        data-color="#6B7280" data-target="ops-color-value" title="회색"></button>
+                                <label class="color-custom-label" title="직접 선택">
+                                    <span>직접</span>
+                                    <input type="color" class="color-custom-input"
+                                           data-target="ops-color-value" value="#000000"/>
+                                </label>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
@@ -309,10 +339,15 @@
                                 </td>
                             </tr>
                             <!-- 항목 행: 운영 항목은 노란 배경 -->
-                            <tr th:classappend="${entry.stageName == opsStageIndicator} ? 'bg-warning-subtle' : ''">
+                            <tr th:classappend="${entry.stageName == opsStageIndicator} ? 'bg-warning-subtle' : ''"
+                                th:style="${entry.stageName == opsStageIndicator and entry.color != null and !#strings.isEmpty(entry.color)} ? 'border-left: 4px solid ' + ${entry.color} + '; padding-left: 0;' : ''">
                                 <td>
-                                    <span th:if="${entry.stageName == opsStageIndicator}"
-                                          class="ops-label" th:text="${opsStageIndicator + ' 운영'}"></span>
+                                    <span th:if="${entry.stageName == opsStageIndicator}" class="ops-label">
+                                        <span th:if="${entry.color != null and !#strings.isEmpty(entry.color)}"
+                                              class="color-dot"
+                                              th:style="'background:' + ${entry.color}"></span>
+                                        <span th:text="${opsStageIndicator + ' 운영'}"></span>
+                                    </span>
                                     <span th:unless="${entry.stageName == opsStageIndicator}"
                                           class="badge badge-stage" th:data-stage="${entry.stageName}"
                                           th:text="${!#strings.isEmpty(entry.stageName) ? entry.stageName : '미지정'}"></span>
@@ -332,6 +367,7 @@
                                             th:data-start="${entry.startTime}"
                                             th:data-end="${entry.endTime}"
                                             th:data-stage="${entry.stageName}"
+                                            th:data-color="${entry.color}"
                                             onclick="openTimetableEdit(this)">수정</button>
                                 </td>
                                 <td>
@@ -393,6 +429,35 @@
                                 </div>
                             </div>
                             <div id="tt-edit-time-error" class="time-error">⚠ 종료 시간은 시작 시간보다 늦어야 합니다.</div>
+                            <div style="margin-top:12px; margin-bottom:4px">
+                                <label class="form-label-sm">색상</label>
+                                <div class="color-picker-row">
+                                    <button type="button" class="color-swatch swatch-none"
+                                            data-color="" data-target="tt-edit-color-value" title="없음">없음</button>
+                                    <button type="button" class="color-swatch" style="background:#EF4444"
+                                            data-color="#EF4444" data-target="tt-edit-color-value" title="빨강"></button>
+                                    <button type="button" class="color-swatch" style="background:#F97316"
+                                            data-color="#F97316" data-target="tt-edit-color-value" title="주황"></button>
+                                    <button type="button" class="color-swatch" style="background:#F59E0B"
+                                            data-color="#F59E0B" data-target="tt-edit-color-value" title="노랑"></button>
+                                    <button type="button" class="color-swatch" style="background:#22C55E"
+                                            data-color="#22C55E" data-target="tt-edit-color-value" title="초록"></button>
+                                    <button type="button" class="color-swatch" style="background:#3B82F6"
+                                            data-color="#3B82F6" data-target="tt-edit-color-value" title="파랑"></button>
+                                    <button type="button" class="color-swatch" style="background:#8B5CF6"
+                                            data-color="#8B5CF6" data-target="tt-edit-color-value" title="보라"></button>
+                                    <button type="button" class="color-swatch" style="background:#EC4899"
+                                            data-color="#EC4899" data-target="tt-edit-color-value" title="핑크"></button>
+                                    <button type="button" class="color-swatch" style="background:#6B7280"
+                                            data-color="#6B7280" data-target="tt-edit-color-value" title="회색"></button>
+                                    <label class="color-custom-label" title="직접 선택">
+                                        <span>직접</span>
+                                        <input type="color" class="color-custom-input"
+                                               data-target="tt-edit-color-value" value="#000000"/>
+                                    </label>
+                                </div>
+                                <input type="hidden" name="color" id="tt-edit-color-value"/>
+                            </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-ghost" onclick="closeTimetableEdit()">취소</button>
                                 <button type="submit" class="btn btn-primary">저장</button>

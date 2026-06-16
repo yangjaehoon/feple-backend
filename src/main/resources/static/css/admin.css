@@ -872,6 +872,23 @@ select.stage-select { padding: 5px 8px; border: 1px solid var(--border); border-
 .stage-list { margin-bottom: 10px; }
 .ops-box { background: var(--accent-bg); border: 1px solid var(--warning-bd); border-radius: var(--r); padding: 14px 18px; margin-bottom: 20px; }
 .ops-box-title { font-size: 13px; font-weight: 700; color: var(--warning-text); margin-bottom: 10px; }
+.ops-color-section { grid-column: 1 / -1; margin-top: 6px; }
+.color-picker-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.color-swatch {
+    width: 28px; height: 28px; border-radius: 6px; border: 2px solid transparent;
+    cursor: pointer; padding: 0; transition: transform .1s, border-color .1s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+.swatch-none { background: var(--bg-2); font-size: 11px; font-weight: 600; color: var(--muted); width: auto; padding: 0 8px; }
+.color-custom-label {
+    display: flex; align-items: center; gap: 4px; cursor: pointer;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    border: 2px solid var(--border); border-radius: 6px; padding: 0 8px; height: 28px;
+}
+.color-custom-label.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+.color-custom-input { width: 22px; height: 20px; border: none; padding: 0; cursor: pointer; background: none; }
+.color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; flex-shrink: 0; }
 .tt-date-row { background: var(--primary-lt) !important; border-top: 2px solid var(--primary-bd); }
 .tt-date-cell { padding: 8px 14px; font-size: 13px; font-weight: 700; color: var(--primary-dk); letter-spacing: .3px; }
 

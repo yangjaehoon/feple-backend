@@ -49,6 +49,7 @@ public class TimetableService {
         String stageName = (rawStageName == null || rawStageName.isBlank()) ? "" : rawStageName.trim();
         Stage stage = stageName.isEmpty() ? null : stageRepository.findByFestivalIdAndName(festivalId, stageName).orElse(null);
 
+        String color = (req.getColor() != null && !req.getColor().isBlank()) ? req.getColor().trim() : null;
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)
                 .stage(stage)
@@ -57,6 +58,7 @@ public class TimetableService {
                 .festivalDate(req.getFestivalDate())
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
+                .color(color)
                 .build();
         TimetableEntry saved = timetableRepository.save(entry);
         artistFestivalService.syncFromTimetableEntry(
@@ -82,7 +84,8 @@ public class TimetableService {
                 stage,
                 req.getFestivalDate(),
                 req.getStartTime(),
-                req.getEndTime());
+                req.getEndTime(),
+                req.getColor());
         artistFestivalService.syncFromTimetableEntry(
                 festivalId, entry.getArtistName(), entry.getFestivalDate(), entry.getStageName());
     }

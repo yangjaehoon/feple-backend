@@ -28,4 +28,6 @@ public class TimetableEntryRequest {
     @NotNull(message = "종료 시간은 필수입니다.")
     @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
     private LocalTime endTime;
+
+    private String color;
 }

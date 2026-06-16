@@ -49,6 +49,9 @@ public class TimetableEntry {
     @Column(nullable = false)
     private LocalTime endTime;
 
+    @Column(length = 20)
+    private String color;
+
     public String getArtistName() {
         if (artistName != null && !artistName.isBlank()) return artistName;
         return artist != null ? artist.getName() : "";
@@ -74,12 +77,14 @@ public class TimetableEntry {
 
     public void update(String artistName, String stageName, Stage stage,
                        java.time.LocalDate festivalDate,
-                       java.time.LocalTime startTime, java.time.LocalTime endTime) {
+                       java.time.LocalTime startTime, java.time.LocalTime endTime,
+                       String color) {
         this.artistName   = artistName;
         this.stageName    = stageName;
         this.stage        = stage;
         this.festivalDate = festivalDate;
         this.startTime    = startTime;
         this.endTime      = endTime;
+        this.color        = (color != null && !color.isBlank()) ? color.trim() : null;
     }
 }

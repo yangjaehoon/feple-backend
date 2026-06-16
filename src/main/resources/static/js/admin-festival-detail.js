@@ -342,6 +342,7 @@
         var festivalId  = btn.getAttribute('data-festival');
         var entryId     = btn.getAttribute('data-id');
         var artistName  = btn.getAttribute('data-artist') || '';
+        var color       = btn.getAttribute('data-color') || '';
 
         form.action = '/admin/festivals/' + festivalId + '/timetable/' + entryId + '/update';
         document.getElementById('tt-edit-date').value      = btn.getAttribute('data-date')  || '';
@@ -349,6 +350,7 @@
         document.getElementById('tt-edit-end').value       = btn.getAttribute('data-end')   || '';
         document.getElementById('tt-edit-stageName').value = btn.getAttribute('data-stage') || '';
         document.getElementById('tt-edit-time-error').style.display = 'none';
+        applyColorPicker('tt-edit-color-value', color);
 
         var select    = document.getElementById('tt-edit-artistSelect');
         var nameInput = document.getElementById('tt-edit-artistName');
@@ -401,6 +403,58 @@
     });
     document.getElementById('tt-edit-end').addEventListener('input', function () {
         document.getElementById('tt-edit-time-error').style.display = 'none';
+    });
+
+    // ── 색상 피커 공통 유틸 ──────────────────────────────────────
+
+    /**
+     * targetId: hidden input ID, color: 현재 색상값(빈 문자열 = 없음)
+     * 해당 hidden input 주변의 .color-swatch, .color-custom-label 상태를 갱신
+     */
+    function applyColorPicker(targetId, color) {
+        var hidden = document.getElementById(targetId);
+        if (!hidden) return;
+        hidden.value = color || '';
+
+        var container = hidden.closest('.color-picker-row, .ops-color-section, div');
+        if (!container) return;
+        var swatches = container.querySelectorAll('.color-swatch');
+        var customLabel = container.querySelector('.color-custom-label');
+        var customInput = container.querySelector('.color-custom-input');
+
+        swatches.forEach(function (s) { s.classList.remove('active'); });
+        if (customLabel) customLabel.classList.remove('active');
+
+        var matched = false;
+        swatches.forEach(function (s) {
+            if (s.getAttribute('data-color') === color) {
+                s.classList.add('active');
+                matched = true;
+            }
+        });
+        if (!matched && color && customInput) {
+            customInput.value = color;
+            if (customLabel) customLabel.classList.add('active');
+        }
+        if (!color) {
+            // '없음' 스와치 활성화 (data-color="" 인 첫 번째 버튼)
+            var none = container.querySelector('.color-swatch[data-color=""]');
+            if (none) none.classList.add('active');
+        }
+    }
+
+    document.addEventListener('click', function (e) {
+        var swatch = e.target.closest('.color-swatch');
+        if (!swatch) return;
+        var targetId = swatch.getAttribute('data-target');
+        var color    = swatch.getAttribute('data-color') || '';
+        applyColorPicker(targetId, color);
+    });
+
+    document.addEventListener('input', function (e) {
+        if (!e.target.classList.contains('color-custom-input')) return;
+        var targetId = e.target.getAttribute('data-target');
+        applyColorPicker(targetId, e.target.value);
     });
 
     window.openTimetableEdit     = openTimetableEdit;
