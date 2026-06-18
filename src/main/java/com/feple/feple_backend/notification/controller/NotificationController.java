@@ -25,7 +25,7 @@ public class NotificationController {
     private final NotificationQueryService notificationQueryService;
 
     /** 내 알림 목록 (페이지네이션) */
-    @GetMapping("/my")
+    @GetMapping
     public ResponseEntity<Page<NotificationDto>> getMyNotifications(
             @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -34,7 +34,7 @@ public class NotificationController {
     }
 
     /** 읽지 않은 알림 수 */
-    @GetMapping("/my/unread-count")
+    @GetMapping("/unread-count")
     public ResponseEntity<Map<String, Long>> getUnreadCount(
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(Map.of("count", notificationQueryService.getUnreadCount(userId)));
@@ -50,7 +50,7 @@ public class NotificationController {
     }
 
     /** 전체 읽음 처리 */
-    @PatchMapping("/my/read-all")
+    @PatchMapping("/read-all")
     public ResponseEntity<Void> markAllRead(
             @AuthenticationPrincipal Long userId) {
         notificationQueryService.markAllRead(userId);

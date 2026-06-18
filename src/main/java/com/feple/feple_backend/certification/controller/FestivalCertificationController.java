@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +45,7 @@ public class FestivalCertificationController {
         return certificationService.generateUploadUrl(userId, ext, req.contentType());
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public CertificationResponseDto submit(
             @Valid @RequestBody CertificationRequestDto req,
@@ -52,21 +54,21 @@ public class FestivalCertificationController {
         return certificationService.submit(userId, req.festivalId(), req.photoKey());
     }
 
-    @GetMapping("/my")
+    @GetMapping
     public List<CertificationResponseDto> myCertifications(
             @AuthenticationPrincipal Long userId
     ) {
         return certificationService.getMyCertifications(userId);
     }
 
-    @GetMapping("/my/approved-festivals")
+    @GetMapping("/approved-festivals")
     public List<Long> myApprovedFestivalIds(
             @AuthenticationPrincipal Long userId
     ) {
         return certificationService.getApprovedFestivalIds(userId);
     }
 
-    @GetMapping("/my/cert-state")
+    @GetMapping("/cert-state")
     public Map<String, String> getMyCertState(
             @RequestParam Long festivalId,
             @AuthenticationPrincipal Long userId

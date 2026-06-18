@@ -56,6 +56,7 @@ public class ArtistGalleryPhotoController {
         return artistGalleryPhotoService.generateUploadUrl(artistId, ext, req.contentType());
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ArtistGalleryPhotoResponseDto register(
             @PathVariable Long artistId,

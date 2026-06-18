@@ -33,7 +33,7 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<CommentResponseDto> create(@Valid @RequestBody CreateCommentDto dto,
                                                      @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(commentService.createComment(dto, userId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.createComment(dto, userId));
     }
 
     @GetMapping("/post/{postId}")

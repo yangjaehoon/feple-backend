@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,7 +51,7 @@ public class PostController {
     public ResponseEntity<Long> createFreePost(@Valid @RequestBody PostRequestDto dto,
                                                @AuthenticationPrincipal Long userId) {
         dto.setBoardType(BoardType.FREE);
-        return ResponseEntity.ok(postService.createPost(dto, userId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(dto, userId));
     }
 
     @GetMapping("/hot")
@@ -73,7 +74,7 @@ public class PostController {
     public ResponseEntity<Long> createMatePost(@Valid @RequestBody PostRequestDto dto,
                                                @AuthenticationPrincipal Long userId) {
         dto.setBoardType(BoardType.MATE);
-        return ResponseEntity.ok(postService.createPost(dto, userId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(dto, userId));
     }
 
     @GetMapping("/mate")
@@ -130,7 +131,7 @@ public class PostController {
         return ResponseEntity.ok(postScrapService.toggleScrap(postId, userId));
     }
 
-    @GetMapping("/my/scrapped")
+    @GetMapping("/scrapped")
     public ResponseEntity<List<PostResponseDto>> getMyScraps(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(postScrapService.getMyScraps(userId));
     }
@@ -147,7 +148,7 @@ public class PostController {
     public ResponseEntity<Long> createArtistPost(@PathVariable Long artistId,
                                                   @Valid @RequestBody PostRequestDto dto,
                                                   @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.createArtistPost(artistId, dto, userId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createArtistPost(artistId, dto, userId));
     }
 
     @GetMapping("/festival/{festivalId}")
@@ -162,7 +163,7 @@ public class PostController {
     public ResponseEntity<Long> createFestivalPost(@PathVariable Long festivalId,
                                                     @Valid @RequestBody PostRequestDto dto,
                                                     @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.createFestivalPost(festivalId, dto, userId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createFestivalPost(festivalId, dto, userId));
     }
 
     @GetMapping("/festival/{festivalId}/popular")
@@ -182,7 +183,7 @@ public class PostController {
     public ResponseEntity<Long> createFestivalCompanionPost(@PathVariable Long festivalId,
                                                              @Valid @RequestBody PostRequestDto dto,
                                                              @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_COMPANION));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_COMPANION));
     }
 
     @GetMapping("/festival/{festivalId}/ticket")
@@ -197,7 +198,7 @@ public class PostController {
     public ResponseEntity<Long> createFestivalTicketPost(@PathVariable Long festivalId,
                                                           @Valid @RequestBody PostRequestDto dto,
                                                           @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_TICKET));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_TICKET));
     }
 
     @PostMapping("/{postId}/view")

@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.suggestion.dto.SubmitArtistSuggestionDto;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
@@ -23,6 +24,6 @@ public class ArtistSuggestionController {
             Authentication authentication,
             @Valid @RequestBody SubmitArtistSuggestionDto dto) {
         Long userId = (Long) authentication.getPrincipal();
-        return ResponseEntity.ok(artistSuggestionService.submit(userId, dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(artistSuggestionService.submit(userId, dto));
     }
 }
