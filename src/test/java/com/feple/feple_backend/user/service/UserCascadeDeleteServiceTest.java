@@ -1,23 +1,20 @@
 package com.feple.feple_backend.user.service;
 
-import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
-import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
+import com.feple.feple_backend.artist.photo.service.ArtistProfileImageLikeService;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
-import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
-import com.feple.feple_backend.comment.repository.CommentLikeRepository;
-import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
-import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
+import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.festival.service.FestivalAttendanceService;
+import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
-import com.feple.feple_backend.post.repository.PostLikeRepository;
-import com.feple.feple_backend.post.repository.PostScrapRepository;
+import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
-import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,20 +28,19 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class UserCascadeDeleteServiceTest {
 
-    @Mock UserRepository userRepository;
     @Mock RefreshTokenRepository refreshTokenRepository;
-    @Mock FestivalLikeRepository festivalLikeRepository;
-    @Mock FestivalAttendanceRepository festivalAttendanceRepository;
-    @Mock ArtistFollowRepository artistFollowRepository;
+    @Mock UserDeviceTokenRepository userDeviceTokenRepository;
+
+    @Mock FestivalLikeService festivalLikeService;
+    @Mock FestivalAttendanceService festivalAttendanceService;
+    @Mock ArtistFollowService artistFollowService;
+    @Mock PostCascadeService postCascadeService;
+    @Mock CommentService commentService;
+    @Mock ArtistProfileImageLikeService artistProfileImageLikeService;
+
     @Mock NotificationRepository notificationRepository;
     @Mock NotificationPreferenceRepository notificationPreferenceRepository;
-    @Mock UserDeviceTokenRepository userDeviceTokenRepository;
     @Mock FestivalCertificationRepository certificationRepository;
-    @Mock ArtistProfileImageLikeRepository artistImageLikeRepository;
-    @Mock ArtistProfileImageRepository artistImageRepository;
-    @Mock PostLikeRepository postLikeRepository;
-    @Mock CommentLikeRepository commentLikeRepository;
-    @Mock PostScrapRepository postScrapRepository;
     @Mock SongRequestRepository songRequestRepository;
     @Mock ArtistSuggestionRepository artistSuggestionRepository;
     @Mock FileStorageService fileStorageService;
@@ -64,8 +60,8 @@ class UserCascadeDeleteServiceTest {
 
         userCascadeDeleteService.delete(user);
 
-        verify(festivalLikeRepository).deleteByUserId(1L);
-        verify(artistFollowRepository).deleteByUserId(1L);
+        verify(festivalLikeService).removeAllByUser(1L);
+        verify(artistFollowService).removeAllByUser(1L);
         verify(notificationRepository).deleteByUserId(1L);
         verify(notificationPreferenceRepository).deleteByUserId(1L);
     }
@@ -80,8 +76,7 @@ class UserCascadeDeleteServiceTest {
         verify(certificationRepository).deleteByUserId(1L);
         verify(songRequestRepository).deleteByUserId(1L);
         verify(artistSuggestionRepository).deleteByUserId(1L);
-        verify(artistImageLikeRepository).deleteByUserId(1L);
-        verify(artistImageRepository).nullifyUploaderByUserId(1L);
+        verify(artistProfileImageLikeService).removeByUser(1L);
     }
 
     @Test
@@ -102,31 +97,23 @@ class UserCascadeDeleteServiceTest {
 
         userCascadeDeleteService.delete(user);
 
-        verify(userRepository, never()).delete(user);
+        // 게시글/댓글 행 삭제 없이 소프트딜리트(익명화)만 수행
+        verify(postCascadeService).removePostActivityByUser(1L);
+        verify(commentService).removeLikesByUser(1L);
     }
 
     @Test
-    void 사용자_삭제시_카운터_감소_후_행_삭제됨() {
+    void 사용자_삭제시_카운터_감소_포함_서비스_위임_호출됨() {
         User user = userWithImage(1L);
-        org.mockito.InOrder inOrder = org.mockito.Mockito.inOrder(
-                festivalLikeRepository, festivalAttendanceRepository,
-                artistFollowRepository, postLikeRepository,
-                commentLikeRepository, postScrapRepository);
 
         userCascadeDeleteService.delete(user);
 
-        inOrder.verify(festivalLikeRepository).decrementFestivalLikeCountByUserId(1L);
-        inOrder.verify(festivalLikeRepository).deleteByUserId(1L);
-        inOrder.verify(festivalAttendanceRepository).decrementAttendingCountByUserId(1L);
-        inOrder.verify(festivalAttendanceRepository).deleteByUserId(1L);
-        inOrder.verify(artistFollowRepository).decrementFollowerCountByUserId(1L);
-        inOrder.verify(artistFollowRepository).deleteByUserId(1L);
-        inOrder.verify(postLikeRepository).decrementPostLikeCountByUserId(1L);
-        inOrder.verify(postLikeRepository).deleteByUserId(1L);
-        inOrder.verify(commentLikeRepository).decrementCommentLikeCountByUserId(1L);
-        inOrder.verify(commentLikeRepository).deleteByUserId(1L);
-        inOrder.verify(postScrapRepository).decrementPostScrapCountByUserId(1L);
-        inOrder.verify(postScrapRepository).deleteByUserId(1L);
+        verify(festivalLikeService).removeAllByUser(1L);
+        verify(festivalAttendanceService).removeAllByUser(1L);
+        verify(artistFollowService).removeAllByUser(1L);
+        verify(postCascadeService).removePostActivityByUser(1L);
+        verify(commentService).removeLikesByUser(1L);
+        verify(artistProfileImageLikeService).removeByUser(1L);
     }
 
     @Test
