@@ -2,6 +2,7 @@ package com.feple.feple_backend.auth.service;
 
 import com.feple.feple_backend.auth.dto.KakaoUserResponse;
 import com.feple.feple_backend.auth.kakao.KakaoApiClient;
+import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -19,6 +20,7 @@ public class KakaoAuthService implements OAuthLoginService {
 
     private final KakaoApiClient kakaoApiClient;
     private final UserRepository userRepository;
+    private final NicknameGenerator nicknameGenerator;
 
     @Override
     public Mono<User> authenticate(String accessToken) {
@@ -34,19 +36,19 @@ public class KakaoAuthService implements OAuthLoginService {
         String oauthId = kakaoId.toString();
         String email = account.getEmail();
 
-        String rawNickname = Optional.ofNullable(account.getProfile())
-                .map(KakaoUserResponse.Profile::getNickname)
-                .filter(n -> !n.isBlank())
-                .orElse("KakaoUser");
-        String sanitized = rawNickname.trim().replaceAll("[^가-힣a-zA-Z0-9_]", "");
-        String nickname = sanitized.isBlank() ? "KakaoUser" : sanitized;
-
         return userRepository.findByOauthId(oauthId).map(user -> {
             if (user.isDeleted()) {
                 throw new IllegalArgumentException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
             }
             return user;
         }).orElseGet(() -> {
+            String rawNickname = Optional.ofNullable(account.getProfile())
+                    .map(KakaoUserResponse.Profile::getNickname)
+                    .filter(n -> !n.isBlank())
+                    .orElse("KakaoUser");
+            String fallback = "Kakao" + oauthId.substring(0, Math.min(oauthId.length(), 4));
+            String nickname = nicknameGenerator.uniquify(nicknameGenerator.sanitize(rawNickname, fallback));
+
             String kakaoImageUrl = Optional.ofNullable(account.getProfile())
                     .map(KakaoUserResponse.Profile::getProfile_image_url)
                     .filter(url -> !url.isBlank())

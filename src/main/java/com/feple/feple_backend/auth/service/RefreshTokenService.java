@@ -72,9 +72,7 @@ public class RefreshTokenService {
 
     @Transactional
     public void revoke(String rawToken) {
-        String tokenHash = hash(rawToken);
-        refreshTokenRepository.findByTokenHash(tokenHash)
-                .ifPresent(refreshTokenRepository::delete);
+        refreshTokenRepository.deleteByTokenHash(hash(rawToken));
     }
 
     @Transactional
