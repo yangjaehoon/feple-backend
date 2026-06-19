@@ -57,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
         }
         Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
         Comment saved = commentRepository.save(comment);
-        postRepository.incrementCommentCount(post.getId());
+        post.incrementCommentCount();
 
         Long postAuthorId = post.getUserId();
         if (!postAuthorId.equals(userId)) {
@@ -176,15 +176,14 @@ public class CommentServiceImpl implements CommentService {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         boolean alreadyLiked = commentLikeRepository.existsByUserIdAndCommentId(userId, commentId);
-        int currentCount = comment.getLikeCount();
         if (alreadyLiked) {
             commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
-            commentRepository.decrementLikeCount(commentId);
-            return new CommentLikeResult(false, currentCount - 1);
+            comment.decrementLikeCount();
+            return new CommentLikeResult(false, comment.getLikeCount());
         } else {
             commentLikeRepository.save(new CommentLike(comment, user));
-            commentRepository.incrementLikeCount(commentId);
-            return new CommentLikeResult(true, currentCount + 1);
+            comment.incrementLikeCount();
+            return new CommentLikeResult(true, comment.getLikeCount());
         }
     }
 }

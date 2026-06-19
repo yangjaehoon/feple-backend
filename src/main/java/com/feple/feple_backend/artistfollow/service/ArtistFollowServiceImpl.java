@@ -45,22 +45,22 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
-            artistRepository.incrementFollowerCount(artistId);
+            artist.incrementFollowerCount();
         }
 
-        return new FollowResponseDto(true, artistRepository.findFollowerCountById(artistId));
+        return new FollowResponseDto(true, artist.getFollowerCount());
     }
 
     @Override
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
-        EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
         if (deleted > 0) {
-            artistRepository.decrementFollowerCount(artistId);
+            artist.decrementFollowerCount();
         }
 
-        return new FollowResponseDto(false, artistRepository.findFollowerCountById(artistId));
+        return new FollowResponseDto(false, artist.getFollowerCount());
     }
 }

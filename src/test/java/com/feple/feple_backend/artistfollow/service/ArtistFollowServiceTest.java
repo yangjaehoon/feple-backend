@@ -101,7 +101,6 @@ class ArtistFollowServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
-        given(artistRepository.findFollowerCountById(10L)).willReturn(1);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 
@@ -117,7 +116,6 @@ class ArtistFollowServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(true);
-        given(artistRepository.findFollowerCountById(10L)).willReturn(5);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 

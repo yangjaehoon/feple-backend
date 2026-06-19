@@ -97,29 +97,33 @@ class CommentRepositoryIntegrationTest {
         assertThat(count).isEqualTo(2);
     }
 
-    // ── likeCount @Modifying 쿼리 ────────────────────────────────────
+    // ── likeCount 엔티티 메서드 ─────────────────────────────────────
 
     @Test
-    void 댓글_좋아요_증가() {
+    void 댓글_좋아요_증가_엔티티_메서드() {
         Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush();
 
-        commentRepository.incrementLikeCount(comment.getId()); // clearAutomatically=true
+        comment.incrementLikeCount();
+        em.flush(); em.clear();
 
         int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(1);
     }
 
     @Test
-    void 댓글_좋아요_감소() {
+    void 댓글_좋아요_감소_엔티티_메서드() {
         Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush();
-        commentRepository.incrementLikeCount(comment.getId());
-        commentRepository.incrementLikeCount(comment.getId());
+        comment.incrementLikeCount();
+        comment.incrementLikeCount();
+        em.flush(); em.clear();
 
-        commentRepository.decrementLikeCount(comment.getId());
+        Comment reloaded = commentRepository.findById(comment.getId()).orElseThrow();
+        reloaded.decrementLikeCount();
+        em.flush(); em.clear();
 
-        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
+        int count = commentRepository.findById(reloaded.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(1);
     }
 
@@ -128,8 +132,8 @@ class CommentRepositoryIntegrationTest {
         Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush(); // likeCount = 0
 
-        // CASE WHEN likeCount > 0 THEN likeCount - 1 ELSE 0 END
-        commentRepository.decrementLikeCount(comment.getId());
+        comment.decrementLikeCount(); // if (likeCount > 0) 보호
+        em.flush(); em.clear();
 
         int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(0);
@@ -140,10 +144,10 @@ class CommentRepositoryIntegrationTest {
         Comment comment = commentRepository.save(new Comment("내용", post, user, false));
         em.flush();
 
-        // 3번 감소 시도해도 0 유지
-        commentRepository.decrementLikeCount(comment.getId());
-        commentRepository.decrementLikeCount(comment.getId());
-        commentRepository.decrementLikeCount(comment.getId());
+        comment.decrementLikeCount();
+        comment.decrementLikeCount();
+        comment.decrementLikeCount();
+        em.flush(); em.clear();
 
         int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
         assertThat(count).isEqualTo(0);

@@ -32,11 +32,11 @@ public class PostLikeService {
 
         int deleted = postLikeRepository.deleteByUserIdAndPostId(userId, postId);
         if (deleted > 0) {
-            postRepository.decrementLikeCount(postId);
+            post.decrementLikeCount();
             return false;
         }
         postLikeRepository.save(new PostLike(user, post));
-        postRepository.incrementLikeCount(postId);
+        post.incrementLikeCount();
         return true;
     }
 }

@@ -167,10 +167,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Object[]> countAndSumByArtistSince(@Param("since") LocalDateTime since);
 
     // ── 댓글 카운트 ─────────────────────────────────────────────────────────
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.commentCount = p.commentCount + 1 WHERE p.id = :postId")
-    void incrementCommentCount(@Param("postId") Long postId);
-
+    // decrementCommentCount: 댓글 삭제 시 post가 로드되지 않으므로 @Modifying 유지
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Post p SET p.commentCount = p.commentCount - 1 WHERE p.id = :postId AND p.commentCount > 0")
     void decrementCommentCount(@Param("postId") Long postId);
@@ -182,24 +179,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p.viewCount FROM Post p WHERE p.id = :postId")
     int findViewCountById(@Param("postId") Long postId);
-
-    // ── 스크랩 카운트 (원자적 SQL UPDATE — 엔티티 dirty check 대신 사용)
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.scrapCount = p.scrapCount + 1 WHERE p.id = :postId")
-    void incrementScrapCount(@Param("postId") Long postId);
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.scrapCount = p.scrapCount - 1 WHERE p.id = :postId AND p.scrapCount > 0")
-    void decrementScrapCount(@Param("postId") Long postId);
-
-    // ── 좋아요 카운트 ─────────────────────────────────────────────────────────
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.likeCount = p.likeCount + 1 WHERE p.id = :postId")
-    void incrementLikeCount(@Param("postId") Long postId);
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Post p SET p.likeCount = p.likeCount - 1 WHERE p.id = :postId AND p.likeCount > 0")
-    void decrementLikeCount(@Param("postId") Long postId);
 
     // ── Soft delete 관련 FK 무효화 (cascade delete 시 soft-deleted 행의 FK 정리) ──
     @Modifying(clearAutomatically = true)

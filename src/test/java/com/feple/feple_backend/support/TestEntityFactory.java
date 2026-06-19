@@ -24,4 +24,22 @@ public final class TestEntityFactory {
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build();
     }
+
+    public static Post freePostWithLikeCount(Long id, User author, int likeCount) {
+        return Post.builder()
+                .id(id).title("제목" + id).content("내용")
+                .user(author).boardType(BoardType.FREE)
+                .likeCount(likeCount).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public static Post freePostWithScrapCount(Long id, User author, int scrapCount) {
+        return Post.builder()
+                .id(id).title("제목" + id).content("내용")
+                .user(author).boardType(BoardType.FREE)
+                .likeCount(0).scrapCount(scrapCount)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+    }
 }

@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static com.feple.feple_backend.support.TestEntityFactory.freePost;
+import static com.feple.feple_backend.support.TestEntityFactory.freePostWithLikeCount;
 import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -65,9 +66,9 @@ class PostLikeServiceTest {
     // ── toggleLike ───────────────────────────────────────────────────
 
     @Test
-    void 좋아요_취소시_decrementLikeCount_호출되고_false_반환() {
+    void 좋아요_취소시_likeCount_감소하고_false_반환() {
         User user = user(1L);
-        Post post = freePost(10L, user);
+        Post post = freePostWithLikeCount(10L, user, 1);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postLikeRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(1);
@@ -75,12 +76,12 @@ class PostLikeServiceTest {
         boolean result = postLikeService.toggleLike(10L, 1L);
 
         assertThat(result).isFalse();
-        verify(postRepository).decrementLikeCount(10L);
+        assertThat(post.getLikeCount()).isEqualTo(0);
         verify(postLikeRepository, never()).save(any(PostLike.class));
     }
 
     @Test
-    void 좋아요_추가시_save와_incrementLikeCount_호출되고_true_반환() {
+    void 좋아요_추가시_save_호출되고_likeCount_증가하며_true_반환() {
         User user = user(1L);
         Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
@@ -90,8 +91,8 @@ class PostLikeServiceTest {
         boolean result = postLikeService.toggleLike(10L, 1L);
 
         assertThat(result).isTrue();
+        assertThat(post.getLikeCount()).isEqualTo(1);
         verify(postLikeRepository).save(any(PostLike.class));
-        verify(postRepository).incrementLikeCount(10L);
     }
 
     @Test

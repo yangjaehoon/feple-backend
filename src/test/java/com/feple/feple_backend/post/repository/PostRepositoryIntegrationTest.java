@@ -93,53 +93,58 @@ class PostRepositoryIntegrationTest {
                 .doesNotContain(p3.getId());
     }
 
-    // ── likeCount @Modifying 쿼리 ────────────────────────────────────
+    // ── likeCount 엔티티 메서드 ─────────────────────────────────────
 
     @Test
-    void 좋아요_증가_쿼리() {
+    void 좋아요_증가_엔티티_메서드() {
         Post post = postRepository.save(freePost(3));
         em.flush();
 
-        postRepository.incrementLikeCount(post.getId()); // clearAutomatically=true
+        post.incrementLikeCount();
+        em.flush(); em.clear();
 
         Post updated = postRepository.findById(post.getId()).orElseThrow();
         assertThat(updated.getLikeCount()).isEqualTo(4);
     }
 
     @Test
-    void 좋아요_감소_쿼리() {
+    void 좋아요_감소_엔티티_메서드() {
         Post post = postRepository.save(freePost(3));
         em.flush();
 
-        postRepository.decrementLikeCount(post.getId());
+        post.decrementLikeCount();
+        em.flush(); em.clear();
 
         Post updated = postRepository.findById(post.getId()).orElseThrow();
         assertThat(updated.getLikeCount()).isEqualTo(2);
     }
 
     @Test
-    void 좋아요_0일때_감소_요청_무시() {
+    void 좋아요_0일때_감소_무시() {
         Post post = postRepository.save(freePost(0));
         em.flush();
 
-        postRepository.decrementLikeCount(post.getId()); // WHERE likeCount > 0 조건으로 무시
+        post.decrementLikeCount(); // Math.max(0, ...) 보호
+        em.flush(); em.clear();
 
         Post updated = postRepository.findById(post.getId()).orElseThrow();
         assertThat(updated.getLikeCount()).isEqualTo(0);
     }
 
-    // ── scrapCount @Modifying 쿼리 ───────────────────────────────────
+    // ── scrapCount 엔티티 메서드 ─────────────────────────────────────
 
     @Test
-    void 스크랩_증가_감소_쿼리() {
+    void 스크랩_증가_감소_엔티티_메서드() {
         Post post = postRepository.save(freePost(0));
         em.flush();
 
-        postRepository.incrementScrapCount(post.getId());
+        post.incrementScrapCount();
+        em.flush(); em.clear();
         Post after = postRepository.findById(post.getId()).orElseThrow();
         assertThat(after.getScrapCount()).isEqualTo(1);
 
-        postRepository.decrementScrapCount(post.getId());
+        after.decrementScrapCount();
+        em.flush(); em.clear();
         Post afterDec = postRepository.findById(post.getId()).orElseThrow();
         assertThat(afterDec.getScrapCount()).isEqualTo(0);
     }

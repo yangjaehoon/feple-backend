@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static com.feple.feple_backend.support.TestEntityFactory.freePost;
+import static com.feple.feple_backend.support.TestEntityFactory.freePostWithScrapCount;
 import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -62,9 +63,9 @@ class PostScrapServiceTest {
     // ── toggleScrap ──────────────────────────────────────────────────
 
     @Test
-    void 스크랩_취소시_delete와_decrement_쿼리가_호출되고_false_반환() {
+    void 스크랩_취소시_delete_호출되고_scrapCount_감소하며_false_반환() {
         User user = user(1L);
-        Post post = freePost(10L, user);
+        Post post = freePostWithScrapCount(10L, user, 1);
         PostScrap existing = new PostScrap(user, post);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -73,13 +74,13 @@ class PostScrapServiceTest {
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
         assertThat(result).isFalse();
+        assertThat(post.getScrapCount()).isEqualTo(0);
         verify(postScrapRepository).delete(existing);
-        verify(postRepository).decrementScrapCount(10L);
         verify(postScrapRepository, never()).save(any(PostScrap.class));
     }
 
     @Test
-    void 스크랩_추가시_save와_increment_쿼리가_호출되고_true_반환() {
+    void 스크랩_추가시_save_호출되고_scrapCount_증가하며_true_반환() {
         User user = user(1L);
         Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
@@ -89,8 +90,8 @@ class PostScrapServiceTest {
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
         assertThat(result).isTrue();
+        assertThat(post.getScrapCount()).isEqualTo(1);
         verify(postScrapRepository).save(any(PostScrap.class));
-        verify(postRepository).incrementScrapCount(10L);
     }
 
     @Test

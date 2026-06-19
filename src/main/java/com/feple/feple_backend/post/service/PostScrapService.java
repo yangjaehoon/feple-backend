@@ -39,12 +39,11 @@ public class PostScrapService {
         Optional<PostScrap> existing = postScrapRepository.findByUserIdAndPostId(userId, postId);
         if (existing.isPresent()) {
             postScrapRepository.delete(existing.get());
-            // 원자적 SQL UPDATE — 동시 요청 시 dirty check lost update 방지
-            postRepository.decrementScrapCount(postId);
+            post.decrementScrapCount();
             return false;
         } else {
             postScrapRepository.save(new PostScrap(user, post));
-            postRepository.incrementScrapCount(postId);
+            post.incrementScrapCount();
             return true;
         }
     }

@@ -285,8 +285,8 @@ class CommentServiceImplTest {
 
         assertThat(result.liked()).isTrue();
         assertThat(result.likeCount()).isEqualTo(1);
+        assertThat(c.getLikeCount()).isEqualTo(1);
         verify(commentLikeRepository).save(any());
-        verify(commentRepository).incrementLikeCount(100L);
     }
 
     @Test
@@ -308,7 +308,7 @@ class CommentServiceImplTest {
 
         assertThat(result.liked()).isFalse();
         assertThat(result.likeCount()).isEqualTo(0);
+        assertThat(c.getLikeCount()).isEqualTo(0);
         verify(commentLikeRepository).deleteByUserIdAndCommentId(2L, 100L);
-        verify(commentRepository).decrementLikeCount(100L);
     }
 }
