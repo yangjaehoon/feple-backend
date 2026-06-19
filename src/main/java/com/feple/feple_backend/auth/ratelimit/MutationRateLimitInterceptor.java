@@ -12,9 +12,12 @@ public class MutationRateLimitInterceptor implements HandlerInterceptor {
 
     private final MutationRateLimiter mutationRateLimiter;
 
+    private static final java.util.Set<String> MUTATION_METHODS =
+            java.util.Set.of("POST", "PUT", "PATCH", "DELETE");
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if ("POST".equalsIgnoreCase(request.getMethod())) {
+        if (MUTATION_METHODS.contains(request.getMethod().toUpperCase())) {
             mutationRateLimiter.check(request.getRemoteAddr());
         }
         return true;
