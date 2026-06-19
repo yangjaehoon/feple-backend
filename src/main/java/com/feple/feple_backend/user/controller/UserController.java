@@ -169,7 +169,7 @@ public class UserController {
             throw new IllegalArgumentException("토큰이 필요합니다.");
         }
         deviceTokenService.register(userId, token, platform);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     /** FCM 디바이스 토큰 삭제 (로그아웃 시) */

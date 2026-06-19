@@ -95,6 +95,6 @@ public class FestivalController {
                                               @PathVariable Long artistFestivalId,
                                               @RequestBody(required = false) Set<Long> songIds) {
         songAdminService.updateSetlist(id, artistFestivalId, songIds != null ? songIds : Set.of());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }

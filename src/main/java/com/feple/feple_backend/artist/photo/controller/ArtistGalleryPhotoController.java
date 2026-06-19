@@ -6,7 +6,6 @@ import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.file.dto.PresignResult;
-import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
@@ -20,7 +19,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Tag(name = "아티스트 갤러리", description = "아티스트 갤러리 사진 등록·조회·신고")
@@ -43,9 +41,6 @@ public class ArtistGalleryPhotoController {
             @Valid @RequestBody PresignRequest req,
             @AuthenticationPrincipal Long userId
     ) {
-        if (userId == null) {
-            throw new AuthenticationRequiredException("로그인이 필요합니다.");
-        }
         String ext = req.extension() == null ? "" : req.extension().toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(ext)) {
             throw new IllegalArgumentException("허용되지 않는 파일 확장자입니다. (jpg, jpeg, png, gif, webp 만 가능)");
@@ -63,7 +58,6 @@ public class ArtistGalleryPhotoController {
             @Valid @RequestBody RegisterPhotoRequestDto req,
             @AuthenticationPrincipal Long userId
     ) {
-        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         boolean anonymous = Boolean.TRUE.equals(req.isAnonymous());
         return artistGalleryPhotoService.register(artistId, req.objectKey(), req.contentType(), req.title(), req.description(), anonymous, userId);
     }
@@ -87,7 +81,6 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long artistId,
             @PathVariable Long photoId,
             @AuthenticationPrincipal Long userId) {
-        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         artistGalleryPhotoService.delete(photoId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -98,7 +91,6 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long photoId,
             @Valid @RequestBody UpdatePhotoRequestDto req,
             @AuthenticationPrincipal Long userId) {
-        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         return artistGalleryPhotoService.update(photoId, userId, req);
     }
 
@@ -108,7 +100,6 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long photoId,
             @Valid @RequestBody ReportRequest body,
             @AuthenticationPrincipal Long userId) {
-        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
         artistPhotoReportService.submitReport(photoId, userId, new SubmitReportCommand(body.reason(), body.detail()));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -119,12 +110,10 @@ public class ArtistGalleryPhotoController {
     ) {}
 
     @PostMapping("/{photoId}/like")
-    public ResponseEntity<Map<String, Boolean>> toggleLike(
+    public ResponseEntity<Boolean> toggleLike(
             @PathVariable Long photoId,
             @PathVariable Long artistId,
             @AuthenticationPrincipal Long userId) {
-        if (userId == null) throw new AuthenticationRequiredException("로그인이 필요합니다.");
-        boolean success = artistGalleryPhotoService.toggleLike(photoId, userId);
-        return ResponseEntity.ok(Map.of("success", success));
+        return ResponseEntity.ok(artistGalleryPhotoService.toggleLike(photoId, userId));
     }
 }
