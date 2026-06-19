@@ -1,6 +1,6 @@
 package com.feple.feple_backend.global.exception;
 
-public class DuplicateArtistFestivalException extends RuntimeException {
+public class DuplicateArtistFestivalException extends ConflictException {
     public DuplicateArtistFestivalException() {
         super("이미 이 페스티벌에 참여 중인 아티스트입니다.");
     }

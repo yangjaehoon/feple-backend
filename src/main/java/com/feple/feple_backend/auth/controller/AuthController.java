@@ -22,8 +22,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
-
 @Tag(name = "인증", description = "카카오·Firebase OAuth 로그인, 토큰 갱신·로그아웃")
 @RestController
 @RequiredArgsConstructor
@@ -100,11 +98,11 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshRequest req) {
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest req) {
         if (req != null && req.getRefreshToken() != null) {
             refreshTokenService.revoke(req.getRefreshToken());
         }
-        return ResponseEntity.ok(Map.of("message", "로그아웃 되었습니다."));
+        return ResponseEntity.noContent().build();
     }
 
     // application.yml의 server.forward-headers-strategy: native 설정으로

@@ -19,7 +19,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
+import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.user.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -124,8 +126,11 @@ public class SecurityConfig {
             .httpBasic(hb -> hb.disable())
             .formLogin(fl -> fl.disable())
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((req, res, e) ->
-                    res.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
+                .authenticationEntryPoint((req, res, e) -> {
+                    res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    res.setContentType("application/json;charset=UTF-8");
+                    res.getWriter().write(ErrorResponse.toJson(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", "UNAUTHORIZED"));
+                }))
             .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userRepository),
                 UsernamePasswordAuthenticationFilter.class);
 

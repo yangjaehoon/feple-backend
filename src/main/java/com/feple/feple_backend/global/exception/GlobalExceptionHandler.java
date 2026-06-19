@@ -16,9 +16,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice
@@ -26,128 +23,102 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // 리소스를 찾지 못했을 때 — 내부 ID는 클라이언트에 노출하지 않고 로그에만 기록
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(NoSuchElementException ex) {
+    public ResponseEntity<ErrorResponse> handleNotFound(NoSuchElementException ex) {
         log.info("Resource not found: {}", ex.getMessage());
-        return errorBody(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다.");
+        return body(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다.", "RESOURCE_NOT_FOUND");
     }
 
-    // 잘못된 요청 값(DTO @Valid 실패)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        return errorBody(HttpStatus.BAD_REQUEST, message);
+        return body(HttpStatus.BAD_REQUEST, message, "VALIDATION_FAILED");
     }
 
-    // 금칙어 포함 (필드 정보 포함 — IllegalArgumentException보다 먼저 등록)
+    // BadWordException extends IllegalArgumentException — Spring이 계층 깊이로 구체적인 핸들러를 먼저 선택
     @ExceptionHandler(BadWordException.class)
-    public ResponseEntity<Map<String, Object>> handleBadWord(BadWordException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
-        body.put("message", ex.getMessage());
-        body.put("code", "BAD_WORD");
-        body.put("field", ex.getField());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    public ResponseEntity<ErrorResponse> handleBadWord(BadWordException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.withField(HttpStatus.BAD_REQUEST, ex.getMessage(), "BAD_WORD", ex.getField()));
     }
 
-    // 잘못된 인자 (파일 형식, 크기, 비즈니스 유효성 등)
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         log.debug("Bad request: {}", ex.getMessage());
-        return errorBody(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return body(HttpStatus.BAD_REQUEST, ex.getMessage(), "ILLEGAL_ARGUMENT");
     }
 
-    // 권한 없음 (IDOR, 타인 리소스 접근 시도) — 보안 모니터링을 위해 WARN 로깅
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
         log.warn("Access denied: {}", ex.getMessage());
-        return errorBody(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
+        return body(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.", "ACCESS_DENIED");
     }
 
-    // 로그인 필요
     @ExceptionHandler(AuthenticationRequiredException.class)
-    public ResponseEntity<Map<String, Object>> handleAuthenticationRequired(AuthenticationRequiredException ex) {
+    public ResponseEntity<ErrorResponse> handleAuthenticationRequired(AuthenticationRequiredException ex) {
         log.info("Authentication required: {}", ex.getMessage());
-        return errorBody(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        return body(HttpStatus.UNAUTHORIZED, ex.getMessage(), "UNAUTHORIZED");
     }
 
-    // 로그인 시도 초과 (Rate Limit) — 공격 모니터링을 위해 WARN 로깅
     @ExceptionHandler(TooManyRequestsException.class)
-    public ResponseEntity<Map<String, Object>> handleTooManyRequests(TooManyRequestsException ex) {
+    public ResponseEntity<ErrorResponse> handleTooManyRequests(TooManyRequestsException ex) {
         log.warn("Rate limit exceeded: {}", ex.getMessage());
-        return errorBody(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+        return body(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), "RATE_LIMITED");
     }
 
-    // 중복/충돌 리소스
-    @ExceptionHandler({ConflictException.class, DuplicateArtistFestivalException.class})
-    public ResponseEntity<Map<String, Object>> handleConflict(RuntimeException ex) {
-        return errorBody(HttpStatus.CONFLICT, ex.getMessage());
+    // DuplicateArtistFestivalException extends ConflictException이므로 단일 타입으로 통합
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
+        return body(HttpStatus.CONFLICT, ex.getMessage(), "CONFLICT");
     }
 
-    // DB unique/FK 제약 위반 (동시 요청 등 서비스 레벨 체크를 통과한 경우)
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        // WARN 레벨에는 SQL 상세(테이블/컬럼명, 실제 값) 노출 금지 — PII/스키마 정보가 포함될 수 있음
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getClass().getSimpleName());
         log.debug("Data integrity violation detail", ex.getMostSpecificCause());
-        return errorBody(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다.");
+        return body(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다.", "CONFLICT");
     }
 
-    // 잘못된 JSON 형식 — Spring 기본 에러 응답 대신 일관된 형식 반환
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleUnreadableMessage(HttpMessageNotReadableException ex) {
+    public ResponseEntity<ErrorResponse> handleUnreadableMessage(HttpMessageNotReadableException ex) {
         log.debug("Malformed request body: {}", ex.getMessage());
-        return errorBody(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다.");
+        return body(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다.", "INVALID_REQUEST");
     }
 
-    // 지원하지 않는 HTTP 메서드
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        return errorBody(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메서드입니다.");
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return body(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메서드입니다.", "METHOD_NOT_ALLOWED");
     }
 
-    // 파일 크기 초과 (멀티파트 레이어에서 발생)
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<Map<String, Object>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
-        return errorBody(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 허용 범위를 초과했습니다.");
+    public ResponseEntity<ErrorResponse> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        return body(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 허용 범위를 초과했습니다.", "FILE_TOO_LARGE");
     }
 
-    // 내부 상태 오류 (예: JCA 알고리즘 미지원) — 운영 환경에서는 발생하면 안 되는 예외
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
         log.error("Illegal state: {}", ex.getMessage(), ex);
-        return errorBody(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        return body(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "ILLEGAL_STATE");
     }
 
-    // 파일 I/O 오류 — 경로 등 시스템 정보를 클라이언트에 노출하지 않고 로그에만 기록
     @ExceptionHandler(IOException.class)
-    public ResponseEntity<Map<String, Object>> handleIOException(IOException ex) {
+    public ResponseEntity<ErrorResponse> handleIOException(IOException ex) {
         log.error("I/O error: {}", ex.getMessage(), ex);
-        return errorBody(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다.");
+        return body(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다.", "IO_ERROR");
     }
 
-    // 정적 리소스 없음 (소스맵 등 브라우저 자동 요청) — 로깅 불필요
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
-        return errorBody(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다.");
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
+        return body(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다.", "RESOURCE_NOT_FOUND");
     }
 
-    // 그 외 모든 예외 — 내부 메시지 노출 금지, 서버 로그에만 기록
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        return errorBody(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        return body(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "SERVER_ERROR");
     }
 
-    private ResponseEntity<Map<String, Object>> errorBody(HttpStatus status, String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", status.value());
-        body.put("error", status.getReasonPhrase());
-        body.put("message", message);
-        return ResponseEntity.status(status).body(body);
+    private ResponseEntity<ErrorResponse> body(HttpStatus status, String message, String code) {
+        return ResponseEntity.status(status).body(ErrorResponse.of(status, message, code));
     }
 }
