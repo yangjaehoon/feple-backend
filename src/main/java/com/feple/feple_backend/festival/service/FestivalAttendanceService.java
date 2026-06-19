@@ -31,11 +31,11 @@ public class FestivalAttendanceService {
 
         int deleted = attendanceRepository.deleteByUserIdAndFestivalId(userId, festivalId);
         if (deleted > 0) {
-            festivalRepository.decrementAttendingCount(festivalId);
+            festival.decrementAttendingCount();
             return false;
         }
         attendanceRepository.save(FestivalAttendance.of(user, festival));
-        festivalRepository.incrementAttendingCount(festivalId);
+        festival.incrementAttendingCount();
         return true;
     }
 }

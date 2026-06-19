@@ -2,6 +2,7 @@ package com.feple.feple_backend.festival.entity;
 
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -15,7 +16,10 @@ import java.util.List;
 @AllArgsConstructor
 @Table(indexes = {
     @Index(name = "idx_festival_like_count", columnList = "like_count DESC"),
-    @Index(name = "idx_festival_start_date", columnList = "start_date")
+    @Index(name = "idx_festival_start_date", columnList = "start_date"),
+    @Index(name = "idx_festival_end_date", columnList = "end_date"),
+    @Index(name = "idx_festival_region", columnList = "region"),
+    @Index(name = "idx_festival_start_like", columnList = "start_date, like_count DESC")
 })
 public class Festival {
     @Id
@@ -44,6 +48,7 @@ public class Festival {
     @Builder.Default
     private EventType eventType = EventType.FESTIVAL;
 
+    @BatchSize(size = 50)
     @ElementCollection(targetClass = Genre.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "festival_genres", joinColumns = @JoinColumn(name = "festival_id"))
     @Enumerated(EnumType.STRING)

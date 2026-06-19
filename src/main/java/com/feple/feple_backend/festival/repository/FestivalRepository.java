@@ -6,7 +6,6 @@ import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,13 +29,16 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     org.springframework.data.domain.Page<Festival> findByTitleKeywordPaged(
             @Param("keyword") String keyword, Pageable pageable);
 
+    // activeFrom: null이면 종료된 축제 포함, non-null이면 endDate >= activeFrom인 것만 반환
     @Query("SELECT DISTINCT f FROM Festival f LEFT JOIN f.genres g " +
            "WHERE (:genres IS NULL OR g IN :genres) " +
            "AND (:regions IS NULL OR f.region IN :regions) " +
-           "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions)")
+           "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions) " +
+           "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom)")
     List<Festival> findByFilters(@Param("genres") List<Genre> genres,
                                  @Param("regions") List<Region> regions,
-                                 @Param("ageRestrictions") List<AgeRestriction> ageRestrictions);
+                                 @Param("ageRestrictions") List<AgeRestriction> ageRestrictions,
+                                 @Param("activeFrom") LocalDate activeFrom);
 
     List<Festival> findTop10ByOrderByLikeCountDesc();
 
@@ -48,21 +50,5 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     @Query("SELECT COUNT(f) FROM Festival f WHERE f.endDate IS NULL OR f.endDate >= :today")
     long countActiveFestivals(@Param("today") LocalDate today);
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Festival f SET f.likeCount = f.likeCount + 1 WHERE f.id = :id")
-    void incrementLikeCount(@Param("id") Long id);
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Festival f SET f.likeCount = f.likeCount - 1 WHERE f.id = :id AND f.likeCount > 0")
-    void decrementLikeCount(@Param("id") Long id);
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Festival f SET f.attendingCount = f.attendingCount + 1 WHERE f.id = :id")
-    void incrementAttendingCount(@Param("id") Long id);
-
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE Festival f SET f.attendingCount = f.attendingCount - 1 WHERE f.id = :id AND f.attendingCount > 0")
-    void decrementAttendingCount(@Param("id") Long id);
 
 }

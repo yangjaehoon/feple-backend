@@ -37,6 +37,10 @@ class FestivalLikeServiceTest {
         return Festival.builder().id(id).title("페스티벌" + id).build();
     }
 
+    private Festival festivalWithLikeCount(Long id, int likeCount) {
+        return Festival.builder().id(id).title("페스티벌" + id).likeCount(likeCount).build();
+    }
+
     // ── isLiked ──────────────────────────────────────────────────────
 
     @Test
@@ -56,9 +60,9 @@ class FestivalLikeServiceTest {
     // ── toggleLike ───────────────────────────────────────────────────
 
     @Test
-    void 찜_취소시_decrementLikeCount_호출되고_false_반환() {
+    void 찜_취소시_likeCount_감소하고_false_반환() {
         User user = user(1L);
-        Festival festival = festival(5L);
+        Festival festival = festivalWithLikeCount(5L, 1);
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(festivalLikeRepository.deleteByUserIdAndFestivalId(1L, 5L)).willReturn(1);
@@ -66,12 +70,12 @@ class FestivalLikeServiceTest {
         boolean result = festivalLikeService.toggleLike(5L, 1L);
 
         assertThat(result).isFalse();
-        verify(festivalRepository).decrementLikeCount(5L);
+        assertThat(festival.getLikeCount()).isEqualTo(0);
         verify(festivalLikeRepository, never()).save(any(FestivalLike.class));
     }
 
     @Test
-    void 찜_추가시_save와_incrementLikeCount_호출되고_true_반환() {
+    void 찜_추가시_save_호출되고_likeCount_증가하며_true_반환() {
         User user = user(1L);
         Festival festival = festival(5L);
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
@@ -81,8 +85,8 @@ class FestivalLikeServiceTest {
         boolean result = festivalLikeService.toggleLike(5L, 1L);
 
         assertThat(result).isTrue();
+        assertThat(festival.getLikeCount()).isEqualTo(1);
         verify(festivalLikeRepository).save(any(FestivalLike.class));
-        verify(festivalRepository).incrementLikeCount(5L);
     }
 
     @Test

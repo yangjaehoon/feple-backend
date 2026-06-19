@@ -95,10 +95,13 @@ public class FestivalServiceImpl implements FestivalService {
                                                      List<AgeRestriction> ageRestrictions,
                                                      boolean includeEnded) {
         LocalDate today = LocalDate.now();
+        // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
+        LocalDate activeFrom = includeEnded ? null : today;
         List<Festival> all = festivalRepository.findByFilters(
             genres == null || genres.isEmpty() ? null : genres,
             regions == null || regions.isEmpty() ? null : regions,
-            ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions
+            ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions,
+            activeFrom
         );
 
         List<FestivalStatus> statuses = includeEnded
