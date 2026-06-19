@@ -186,4 +186,11 @@ public class CommentServiceImpl implements CommentService {
             return new CommentLikeResult(true, comment.getLikeCount());
         }
     }
+
+    @Override
+    @Transactional
+    public void removeLikesByUser(Long userId) {
+        commentLikeRepository.decrementCommentLikeCountByUserId(userId);
+        commentLikeRepository.deleteByUserId(userId);
+    }
 }

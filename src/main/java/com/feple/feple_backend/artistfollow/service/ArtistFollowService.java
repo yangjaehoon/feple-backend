@@ -12,4 +12,7 @@ public interface ArtistFollowService {
     FollowResponseDto follow(Long userId, Long artistId);
 
     FollowResponseDto unfollow(Long userId, Long artistId);
+
+    /** 회원 탈퇴 시 해당 유저의 팔로우 데이터 일괄 제거 */
+    void removeAllByUser(Long userId);
 }

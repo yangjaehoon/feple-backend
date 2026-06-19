@@ -63,4 +63,11 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
         return new FollowResponseDto(false, artist.getFollowerCount());
     }
+
+    @Override
+    @Transactional
+    public void removeAllByUser(Long userId) {
+        artistFollowRepository.decrementFollowerCountByUserId(userId);
+        artistFollowRepository.deleteByUserId(userId);
+    }
 }

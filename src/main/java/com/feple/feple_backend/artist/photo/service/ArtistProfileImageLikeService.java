@@ -44,4 +44,11 @@ public class ArtistProfileImageLikeService {
                     imageRepository.decrementLikeCount(imageId);
                 });
     }
+
+    /** 회원 탈퇴 시 해당 유저의 아티스트 사진 좋아요 및 업로더 정보 일괄 제거 */
+    @Transactional
+    public void removeByUser(Long userId) {
+        likeRepository.deleteByUserId(userId);
+        imageRepository.nullifyUploaderByUserId(userId);
+    }
 }

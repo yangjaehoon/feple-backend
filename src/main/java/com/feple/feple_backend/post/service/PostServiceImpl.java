@@ -335,6 +335,15 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     @Override
+    @Transactional
+    public void removePostActivityByUser(Long userId) {
+        postLikeRepository.decrementPostLikeCountByUserId(userId);
+        postLikeRepository.deleteByUserId(userId);
+        postScrapRepository.decrementPostScrapCountByUserId(userId);
+        postScrapRepository.deleteByUserId(userId);
+    }
+
+    @Override
     public List<PostResponseDto> getMyPosts(Long userId) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))

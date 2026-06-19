@@ -38,4 +38,11 @@ public class FestivalLikeService {
         festival.incrementLikeCount();
         return true;
     }
+
+    /** 회원 탈퇴 시 해당 유저의 페스티벌 좋아요 데이터 일괄 제거 */
+    @Transactional
+    public void removeAllByUser(Long userId) {
+        festivalLikeRepository.decrementFestivalLikeCountByUserId(userId);
+        festivalLikeRepository.deleteByUserId(userId);
+    }
 }
