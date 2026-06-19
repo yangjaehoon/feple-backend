@@ -157,25 +157,20 @@ class RefreshTokenServiceTest {
     // ── revoke ───────────────────────────────────────────────────────
 
     @Test
-    void 존재하는_토큰_revoke시_delete_호출() {
-        User user = user(1L);
+    void 토큰_revoke시_deleteByTokenHash_호출() {
         String raw = "revoke-token";
-        RefreshToken token = validToken(user, raw);
-        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
-                .willReturn(Optional.of(token));
 
         refreshTokenService.revoke(raw);
 
-        verify(refreshTokenRepository).delete(token);
+        verify(refreshTokenRepository).deleteByTokenHash(refreshTokenService.hash(raw));
     }
 
     @Test
-    void 존재하지_않는_토큰_revoke시_무시() {
-        given(refreshTokenRepository.findByTokenHash(any())).willReturn(Optional.empty());
-
+    void 존재하지_않는_토큰_revoke시_예외_없이_무시() {
+        // deleteByTokenHash는 존재 여부와 관계없이 항상 호출됨 (0 반환 시 무시)
         refreshTokenService.revoke("unknown-token");
 
-        verify(refreshTokenRepository, never()).delete(any());
+        verify(refreshTokenRepository).deleteByTokenHash(any());
     }
 
     // ── revokeAll / cleanExpiredTokens ───────────────────────────────
