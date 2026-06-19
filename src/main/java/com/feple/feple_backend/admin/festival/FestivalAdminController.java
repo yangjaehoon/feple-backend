@@ -74,11 +74,17 @@ public class FestivalAdminController {
             return "admin/festival/create";
         }
 
-        Long festivalId = festivalService.createFestival(dto);
-        adminLogService.log(AdminAction.FESTIVAL_CREATE, "FESTIVAL", festivalId, dto.getTitle());
-        artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
-
-        return "redirect:/admin/festivals/" + festivalId;
+        try {
+            Long festivalId = festivalService.createFestival(dto);
+            adminLogService.log(AdminAction.FESTIVAL_CREATE, "FESTIVAL", festivalId, dto.getTitle());
+            artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
+            return "redirect:/admin/festivals/" + festivalId;
+        } catch (IllegalArgumentException e) {
+            bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
+            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+            populateFestivalFormModel(model);
+            return "admin/festival/create";
+        }
     }
 
     @GetMapping
@@ -135,6 +141,13 @@ public class FestivalAdminController {
         try {
             festivalService.updateFestival(id, dto);
             adminLogService.log(AdminAction.FESTIVAL_UPDATE, "FESTIVAL", id, dto.getTitle());
+        } catch (IllegalArgumentException e) {
+            bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
+            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+            model.addAttribute("festivalId", id);
+            model.addAttribute("currentPosterUrl", festivalService.getFestival(id).getPosterUrl());
+            populateFestivalFormModel(model);
+            return "admin/festival/edit";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/festivals";
