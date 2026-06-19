@@ -10,7 +10,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "timetable_entry")
+@Table(name = "timetable_entry", indexes = {
+    @Index(name = "idx_timetable_entry_festival_id", columnList = "festival_id")
+})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

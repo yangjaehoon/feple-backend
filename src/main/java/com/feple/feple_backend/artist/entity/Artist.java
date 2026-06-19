@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Table(indexes = {
-    @Index(name = "idx_artist_follower_count", columnList = "follower_count DESC")
+    @Index(name = "idx_artist_follower_count", columnList = "follower_count DESC"),
+    @Index(name = "idx_artist_weekly_score", columnList = "weekly_score DESC, id ASC")
 })
 public class Artist {
 

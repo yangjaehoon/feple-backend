@@ -18,8 +18,6 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     @Query("SELECT a FROM Artist a WHERE LOWER(a.name) = LOWER(:name) OR LOWER(a.nameEn) = LOWER(:name)")
     java.util.Optional<Artist> findExactByNameIgnoreCase(@Param("name") String name);
 
-    java.util.List<Artist> findAllByOrderByWeeklyScoreDescIdAsc();
-
     java.util.List<Artist> findTop10ByOrderByFollowerCountDesc();
 
     @Query("SELECT a.name FROM Artist a WHERE a.name IS NOT NULL AND a.name <> ''")
