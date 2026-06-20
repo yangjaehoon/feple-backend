@@ -18,7 +18,7 @@ public class V16__add_festival_performance_indexes extends BaseJavaMigration {
             addIndexIfNotExists(stmt, "festival", "idx_festival_start_like",
                     "ALTER TABLE `festival` ADD INDEX `idx_festival_start_like` (`start_date`, `like_count` DESC)");
             addIndexIfNotExists(stmt, "festival_genres", "idx_festival_genres_genre",
-                    "ALTER TABLE `festival_genres` ADD INDEX `idx_festival_genres_genre` (`genre`)");
+                    "ALTER TABLE `festival_genres` ADD INDEX `idx_festival_genres_genre` (`genres`)");
         }
     }
 
