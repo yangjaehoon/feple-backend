@@ -8,8 +8,12 @@
         <div th:replace="~{admin/fragments :: pageHeaderInner('페스티벌 목록', '페스티벌')}"></div>
         <div class="page-actions">
             <div class="header-tab-group">
-                <button class="header-tab-btn" data-tab="list">페스티벌 목록</button>
-                <button class="header-tab-btn active" data-tab="checklist">등록 체크리스트</button>
+                <button class="header-tab-btn"
+                        th:classappend="${keyword != null and !#strings.isEmpty(keyword)} ? 'active'"
+                        data-tab="list">페스티벌 목록</button>
+                <button class="header-tab-btn"
+                        th:classappend="${keyword == null or #strings.isEmpty(keyword)} ? 'active'"
+                        data-tab="checklist">등록 체크리스트</button>
             </div>
             <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌 등록</a>
         </div>
@@ -19,7 +23,8 @@
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <!-- ══ 탭 1: 페스티벌 목록 ══ -->
-        <div id="tab-list" class="tab-panel">
+        <div id="tab-list" class="tab-panel"
+             th:classappend="${keyword != null and !#strings.isEmpty(keyword)} ? 'active'">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">전체 페스티벌</div>
@@ -92,7 +97,8 @@
         </div>
 
         <!-- ══ 탭 2: 등록 체크리스트 ══ -->
-        <div id="tab-checklist" class="tab-panel active">
+        <div id="tab-checklist" class="tab-panel"
+             th:classappend="${keyword == null or #strings.isEmpty(keyword)} ? 'active'">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">등록 체크리스트</div>
