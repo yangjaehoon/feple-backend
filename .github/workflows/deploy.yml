@@ -83,5 +83,16 @@ jobs:
             EOF
             sudo systemctl daemon-reload
             sudo systemctl start feple.service
-            sleep 15
-            systemctl is-active feple.service
+            for i in $(seq 1 12); do
+              sleep 5
+              STATUS=$(systemctl is-active feple.service)
+              echo "[$i/12] feple.service: $STATUS"
+              if [ "$STATUS" = "active" ]; then exit 0; fi
+              if [ "$STATUS" = "failed" ]; then
+                journalctl -u feple.service --no-pager -n 30
+                exit 1
+              fi
+            done
+            echo "Service did not become active within 60s"
+            journalctl -u feple.service --no-pager -n 30
+            exit 1
