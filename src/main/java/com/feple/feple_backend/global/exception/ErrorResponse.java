@@ -3,31 +3,23 @@ package com.feple.feple_backend.global.exception;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ErrorResponse(
-        LocalDateTime timestamp,
+        OffsetDateTime timestamp,
         int status,
         String error,
         String message,
         String code,
         String field
 ) {
-    public static ErrorResponse of(HttpStatus status, String message, String code) {
-        return new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), message, code, null);
+    public static ErrorResponse of(HttpStatus status, String message, ErrorCode code) {
+        return new ErrorResponse(OffsetDateTime.now(ZoneOffset.UTC), status.value(), status.getReasonPhrase(), message, code.name(), null);
     }
 
-    public static ErrorResponse withField(HttpStatus status, String message, String code, String field) {
-        return new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), message, code, field);
-    }
-
-    /** 필터·인터셉터에서 Jackson 없이 직접 HTTP 응답을 쓸 때 사용 */
-    public static String toJson(HttpStatus status, String message, String code) {
-        return "{\"timestamp\":\"" + LocalDateTime.now() + "\","
-                + "\"status\":" + status.value() + ","
-                + "\"error\":\"" + status.getReasonPhrase() + "\","
-                + "\"message\":\"" + message + "\","
-                + "\"code\":\"" + code + "\"}";
+    public static ErrorResponse withField(HttpStatus status, String message, ErrorCode code, String field) {
+        return new ErrorResponse(OffsetDateTime.now(ZoneOffset.UTC), status.value(), status.getReasonPhrase(), message, code.name(), field);
     }
 }

@@ -29,6 +29,10 @@ spring:
     init:
       mode: never   # Flyway가 스키마·데이터 초기화 담당 — Spring SQL init 불필요
 
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
   config:
     import: "optional:classpath:application-local.yaml"
   servlet:

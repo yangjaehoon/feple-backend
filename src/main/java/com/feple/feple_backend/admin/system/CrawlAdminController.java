@@ -15,10 +15,13 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.global.exception.ErrorCode;
+import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -93,8 +96,10 @@ public class CrawlAdminController {
     public ResponseEntity<?> parseOcr(@RequestParam("image") MultipartFile image) {
         if (image.isEmpty()) return badRequest("이미지를 업로드해주세요.");
         if (!ocrService.isConfigured()) {
-            return ResponseEntity.status(503).body(Map.of("error",
-                    "Gemini API 키가 설정되지 않았습니다. application-local.yaml에 app.gemini.api-key를 설정하세요."));
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(ErrorResponse.of(HttpStatus.SERVICE_UNAVAILABLE,
+                            "Gemini API 키가 설정되지 않았습니다. application-local.yaml에 app.gemini.api-key를 설정하세요.",
+                            ErrorCode.SERVICE_UNAVAILABLE));
         }
         try {
             List<OcrResultDto> results = ocrService.parseTimeTable(image);
@@ -124,8 +129,10 @@ public class CrawlAdminController {
     public ResponseEntity<?> parseLineupOcr(@RequestParam("image") MultipartFile image) {
         if (image.isEmpty()) return badRequest("이미지를 업로드해주세요.");
         if (!ocrService.isConfigured()) {
-            return ResponseEntity.status(503).body(Map.of("error",
-                    "Gemini API 키가 설정되지 않았습니다. application-local.yaml에 app.gemini.api-key를 설정하세요."));
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(ErrorResponse.of(HttpStatus.SERVICE_UNAVAILABLE,
+                            "Gemini API 키가 설정되지 않았습니다. application-local.yaml에 app.gemini.api-key를 설정하세요.",
+                            ErrorCode.SERVICE_UNAVAILABLE));
         }
         try {
             List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image);
@@ -213,11 +220,13 @@ public class CrawlAdminController {
         return null;
     }
 
-    private static ResponseEntity<?> badRequest(String error) {
-        return ResponseEntity.badRequest().body(Map.of("error", error));
+    private static ResponseEntity<ErrorResponse> badRequest(String error) {
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST, error, ErrorCode.ILLEGAL_ARGUMENT));
     }
 
-    private static ResponseEntity<?> serverError(String error) {
-        return ResponseEntity.internalServerError().body(Map.of("error", error));
+    private static ResponseEntity<ErrorResponse> serverError(String error) {
+        return ResponseEntity.internalServerError()
+                .body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, error, ErrorCode.SERVER_ERROR));
     }
 }

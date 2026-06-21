@@ -1,12 +1,20 @@
 package com.feple.feple_backend.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.admin.AdminLoginFailureHandler;
+import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
+import com.feple.feple_backend.auth.jwt.JwtProvider;
+import com.feple.feple_backend.global.exception.ErrorCode;
+import com.feple.feple_backend.global.exception.ErrorResponse;
+import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,11 +25,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
-import com.feple.feple_backend.auth.jwt.JwtProvider;
-import com.feple.feple_backend.global.exception.ErrorResponse;
-import com.feple.feple_backend.user.repository.UserRepository;
-import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +38,7 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final AdminLoginFailureHandler adminLoginFailureHandler;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
@@ -127,11 +131,12 @@ public class SecurityConfig {
             .formLogin(fl -> fl.disable())
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((req, res, e) -> {
+                    ErrorResponse body = ErrorResponse.of(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", ErrorCode.UNAUTHORIZED);
                     res.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    res.setContentType("application/json;charset=UTF-8");
-                    res.getWriter().write(ErrorResponse.toJson(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", "UNAUTHORIZED"));
+                    res.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
+                    res.getWriter().write(objectMapper.writeValueAsString(body));
                 }))
-            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userRepository),
+            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userRepository, objectMapper),
                 UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
