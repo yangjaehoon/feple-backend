@@ -17,6 +17,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ArtistFollowServiceImpl implements ArtistFollowService {
 
     private final ArtistFollowRepository artistFollowRepository;
@@ -24,13 +25,11 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     private final UserRepository userRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public boolean isFollowed(Long userId, Long artistId) {
         return artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public FollowStatusDto followStatus(Long userId, Long artistId) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         boolean followed = userId != null && artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
@@ -45,7 +44,8 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
-            artist.incrementFollowerCount();
+            artistRepository.incrementFollowerCount(artistId);
+            return new FollowResponseDto(true, artist.getFollowerCount() + 1);
         }
 
         return new FollowResponseDto(true, artist.getFollowerCount());
@@ -58,7 +58,8 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
         int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
         if (deleted > 0) {
-            artist.decrementFollowerCount();
+            artistRepository.decrementFollowerCount(artistId);
+            return new FollowResponseDto(false, Math.max(0, artist.getFollowerCount() - 1));
         }
 
         return new FollowResponseDto(false, artist.getFollowerCount());

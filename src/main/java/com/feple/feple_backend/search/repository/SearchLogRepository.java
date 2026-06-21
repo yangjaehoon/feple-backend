@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface SearchLogRepository extends JpaRepository<SearchLog, Long> {
 
@@ -22,6 +23,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long> {
     List<Object[]> findTopKeywordsSince(@Param("since") LocalDateTime since, @Param("lim") int lim);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM SearchLog sl WHERE sl.createdAt < :cutoff")
     void deleteByCreatedAtBefore(@Param("cutoff") LocalDateTime cutoff);
 }

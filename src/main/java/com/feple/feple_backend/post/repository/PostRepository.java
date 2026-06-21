@@ -15,8 +15,20 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
+
+    // ── 좋아요 카운터 (원자적 증감 — race condition 방지) ─────────────────────
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE Post p SET p.likeCount = p.likeCount + 1 WHERE p.id = :id")
+    void incrementLikeCount(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE post SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
+    void decrementLikeCount(@Param("id") Long id);
 
     // ── 단건 조회 (user/artist/festival 연관 즉시 로딩) ─────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
@@ -169,11 +181,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // ── 댓글 카운트 ─────────────────────────────────────────────────────────
     // decrementCommentCount: 댓글 삭제 시 post가 로드되지 않으므로 @Modifying 유지
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE Post p SET p.commentCount = p.commentCount - 1 WHERE p.id = :postId AND p.commentCount > 0")
     void decrementCommentCount(@Param("postId") Long postId);
 
     // ── 조회수 카운트 ─────────────────────────────────────────────────────────
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
     void incrementViewCount(@Param("postId") Long postId);
 
@@ -182,15 +196,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // ── Soft delete 관련 FK 무효화 (cascade delete 시 soft-deleted 행의 FK 정리) ──
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "UPDATE post SET artist_id = NULL WHERE artist_id = :artistId AND deleted_at IS NOT NULL", nativeQuery = true)
     void nullifyArtistIdForSoftDeleted(@Param("artistId") Long artistId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "UPDATE post SET festival_id = NULL WHERE festival_id = :festivalId AND deleted_at IS NOT NULL", nativeQuery = true)
     void nullifyFestivalIdForSoftDeleted(@Param("festivalId") Long festivalId);
 
     // ── Soft delete 관리자용 ──────────────────────────────────────────────────
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "UPDATE post SET deleted_at = NOW() WHERE id IN (:ids)", nativeQuery = true)
     void softDeleteByIds(@Param("ids") List<Long> ids);
 
@@ -199,6 +216,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findSoftDeleted(@Param("limit") int limit);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "UPDATE post SET deleted_at = NULL WHERE id = :id", nativeQuery = true)
     void restore(@Param("id") Long id);
 

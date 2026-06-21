@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface CommentReportRepository extends BaseReportRepository<CommentReport> {
 
@@ -42,10 +43,12 @@ public interface CommentReportRepository extends BaseReportRepository<CommentRep
     List<CommentReport> findAllForExport(org.springframework.data.domain.Pageable pageable);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.id = :commentId")
     void deleteByCommentId(@Param("commentId") Long commentId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 

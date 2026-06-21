@@ -5,10 +5,23 @@ import com.feple.feple_backend.artist.entity.ArtistGenre;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistRepository extends JpaRepository<Artist, Long> {
+
+    // ── 팔로워 카운터 (원자적 증감 — race condition 방지) ────────────────────
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE Artist a SET a.followerCount = a.followerCount + 1 WHERE a.id = :id")
+    void incrementFollowerCount(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE artist SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = :id", nativeQuery = true)
+    void decrementFollowerCount(@Param("id") Long id);
 
     Page<Artist> findByGenre(ArtistGenre genre, Pageable pageable);
 

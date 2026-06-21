@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistSuggestionRepository extends JpaRepository<ArtistSuggestion, Long> {
 
@@ -28,6 +29,7 @@ public interface ArtistSuggestionRepository extends JpaRepository<ArtistSuggesti
     long countByStatus(ArtistSuggestionStatus status);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistSuggestion s WHERE s.userId = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 }

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 
 public interface StageRepository extends JpaRepository<Stage, Long> {
@@ -28,6 +29,7 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     int countByFestivalId(@Param("festivalId") Long festivalId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM Stage s WHERE s.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 

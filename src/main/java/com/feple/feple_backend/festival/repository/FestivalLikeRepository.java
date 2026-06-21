@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long> {
 
@@ -22,18 +23,22 @@ public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long
     List<FestivalLike> findByUserId(@Param("userId") Long userId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "UPDATE festival SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT festival_id FROM festival_like WHERE user_id = :userId)", nativeQuery = true)
     void decrementFestivalLikeCountByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM FestivalLike fl WHERE fl.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM FestivalLike fl WHERE fl.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM FestivalLike fl WHERE fl.user.id = :userId AND fl.festival.id = :festivalId")
     int deleteByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
 }

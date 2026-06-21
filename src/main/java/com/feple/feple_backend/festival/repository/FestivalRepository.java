@@ -6,13 +6,26 @@ import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface FestivalRepository extends JpaRepository<Festival, Long> {
+
+    // ── 좋아요 카운터 (원자적 증감 — race condition 방지) ─────────────────────
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE Festival f SET f.likeCount = f.likeCount + 1 WHERE f.id = :id")
+    void incrementLikeCount(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE festival SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
+    void decrementLikeCount(@Param("id") Long id);
 
     List<Festival> findAllByOrderByStartDateDesc();
 

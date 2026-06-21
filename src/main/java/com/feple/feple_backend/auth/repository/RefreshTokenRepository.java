@@ -8,20 +8,24 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
     Optional<RefreshToken> findByTokenHash(String tokenHash);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM RefreshToken rt WHERE rt.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM RefreshToken rt WHERE rt.tokenHash = :tokenHash")
     int deleteByTokenHash(@Param("tokenHash") String tokenHash);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM RefreshToken rt WHERE rt.expiresAt < :now")
     void deleteExpiredTokens(@Param("now") LocalDateTime now);
 }

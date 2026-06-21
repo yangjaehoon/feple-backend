@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGalleryPhoto, Long> {
     @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.artist.id = :artistId ORDER BY p.id DESC")
@@ -19,10 +20,12 @@ public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGaller
     ArtistGalleryPhoto findByIdAndArtist_Id(@Param("id") Long id, @Param("artistId") Long artistId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount + 1 WHERE p.id = :photoId")
     void incrementLikeCount(@Param("photoId") Long photoId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount - 1 WHERE p.id = :photoId AND p.likeCount > 0")
     void decrementLikeCount(@Param("photoId") Long photoId);
 }

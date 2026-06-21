@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, Long> {
 
@@ -41,10 +42,12 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     boolean existsByIdAndArtistId(@Param("id") Long id, @Param("artistId") Long artistId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistFestival af WHERE af.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistFestival af WHERE af.artist.id = :artistId")
     void deleteByArtistId(@Param("artistId") Long artistId);
 }

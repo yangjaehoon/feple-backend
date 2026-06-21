@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
@@ -18,18 +19,22 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     long countByUserIdAndIsReadFalse(@Param("userId") Long userId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.user.id = :userId AND n.isRead = false")
     int markAllReadByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM Notification n WHERE n.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM Notification n WHERE n.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 
     @Modifying
+    @Transactional
     @Query(value = "DELETE FROM notifications WHERE post_id IN :postIds", nativeQuery = true)
     void deleteByPostIdIn(@Param("postIds") List<Long> postIds);
 }

@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface PostReportRepository extends BaseReportRepository<PostReport> {
 
@@ -52,10 +53,12 @@ public interface PostReportRepository extends BaseReportRepository<PostReport> {
     List<PostReport> findByPostId(@Param("postId") Long postId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM PostReport pr WHERE pr.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM PostReport pr WHERE pr.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 

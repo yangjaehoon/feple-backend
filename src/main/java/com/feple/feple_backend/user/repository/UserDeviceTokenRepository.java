@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface UserDeviceTokenRepository extends JpaRepository<UserDeviceToken, Long> {
 
@@ -22,14 +23,17 @@ public interface UserDeviceTokenRepository extends JpaRepository<UserDeviceToken
     List<String> findTokensByUserIds(@Param("userIds") List<Long> userIds);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM UserDeviceToken t WHERE t.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM UserDeviceToken t WHERE t.user.id = :userId AND t.token = :token")
     void deleteByUserIdAndToken(@Param("userId") Long userId, @Param("token") String token);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM UserDeviceToken t WHERE t.token = :token AND t.user.id != :userId")
     void deleteByTokenAndOtherUsers(@Param("token") String token, @Param("userId") Long userId);
 
@@ -37,6 +41,7 @@ public interface UserDeviceTokenRepository extends JpaRepository<UserDeviceToken
     List<String> findAllTokens();
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM UserDeviceToken t WHERE t.token IN :tokens")
     void deleteByTokenIn(@Param("tokens") List<String> tokens);
 

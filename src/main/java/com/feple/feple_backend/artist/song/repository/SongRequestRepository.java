@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface SongRequestRepository extends JpaRepository<SongRequest, Long> {
 
@@ -43,10 +44,12 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
     List<SongRequest> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM SongRequest sr WHERE sr.userId = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM SongRequest sr WHERE sr.artist.id = :artistId")
     void deleteByArtistId(@Param("artistId") Long artistId);
 }

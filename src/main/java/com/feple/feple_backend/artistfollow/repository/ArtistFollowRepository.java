@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long> {
 
@@ -19,18 +20,22 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
     Optional<ArtistFollow> findByUserIdAndArtistId(@Param("userId") Long userId, @Param("artistId") Long artistId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistFollow af WHERE af.user.id = :userId AND af.artist.id = :artistId")
     int deleteByUserIdAndArtistId(@Param("userId") Long userId, @Param("artistId") Long artistId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "UPDATE artist SET follower_count = GREATEST(follower_count - 1, 0) WHERE id IN (SELECT artist_id FROM artist_follow WHERE user_id = :userId)", nativeQuery = true)
     void decrementFollowerCountByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistFollow af WHERE af.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistFollow af WHERE af.artist.id = :artistId")
     void deleteByArtistId(@Param("artistId") Long artistId);
 

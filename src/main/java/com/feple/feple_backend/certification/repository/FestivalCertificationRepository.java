@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface FestivalCertificationRepository extends JpaRepository<FestivalCertification, Long> {
 
@@ -64,10 +65,12 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
                                                 Pageable pageable);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM FestivalCertification fc WHERE fc.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 }

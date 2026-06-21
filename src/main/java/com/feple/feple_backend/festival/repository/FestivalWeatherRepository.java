@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface FestivalWeatherRepository extends JpaRepository<FestivalWeather, Long> {
 
@@ -14,6 +15,7 @@ public interface FestivalWeatherRepository extends JpaRepository<FestivalWeather
     Optional<FestivalWeather> findByFestivalId(@Param("festivalId") Long festivalId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM FestivalWeather fw WHERE fw.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 }

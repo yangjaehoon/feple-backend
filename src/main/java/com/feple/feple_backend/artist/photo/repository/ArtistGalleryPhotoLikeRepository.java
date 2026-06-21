@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGalleryPhotoLike, Long> {
 
@@ -26,10 +27,12 @@ public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGa
     Set<Long> findLikedPhotoIds(@Param("userId") Long userId, @Param("photoIds") List<Long> photoIds);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId AND apl.user.id = :userId")
     int deleteByPhotoIdAndUserId(@Param("photoId") Long photoId, @Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId")
     void deleteByPhotoId(@Param("photoId") Long photoId);
 }

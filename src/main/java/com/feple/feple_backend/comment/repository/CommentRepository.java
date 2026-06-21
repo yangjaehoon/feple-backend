@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
@@ -70,6 +71,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Object[]> countGroupByUserId(@Param("userIds") List<Long> userIds);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM Comment c WHERE c.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 }

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
 
@@ -26,18 +27,22 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     long countByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM PostScrap ps WHERE ps.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM PostScrap ps WHERE ps.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "UPDATE post SET scrap_count = GREATEST(scrap_count - 1, 0) WHERE id IN (SELECT post_id FROM post_scrap WHERE user_id = :userId)", nativeQuery = true)
     void decrementPostScrapCountByUserId(@Param("userId") Long userId);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM PostScrap ps WHERE ps.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 }

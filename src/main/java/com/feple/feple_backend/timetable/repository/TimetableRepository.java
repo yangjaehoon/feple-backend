@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface TimetableRepository extends JpaRepository<TimetableEntry, Long> {
     // stage JOIN FETCH — getStageName()/getDisplayOrder() 접근 시 N+1 방지
@@ -16,14 +17,17 @@ public interface TimetableRepository extends JpaRepository<TimetableEntry, Long>
     List<TimetableEntry> findByFestivalIdAndArtistName(@Param("festivalId") Long festivalId, @Param("artistName") String artistName);
 
     @Modifying
+    @Transactional
     @Query("DELETE FROM TimetableEntry t WHERE t.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE TimetableEntry t SET t.artist = null WHERE t.artist.id = :artistId")
     void nullifyArtistId(@Param("artistId") Long artistId);
 
     @Modifying(clearAutomatically = true)
+    @Transactional
     @Query("UPDATE TimetableEntry t SET t.stage = null WHERE t.stage.id = :stageId")
     void nullifyStageId(@Param("stageId") Long stageId);
 }
