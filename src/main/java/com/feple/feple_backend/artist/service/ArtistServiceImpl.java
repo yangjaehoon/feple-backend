@@ -69,7 +69,7 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artist = Artist.builder()
                 .name(dto.getName())
                 .nameEn(dto.getNameEn())
-                .genre(dto.getGenre())
+                .genres(dto.getGenres())
                 .profileImageKey(dto.getProfileImageKey())
                 .build();
         Long id = artistRepository.save(artist).getId();
@@ -130,7 +130,7 @@ public class ArtistServiceImpl implements ArtistService {
                     ? artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(keyword.trim()))
                     : artistRepository.findAll();
             if (genre != null) {
-                artists = artists.stream().filter(a -> genre == a.getGenre()).toList();
+                artists = artists.stream().filter(a -> a.getGenres().contains(genre)).toList();
             }
             List<ArtistResponseDto> dtos = artists.stream()
                     .map(a -> ArtistResponseDto.from(a,
@@ -151,7 +151,7 @@ public class ArtistServiceImpl implements ArtistService {
         // 일반 케이스: DB 레벨 페이지네이션
         PageRequest pageable = PageRequest.of(page, ADMIN_PAGE_SIZE, adminSort(sort));
         Page<Artist> artistPage = (genre != null)
-                ? artistRepository.findByGenre(genre, pageable)
+                ? artistRepository.findByGenreName(genre.name(), pageable)
                 : artistRepository.findAll(pageable);
         List<Long> artistIds = artistPage.getContent().stream().map(Artist::getId).toList();
         Map<Long, Integer> songCountMap = buildSongCountMapForIds(artistIds);
@@ -192,7 +192,7 @@ public class ArtistServiceImpl implements ArtistService {
                 .id(artist.getId())
                 .name(artist.getName())
                 .nameEn(artist.getNameEn())
-                .genre(artist.getGenre())
+                .genres(artist.getGenres())
                 .profileImageKey(fileStorageService.buildUrl(artist.getProfileImageKey()))
                 .followerCount(artist.getFollowerCount())
                 .build();
@@ -203,7 +203,7 @@ public class ArtistServiceImpl implements ArtistService {
     @EvictArtistCaches
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
-        artist.update(dto.getName(), dto.getNameEn(), dto.getGenre());
+        artist.update(dto.getName(), dto.getNameEn(), dto.getGenres());
         if (dto.getProfileImageKey() != null) {
             String oldKey = artist.getProfileImageKey();
             artist.updateProfileImage(dto.getProfileImageKey());

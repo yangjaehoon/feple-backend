@@ -47,13 +47,13 @@ class ArtistServiceTest {
         ArtistRequestDto dto = ArtistRequestDto.builder()
                 .name("아이유")
                 .nameEn("IU")
-                .genre(ArtistGenre.BALLAD)
+                .genres(List.of(ArtistGenre.BALLAD))
                 .profileImageKey("artists/iu.jpg")
                 .build();
 
         Artist saved = Artist.builder()
                 .id(1L).name("아이유").nameEn("IU")
-                .genre(ArtistGenre.BALLAD).profileImageKey("artists/iu.jpg")
+                .genres(List.of(ArtistGenre.BALLAD)).profileImageKey("artists/iu.jpg")
                 .build();
 
         given(artistRepository.save(any(Artist.class))).willReturn(saved);
@@ -96,12 +96,12 @@ class ArtistServiceTest {
     void 아티스트_수정_이미지_변경() {
         Artist artist = Artist.builder()
                 .id(1L).name("아이유").nameEn("IU")
-                .genre(ArtistGenre.BALLAD).profileImageKey("old.jpg")
+                .genres(List.of(ArtistGenre.BALLAD)).profileImageKey("old.jpg")
                 .build();
 
         ArtistRequestDto dto = ArtistRequestDto.builder()
                 .name("아이유").nameEn("IU")
-                .genre(ArtistGenre.BALLAD)
+                .genres(List.of(ArtistGenre.BALLAD))
                 .profileImageKey("new.jpg")
                 .build();
 
@@ -117,13 +117,13 @@ class ArtistServiceTest {
     void 아티스트_수정_이미지_없으면_기존_유지() {
         Artist artist = Artist.builder()
                 .id(1L).name("아이유").nameEn("IU")
-                .genre(ArtistGenre.BALLAD).profileImageKey("old.jpg")
+                .genres(List.of(ArtistGenre.BALLAD)).profileImageKey("old.jpg")
                 .build();
 
         // profileImageKey null → 이미지 변경 없음
         ArtistRequestDto dto = ArtistRequestDto.builder()
                 .name("아이유 (수정)").nameEn("IU")
-                .genre(ArtistGenre.BALLAD)
+                .genres(List.of(ArtistGenre.BALLAD))
                 .build();
 
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist));

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.dto;
 
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.entity.ArtistGenre;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -25,11 +26,16 @@ public class ArtistResponseDto {
     }
 
     public static ArtistResponseDto from(Artist artist, String imageUrl, int songCount) {
+        String genreDisplay = (artist.getGenres() != null && !artist.getGenres().isEmpty())
+                ? artist.getGenres().stream()
+                        .map(ArtistGenre::getDisplayName)
+                        .collect(java.util.stream.Collectors.joining(", "))
+                : null;
         return ArtistResponseDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
                 .nameEn(artist.getNameEn())
-                .genre(artist.getGenre() != null ? artist.getGenre().getDisplayName() : null)
+                .genre(genreDisplay)
                 .profileImageUrl(imageUrl)
                 .followerCount(artist.getFollowerCount())
                 .songCount(songCount)

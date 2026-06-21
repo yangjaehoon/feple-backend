@@ -5,7 +5,9 @@ public enum ArtistGenre {
     HIP_HOP("Hip-hop"),
     INDIE("Indie"),
     BALLAD("Ballad"),
-    RNB("R&B");
+    RNB("R&B"),
+    DANCE("댄스"),
+    IDOL("아이돌");
 
     private final String displayName;
 

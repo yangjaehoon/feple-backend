@@ -31,13 +31,14 @@
                         </div>
 
                         <div class="form-group">
-                            <label>카테고리</label>
-                            <select th:field="*{genre}" required>
-                                <option value="">선택하세요</option>
-                                <option th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
-                                        th:value="${g}"
-                                        th:text="${g.displayName}"></option>
-                            </select>
+                            <label>카테고리 <span class="required-star">*</span></label>
+                            <div class="genre-check-group">
+                                <label th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
+                                       class="genre-check-label">
+                                    <input type="checkbox" th:field="*{genres}" th:value="${g}"/>
+                                    <span th:text="${g.displayName}"></span>
+                                </label>
+                            </div>
                         </div>
 
                         <!-- 현재 프로필 이미지 -->

@@ -1,7 +1,6 @@
 package com.feple.feple_backend.artist.repository;
 
 import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.artist.entity.ArtistGenre;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +22,10 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     @Query(value = "UPDATE artist SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementFollowerCount(@Param("id") Long id);
 
-    Page<Artist> findByGenre(ArtistGenre genre, Pageable pageable);
+    @Query(value = "SELECT * FROM artist WHERE genre LIKE CONCAT('%', :genreName, '%')",
+           countQuery = "SELECT COUNT(*) FROM artist WHERE genre LIKE CONCAT('%', :genreName, '%')",
+           nativeQuery = true)
+    Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
 
     @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' ORDER BY a.name ASC")
     java.util.List<Artist> findByNameOrNameEnContainingIgnoreCase(@Param("keyword") String keyword);

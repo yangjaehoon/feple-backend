@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,8 +26,10 @@ public class Artist {
 
     private String nameEn;
 
-    @Enumerated(EnumType.STRING)
-    private ArtistGenre genre;
+    @Convert(converter = ArtistGenreConverter.class)
+    @Column(name = "genre")
+    @Builder.Default
+    private List<ArtistGenre> genres = new ArrayList<>();
 
     private String profileImageKey;
 
@@ -51,10 +55,10 @@ public class Artist {
         this.rankUpdatedAt = LocalDateTime.now();
     }
 
-    public void update(String name, String nameEn, ArtistGenre genre) {
+    public void update(String name, String nameEn, List<ArtistGenre> genres) {
         this.name = name;
         this.nameEn = nameEn;
-        this.genre = genre;
+        this.genres = genres != null ? genres : new ArrayList<>();
     }
 
     public void updateProfileImage(String newKey) {

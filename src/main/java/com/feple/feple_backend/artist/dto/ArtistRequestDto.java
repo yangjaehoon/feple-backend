@@ -3,9 +3,12 @@ package com.feple.feple_backend.artist.dto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,8 +22,9 @@ public class ArtistRequestDto {
     private String name;
     @Size(max = 200, message = "영어 이름은 200자 이하여야 합니다.")
     private String nameEn;
-    @NotNull(message = "장르를 선택해주세요.")
-    private ArtistGenre genre;
+    @NotEmpty(message = "장르를 하나 이상 선택해주세요.")
+    @Builder.Default
+    private List<ArtistGenre> genres = new ArrayList<>();
     private String profileImageKey;
     @Min(value = 0, message = "팔로워 수는 0 이상이어야 합니다.")
     private int followerCount;

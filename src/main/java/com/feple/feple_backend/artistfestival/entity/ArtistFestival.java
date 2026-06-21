@@ -53,7 +53,12 @@ public class ArtistFestival {
     public Long getArtistId() { return artist.getId(); }
     public String getArtistName()   { return artist.getName(); }
     public String getArtistNameEn() { return artist.getNameEn(); }
-    public String getArtistGenreDisplayName() { return artist.getGenre() != null ? artist.getGenre().getDisplayName() : null; }
+    public String getArtistGenreDisplayName() {
+        if (artist.getGenres() == null || artist.getGenres().isEmpty()) return null;
+        return artist.getGenres().stream()
+                .map(com.feple.feple_backend.artist.entity.ArtistGenre::getDisplayName)
+                .collect(java.util.stream.Collectors.joining(", "));
+    }
     public String getArtistProfileImageKey() { return artist.getProfileImageKey(); }
     public Long getFestivalId() { return festival.getId(); }
 
