@@ -28,4 +28,9 @@ public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGaller
     @Transactional
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount - 1 WHERE p.id = :photoId AND p.likeCount > 0")
     void decrementLikeCount(@Param("photoId") Long photoId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ArtistGalleryPhoto p WHERE p.artist.id = :artistId")
+    void deleteByArtistId(@Param("artistId") Long artistId);
 }

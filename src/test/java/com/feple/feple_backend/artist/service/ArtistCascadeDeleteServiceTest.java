@@ -2,6 +2,8 @@ package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.entity.ArtistProfileImage;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
@@ -30,6 +32,8 @@ import static org.mockito.Mockito.verify;
 class ArtistCascadeDeleteServiceTest {
 
     @Mock ArtistRepository artistRepository;
+    @Mock ArtistGalleryPhotoRepository galleryPhotoRepository;
+    @Mock ArtistGalleryPhotoLikeRepository galleryPhotoLikeRepository;
     @Mock ArtistProfileImageRepository artistImageRepository;
     @Mock ArtistProfileImageLikeRepository artistImageLikeRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;

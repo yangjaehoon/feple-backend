@@ -45,4 +45,10 @@ public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGa
     @Transactional
     @Query("DELETE FROM ArtistGalleryPhotoLike apl WHERE apl.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
+
+    // 아티스트 삭제 시 해당 아티스트의 모든 사진 좋아요 일괄 삭제 (artist_photos FK 선행 정리)
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM artist_photo_likes WHERE artist_photo_id IN (SELECT id FROM artist_photos WHERE artist_id = :artistId)", nativeQuery = true)
+    void deleteByArtistId(@Param("artistId") Long artistId);
 }
