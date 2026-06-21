@@ -136,6 +136,13 @@ public class ArtistGalleryPhotoService {
         }
     }
 
+    /** 회원 탈퇴 시 해당 유저의 갤러리 사진 좋아요 일괄 제거 */
+    @Transactional
+    public void removeByUser(Long userId) {
+        artistGalleryPhotoLikeRepository.decrementLikeCountByUserId(userId);
+        artistGalleryPhotoLikeRepository.deleteByUserId(userId);
+    }
+
     @Transactional
     public boolean toggleLike(Long photoId, Long userId) {
         ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");

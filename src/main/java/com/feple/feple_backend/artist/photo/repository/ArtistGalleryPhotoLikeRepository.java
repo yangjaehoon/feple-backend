@@ -35,4 +35,14 @@ public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGa
     @Transactional
     @Query("DELETE FROM ArtistGalleryPhotoLike apl WHERE apl.photo.id = :photoId")
     void deleteByPhotoId(@Param("photoId") Long photoId);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE artist_gallery_photo SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT photo_id FROM artist_gallery_photo_like WHERE user_id = :userId)", nativeQuery = true)
+    void decrementLikeCountByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ArtistGalleryPhotoLike apl WHERE apl.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }
