@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Tag(name = "페스티벌 인증", description = "페스티벌 참여 인증 제출·조회")
 @RestController
@@ -23,9 +22,11 @@ import java.util.Set;
 @RequestMapping("/certifications")
 public class FestivalCertificationController {
 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
-    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/webp"
+    private static final Map<String, String> ALLOWED_IMAGE_TYPES = Map.of(
+            "jpg",  "image/jpeg",
+            "jpeg", "image/jpeg",
+            "png",  "image/png",
+            "webp", "image/webp"
     );
 
     private final FestivalCertificationService certificationService;
@@ -36,11 +37,8 @@ public class FestivalCertificationController {
             @AuthenticationPrincipal Long userId
     ) {
         String ext = req.extension() == null ? "" : req.extension().toLowerCase();
-        if (!ALLOWED_EXTENSIONS.contains(ext)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 확장자입니다. (jpg, jpeg, png, webp 만 가능)");
-        }
-        if (!ALLOWED_CONTENT_TYPES.contains(req.contentType())) {
-            throw new IllegalArgumentException("허용되지 않는 Content-Type입니다.");
+        if (!req.contentType().equals(ALLOWED_IMAGE_TYPES.get(ext))) {
+            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (jpg, jpeg, png, webp 만 가능)");
         }
         return certificationService.generateUploadUrl(userId, ext, req.contentType());
     }
