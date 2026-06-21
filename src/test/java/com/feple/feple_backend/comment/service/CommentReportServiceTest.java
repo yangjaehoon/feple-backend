@@ -159,17 +159,18 @@ class CommentReportServiceTest {
     void bulkDismiss_PENDING_신고만_DISMISSED로_변경됨() {
         Comment comment = mockComment();
         CommentReport pending = pendingReport(1L, comment, user(1L));
-        CommentReport alreadyDismissed = CommentReport.builder()
+        // POST_DELETED: PENDING이 아닌 신고 → bulkDismiss가 resolve()를 호출하면 DISMISSED로 바뀌어 검출 가능
+        CommentReport alreadyProcessed = CommentReport.builder()
                 .id(2L).comment(comment).reporter(user(2L))
-                .reason(ReportReason.SPAM).status(ReportStatus.DISMISSED).build();
+                .reason(ReportReason.SPAM).status(ReportStatus.POST_DELETED).build();
 
         given(reportRepository.findAllById(List.of(1L, 2L)))
-                .willReturn(List.of(pending, alreadyDismissed));
+                .willReturn(List.of(pending, alreadyProcessed));
 
         commentReportService.bulkDismiss(List.of(1L, 2L));
 
         assertThat(pending.getStatus()).isEqualTo(ReportStatus.DISMISSED);
-        assertThat(alreadyDismissed.getStatus()).isEqualTo(ReportStatus.DISMISSED);
+        assertThat(alreadyProcessed.getStatus()).isEqualTo(ReportStatus.POST_DELETED);
     }
 
     // ── getPendingCount ──────────────────────────────────────────────

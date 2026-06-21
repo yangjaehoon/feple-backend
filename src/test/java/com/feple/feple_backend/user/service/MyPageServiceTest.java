@@ -110,11 +110,15 @@ class MyPageServiceTest {
         given(postService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
         given(certificationService.countApprovedByUser(1L)).willReturn(0L);
+        given(postReportService.getReportCountForUser(1L)).willReturn(3L);
+        given(commentReportService.getReportCountForUser(1L)).willReturn(2L);
+        given(photoReportService.getReportCountForUser(1L)).willReturn(1L);
 
         UserStatsDto stats = myPageService.getUserStats(1L);
 
         assertThat(stats.getPostCount()).isEqualTo(5L);
         assertThat(stats.getCommentCount()).isEqualTo(12L);
+        assertThat(stats.getReportCount()).isEqualTo(6L);
     }
 
     @Test
@@ -124,10 +128,14 @@ class MyPageServiceTest {
         given(postService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
         given(certificationService.countApprovedByUser(1L)).willReturn(0L);
+        given(postReportService.getReportCountForUser(1L)).willReturn(0L);
+        given(commentReportService.getReportCountForUser(1L)).willReturn(0L);
+        given(photoReportService.getReportCountForUser(1L)).willReturn(0L);
 
         UserStatsDto stats = myPageService.getUserStats(1L);
 
         assertThat(stats.getPostCount()).isZero();
         assertThat(stats.getCommentCount()).isZero();
+        assertThat(stats.getReportCount()).isZero();
     }
 }

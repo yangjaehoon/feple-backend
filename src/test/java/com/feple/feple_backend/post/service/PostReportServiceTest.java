@@ -146,17 +146,18 @@ class PostReportServiceTest {
         User author = user(2L);
         Post post = freePost(10L, author);
         PostReport pending = pendingReport(1L, post, user(1L));
-        PostReport alreadyDismissed = PostReport.builder()
+        // POST_DELETED: PENDING이 아닌 신고 → bulkDismiss가 resolve()를 호출하면 DISMISSED로 바뀌어 검출 가능
+        PostReport alreadyDeleted = PostReport.builder()
                 .id(2L).post(post).reporter(user(3L))
-                .reason(ReportReason.SPAM).status(ReportStatus.DISMISSED).build();
+                .reason(ReportReason.SPAM).status(ReportStatus.POST_DELETED).build();
 
         given(reportRepository.findAllById(List.of(1L, 2L)))
-                .willReturn(List.of(pending, alreadyDismissed));
+                .willReturn(List.of(pending, alreadyDeleted));
 
         postReportService.bulkDismiss(List.of(1L, 2L));
 
         assertThat(pending.getStatus()).isEqualTo(ReportStatus.DISMISSED);
-        assertThat(alreadyDismissed.getStatus()).isEqualTo(ReportStatus.DISMISSED);
+        assertThat(alreadyDeleted.getStatus()).isEqualTo(ReportStatus.POST_DELETED);
     }
 
     // ── getPendingCount ──────────────────────────────────────────────
