@@ -36,7 +36,7 @@ public class KakaoAuthService implements OAuthLoginService {
         String oauthId = kakaoId.toString();
         String email = account.getEmail();
 
-        return userRepository.findByOauthId(oauthId).map(user -> {
+        return userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, oauthId).map(user -> {
             if (user.isDeleted()) {
                 throw new IllegalArgumentException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
             }

@@ -24,6 +24,7 @@ public class Artist {
 
     private String nameEn;
 
+    @Enumerated(EnumType.STRING)
     private ArtistGenre genre;
 
     private String profileImageKey;
