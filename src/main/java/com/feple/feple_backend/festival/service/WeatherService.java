@@ -130,7 +130,7 @@ public class WeatherService {
 
     private WeatherDto parseWeather(JsonNode items, String fcstDate) {
         double minTemp = Double.MAX_VALUE;
-        double maxTemp = Double.MIN_VALUE;
+        double maxTemp = -Double.MAX_VALUE;
         int maxRainProb = 0;
         String skyCode = "1";
         String ptyCode = "0";
@@ -167,7 +167,7 @@ public class WeatherService {
         return new WeatherDto(
                 fcstDate,
                 minTemp == Double.MAX_VALUE ? 0 : minTemp,
-                maxTemp == Double.MIN_VALUE ? 0 : maxTemp,
+                maxTemp == -Double.MAX_VALUE ? 0 : maxTemp,
                 maxRainProb,
                 skyCode,
                 ptyCode
