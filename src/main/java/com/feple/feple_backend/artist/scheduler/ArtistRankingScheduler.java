@@ -7,6 +7,7 @@ import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -33,6 +34,7 @@ public class ArtistRankingScheduler {
      * 점수 = 지난 7일간 아티스트 게시판에 달린 좋아요 수 + 게시글 수 + 댓글 수 + 팔로우 수
      */
     @Scheduled(cron = "0 0 0 * * MON")
+    @SchedulerLock(name = "artistRankingScheduler", lockAtMostFor = "30m", lockAtLeastFor = "5m")
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "artistRanking", allEntries = true),

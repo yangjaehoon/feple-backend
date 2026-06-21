@@ -21,7 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 
 @Tag(name = "게시글", description = "자유·동행·아티스트·페스티벌 게시글 CRUD, 좋아요, 스크랩")
@@ -206,8 +206,13 @@ public class PostController {
         return ResponseEntity.ok(postService.incrementViewCount(postId));
     }
 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
-    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+    // extension → 허용 content-type 매핑으로 확장자·MIME 불일치 업로드 차단
+    private static final Map<String, String> ALLOWED_IMAGE_TYPES = Map.of(
+            "jpg",  "image/jpeg",
+            "jpeg", "image/jpeg",
+            "png",  "image/png",
+            "webp", "image/webp"
+    );
 
     record PostImagePresignRequest(
             @NotBlank String contentType,
@@ -217,7 +222,7 @@ public class PostController {
     public ResponseEntity<PresignResult> getPostImageUploadUrl(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody PostImagePresignRequest req) {
-        if (!ALLOWED_EXTENSIONS.contains(req.extension()) || !ALLOWED_CONTENT_TYPES.contains(req.contentType())) {
+        if (!req.contentType().equals(ALLOWED_IMAGE_TYPES.get(req.extension()))) {
             return ResponseEntity.badRequest().build();
         }
         String key = "posts/" + userId + "/" + UUID.randomUUID() + "." + req.extension();

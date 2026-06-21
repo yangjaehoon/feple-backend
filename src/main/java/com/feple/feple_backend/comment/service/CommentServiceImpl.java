@@ -61,8 +61,9 @@ public class CommentServiceImpl implements CommentService {
 
         Long postAuthorId = post.getUserId();
         if (!postAuthorId.equals(userId)) {
+            String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
             eventPublisher.publishEvent(
-                    new CommentCreatedEvent(postAuthorId, user.getNickname(), post.getTitle(), post.getId()));
+                    new CommentCreatedEvent(postAuthorId, commenterName, post.getTitle(), post.getId()));
         }
 
         boolean certified = post.getFestivalId() != null &&

@@ -239,6 +239,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
+    @EvictArtistCaches
     public void batchUpdateNameEn(List<Long> ids, List<String> nameEns) {
         Map<Long, Artist> artistMap = artistRepository.findAllById(ids).stream()
                 .collect(Collectors.toMap(Artist::getId, a -> a));
