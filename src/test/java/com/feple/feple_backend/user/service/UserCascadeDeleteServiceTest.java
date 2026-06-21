@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistProfileImageLikeService;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
@@ -36,6 +37,7 @@ class UserCascadeDeleteServiceTest {
     @Mock ArtistFollowService artistFollowService;
     @Mock PostCascadeService postCascadeService;
     @Mock CommentService commentService;
+    @Mock ArtistGalleryPhotoService artistGalleryPhotoService;
     @Mock ArtistProfileImageLikeService artistProfileImageLikeService;
 
     @Mock NotificationRepository notificationRepository;
@@ -114,6 +116,7 @@ class UserCascadeDeleteServiceTest {
         verify(postCascadeService).removePostActivityByUser(1L);
         verify(commentService).removeLikesByUser(1L);
         verify(artistProfileImageLikeService).removeByUser(1L);
+        verify(artistGalleryPhotoService).removeByUser(1L);
     }
 
     @Test
