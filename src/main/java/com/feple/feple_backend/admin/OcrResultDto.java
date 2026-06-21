@@ -9,5 +9,10 @@ public record OcrResultDto(
         String date,
         String startTime,
         String endTime,
-        Integer confidence) {
+        Integer confidence,
+        String type) {
+
+    public boolean isOps() {
+        return "OPS".equals(type);
+    }
 }

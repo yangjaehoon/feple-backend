@@ -81,9 +81,15 @@ public class OcrService {
         return Optional.empty();
     }
 
+    private static final String OPS_STAGE = "📢";
+
     private TimetableEntryRequest toTimetableRequest(OcrResultDto entry) {
         TimetableEntryRequest req = new TimetableEntryRequest();
-        req.setStageName(entry.stage()  != null ? entry.stage().trim()  : "");
+        if (entry.isOps()) {
+            req.setStageName(OPS_STAGE);
+        } else {
+            req.setStageName(entry.stage() != null ? entry.stage().trim() : "");
+        }
         req.setArtistName(entry.artist() != null ? entry.artist().trim() : "");
         req.setFestivalDate(LocalDate.parse(entry.date()));
         req.setStartTime(LocalTime.parse(entry.startTime()));

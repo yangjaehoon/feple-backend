@@ -398,10 +398,15 @@
         results.forEach(function (row) {
             var conf = row.confidence != null ? row.confidence : 0;
             if (conf < 70) hasLow = true;
-            var matchedArtist = findBestMatch(row.artist || '', artistNames);
-            var matchedStage  = findBestMatch(row.stage  || '', stageNames);
+            var type = row.type || 'PERFORMANCE';
             var date = row.date || document.getElementById('selDate').value || '';
-            appendRow(matchedArtist, matchedStage, date, row.startTime || '', row.endTime || '', conf);
+            if (type === 'OPS') {
+                appendRow(row.artist || '', '', date, row.startTime || '', row.endTime || '', conf, 'OPS');
+            } else {
+                var matchedArtist = findBestMatch(row.artist || '', artistNames);
+                var matchedStage  = findBestMatch(row.stage  || '', stageNames);
+                appendRow(matchedArtist, matchedStage, date, row.startTime || '', row.endTime || '', conf, 'PERFORMANCE');
+            }
         });
 
         document.getElementById('ocrWarnBox').classList.toggle('d-none', !hasLow);
@@ -452,18 +457,35 @@
     var fieldStyle = 'width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:12px;';
     var selectStyle = fieldStyle, timeStyle = fieldStyle, dateStyle = fieldStyle;
 
-    function appendRow(artist, stage, date, startTime, endTime, conf) {
+    var OPS_STAGE = '📢';
+
+    function appendRow(artist, stage, date, startTime, endTime, conf, type) {
         rowIndex++;
         var idx = rowIndex;
+        var isOps = (type === 'OPS');
         var tr = document.createElement('tr');
         tr.dataset.rowIndex = idx;
+        tr.dataset.type = isOps ? 'OPS' : 'PERFORMANCE';
+        if (isOps) tr.style.background = 'rgba(251,191,36,0.08)';
         var dateAttrs = '';
         if (festivalStartDate) dateAttrs += ' min="' + festivalStartDate + '"';
         if (festivalEndDate)   dateAttrs += ' max="' + festivalEndDate   + '"';
+
+        var artistCell, stageCell;
+        if (isOps) {
+            artistCell = '<span style="font-size:11px;color:var(--warning-text);font-weight:600;margin-right:4px;">📢</span>' +
+                         '<input type="text" data-field="artist" value="' + window.AdminUtils.escapeHtml(artist) + '" style="' + fieldStyle + '" placeholder="운영 항목명"/>';
+            stageCell  = '<span style="color:var(--muted);font-size:11px;">운영 항목</span>' +
+                         '<input type="hidden" data-field="stage" value="' + OPS_STAGE + '"/>';
+        } else {
+            artistCell = '<select data-field="artist" style="' + selectStyle + '">' + makeOptions(artistNames, artist) + '</select>';
+            stageCell  = '<select data-field="stage"  style="' + selectStyle + '">' + makeOptions(stageNames,  stage)  + '</select>';
+        }
+
         tr.innerHTML =
             '<td>' + idx + '</td>' +
-            '<td><select data-field="artist" style="' + selectStyle + '">' + makeOptions(artistNames, artist) + '</select></td>' +
-            '<td><select data-field="stage"  style="' + selectStyle + '">' + makeOptions(stageNames,  stage)  + '</select></td>' +
+            '<td>' + artistCell + '</td>' +
+            '<td>' + stageCell  + '</td>' +
             '<td><input type="date" data-field="date" value="' + window.AdminUtils.escapeHtml(date) + '"' + dateAttrs + ' style="' + dateStyle + '"/></td>' +
             '<td><input type="time" data-field="startTime" value="' + window.AdminUtils.escapeHtml(startTime) + '" style="' + timeStyle + '"/></td>' +
             '<td><input type="time" data-field="endTime"   value="' + window.AdminUtils.escapeHtml(endTime)   + '" style="' + timeStyle + '"/></td>' +
@@ -489,7 +511,7 @@
     /* ── 행 추가 ── */
     document.getElementById('btnAddRow').addEventListener('click', function () {
         var defaultDate = document.getElementById('selDate').value || '';
-        appendRow('', '', defaultDate, '', '', null);
+        appendRow('', '', defaultDate, '', '', null, 'PERFORMANCE');
         document.getElementById('ocrEmptyState').style.display = 'none';
         document.getElementById('ocrPreviewWrap').classList.add('visible');
         document.getElementById('btnApplyOcr').disabled = false;
