@@ -248,7 +248,6 @@
                             ⚠ 종료 시간은 시작 시간보다 늦어야 합니다.
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
                     <!-- 크루 공연 설정 (전체 너비) -->
                     <div style="grid-column: 1 / -1" th:if="${!participatingArtistsByName.isEmpty()}">
                         <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; background:#f9fafb;">
@@ -273,6 +272,9 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end; margin-top:4px;">
+                        <button type="submit" class="btn btn-primary">+ 추가</button>
                     </div>
                 </form>
                 <div th:if="${timetableSuccess}" class="alert alert-success" th:text="${timetableSuccess}"></div>
