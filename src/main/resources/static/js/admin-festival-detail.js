@@ -150,14 +150,32 @@
     }
 
     function validateTimetable(form) {
+        var hiddenName = document.getElementById('artistNameHidden');
+        if (hiddenName && !hiddenName.value.trim()) {
+            var directInput = document.getElementById('artistNameDirect');
+            if (directInput && directInput.style.display !== 'none') {
+                directInput.style.borderColor = 'var(--danger)';
+                directInput.focus();
+            } else {
+                var sel = document.getElementById('artistSelect');
+                if (sel) { sel.style.borderColor = 'var(--danger)'; sel.focus(); }
+            }
+            return false;
+        }
         var festivalDate = document.getElementById('autoFestivalDate').value;
         if (!festivalDate) {
-            var preview = document.getElementById('datePreview');
-            preview.textContent = '⚠ 참여 아티스트 목록에서 날짜를 먼저 설정해주세요.';
-            preview.style.color = 'var(--danger)';
-            preview.style.fontWeight = '600';
-            preview.style.borderColor = 'var(--danger)';
-            preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            var directDate = document.getElementById('directDateInput');
+            if (directDate && directDate.style.display !== 'none') {
+                directDate.style.borderColor = 'var(--danger)';
+                directDate.focus();
+            } else {
+                var preview = document.getElementById('datePreview');
+                preview.textContent = '⚠ 아티스트 선택 또는 날짜를 직접 입력해주세요.';
+                preview.style.color = 'var(--danger)';
+                preview.style.fontWeight = '600';
+                preview.style.borderColor = 'var(--danger)';
+                preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
         var start = form.querySelector('#startTime').value;
@@ -230,9 +248,28 @@
     }
 
     function onArtistChange(select) {
-        var sel = extractArtistSelection(select);
-        applyStagePreview(sel.stage);
-        applyDatePreview(sel.date);
+        var isDirect = select.value === '__direct__';
+        var directNameInput = document.getElementById('artistNameDirect');
+        var hiddenNameInput = document.getElementById('artistNameHidden');
+        var directDateInput = document.getElementById('directDateInput');
+        var datePreview = document.getElementById('datePreview');
+
+        if (isDirect) {
+            if (directNameInput) { directNameInput.style.display = 'block'; directNameInput.focus(); }
+            if (hiddenNameInput) hiddenNameInput.value = '';
+            if (directDateInput) directDateInput.style.display = 'block';
+            if (datePreview) datePreview.style.display = 'none';
+            applyStagePreview('');
+            document.getElementById('autoFestivalDate').value = '';
+        } else {
+            if (directNameInput) { directNameInput.style.display = 'none'; directNameInput.style.borderColor = ''; }
+            if (directDateInput) directDateInput.style.display = 'none';
+            if (datePreview) datePreview.style.display = 'block';
+            if (hiddenNameInput) hiddenNameInput.value = select.value;
+            var sel = extractArtistSelection(select);
+            applyStagePreview(sel.stage);
+            applyDatePreview(sel.date);
+        }
     }
 
     /* ── 스테이지 색상 ── */
@@ -284,6 +321,23 @@
     if (artistSelect) {
         artistSelect.addEventListener('change', function () {
             onArtistChange(this);
+        });
+    }
+
+    var artistNameDirect = document.getElementById('artistNameDirect');
+    if (artistNameDirect) {
+        artistNameDirect.addEventListener('input', function () {
+            var hidden = document.getElementById('artistNameHidden');
+            if (hidden) hidden.value = this.value;
+            this.style.borderColor = '';
+        });
+    }
+
+    var directDateInput = document.getElementById('directDateInput');
+    if (directDateInput) {
+        directDateInput.addEventListener('change', function () {
+            document.getElementById('autoFestivalDate').value = this.value;
+            this.style.borderColor = '';
         });
     }
 
