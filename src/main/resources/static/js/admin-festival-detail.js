@@ -158,12 +158,18 @@
         }
         var festivalDate = document.getElementById('autoFestivalDate').value;
         if (!festivalDate) {
-            var preview = document.getElementById('datePreview');
-            preview.textContent = '⚠ 참여 아티스트 목록에서 날짜를 먼저 설정해주세요.';
-            preview.style.color = 'var(--danger)';
-            preview.style.fontWeight = '600';
-            preview.style.borderColor = 'var(--danger)';
-            preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            var crewNameVal = (document.getElementById('crewNameInput') || {}).value || '';
+            if (crewNameVal.trim()) {
+                var crewDateEl = document.getElementById('crewDateInput');
+                if (crewDateEl) { crewDateEl.style.borderColor = 'var(--danger)'; crewDateEl.focus(); }
+            } else {
+                var preview = document.getElementById('datePreview');
+                preview.textContent = '⚠ 참여 아티스트 목록에서 날짜를 먼저 설정해주세요.';
+                preview.style.color = 'var(--danger)';
+                preview.style.fontWeight = '600';
+                preview.style.borderColor = 'var(--danger)';
+                preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
         var start = form.querySelector('#startTime').value;
@@ -306,11 +312,16 @@
     var timetableForm = document.getElementById('timetable-add-form');
     if (timetableForm) {
         timetableForm.addEventListener('submit', function (e) {
-            // 크루 이름이 입력된 경우 아티스트명을 크루명으로 덮어씀
             var crewName = document.getElementById('crewNameInput');
             var hiddenName = document.getElementById('artistNameHidden');
-            if (crewName && crewName.value.trim() && hiddenName) {
-                hiddenName.value = crewName.value.trim();
+            if (crewName && crewName.value.trim()) {
+                // 크루명으로 아티스트명 덮어씀
+                if (hiddenName) hiddenName.value = crewName.value.trim();
+                // 크루 날짜로 autoFestivalDate 덮어씀
+                var crewDate = document.getElementById('crewDateInput');
+                if (crewDate && crewDate.value) {
+                    document.getElementById('autoFestivalDate').value = crewDate.value;
+                }
             }
             if (!validateTimetable(this)) e.preventDefault();
         });

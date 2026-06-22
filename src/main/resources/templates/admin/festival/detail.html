@@ -254,11 +254,19 @@
                             <div style="font-size:12px; font-weight:600; color:#374151; margin-bottom:10px;">
                                 크루 공연 설정 (선택 — 일반 공연은 비워두세요)
                             </div>
-                            <div style="margin-bottom:10px;">
-                                <label class="form-label-sm">크루 이름</label>
-                                <input type="text" id="crewNameInput" class="compact-input"
-                                       style="width:100%; max-width:320px; margin-top:4px;"
-                                       maxlength="200" placeholder="예: LOUDX, BE:MBLEM 크루"/>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
+                                <div style="flex:1; min-width:200px;">
+                                    <label class="form-label-sm">크루 이름</label>
+                                    <input type="text" id="crewNameInput" class="compact-input"
+                                           style="width:100%; margin-top:4px;"
+                                           maxlength="200" placeholder="예: LOUDX, BE:MBLEM 크루"/>
+                                </div>
+                                <div>
+                                    <label class="form-label-sm">날짜</label>
+                                    <input type="date" id="crewDateInput" class="compact-input"
+                                           style="margin-top:4px;"
+                                           th:min="${festival.startDate}" th:max="${festival.endDate}"/>
+                                </div>
                             </div>
                             <div>
                                 <label class="form-label-sm">크루 멤버</label>
