@@ -204,7 +204,7 @@
                     <input type="hidden" name="festivalDate" id="autoFestivalDate"/>
 
                     <div>
-                        <label class="form-label-sm">아티스트 / 크루명</label>
+                        <label class="form-label-sm">아티스트</label>
                         <th:block th:if="${!participatingArtistsByName.isEmpty()}">
                             <!-- name 없음 — JS가 artistNameHidden에 값을 동기화 -->
                             <select id="artistSelect" class="compact-input">
@@ -213,23 +213,17 @@
                                         th:value="${af.artistName}"
                                         th:text="${af.artistName}"
                                         th:attr="data-stage=${af.stageName},data-date=${af.performanceDate}"></option>
-                                <option value="__direct__">-- 직접 입력 (크루명 등) --</option>
                             </select>
-                            <input type="text" id="artistNameDirect" style="display:none; margin-top:4px"
-                                   class="compact-input" maxlength="200" placeholder="크루명 입력"/>
+                            <input type="hidden" id="artistNameHidden" name="artistName"/>
                         </th:block>
                         <th:block th:if="${participatingArtistsByName.isEmpty()}">
                             <input type="text" name="artistName" required class="compact-input"
-                                   placeholder="아티스트 / 크루명 입력"/>
+                                   placeholder="아티스트명 입력"/>
                         </th:block>
-                        <input type="hidden" id="artistNameHidden" name="artistName"/>
                     </div>
                     <div>
-                        <label class="form-label-sm">날짜</label>
+                        <label class="form-label-sm">날짜 (자동)</label>
                         <div id="datePreview" class="preview-input">아티스트 선택 시 자동 입력</div>
-                        <input type="date" id="directDateInput" style="display:none"
-                               class="compact-input"
-                               th:min="${festival.startDate}" th:max="${festival.endDate}"/>
                     </div>
                     <div>
                         <label class="form-label-sm">스테이지 (자동)</label>
@@ -255,17 +249,30 @@
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
-                    <!-- 크루 멤버 선택 (전체 너비) -->
+                    <!-- 크루 공연 설정 (전체 너비) -->
                     <div style="grid-column: 1 / -1" th:if="${!participatingArtistsByName.isEmpty()}">
-                        <label class="form-label-sm" style="font-size:11px; color:#6b7280;">
-                            크루 멤버 (선택 — Ctrl/Cmd+클릭으로 여러 명 선택, 일반 공연은 비워두세요)
-                        </label>
-                        <select name="memberArtistIds" multiple class="compact-input"
-                                style="width:100%; min-height:56px; font-size:12px;">
-                            <option th:each="af : ${participatingArtistsByName}"
-                                    th:value="${af.artistId}"
-                                    th:text="${af.artistName}"></option>
-                        </select>
+                        <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; background:#f9fafb;">
+                            <div style="font-size:12px; font-weight:600; color:#374151; margin-bottom:10px;">
+                                크루 공연 설정 (선택 — 일반 공연은 비워두세요)
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <label class="form-label-sm">크루 이름</label>
+                                <input type="text" id="crewNameInput" class="compact-input"
+                                       style="width:100%; max-width:320px; margin-top:4px;"
+                                       maxlength="200" placeholder="예: LOUDX, BE:MBLEM 크루"/>
+                            </div>
+                            <div>
+                                <label class="form-label-sm">크루 멤버</label>
+                                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                                    <label th:each="af : ${participatingArtistsByName}"
+                                           style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:12px; background:#fff; user-select:none;">
+                                        <input type="checkbox" name="memberArtistIds"
+                                               th:value="${af.artistId}" style="margin:0; cursor:pointer;"/>
+                                        <span th:text="${af.artistName}"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
                 <div th:if="${timetableSuccess}" class="alert alert-success" th:text="${timetableSuccess}"></div>
@@ -449,14 +456,17 @@
                             <div id="tt-edit-time-error" class="time-error">⚠ 종료 시간은 시작 시간보다 늦어야 합니다.</div>
                             <div style="margin-top:12px; margin-bottom:12px" th:if="${!participatingArtistsByName.isEmpty()}">
                                 <label class="form-label-sm" style="font-size:11px; color:#6b7280;">
-                                    크루 멤버 (선택 — Ctrl/Cmd+클릭으로 여러 명, 일반 공연은 비워두세요)
+                                    크루 멤버 (선택 — 일반 공연은 비워두세요)
                                 </label>
-                                <select name="memberArtistIds" id="tt-edit-memberSelect" multiple
-                                        class="compact-input" style="width:100%; min-height:72px; font-size:12px;">
-                                    <option th:each="af : ${participatingArtistsByName}"
-                                            th:value="${af.artistId}"
-                                            th:text="${af.artistName}"></option>
-                                </select>
+                                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                                    <label th:each="af : ${participatingArtistsByName}"
+                                           style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:12px; background:#fff; user-select:none;">
+                                        <input type="checkbox" name="memberArtistIds"
+                                               class="tt-edit-member-cb"
+                                               th:value="${af.artistId}" style="margin:0; cursor:pointer;"/>
+                                        <span th:text="${af.artistName}"></span>
+                                    </label>
+                                </div>
                             </div>
                             <div style="margin-top:12px; margin-bottom:4px">
                                 <label class="form-label-sm">색상</label>
