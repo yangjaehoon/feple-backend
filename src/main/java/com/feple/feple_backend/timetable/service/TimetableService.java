@@ -13,6 +13,8 @@ import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.entity.TimetableEntryMember;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,7 @@ public class TimetableService {
     private final ArtistRepository artistRepository;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "timetable", key = "#festivalId")
     public List<TimetableEntryResponse> getEntries(Long festivalId) {
         return timetableRepository.findByFestivalIdWithStage(festivalId)
                 .stream()
@@ -45,6 +48,7 @@ public class TimetableService {
     }
 
     @Transactional
+    @CacheEvict(value = "timetable", key = "#festivalId")
     public TimetableEntryResponse createEntry(Long festivalId, TimetableEntryRequest req) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         if (!req.getStartTime().isBefore(req.getEndTime())) {
@@ -77,6 +81,7 @@ public class TimetableService {
     }
 
     @Transactional
+    @CacheEvict(value = "timetable", key = "#festivalId")
     public void updateEntry(Long festivalId, Long entryId, TimetableEntryRequest req) {
         TimetableEntry entry = EntityFinder.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         if (!festivalId.equals(entry.getFestivalId())) {
@@ -129,6 +134,7 @@ public class TimetableService {
     }
 
     @Transactional
+    @CacheEvict(value = "timetable", key = "#festivalId")
     public void deleteEntry(Long festivalId, Long entryId) {
         TimetableEntry entry = EntityFinder.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         if (!festivalId.equals(entry.getFestivalId())) {

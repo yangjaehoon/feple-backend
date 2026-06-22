@@ -127,12 +127,34 @@ public class CacheConfig {
                         .maximumSize(1)
                         .build());
 
+        // 페스티벌 상세(id별): 매 요청마다 findById 방지 — 10분 TTL, update/delete 시 해당 키 evict
+        CaffeineCache festivalDetailCache = new CaffeineCache("festivalDetail",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(10, TimeUnit.MINUTES)
+                        .maximumSize(200)
+                        .build());
+
+        // 아티스트 상세(id별): 매 요청마다 findById 방지 — 10분 TTL, update/delete/사진변경 시 해당 키 evict
+        CaffeineCache artistDetailCache = new CaffeineCache("artistDetail",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(10, TimeUnit.MINUTES)
+                        .maximumSize(300)
+                        .build());
+
+        // 타임테이블(festivalId별): 관리자 수정 전까지 불변 — 30분 TTL, create/update/delete 시 해당 키 evict
+        CaffeineCache timetableCache = new CaffeineCache("timetable",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(30, TimeUnit.MINUTES)
+                        .maximumSize(100)
+                        .build());
+
         SimpleCacheManager manager = new SimpleCacheManager();
         manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
                 adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache,
                 allArtistsSortedByNameCache, allFestivalsForAdminCache, adminRangeStatsCache,
                 adminDashboardStatsCache, adminPendingCountsCache, adminReportTypeCountsCache,
-                activeFestivalCountCache, festivalChecklistMapCache));
+                activeFestivalCountCache, festivalChecklistMapCache,
+                festivalDetailCache, artistDetailCache, timetableCache));
         return manager;
     }
 }

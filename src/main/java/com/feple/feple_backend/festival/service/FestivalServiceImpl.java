@@ -27,6 +27,7 @@ import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictFestivalCaches;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -139,6 +140,7 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "festivalDetail", key = "#id")
     public FestivalResponseDto getFestival(Long id) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
         return toDto(festival);
@@ -147,6 +149,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional
     @EvictFestivalCaches
+    @CacheEvict(value = "festivalDetail", key = "#id")
     public void updateFestival(Long id, FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
@@ -168,6 +171,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional
     @EvictFestivalCaches
+    @CacheEvict(value = "festivalDetail", key = "#festivalId")
     public void deleteFestival(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();

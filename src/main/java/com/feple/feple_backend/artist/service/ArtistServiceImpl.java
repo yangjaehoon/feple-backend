@@ -171,6 +171,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "artistDetail", key = "#id")
     public ArtistResponseDto getArtistById(Long id) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         return toDto(artist);
@@ -201,6 +202,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional
     @EvictArtistCaches
+    @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenres());
@@ -226,7 +228,8 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true)
+        @CacheEvict(value = "topArtists", allEntries = true),
+        @CacheEvict(value = "artistDetail", key = "#id")
     })
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
@@ -255,6 +258,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional
     @EvictArtistCaches
+    @CacheEvict(value = "artistDetail", key = "#id")
     public void deleteArtist(Long id) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
