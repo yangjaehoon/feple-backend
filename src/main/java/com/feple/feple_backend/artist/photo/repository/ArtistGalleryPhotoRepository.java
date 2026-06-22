@@ -10,10 +10,10 @@ import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGalleryPhoto, Long> {
-    @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.artist.id = :artistId ORDER BY p.id DESC")
+    @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.id DESC")
     List<ArtistGalleryPhoto> findByArtist_IdOrderByIdDesc(@Param("artistId") Long artistId);
 
-    @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.artist.id = :artistId ORDER BY p.likeCount DESC, p.createdAt DESC")
+    @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.likeCount DESC, p.createdAt DESC")
     List<ArtistGalleryPhoto> findByArtist_IdOrderByLikeCountDescCreatedAtDesc(@Param("artistId") Long artistId);
 
     @Query("SELECT p FROM ArtistGalleryPhoto p WHERE p.id = :id AND p.artist.id = :artistId")
