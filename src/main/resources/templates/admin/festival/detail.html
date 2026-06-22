@@ -267,6 +267,13 @@
                                            style="margin-top:4px;"
                                            th:min="${festival.startDate}" th:max="${festival.endDate}"/>
                                 </div>
+                                <div>
+                                    <label class="form-label-sm">스테이지</label>
+                                    <select id="crewStageInput" class="compact-input" style="margin-top:4px;">
+                                        <option value="">스테이지 선택</option>
+                                        <option th:each="s : ${stages}" th:value="${s.name}" th:text="${s.name}"></option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label class="form-label-sm">크루 멤버</label>

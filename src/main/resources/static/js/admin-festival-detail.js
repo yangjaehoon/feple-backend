@@ -322,6 +322,11 @@
                 if (crewDate && crewDate.value) {
                     document.getElementById('autoFestivalDate').value = crewDate.value;
                 }
+                // 크루 스테이지로 autoStageName 덮어씀
+                var crewStage = document.getElementById('crewStageInput');
+                if (crewStage && crewStage.value) {
+                    document.getElementById('autoStageName').value = crewStage.value;
+                }
             }
             if (!validateTimetable(this)) e.preventDefault();
         });
