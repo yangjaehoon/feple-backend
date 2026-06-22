@@ -378,6 +378,15 @@
             nameInput.style.display = 'block';
         }
 
+        var memberIdsStr = btn.getAttribute('data-member-ids') || '';
+        var memberIds = memberIdsStr ? memberIdsStr.split(',').map(Number).filter(Boolean) : [];
+        var memberSelect = document.getElementById('tt-edit-memberSelect');
+        if (memberSelect) {
+            for (var i = 0; i < memberSelect.options.length; i++) {
+                memberSelect.options[i].selected = memberIds.includes(parseInt(memberSelect.options[i].value));
+            }
+        }
+
         modal.style.display = 'flex';
     }
 

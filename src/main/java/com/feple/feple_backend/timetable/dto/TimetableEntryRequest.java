@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,6 +17,7 @@ import java.time.LocalTime;
 public class TimetableEntryRequest {
     private String stageName;
     private String artistName;
+    private List<Long> memberArtistIds;
 
     @NotNull(message = "페스티벌 날짜는 필수입니다.")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

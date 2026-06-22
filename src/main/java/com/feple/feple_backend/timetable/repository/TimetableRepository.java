@@ -10,8 +10,8 @@ import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface TimetableRepository extends JpaRepository<TimetableEntry, Long> {
-    // stage JOIN FETCH — getStageName()/getDisplayOrder() 접근 시 N+1 방지
-    @Query("SELECT t FROM TimetableEntry t LEFT JOIN FETCH t.stage WHERE t.festival.id = :festivalId ORDER BY t.festivalDate ASC, t.startTime ASC")
+    // stage + members JOIN FETCH — N+1 방지
+    @Query("SELECT DISTINCT t FROM TimetableEntry t LEFT JOIN FETCH t.stage LEFT JOIN FETCH t.members WHERE t.festival.id = :festivalId ORDER BY t.festivalDate ASC, t.startTime ASC")
     List<TimetableEntry> findByFestivalIdWithStage(@Param("festivalId") Long festivalId);
     @Query("SELECT t FROM TimetableEntry t WHERE t.festival.id = :festivalId AND t.artistName = :artistName")
     List<TimetableEntry> findByFestivalIdAndArtistName(@Param("festivalId") Long festivalId, @Param("artistName") String artistName);

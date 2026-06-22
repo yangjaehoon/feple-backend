@@ -250,6 +250,18 @@
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
+                    <!-- 크루 멤버 선택 (전체 너비) -->
+                    <div style="grid-column: 1 / -1" th:if="${!participatingArtistsByName.isEmpty()}">
+                        <label class="form-label-sm" style="font-size:11px; color:#6b7280;">
+                            크루 멤버 (선택 — Ctrl/Cmd+클릭으로 여러 명 선택, 일반 공연은 비워두세요)
+                        </label>
+                        <select name="memberArtistIds" multiple class="compact-input"
+                                style="width:100%; min-height:56px; font-size:12px;">
+                            <option th:each="af : ${participatingArtistsByName}"
+                                    th:value="${af.artistId}"
+                                    th:text="${af.artistName}"></option>
+                        </select>
+                    </div>
                 </form>
                 <div th:if="${timetableSuccess}" class="alert alert-success" th:text="${timetableSuccess}"></div>
 
@@ -368,6 +380,7 @@
                                             th:data-end="${entry.endTime}"
                                             th:data-stage="${entry.stageName}"
                                             th:data-color="${entry.color}"
+                                            th:data-member-ids="${entry.memberArtistIdsStr}"
                                             onclick="openTimetableEdit(this)">수정</button>
                                 </td>
                                 <td>
@@ -429,6 +442,17 @@
                                 </div>
                             </div>
                             <div id="tt-edit-time-error" class="time-error">⚠ 종료 시간은 시작 시간보다 늦어야 합니다.</div>
+                            <div style="margin-top:12px; margin-bottom:12px" th:if="${!participatingArtistsByName.isEmpty()}">
+                                <label class="form-label-sm" style="font-size:11px; color:#6b7280;">
+                                    크루 멤버 (선택 — Ctrl/Cmd+클릭으로 여러 명, 일반 공연은 비워두세요)
+                                </label>
+                                <select name="memberArtistIds" id="tt-edit-memberSelect" multiple
+                                        class="compact-input" style="width:100%; min-height:72px; font-size:12px;">
+                                    <option th:each="af : ${participatingArtistsByName}"
+                                            th:value="${af.artistId}"
+                                            th:text="${af.artistName}"></option>
+                                </select>
+                            </div>
                             <div style="margin-top:12px; margin-bottom:4px">
                                 <label class="form-label-sm">색상</label>
                                 <div class="color-picker-row">

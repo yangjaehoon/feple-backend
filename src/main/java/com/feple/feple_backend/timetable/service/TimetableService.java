@@ -1,5 +1,7 @@
 package com.feple.feple_backend.timetable.service;
 
+import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -8,6 +10,7 @@ import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
+import com.feple.feple_backend.timetable.entity.TimetableEntryMember;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,7 @@ import com.feple.feple_backend.global.EntityFinder;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,7 @@ public class TimetableService {
     private final FestivalRepository festivalRepository;
     private final StageRepository stageRepository;
     private final ArtistFestivalService artistFestivalService;
+    private final ArtistRepository artistRepository;
 
     @Transactional(readOnly = true)
     public List<TimetableEntryResponse> getEntries(Long festivalId) {
@@ -61,8 +66,13 @@ public class TimetableService {
                 .color(color)
                 .build();
         TimetableEntry saved = timetableRepository.save(entry);
+        syncMembers(saved, req.getMemberArtistIds());
         artistFestivalService.syncFromTimetableEntry(
                 festivalId, saved.getArtistName(), saved.getFestivalDate(), saved.getStageName());
+        for (TimetableEntryMember member : saved.getMembers()) {
+            artistFestivalService.syncFromTimetableEntry(
+                    festivalId, member.getArtistName(), saved.getFestivalDate(), saved.getStageName());
+        }
         return TimetableEntryResponse.from(saved);
     }
 
@@ -86,8 +96,31 @@ public class TimetableService {
                 req.getStartTime(),
                 req.getEndTime(),
                 req.getColor());
+        syncMembers(entry, req.getMemberArtistIds());
         artistFestivalService.syncFromTimetableEntry(
                 festivalId, entry.getArtistName(), entry.getFestivalDate(), entry.getStageName());
+        for (TimetableEntryMember member : entry.getMembers()) {
+            artistFestivalService.syncFromTimetableEntry(
+                    festivalId, member.getArtistName(), entry.getFestivalDate(), entry.getStageName());
+        }
+    }
+
+    private void syncMembers(TimetableEntry entry, List<Long> memberArtistIds) {
+        if (memberArtistIds == null || memberArtistIds.isEmpty()) {
+            entry.replaceMembers(List.of());
+            return;
+        }
+        List<TimetableEntryMember> members = memberArtistIds.stream()
+                .map(artistRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(artist -> TimetableEntryMember.builder()
+                        .entry(entry)
+                        .artist(artist)
+                        .artistName(artist.getName())
+                        .build())
+                .toList();
+        entry.replaceMembers(members);
     }
 
     @Transactional

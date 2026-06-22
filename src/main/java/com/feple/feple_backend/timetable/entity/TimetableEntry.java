@@ -8,6 +8,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "timetable_entry", indexes = {
@@ -53,6 +55,15 @@ public class TimetableEntry {
 
     @Column(length = 20)
     private String color;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "entry", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TimetableEntryMember> members = new ArrayList<>();
+
+    public void replaceMembers(List<TimetableEntryMember> newMembers) {
+        members.clear();
+        members.addAll(newMembers);
+    }
 
     public String getArtistName() {
         if (artistName != null && !artistName.isBlank()) return artistName;
