@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -57,12 +58,18 @@ public class FirebaseAuthService implements OAuthLoginService {
                     String fallback = "User" + uid.substring(0, Math.min(uid.length(), 8));
                     String raw = (displayName != null && !displayName.isBlank()) ? displayName : fallback;
                     String nickname = nicknameGenerator.uniquify(nicknameGenerator.sanitize(raw, fallback));
-                    return userRepository.save(User.builder()
-                            .email(email)
-                            .nickname(nickname)
-                            .oauthId(uid)
-                            .provider(AuthProvider.FIREBASE)
-                            .build());
+                    try {
+                        return userRepository.save(User.builder()
+                                .email(email)
+                                .nickname(nickname)
+                                .oauthId(uid)
+                                .provider(AuthProvider.FIREBASE)
+                                .build());
+                    } catch (DataIntegrityViolationException e) {
+                        // 동시 요청 경합(race condition): 다른 요청이 같은 uid로 먼저 가입 완료
+                        return userRepository.findByProviderAndOauthId(AuthProvider.FIREBASE, uid)
+                                .orElseThrow(() -> new IllegalStateException("동시 가입 처리 중 예상치 못한 오류"));
+                    }
                 });
     }
 }

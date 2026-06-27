@@ -7,6 +7,7 @@ import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -53,13 +54,19 @@ public class KakaoAuthService implements OAuthLoginService {
                     .map(KakaoUserResponse.Profile::getProfile_image_url)
                     .filter(url -> !url.isBlank())
                     .orElse(null);
-            return userRepository.save(User.builder()
-                    .oauthId(oauthId)
-                    .email(email)
-                    .nickname(nickname)
-                    .provider(AuthProvider.KAKAO)
-                    .profileImageUrl(kakaoImageUrl)
-                    .build());
+            try {
+                return userRepository.save(User.builder()
+                        .oauthId(oauthId)
+                        .email(email)
+                        .nickname(nickname)
+                        .provider(AuthProvider.KAKAO)
+                        .profileImageUrl(kakaoImageUrl)
+                        .build());
+            } catch (DataIntegrityViolationException e) {
+                // 동시 요청 경합(race condition): 다른 요청이 같은 oauthId로 먼저 가입 완료
+                return userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, oauthId)
+                        .orElseThrow(() -> new IllegalStateException("동시 가입 처리 중 예상치 못한 오류"));
+            }
         });
     }
 }
