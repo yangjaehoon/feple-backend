@@ -10,7 +10,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * IP 주소 기준으로 변경 요청(POST)을 제한한다.
+ * 사용자 ID(인증된 경우) 또는 IP 주소(미인증) 기준으로 변경 요청을 제한한다.
  * 1분 동안 최대 30회 허용, 초과 시 429 응답.
  */
 @Component

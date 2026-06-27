@@ -173,13 +173,16 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    record UnregisterDeviceTokenRequest(
+        @NotBlank(message = "토큰이 필요합니다.") String token
+    ) {}
+
     /** FCM 디바이스 토큰 삭제 (로그아웃 시) */
     @DeleteMapping("/device-token")
     public ResponseEntity<Void> unregisterDeviceToken(
-            @RequestBody Map<String, String> body,
+            @Valid @RequestBody UnregisterDeviceTokenRequest req,
             @AuthenticationPrincipal Long userId) {
-        String token = body.get("token");
-        if (token != null) deviceTokenService.unregister(userId, token);
+        deviceTokenService.unregister(userId, req.token());
         return ResponseEntity.noContent().build();
     }
 
