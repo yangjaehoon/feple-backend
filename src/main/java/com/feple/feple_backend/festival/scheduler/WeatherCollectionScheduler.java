@@ -35,18 +35,19 @@ public class WeatherCollectionScheduler {
         }
 
         log.info("[WeatherScheduler] 날씨 수집 시작 — 대상 {}개", targets.size());
-        int success = 0, skip = 0;
+        int success = 0, skip = 0, fail = 0;
 
         for (Festival festival : targets) {
             try {
-                boolean fetched = weatherService.getByFestivalId(festival.getId()).isPresent();
+                boolean fetched = weatherService.collectWeather(festival);
                 if (fetched) success++; else skip++;
             } catch (Exception e) {
-                log.error("[WeatherScheduler] 수집 실패: festivalId={} title={}", festival.getId(), festival.getTitle(), e);
-                skip++;
+                log.error("[WeatherScheduler] 수집 실패: festivalId={} title={}",
+                        festival.getId(), festival.getTitle(), e);
+                fail++;
             }
         }
 
-        log.info("[WeatherScheduler] 완료 — 성공 {}개 / 스킵 {}개", success, skip);
+        log.info("[WeatherScheduler] 완료 — 성공 {}개 / 스킵 {}개 / 실패 {}개", success, skip, fail);
     }
 }
