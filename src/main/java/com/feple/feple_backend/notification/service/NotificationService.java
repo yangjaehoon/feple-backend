@@ -19,6 +19,8 @@ import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
+import com.feple.feple_backend.post.event.PostLikedEvent;
+import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -170,8 +172,53 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCommentCreated(CommentCreatedEvent event) {
-        notifyNewComment(event.postAuthorId(), event.commenterNickname(),
-                event.postTitle(), event.postId());
+        if (event.postAuthorId() != null) {
+            notifyNewComment(event.postAuthorId(), event.commenterNickname(),
+                    event.postTitle(), event.postId());
+        }
+        if (event.parentCommentAuthorId() != null) {
+            notifyNewReply(event.parentCommentAuthorId(), event.commenterNickname(),
+                    event.postTitle(), event.postId());
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onPostLiked(PostLikedEvent event) {
+        User author = userRepository.findById(event.postAuthorId()).orElse(null);
+        if (author == null) return;
+        String title = NotificationMessages.postLikedTitle(event.likerNickname());
+        String body = NotificationMessages.postLikedBody(event.postTitle());
+        String titleEn = NotificationMessages.postLikedTitleEn(event.likerNickname());
+        String bodyEn = NotificationMessages.postLikedBodyEn(event.postTitle());
+        Post post = postRepository.findById(event.postId()).orElse(null);
+        notificationRepository.save(
+                Notification.of(author, NotificationType.POST_LIKED, title, body, titleEn, bodyEn, post));
+        NotificationPreference pref = preferenceService.getOrCreate(event.postAuthorId());
+        if (pref.isEnabledFor(NotificationType.POST_LIKED)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.postAuthorId()));
+            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(event.postId()), NotificationType.POST_LIKED);
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onPostDeletedByAdmin(PostDeletedByAdminEvent event) {
+        User author = userRepository.findById(event.postAuthorId()).orElse(null);
+        if (author == null) return;
+        String title = NotificationMessages.POST_DELETED_BY_ADMIN_TITLE;
+        String body = NotificationMessages.postDeletedByAdminBody(event.postTitle());
+        String titleEn = NotificationMessages.POST_DELETED_BY_ADMIN_TITLE_EN;
+        String bodyEn = NotificationMessages.postDeletedByAdminBodyEn(event.postTitle());
+        notificationRepository.save(
+                Notification.of(author, NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, (Festival) null));
+        NotificationPreference pref = preferenceService.getOrCreate(event.postAuthorId());
+        if (pref.isEnabledFor(NotificationType.POST_DELETED_BY_ADMIN)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.postAuthorId()));
+            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.POST_DELETED_BY_ADMIN);
+        }
     }
 
     /** 내 게시글에 댓글 알림 */
@@ -196,6 +243,27 @@ public class NotificationService {
         if (pref.isEnabledFor(NotificationType.NEW_COMMENT)) {
             List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(postAuthorId));
             fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.NEW_COMMENT);
+        }
+    }
+
+    /** 내 댓글에 대댓글 알림 */
+    @Async
+    @Transactional
+    public void notifyNewReply(Long parentCommentAuthorId, String replierNickname,
+                                String postTitle, Long postId) {
+        User author = userRepository.findById(parentCommentAuthorId).orElse(null);
+        if (author == null) return;
+        String title = NotificationMessages.newReplyTitle(replierNickname);
+        String body = NotificationMessages.newReplyBody(postTitle);
+        String titleEn = NotificationMessages.newReplyTitleEn(replierNickname);
+        String bodyEn = NotificationMessages.newReplyBodyEn(postTitle);
+        Post post = postRepository.findById(postId).orElse(null);
+        notificationRepository.save(
+                Notification.of(author, NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, post));
+        NotificationPreference pref = preferenceService.getOrCreate(parentCommentAuthorId);
+        if (pref.isEnabledFor(NotificationType.NEW_REPLY)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(parentCommentAuthorId));
+            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.NEW_REPLY);
         }
     }
 

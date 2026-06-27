@@ -131,4 +131,60 @@ public final class NotificationMessages {
         String base = "Your request for '" + artistName + "'";
         return (note != null && !note.isBlank()) ? base + ": " + note : base + " has been reviewed.";
     }
+
+    public static String newReplyTitle(String replierNickname) {
+        return replierNickname + "님이 댓글에 답글을 달았어요.";
+    }
+
+    public static String newReplyBody(String postTitle) {
+        return (postTitle != null && !postTitle.isBlank())
+                ? "'" + postTitle + "' 게시글의 내 댓글에 답글이 달렸습니다."
+                : "내 댓글에 답글이 달렸습니다.";
+    }
+
+    public static String newReplyTitleEn(String replierNickname) {
+        return replierNickname + " replied to your comment.";
+    }
+
+    public static String newReplyBodyEn(String postTitle) {
+        return (postTitle != null && !postTitle.isBlank())
+                ? "Someone replied to your comment on '" + postTitle + "'."
+                : "Someone replied to your comment.";
+    }
+
+    public static String postLikedTitle(String likerNickname) {
+        return likerNickname + "님이 게시글을 좋아해요.";
+    }
+
+    public static String postLikedBody(String postTitle) {
+        return (postTitle != null && !postTitle.isBlank())
+                ? "'" + postTitle + "' 게시글에 좋아요가 달렸습니다."
+                : "게시글에 좋아요가 달렸습니다.";
+    }
+
+    public static String postLikedTitleEn(String likerNickname) {
+        return likerNickname + " liked your post.";
+    }
+
+    public static String postLikedBodyEn(String postTitle) {
+        return (postTitle != null && !postTitle.isBlank())
+                ? "Someone liked your post '" + postTitle + "'."
+                : "Someone liked your post.";
+    }
+
+    public static final String POST_DELETED_BY_ADMIN_TITLE = "게시글이 삭제됐어요.";
+
+    public static String postDeletedByAdminBody(String postTitle) {
+        return (postTitle != null && !postTitle.isBlank())
+                ? "'" + postTitle + "' 게시글이 운영 정책에 따라 삭제됐습니다."
+                : "게시글이 운영 정책에 따라 삭제됐습니다.";
+    }
+
+    public static final String POST_DELETED_BY_ADMIN_TITLE_EN = "Your post has been removed.";
+
+    public static String postDeletedByAdminBodyEn(String postTitle) {
+        return (postTitle != null && !postTitle.isBlank())
+                ? "Your post '" + postTitle + "' was removed for violating our community guidelines."
+                : "Your post was removed for violating our community guidelines.";
+    }
 }

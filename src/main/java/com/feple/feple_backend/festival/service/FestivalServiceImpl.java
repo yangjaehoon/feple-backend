@@ -38,7 +38,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -94,7 +96,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions,
                                                      List<AgeRestriction> ageRestrictions,
-                                                     boolean includeEnded) {
+                                                     boolean includeEnded, String sort) {
         LocalDate today = LocalDate.now();
         // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
         LocalDate activeFrom = includeEnded ? null : today;
@@ -109,8 +111,16 @@ public class FestivalServiceImpl implements FestivalService {
             ? List.of(FestivalStatus.ACTIVE, FestivalStatus.ENDED)
             : List.of(FestivalStatus.ACTIVE);
 
-        return statuses.stream()
-            .flatMap(status -> status.filter(all, today).stream())
+        Stream<Festival> stream = statuses.stream()
+            .flatMap(status -> status.filter(all, today).stream());
+
+        if ("date_asc".equals(sort)) {
+            stream = stream.sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())));
+        } else if ("date_desc".equals(sort)) {
+            stream = stream.sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())));
+        }
+
+        return stream
             .limit(PageSize.FESTIVALS)
             .map(this::toDto)
             .toList();
@@ -120,7 +130,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Transactional(readOnly = true)
     @Cacheable("allFestivalsForAdmin")
     public List<FestivalResponseDto> getAllFestivalsForAdmin() {
-        return getAllFestivals(null, null, null, true);
+        return getAllFestivals(null, null, null, true, null);
     }
 
     @Override

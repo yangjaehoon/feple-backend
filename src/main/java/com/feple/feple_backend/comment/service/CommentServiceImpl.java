@@ -60,10 +60,24 @@ public class CommentServiceImpl implements CommentService {
         post.incrementCommentCount();
 
         Long postAuthorId = post.getUserId();
+        String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
+
+        // 대댓글인 경우 원댓글 작성자 ID 추출 (자기 자신 제외, 게시글 작성자와 동일한 경우 제외)
+        Long parentCommentAuthorId = null;
+        if (parent != null) {
+            Long parentAuthorId = parent.getUserId();
+            if (!parentAuthorId.equals(userId) && !parentAuthorId.equals(postAuthorId)) {
+                parentCommentAuthorId = parentAuthorId;
+            }
+        }
+
         if (!postAuthorId.equals(userId)) {
-            String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
             eventPublisher.publishEvent(
-                    new CommentCreatedEvent(postAuthorId, commenterName, post.getTitle(), post.getId()));
+                    new CommentCreatedEvent(postAuthorId, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId));
+        } else if (parentCommentAuthorId != null) {
+            // 게시글 작성자가 자기 게시글에 댓글을 달아도 원댓글 작성자에게는 알림 필요
+            eventPublisher.publishEvent(
+                    new CommentCreatedEvent(null, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId));
         }
 
         boolean certified = post.getFestivalId() != null &&

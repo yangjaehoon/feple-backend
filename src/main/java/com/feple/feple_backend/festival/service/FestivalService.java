@@ -16,7 +16,7 @@ import java.util.List;
 public interface FestivalService {
     Long createFestival(FestivalRequestDto dto);
     List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions,
-                                              List<AgeRestriction> ageRestrictions, boolean includeEnded);
+                                              List<AgeRestriction> ageRestrictions, boolean includeEnded, String sort);
     List<FestivalResponseDto> getAllFestivalsForAdmin();
     List<FestivalResponseDto> getAllActiveFestivalsForAdmin();
     FestivalDetailResponseDto getFestivalDetail(Long id);

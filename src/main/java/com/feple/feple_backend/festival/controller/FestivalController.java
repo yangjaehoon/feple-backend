@@ -41,8 +41,9 @@ public class FestivalController {
             @RequestParam(required = false) List<Genre> genres,
             @RequestParam(required = false) List<Region> regions,
             @RequestParam(required = false) List<AgeRestriction> ageRestrictions,
-            @RequestParam(defaultValue = "false") boolean includeEnded) {
-        return festivalService.getAllFestivals(genres, regions, ageRestrictions, includeEnded);
+            @RequestParam(defaultValue = "false") boolean includeEnded,
+            @RequestParam(required = false) String sort) {
+        return festivalService.getAllFestivals(genres, regions, ageRestrictions, includeEnded, sort);
     }
 
     @GetMapping("/{id}")

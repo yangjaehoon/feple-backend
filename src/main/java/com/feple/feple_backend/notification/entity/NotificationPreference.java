@@ -38,11 +38,11 @@ public class NotificationPreference {
     public boolean isEnabledFor(NotificationType type) {
         return switch (type) {
             case CERT_APPROVED, CERT_REJECTED -> certEnabled;
-            case NEW_COMMENT -> commentEnabled;
+            case NEW_COMMENT, NEW_REPLY, POST_LIKED -> commentEnabled;
             case NEW_FESTIVAL, FESTIVAL_REMINDER -> festivalEnabled;
             case SONG_REQUEST_APPROVED, SONG_REQUEST_REJECTED,
                  ARTIST_SUGGESTION_PROCESSED -> songRequestEnabled;
-            case ADMIN_BROADCAST -> true;
+            case ADMIN_BROADCAST, POST_DELETED_BY_ADMIN -> true;
         };
     }
 }

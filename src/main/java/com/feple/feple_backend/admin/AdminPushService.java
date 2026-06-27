@@ -48,7 +48,7 @@ public class AdminPushService {
                 getRegisteredDeviceCount(),
                 getBroadcastHistory(),
                 artistService.getAllArtistsSortedByName(),
-                festivalService.getAllFestivals(null, null, null, true)
+                festivalService.getAllFestivals(null, null, null, true, null)
         );
     }
 

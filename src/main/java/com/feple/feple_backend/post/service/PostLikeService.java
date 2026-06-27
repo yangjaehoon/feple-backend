@@ -3,11 +3,13 @@ package com.feple.feple_backend.post.service;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
+import com.feple.feple_backend.post.event.PostLikedEvent;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ public class PostLikeService {
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public boolean isLikedByUser(Long postId, Long userId) {
         if (userId == null) return false;
@@ -37,6 +40,9 @@ public class PostLikeService {
         }
         postLikeRepository.save(new PostLike(user, post));
         postRepository.incrementLikeCount(postId);
+        if (!post.getUserId().equals(userId)) {
+            eventPublisher.publishEvent(new PostLikedEvent(post.getUserId(), user.getNickname(), post.getTitle(), postId));
+        }
         return true;
     }
 }

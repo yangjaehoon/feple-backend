@@ -25,7 +25,9 @@ import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.cache.annotation.Cacheable;
@@ -54,6 +56,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     private final FestivalCertificationRepository certificationRepository;
     private final NotificationRepository notificationRepository;
     private final BadWordFilter badWordFilter;
+    private final ApplicationEventPublisher eventPublisher;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
 
@@ -188,6 +191,8 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     @Transactional
     public void deletePost(Long postId) {
+        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        eventPublisher.publishEvent(new PostDeletedByAdminEvent(post.getUserId(), post.getTitle()));
         postRepository.deleteById(postId);
     }
 
