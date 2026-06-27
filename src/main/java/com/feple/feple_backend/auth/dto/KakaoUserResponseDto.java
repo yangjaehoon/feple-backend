@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class KakaoUserResponse {
+public class KakaoUserResponseDto {
     private Long id;
 
     @JsonProperty("kakao_account")

@@ -12,7 +12,7 @@ import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PermissionValidator;
 import com.feple.feple_backend.post.dto.CursorPage;
-import com.feple.feple_backend.post.dto.PostAdminFilter;
+import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -112,7 +112,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     @Override
-    public Page<PostResponseDto> getPostsForAdmin(PostAdminFilter params) {
+    public Page<PostResponseDto> getPostsForAdmin(PostAdminFilterDto params) {
         PageRequest pageable = PageRequest.of(params.page(), params.size());
         boolean hasKeyword = params.keyword() != null && !params.keyword().isBlank();
         String kw = LikeEscaper.escapeOrEmpty(params.keyword());

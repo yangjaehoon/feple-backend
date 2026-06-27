@@ -10,7 +10,7 @@ public final class ScrapedFestivalMapper {
 
     private ScrapedFestivalMapper() {}
 
-    public static FestivalRequestDto toFestivalRequestDto(ScraperApplyRequest req) {
+    public static FestivalRequestDto toFestivalRequestDto(ScraperApplyRequestDto req) {
         FestivalRequestDto dto = new FestivalRequestDto();
         dto.setTitle(req.title().trim());
         dto.setTitleEn(req.titleEn() != null ? req.titleEn().trim() : null);

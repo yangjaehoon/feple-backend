@@ -1,6 +1,6 @@
 package com.feple.feple_backend.auth.kakao;
 
-import com.feple.feple_backend.auth.dto.KakaoUserResponse;
+import com.feple.feple_backend.auth.dto.KakaoUserResponseDto;
 import com.feple.feple_backend.auth.jwt.JwtConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -15,12 +15,12 @@ public class KakaoApiClient {
 
     private final WebClient webClient;
 
-    public Mono<KakaoUserResponse> getMe(String kakaoAccessToken) {
+    public Mono<KakaoUserResponseDto> getMe(String kakaoAccessToken) {
         return webClient.post()
                 .uri("https://kapi.kakao.com/v2/user/me")
                 .header(HttpHeaders.AUTHORIZATION, JwtConstants.BEARER_PREFIX + kakaoAccessToken)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .retrieve()
-                .bodyToMono(KakaoUserResponse.class);
+                .bodyToMono(KakaoUserResponseDto.class);
     }
 }

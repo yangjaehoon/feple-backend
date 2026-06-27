@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin;
 
 import java.util.List;
 
-public record ScraperApplyRequest(
+public record ScraperApplyRequestDto(
     String title,
     String titleEn,
     String description,

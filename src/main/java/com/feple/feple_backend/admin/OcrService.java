@@ -46,7 +46,7 @@ public class OcrService {
         return geminiOcrClient.parseTimeTable(image);
     }
 
-    public OcrApplyResultDto applyEntries(OcrApplyRequest request) {
+    public OcrApplyResultDto applyEntries(OcrApplyRequestDto request) {
         List<Map<String, String>> failures = new ArrayList<>();
         int savedCount = 0;
 

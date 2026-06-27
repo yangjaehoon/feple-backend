@@ -6,7 +6,7 @@ import com.feple.feple_backend.admin.FilterDropdownProvider;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.post.dto.PostAdminFilter;
+import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.post.service.PostService;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +58,7 @@ public class PostAdminController {
             Model model) {
         PostListParams params = new PostListParams(filter, keyword, artistId, festivalId);
         addListModel(model, postAdminService.getPostsForAdmin(
-                new PostAdminFilter(page, AdminConstants.LIST_PAGE_SIZE, filter, keyword, artistId, festivalId)), params);
+                new PostAdminFilterDto(page, AdminConstants.LIST_PAGE_SIZE, filter, keyword, artistId, festivalId)), params);
 
         FilterDropdownProvider provider = dropdownProviders.get(filter);
         if (provider != null) provider.populate(model);

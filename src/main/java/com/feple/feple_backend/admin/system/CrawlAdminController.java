@@ -1,15 +1,15 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.ArtistLineupOcrResult;
-import com.feple.feple_backend.admin.LineupApplyOcrRequest;
+import com.feple.feple_backend.admin.LineupApplyOcrRequestDto;
 import com.feple.feple_backend.admin.LineupApplyResult;
-import com.feple.feple_backend.admin.OcrApplyRequest;
+import com.feple.feple_backend.admin.OcrApplyRequestDto;
 import com.feple.feple_backend.admin.OcrApplyResultDto;
 import com.feple.feple_backend.admin.OcrResultDto;
 import com.feple.feple_backend.admin.OcrService;
 import com.feple.feple_backend.admin.ScrapedFestivalDto;
 import com.feple.feple_backend.admin.ScrapedFestivalMapper;
-import com.feple.feple_backend.admin.ScraperApplyRequest;
+import com.feple.feple_backend.admin.ScraperApplyRequestDto;
 import com.feple.feple_backend.admin.WebScraperService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -75,8 +75,8 @@ public class CrawlAdminController {
 
     @PostMapping("/scrape/apply")
     @ResponseBody
-    public ResponseEntity<?> applyScrape(@RequestBody ScraperApplyRequest req) {
-        String validationError = validateScraperApplyRequest(req);
+    public ResponseEntity<?> applyScrape(@RequestBody ScraperApplyRequestDto req) {
+        String validationError = validateScraperApplyRequestDto(req);
         if (validationError != null) return badRequest(validationError);
         try {
             Long festivalId = festivalService.createFestival(ScrapedFestivalMapper.toFestivalRequestDto(req));
@@ -112,7 +112,7 @@ public class CrawlAdminController {
 
     @PostMapping("/ocr/apply")
     @ResponseBody
-    public ResponseEntity<?> applyOcr(@RequestBody OcrApplyRequest request) {
+    public ResponseEntity<?> applyOcr(@RequestBody OcrApplyRequestDto request) {
         if (request.festivalId() == null)                    return badRequest("페스티벌을 선택해주세요.");
         if (request.entries() == null || request.entries().isEmpty()) return badRequest("저장할 항목이 없습니다.");
         try {
@@ -145,7 +145,7 @@ public class CrawlAdminController {
 
     @PostMapping("/ocr/lineup/apply")
     @ResponseBody
-    public ResponseEntity<?> applyLineupOcr(@RequestBody LineupApplyOcrRequest request) {
+    public ResponseEntity<?> applyLineupOcr(@RequestBody LineupApplyOcrRequestDto request) {
         if (request.festivalId() == null)                            return badRequest("페스티벌을 선택해주세요.");
         if (request.artistIds() == null || request.artistIds().isEmpty()) return badRequest("등록할 아티스트가 없습니다.");
         try {
@@ -205,7 +205,7 @@ public class CrawlAdminController {
 
     // ── 내부 헬퍼 ────────────────────────────────────────
 
-    private static String validateScraperApplyRequest(ScraperApplyRequest req) {
+    private static String validateScraperApplyRequestDto(ScraperApplyRequestDto req) {
         if (req.title() == null || req.title().isBlank())
             return "제목을 입력해주세요.";
         if (req.startDate() == null || req.startDate().isBlank()

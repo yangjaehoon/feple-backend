@@ -101,7 +101,7 @@ class CrawlAdminControllerTest {
 
     @Test
     void 스크래핑_결과_적용_제목없으면_400_반환() throws Exception {
-        ScraperApplyRequest req = new ScraperApplyRequest(
+        ScraperApplyRequestDto req = new ScraperApplyRequestDto(
                 null, null, null, null, "2026-06-01", "2026-06-03", null, null);
 
         mockMvc.perform(post("/admin/crawl/scrape/apply")
@@ -114,7 +114,7 @@ class CrawlAdminControllerTest {
     void 스크래핑_결과_적용_성공_festivalId_반환() throws Exception {
         given(festivalService.createFestival(any())).willReturn(1L);
 
-        ScraperApplyRequest req = new ScraperApplyRequest(
+        ScraperApplyRequestDto req = new ScraperApplyRequestDto(
                 "테스트 페스티벌", null, null, null,
                 "2026-06-01", "2026-06-03", null, null);
 
@@ -160,7 +160,7 @@ class CrawlAdminControllerTest {
 
     @Test
     void OCR_적용_festivalId없으면_400_반환() throws Exception {
-        OcrApplyRequest req = new OcrApplyRequest(null, List.of());
+        OcrApplyRequestDto req = new OcrApplyRequestDto(null, List.of());
 
         mockMvc.perform(post("/admin/crawl/ocr/apply")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -173,7 +173,7 @@ class CrawlAdminControllerTest {
         OcrApplyResultDto result = new OcrApplyResultDto(2, 0, List.of());
         given(ocrService.applyEntries(any())).willReturn(result);
 
-        OcrApplyRequest req = new OcrApplyRequest(1L, List.of(mock(OcrResultDto.class)));
+        OcrApplyRequestDto req = new OcrApplyRequestDto(1L, List.of(mock(OcrResultDto.class)));
 
         mockMvc.perform(post("/admin/crawl/ocr/apply")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -201,7 +201,7 @@ class CrawlAdminControllerTest {
         given(ocrService.applyArtistLineup(anyLong(), anyList()))
                 .willReturn(new LineupApplyResult(2, 2, 0));
 
-        LineupApplyOcrRequest req = new LineupApplyOcrRequest(1L, List.of(10L, 11L));
+        LineupApplyOcrRequestDto req = new LineupApplyOcrRequestDto(1L, List.of(10L, 11L));
 
         mockMvc.perform(post("/admin/crawl/ocr/lineup/apply")
                         .contentType(MediaType.APPLICATION_JSON)
