@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ArtistFestivalCreateRequest {
+public class ArtistFestivalCreateRequestDto {
 
     @NotNull(message = "아티스트 ID는 필수입니다.")
     @Positive(message = "아티스트 ID는 양수여야 합니다.")

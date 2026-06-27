@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
-public class TimetableEntryResponse {
+public class TimetableEntryResponseDto {
     private Long id;
     private String stageName;
     private int stageOrder;
@@ -26,10 +26,10 @@ public class TimetableEntryResponse {
 
     private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
 
-    public static TimetableEntryResponse from(TimetableEntry e) {
+    public static TimetableEntryResponseDto from(TimetableEntry e) {
         int order = e.getStage() != null ? e.getStage().getDisplayOrder() : Integer.MAX_VALUE;
         List<TimetableEntryMember> members = e.getMembers();
-        return TimetableEntryResponse.builder()
+        return TimetableEntryResponseDto.builder()
                 .id(e.getId())
                 .stageName(e.getStageName())
                 .stageOrder(order)

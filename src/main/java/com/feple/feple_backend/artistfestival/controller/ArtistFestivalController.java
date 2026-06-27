@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artistfestival.controller;
 
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +18,10 @@ public class ArtistFestivalController {
     private final ArtistFestivalService artistFestivalService;
 
     @GetMapping
-    public ResponseEntity<List<ArtistFestivalResponse>> getArtistFestivals(
+    public ResponseEntity<List<ArtistFestivalResponseDto>> getArtistFestivals(
             @PathVariable Long festivalId
     ) {
-        List<ArtistFestivalResponse> responses =
+        List<ArtistFestivalResponseDto> responses =
                 artistFestivalService.getArtistFestivals(festivalId);
         return ResponseEntity.ok(responses);
     }

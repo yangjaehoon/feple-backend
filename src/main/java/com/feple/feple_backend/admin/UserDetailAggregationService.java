@@ -22,16 +22,16 @@ public class UserDetailAggregationService {
     private final CommentService commentService;
     private final PostAdminService postAdminService;
 
-    public UserListCountsModel getListCounts(List<Long> userIds) {
-        return new UserListCountsModel(
+    public UserListCountsDto getListCounts(List<Long> userIds) {
+        return new UserListCountsDto(
                 myPageService.getReportCounts(userIds),
                 postAdminService.getPostCountsByUserIds(userIds),
                 commentService.getCommentCountsByUserIds(userIds)
         );
     }
 
-    public UserDetailModel getDetail(Long userId) {
-        return new UserDetailModel(
+    public UserDetailDto getDetail(Long userId) {
+        return new UserDetailDto(
                 userAdminService.getAdminUser(userId),
                 myPageService.getUserStats(userId),
                 postAdminService.getRecentPostsByUser(userId, RECENT_LIMIT),

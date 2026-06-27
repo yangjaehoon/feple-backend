@@ -41,7 +41,7 @@ public class AdminAccountService {
         return EntityFinder.getOrThrow(accountRepository::findById, id, "관리자 계정");
     }
 
-    public void create(AdminAccountCreateRequest req) throws IOException {
+    public void create(AdminAccountCreateRequestDto req) throws IOException {
         validateNewAccount(req.username(), req.password());
         AdminAccount account = accountRepository.save(AdminAccount.builder()
                 .username(req.username())
@@ -54,7 +54,7 @@ public class AdminAccountService {
         adminLogService.log(AdminAction.ADMIN_ACCOUNT_CREATE, "ADMIN_ACCOUNT", account.getId(), req.username());
     }
 
-    public void update(Long id, AdminAccountUpdateRequest req) throws IOException {
+    public void update(Long id, AdminAccountUpdateRequestDto req) throws IOException {
         AdminAccount account = findById(id);
         validateRoleChange(account, req.role());
         account.updateProfile(req.displayName(), req.role(), resolvePermissions(req.role(), req.permissions()));
@@ -137,7 +137,7 @@ public class AdminAccountService {
         }
     }
 
-    private void applyProfileImageUpdate(AdminAccount account, AdminAccountUpdateRequest req) throws IOException {
+    private void applyProfileImageUpdate(AdminAccount account, AdminAccountUpdateRequestDto req) throws IOException {
         if (req.deleteProfileImage()) {
             account.updateProfileImage(null);
         } else if (req.profileImage() != null && !req.profileImage().isEmpty()) {

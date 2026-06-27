@@ -11,7 +11,7 @@ import com.feple.feple_backend.admin.ScrapedFestivalDto;
 import com.feple.feple_backend.admin.ScrapedFestivalMapper;
 import com.feple.feple_backend.admin.ScraperApplyRequest;
 import com.feple.feple_backend.admin.WebScraperService;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;

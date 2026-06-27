@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class TimetableEntryRequest {
+public class TimetableEntryRequestDto {
     private String stageName;
     private String artistName;
     private List<Long> memberArtistIds;

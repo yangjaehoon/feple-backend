@@ -5,8 +5,8 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.stage.repository.StageRepository;
-import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
-import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
+import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
+import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import com.feple.feple_backend.timetable.service.TimetableService;
@@ -46,7 +46,7 @@ class TimetableServiceTest {
         Festival festival = mock(Festival.class);
         given(festivalRepository.findById(1L)).willReturn(Optional.of(festival));
 
-        TimetableEntryRequest req = new TimetableEntryRequest();
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         req.setFestivalDate(LocalDate.of(2026, 7, 1));
         req.setStartTime(LocalTime.of(10, 0));
         req.setEndTime(LocalTime.of(9, 0));
@@ -71,7 +71,7 @@ class TimetableServiceTest {
                 .build();
         given(timetableRepository.save(any(TimetableEntry.class))).willReturn(savedEntry);
 
-        TimetableEntryRequest req = new TimetableEntryRequest();
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         req.setStageName("  ");
         req.setArtistName("아티스트");
         req.setFestivalDate(LocalDate.of(2026, 7, 1));
@@ -98,7 +98,7 @@ class TimetableServiceTest {
                 .build();
         given(timetableRepository.save(any(TimetableEntry.class))).willReturn(savedEntry);
 
-        TimetableEntryRequest req = new TimetableEntryRequest();
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         req.setStageName("MAIN");
         req.setArtistName("아티스트명");
         req.setFestivalDate(LocalDate.of(2026, 7, 1));
@@ -108,7 +108,7 @@ class TimetableServiceTest {
         given(stageRepository.findByFestivalIdAndName(eq(1L), eq("MAIN")))
                 .willReturn(Optional.empty());
 
-        TimetableEntryResponse response = timetableService.createEntry(1L, req);
+        TimetableEntryResponseDto response = timetableService.createEntry(1L, req);
 
         then(artistFestivalService).should().syncFromTimetableEntry(
                 eq(1L), anyString(), any(LocalDate.class), anyString());
@@ -129,7 +129,7 @@ class TimetableServiceTest {
                 .build();
         given(timetableRepository.findById(5L)).willReturn(Optional.of(entry));
 
-        TimetableEntryRequest req = new TimetableEntryRequest();
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         req.setFestivalDate(LocalDate.of(2026, 7, 1));
         req.setStartTime(LocalTime.of(10, 0));
         req.setEndTime(LocalTime.of(12, 0));
@@ -154,7 +154,7 @@ class TimetableServiceTest {
                 .build();
         given(timetableRepository.findById(5L)).willReturn(Optional.of(entry));
 
-        TimetableEntryRequest req = new TimetableEntryRequest();
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         req.setFestivalDate(LocalDate.of(2026, 7, 1));
         req.setStartTime(LocalTime.of(12, 0));
         req.setEndTime(LocalTime.of(10, 0));

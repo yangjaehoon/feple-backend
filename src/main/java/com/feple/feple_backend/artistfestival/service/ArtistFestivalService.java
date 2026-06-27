@@ -4,8 +4,8 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -39,7 +39,7 @@ public class ArtistFestivalService {
     private final StageRepository stageRepository;
     private final NotificationService notificationService;
 
-    public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId) {
+    public List<ArtistFestivalResponseDto> getArtistFestivals(Long festivalId) {
         List<ArtistFestival> artistFestivals =
                 artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId);
 
@@ -59,7 +59,7 @@ public class ArtistFestivalService {
     }
 
     // 타임테이블을 이미 로드한 경우 재사용 — 중복 쿼리 방지
-    public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId,
+    public List<ArtistFestivalResponseDto> getArtistFestivals(Long festivalId,
                                                            Map<String, List<String>> datesByArtistName) {
         return getArtistFestivals(
                 artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId),
@@ -67,7 +67,7 @@ public class ArtistFestivalService {
     }
 
     // 관리자 상세 페이지 전용 — 타임테이블 기반 스테이지/날짜 폴백 적용
-    public List<ArtistFestivalResponse> getArtistFestivals(Long festivalId,
+    public List<ArtistFestivalResponseDto> getArtistFestivals(Long festivalId,
                                                            Map<String, List<String>> datesByArtistName,
                                                            Map<String, String> stageByArtistName) {
         return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId).stream()
@@ -77,7 +77,7 @@ public class ArtistFestivalService {
                 .toList();
     }
 
-    private List<ArtistFestivalResponse> getArtistFestivals(List<ArtistFestival> artistFestivals,
+    private List<ArtistFestivalResponseDto> getArtistFestivals(List<ArtistFestival> artistFestivals,
                                                              Map<String, List<String>> datesByArtistName) {
         return artistFestivals.stream()
                 .map(af -> toResponse(af, datesByArtistName.getOrDefault(af.getArtistName(), List.of())))
@@ -85,7 +85,7 @@ public class ArtistFestivalService {
     }
 
     @Transactional
-    public Long addArtistToFestival(Long festivalId, ArtistFestivalCreateRequest request) {
+    public Long addArtistToFestival(Long festivalId, ArtistFestivalCreateRequestDto request) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, request.getArtistId(), "아티스트");
 
@@ -117,7 +117,7 @@ public class ArtistFestivalService {
         if (artistIds == null || artistIds.isEmpty()) return;
         for (Long artistId : artistIds) {
             try {
-                ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
+                ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
                 req.setArtistId(artistId);
                 addArtistToFestival(festivalId, req);
             } catch (DuplicateArtistFestivalException ignored) {
@@ -217,16 +217,16 @@ public class ArtistFestivalService {
     }
 
 
-    private ArtistFestivalResponse toResponse(ArtistFestival af, List<String> dates) {
+    private ArtistFestivalResponseDto toResponse(ArtistFestival af, List<String> dates) {
         return toResponse(af, dates, null);
     }
 
-    private ArtistFestivalResponse toResponse(ArtistFestival af, List<String> dates, String stageFallback) {
+    private ArtistFestivalResponseDto toResponse(ArtistFestival af, List<String> dates, String stageFallback) {
         String stage = af.getStageName() != null ? af.getStageName() : stageFallback;
         String date = af.getPerformanceDate() != null
                 ? af.getPerformanceDate().toString()
                 : (dates.isEmpty() ? null : dates.get(0));
-        return ArtistFestivalResponse.builder()
+        return ArtistFestivalResponseDto.builder()
                 .artistFestivalId(af.getId())
                 .artistId(af.getArtistId())
                 .artistName(af.getArtistName())

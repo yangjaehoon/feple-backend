@@ -35,8 +35,8 @@ class AdminAccountServiceTest {
 
     // ── 헬퍼 ─────────────────────────────────────────────────────────────────
 
-    private static AdminAccountCreateRequest createReq(String username, String password, AdminRole role) {
-        return new AdminAccountCreateRequest(username, password, "표시이름", role, Set.of(AdminPermission.POSTS), null);
+    private static AdminAccountCreateRequestDto createReq(String username, String password, AdminRole role) {
+        return new AdminAccountCreateRequestDto(username, password, "표시이름", role, Set.of(AdminPermission.POSTS), null);
     }
 
     private static AdminAccount buildAccount(Long id, String username, AdminRole role, boolean enabled) {
@@ -85,7 +85,7 @@ class AdminAccountServiceTest {
 
     @Test
     void MANAGER_생성시_권한목록_요청값_그대로_저장() throws IOException {
-        AdminAccountCreateRequest req = new AdminAccountCreateRequest(
+        AdminAccountCreateRequestDto req = new AdminAccountCreateRequestDto(
                 "manager1", "Pass1234!", "표시이름",
                 AdminRole.MANAGER, Set.of(AdminPermission.POSTS, AdminPermission.USERS), null);
         AdminAccount saved = buildAccount(3L, "manager1", AdminRole.MANAGER, true);
@@ -274,7 +274,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true));
         given(accountRepository.countByRole(AdminRole.SUPER_ADMIN)).willReturn(1L);
 
-        AdminAccountUpdateRequest req = new AdminAccountUpdateRequest(
+        AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
                 "새이름", AdminRole.MANAGER, Set.of(), null, null, false);
 
         assertThatThrownBy(() -> service.update(1L, req))
@@ -288,7 +288,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, account);
         given(passwordEncoder.encode("NewPass1!")).willReturn("newEncoded");
 
-        AdminAccountUpdateRequest req = new AdminAccountUpdateRequest(
+        AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
                 "새이름", AdminRole.MANAGER, Set.of(), "NewPass1!", null, false);
 
         service.update(1L, req);
@@ -301,7 +301,7 @@ class AdminAccountServiceTest {
         AdminAccount account = buildAccount(1L, "admin1", AdminRole.MANAGER, true);
         stubFindById(1L, account);
 
-        AdminAccountUpdateRequest req = new AdminAccountUpdateRequest(
+        AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
                 "새이름", AdminRole.MANAGER, Set.of(), null, null, false);
 
         service.update(1L, req);
@@ -315,7 +315,7 @@ class AdminAccountServiceTest {
         AdminAccount account = buildAccount(1L, "admin1", AdminRole.MANAGER, true);
         stubFindById(1L, account);
 
-        AdminAccountUpdateRequest req = new AdminAccountUpdateRequest(
+        AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
                 "새이름", AdminRole.MANAGER, Set.of(), null, null, true);
 
         service.update(1L, req);

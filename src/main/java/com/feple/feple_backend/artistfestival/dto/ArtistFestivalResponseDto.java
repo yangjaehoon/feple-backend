@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Builder
-public class ArtistFestivalResponse {
+public class ArtistFestivalResponseDto {
     private Long artistFestivalId;
 
     private Long artistId;

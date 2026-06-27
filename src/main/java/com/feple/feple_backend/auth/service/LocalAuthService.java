@@ -1,6 +1,6 @@
 package com.feple.feple_backend.auth.service;
 
-import com.feple.feple_backend.auth.dto.LocalLoginRequest;
+import com.feple.feple_backend.auth.dto.LocalLoginRequestDto;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -18,7 +18,7 @@ public class LocalAuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
-    public User login(LocalLoginRequest req) {
+    public User login(LocalLoginRequestDto req) {
         User user = userRepository.findByProviderAndOauthId(AuthProvider.EMAIL, req.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
         if (user.isDeleted()) {

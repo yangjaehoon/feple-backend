@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
-import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
+import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class FestivalTimetableAdminController {
 
     @PostMapping
     public String createTimetableEntry(@PathVariable Long festivalId,
-                                       @Valid @ModelAttribute TimetableEntryRequest req,
+                                       @Valid @ModelAttribute TimetableEntryRequestDto req,
                                        BindingResult bindingResult,
                                        RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
@@ -43,7 +43,7 @@ public class FestivalTimetableAdminController {
     @PostMapping("/{entryId}/update")
     public String updateTimetableEntry(@PathVariable Long festivalId,
                                        @PathVariable Long entryId,
-                                       @Valid @ModelAttribute TimetableEntryRequest req,
+                                       @Valid @ModelAttribute TimetableEntryRequestDto req,
                                        BindingResult bindingResult,
                                        RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.timetable.controller;
 
-import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
+import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class TimetableController {
     private final TimetableService timetableService;
 
     @GetMapping
-    public ResponseEntity<List<TimetableEntryResponse>> getEntries(@PathVariable Long festivalId) {
+    public ResponseEntity<List<TimetableEntryResponseDto>> getEntries(@PathVariable Long festivalId) {
         return ResponseEntity.ok(timetableService.getEntries(festivalId));
     }
 

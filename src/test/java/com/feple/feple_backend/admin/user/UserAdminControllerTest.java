@@ -1,8 +1,8 @@
 package com.feple.feple_backend.admin.user;
 
 import com.feple.feple_backend.admin.UserDetailAggregationService;
-import com.feple.feple_backend.admin.UserDetailModel;
-import com.feple.feple_backend.admin.UserListCountsModel;
+import com.feple.feple_backend.admin.UserDetailDto;
+import com.feple.feple_backend.admin.UserListCountsDto;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -42,8 +42,8 @@ class UserAdminControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
-    private UserListCountsModel emptyCounts() {
-        return new UserListCountsModel(Map.of(), Map.of(), Map.of());
+    private UserListCountsDto emptyCounts() {
+        return new UserListCountsDto(Map.of(), Map.of(), Map.of());
     }
 
     // ── GET /admin/users ──────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ class UserAdminControllerTest {
 
     @Test
     void 상세_조회_성공() throws Exception {
-        UserDetailModel detail = new UserDetailModel(
+        UserDetailDto detail = new UserDetailDto(
                 mock(UserResponseDto.class), null, List.of(), List.of(), List.of(), List.of());
         given(userDetailAggregationService.getDetail(1L)).willReturn(detail);
 

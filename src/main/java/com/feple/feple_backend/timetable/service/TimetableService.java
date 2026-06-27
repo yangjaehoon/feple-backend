@@ -7,8 +7,8 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.repository.StageRepository;
-import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
-import com.feple.feple_backend.timetable.dto.TimetableEntryResponse;
+import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
+import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.entity.TimetableEntryMember;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
@@ -36,20 +36,20 @@ public class TimetableService {
 
     @Transactional(readOnly = true)
     @Cacheable(value = "timetable", key = "#festivalId")
-    public List<TimetableEntryResponse> getEntries(Long festivalId) {
+    public List<TimetableEntryResponseDto> getEntries(Long festivalId) {
         return timetableRepository.findByFestivalIdWithStage(festivalId)
                 .stream()
-                .map(TimetableEntryResponse::from)
+                .map(TimetableEntryResponseDto::from)
                 .sorted(Comparator
-                        .comparing(TimetableEntryResponse::getFestivalDate)
-                        .thenComparingInt(TimetableEntryResponse::getStageOrder)
-                        .thenComparing(TimetableEntryResponse::getStartTime))
+                        .comparing(TimetableEntryResponseDto::getFestivalDate)
+                        .thenComparingInt(TimetableEntryResponseDto::getStageOrder)
+                        .thenComparing(TimetableEntryResponseDto::getStartTime))
                 .toList();
     }
 
     @Transactional
     @CacheEvict(value = "timetable", key = "#festivalId")
-    public TimetableEntryResponse createEntry(Long festivalId, TimetableEntryRequest req) {
+    public TimetableEntryResponseDto createEntry(Long festivalId, TimetableEntryRequestDto req) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         if (!req.getStartTime().isBefore(req.getEndTime())) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
@@ -77,12 +77,12 @@ public class TimetableService {
             artistFestivalService.syncFromTimetableEntry(
                     festivalId, member.getArtistName(), saved.getFestivalDate(), saved.getStageName());
         }
-        return TimetableEntryResponse.from(saved);
+        return TimetableEntryResponseDto.from(saved);
     }
 
     @Transactional
     @CacheEvict(value = "timetable", key = "#festivalId")
-    public void updateEntry(Long festivalId, Long entryId, TimetableEntryRequest req) {
+    public void updateEntry(Long festivalId, Long entryId, TimetableEntryRequestDto req) {
         TimetableEntry entry = EntityFinder.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         if (!festivalId.equals(entry.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");

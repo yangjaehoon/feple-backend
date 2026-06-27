@@ -4,8 +4,8 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -42,13 +42,13 @@ public class FestivalArtistAdminController {
 
         Set<Long> participatingIds = artistFestivalService.getArtistFestivals(festivalId)
                 .stream()
-                .map(ArtistFestivalResponse::getArtistId)
+                .map(ArtistFestivalResponseDto::getArtistId)
                 .collect(Collectors.toSet());
 
         model.addAttribute("festival", festival);
         model.addAttribute("artists", allArtists);
         model.addAttribute("participatingIds", participatingIds);
-        model.addAttribute("request", new ArtistFestivalCreateRequest());
+        model.addAttribute("request", new ArtistFestivalCreateRequestDto());
         return "admin/festival/artist-form";
     }
 
@@ -70,7 +70,7 @@ public class FestivalArtistAdminController {
         int added = 0, duplicates = 0, errors = 0;
         for (Long artistId : artistIds) {
             try {
-                ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
+                ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
                 req.setArtistId(artistId);
                 artistFestivalService.addArtistToFestival(festivalId, req);
                 added++;
@@ -99,7 +99,7 @@ public class FestivalArtistAdminController {
 
     @GetMapping("/list")
     @ResponseBody
-    public List<ArtistFestivalResponse> getFestivalArtists(@PathVariable Long festivalId) {
+    public List<ArtistFestivalResponseDto> getFestivalArtists(@PathVariable Long festivalId) {
         return artistFestivalService.getArtistFestivals(festivalId);
     }
 

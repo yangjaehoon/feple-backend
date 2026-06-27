@@ -2,7 +2,7 @@ package com.feple.feple_backend.artist.controller;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistScheduleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ class ArtistControllerTest {
 
     @Test
     void 아티스트_스케줄_조회() throws Exception {
-        ArtistScheduleResponse scheduleResponse = mock(ArtistScheduleResponse.class);
+        ArtistScheduleResponseDto scheduleResponse = mock(ArtistScheduleResponseDto.class);
         given(artistScheduleService.getArtistSchedule(1L)).willReturn(List.of(scheduleResponse));
 
         mockMvc.perform(get("/artists/1/schedule"))

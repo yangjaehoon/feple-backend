@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.feple.feple_backend.admin.BindingResultUtils;
-import com.feple.feple_backend.admin.FestivalDetailModel;
+import com.feple.feple_backend.admin.FestivalDetailDto;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -200,7 +200,7 @@ public class FestivalAdminController {
     public String festivalDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
         return AdminActionUtils.tryRender(
                 () -> {
-                    FestivalDetailModel detail = festivalDetailAggregationService.getDetail(id);
+                    FestivalDetailDto detail = festivalDetailAggregationService.getDetail(id);
                     model.addAttribute("festival",                   detail.festival());
                     model.addAttribute("participatingArtists",       detail.participatingArtists());
                     model.addAttribute("participatingArtistsByName", detail.participatingArtistsByName());

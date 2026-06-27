@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -88,7 +88,7 @@ class FestivalArtistAdminControllerTest {
 
     @Test
     void 아티스트_목록_JSON_반환() throws Exception {
-        ArtistFestivalResponse resp = mock(ArtistFestivalResponse.class);
+        ArtistFestivalResponseDto resp = mock(ArtistFestivalResponseDto.class);
         given(artistFestivalService.getArtistFestivals(1L)).willReturn(List.of(resp));
 
         mockMvc.perform(get("/admin/festivals/1/artists/list"))

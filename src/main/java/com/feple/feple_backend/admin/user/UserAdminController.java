@@ -3,8 +3,8 @@ package com.feple.feple_backend.admin.user;
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.UserDetailAggregationService;
-import com.feple.feple_backend.admin.UserDetailModel;
-import com.feple.feple_backend.admin.UserListCountsModel;
+import com.feple.feple_backend.admin.UserDetailDto;
+import com.feple.feple_backend.admin.UserListCountsDto;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -154,7 +154,7 @@ public class UserAdminController {
     }
 
     private void addListModel(Model model, Page<UserResponseDto> users,
-                               UserListCountsModel counts, UserListFilter listFilter) {
+                               UserListCountsDto counts, UserListFilter listFilter) {
         model.addAttribute("users",         users);
         model.addAttribute("keyword",       listFilter.keyword());
         model.addAttribute("sort",          listFilter.sort());
@@ -165,7 +165,7 @@ public class UserAdminController {
         model.addAttribute("extraParams",   buildListParams(listFilter));
     }
 
-    private static void addDetailModel(Model model, UserDetailModel detail) {
+    private static void addDetailModel(Model model, UserDetailDto detail) {
         model.addAttribute("user",            detail.user());
         model.addAttribute("stats",           detail.stats());
         model.addAttribute("recentPosts",     detail.recentPosts());

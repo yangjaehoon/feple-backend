@@ -2,10 +2,10 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequest;
+import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
-import com.feple.feple_backend.timetable.dto.TimetableEntryRequest;
+import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -83,8 +83,8 @@ public class OcrService {
 
     private static final String OPS_STAGE = "📢";
 
-    private TimetableEntryRequest toTimetableRequest(OcrResultDto entry) {
-        TimetableEntryRequest req = new TimetableEntryRequest();
+    private TimetableEntryRequestDto toTimetableRequest(OcrResultDto entry) {
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         if (entry.isOps()) {
             req.setStageName(OPS_STAGE);
         } else {
@@ -122,7 +122,7 @@ public class OcrService {
         int duplicates = 0;
         for (Long id : artistIds) {
             try {
-                ArtistFestivalCreateRequest req = new ArtistFestivalCreateRequest();
+                ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
                 req.setArtistId(id);
                 artistFestivalService.addArtistToFestival(festivalId, req);
                 added++;

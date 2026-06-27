@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artistfestival.service;
 
-import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponseDto;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
@@ -21,7 +21,7 @@ public class ArtistScheduleService {
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FileStorageService fileStorageService;
 
-    public List<ArtistScheduleResponse> getArtistSchedule(Long artistId) {
+    public List<ArtistScheduleResponseDto> getArtistSchedule(Long artistId) {
         List<ArtistFestival> myFestivals =
                 artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId);
 
@@ -41,14 +41,14 @@ public class ArtistScheduleService {
                 .toList();
     }
 
-    private ArtistScheduleResponse buildResponse(ArtistFestival af, Long artistId,
+    private ArtistScheduleResponseDto buildResponse(ArtistFestival af, Long artistId,
                                                   Map<Long, List<ArtistFestival>> coArtistMap) {
         Festival festival = af.getFestival();
-        List<ArtistScheduleResponse.CoArtistInfo> coArtists =
+        List<ArtistScheduleResponseDto.CoArtistInfo> coArtists =
                 coArtistMap.getOrDefault(festival.getId(), List.of())
                         .stream()
                         .filter(other -> !other.getArtistId().equals(artistId))
-                        .map(other -> ArtistScheduleResponse.CoArtistInfo.builder()
+                        .map(other -> ArtistScheduleResponseDto.CoArtistInfo.builder()
                                 .artistId(other.getArtistId())
                                 .artistName(other.getArtistName())
                                 .profileImageUrl(fileStorageService.buildUrl(
@@ -56,7 +56,7 @@ public class ArtistScheduleService {
                                 .build())
                         .toList();
 
-        return ArtistScheduleResponse.builder()
+        return ArtistScheduleResponseDto.builder()
                 .festivalId(festival.getId())
                 .title(festival.getTitle())
                 .description(festival.getDescription())

@@ -46,7 +46,7 @@ public class AdminAccountController {
                          @RequestParam(required = false) MultipartFile profileImage,
                          RedirectAttributes redirectAttributes) {
         Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-        AdminAccountCreateRequest req = new AdminAccountCreateRequest(username, password, displayName, role, perms, profileImage);
+        AdminAccountCreateRequestDto req = new AdminAccountCreateRequestDto(username, password, displayName, role, perms, profileImage);
         AdminActionUtils.tryAction(
                 () -> accountService.create(req),
                 "관리자 계정이 생성되었습니다.",
@@ -74,7 +74,7 @@ public class AdminAccountController {
                          @RequestParam(defaultValue = "false") boolean deleteProfileImage,
                          RedirectAttributes redirectAttributes) {
         Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-        AdminAccountUpdateRequest req = new AdminAccountUpdateRequest(displayName, role, perms, password, profileImage, deleteProfileImage);
+        AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(displayName, role, perms, password, profileImage, deleteProfileImage);
         AdminActionUtils.tryAction(
                 () -> accountService.update(id, req),
                 "관리자 계정이 수정되었습니다.",

@@ -48,7 +48,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
         given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
 
-        UserDetailModel model = service.getDetail(userId);
+        UserDetailDto model = service.getDetail(userId);
 
         assertThat(model.user()).isSameAs(user);
         assertThat(model.stats()).isSameAs(stats);
@@ -84,7 +84,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getLikedFestivals(userId)).willReturn(festivals);
         given(myPageService.getFollowedArtists(userId)).willReturn(artists);
 
-        UserDetailModel model = service.getDetail(userId);
+        UserDetailDto model = service.getDetail(userId);
 
         assertThat(model.recentPosts()).isSameAs(posts);
         assertThat(model.recentComments()).isSameAs(comments);
@@ -104,7 +104,7 @@ class UserDetailAggregationServiceTest {
         given(postAdminService.getPostCountsByUserIds(userIds)).willReturn(postCounts);
         given(commentService.getCommentCountsByUserIds(userIds)).willReturn(commentCounts);
 
-        UserListCountsModel model = service.getListCounts(userIds);
+        UserListCountsDto model = service.getListCounts(userIds);
 
         assertThat(model.reportCounts()).isSameAs(reportCounts);
         assertThat(model.postCounts()).isSameAs(postCounts);

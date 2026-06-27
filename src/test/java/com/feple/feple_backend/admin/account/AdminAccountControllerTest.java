@@ -73,7 +73,7 @@ class AdminAccountControllerTest {
                 .andExpect(redirectedUrl("/admin/accounts"))
                 .andExpect(flash().attribute("successMessage", "관리자 계정이 생성되었습니다."));
 
-        then(accountService).should().create(any(AdminAccountCreateRequest.class));
+        then(accountService).should().create(any(AdminAccountCreateRequestDto.class));
     }
 
     @Test
@@ -117,7 +117,7 @@ class AdminAccountControllerTest {
                 .andExpect(redirectedUrl("/admin/accounts"))
                 .andExpect(flash().attribute("successMessage", "관리자 계정이 수정되었습니다."));
 
-        then(accountService).should().update(eq(1L), any(AdminAccountUpdateRequest.class));
+        then(accountService).should().update(eq(1L), any(AdminAccountUpdateRequestDto.class));
     }
 
     @Test

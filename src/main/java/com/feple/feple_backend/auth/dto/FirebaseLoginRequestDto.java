@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class FirebaseLoginRequest {
+public class FirebaseLoginRequestDto {
 
     @NotBlank(message = "Firebase ID 토큰이 필요합니다.")
     private String idToken;

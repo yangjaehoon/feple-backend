@@ -2,7 +2,7 @@ package com.feple.feple_backend.artist.controller;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponse;
+import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistScheduleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class ArtistController {
     }
 
     @GetMapping("/{id}/schedule")
-    public List<ArtistScheduleResponse> getArtistSchedule(@PathVariable Long id) {
+    public List<ArtistScheduleResponseDto> getArtistSchedule(@PathVariable Long id) {
         return artistScheduleService.getArtistSchedule(id);
     }
 }

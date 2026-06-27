@@ -9,7 +9,7 @@ import com.feple.feple_backend.user.dto.UserStatsDto;
 
 import java.util.List;
 
-public record UserDetailModel(
+public record UserDetailDto(
         UserResponseDto user,
         UserStatsDto stats,
         List<PostResponseDto> recentPosts,

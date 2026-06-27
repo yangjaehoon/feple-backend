@@ -1,7 +1,7 @@
 package com.feple.feple_backend.auth.controller;
 
 import com.feple.feple_backend.auth.dto.AuthResponseDto;
-import com.feple.feple_backend.auth.dto.LocalLoginRequest;
+import com.feple.feple_backend.auth.dto.LocalLoginRequestDto;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
 import com.feple.feple_backend.auth.service.LocalAuthService;
@@ -57,7 +57,7 @@ class AuthControllerTest {
     void 로컬_로그인_성공() throws Exception {
         User user = mock(User.class);
         given(user.getId()).willReturn(1L);
-        given(localAuthService.login(any(LocalLoginRequest.class))).willReturn(user);
+        given(localAuthService.login(any(LocalLoginRequestDto.class))).willReturn(user);
         given(jwtProvider.createAccessToken(1L)).willReturn("access-token");
         given(jwtProvider.createRefreshToken(1L)).willReturn("refresh-token");
         UserResponseDto userDto = mock(UserResponseDto.class);

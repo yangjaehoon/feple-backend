@@ -1,9 +1,9 @@
 package com.feple.feple_backend.auth.controller;
 
 import com.feple.feple_backend.auth.dto.AuthResponseDto;
-import com.feple.feple_backend.auth.dto.FirebaseLoginRequest;
-import com.feple.feple_backend.auth.dto.LocalLoginRequest;
-import com.feple.feple_backend.auth.dto.RefreshRequest;
+import com.feple.feple_backend.auth.dto.FirebaseLoginRequestDto;
+import com.feple.feple_backend.auth.dto.LocalLoginRequestDto;
+import com.feple.feple_backend.auth.dto.RefreshRequestDto;
 import com.feple.feple_backend.auth.jwt.JwtConstants;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
@@ -51,7 +51,7 @@ public class AuthController {
 
     @PostMapping("/firebase")
     public Mono<ResponseEntity<AuthResponseDto>> firebaseLogin(
-            @Valid @RequestBody FirebaseLoginRequest req,
+            @Valid @RequestBody FirebaseLoginRequestDto req,
             HttpServletRequest httpRequest
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
@@ -68,7 +68,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(
-            @Valid @RequestBody LocalLoginRequest req,
+            @Valid @RequestBody LocalLoginRequestDto req,
             HttpServletRequest httpRequest
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
@@ -80,7 +80,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponseDto> refresh(@Valid @RequestBody RefreshRequest req,
+    public ResponseEntity<AuthResponseDto> refresh(@Valid @RequestBody RefreshRequestDto req,
                                                    HttpServletRequest httpRequest) {
         loginRateLimiter.check(getClientIp(httpRequest));
         if (!jwtProvider.isRefreshToken(req.getRefreshToken())) {
@@ -98,7 +98,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest req) {
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequestDto req) {
         if (req != null && req.getRefreshToken() != null) {
             refreshTokenService.revoke(req.getRefreshToken());
         }

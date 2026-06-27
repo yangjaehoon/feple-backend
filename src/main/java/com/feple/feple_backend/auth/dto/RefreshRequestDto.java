@@ -6,11 +6,11 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class RefreshRequest {
+public class RefreshRequestDto {
     @NotBlank(message = "리프레시 토큰은 필수입니다.")
     private String refreshToken;
 
-    public RefreshRequest() {
+    public RefreshRequestDto() {
     }
 
 }
