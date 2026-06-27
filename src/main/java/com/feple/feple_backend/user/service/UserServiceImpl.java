@@ -215,10 +215,8 @@ public class UserServiceImpl implements UserService, UserAdminService {
     public void banUser(Long userId, int days, String reason) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         String adminUsername = null;
-        try {
-            var auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.isAuthenticated()) adminUsername = auth.getName();
-        } catch (Exception ignored) {}
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) adminUsername = auth.getName();
         user.ban(days, reason, adminUsername);
     }
 
