@@ -93,7 +93,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getFollowedArtists(Long userId) {
-        return artistFollowRepository.findByUserId(userId).stream()
+        return artistFollowRepository.findByUserId(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES)).stream()
                 .map(follow -> toDto(follow.getArtist()))
                 .toList();
     }

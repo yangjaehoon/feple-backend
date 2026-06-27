@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.repository;
 
 import com.feple.feple_backend.post.entity.PostScrap;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -22,6 +23,10 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
     @Query("SELECT ps FROM PostScrap ps WHERE ps.user.id = :userId ORDER BY ps.id DESC")
     List<PostScrap> findByUserIdOrderByIdDesc(@Param("userId") Long userId);
+
+    @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
+    @Query("SELECT ps FROM PostScrap ps WHERE ps.user.id = :userId ORDER BY ps.id DESC")
+    List<PostScrap> findByUserIdOrderByIdDesc(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT COUNT(ps) FROM PostScrap ps WHERE ps.user.id = :userId")
     long countByUserId(@Param("userId") Long userId);

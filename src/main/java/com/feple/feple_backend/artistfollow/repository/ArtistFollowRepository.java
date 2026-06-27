@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artistfollow.repository;
 
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -45,6 +46,9 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
     // artist JOIN FETCH — getFollowedArtists()에서 follow.getArtist() 접근 시 N+1 방지
     @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.artist WHERE af.user.id = :userId")
     List<ArtistFollow> findByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.artist WHERE af.user.id = :userId")
+    List<ArtistFollow> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     // user JOIN FETCH — notifyNewFestivalForArtist()에서 f.getUser() 접근 시 N+1 방지
     @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.user WHERE af.artist.id = :artistId")

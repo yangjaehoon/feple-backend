@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostScrap;
@@ -9,6 +10,7 @@ import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,7 +56,7 @@ public class PostScrapService {
 
     /** 내 스크랩 목록 조회 */
     public List<PostResponseDto> getMyScraps(Long userId) {
-        return postScrapRepository.findByUserIdOrderByIdDesc(userId)
+        return postScrapRepository.findByUserIdOrderByIdDesc(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream()
                 .map(scrap -> PostResponseDto.from(scrap.getPost()))
                 .toList();

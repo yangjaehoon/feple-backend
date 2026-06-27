@@ -33,7 +33,7 @@ public class PostReportController {
 
     @Data
     public static class ReportRequest {
-        @NotNull
+        @NotNull(message = "신고 사유를 선택해주세요.")
         private ReportReason reason;
         @Size(max = 500, message = "신고 사유는 500자 이하로 입력해주세요.")
         private String detail;

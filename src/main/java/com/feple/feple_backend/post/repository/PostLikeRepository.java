@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.repository;
 
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -50,6 +51,13 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
            "LEFT JOIN FETCH pl.post.festival " +
            "WHERE pl.user.id = :userId ORDER BY pl.id DESC")
     List<Post> findPostsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT pl.post FROM PostLike pl " +
+           "JOIN FETCH pl.post.user " +
+           "LEFT JOIN FETCH pl.post.artist " +
+           "LEFT JOIN FETCH pl.post.festival " +
+           "WHERE pl.user.id = :userId ORDER BY pl.id DESC")
+    List<Post> findPostsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.user.id = :userId")
     long countByUserId(@Param("userId") Long userId);

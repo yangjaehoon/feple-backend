@@ -2,6 +2,8 @@ package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.global.exception.ErrorCode;
+import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.dto.PostRequestDto;
@@ -112,7 +114,7 @@ public class PostController {
 
     @GetMapping("/search")
     public ResponseEntity<List<PostResponseDto>> searchPosts(
-            @RequestParam @NotBlank @Size(max = 100) String keyword,
+            @RequestParam @NotBlank @Size(max = 100, message = "검색어는 100자 이내로 입력해주세요.") String keyword,
             @RequestParam(required = false) String boardType) {
         return ResponseEntity.ok(postService.searchPosts(keyword, boardType));
     }
@@ -219,11 +221,12 @@ public class PostController {
             @NotBlank String extension) {}
 
     @PostMapping("/image-upload-url")
-    public ResponseEntity<PresignResult> getPostImageUploadUrl(
+    public ResponseEntity<?> getPostImageUploadUrl(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody PostImagePresignRequest req) {
         if (!req.contentType().equals(ALLOWED_IMAGE_TYPES.get(req.extension()))) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(
+                ErrorResponse.of(HttpStatus.BAD_REQUEST, "파일 형식과 Content-Type이 일치하지 않습니다.", ErrorCode.ILLEGAL_ARGUMENT));
         }
         String key = "posts/" + userId + "/" + UUID.randomUUID() + "." + req.extension();
         return ResponseEntity.ok(s3PresignService.presignPut(key, req.contentType()));

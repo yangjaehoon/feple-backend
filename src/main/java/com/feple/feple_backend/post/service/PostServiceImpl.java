@@ -382,7 +382,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getLikedPosts(Long userId) {
-        return postLikeRepository.findPostsByUserId(userId)
+        return postLikeRepository.findPostsByUserId(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream()
                 .map(PostResponseDto::from)
                 .toList();

@@ -159,16 +159,17 @@ public class UserController {
             throw new AccessDeniedException("본인만 접근할 수 있습니다.");
     }
 
+    record RegisterDeviceTokenRequest(
+        @NotBlank(message = "토큰이 필요합니다.") String token,
+        String platform
+    ) {}
+
     @PostMapping("/device-token")
     public ResponseEntity<Void> registerDeviceToken(
-            @RequestBody Map<String, String> body,
+            @Valid @RequestBody RegisterDeviceTokenRequest req,
             @AuthenticationPrincipal Long userId) {
-        String token = body.get("token");
-        String platform = body.getOrDefault("platform", "android");
-        if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("토큰이 필요합니다.");
-        }
-        deviceTokenService.register(userId, token, platform);
+        String platform = req.platform() != null ? req.platform() : "android";
+        deviceTokenService.register(userId, req.token(), platform);
         return ResponseEntity.noContent().build();
     }
 

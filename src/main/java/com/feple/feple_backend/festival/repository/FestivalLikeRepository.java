@@ -1,6 +1,7 @@
 package com.feple.feple_backend.festival.repository;
 
 import com.feple.feple_backend.festival.entity.FestivalLike;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +22,9 @@ public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long
     // festival JOIN FETCH — getLikedFestivals()에서 like.getFestival() 접근 시 N+1 방지
     @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
     List<FestivalLike> findByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
+    List<FestivalLike> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Modifying(clearAutomatically = true)
     @Transactional

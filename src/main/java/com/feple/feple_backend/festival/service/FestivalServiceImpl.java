@@ -210,7 +210,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getLikedFestivals(Long userId) {
-        return festivalLikeRepository.findByUserId(userId).stream()
+        return festivalLikeRepository.findByUserId(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES)).stream()
                 .map(like -> toDto(like.getFestival()))
                 .toList();
     }
