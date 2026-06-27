@@ -17,9 +17,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static com.feple.feple_backend.support.TestEntityFactory.freePost;
 import static com.feple.feple_backend.support.TestEntityFactory.freePostWithScrapCount;
@@ -122,7 +125,7 @@ class PostScrapServiceTest {
         Post post2 = freePost(11L, user);
         PostScrap scrap1 = new PostScrap(user, post1);
         PostScrap scrap2 = new PostScrap(user, post2);
-        given(postScrapRepository.findByUserIdOrderByIdDesc(1L)).willReturn(List.of(scrap1, scrap2));
+        given(postScrapRepository.findByUserIdOrderByIdDesc(eq(1L), any(Pageable.class))).willReturn(List.of(scrap1, scrap2));
 
         List<PostResponseDto> result = postScrapService.getMyScraps(1L);
 
@@ -133,7 +136,7 @@ class PostScrapServiceTest {
 
     @Test
     void 스크랩_없으면_빈_목록_반환() {
-        given(postScrapRepository.findByUserIdOrderByIdDesc(1L)).willReturn(List.of());
+        given(postScrapRepository.findByUserIdOrderByIdDesc(eq(1L), any(Pageable.class))).willReturn(List.of());
 
         assertThat(postScrapService.getMyScraps(1L)).isEmpty();
     }
