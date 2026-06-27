@@ -231,7 +231,7 @@ class CrawlAdminControllerTest {
         FestivalResponseDto festival = mock(FestivalResponseDto.class);
         given(festival.getId()).willReturn(1L);
         given(festival.getTitle()).willReturn("테스트 페스티벌");
-        given(festivalService.getAllFestivals(null, null, null, true))
+        given(festivalService.getAllFestivals(null, null, null, true, null))
                 .willReturn(List.of(festival));
 
         mockMvc.perform(get("/admin/crawl/festivals"))

@@ -52,7 +52,7 @@ class FestivalControllerTest {
 
     @Test
     void 페스티벌_목록_조회() throws Exception {
-        given(festivalService.getAllFestivals(any(), any(), any(), anyBoolean())).willReturn(List.of());
+        given(festivalService.getAllFestivals(any(), any(), any(), anyBoolean(), any())).willReturn(List.of());
 
         mockMvc.perform(get("/festivals"))
                 .andExpect(status().isOk());
