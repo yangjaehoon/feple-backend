@@ -69,6 +69,12 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("DELETE FROM FestivalCertification fc WHERE fc.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT AVG(fc.rating) FROM FestivalCertification fc WHERE fc.festival.id = :festivalId AND fc.status = 'APPROVED' AND fc.rating IS NOT NULL")
+    Double getAverageRatingByFestivalId(@Param("festivalId") Long festivalId);
+
+    @Query("SELECT COUNT(fc) FROM FestivalCertification fc WHERE fc.festival.id = :festivalId AND fc.status = 'APPROVED' AND fc.rating IS NOT NULL")
+    int getRatingCountByFestivalId(@Param("festivalId") Long festivalId);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")

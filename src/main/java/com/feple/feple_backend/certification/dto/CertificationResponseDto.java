@@ -14,7 +14,9 @@ public record CertificationResponseDto(
         CertificationStatus status,
         String rejectionMessage,
         LocalDateTime createdAt,
-        LocalDateTime reviewedAt
+        LocalDateTime reviewedAt,
+        Integer rating,
+        String userReview
 ) {
     public static CertificationResponseDto from(FestivalCertification cert, String festivalPosterUrl, String photoUrl) {
         return new CertificationResponseDto(
@@ -26,7 +28,9 @@ public record CertificationResponseDto(
                 cert.getStatus(),
                 cert.getRejectionMessage(),
                 cert.getCreatedAt(),
-                cert.getReviewedAt()
+                cert.getReviewedAt(),
+                cert.getRating(),
+                cert.getUserReview()
         );
     }
 }

@@ -47,6 +47,12 @@ public class FestivalCertification extends BaseTimeEntity {
 
     private String reviewedBy;
 
+    @Column
+    private Integer rating;
+
+    @Column(length = 100)
+    private String userReview;
+
     public Long getFestivalId() { return festival.getId(); }
     public String getFestivalTitle() { return festival.getTitle(); }
     public String getFestivalTitleEn() { return festival.getTitleEn(); }
@@ -78,5 +84,10 @@ public class FestivalCertification extends BaseTimeEntity {
         this.rejectionMessage = message;
         this.reviewedAt = LocalDateTime.now();
         this.reviewedBy = reviewerName;
+    }
+
+    public void rate(int rating, String review) {
+        this.rating = rating;
+        this.userReview = review;
     }
 }

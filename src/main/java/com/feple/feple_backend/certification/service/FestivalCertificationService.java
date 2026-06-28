@@ -148,6 +148,29 @@ public class FestivalCertificationService {
         return s3PresignService.presignGetUrl(photoKey);
     }
 
+    @Transactional
+    public void submitRating(Long userId, Long certId, int rating, String review) {
+        FestivalCertification cert = EntityFinder.getOrThrow(certificationRepository::findById, certId, "인증");
+        if (!cert.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("본인의 인증에만 평점을 남길 수 있습니다.");
+        }
+        if (!cert.isApproved()) {
+            throw new IllegalArgumentException("승인된 인증에만 평점을 남길 수 있습니다.");
+        }
+        cert.rate(rating, review);
+    }
+
+    @Transactional(readOnly = true)
+    public double getAverageRating(Long festivalId) {
+        Double avg = certificationRepository.getAverageRatingByFestivalId(festivalId);
+        return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
+    }
+
+    @Transactional(readOnly = true)
+    public int getRatingCount(Long festivalId) {
+        return certificationRepository.getRatingCountByFestivalId(festivalId);
+    }
+
     public PresignResult generateUploadUrl(Long userId, String extension, String contentType) {
         String objectKey = S3Keys.certificationPrefix(userId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);

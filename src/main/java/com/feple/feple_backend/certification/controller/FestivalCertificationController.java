@@ -1,5 +1,6 @@
 package com.feple.feple_backend.certification.controller;
 
+import com.feple.feple_backend.certification.dto.CertificationRatingRequestDto;
 import com.feple.feple_backend.certification.dto.CertificationRequestDto;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
@@ -72,6 +73,24 @@ public class FestivalCertificationController {
             @AuthenticationPrincipal Long userId
     ) {
         return Map.of("certState", certificationService.getCertState(userId, festivalId));
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{id}/rating")
+    public void submitRating(
+            @PathVariable Long id,
+            @Valid @RequestBody CertificationRatingRequestDto req,
+            @AuthenticationPrincipal Long userId
+    ) {
+        certificationService.submitRating(userId, id, req.rating(), req.review());
+    }
+
+    @GetMapping("/festival/{festivalId}/rating")
+    public Map<String, Object> getFestivalRating(@PathVariable Long festivalId) {
+        return Map.of(
+                "averageRating", certificationService.getAverageRating(festivalId),
+                "ratingCount", certificationService.getRatingCount(festivalId)
+        );
     }
 
     public record PresignRequest(
