@@ -30,7 +30,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -57,9 +56,8 @@ public class NotificationService {
         List<ArtistFollow> follows = artistFollowRepository.findByArtistId(artistId);
         if (follows.isEmpty()) return;
 
-        Optional<Festival> festivalOpt = festivalRepository.findById(festivalId);
-        if (festivalOpt.isEmpty()) return;
-        Festival festival = festivalOpt.get();
+        Festival festival = festivalRepository.findById(festivalId).orElse(null);
+        if (festival == null) return;
 
         String title = NotificationMessages.newFestivalTitle(artistName);
         String body = NotificationMessages.newFestivalBody(festivalTitle);
@@ -77,9 +75,8 @@ public class NotificationService {
     @Async
     @Transactional
     public void notifyCertApproved(Long userId, String festivalTitle, String festivalTitleEn, Long festivalId) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) return;
-        User user = userOpt.get();
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) return;
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
         String title = NotificationMessages.CERT_APPROVED_TITLE;
         String body = NotificationMessages.certApprovedBody(festivalTitle);
@@ -97,9 +94,8 @@ public class NotificationService {
     @Async
     @Transactional
     public void notifyCertRejected(Long userId, String festivalTitle, String festivalTitleEn, Long festivalId, String reason) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) return;
-        User user = userOpt.get();
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) return;
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
         String title = NotificationMessages.CERT_REJECTED_TITLE;
         String body = NotificationMessages.certRejectedBody(festivalTitle, reason);
@@ -117,9 +113,8 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestApproved(SongRequestApprovedEvent event) {
-        Optional<User> userOpt = userRepository.findById(event.userId());
-        if (userOpt.isEmpty()) return;
-        User user = userOpt.get();
+        User user = userRepository.findById(event.userId()).orElse(null);
+        if (user == null) return;
         String title = NotificationMessages.SONG_REQUEST_APPROVED_TITLE;
         String body = NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName());
         String titleEn = NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN;
@@ -138,9 +133,8 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestRejected(SongRequestRejectedEvent event) {
-        Optional<User> userOpt = userRepository.findById(event.userId());
-        if (userOpt.isEmpty()) return;
-        User user = userOpt.get();
+        User user = userRepository.findById(event.userId()).orElse(null);
+        if (user == null) return;
         String title = NotificationMessages.SONG_REQUEST_REJECTED_TITLE;
         String body = NotificationMessages.songRequestRejectedBody(event.songTitle(), event.reason());
         String titleEn = NotificationMessages.SONG_REQUEST_REJECTED_TITLE_EN;
@@ -159,9 +153,8 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onArtistSuggestionProcessed(ArtistSuggestionProcessedEvent event) {
-        Optional<User> userOpt = userRepository.findById(event.userId());
-        if (userOpt.isEmpty()) return;
-        User user = userOpt.get();
+        User user = userRepository.findById(event.userId()).orElse(null);
+        if (user == null) return;
         String title = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE;
         String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
         String titleEn = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN;
@@ -193,9 +186,8 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostLiked(PostLikedEvent event) {
-        Optional<User> authorOpt = userRepository.findById(event.postAuthorId());
-        if (authorOpt.isEmpty()) return;
-        User author = authorOpt.get();
+        User author = userRepository.findById(event.postAuthorId()).orElse(null);
+        if (author == null) return;
         String title = NotificationMessages.postLikedTitle(event.likerNickname());
         String body = NotificationMessages.postLikedBody(event.postTitle());
         String titleEn = NotificationMessages.postLikedTitleEn(event.likerNickname());
@@ -214,9 +206,8 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostDeletedByAdmin(PostDeletedByAdminEvent event) {
-        Optional<User> authorOpt = userRepository.findById(event.postAuthorId());
-        if (authorOpt.isEmpty()) return;
-        User author = authorOpt.get();
+        User author = userRepository.findById(event.postAuthorId()).orElse(null);
+        if (author == null) return;
         String title = NotificationMessages.POST_DELETED_BY_ADMIN_TITLE;
         String body = NotificationMessages.postDeletedByAdminBody(event.postTitle());
         String titleEn = NotificationMessages.POST_DELETED_BY_ADMIN_TITLE_EN;
@@ -236,9 +227,8 @@ public class NotificationService {
     public void notifyNewComment(Long postAuthorId, String commenterNickname,
                                   String postTitle, Long postId) {
         // 자기 자신의 댓글이면 알림 없음
-        Optional<User> authorOpt = userRepository.findById(postAuthorId);
-        if (authorOpt.isEmpty()) return;
-        User author = authorOpt.get();
+        User author = userRepository.findById(postAuthorId).orElse(null);
+        if (author == null) return;
 
         String title = NotificationMessages.newCommentTitle(commenterNickname);
         String body = NotificationMessages.newCommentBody(postTitle);
@@ -261,9 +251,8 @@ public class NotificationService {
     @Transactional
     public void notifyNewReply(Long parentCommentAuthorId, String replierNickname,
                                 String postTitle, Long postId) {
-        Optional<User> authorOpt = userRepository.findById(parentCommentAuthorId);
-        if (authorOpt.isEmpty()) return;
-        User author = authorOpt.get();
+        User author = userRepository.findById(parentCommentAuthorId).orElse(null);
+        if (author == null) return;
         String title = NotificationMessages.newReplyTitle(replierNickname);
         String body = NotificationMessages.newReplyBody(postTitle);
         String titleEn = NotificationMessages.newReplyTitleEn(replierNickname);
