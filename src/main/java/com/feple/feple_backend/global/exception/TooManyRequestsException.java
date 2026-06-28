@@ -1,4 +1,4 @@
-package com.feple.feple_backend.auth.ratelimit;
+package com.feple.feple_backend.global.exception;
 
 public class TooManyRequestsException extends RuntimeException {
     public TooManyRequestsException(String message) {

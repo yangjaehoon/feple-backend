@@ -1,6 +1,6 @@
 package com.feple.feple_backend.global.exception;
 
-import com.feple.feple_backend.auth.ratelimit.TooManyRequestsException;
+import com.feple.feple_backend.global.exception.TooManyRequestsException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;

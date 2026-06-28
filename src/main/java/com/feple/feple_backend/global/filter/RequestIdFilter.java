@@ -1,4 +1,4 @@
-package com.feple.feple_backend.config;
+package com.feple.feple_backend.global.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
