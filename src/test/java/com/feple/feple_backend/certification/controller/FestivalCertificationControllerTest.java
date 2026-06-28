@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -84,7 +85,8 @@ class FestivalCertificationControllerTest {
 
     @Test
     void 인증_상태_조회() throws Exception {
-        given(certificationService.getCertState(1L, 2L)).willReturn("PENDING");
+        given(certificationService.getCertDetail(1L, 2L))
+                .willReturn(Map.of("certState", "PENDING"));
 
         mockMvc.perform(get("/certifications/cert-state")
                         .param("festivalId", "2")
