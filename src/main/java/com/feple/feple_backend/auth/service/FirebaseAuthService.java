@@ -3,13 +3,11 @@ package com.feple.feple_backend.auth.service;
 import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.repository.UserRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -22,8 +20,8 @@ public class FirebaseAuthService implements OAuthLoginService {
 
     private static final Logger log = LoggerFactory.getLogger(FirebaseAuthService.class);
 
-    private final UserRepository userRepository;
     private final NicknameGenerator nicknameGenerator;
+    private final OAuthUserRegistrationService registrationService;
 
     @Override
     public Mono<User> authenticate(String idToken) {
@@ -48,28 +46,15 @@ public class FirebaseAuthService implements OAuthLoginService {
     }
 
     private User registerOrFind(String uid, String email, String displayName) {
-        return userRepository.findByProviderAndOauthId(AuthProvider.FIREBASE, uid)
-                .map(user -> {
-                    if (user.isDeleted()) {
-                        throw new IllegalArgumentException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
-                    }
-                    return user;
-                }).orElseGet(() -> {
-                    String fallback = "User" + uid.substring(0, Math.min(uid.length(), 8));
-                    String raw = (displayName != null && !displayName.isBlank()) ? displayName : fallback;
-                    String nickname = nicknameGenerator.uniquify(nicknameGenerator.sanitize(raw, fallback));
-                    try {
-                        return userRepository.save(User.builder()
-                                .email(email)
-                                .nickname(nickname)
-                                .oauthId(uid)
-                                .provider(AuthProvider.FIREBASE)
-                                .build());
-                    } catch (DataIntegrityViolationException e) {
-                        // 동시 요청 경합(race condition): 다른 요청이 같은 uid로 먼저 가입 완료
-                        return userRepository.findByProviderAndOauthId(AuthProvider.FIREBASE, uid)
-                                .orElseThrow(() -> new IllegalStateException("동시 가입 처리 중 예상치 못한 오류"));
-                    }
-                });
+        String fallback = "User" + uid.substring(0, Math.min(uid.length(), 8));
+        String raw = (displayName != null && !displayName.isBlank()) ? displayName : fallback;
+        String nickname = nicknameGenerator.uniquify(nicknameGenerator.sanitize(raw, fallback));
+        return registrationService.registerOrFind(AuthProvider.FIREBASE, uid, () ->
+                User.builder()
+                        .email(email)
+                        .nickname(nickname)
+                        .oauthId(uid)
+                        .provider(AuthProvider.FIREBASE)
+                        .build());
     }
 }

@@ -5,9 +5,7 @@ import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -20,8 +18,8 @@ import java.util.Optional;
 public class KakaoAuthService implements OAuthLoginService {
 
     private final KakaoApiClient kakaoApiClient;
-    private final UserRepository userRepository;
     private final NicknameGenerator nicknameGenerator;
+    private final OAuthUserRegistrationService registrationService;
 
     @Override
     public Mono<User> authenticate(String accessToken) {
@@ -37,36 +35,25 @@ public class KakaoAuthService implements OAuthLoginService {
         String oauthId = kakaoId.toString();
         String email = account.getEmail();
 
-        return userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, oauthId).map(user -> {
-            if (user.isDeleted()) {
-                throw new IllegalArgumentException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
-            }
-            return user;
-        }).orElseGet(() -> {
-            String rawNickname = Optional.ofNullable(account.getProfile())
-                    .map(KakaoUserResponseDto.Profile::getNickname)
-                    .filter(n -> !n.isBlank())
-                    .orElse("KakaoUser");
-            String fallback = "Kakao" + oauthId.substring(0, Math.min(oauthId.length(), 4));
-            String nickname = nicknameGenerator.uniquify(nicknameGenerator.sanitize(rawNickname, fallback));
+        String rawNickname = Optional.ofNullable(account.getProfile())
+                .map(KakaoUserResponseDto.Profile::getNickname)
+                .filter(n -> !n.isBlank())
+                .orElse("KakaoUser");
+        String fallback = "Kakao" + oauthId.substring(0, Math.min(oauthId.length(), 4));
+        String nickname = nicknameGenerator.uniquify(nicknameGenerator.sanitize(rawNickname, fallback));
 
-            String kakaoImageUrl = Optional.ofNullable(account.getProfile())
-                    .map(KakaoUserResponseDto.Profile::getProfile_image_url)
-                    .filter(url -> !url.isBlank())
-                    .orElse(null);
-            try {
-                return userRepository.save(User.builder()
+        String kakaoImageUrl = Optional.ofNullable(account.getProfile())
+                .map(KakaoUserResponseDto.Profile::getProfile_image_url)
+                .filter(url -> !url.isBlank())
+                .orElse(null);
+
+        return registrationService.registerOrFind(AuthProvider.KAKAO, oauthId, () ->
+                User.builder()
                         .oauthId(oauthId)
                         .email(email)
                         .nickname(nickname)
                         .provider(AuthProvider.KAKAO)
                         .profileImageUrl(kakaoImageUrl)
                         .build());
-            } catch (DataIntegrityViolationException e) {
-                // 동시 요청 경합(race condition): 다른 요청이 같은 oauthId로 먼저 가입 완료
-                return userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, oauthId)
-                        .orElseThrow(() -> new IllegalStateException("동시 가입 처리 중 예상치 못한 오류"));
-            }
-        });
     }
 }

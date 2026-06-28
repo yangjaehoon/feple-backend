@@ -96,9 +96,8 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         }
         String kw = LikeEscaper.escapeOrNull(keyword);
         Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusEnum, kw, pageable);
-        Map<Long, String> nicknameMap = nicknameResolver.buildMap(
-                requestsPage.getContent().stream().map(SongRequest::getUserId).toList());
-        return requestsPage.map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), "알 수 없음")));
+        Map<Long, String> nicknameMap = nicknameMap(requestsPage.getContent());
+        return requestsPage.map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameResolver.UNKNOWN)));
     }
 
     @Override
@@ -112,10 +111,9 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     public List<SongRequestResponseDto> getPendingRequests(Long artistId) {
         List<SongRequest> requests = songRequestRepository
                 .findByArtistIdAndStatusOrderByCreatedAtDesc(artistId, SongRequestStatus.PENDING);
-        Map<Long, String> nicknameMap = nicknameResolver.buildMap(
-                requests.stream().map(SongRequest::getUserId).toList());
+        Map<Long, String> nicknameMap = nicknameMap(requests);
         return requests.stream()
-                .map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), "알 수 없음")))
+                .map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameResolver.UNKNOWN)))
                 .toList();
     }
 
@@ -150,6 +148,11 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         eventPublisher.publishEvent(new SongRequestApprovedEvent(
                 request.getUserId(), request.getSongTitle(), request.getArtistName()));
         return songSaved;
+    }
+
+    private Map<Long, String> nicknameMap(List<SongRequest> requests) {
+        return nicknameResolver.buildMap(
+                requests.stream().map(SongRequest::getUserId).distinct().toList());
     }
 
     @Override
