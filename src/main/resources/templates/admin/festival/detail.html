@@ -57,6 +57,44 @@
             </div>
         </div>
 
+        <!-- 별점 통계 -->
+        <div class="card card-padded" th:if="${ratingStats != null}">
+            <div class="card-header">
+                <div class="card-title">별점 통계</div>
+            </div>
+            <div th:if="${ratingStats.ratingCount == 0}" class="cell-secondary" style="padding:8px 0">
+                아직 별점 평가가 없습니다.
+            </div>
+            <div th:if="${ratingStats.ratingCount > 0}">
+                <div style="display:flex;align-items:center;gap:24px;margin-bottom:16px">
+                    <div style="text-align:center">
+                        <div style="font-size:36px;font-weight:700;color:#f59e0b"
+                             th:text="${#numbers.formatDecimal(ratingStats.averageRating, 1, 1)}"></div>
+                        <div style="font-size:22px;color:#f59e0b;letter-spacing:2px">
+                            <th:block th:each="i : ${#numbers.sequence(1,5)}"
+                                      th:text="${i <= ratingStats.averageRating} ? '★' : '☆'"></th:block>
+                        </div>
+                        <div class="cell-secondary" style="margin-top:4px"
+                             th:text="${ratingStats.ratingCount} + '명 평가'"></div>
+                    </div>
+                    <div style="flex:1">
+                        <th:block th:each="entry : ${ratingStats.distribution}">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                                <span style="min-width:24px;color:#f59e0b;font-weight:700"
+                                      th:text="${entry.key} + '★'"></span>
+                                <div style="flex:1;background:#f3f4f6;border-radius:4px;height:12px;overflow:hidden">
+                                    <div style="height:100%;background:#f59e0b;border-radius:4px;transition:width 0.3s"
+                                         th:style="'width:' + (${ratingStats.ratingCount > 0} ? ${#numbers.formatDecimal(entry.value * 100.0 / ratingStats.ratingCount, 1, 0)} : 0) + '%'"></div>
+                                </div>
+                                <span class="cell-secondary" style="min-width:28px;text-align:right"
+                                      th:text="${entry.value} + '명'"></span>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 참여 아티스트 -->
         <div id="artists" class="card">
             <div class="card-header">

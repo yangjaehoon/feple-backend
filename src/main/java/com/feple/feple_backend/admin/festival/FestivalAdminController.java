@@ -212,6 +212,7 @@ public class FestivalAdminController {
                     model.addAttribute("googleMapsKey",              detail.googleMapsKey());
                     model.addAttribute("setlistCounts",              detail.setlistCounts());
                     model.addAttribute("opsStageIndicator",          detail.opsStageIndicator());
+                    model.addAttribute("ratingStats",                detail.ratingStats());
                 },
                 "admin/festival/detail",
                 e -> log.error("페스티벌 상세 조회 실패. id={}", id, e),

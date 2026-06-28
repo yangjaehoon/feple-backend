@@ -23,7 +23,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -169,6 +171,15 @@ public class FestivalCertificationService {
     @Transactional(readOnly = true)
     public int getRatingCount(Long festivalId) {
         return certificationRepository.getRatingCountByFestivalId(festivalId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, Long> getRatingDistribution(Long festivalId) {
+        Map<Integer, Long> dist = new LinkedHashMap<>();
+        for (int star = 5; star >= 1; star--) dist.put(star, 0L);
+        certificationRepository.getRatingDistributionByFestivalId(festivalId)
+                .forEach(row -> dist.put(((Number) row[0]).intValue(), (Long) row[1]));
+        return dist;
     }
 
     public PresignResult generateUploadUrl(Long userId, String extension, String contentType) {

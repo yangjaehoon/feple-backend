@@ -48,6 +48,7 @@
                         <th>신청자</th>
                         <th>페스티벌</th>
                         <th class="col-w80">상태</th>
+                        <th class="col-w80">별점</th>
                         <th class="col-w120">신청일</th>
                         <th class="col-w100">액션</th>
                     </tr>
@@ -71,13 +72,21 @@
                                   th:classappend="${cert.pending} ? 'badge-warning' : (${cert.approved} ? 'badge-success' : 'badge-danger')"
                                   th:text="${cert.status.displayName}"></span>
                         </td>
+                        <td>
+                            <span th:if="${cert.approved and cert.rating != null}"
+                                  style="color:#f59e0b;letter-spacing:1px"
+                                  th:text="${'★'.repeat(cert.rating) + '☆'.repeat(5 - cert.rating)}"></span>
+                            <span th:if="${cert.approved and cert.rating == null}"
+                                  class="cell-secondary">-</span>
+                            <span th:unless="${cert.approved}" class="cell-secondary">-</span>
+                        </td>
                         <td class="cell-secondary" th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></td>
                         <td>
                             <a th:href="@{/admin/certifications/{id}(id=${cert.id})}"
                                class="btn btn-secondary btn-sm">상세</a>
                         </td>
                     </tr>
-                    <tr th:if="${certifications.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(6, '인증 신청이 없습니다.')}"></tr>
+                    <tr th:if="${certifications.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(7, '인증 신청이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>

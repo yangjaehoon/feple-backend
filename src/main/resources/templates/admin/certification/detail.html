@@ -52,6 +52,19 @@
                             <td class="cert-label">거절 사유</td>
                             <td class="cert-value-danger" th:text="${cert.rejectionMessage}"></td>
                         </tr>
+                        <tr th:if="${cert.approved and cert.rating != null}" class="cert-border-row">
+                            <td class="cert-label">별점</td>
+                            <td class="cert-value">
+                                <span th:each="i : ${#numbers.sequence(1,5)}"
+                                      th:text="${i <= cert.rating} ? '★' : '☆'"
+                                      th:style="${i <= cert.rating} ? 'color:#f59e0b;font-size:18px' : 'color:#d1d5db;font-size:18px'"></span>
+                                <span class="cell-secondary" th:text="'(' + ${cert.rating} + '/5)'"></span>
+                            </td>
+                        </tr>
+                        <tr th:if="${cert.approved and cert.userReview != null and !#strings.isEmpty(cert.userReview)}">
+                            <td class="cert-label">한줄 후기</td>
+                            <td class="cert-value" th:text="${cert.userReview}"></td>
+                        </tr>
                     </table>
 
                     <!-- 액션 버튼 -->
