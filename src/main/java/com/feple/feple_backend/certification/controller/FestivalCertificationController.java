@@ -68,11 +68,11 @@ public class FestivalCertificationController {
     }
 
     @GetMapping("/cert-state")
-    public Map<String, String> getMyCertState(
+    public Map<String, Object> getMyCertState(
             @RequestParam Long festivalId,
             @AuthenticationPrincipal Long userId
     ) {
-        return Map.of("certState", certificationService.getCertState(userId, festivalId));
+        return certificationService.getCertDetail(userId, festivalId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

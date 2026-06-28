@@ -144,6 +144,22 @@ public class FestivalCertificationService {
     }
 
     @Transactional(readOnly = true)
+    public Map<String, Object> getCertDetail(Long userId, Long festivalId) {
+        return certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
+                .map(cert -> {
+                    Map<String, Object> result = new LinkedHashMap<>();
+                    result.put("certState", cert.getStatus().name());
+                    if (cert.isApproved()) {
+                        result.put("certId", cert.getId());
+                        result.put("myRating", cert.getRating());
+                        result.put("myReview", cert.getUserReview());
+                    }
+                    return result;
+                })
+                .orElseGet(() -> Map.of("certState", "NONE"));
+    }
+
+    @Transactional(readOnly = true)
     public long getPendingCount() {
         return certificationRepository.countByStatus(CertificationStatus.PENDING);
     }
