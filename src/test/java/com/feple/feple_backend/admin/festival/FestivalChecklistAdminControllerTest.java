@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
-import com.feple.feple_backend.admin.FestivalChecklistService;
+import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

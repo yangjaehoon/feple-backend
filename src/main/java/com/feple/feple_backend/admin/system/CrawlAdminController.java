@@ -1,16 +1,16 @@
 package com.feple.feple_backend.admin.system;
 
-import com.feple.feple_backend.admin.ArtistLineupOcrResult;
-import com.feple.feple_backend.admin.LineupApplyOcrRequestDto;
-import com.feple.feple_backend.admin.LineupApplyResult;
-import com.feple.feple_backend.admin.OcrApplyRequestDto;
-import com.feple.feple_backend.admin.OcrApplyResultDto;
-import com.feple.feple_backend.admin.OcrResultDto;
-import com.feple.feple_backend.admin.OcrService;
-import com.feple.feple_backend.admin.ScrapedFestivalDto;
-import com.feple.feple_backend.admin.ScrapedFestivalMapper;
-import com.feple.feple_backend.admin.ScraperApplyRequestDto;
-import com.feple.feple_backend.admin.WebScraperService;
+import com.feple.feple_backend.admin.ocr.ArtistLineupOcrResult;
+import com.feple.feple_backend.admin.ocr.LineupApplyOcrRequestDto;
+import com.feple.feple_backend.admin.ocr.LineupApplyResult;
+import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
+import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
+import com.feple.feple_backend.admin.ocr.OcrResultDto;
+import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.scraper.ScrapedFestivalDto;
+import com.feple.feple_backend.admin.scraper.ScrapedFestivalMapper;
+import com.feple.feple_backend.admin.scraper.ScraperApplyRequestDto;
+import com.feple.feple_backend.admin.scraper.WebScraperService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;

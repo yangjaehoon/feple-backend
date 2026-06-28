@@ -1,6 +1,6 @@
 package com.feple.feple_backend.festival.service;
 
-import com.feple.feple_backend.admin.FestivalChecklistRepository;
+import com.feple.feple_backend.admin.checklist.FestivalChecklistRepository;
 import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.global.LikeEscaper;

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.auth.ratelimit;
 
+import com.feple.feple_backend.global.exception.TooManyRequestsException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.Bandwidth;

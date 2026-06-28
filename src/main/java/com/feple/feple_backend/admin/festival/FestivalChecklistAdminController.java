@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
-import com.feple.feple_backend.admin.FestivalChecklistService;
+import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

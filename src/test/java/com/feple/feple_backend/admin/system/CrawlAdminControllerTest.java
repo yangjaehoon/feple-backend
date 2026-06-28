@@ -1,7 +1,16 @@
 package com.feple.feple_backend.admin.system;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feple.feple_backend.admin.*;
+import com.feple.feple_backend.admin.ocr.ArtistLineupOcrResult;
+import com.feple.feple_backend.admin.ocr.LineupApplyOcrRequestDto;
+import com.feple.feple_backend.admin.ocr.LineupApplyResult;
+import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
+import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
+import com.feple.feple_backend.admin.ocr.OcrResultDto;
+import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.scraper.ScrapedFestivalDto;
+import com.feple.feple_backend.admin.scraper.ScraperApplyRequestDto;
+import com.feple.feple_backend.admin.scraper.WebScraperService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
