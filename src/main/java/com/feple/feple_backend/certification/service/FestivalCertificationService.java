@@ -2,6 +2,7 @@ package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
+import com.feple.feple_backend.certification.dto.FestivalReviewDto;
 import com.feple.feple_backend.file.S3Keys;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.global.EntityFinder;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -180,6 +182,28 @@ public class FestivalCertificationService {
         certificationRepository.getRatingDistributionByFestivalId(festivalId)
                 .forEach(row -> dist.put(((Number) row[0]).intValue(), (Long) row[1]));
         return dist;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getFestivalReviewsPage(Long festivalId, int page) {
+        Map<Integer, Long> distribution = getRatingDistribution(festivalId);
+        long ratingCount = distribution.values().stream().mapToLong(Long::longValue).sum();
+        double averageRating = ratingCount > 0 ? getAverageRating(festivalId) : 0.0;
+
+        org.springframework.data.domain.Page<FestivalCertification> certPage =
+                certificationRepository.findReviewsByFestivalId(festivalId, PageRequest.of(page, 10));
+        List<FestivalReviewDto> reviews = certPage.getContent().stream()
+                .map(FestivalReviewDto::from)
+                .toList();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("averageRating", averageRating);
+        result.put("ratingCount", (int) ratingCount);
+        result.put("distribution", distribution);
+        result.put("reviews", reviews);
+        result.put("totalPages", certPage.getTotalPages());
+        result.put("hasNext", !certPage.isLast());
+        return result;
     }
 
     public PresignResult generateUploadUrl(Long userId, String extension, String contentType) {

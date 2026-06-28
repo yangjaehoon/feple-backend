@@ -79,6 +79,10 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc.rating, COUNT(fc) FROM FestivalCertification fc WHERE fc.festival.id = :festivalId AND fc.status = 'APPROVED' AND fc.rating IS NOT NULL GROUP BY fc.rating ORDER BY fc.rating")
     List<Object[]> getRatingDistributionByFestivalId(@Param("festivalId") Long festivalId);
 
+    /** 별점이 있는 승인 인증 목록 (리뷰 시트용) - 최신 평가순 */
+    @Query("SELECT fc FROM FestivalCertification fc JOIN FETCH fc.user WHERE fc.festival.id = :festivalId AND fc.status = 'APPROVED' AND fc.rating IS NOT NULL ORDER BY fc.ratedAt DESC NULLS LAST, fc.createdAt DESC")
+    Page<FestivalCertification> findReviewsByFestivalId(@Param("festivalId") Long festivalId, Pageable pageable);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")

@@ -93,6 +93,14 @@ public class FestivalCertificationController {
         );
     }
 
+    @GetMapping("/festival/{festivalId}/reviews")
+    public Map<String, Object> getFestivalReviews(
+            @PathVariable Long festivalId,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        return certificationService.getFestivalReviewsPage(festivalId, page);
+    }
+
     public record PresignRequest(
             @NotBlank(message = "Content-Type은 필수입니다.") String contentType,
             @NotBlank(message = "파일 확장자는 필수입니다.") String extension
