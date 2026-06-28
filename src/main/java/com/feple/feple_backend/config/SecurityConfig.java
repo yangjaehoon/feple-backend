@@ -126,6 +126,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/posts/my/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**").permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/certifications/festival/*/rating",
+                    "/certifications/festival/*/reviews").permitAll()
                 .anyRequest().authenticated())
             .httpBasic(hb -> hb.disable())
             .formLogin(fl -> fl.disable())
