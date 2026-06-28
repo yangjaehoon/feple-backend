@@ -9,6 +9,7 @@ import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -107,8 +108,22 @@ public class SecurityConfig {
 
     // ── 2. API용 FilterChain (JWT Stateless) ──
     @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtProvider, userRepository, objectMapper);
+    }
+
+    // Spring Boot가 Filter Bean을 서블릿 체인에 자동 등록하지 않도록 비활성화
+    // — Spring Security 필터 체인에서만 동작해야 이중 실행을 방지할 수 있음
+    @Bean
+    public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
+        FilterRegistrationBean<JwtAuthenticationFilter> reg = new FilterRegistrationBean<>(filter);
+        reg.setEnabled(false);
+        return reg;
+    }
+
+    @Bean
     @Order(3)
-    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain apiFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
         http
             .headers(headers -> headers
                 .contentTypeOptions(ct -> {})          // X-Content-Type-Options: nosniff
@@ -139,8 +154,7 @@ public class SecurityConfig {
                     res.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
                     res.getWriter().write(objectMapper.writeValueAsString(body));
                 }))
-            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userRepository, objectMapper),
-                UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
