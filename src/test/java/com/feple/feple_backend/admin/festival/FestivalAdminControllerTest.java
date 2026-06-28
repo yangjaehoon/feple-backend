@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.festival;
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import com.feple.feple_backend.admin.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.FestivalDetailDto;
+import com.feple.feple_backend.admin.FestivalRatingStatsDto;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -84,7 +85,7 @@ class FestivalAdminControllerTest {
         FestivalDetailDto detail = new FestivalDetailDto(
                 mock(FestivalResponseDto.class), List.of(), List.of(), List.of(),
                 Map.of(), List.of(), List.of(), BoothType.values(),
-                "google-key", Map.of(), "");
+                "google-key", Map.of(), "", FestivalRatingStatsDto.EMPTY);
         given(festivalDetailAggregationService.getDetail(1L)).willReturn(detail);
 
         mockMvc.perform(get("/admin/festivals/1"))
