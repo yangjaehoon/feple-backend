@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.post.dto.CursorPage;
@@ -67,9 +68,9 @@ public class PostController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "latest") String sort) {
         if ("popular".equals(sort)) {
-            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, cursor, Math.min(size, 50)));
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, cursor, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
     }
 
     @PostMapping("/mate")
@@ -85,9 +86,9 @@ public class PostController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "latest") String sort) {
         if ("popular".equals(sort)) {
-            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, cursor, Math.min(size, 50)));
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, cursor, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
     }
 
     @PostMapping("/{postId}/like")
@@ -143,7 +144,7 @@ public class PostController {
             @PathVariable Long artistId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByArtistIdPaged(artistId, cursor, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByArtistIdPaged(artistId, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
     }
 
     @PostMapping("/artist/{artistId}")
@@ -158,7 +159,7 @@ public class PostController {
             @PathVariable Long festivalId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdPaged(festivalId, cursor, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByFestivalIdPaged(festivalId, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
     }
 
     @PostMapping("/festival/{festivalId}")
@@ -178,7 +179,7 @@ public class PostController {
             @PathVariable Long festivalId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_COMPANION, cursor, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_COMPANION, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
     }
 
     @PostMapping("/festival/{festivalId}/companion")
@@ -193,7 +194,7 @@ public class PostController {
             @PathVariable Long festivalId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_TICKET, cursor, Math.min(size, 50)));
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_TICKET, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
     }
 
     @PostMapping("/festival/{festivalId}/ticket")

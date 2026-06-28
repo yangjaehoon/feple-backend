@@ -102,13 +102,11 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     public CursorPage<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, Long cursor, int size) {
         // likeCount는 동적으로 변하므로 offset 기반 유지, cursor는 페이지 번호를 opaque Long으로 전달
-        int page = (cursor == null) ? 0 : cursor.intValue();
+        int page = toPage(cursor);
         Page<Post> result = postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDesc(
                 boardType, PageRequest.of(page, size));
         List<PostResponseDto> content = result.map(PostResponseDto::from).toList();
-        boolean hasNext = result.hasNext();
-        Long nextCursor = hasNext ? (long) (page + 1) : null;
-        return new CursorPage<>(content, nextCursor, hasNext);
+        return toCursorPage(result, content, cursor);
     }
 
     @Override
@@ -174,8 +172,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
-        badWordFilter.validateField("title", dto.getTitle());
-        badWordFilter.validateField("content", dto.getContent());
+        validatePostContent(dto);
         post.update(dto.getTitle(), dto.getContent(), dto.getImageUrl());
     }
 
@@ -241,11 +238,10 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     public CursorPage<PostResponseDto> getPostsByArtistIdPaged(Long artistId, Long cursor, int size) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        int page = (cursor == null) ? 0 : cursor.intValue();
+        int page = toPage(cursor);
         Page<Post> result = postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
-        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
-        return new CursorPage<>(content, nextCursor, result.hasNext());
+        return toCursorPage(result, content, cursor);
     }
 
     @Override
@@ -269,13 +265,12 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, Long cursor, int size) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
-        int page = (cursor == null) ? 0 : cursor.intValue();
+        int page = toPage(cursor);
         Page<Post> result = postRepository.findGeneralFestivalPosts(festival, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream()
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();
-        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
-        return new CursorPage<>(content, nextCursor, result.hasNext());
+        return toCursorPage(result, content, cursor);
     }
 
     @Override
@@ -299,13 +294,12 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, Long cursor, int size) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
-        int page = (cursor == null) ? 0 : cursor.intValue();
+        int page = toPage(cursor);
         Page<Post> result = postRepository.findByFestivalAndBoardTypeOrderByCreatedAtDesc(festival, boardType, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream()
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();
-        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
-        return new CursorPage<>(content, nextCursor, result.hasNext());
+        return toCursorPage(result, content, cursor);
     }
 
     @Override
@@ -358,11 +352,10 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Override
     public CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        int page = (cursor == null) ? 0 : cursor.intValue();
+        int page = toPage(cursor);
         Page<Post> result = postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
-        Long nextCursor = result.hasNext() ? (long) (page + 1) : null;
-        return new CursorPage<>(content, nextCursor, result.hasNext());
+        return toCursorPage(result, content, cursor);
     }
 
     @Override
@@ -427,8 +420,7 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     }
 
     private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
-        badWordFilter.validateField("title", dto.getTitle());
-        badWordFilter.validateField("content", dto.getContent());
+        validatePostContent(dto);
         return Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
@@ -457,5 +449,20 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     private LocalDateTime oneWeekAgo() {
         return LocalDateTime.now().minusWeeks(1);
+    }
+
+    private void validatePostContent(PostRequestDto dto) {
+        badWordFilter.validateField("title", dto.getTitle());
+        badWordFilter.validateField("content", dto.getContent());
+    }
+
+    private static int toPage(Long cursor) {
+        return cursor == null ? 0 : cursor.intValue();
+    }
+
+    private static <T> CursorPage<T> toCursorPage(Page<?> result, List<T> content, Long cursor) {
+        boolean hasNext = result.hasNext();
+        Long nextCursor = hasNext ? (long)(toPage(cursor) + 1) : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 }

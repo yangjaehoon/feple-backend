@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.user.dto.UpdateBioDto;
