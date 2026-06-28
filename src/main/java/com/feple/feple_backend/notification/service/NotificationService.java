@@ -83,11 +83,7 @@ public class NotificationService {
         String titleEn = NotificationMessages.CERT_APPROVED_TITLE_EN;
         String bodyEn = NotificationMessages.certApprovedBodyEn(festivalTitleEn);
         notificationRepository.save(Notification.of(user, NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, festival));
-        NotificationPreference pref = preferenceService.getOrCreate(userId);
-        if (pref.isEnabledFor(NotificationType.CERT_APPROVED)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
-            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId), NotificationType.CERT_APPROVED);
-        }
+        maybePush(userId, NotificationType.CERT_APPROVED, title, body, String.valueOf(festivalId));
     }
 
     /** 인증 거절 알림 */
@@ -102,11 +98,7 @@ public class NotificationService {
         String titleEn = NotificationMessages.CERT_REJECTED_TITLE_EN;
         String bodyEn = NotificationMessages.certRejectedBodyEn(festivalTitleEn, reason);
         notificationRepository.save(Notification.of(user, NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, festival));
-        NotificationPreference pref = preferenceService.getOrCreate(userId);
-        if (pref.isEnabledFor(NotificationType.CERT_REJECTED)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
-            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(festivalId), NotificationType.CERT_REJECTED);
-        }
+        maybePush(userId, NotificationType.CERT_REJECTED, title, body, String.valueOf(festivalId));
     }
 
     @Async
@@ -122,11 +114,7 @@ public class NotificationService {
         Festival noFestival = null;
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, noFestival));
-        NotificationPreference pref = preferenceService.getOrCreate(event.userId());
-        if (pref.isEnabledFor(NotificationType.SONG_REQUEST_APPROVED)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.SONG_REQUEST_APPROVED);
-        }
+        maybePush(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, null);
     }
 
     @Async
@@ -142,11 +130,7 @@ public class NotificationService {
         Festival noFestival = null;
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, noFestival));
-        NotificationPreference pref = preferenceService.getOrCreate(event.userId());
-        if (pref.isEnabledFor(NotificationType.SONG_REQUEST_REJECTED)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.SONG_REQUEST_REJECTED);
-        }
+        maybePush(event.userId(), NotificationType.SONG_REQUEST_REJECTED, title, body, null);
     }
 
     @Async
@@ -161,11 +145,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.artistSuggestionProcessedBodyEn(event.artistName(), event.note());
         notificationRepository.save(
                 Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, (Festival) null));
-        NotificationPreference pref = preferenceService.getOrCreate(event.userId());
-        if (pref.isEnabledFor(NotificationType.ARTIST_SUGGESTION_PROCESSED)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.userId()));
-            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.ARTIST_SUGGESTION_PROCESSED);
-        }
+        maybePush(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, null);
     }
 
     @Async
@@ -195,11 +175,7 @@ public class NotificationService {
         Post post = postRepository.findById(event.postId()).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.POST_LIKED, title, body, titleEn, bodyEn, post));
-        NotificationPreference pref = preferenceService.getOrCreate(event.postAuthorId());
-        if (pref.isEnabledFor(NotificationType.POST_LIKED)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.postAuthorId()));
-            fcmPushService.sendMulticast(tokens, title, body, String.valueOf(event.postId()), NotificationType.POST_LIKED);
-        }
+        maybePush(event.postAuthorId(), NotificationType.POST_LIKED, title, body, String.valueOf(event.postId()));
     }
 
     @Async
@@ -214,11 +190,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.postDeletedByAdminBodyEn(event.postTitle());
         notificationRepository.save(
                 Notification.of(author, NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, (Festival) null));
-        NotificationPreference pref = preferenceService.getOrCreate(event.postAuthorId());
-        if (pref.isEnabledFor(NotificationType.POST_DELETED_BY_ADMIN)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(event.postAuthorId()));
-            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.POST_DELETED_BY_ADMIN);
-        }
+        maybePush(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN, title, body, null);
     }
 
     /** 내 게시글에 댓글 알림 */
@@ -238,12 +210,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, post));
-
-        NotificationPreference pref = preferenceService.getOrCreate(postAuthorId);
-        if (pref.isEnabledFor(NotificationType.NEW_COMMENT)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(postAuthorId));
-            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.NEW_COMMENT);
-        }
+        maybePush(postAuthorId, NotificationType.NEW_COMMENT, title, body, null);
     }
 
     /** 내 댓글에 대댓글 알림 */
@@ -260,11 +227,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, post));
-        NotificationPreference pref = preferenceService.getOrCreate(parentCommentAuthorId);
-        if (pref.isEnabledFor(NotificationType.NEW_REPLY)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(parentCommentAuthorId));
-            fcmPushService.sendMulticast(tokens, title, body, null, NotificationType.NEW_REPLY);
-        }
+        maybePush(parentCommentAuthorId, NotificationType.NEW_REPLY, title, body, null);
     }
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
@@ -282,6 +245,14 @@ public class NotificationService {
         List<User> users = userRepository.findAllById(userIds);
         saveAndPush(users, NotificationType.FESTIVAL_REMINDER, title, body, titleEn, bodyEn, festival, String.valueOf(festivalId));
         log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, users.size(), festivalId);
+    }
+
+    private void maybePush(Long userId, NotificationType type, String title, String body, String linkId) {
+        NotificationPreference pref = preferenceService.getOrCreate(userId);
+        if (pref.isEnabledFor(type)) {
+            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
+            fcmPushService.sendMulticast(tokens, title, body, linkId, type);
+        }
     }
 
     private void saveAndPush(List<User> users, NotificationType type,
