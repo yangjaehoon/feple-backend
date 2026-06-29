@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -56,13 +57,20 @@ public class ArtistScheduleService {
                                 .build())
                         .toList();
 
+        LocalDate startDate = af.getPerformanceDate() != null
+                ? af.getPerformanceDate()
+                : festival.getStartDate();
+        LocalDate endDate = af.getPerformanceDate() != null
+                ? af.getPerformanceDate()
+                : festival.getEndDate();
+
         return ArtistScheduleResponseDto.builder()
                 .festivalId(festival.getId())
                 .title(festival.getTitle())
                 .description(festival.getDescription())
                 .location(festival.getLocation())
-                .startDate(festival.getStartDate())
-                .endDate(festival.getEndDate())
+                .startDate(startDate)
+                .endDate(endDate)
                 .posterUrl(fileStorageService.buildUrl(festival.getPosterKey()))
                 .eventType(festival.getEventType())
                 .coArtists(coArtists)
