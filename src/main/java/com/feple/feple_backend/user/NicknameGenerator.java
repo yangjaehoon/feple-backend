@@ -32,7 +32,7 @@ public class NicknameGenerator {
             badWordFilter.validate(sanitized);
             artistNameFilter.validate(sanitized);
             nicknameRestrictionFilter.validate(sanitized);
-        } catch (Exception ignored) {
+        } catch (IllegalArgumentException ignored) {
             return fallback;
         }
         return sanitized;
