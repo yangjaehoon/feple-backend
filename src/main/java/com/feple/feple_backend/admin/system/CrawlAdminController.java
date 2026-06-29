@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
 import com.feple.feple_backend.admin.ocr.OcrResultDto;
 import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.ocr.UnmatchedArtistSuggestionDto;
 import com.feple.feple_backend.admin.scraper.ScrapedFestivalDto;
 import com.feple.feple_backend.admin.scraper.ScrapedFestivalMapper;
 import com.feple.feple_backend.admin.scraper.ScraperApplyRequestDto;
@@ -151,12 +152,25 @@ public class CrawlAdminController {
         if (request.festivalId() == null)                            return badRequest("페스티벌을 선택해주세요.");
         if (request.artistIds() == null || request.artistIds().isEmpty()) return badRequest("등록할 아티스트가 없습니다.");
         try {
-            LineupApplyResult result = ocrService.applyArtistLineup(request.festivalId(), request.artistIds());
+            LineupApplyResult result = ocrService.applyArtistLineup(request.festivalId(), request.artistIds(), request.unmatchedNames());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("라인업 OCR 적용 실패: festivalId={}", request.festivalId(), e);
             return serverError("아티스트 등록에 실패했습니다.");
         }
+    }
+
+    @GetMapping("/ocr/lineup/suggestions")
+    @ResponseBody
+    public ResponseEntity<List<UnmatchedArtistSuggestionDto>> getSuggestions() {
+        return ResponseEntity.ok(ocrService.getSuggestions());
+    }
+
+    @DeleteMapping("/ocr/lineup/suggestions/{id}")
+    @ResponseBody
+    public ResponseEntity<Void> deleteSuggestion(@PathVariable Long id) {
+        ocrService.deleteSuggestion(id);
+        return ResponseEntity.noContent().build();
     }
 
     // ── Gemini 사용량 ────────────────────────────────────

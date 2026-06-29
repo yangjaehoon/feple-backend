@@ -846,6 +846,16 @@
         });
         if (artistIds.length === 0) { showApplyResult('error', '등록할 아티스트를 선택해주세요.'); return; }
 
+        /* 미매칭 이름 수집 (체크박스 disabled = 미매칭 행) */
+        var unmatchedNames = [];
+        document.querySelectorAll('#lineupParseBody tr').forEach(function (tr) {
+            var chk = tr.querySelector('.lineup-chk');
+            if (chk && chk.disabled && !chk.getAttribute('data-artist-id')) {
+                var nameTd = tr.querySelectorAll('td')[1];
+                if (nameTd) unmatchedNames.push(nameTd.textContent.trim());
+            }
+        });
+
         var btn = document.getElementById('btnApplyLineup');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span>등록 중...';
@@ -855,7 +865,7 @@
         fetch(CrawlUrls.lineupOcrApply, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify({ festivalId: parseInt(fid), artistIds: artistIds })
+            body: JSON.stringify({ festivalId: parseInt(fid), artistIds: artistIds, unmatchedNames: unmatchedNames })
         })
         .then(function (r) {
             if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '등록 실패'); });
@@ -866,8 +876,11 @@
             btn.innerHTML = '참여 아티스트로 등록';
             var msg = result.added + '명 등록 완료';
             if (result.duplicates > 0) msg += ' (' + result.duplicates + '명 이미 등록됨)';
-            var fTitle = document.getElementById('selLineupFestival').selectedOptions[0].textContent;
             msg += '. <a href="' + CrawlUrls.festivalDetailBase + '/' + fid + '#artists" style="color:var(--primary);text-decoration:underline;font-weight:700;">페스티벌 확인 →</a>';
+            if (unmatchedNames.length > 0) {
+                msg += ' · 미매칭 ' + unmatchedNames.length + '명 제안 저장됨.';
+                loadSuggestions();
+            }
             showApplyResult('success', msg);
         })
         .catch(function (err) {
@@ -876,5 +889,87 @@
             showApplyResult('error', '오류: ' + err.message);
         });
     });
+
+    /* ── 미매칭 아티스트 등록 제안 ── */
+
+    function loadSuggestions() {
+        fetch(CrawlUrls.lineupSuggestions)
+            .then(function (r) { return r.json(); })
+            .then(function (list) { renderSuggestions(list); })
+            .catch(function () { /* 조용히 실패 */ });
+    }
+
+    function renderSuggestions(list) {
+        var badge  = document.getElementById('suggestionBadge');
+        var empty  = document.getElementById('suggestionEmptyState');
+        var table  = document.getElementById('suggestionTable');
+        var body   = document.getElementById('suggestionBody');
+
+        body.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            badge.classList.add('d-none');
+            table.classList.add('d-none');
+            empty.classList.remove('d-none');
+            return;
+        }
+
+        badge.textContent = list.length;
+        badge.classList.remove('d-none');
+        empty.classList.add('d-none');
+        table.classList.remove('d-none');
+
+        list.forEach(function (item) {
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-suggestion-id', item.id);
+            tr.innerHTML =
+                '<td><strong>' + window.AdminUtils.escapeHtml(item.name) + '</strong></td>' +
+                '<td><span class="badge-count">' + item.mentionCount + '회</span></td>' +
+                '<td>' +
+                  '<a href="' + CrawlUrls.artistCreateBase + '?name=' + encodeURIComponent(item.name) + '" ' +
+                     'class="btn btn-sm btn-primary" target="_blank">아티스트 등록</a> ' +
+                  '<button class="btn btn-sm btn-danger btn-delete-suggestion" data-id="' + item.id + '">삭제</button>' +
+                '</td>';
+            body.appendChild(tr);
+        });
+    }
+
+    document.getElementById('suggestionBody').addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-delete-suggestion');
+        if (!btn) return;
+        var id = btn.getAttribute('data-id');
+        var headers = window.AdminUtils.getCsrfHeaders();
+        btn.disabled = true;
+        fetch(CrawlUrls.lineupSuggestions + '/' + id, { method: 'DELETE', headers: headers })
+            .then(function (r) {
+                if (!r.ok) throw new Error();
+                var tr = document.querySelector('#suggestionBody tr[data-suggestion-id="' + id + '"]');
+                if (tr) tr.remove();
+                var remaining = document.querySelectorAll('#suggestionBody tr').length;
+                if (remaining === 0) {
+                    document.getElementById('suggestionBadge').classList.add('d-none');
+                    document.getElementById('suggestionTable').classList.add('d-none');
+                    document.getElementById('suggestionEmptyState').classList.remove('d-none');
+                } else {
+                    document.getElementById('suggestionBadge').textContent = remaining;
+                }
+            })
+            .catch(function () { btn.disabled = false; });
+    });
+
+    document.getElementById('btnRefreshSuggestions').addEventListener('click', loadSuggestions);
+
+    /* 라인업 탭 활성화 시 제안 목록 로드 */
+    document.querySelectorAll('.crawl-tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (this.getAttribute('data-tab') === 'lineup') loadSuggestions();
+        });
+    });
+
+    /* 라인업 탭이 기본 활성화 상태이면 즉시 로드 */
+    (function () {
+        var active = document.querySelector('.crawl-tab-btn.active');
+        if (active && active.getAttribute('data-tab') === 'lineup') loadSuggestions();
+    })();
 
 })();

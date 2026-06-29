@@ -9,6 +9,7 @@ import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class OcrService {
     private final TimetableService timetableService;
     private final ArtistRepository artistRepository;
     private final ArtistFestivalService artistFestivalService;
+    private final UnmatchedArtistSuggestionRepository suggestionRepository;
 
     public boolean isConfigured() {
         return geminiOcrClient.isConfigured();
@@ -119,7 +121,8 @@ public class OcrService {
         return new ArtistLineupOcrResult(raw.name(), null, null, conf);
     }
 
-    public LineupApplyResult applyArtistLineup(Long festivalId, List<Long> artistIds) {
+    @Transactional
+    public LineupApplyResult applyArtistLineup(Long festivalId, List<Long> artistIds, List<String> unmatchedNames) {
         int added = 0;
         int duplicates = 0;
         for (Long id : artistIds) {
@@ -132,7 +135,32 @@ public class OcrService {
                 duplicates++;
             }
         }
+        if (unmatchedNames != null) {
+            saveSuggestions(unmatchedNames);
+        }
         return new LineupApplyResult(artistIds.size(), added, duplicates);
+    }
+
+    private void saveSuggestions(List<String> names) {
+        for (String name : names) {
+            if (name == null || name.isBlank()) continue;
+            String trimmed = name.trim();
+            suggestionRepository.findByNameIgnoreCase(trimmed).ifPresentOrElse(
+                    UnmatchedArtistSuggestion::incrementMentionCount,
+                    () -> suggestionRepository.save(UnmatchedArtistSuggestion.of(trimmed))
+            );
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<UnmatchedArtistSuggestionDto> getSuggestions() {
+        return suggestionRepository.findAllOrderByMentionCountDesc()
+                .stream().map(UnmatchedArtistSuggestionDto::from).toList();
+    }
+
+    @Transactional
+    public void deleteSuggestion(Long id) {
+        suggestionRepository.deleteById(id);
     }
 
     // ── 타임테이블 OCR ──────────────────────────────────────

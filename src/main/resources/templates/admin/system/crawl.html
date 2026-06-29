@@ -389,6 +389,29 @@
                 </div>
             </div>
 
+            <!-- 미매칭 아티스트 등록 제안 -->
+            <div class="crawl-card mt-3" id="suggestionCard">
+                <div class="crawl-card-title crawl-card-title-sb">
+                    <span>미매칭 아티스트 등록 제안 <span id="suggestionBadge" class="badge-count d-none"></span></span>
+                    <button class="btn btn-sm btn-secondary" id="btnRefreshSuggestions">새로고침</button>
+                </div>
+                <div class="hint mb-2">라인업 OCR 적용 시 DB에 없는 아티스트 이름이 자동으로 누적됩니다. 많이 언급된 순으로 정렬됩니다.</div>
+                <div id="suggestionEmptyState" class="empty-state d-none">
+                    <div class="empty-icon">👤</div>
+                    <div>등록 제안된 아티스트가 없습니다.</div>
+                </div>
+                <table class="parse-table d-none" id="suggestionTable">
+                    <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th class="col-w80">언급 횟수</th>
+                        <th class="col-w120">액션</th>
+                    </tr>
+                    </thead>
+                    <tbody id="suggestionBody"></tbody>
+                </table>
+            </div>
+
         </div><!-- /tab-lineup -->
     </div>
 </div>
@@ -401,15 +424,17 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
 window.CrawlUrls = {
-    scrape:             /*[[@{/admin/crawl/scrape}]]*/ '',
-    scrapeApply:        /*[[@{/admin/crawl/scrape/apply}]]*/ '',
-    festivals:          /*[[@{/admin/crawl/festivals}]]*/ '',
-    ocr:                /*[[@{/admin/crawl/ocr}]]*/ '',
-    ocrApply:           /*[[@{/admin/crawl/ocr/apply}]]*/ '',
-    lineupOcr:          /*[[@{/admin/crawl/ocr/lineup}]]*/ '',
-    lineupOcrApply:     /*[[@{/admin/crawl/ocr/lineup/apply}]]*/ '',
-    quota:              /*[[@{/admin/crawl/quota}]]*/ '',
-    festivalDetailBase: /*[[@{/admin/festivals}]]*/ ''
+    scrape:                  /*[[@{/admin/crawl/scrape}]]*/ '',
+    scrapeApply:             /*[[@{/admin/crawl/scrape/apply}]]*/ '',
+    festivals:               /*[[@{/admin/crawl/festivals}]]*/ '',
+    ocr:                     /*[[@{/admin/crawl/ocr}]]*/ '',
+    ocrApply:                /*[[@{/admin/crawl/ocr/apply}]]*/ '',
+    lineupOcr:               /*[[@{/admin/crawl/ocr/lineup}]]*/ '',
+    lineupOcrApply:          /*[[@{/admin/crawl/ocr/lineup/apply}]]*/ '',
+    lineupSuggestions:       /*[[@{/admin/crawl/ocr/lineup/suggestions}]]*/ '',
+    quota:                   /*[[@{/admin/crawl/quota}]]*/ '',
+    festivalDetailBase:      /*[[@{/admin/festivals}]]*/ '',
+    artistCreateBase:        /*[[@{/admin/artists/new}]]*/ ''
 };
 /*]]>*/
 </script>

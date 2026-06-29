@@ -37,8 +37,12 @@ public class ArtistAdminController {
     private final AdminLogService adminLogService;
 
     @GetMapping("/new")
-    public String showCreateForm(Model model) {
-        model.addAttribute("artist", new ArtistRequestDto());
+    public String showCreateForm(@RequestParam(required = false) String name, Model model) {
+        ArtistRequestDto dto = new ArtistRequestDto();
+        if (name != null && !name.isBlank()) {
+            dto.setName(name.trim());
+        }
+        model.addAttribute("artist", dto);
         return "admin/artist/create";
     }
 
