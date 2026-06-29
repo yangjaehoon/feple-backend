@@ -150,7 +150,7 @@ public class ArtistGalleryPhotoService {
 
         int deleted = artistGalleryPhotoLikeRepository.deleteByPhotoIdAndUserId(photoId, userId);
         if (deleted > 0) {
-            artistGalleryPhotoRepository.decrementLikeCount(photoId);
+            photo.decrementLikeCount();
             return false;
         }
         try {
@@ -159,7 +159,7 @@ public class ArtistGalleryPhotoService {
             // unique(artist_photo_id, user_id): 동시 요청으로 이미 저장됨
             return true;
         }
-        artistGalleryPhotoRepository.incrementLikeCount(photoId);
+        photo.incrementLikeCount();
         return true;
     }
 }

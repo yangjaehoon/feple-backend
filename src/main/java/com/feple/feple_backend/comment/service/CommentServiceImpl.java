@@ -142,7 +142,8 @@ public class CommentServiceImpl implements CommentService {
 
     private void deleteAndDecrement(Comment comment) {
         commentRepository.deleteById(comment.getId());
-        postRepository.decrementCommentCount(comment.getPostId());
+        Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
+        post.decrementCommentCount();
     }
 
     @Override

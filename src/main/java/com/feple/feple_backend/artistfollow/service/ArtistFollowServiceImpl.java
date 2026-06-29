@@ -44,8 +44,8 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             artistFollowRepository.save(ArtistFollow.of(user, artist));
-            artistRepository.incrementFollowerCount(artistId);
-            return new FollowResponseDto(true, artist.getFollowerCount() + 1);
+            artist.incrementFollowerCount();
+            return new FollowResponseDto(true, artist.getFollowerCount());
         }
 
         return new FollowResponseDto(true, artist.getFollowerCount());
@@ -58,8 +58,8 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
         int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
         if (deleted > 0) {
-            artistRepository.decrementFollowerCount(artistId);
-            return new FollowResponseDto(false, Math.max(0, artist.getFollowerCount() - 1));
+            artist.decrementFollowerCount();
+            return new FollowResponseDto(false, artist.getFollowerCount());
         }
 
         return new FollowResponseDto(false, artist.getFollowerCount());

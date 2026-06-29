@@ -29,7 +29,7 @@ public class ArtistProfileImageLikeService {
                     .user(user)
                     .artistProfileImage(image)
                     .build());
-            imageRepository.incrementLikeCount(imageId);
+            image.incrementLikeCount();
         }
     }
 
@@ -41,7 +41,7 @@ public class ArtistProfileImageLikeService {
         likeRepository.findByUserAndArtistProfileImage(user, image)
                 .ifPresent(like -> {
                     likeRepository.delete(like);
-                    imageRepository.decrementLikeCount(imageId);
+                    image.decrementLikeCount();
                 });
     }
 

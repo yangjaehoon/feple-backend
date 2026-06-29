@@ -31,11 +31,11 @@ public class FestivalLikeService {
 
         int deleted = festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId);
         if (deleted > 0) {
-            festivalRepository.decrementLikeCount(festivalId);
+            festival.decrementLikeCount();
             return false;
         }
         festivalLikeRepository.save(FestivalLike.of(user, festival));
-        festivalRepository.incrementLikeCount(festivalId);
+        festival.incrementLikeCount();
         return true;
     }
 
