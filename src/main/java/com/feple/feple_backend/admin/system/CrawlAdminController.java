@@ -94,7 +94,8 @@ public class CrawlAdminController {
 
     @PostMapping("/ocr")
     @ResponseBody
-    public ResponseEntity<?> parseOcr(@RequestParam("image") MultipartFile image) {
+    public ResponseEntity<?> parseOcr(@RequestParam("image") MultipartFile image,
+                                       @RequestParam(value = "year", required = false) Integer year) {
         if (image.isEmpty()) return badRequest("이미지를 업로드해주세요.");
         if (!ocrService.isConfigured()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
@@ -103,7 +104,7 @@ public class CrawlAdminController {
                             ErrorCode.SERVICE_UNAVAILABLE));
         }
         try {
-            List<OcrResultDto> results = ocrService.parseTimeTable(image);
+            List<OcrResultDto> results = ocrService.parseTimeTable(image, year);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             log.error("OCR 파싱 실패", e);

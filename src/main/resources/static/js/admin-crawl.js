@@ -230,12 +230,12 @@
         });
     });
 
-    /* ── 날짜 일괄 설정: 모든 행에 동일 날짜 적용 ── */
+    /* ── 날짜 미설정 행 보충: 비어있는 행에만 날짜 적용 ── */
     document.getElementById('selDate').addEventListener('change', function () {
         var date = this.value;
         if (!date) return;
         document.getElementById('ocrParseBody').querySelectorAll('[data-field="date"]').forEach(function (input) {
-            input.value = date;
+            if (!input.value) input.value = date;
         });
     });
 
@@ -306,6 +306,9 @@
     function submitOcrRequest(file) {
         var formData = new FormData();
         formData.append('image', file);
+        if (festivalStartDate) {
+            formData.append('year', festivalStartDate.substring(0, 4));
+        }
         var timer = startOcrProgress();
 
         fetch(CrawlUrls.ocr, { method: 'POST', headers: window.AdminUtils.getCsrfHeaders(), body: formData })

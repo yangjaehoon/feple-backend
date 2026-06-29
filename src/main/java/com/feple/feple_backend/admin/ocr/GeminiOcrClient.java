@@ -66,12 +66,18 @@ public class GeminiOcrClient {
         return usageTracker.getDailyLimit();
     }
 
-    public List<OcrResultDto> parseTimeTable(MultipartFile image) throws IOException {
+    public List<OcrResultDto> parseTimeTable(MultipartFile image, Integer year) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
-        String content = extractContent(callGeminiApi(buildGeminiRequest(PROMPT, base64, mimeType)));
+        String prompt = year != null ? buildPromptWithYear(year) : PROMPT;
+        String content = extractContent(callGeminiApi(buildGeminiRequest(prompt, base64, mimeType)));
         log.debug("Gemini OCR raw response: {}", content);
         return parseJsonArray(content);
+    }
+
+    private String buildPromptWithYear(int year) {
+        return PROMPT + "\n- 이미지에 연도가 명시되지 않은 날짜(예: \"8월 1일\", \"8/1\", \"Aug 1\", \"Day 1\", \"Day 2\")는 "
+                + year + "년으로 간주하여 " + year + "-MM-dd 형식으로 변환하세요.";
     }
 
     public List<LineupRawResult> parseLineup(MultipartFile image) throws IOException {
