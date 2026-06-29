@@ -69,16 +69,15 @@ class PostScrapServiceTest {
     void 스크랩_취소시_delete_호출되고_scrapCount_감소하며_false_반환() {
         User user = user(1L);
         Post post = freePostWithScrapCount(10L, user, 1);
-        PostScrap existing = new PostScrap(user, post);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(postScrapRepository.findByUserIdAndPostId(1L, 10L)).willReturn(Optional.of(existing));
+        given(postScrapRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(1);
 
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
         assertThat(result).isFalse();
         assertThat(post.getScrapCount()).isEqualTo(0);
-        verify(postScrapRepository).delete(existing);
+        verify(postScrapRepository).deleteByUserIdAndPostId(1L, 10L);
         verify(postScrapRepository, never()).save(any(PostScrap.class));
     }
 
@@ -88,7 +87,7 @@ class PostScrapServiceTest {
         Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(postScrapRepository.findByUserIdAndPostId(1L, 10L)).willReturn(Optional.empty());
+        given(postScrapRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
 
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
