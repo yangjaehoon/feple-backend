@@ -82,7 +82,7 @@ class UserControllerTest {
     @Test
     void 사용자_수정_성공() throws Exception {
         UserResponseDto dto = mock(UserResponseDto.class);
-        given(userService.updateNickname(1L, "newnick")).willReturn(dto);
+        given(userService.getUser(1L)).willReturn(dto);
 
         mockMvc.perform(put("/users/1")
                         .with(AuthTestHelper.userAuth(1L))

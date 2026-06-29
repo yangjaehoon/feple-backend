@@ -66,7 +66,7 @@ class PostLikeServiceTest {
     // ── toggleLike ───────────────────────────────────────────────────
 
     @Test
-    void 좋아요_취소시_DB_감소쿼리_호출되고_false_반환() {
+    void 좋아요_취소시_좋아요수_감소되고_false_반환() {
         User user = user(1L);
         Post post = freePostWithLikeCount(10L, user, 1);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
@@ -76,12 +76,12 @@ class PostLikeServiceTest {
         boolean result = postLikeService.toggleLike(10L, 1L);
 
         assertThat(result).isFalse();
-        verify(postRepository).decrementLikeCount(10L);
+        assertThat(post.getLikeCount()).isEqualTo(0);
         verify(postLikeRepository, never()).save(any(PostLike.class));
     }
 
     @Test
-    void 좋아요_추가시_save_호출되고_DB_증가쿼리_호출되며_true_반환() {
+    void 좋아요_추가시_save_호출되고_좋아요수_증가되며_true_반환() {
         User user = user(1L);
         Post post = freePost(10L, user);
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
@@ -92,7 +92,7 @@ class PostLikeServiceTest {
 
         assertThat(result).isTrue();
         verify(postLikeRepository).save(any(PostLike.class));
-        verify(postRepository).incrementLikeCount(10L);
+        assertThat(post.getLikeCount()).isEqualTo(1);
     }
 
     @Test

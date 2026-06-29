@@ -60,7 +60,7 @@ class FestivalLikeServiceTest {
     // ── toggleLike ───────────────────────────────────────────────────
 
     @Test
-    void 찜_취소시_DB_감소쿼리_호출되고_false_반환() {
+    void 찜_취소시_좋아요수_감소되고_false_반환() {
         User user = user(1L);
         Festival festival = festivalWithLikeCount(5L, 1);
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
@@ -70,12 +70,12 @@ class FestivalLikeServiceTest {
         boolean result = festivalLikeService.toggleLike(5L, 1L);
 
         assertThat(result).isFalse();
-        verify(festivalRepository).decrementLikeCount(5L);
+        assertThat(festival.getLikeCount()).isEqualTo(0);
         verify(festivalLikeRepository, never()).save(any(FestivalLike.class));
     }
 
     @Test
-    void 찜_추가시_save_호출되고_DB_증가쿼리_호출되며_true_반환() {
+    void 찜_추가시_save_호출되고_좋아요수_증가되며_true_반환() {
         User user = user(1L);
         Festival festival = festival(5L);
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
@@ -86,7 +86,7 @@ class FestivalLikeServiceTest {
 
         assertThat(result).isTrue();
         verify(festivalLikeRepository).save(any(FestivalLike.class));
-        verify(festivalRepository).incrementLikeCount(5L);
+        assertThat(festival.getLikeCount()).isEqualTo(1);
     }
 
     @Test

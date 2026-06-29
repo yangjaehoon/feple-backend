@@ -247,10 +247,10 @@ class CommentServiceImplTest {
         Comment c = comment(100L, post, author);
 
         given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         commentService.deleteOwnComment(100L, 1L);
 
-        // soft delete: comment 행이 남아 FK 무결성 유지 → like/report 사전 삭제 불필요
         verify(commentRepository).deleteById(100L);
     }
 

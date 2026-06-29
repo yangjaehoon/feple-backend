@@ -198,9 +198,9 @@ class UserServiceImplTest {
         given(userRepository.existsByNicknameAndIdNot("새닉네임", 1L)).willReturn(false);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
-        UserResponseDto dto = userService.updateNickname(1L, "새닉네임");
+        userService.updateNickname(1L, "새닉네임");
 
-        assertThat(dto.getNickname()).isEqualTo("새닉네임");
+        assertThat(user.getNickname()).isEqualTo("새닉네임");
     }
 
     @Test
