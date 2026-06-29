@@ -4,7 +4,7 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
-import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
@@ -128,7 +128,7 @@ public class OcrService {
                 req.setArtistId(id);
                 artistFestivalService.addArtistToFestival(festivalId, req);
                 added++;
-            } catch (DuplicateArtistFestivalException e) {
+            } catch (ConflictException e) {
                 duplicates++;
             }
         }

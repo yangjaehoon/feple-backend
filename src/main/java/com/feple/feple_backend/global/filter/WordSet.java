@@ -1,22 +1,17 @@
 package com.feple.feple_backend.global.filter;
 
-import jakarta.annotation.PostConstruct;
-
 import java.util.List;
 import java.util.Set;
 
-public abstract class WordSetFilter {
+public class WordSet {
 
     private volatile Set<String> words = Set.of();
 
-    @PostConstruct
-    public void reload() {
-        words = Set.copyOf(loadWords());
+    public void load(List<String> wordList) {
+        this.words = Set.copyOf(wordList);
     }
 
-    protected abstract List<String> loadWords();
-
-    protected boolean containsRestrictedWord(String text) {
+    public boolean contains(String text) {
         Set<String> snapshot = words;
         if (snapshot.isEmpty()) return false;
         String normalized = text.toLowerCase().replaceAll("\\s+", "");

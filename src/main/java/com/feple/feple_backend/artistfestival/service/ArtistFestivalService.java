@@ -2,7 +2,7 @@ package com.feple.feple_backend.artistfestival.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
@@ -90,7 +90,7 @@ public class ArtistFestivalService {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, request.getArtistId(), "아티스트");
 
         if (artistFestivalRepository.existsByFestivalIdAndArtistId(festivalId, request.getArtistId())) {
-            throw new DuplicateArtistFestivalException();
+            throw new ConflictException("이미 이 페스티벌에 참여 중인 아티스트입니다.");
         }
 
         ArtistFestival artistFestival = ArtistFestival.builder()
@@ -120,7 +120,7 @@ public class ArtistFestivalService {
                 ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
                 req.setArtistId(artistId);
                 addArtistToFestival(festivalId, req);
-            } catch (DuplicateArtistFestivalException ignored) {
+            } catch (ConflictException ignored) {
             }
         }
     }

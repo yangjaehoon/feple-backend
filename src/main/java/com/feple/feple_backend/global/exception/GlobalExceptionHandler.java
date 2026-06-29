@@ -73,7 +73,6 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), ErrorCode.RATE_LIMITED);
     }
 
-    // DuplicateArtistFestivalException extends ConflictException이므로 단일 타입으로 통합
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
         return body(HttpStatus.CONFLICT, ex.getMessage(), ErrorCode.CONFLICT);

@@ -8,7 +8,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -75,7 +75,7 @@ class FestivalCertificationServiceTest {
 
         assertThatThrownBy(() ->
                 festivalCertificationService.submit(USER_ID, FESTIVAL_ID, VALID_PHOTO_KEY))
-                .isInstanceOf(DuplicateArtistFestivalException.class)
+                .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("이미 해당 페스티벌에 인증 신청을 했습니다.");
     }
 

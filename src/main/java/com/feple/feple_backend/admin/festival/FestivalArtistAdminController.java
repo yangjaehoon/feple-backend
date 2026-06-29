@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin.festival;
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -74,7 +74,7 @@ public class FestivalArtistAdminController {
                 req.setArtistId(artistId);
                 artistFestivalService.addArtistToFestival(festivalId, req);
                 added++;
-            } catch (DuplicateArtistFestivalException ignored) {
+            } catch (ConflictException ignored) {
                 duplicates++;
             } catch (Exception e) {
                 log.error("아티스트 추가 실패: festivalId={}, artistId={}", festivalId, artistId, e);

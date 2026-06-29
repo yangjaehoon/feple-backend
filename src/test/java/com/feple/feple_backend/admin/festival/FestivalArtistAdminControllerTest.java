@@ -6,7 +6,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
-import com.feple.feple_backend.global.exception.DuplicateArtistFestivalException;
+import com.feple.feple_backend.global.exception.ConflictException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,7 +75,7 @@ class FestivalArtistAdminControllerTest {
 
     @Test
     void 아티스트_추가_모두_중복이면_errorMessage_설정() throws Exception {
-        willThrow(new DuplicateArtistFestivalException())
+        willThrow(new ConflictException("이미 이 페스티벌에 참여 중인 아티스트입니다."))
                 .given(artistFestivalService).addArtistToFestival(eq(1L), any());
 
         mockMvc.perform(post("/admin/festivals/1/artists")
