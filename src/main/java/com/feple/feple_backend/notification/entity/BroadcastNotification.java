@@ -23,9 +23,9 @@ public class BroadcastNotification extends BaseTimeEntity {
     private String body;
 
     public static BroadcastNotification of(String title, String body) {
-        BroadcastNotification b = new BroadcastNotification();
-        b.title = title;
-        b.body = body;
-        return b;
+        BroadcastNotification notification = new BroadcastNotification();
+        notification.title = title;
+        notification.body = body;
+        return notification;
     }
 }

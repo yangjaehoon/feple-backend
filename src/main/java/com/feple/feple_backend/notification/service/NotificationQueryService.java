@@ -56,11 +56,11 @@ public class NotificationQueryService {
 
     @Transactional
     public void markRead(Long notificationId, Long userId) {
-        Notification n = EntityFinder.getOrThrow(notificationRepository::findById, notificationId, "알림");
-        if (!n.getUserId().equals(userId)) {
+        Notification notification = EntityFinder.getOrThrow(notificationRepository::findById, notificationId, "알림");
+        if (!notification.getUserId().equals(userId)) {
             throw new IllegalArgumentException("본인의 알림만 읽음 처리할 수 있습니다.");
         }
-        n.markRead();
+        notification.markRead();
     }
 
     @Transactional

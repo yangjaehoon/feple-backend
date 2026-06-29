@@ -155,7 +155,7 @@ public class GeminiUrlContextClient {
     }
 
     private String textOf(JsonNode node, String field) {
-        JsonNode n = node.get(field);
-        return (n == null || n.isNull()) ? "" : n.asText("").trim();
+        JsonNode fieldNode = node.get(field);
+        return (fieldNode == null || fieldNode.isNull()) ? "" : fieldNode.asText("").trim();
     }
 }

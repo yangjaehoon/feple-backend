@@ -51,6 +51,11 @@ public class WeatherService {
 
     private static final int[] BASE_HOURS = {2, 5, 8, 11, 14, 17, 20, 23};
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final String KMA_SUCCESS_CODE = "00";
+    private static final String NOON_FORECAST_TIME = "1200";
+    private static final String EARLY_MORNING_BASE_TIME = "0200";
+    private static final String DEFAULT_SKY_CODE = "1";
+    private static final String DEFAULT_PTY_CODE = "0";
 
     @Value("${kma.service-key}")
     private String serviceKey;
@@ -129,7 +134,7 @@ public class WeatherService {
         JsonNode items = body.path("response").path("body").path("items").path("item");
 
         String resultCode = body.path("response").path("header").path("resultCode").asText();
-        if (!"00".equals(resultCode)) {
+        if (!KMA_SUCCESS_CODE.equals(resultCode)) {
             throw new IllegalStateException("기상청 API 오류: " + resultCode);
         }
 
@@ -140,8 +145,8 @@ public class WeatherService {
         double minTemp = Double.MAX_VALUE;
         double maxTemp = -Double.MAX_VALUE;
         int maxRainProb = 0;
-        String skyCode = "1";
-        String ptyCode = "0";
+        String skyCode = DEFAULT_SKY_CODE;
+        String ptyCode = DEFAULT_PTY_CODE;
         boolean hasTmn = false, hasTmx = false;
 
         for (JsonNode item : items) {
@@ -154,7 +159,7 @@ public class WeatherService {
                 case "TMN" -> { minTemp = Double.parseDouble(value); hasTmn = true; }
                 case "TMX" -> { maxTemp = Double.parseDouble(value); hasTmx = true; }
                 case "POP" -> maxRainProb = Math.max(maxRainProb, Integer.parseInt(value));
-                case "SKY" -> { if ("1200".equals(fcstTime)) skyCode = value; }
+                case "SKY" -> { if (NOON_FORECAST_TIME.equals(fcstTime)) skyCode = value; }
                 case "PTY" -> {
                     int next = Integer.parseInt(value);
                     if (next > Integer.parseInt(ptyCode)) ptyCode = value;
@@ -204,7 +209,7 @@ public class WeatherService {
         if (targetDate.isAfter(today.plusDays(3))) return null;
 
         if (targetDate.isBefore(today)) {
-            return new String[]{targetDate.format(DATE_FMT), "0200"};
+            return new String[]{targetDate.format(DATE_FMT), EARLY_MORNING_BASE_TIME};
         }
 
         LocalTime nowKST = LocalTime.now(ZoneId.of("Asia/Seoul")).minusMinutes(10);

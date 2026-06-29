@@ -32,10 +32,10 @@ public class UserDeviceToken {
     private LocalDateTime updatedAt;
 
     public static UserDeviceToken of(User user, String token, DevicePlatform platform) {
-        UserDeviceToken t = new UserDeviceToken();
-        t.user = user;
-        t.token = token;
-        t.platform = platform;
-        return t;
+        UserDeviceToken deviceToken = new UserDeviceToken();
+        deviceToken.user = user;
+        deviceToken.token = token;
+        deviceToken.platform = platform;
+        return deviceToken;
     }
 }

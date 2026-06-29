@@ -16,15 +16,15 @@ public final class CsvExporter {
 
     public static String cell(Object value) {
         if (value == null) return "";
-        String s = value.toString();
+        String text = value.toString();
         // =, +, @, - 로 시작하는 값은 스프레드시트 수식으로 해석될 수 있으므로 탭 문자를 앞에 붙여 차단
-        if (!s.isEmpty() && "=+-@".indexOf(s.charAt(0)) >= 0) {
-            s = "\t" + s;
+        if (!text.isEmpty() && "=+-@".indexOf(text.charAt(0)) >= 0) {
+            text = "\t" + text;
         }
-        if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r") || s.contains("\t")) {
-            return "\"" + s.replace("\"", "\"\"") + "\"";
+        if (text.contains(",") || text.contains("\"") || text.contains("\n") || text.contains("\r") || text.contains("\t")) {
+            return "\"" + text.replace("\"", "\"\"") + "\"";
         }
-        return s;
+        return text;
     }
 
     public static String formatDt(LocalDateTime dt) {

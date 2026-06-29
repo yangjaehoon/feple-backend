@@ -14,10 +14,10 @@ final class FestivalDateParser {
     private FestivalDateParser() {}
 
     static String[] parseRange(String raw) {
-        Matcher m = DATE_PATTERN.matcher(raw);
-        if (!m.find()) return new String[]{"", ""};
-        String start = format(m.group(1), m.group(2), m.group(3));
-        String end   = m.find() ? format(m.group(1), m.group(2), m.group(3)) : start;
+        Matcher matcher = DATE_PATTERN.matcher(raw);
+        if (!matcher.find()) return new String[]{"", ""};
+        String start = format(matcher.group(1), matcher.group(2), matcher.group(3));
+        String end   = matcher.find() ? format(matcher.group(1), matcher.group(2), matcher.group(3)) : start;
         return new String[]{start, end};
     }
 
@@ -28,8 +28,8 @@ final class FestivalDateParser {
     }
 
     static String extractJsonValue(String json, String key) {
-        Matcher m = Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]+)\"").matcher(json);
-        return m.find() ? m.group(1) : "";
+        Matcher matcher = Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]+)\"").matcher(json);
+        return matcher.find() ? matcher.group(1) : "";
     }
 
     private static String format(String year, String month, String day) {

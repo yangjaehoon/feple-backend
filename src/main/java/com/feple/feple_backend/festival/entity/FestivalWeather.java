@@ -36,10 +36,10 @@ public class FestivalWeather {
     public Long getFestivalId() { return festival.getId(); }
 
     public static FestivalWeather of(Festival festival, WeatherDto dto) {
-        FestivalWeather w = new FestivalWeather();
-        w.festival = festival;
-        w.apply(dto);
-        return w;
+        FestivalWeather weather = new FestivalWeather();
+        weather.festival = festival;
+        weather.apply(dto);
+        return weather;
     }
 
     public void apply(WeatherDto dto) {

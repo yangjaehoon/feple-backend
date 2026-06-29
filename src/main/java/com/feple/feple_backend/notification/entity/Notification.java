@@ -64,30 +64,30 @@ public class Notification {
                                    String title, String body,
                                    String titleEn, String bodyEn,
                                    Festival festival) {
-        Notification n = new Notification();
-        n.user = user;
-        n.type = type;
-        n.title = title;
-        n.body = body;
-        n.titleEn = titleEn;
-        n.bodyEn = bodyEn;
-        n.festival = festival;
-        return n;
+        Notification notification = new Notification();
+        notification.user = user;
+        notification.type = type;
+        notification.title = title;
+        notification.body = body;
+        notification.titleEn = titleEn;
+        notification.bodyEn = bodyEn;
+        notification.festival = festival;
+        return notification;
     }
 
     public static Notification of(User user, NotificationType type,
                                    String title, String body,
                                    String titleEn, String bodyEn,
                                    Post post) {
-        Notification n = new Notification();
-        n.user = user;
-        n.type = type;
-        n.title = title;
-        n.body = body;
-        n.titleEn = titleEn;
-        n.bodyEn = bodyEn;
-        n.post = post;
-        return n;
+        Notification notification = new Notification();
+        notification.user = user;
+        notification.type = type;
+        notification.title = title;
+        notification.body = body;
+        notification.titleEn = titleEn;
+        notification.bodyEn = bodyEn;
+        notification.post = post;
+        return notification;
     }
 
     public Long getUserId() { return user.getId(); }

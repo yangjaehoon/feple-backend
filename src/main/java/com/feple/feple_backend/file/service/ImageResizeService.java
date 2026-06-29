@@ -66,9 +66,9 @@ public class ImageResizeService {
             ImageReader reader = it.next();
             try {
                 reader.setInput(iis, true, true);
-                int w = reader.getWidth(0);
-                int h = reader.getHeight(0);
-                if (w > MAX_DIMENSION_PX || h > MAX_DIMENSION_PX)
+                int width = reader.getWidth(0);
+                int height = reader.getHeight(0);
+                if (width > MAX_DIMENSION_PX || height > MAX_DIMENSION_PX)
                     throw new IllegalArgumentException(
                         "이미지 크기가 너무 큽니다. 최대 " + MAX_DIMENSION_PX + "×" + MAX_DIMENSION_PX + " 픽셀까지 허용됩니다.");
             } finally {
@@ -77,10 +77,10 @@ public class ImageResizeService {
         }
     }
 
-    private int[] computeTargetSize(int w, int h, int maxPx) {
-        if (w <= maxPx && h <= maxPx) return new int[]{w, h};
-        double scale = Math.min((double) maxPx / w, (double) maxPx / h);
-        return new int[]{(int) (w * scale), (int) (h * scale)};
+    private int[] computeTargetSize(int width, int height, int maxPx) {
+        if (width <= maxPx && height <= maxPx) return new int[]{width, height};
+        double scale = Math.min((double) maxPx / width, (double) maxPx / height);
+        return new int[]{(int) (width * scale), (int) (height * scale)};
     }
 
     /**
@@ -88,15 +88,15 @@ public class ImageResizeService {
      * ImageIO.write()는 IIOMetadata 없이 픽셀 데이터만 JPEG로 직렬화하므로
      * 원본의 EXIF(GPS, 카메라 정보 등) 및 ICC 프로파일이 출력에 포함되지 않는다.
      */
-    private byte[] encodeToJpeg(BufferedImage src, int w, int h) throws IOException {
-        BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = out.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, w, h);
-        g.drawImage(src.getScaledInstance(w, h, Image.SCALE_SMOOTH), 0, 0, null);
-        g.dispose();
+    private byte[] encodeToJpeg(BufferedImage src, int width, int height) throws IOException {
+        BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = out.createGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, width, height);
+        graphics.drawImage(src.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
+        graphics.dispose();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(out, "jpg", baos);

@@ -163,8 +163,8 @@ public class GeminiOcrClient {
     }
 
     private static String extractJsonArray(String content) {
-        Matcher m = Pattern.compile("```(?:json)?\\s*([\\s\\S]*?)```", Pattern.MULTILINE).matcher(content);
-        if (m.find()) return m.group(1).trim();
+        Matcher matcher = Pattern.compile("```(?:json)?\\s*([\\s\\S]*?)```", Pattern.MULTILINE).matcher(content);
+        if (matcher.find()) return matcher.group(1).trim();
         int start = content.indexOf('[');
         if (start == -1) return content;
         int end = content.lastIndexOf(']');

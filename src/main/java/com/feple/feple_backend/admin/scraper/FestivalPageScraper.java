@@ -28,7 +28,7 @@ public class FestivalPageScraper {
 
     public FestivalPageScraper(List<SiteScraperStrategy> strategyList) {
         this.strategies = strategyList.stream()
-                .collect(Collectors.toMap(SiteScraperStrategy::source, s -> s));
+                .collect(Collectors.toMap(SiteScraperStrategy::source, strategy -> strategy));
     }
 
     public ScrapedFestivalDto scrape(String url, String source) throws IOException {
@@ -67,12 +67,12 @@ public class FestivalPageScraper {
         for (String sel : new String[]{
             "meta[property=og:title]", "meta[name=twitter:title]"
         }) {
-            String v = doc.select(sel).attr("content").trim();
-            if (!v.isBlank() && !isSpaTitle(v)) return v;
+            String content = doc.select(sel).attr("content").trim();
+            if (!content.isBlank() && !isSpaTitle(content)) return content;
         }
         for (String sel : strategy(source).titleSelectors()) {
-            String v = doc.select(sel).text().trim();
-            if (!v.isBlank()) return v;
+            String content = doc.select(sel).text().trim();
+            if (!content.isBlank()) return content;
         }
         String htmlTitle = doc.title().replaceAll("\\s*[|\\-–—].*", "").trim();
         return isSpaTitle(htmlTitle) ? "" : htmlTitle;
@@ -82,12 +82,12 @@ public class FestivalPageScraper {
         for (String sel : new String[]{
             "meta[property=og:description]", "meta[name=twitter:description]", "meta[name=description]"
         }) {
-            String v = doc.select(sel).attr("content").trim();
-            if (!v.isBlank()) return v;
+            String content = doc.select(sel).attr("content").trim();
+            if (!content.isBlank()) return content;
         }
         for (String sel : strategy(source).descriptionSelectors()) {
-            String v = doc.select(sel).text().trim();
-            if (!v.isBlank()) return v;
+            String content = doc.select(sel).text().trim();
+            if (!content.isBlank()) return content;
         }
         return "";
     }
@@ -96,8 +96,8 @@ public class FestivalPageScraper {
         for (String sel : new String[]{
             "meta[property=og:image]", "meta[name=twitter:image]", "meta[name=twitter:image:src]"
         }) {
-            String v = doc.select(sel).attr("content").trim();
-            if (!v.isBlank()) return v;
+            String content = doc.select(sel).attr("content").trim();
+            if (!content.isBlank()) return content;
         }
         return "";
     }

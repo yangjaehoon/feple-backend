@@ -16,11 +16,11 @@ public class AdminSidebarAdvice {
     @ModelAttribute
     public void sidebarCounts(Model model) {
         try {
-            AdminSidebarCountService.Counts c = sidebarCountService.getCounts();
-            model.addAttribute("sidebarReportCount", c.reportCount());
-            model.addAttribute("sidebarCertCount", c.certCount());
-            model.addAttribute("sidebarSongRequestCount", c.songRequestCount());
-            model.addAttribute("sidebarArtistSuggestionCount", c.suggestionCount());
+            AdminSidebarCountService.Counts counts = sidebarCountService.getCounts();
+            model.addAttribute("sidebarReportCount", counts.reportCount());
+            model.addAttribute("sidebarCertCount", counts.certCount());
+            model.addAttribute("sidebarSongRequestCount", counts.songRequestCount());
+            model.addAttribute("sidebarArtistSuggestionCount", counts.suggestionCount());
         } catch (Exception e) {
             log.warn("사이드바 카운트 조회 실패 — 0으로 폴백", e);
             model.addAttribute("sidebarReportCount", 0L);

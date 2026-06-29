@@ -37,9 +37,9 @@ public class FestivalChecklist {
     private LocalDateTime updatedAt;
 
     public static FestivalChecklist of(Long festivalId) {
-        FestivalChecklist c = new FestivalChecklist();
-        c.festivalId = festivalId;
-        return c;
+        FestivalChecklist checklist = new FestivalChecklist();
+        checklist.festivalId = festivalId;
+        return checklist;
     }
 
     public void toggle(String field) {

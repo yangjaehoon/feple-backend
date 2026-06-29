@@ -178,10 +178,10 @@ public class ArtistFestivalService {
         return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId)
                 .stream()
                 .map(af -> {
-                    Map<String, Object> m = new java.util.HashMap<>();
-                    m.put("name",   af.getArtistName());
-                    m.put("nameEn", af.getArtistNameEn() != null ? af.getArtistNameEn() : "");
-                    return m;
+                    Map<String, Object> artistInfo = new java.util.HashMap<>();
+                    artistInfo.put("name",   af.getArtistName());
+                    artistInfo.put("nameEn", af.getArtistNameEn() != null ? af.getArtistNameEn() : "");
+                    return artistInfo;
                 })
                 .toList();
     }
