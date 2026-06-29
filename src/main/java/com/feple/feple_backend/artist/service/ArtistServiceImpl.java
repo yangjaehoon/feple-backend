@@ -117,11 +117,19 @@ public class ArtistServiceImpl implements ArtistService {
                 .toList();
     }
 
+    private static boolean isSongCountSort(String sort) {
+        return "songs".equals(sort) || "songs_asc".equals(sort);
+    }
+
+    private static boolean hasSearchKeyword(String keyword) {
+        return keyword != null && !keyword.isBlank();
+    }
+
     @Override
     @Transactional(readOnly = true)
     public Page<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre, int page) {
-        boolean songSort   = "songs".equals(sort) || "songs_asc".equals(sort);
-        boolean hasKeyword = keyword != null && !keyword.isBlank();
+        boolean songSort   = isSongCountSort(sort);
+        boolean hasKeyword = hasSearchKeyword(keyword);
 
         if (hasKeyword || songSort) {
             // 키워드 검색·곡수 정렬은 인메모리 처리 후 PageImpl로 슬라이싱

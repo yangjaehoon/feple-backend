@@ -12,6 +12,7 @@ import com.feple.feple_backend.admin.scraper.ScrapedFestivalDto;
 import com.feple.feple_backend.admin.scraper.ScraperApplyRequestDto;
 import com.feple.feple_backend.admin.scraper.WebScraperService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.stage.service.StageService;
@@ -240,7 +241,7 @@ class CrawlAdminControllerTest {
         FestivalResponseDto festival = mock(FestivalResponseDto.class);
         given(festival.getId()).willReturn(1L);
         given(festival.getTitle()).willReturn("테스트 페스티벌");
-        given(festivalService.getAllFestivals(null, null, null, true, null))
+        given(festivalService.getAllFestivals(FestivalFilterCriteria.forAdmin()))
                 .willReturn(List.of(festival));
 
         mockMvc.perform(get("/admin/crawl/festivals"))

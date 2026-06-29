@@ -7,6 +7,7 @@ import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.booth.repository.BoothRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
@@ -94,12 +95,13 @@ public class FestivalServiceImpl implements FestivalService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FestivalResponseDto> getAllFestivals(List<Genre> genres, List<Region> regions,
-                                                     List<AgeRestriction> ageRestrictions,
-                                                     boolean includeEnded, String sort) {
+    public List<FestivalResponseDto> getAllFestivals(FestivalFilterCriteria criteria) {
         LocalDate today = LocalDate.now();
         // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
-        LocalDate activeFrom = includeEnded ? null : today;
+        LocalDate activeFrom = criteria.includeEnded() ? null : today;
+        List<Genre> genres = criteria.genres();
+        List<Region> regions = criteria.regions();
+        List<AgeRestriction> ageRestrictions = criteria.ageRestrictions();
         List<Festival> all = festivalRepository.findByFilters(
             genres == null || genres.isEmpty() ? null : genres,
             regions == null || regions.isEmpty() ? null : regions,
@@ -107,13 +109,14 @@ public class FestivalServiceImpl implements FestivalService {
             activeFrom
         );
 
-        List<FestivalStatus> statuses = includeEnded
+        List<FestivalStatus> statuses = criteria.includeEnded()
             ? List.of(FestivalStatus.ACTIVE, FestivalStatus.ENDED)
             : List.of(FestivalStatus.ACTIVE);
 
         Stream<Festival> stream = statuses.stream()
             .flatMap(status -> status.filter(all, today).stream());
 
+        String sort = criteria.sort();
         if ("date_asc".equals(sort)) {
             stream = stream.sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())));
         } else if ("date_desc".equals(sort)) {
@@ -130,7 +133,7 @@ public class FestivalServiceImpl implements FestivalService {
     @Transactional(readOnly = true)
     @Cacheable("allFestivalsForAdmin")
     public List<FestivalResponseDto> getAllFestivalsForAdmin() {
-        return getAllFestivals(null, null, null, true, null);
+        return getAllFestivals(FestivalFilterCriteria.forAdmin());
     }
 
     @Override

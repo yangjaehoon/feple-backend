@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
@@ -48,7 +49,7 @@ public class AdminPushService {
                 getRegisteredDeviceCount(),
                 getBroadcastHistory(),
                 artistService.getAllArtistsSortedByName(),
-                festivalService.getAllFestivals(null, null, null, true, null)
+                festivalService.getAllFestivals(FestivalFilterCriteria.forAdmin())
         );
     }
 

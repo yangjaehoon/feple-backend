@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.song.dto.FestivalSetlistEntryDto;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.dto.WeatherDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
@@ -43,7 +44,7 @@ public class FestivalController {
             @RequestParam(required = false) List<AgeRestriction> ageRestrictions,
             @RequestParam(defaultValue = "false") boolean includeEnded,
             @RequestParam(required = false) String sort) {
-        return festivalService.getAllFestivals(genres, regions, ageRestrictions, includeEnded, sort);
+        return festivalService.getAllFestivals(new FestivalFilterCriteria(genres, regions, ageRestrictions, includeEnded, sort));
     }
 
     @GetMapping("/{id}")

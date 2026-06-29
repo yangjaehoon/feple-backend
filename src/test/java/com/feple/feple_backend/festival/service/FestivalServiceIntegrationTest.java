@@ -1,5 +1,6 @@
 package com.feple.feple_backend.festival.service;
 
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.Genre;
@@ -122,9 +123,9 @@ class FestivalServiceIntegrationTest {
         festivalService.createFestival(makeDtoEnded("종료됨", past.minusDays(3), past));
 
         List<FestivalResponseDto> activeOnly =
-                festivalService.getAllFestivals(null, null, null, false, null);
+                festivalService.getAllFestivals(new FestivalFilterCriteria(null, null, null, false, null));
         List<FestivalResponseDto> all =
-                festivalService.getAllFestivals(null, null, null, true, null);
+                festivalService.getAllFestivals(FestivalFilterCriteria.forAdmin());
 
         long activeCount = activeOnly.stream()
                 .filter(f -> f.getTitle().equals("진행중")).count();
@@ -142,7 +143,7 @@ class FestivalServiceIntegrationTest {
         festivalService.createFestival(makeDtoWithGenre("힙합페스티벌", Genre.HIP_HOP));
 
         List<FestivalResponseDto> result =
-                festivalService.getAllFestivals(List.of(Genre.BAND), null, null, true, null);
+                festivalService.getAllFestivals(new FestivalFilterCriteria(List.of(Genre.BAND), null, null, true, null));
 
         assertThat(result).allMatch(f -> f.getGenres().contains(Genre.BAND));
     }

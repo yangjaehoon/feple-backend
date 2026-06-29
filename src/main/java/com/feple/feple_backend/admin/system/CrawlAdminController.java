@@ -13,6 +13,7 @@ import com.feple.feple_backend.admin.scraper.ScraperApplyRequestDto;
 import com.feple.feple_backend.admin.scraper.WebScraperService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.global.exception.ErrorCode;
@@ -174,7 +175,7 @@ public class CrawlAdminController {
     @GetMapping("/festivals")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> getFestivals() {
-        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(null, null, null, true, null);
+        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(FestivalFilterCriteria.forAdmin());
         List<Map<String, Object>> result = festivals.stream().map(f -> {
             Map<String, Object> m = new HashMap<>();
             m.put("id",        f.getId());

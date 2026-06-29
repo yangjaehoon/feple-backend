@@ -62,14 +62,7 @@ public class CommentServiceImpl implements CommentService {
         Long postAuthorId = post.getUserId();
         String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
 
-        // 대댓글인 경우 원댓글 작성자 ID 추출 (자기 자신 제외, 게시글 작성자와 동일한 경우 제외)
-        Long parentCommentAuthorId = null;
-        if (parent != null) {
-            Long parentAuthorId = parent.getUserId();
-            if (!parentAuthorId.equals(userId) && !parentAuthorId.equals(postAuthorId)) {
-                parentCommentAuthorId = parentAuthorId;
-            }
-        }
+        Long parentCommentAuthorId = resolveParentCommentAuthorId(parent, userId, postAuthorId);
 
         if (!postAuthorId.equals(userId)) {
             eventPublisher.publishEvent(
@@ -138,6 +131,13 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
         deleteAndDecrement(comment);
+    }
+
+    private Long resolveParentCommentAuthorId(Comment parent, Long userId, Long postAuthorId) {
+        if (parent == null) return null;
+        Long parentAuthorId = parent.getUserId();
+        if (parentAuthorId.equals(userId) || parentAuthorId.equals(postAuthorId)) return null;
+        return parentAuthorId;
     }
 
     private void deleteAndDecrement(Comment comment) {
