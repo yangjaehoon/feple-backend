@@ -26,6 +26,9 @@ public class Artist {
 
     private String nameEn;
 
+    // 쉼표로 구분된 별명 목록 (예: "쌈디,SD")
+    private String aliases;
+
     @Convert(converter = ArtistGenreConverter.class)
     @Column(name = "genre")
     @Builder.Default
@@ -55,10 +58,11 @@ public class Artist {
         this.rankUpdatedAt = LocalDateTime.now();
     }
 
-    public void update(String name, String nameEn, List<ArtistGenre> genres) {
+    public void update(String name, String nameEn, List<ArtistGenre> genres, String aliases) {
         this.name = name;
         this.nameEn = nameEn;
         this.genres = genres != null ? genres : new ArrayList<>();
+        this.aliases = (aliases != null && !aliases.isBlank()) ? aliases.trim() : null;
     }
 
     public void updateProfileImage(String newKey) {

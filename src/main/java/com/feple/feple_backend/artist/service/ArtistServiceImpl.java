@@ -69,6 +69,7 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artist = Artist.builder()
                 .name(dto.getName())
                 .nameEn(dto.getNameEn())
+                .aliases(dto.getAliases())
                 .genres(dto.getGenres())
                 .profileImageKey(dto.getProfileImageKey())
                 .build();
@@ -213,7 +214,7 @@ public class ArtistServiceImpl implements ArtistService {
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
-        artist.update(dto.getName(), dto.getNameEn(), dto.getGenres());
+        artist.update(dto.getName(), dto.getNameEn(), dto.getGenres(), dto.getAliases());
         if (dto.getProfileImageKey() != null) {
             String oldKey = artist.getProfileImageKey();
             artist.updateProfileImage(dto.getProfileImageKey());

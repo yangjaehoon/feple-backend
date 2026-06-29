@@ -27,10 +27,10 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
            nativeQuery = true)
     Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
 
-    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' ORDER BY a.name ASC")
+    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR (a.aliases IS NOT NULL AND LOWER(a.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') ORDER BY a.name ASC")
     java.util.List<Artist> findByNameOrNameEnContainingIgnoreCase(@Param("keyword") String keyword);
 
-    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) = LOWER(:name) OR LOWER(a.nameEn) = LOWER(:name)")
+    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) = LOWER(:name) OR LOWER(a.nameEn) = LOWER(:name) OR (a.aliases IS NOT NULL AND LOWER(a.aliases) LIKE LOWER(CONCAT('%', :name, '%')) ESCAPE '!')")
     java.util.Optional<Artist> findExactByNameIgnoreCase(@Param("name") String name);
 
     java.util.List<Artist> findTop10ByOrderByFollowerCountDesc();
