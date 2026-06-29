@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,9 +97,20 @@ public class FestivalCertificationController {
     @GetMapping("/festival/{festivalId}/reviews")
     public Map<String, Object> getFestivalReviews(
             @PathVariable Long festivalId,
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(defaultValue = "0") int page,
+            Authentication authentication
     ) {
-        return certificationService.getFestivalReviewsPage(festivalId, page);
+        Long userId = (authentication != null) ? (Long) authentication.getPrincipal() : null;
+        return certificationService.getFestivalReviewsPage(festivalId, page, userId);
+    }
+
+    @PostMapping("/{id}/review-like")
+    public Map<String, Object> toggleReviewLike(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId
+    ) {
+        boolean liked = certificationService.toggleReviewLike(userId, id);
+        return Map.of("liked", liked);
     }
 
     public record PresignRequest(

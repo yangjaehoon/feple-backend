@@ -55,6 +55,9 @@ public class FestivalCertification extends BaseTimeEntity {
 
     private LocalDateTime ratedAt;
 
+    @Column(nullable = false)
+    private int likeCount = 0;
+
     public Long getFestivalId() { return festival.getId(); }
     public String getFestivalTitle() { return festival.getTitle(); }
     public String getFestivalTitleEn() { return festival.getTitleEn(); }
@@ -93,4 +96,7 @@ public class FestivalCertification extends BaseTimeEntity {
         this.userReview = review;
         this.ratedAt = LocalDateTime.now();
     }
+
+    public void incrementLikeCount() { this.likeCount++; }
+    public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
 }
