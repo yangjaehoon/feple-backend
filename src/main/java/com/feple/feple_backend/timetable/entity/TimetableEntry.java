@@ -79,6 +79,10 @@ public class TimetableEntry {
         return festival != null ? festival.getId() : null;
     }
 
+    public int getStageDisplayOrder() {
+        return stage != null ? stage.getDisplayOrder() : Integer.MAX_VALUE;
+    }
+
     public void updateStage(Stage stage) {
         this.stage = stage;
         this.stageName = stage.getName();

@@ -27,7 +27,7 @@ public class TimetableEntryResponseDto {
     private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
 
     public static TimetableEntryResponseDto from(TimetableEntry e) {
-        int order = e.getStage() != null ? e.getStage().getDisplayOrder() : Integer.MAX_VALUE;
+        int order = e.getStageDisplayOrder();
         List<TimetableEntryMember> members = e.getMembers();
         return TimetableEntryResponseDto.builder()
                 .id(e.getId())

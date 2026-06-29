@@ -43,4 +43,8 @@ public class Booth {
     public Long getFestivalId() {
         return festival != null ? festival.getId() : null;
     }
+
+    public String getBoothTypeDisplayName() {
+        return boothType != null ? boothType.getDisplayName() : null;
+    }
 }

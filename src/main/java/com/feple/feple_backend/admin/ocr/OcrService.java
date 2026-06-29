@@ -108,11 +108,13 @@ public class OcrService {
         int conf = raw.confidence() != null ? raw.confidence() : 0;
         Optional<Artist> exact = artistRepository.findExactByNameIgnoreCase(raw.name());
         if (exact.isPresent()) {
-            return new ArtistLineupOcrResult(raw.name(), exact.get().getId(), exact.get().getName(), conf);
+            Artist artist = exact.get();
+            return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), conf);
         }
         List<Artist> partial = artistRepository.findByNameOrNameEnContainingIgnoreCase(raw.name());
         if (partial.size() == 1) {
-            return new ArtistLineupOcrResult(raw.name(), partial.get(0).getId(), partial.get(0).getName(), conf);
+            Artist artist = partial.get(0);
+            return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), conf);
         }
         return new ArtistLineupOcrResult(raw.name(), null, null, conf);
     }

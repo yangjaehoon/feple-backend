@@ -61,6 +61,8 @@ public class ArtistFestival {
     }
     public String getArtistProfileImageKey() { return artist.getProfileImageKey(); }
     public Long getFestivalId() { return festival.getId(); }
+    public String getFestivalTitle() { return festival.getTitle(); }
+    public java.time.LocalDate getFestivalStartDate() { return festival.getStartDate(); }
 
     public void updateLineup(String stageName, LocalDate performanceDate) {
         this.stageName = stageName;

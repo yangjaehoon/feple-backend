@@ -54,7 +54,7 @@ public class ArtistPhotoReport extends BaseTimeEntity implements Resolvable {
 
     public Long getPhotoId() { return photo.getId(); }
     public String getPhotoTitle() { return photo.getTitle(); }
-    public String getPhotoArtistName() { return photo.getArtist().getName(); }
+    public String getPhotoArtistName() { return photo.getArtistName(); }
     public Long getReporterId() { return reporter.getId(); }
     public String getReporterNickname() { return reporter.getNickname(); }
     public Long getPhotoUploaderId() { return photo.getUploaderId(); }

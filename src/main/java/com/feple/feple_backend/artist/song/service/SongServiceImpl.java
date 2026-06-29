@@ -64,14 +64,11 @@ public class SongServiceImpl implements SongService, SongAdminService {
     public List<SongFestivalDto> getSongFestivals(Long songId) {
         return artistFestivalSongRepository.findBySongIdWithFestival(songId)
                 .stream()
-                .map(afs -> {
-                    var festival = afs.getArtistFestival().getFestival();
-                    return SongFestivalDto.builder()
-                            .festivalId(festival.getId())
-                            .festivalTitle(festival.getTitle())
-                            .startDate(festival.getStartDate() != null ? festival.getStartDate().toString() : null)
-                            .build();
-                })
+                .map(afs -> SongFestivalDto.builder()
+                            .festivalId(afs.getFestivalId())
+                            .festivalTitle(afs.getFestivalTitle())
+                            .startDate(afs.getFestivalStartDate() != null ? afs.getFestivalStartDate().toString() : null)
+                            .build())
                 .toList();
     }
 

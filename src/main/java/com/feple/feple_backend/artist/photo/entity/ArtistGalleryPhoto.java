@@ -72,4 +72,5 @@ public class ArtistGalleryPhoto extends BaseTimeEntity {
 
     public Long getUploaderId() { return uploader.getId(); }
     public String getUploaderNickname() { return uploader.getNickname(); }
+    public String getArtistName() { return artist.getName(); }
 }

@@ -31,6 +31,9 @@ public class ArtistFestivalSong {
 
     public Long getSongId() { return song.getId(); }
     public Long getArtistFestivalId() { return artistFestival.getId(); }
+    public Long getFestivalId() { return artistFestival.getFestivalId(); }
+    public String getFestivalTitle() { return artistFestival.getFestivalTitle(); }
+    public java.time.LocalDate getFestivalStartDate() { return artistFestival.getFestivalStartDate(); }
 
     @Builder
     public ArtistFestivalSong(Song song, ArtistFestival artistFestival) {
