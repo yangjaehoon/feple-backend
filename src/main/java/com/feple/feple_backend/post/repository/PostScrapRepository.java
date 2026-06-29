@@ -17,6 +17,11 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     @Query("SELECT ps FROM PostScrap ps WHERE ps.user.id = :userId AND ps.post.id = :postId")
     Optional<PostScrap> findByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PostScrap ps WHERE ps.user.id = :userId AND ps.post.id = :postId")
+    int deleteByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
+
     @Query("SELECT CASE WHEN COUNT(ps) > 0 THEN TRUE ELSE FALSE END FROM PostScrap ps WHERE ps.user.id = :userId AND ps.post.id = :postId")
     boolean existsByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 

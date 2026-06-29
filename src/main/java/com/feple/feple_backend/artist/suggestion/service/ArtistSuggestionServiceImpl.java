@@ -56,8 +56,8 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     public Page<ArtistSuggestionResponseDto> getSuggestionsPage(int page, int size) {
         Page<ArtistSuggestion> pageResult = suggestionRepository.findByStatusOrderByCreatedAtDesc(
                 ArtistSuggestionStatus.PENDING, PageRequest.of(page, size));
-        Map<Long, String> nMap = nicknameMap(pageResult.getContent());
-        return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)));
+        Map<Long, String> nicknameMap = nicknameResolver.buildMap(pageResult.getContent(), ArtistSuggestion::getUserId);
+        return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)));
     }
 
     @Override
@@ -65,9 +65,9 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     public List<ArtistSuggestionResponseDto> getProcessedSuggestionsPreview(int limit) {
         List<ArtistSuggestion> suggestions = suggestionRepository.findByStatusOrderByCreatedAtDesc(
                 ArtistSuggestionStatus.DISMISSED, PageRequest.of(0, limit)).getContent();
-        Map<Long, String> nMap = nicknameMap(suggestions);
+        Map<Long, String> nicknameMap = nicknameResolver.buildMap(suggestions, ArtistSuggestion::getUserId);
         return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
+                .map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
                 .toList();
     }
 
@@ -90,9 +90,9 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     public List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit) {
         List<ArtistSuggestion> suggestions = suggestionRepository.findByStatusOrderByCreatedAtDesc(
                 ArtistSuggestionStatus.PENDING, PageRequest.of(0, limit)).getContent();
-        Map<Long, String> nMap = nicknameMap(suggestions);
+        Map<Long, String> nicknameMap = nicknameResolver.buildMap(suggestions, ArtistSuggestion::getUserId);
         return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
+                .map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
                 .toList();
     }
 
@@ -106,8 +106,4 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 suggestion.getUserId(), suggestion.getArtistName(), processNote));
     }
 
-    private Map<Long, String> nicknameMap(List<ArtistSuggestion> suggestions) {
-        return nicknameResolver.buildMap(
-                suggestions.stream().map(ArtistSuggestion::getUserId).distinct().toList());
-    }
 }

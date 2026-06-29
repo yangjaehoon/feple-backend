@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,16 +37,14 @@ public class PostScrapService {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        Optional<PostScrap> existing = postScrapRepository.findByUserIdAndPostId(userId, postId);
-        if (existing.isPresent()) {
-            postScrapRepository.delete(existing.get());
+        int deleted = postScrapRepository.deleteByUserIdAndPostId(userId, postId);
+        if (deleted > 0) {
             post.decrementScrapCount();
             return false;
-        } else {
-            postScrapRepository.save(new PostScrap(user, post));
-            post.incrementScrapCount();
-            return true;
         }
+        postScrapRepository.save(new PostScrap(user, post));
+        post.incrementScrapCount();
+        return true;
     }
 
     public long countMyScraps(Long userId) {

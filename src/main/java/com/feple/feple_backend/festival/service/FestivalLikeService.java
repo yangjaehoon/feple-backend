@@ -21,6 +21,7 @@ public class FestivalLikeService {
     private final UserRepository userRepository;
 
     public boolean isLiked(Long festivalId, Long userId) {
+        if (userId == null) return false;
         return festivalLikeRepository.existsByUserIdAndFestivalId(userId, festivalId);
     }
 

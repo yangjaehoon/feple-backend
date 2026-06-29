@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -30,5 +31,10 @@ public class UserNicknameResolver {
                         User::getId,
                         u -> (u.getNickname() != null && !u.getNickname().isBlank()) ? u.getNickname() : UNKNOWN
                 ));
+    }
+
+    public <T> Map<Long, String> buildMap(List<T> items, Function<T, Long> userIdExtractor) {
+        List<Long> userIds = items.stream().map(userIdExtractor).distinct().toList();
+        return buildMap(userIds);
     }
 }

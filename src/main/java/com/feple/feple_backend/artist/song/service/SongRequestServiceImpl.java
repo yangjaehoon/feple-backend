@@ -87,16 +87,10 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Transactional(readOnly = true)
     public Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status, String keyword) {
         PageRequest pageable = PageRequest.of(page, size);
-        SongRequestStatus statusEnum;
-        try {
-            statusEnum = (status == null || status.isBlank() || status.equals("ALL"))
-                    ? null : SongRequestStatus.valueOf(status);
-        } catch (IllegalArgumentException e) {
-            statusEnum = SongRequestStatus.PENDING;
-        }
+        SongRequestStatus statusFilter = parseStatus(status);
         String kw = LikeEscaper.escapeOrNull(keyword);
-        Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusEnum, kw, pageable);
-        Map<Long, String> nicknameMap = nicknameMap(requestsPage.getContent());
+        Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusFilter, kw, pageable);
+        Map<Long, String> nicknameMap = nicknameResolver.buildMap(requestsPage.getContent(), SongRequest::getUserId);
         return requestsPage.map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameResolver.UNKNOWN)));
     }
 
@@ -111,7 +105,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     public List<SongRequestResponseDto> getPendingRequests(Long artistId) {
         List<SongRequest> requests = songRequestRepository
                 .findByArtistIdAndStatusOrderByCreatedAtDesc(artistId, SongRequestStatus.PENDING);
-        Map<Long, String> nicknameMap = nicknameMap(requests);
+        Map<Long, String> nicknameMap = nicknameResolver.buildMap(requests, SongRequest::getUserId);
         return requests.stream()
                 .map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameResolver.UNKNOWN)))
                 .toList();
@@ -150,9 +144,13 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         return songSaved;
     }
 
-    private Map<Long, String> nicknameMap(List<SongRequest> requests) {
-        return nicknameResolver.buildMap(
-                requests.stream().map(SongRequest::getUserId).distinct().toList());
+    private SongRequestStatus parseStatus(String status) {
+        if (status == null || status.isBlank() || status.equals("ALL")) return null;
+        try {
+            return SongRequestStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            return SongRequestStatus.PENDING;
+        }
     }
 
     @Override
