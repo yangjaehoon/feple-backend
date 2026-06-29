@@ -372,10 +372,9 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     @Override
     @Transactional
-    public int incrementViewCount(Long postId) {
+    public void incrementViewCount(Long postId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         post.incrementViewCount();
-        return post.getViewCount();
     }
 
     @Override

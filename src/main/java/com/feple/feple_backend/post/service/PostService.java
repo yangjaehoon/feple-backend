@@ -30,7 +30,7 @@ public interface PostService {
     List<PostResponseDto> getMyPosts(Long userId);
     CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size);
     long countMyPosts(Long userId);
-    int incrementViewCount(Long postId);
+    void incrementViewCount(Long postId);
     List<PostResponseDto> getLikedPosts(Long userId);
     long countLikedPosts(Long userId);
 }

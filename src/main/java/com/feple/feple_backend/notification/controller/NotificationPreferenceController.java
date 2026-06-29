@@ -28,6 +28,7 @@ public class NotificationPreferenceController {
     public ResponseEntity<NotificationPreferenceDto> updatePreferences(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody UpdateNotificationPreferenceDto dto) {
-        return ResponseEntity.ok(preferenceService.updatePreferences(userId, dto));
+        preferenceService.updatePreferences(userId, dto);
+        return ResponseEntity.ok(preferenceService.getPreferences(userId));
     }
 }

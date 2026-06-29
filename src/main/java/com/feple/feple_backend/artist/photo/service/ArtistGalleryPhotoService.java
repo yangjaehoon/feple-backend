@@ -111,15 +111,21 @@ public class ArtistGalleryPhotoService {
     }
 
     @Transactional
-    public ArtistGalleryPhotoResponseDto update(Long photoId, Long userId, UpdatePhotoRequestDto command) {
+    public void update(Long photoId, Long userId, UpdatePhotoRequestDto command) {
         ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         if (!photo.getUploaderId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 수정할 수 있습니다.");
         }
         photo.updateTitleAndDescription(command.title(), command.description());
+    }
+
+    @Transactional(readOnly = true)
+    public ArtistGalleryPhotoResponseDto getPhoto(Long photoId, Long currentUserId) {
+        ArtistGalleryPhoto photo = EntityFinder.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
-        boolean isLiked = artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, userId);
-        return ArtistGalleryPhotoResponseDto.from(photo, url, isLiked, userId);
+        boolean isLiked = currentUserId != null &&
+                artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, currentUserId);
+        return ArtistGalleryPhotoResponseDto.from(photo, url, isLiked, currentUserId);
     }
 
     private void verifyS3ImageObject(String objectKey) {

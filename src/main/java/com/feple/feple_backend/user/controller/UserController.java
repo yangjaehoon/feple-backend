@@ -60,8 +60,8 @@ public class UserController {
             @Valid @RequestBody UpdateNicknameDto dto,
             @AuthenticationPrincipal Long userId) {
         requireSelf(id, userId);
-        UserResponseDto updated = userService.updateNickname(id, dto.getNickname());
-        return ResponseEntity.ok(updated);
+        userService.updateNickname(id, dto.getNickname());
+        return ResponseEntity.ok(userService.getUser(id));
     }
 
     @PostMapping("/{id}/profile-image")
@@ -70,7 +70,8 @@ public class UserController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal Long userId) {
         requireSelf(id, userId);
-        return ResponseEntity.ok(userService.updateProfileImage(id, file));
+        userService.updateProfileImage(id, file);
+        return ResponseEntity.ok(userService.getUser(id));
     }
 
     @GetMapping("/me")
@@ -136,7 +137,8 @@ public class UserController {
             @Valid @RequestBody UpdateBioDto dto,
             @AuthenticationPrincipal Long userId) {
         requireSelf(id, userId);
-        return ResponseEntity.ok(userService.updateBio(id, dto.getBio()));
+        userService.updateBio(id, dto.getBio());
+        return ResponseEntity.ok(userService.getUser(id));
     }
 
     @GetMapping("/{id}/song-requests")

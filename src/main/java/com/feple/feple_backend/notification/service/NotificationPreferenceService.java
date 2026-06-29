@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface NotificationPreferenceService {
     NotificationPreferenceDto getPreferences(Long userId);
-    NotificationPreferenceDto updatePreferences(Long userId, UpdateNotificationPreferenceDto dto);
+    void updatePreferences(Long userId, UpdateNotificationPreferenceDto dto);
     NotificationPreference getOrCreate(Long userId);
     Map<Long, NotificationPreference> getOrCreateBatch(List<Long> userIds);
 }

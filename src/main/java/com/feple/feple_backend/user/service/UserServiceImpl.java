@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
     }
 
     @Override
-    public UserResponseDto updateNickname(@NonNull Long id, String nickname) {
+    public void updateNickname(@NonNull Long id, String nickname) {
         NicknameValidator.validate(nickname);
         badWordFilter.validateField("nickname", nickname);
         artistNameFilter.validate(nickname);
@@ -106,27 +106,24 @@ public class UserServiceImpl implements UserService, UserAdminService {
         }
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         user.changeNickname(nickname.trim());
-        return toUserDto(user);
     }
 
     @Override
-    public UserResponseDto updateBio(@NonNull Long id, String bio) {
+    public void updateBio(@NonNull Long id, String bio) {
         if (bio != null) badWordFilter.validateField("bio", bio);
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
         user.updateBio(bio);
-        return toUserDto(user);
     }
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public UserResponseDto updateProfileImage(@NonNull Long id, MultipartFile file) {
+    public void updateProfileImage(@NonNull Long id, MultipartFile file) {
         try {
             // S3 업로드는 커넥션 점유 없이 수행; 완료 후 별도 트랜잭션으로 DB 반영
             User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
             String url = fileStorageService.storeUserProfile(file, user.getNickname());
             user.changeProfileImage(url);
             userRepository.save(user);
-            return toUserDto(user);
         } catch (java.io.IOException e) {
             throw new IllegalStateException("프로필 이미지 저장에 실패했습니다.", e);
         }

@@ -91,7 +91,8 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long photoId,
             @Valid @RequestBody UpdatePhotoRequestDto req,
             @AuthenticationPrincipal Long userId) {
-        return artistGalleryPhotoService.update(photoId, userId, req);
+        artistGalleryPhotoService.update(photoId, userId, req);
+        return artistGalleryPhotoService.getPhoto(photoId, userId);
     }
 
     @PostMapping("/{photoId}/report")

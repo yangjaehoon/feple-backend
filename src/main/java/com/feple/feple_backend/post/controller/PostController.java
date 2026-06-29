@@ -205,8 +205,9 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/view")
-    public ResponseEntity<Integer> incrementView(@PathVariable Long postId) {
-        return ResponseEntity.ok(postService.incrementViewCount(postId));
+    public ResponseEntity<Void> incrementView(@PathVariable Long postId) {
+        postService.incrementViewCount(postId);
+        return ResponseEntity.noContent().build();
     }
 
     // extension → 허용 content-type 매핑으로 확장자·MIME 불일치 업로드 차단
