@@ -10,6 +10,110 @@
     var ocrPendingFile    = null; // 타임테이블 OCR: 파싱 대기 중인 파일
     var lineupPendingFile = null; // 라인업 OCR: 파싱 대기 중인 파일
 
+    // ── 검색 가능 페스티벌 콤보박스 ────────────────────────────
+    function FestivalCombobox(elId) {
+        var root = document.getElementById(elId);
+        root.classList.add('fest-combobox');
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'fest-cb-input';
+        input.placeholder = '페스티벌 검색...';
+        input.autocomplete = 'off';
+
+        var dropdown = document.createElement('div');
+        dropdown.className = 'fest-cb-dropdown';
+
+        root.appendChild(input);
+        root.appendChild(dropdown);
+
+        this._root     = root;
+        this._input    = input;
+        this._dropdown = dropdown;
+        this._value    = '';
+        this._items    = [];
+        this._changeHandlers = [];
+
+        var self = this;
+        input.addEventListener('input', function () { self._filter(); self._open(); });
+        input.addEventListener('focus', function () { self._filter(); self._open(); });
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { self._close(); input.blur(); }
+        });
+        document.addEventListener('mousedown', function (e) {
+            if (!root.contains(e.target)) self._close();
+        });
+    }
+
+    FestivalCombobox.prototype.populate = function (festivals) {
+        this._items = festivals;
+        this._renderList(festivals);
+    };
+
+    FestivalCombobox.prototype._filter = function () {
+        var q = this._input.value.trim().toLowerCase();
+        var filtered = q
+            ? this._items.filter(function (f) { return f.title.toLowerCase().indexOf(q) !== -1; })
+            : this._items;
+        this._renderList(filtered);
+    };
+
+    FestivalCombobox.prototype._renderList = function (items) {
+        var self = this;
+        this._dropdown.innerHTML = '';
+        if (items.length === 0) {
+            var empty = document.createElement('div');
+            empty.className = 'fest-cb-empty';
+            empty.textContent = '검색 결과가 없습니다.';
+            this._dropdown.appendChild(empty);
+            return;
+        }
+        items.forEach(function (f) {
+            var item = document.createElement('div');
+            item.className = 'fest-cb-item' + (String(f.id) === self._value ? ' selected' : '');
+            item.textContent = f.title;
+            item.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                self._select(f);
+            });
+            self._dropdown.appendChild(item);
+        });
+    };
+
+    FestivalCombobox.prototype._select = function (f) {
+        this._value = String(f.id);
+        this._input.value = f.title;
+        this._close();
+        this._root.classList.remove('select-error');
+        var self = this;
+        this._changeHandlers.forEach(function (fn) { fn.call({ value: self._value }); });
+    };
+
+    FestivalCombobox.prototype._open = function () {
+        this._dropdown.classList.add('open');
+    };
+
+    FestivalCombobox.prototype._close = function () {
+        this._dropdown.classList.remove('open');
+    };
+
+    Object.defineProperty(FestivalCombobox.prototype, 'value', {
+        get: function () { return this._value; }
+    });
+
+    FestivalCombobox.prototype.focus = function () { this._input.focus(); };
+
+    FestivalCombobox.prototype.setError = function (hasError) {
+        this._root.classList.toggle('select-error', hasError);
+    };
+
+    FestivalCombobox.prototype.addEventListener = function (type, fn) {
+        if (type === 'change') this._changeHandlers.push(fn);
+    };
+
+    var ocrSelect    = new FestivalCombobox('selFestival');
+    var lineupSelect = new FestivalCombobox('selLineupFestival');
+
     window.AdminUtils.initTabs();
 
     /* ── Gemini 사용량 ── */
@@ -182,18 +286,13 @@
     fetch(CrawlUrls.festivals)
         .then(function (r) { return r.json(); })
         .then(function (festivals) {
-            var sel = document.getElementById('selFestival');
-            festivals.forEach(function (f) {
-                festivalMap[f.id] = f;
-                var opt = document.createElement('option');
-                opt.value = f.id;
-                opt.textContent = f.title;
-                sel.appendChild(opt);
-            });
+            festivals.forEach(function (f) { festivalMap[f.id] = f; });
+            ocrSelect.populate(festivals);
+            lineupSelect.populate(festivals);
         });
 
     /* ── 페스티벌 선택 시 날짜 범위 + 아티스트/스테이지 로드 ── */
-    document.getElementById('selFestival').addEventListener('change', function () {
+    ocrSelect.addEventListener('change', function () {
         var fid = this.value;
         var dateInput = document.getElementById('selDate');
         dateInput.value = '';
@@ -362,25 +461,23 @@
     }
 
     function setOcrFestivalError(msg) {
-        var sel = document.getElementById('selFestival');
-        var err = document.getElementById('ocrFestivalError');
-        err.textContent = msg;
-        sel.classList.toggle('select-error', msg.length > 0);
+        document.getElementById('ocrFestivalError').textContent = msg;
+        ocrSelect.setError(msg.length > 0);
     }
 
     function setOcrStartError(msg) {
         document.getElementById('ocrStartError').textContent = msg;
     }
 
-    document.getElementById('selFestival').addEventListener('change', function () {
+    ocrSelect.addEventListener('change', function () {
         if (this.value) setOcrFestivalError('');
     });
 
     document.getElementById('btnStartOcr').addEventListener('click', function () {
-        var fid = document.getElementById('selFestival').value;
+        var fid = ocrSelect.value;
         if (!fid) {
             setOcrFestivalError('페스티벌을 선택해주세요.');
-            document.getElementById('selFestival').focus();
+            ocrSelect.focus();
             return;
         }
         setOcrFestivalError('');
@@ -593,7 +690,7 @@
 
     /* ── 타임테이블에 적용 ── */
     document.getElementById('btnApplyOcr').addEventListener('click', function () {
-        var fid = document.getElementById('selFestival').value;
+        var fid = ocrSelect.value;
         if (!fid) { showApplyResult('error', '페스티벌을 선택해주세요.'); return; }
 
         var entries = collectOcrEntries();
@@ -666,18 +763,7 @@
     //  라인업 OCR
     // ════════════════════════════════════════════════════════
 
-    /* ── 페스티벌 드롭다운 공유 ── */
-    fetch(CrawlUrls.festivals)
-        .then(function (r) { return r.json(); })
-        .then(function (festivals) {
-            var sel = document.getElementById('selLineupFestival');
-            festivals.forEach(function (f) {
-                var opt = document.createElement('option');
-                opt.value = f.id;
-                opt.textContent = f.title;
-                sel.appendChild(opt);
-            });
-        });
+    /* ── 페스티벌 드롭다운 (ocrSelect.populate 시 함께 처리) ── */
 
     /* ── 파일 업로드 ── */
     var lineupDropZone  = document.getElementById('lineupDropZone');
@@ -752,25 +838,23 @@
     }
 
     function setLineupFestivalError(msg) {
-        var sel = document.getElementById('selLineupFestival');
-        var err = document.getElementById('lineupFestivalError');
-        err.textContent = msg;
-        sel.classList.toggle('select-error', msg.length > 0);
+        document.getElementById('lineupFestivalError').textContent = msg;
+        lineupSelect.setError(msg.length > 0);
     }
 
     function setLineupStartError(msg) {
         document.getElementById('lineupStartError').textContent = msg;
     }
 
-    document.getElementById('selLineupFestival').addEventListener('change', function () {
+    lineupSelect.addEventListener('change', function () {
         if (this.value) setLineupFestivalError('');
     });
 
     document.getElementById('btnStartLineup').addEventListener('click', function () {
-        var fid = document.getElementById('selLineupFestival').value;
+        var fid = lineupSelect.value;
         if (!fid) {
             setLineupFestivalError('페스티벌을 선택해주세요.');
-            document.getElementById('selLineupFestival').focus();
+            lineupSelect.focus();
             return;
         }
         setLineupFestivalError('');
@@ -836,7 +920,7 @@
 
     /* ── 등록 실행 ── */
     document.getElementById('btnApplyLineup').addEventListener('click', function () {
-        var fid = document.getElementById('selLineupFestival').value;
+        var fid = lineupSelect.value;
         if (!fid) { showApplyResult('error', '페스티벌을 선택해주세요.'); return; }
 
         var artistIds = [];
