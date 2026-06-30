@@ -121,7 +121,9 @@ public class OcrService {
         return new ArtistLineupOcrResult(raw.name(), null, null, conf);
     }
 
-    @Transactional
+    // @Transactional 제거: addArtistToFestival(ConflictException 발생 시)이 외부 트랜잭션을
+    // rollback-only로 마킹해 UnexpectedRollbackException이 발생하는 것을 방지.
+    // 각 addArtistToFestival 호출은 자신의 독립 트랜잭션을 사용함.
     public LineupApplyResult applyArtistLineup(Long festivalId, List<Long> artistIds, List<String> unmatchedNames) {
         int added = 0;
         int duplicates = 0;
@@ -145,8 +147,9 @@ public class OcrService {
         for (String name : names) {
             if (name == null || name.isBlank()) continue;
             String trimmed = name.trim();
+            // 트랜잭션 없이 호출되므로 더티 체킹 대신 명시적 save() 필요
             suggestionRepository.findByNameIgnoreCase(trimmed).ifPresentOrElse(
-                    UnmatchedArtistSuggestion::incrementMentionCount,
+                    s -> { s.incrementMentionCount(); suggestionRepository.save(s); },
                     () -> suggestionRepository.save(UnmatchedArtistSuggestion.of(trimmed))
             );
         }
