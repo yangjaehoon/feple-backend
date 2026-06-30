@@ -208,10 +208,10 @@ class CrawlAdminControllerTest {
 
     @Test
     void 라인업_OCR_적용_성공_결과_반환() throws Exception {
-        given(ocrService.applyArtistLineup(anyLong(), anyList()))
+        given(ocrService.applyArtistLineup(anyLong(), anyList(), any()))
                 .willReturn(new LineupApplyResult(2, 2, 0));
 
-        LineupApplyOcrRequestDto req = new LineupApplyOcrRequestDto(1L, List.of(10L, 11L));
+        LineupApplyOcrRequestDto req = new LineupApplyOcrRequestDto(1L, List.of(10L, 11L), List.of());
 
         mockMvc.perform(post("/admin/crawl/ocr/lineup/apply")
                         .contentType(MediaType.APPLICATION_JSON)
