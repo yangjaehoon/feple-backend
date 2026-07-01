@@ -1044,7 +1044,7 @@
     document.getElementById('btnRefreshSuggestions').addEventListener('click', loadSuggestions);
 
     /* 라인업 탭 활성화 시 제안 목록 로드 */
-    document.querySelectorAll('.crawl-tab-btn').forEach(function (btn) {
+    document.querySelectorAll('.header-tab-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             if (this.getAttribute('data-tab') === 'lineup') loadSuggestions();
         });
@@ -1052,7 +1052,7 @@
 
     /* 라인업 탭이 기본 활성화 상태이면 즉시 로드 */
     (function () {
-        var active = document.querySelector('.crawl-tab-btn.active');
+        var active = document.querySelector('.header-tab-btn.active');
         if (active && active.getAttribute('data-tab') === 'lineup') loadSuggestions();
     })();
 
