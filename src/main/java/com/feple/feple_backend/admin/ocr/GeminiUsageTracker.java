@@ -1,13 +1,15 @@
 package com.feple.feple_backend.admin.ocr;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
+@RequiredArgsConstructor
 public class GeminiUsageTracker {
 
     private static final ZoneId PACIFIC = ZoneId.of("America/Los_Angeles");
@@ -15,29 +17,26 @@ public class GeminiUsageTracker {
     @Value("${app.gemini.daily-limit:500}")
     private int dailyLimit;
 
-    private final AtomicInteger todayCount = new AtomicInteger(0);
-    private volatile LocalDate trackingDate = LocalDate.now(PACIFIC);
+    private final GeminiDailyUsageRepository repository;
 
+    @Transactional
     public synchronized void increment() {
-        resetIfNewDay();
-        todayCount.incrementAndGet();
+        LocalDate today = LocalDate.now(PACIFIC);
+        GeminiDailyUsage usage = repository.findById(today)
+                .orElse(GeminiDailyUsage.of(today));
+        usage.increment();
+        repository.save(usage);
     }
 
-    public synchronized int getTodayCount() {
-        resetIfNewDay();
-        return todayCount.get();
+    @Transactional(readOnly = true)
+    public int getTodayCount() {
+        LocalDate today = LocalDate.now(PACIFIC);
+        return repository.findById(today)
+                .map(GeminiDailyUsage::getCount)
+                .orElse(0);
     }
 
     public int getDailyLimit() {
         return dailyLimit;
-    }
-
-    // 호출자가 이미 synchronized 메서드 안에 있을 때만 사용
-    private void resetIfNewDay() {
-        LocalDate today = LocalDate.now(PACIFIC);
-        if (!today.equals(trackingDate)) {
-            trackingDate = today;
-            todayCount.set(0);
-        }
     }
 }
