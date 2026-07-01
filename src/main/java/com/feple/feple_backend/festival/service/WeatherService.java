@@ -131,13 +131,13 @@ public class WeatherService {
                 .build().toUri();
 
         JsonNode body = restTemplate.getForObject(uri, JsonNode.class);
-        JsonNode items = body.path("response").path("body").path("items").path("item");
 
         String resultCode = body.path("response").path("header").path("resultCode").asText();
         if (!KMA_SUCCESS_CODE.equals(resultCode)) {
             throw new IllegalStateException("기상청 API 오류: " + resultCode);
         }
 
+        JsonNode items = body.path("response").path("body").path("items").path("item");
         return parseWeather(items, targetDate.format(DATE_FMT));
     }
 
