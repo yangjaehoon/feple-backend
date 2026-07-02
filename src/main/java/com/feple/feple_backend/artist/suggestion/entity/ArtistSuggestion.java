@@ -34,9 +34,17 @@ public class ArtistSuggestion extends BaseTimeEntity {
 
     private LocalDateTime processedAt;
 
+    private Long approvedArtistId;
+
     @PrePersist
     protected void onCreate() {
         if (this.status == null) this.status = ArtistSuggestionStatus.PENDING;
+    }
+
+    public void approve(Long artistId) {
+        this.status = ArtistSuggestionStatus.APPROVED;
+        this.approvedArtistId = artistId;
+        this.processedAt = LocalDateTime.now();
     }
 
     public void dismiss(String processNote) {

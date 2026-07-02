@@ -99,11 +99,21 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @Override
     @EvictAdminPendingCaches
     @Transactional
+    public void approve(Long suggestionId, Long artistId) {
+        ArtistSuggestion suggestion = EntityFinder.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
+        suggestion.approve(artistId);
+        eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
+                suggestion.getUserId(), artistId, suggestion.getArtistName(), null));
+    }
+
+    @Override
+    @EvictAdminPendingCaches
+    @Transactional
     public void dismiss(Long suggestionId, String processNote) {
         ArtistSuggestion suggestion = EntityFinder.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
         suggestion.dismiss(processNote);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
-                suggestion.getUserId(), suggestion.getArtistName(), processNote));
+                suggestion.getUserId(), null, suggestion.getArtistName(), processNote));
     }
 
 }

@@ -32,6 +32,22 @@ public class ArtistSuggestionAdminController {
         return "admin/artist/suggestions";
     }
 
+    @PostMapping("/{id}/approve")
+    public String approve(@PathVariable Long id,
+                          @RequestParam Long artistId,
+                          RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    artistSuggestionAdminService.approve(id, artistId);
+                    adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST_SUGGESTION", id, null);
+                },
+                "아티스트 신청이 승인되었습니다.",
+                e -> log.error("아티스트 신청 승인 실패: id={}, artistId={}", id, artistId, e),
+                "승인 중 오류가 발생했습니다.",
+                ra);
+        return "redirect:/admin/artist-suggestions";
+    }
+
     @PostMapping("/{id}/dismiss")
     public String dismiss(@PathVariable Long id,
                           @RequestParam(defaultValue = "") String processNote,

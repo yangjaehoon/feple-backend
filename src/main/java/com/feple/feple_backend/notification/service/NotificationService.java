@@ -146,9 +146,16 @@ public class NotificationService {
         String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
         String titleEn = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN;
         String bodyEn = NotificationMessages.artistSuggestionProcessedBodyEn(event.artistName(), event.note());
-        notificationRepository.save(
-                Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, (Festival) null));
-        maybePush(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, null);
+        String linkId = event.artistId() != null ? String.valueOf(event.artistId()) : null;
+        if (event.artistId() != null) {
+            Artist artist = artistRepository.findById(event.artistId()).orElse(null);
+            notificationRepository.save(
+                    Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, artist));
+        } else {
+            notificationRepository.save(
+                    Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, (Festival) null));
+        }
+        maybePush(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, linkId);
     }
 
     @Async
