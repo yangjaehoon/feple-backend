@@ -21,6 +21,7 @@ public class SongRequestResponseDto {
     private String userNickname;
     private Long artistId;
     private String artistName;
+    private String artistNameEn;
 
     public static SongRequestResponseDto from(SongRequest request, String userNickname) {
         return SongRequestResponseDto.builder()
@@ -35,6 +36,7 @@ public class SongRequestResponseDto {
                 .userNickname(userNickname)
                 .artistId(request.getArtistId())
                 .artistName(request.getArtistName())
+                .artistNameEn(request.getArtistNameEn())
                 .build();
     }
 }
