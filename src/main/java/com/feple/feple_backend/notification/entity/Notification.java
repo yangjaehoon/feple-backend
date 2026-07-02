@@ -1,5 +1,6 @@
 package com.feple.feple_backend.notification.entity;
 
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.User;
@@ -48,9 +49,14 @@ public class Notification {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist_id")
+    private Artist artist;
+
     public Long getReferenceId() {
         if (festival != null) return festival.getId();
         if (post != null) return post.getId();
+        if (artist != null) return artist.getId();
         return null;
     }
 
@@ -87,6 +93,21 @@ public class Notification {
         notification.titleEn = titleEn;
         notification.bodyEn = bodyEn;
         notification.post = post;
+        return notification;
+    }
+
+    public static Notification of(User user, NotificationType type,
+                                   String title, String body,
+                                   String titleEn, String bodyEn,
+                                   Artist artist) {
+        Notification notification = new Notification();
+        notification.user = user;
+        notification.type = type;
+        notification.title = title;
+        notification.body = body;
+        notification.titleEn = titleEn;
+        notification.bodyEn = bodyEn;
+        notification.artist = artist;
         return notification;
     }
 

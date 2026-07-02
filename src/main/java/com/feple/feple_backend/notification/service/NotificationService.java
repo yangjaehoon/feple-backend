@@ -1,5 +1,7 @@
 package com.feple.feple_backend.notification.service;
 
+import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.festival.entity.Festival;
@@ -38,6 +40,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final ArtistFollowRepository artistFollowRepository;
+    private final ArtistRepository artistRepository;
     private final UserDeviceTokenRepository deviceTokenRepository;
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
@@ -107,14 +110,14 @@ public class NotificationService {
     public void onSongRequestApproved(SongRequestApprovedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
+        Artist artist = artistRepository.findById(event.artistId()).orElse(null);
         String title = NotificationMessages.SONG_REQUEST_APPROVED_TITLE;
         String body = NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName());
         String titleEn = NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN;
         String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistName());
-        Festival noFestival = null;
         notificationRepository.save(
-                Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, noFestival));
-        maybePush(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, null);
+                Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, artist));
+        maybePush(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, String.valueOf(event.artistId()));
     }
 
     @Async
@@ -123,14 +126,14 @@ public class NotificationService {
     public void onSongRequestRejected(SongRequestRejectedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
+        Artist artist = artistRepository.findById(event.artistId()).orElse(null);
         String title = NotificationMessages.SONG_REQUEST_REJECTED_TITLE;
         String body = NotificationMessages.songRequestRejectedBody(event.songTitle(), event.reason());
         String titleEn = NotificationMessages.SONG_REQUEST_REJECTED_TITLE_EN;
         String bodyEn = NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason());
-        Festival noFestival = null;
         notificationRepository.save(
-                Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, noFestival));
-        maybePush(event.userId(), NotificationType.SONG_REQUEST_REJECTED, title, body, null);
+                Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, artist));
+        maybePush(event.userId(), NotificationType.SONG_REQUEST_REJECTED, title, body, String.valueOf(event.artistId()));
     }
 
     @Async

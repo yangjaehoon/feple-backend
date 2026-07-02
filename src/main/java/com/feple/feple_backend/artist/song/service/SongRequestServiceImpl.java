@@ -140,7 +140,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         }
 
         eventPublisher.publishEvent(new SongRequestApprovedEvent(
-                request.getUserId(), request.getSongTitle(), request.getArtistName()));
+                request.getUserId(), request.getArtistId(), request.getSongTitle(), request.getArtistName()));
         return songSaved;
     }
 
@@ -160,7 +160,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
         request.reject();
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
-                request.getUserId(), request.getSongTitle(), request.getArtistName(), reason));
+                request.getUserId(), request.getArtistId(), request.getSongTitle(), request.getArtistName(), reason));
     }
 
 }
