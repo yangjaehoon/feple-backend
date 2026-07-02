@@ -8,6 +8,8 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
+import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
+import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.CountRowMapper;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort.Direction;
@@ -53,6 +56,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     private final ArtistRepository artistRepository;
     private final ArtistFollowRepository artistFollowRepository;
+    private final ArtistFestivalRepository artistFestivalRepository;
     private final FileStorageService fileStorageService;
     private final ArtistCascadeDeleteService cascadeDeleteService;
     private final SongRepository songRepository;
@@ -272,6 +276,42 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
         artistNameFilter.reload();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArtistResponseDto> getRelatedArtists(Long artistId, int limit) {
+        List<Long> festivalIds = artistFestivalRepository
+                .findByArtistIdOrderByFestivalStartDateAsc(artistId)
+                .stream()
+                .map(ArtistFestival::getFestivalId)
+                .toList();
+        if (festivalIds.isEmpty()) return List.of();
+
+        // 같은 페스티벌에 출연한 다른 아티스트의 공동 출연 횟수 집계
+        Map<Long, Long> coAppearanceCount = artistFestivalRepository
+                .findByFestivalIdInWithArtist(festivalIds)
+                .stream()
+                .filter(af -> !af.getArtistId().equals(artistId))
+                .collect(Collectors.groupingBy(ArtistFestival::getArtistId, Collectors.counting()));
+
+        if (coAppearanceCount.isEmpty()) return List.of();
+
+        // 공동 출연 많은 순 → 상위 limit 개 아티스트 ID 추출
+        List<Long> topIds = coAppearanceCount.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue(Comparator.reverseOrder()))
+                .limit(limit)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        Map<Long, Artist> artistMap = artistRepository.findAllById(topIds).stream()
+                .collect(Collectors.toMap(Artist::getId, a -> a));
+
+        return topIds.stream()
+                .map(artistMap::get)
+                .filter(Objects::nonNull)
+                .map(this::toDto)
+                .toList();
     }
 
     @Override

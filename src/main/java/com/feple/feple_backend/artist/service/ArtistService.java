@@ -25,5 +25,6 @@ public interface ArtistService {
     void batchUpdateNameEn(List<Long> ids, List<String> nameEns);
     void deleteArtist(Long id);
     List<ArtistResponseDto> getFollowedArtists(Long userId);
+    List<ArtistResponseDto> getRelatedArtists(Long artistId, int limit);
     long getTotalCount();
 }

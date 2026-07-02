@@ -36,4 +36,9 @@ public class ArtistController {
     public List<ArtistScheduleResponseDto> getArtistSchedule(@PathVariable Long id) {
         return artistScheduleService.getArtistSchedule(id);
     }
+
+    @GetMapping("/{id}/related")
+    public List<ArtistResponseDto> getRelatedArtists(@PathVariable Long id) {
+        return artistService.getRelatedArtists(id, 10);
+    }
 }
