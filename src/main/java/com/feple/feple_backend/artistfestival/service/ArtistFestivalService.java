@@ -230,6 +230,7 @@ public class ArtistFestivalService {
                 .artistFestivalId(af.getId())
                 .artistId(af.getArtistId())
                 .artistName(af.getArtistName())
+                .artistNameEn(af.getArtistNameEn())
                 .artistGenre(af.getArtistGenreDisplayName())
                 .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
                 .lineupOrder(af.getLineupOrder())

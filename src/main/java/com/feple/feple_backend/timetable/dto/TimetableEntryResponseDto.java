@@ -17,11 +17,13 @@ public class TimetableEntryResponseDto {
     private String stageName;
     private int stageOrder;
     private String artistName;
+    private String artistNameEn;
     private String festivalDate;
     private String startTime;
     private String endTime;
     private String color;
     private List<String> memberArtistNames;
+    private List<String> memberArtistNameEnList;
     private List<Long> memberArtistIds;
 
     private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
@@ -34,11 +36,13 @@ public class TimetableEntryResponseDto {
                 .stageName(e.getStageName())
                 .stageOrder(order)
                 .artistName(e.getArtistName())
+                .artistNameEn(e.getArtistNameEn())
                 .festivalDate(e.getFestivalDate().toString())
                 .startTime(e.getStartTime().format(HH_MM))
                 .endTime(e.getEndTime().format(HH_MM))
                 .color(e.getColor())
                 .memberArtistNames(members.stream().map(TimetableEntryMember::getArtistName).toList())
+                .memberArtistNameEnList(members.stream().map(TimetableEntryMember::getArtistNameEn).toList())
                 .memberArtistIds(members.stream().map(TimetableEntryMember::getArtistId).filter(Objects::nonNull).toList())
                 .build();
     }

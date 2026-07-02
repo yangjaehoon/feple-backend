@@ -12,6 +12,7 @@ public class ArtistFestivalResponseDto {
 
     private Long artistId;
     private String artistName;
+    private String artistNameEn;
     private String artistGenre;
     private String profileImageUrl;
 

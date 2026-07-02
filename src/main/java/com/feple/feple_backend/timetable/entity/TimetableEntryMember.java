@@ -32,4 +32,8 @@ public class TimetableEntryMember {
     public Long getArtistId() {
         return artist != null ? artist.getId() : null;
     }
+
+    public String getArtistNameEn() {
+        return artist != null ? artist.getNameEn() : "";
+    }
 }

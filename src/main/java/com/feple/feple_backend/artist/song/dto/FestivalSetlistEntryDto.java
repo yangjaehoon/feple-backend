@@ -11,6 +11,7 @@ public class FestivalSetlistEntryDto {
     private Long artistFestivalId;
     private Long artistId;
     private String artistName;
+    private String artistNameEn;
     private String profileImageUrl;
     private List<SongResponseDto> songs;
 }

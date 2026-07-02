@@ -70,6 +70,10 @@ public class TimetableEntry {
         return artist != null ? artist.getName() : "";
     }
 
+    public String getArtistNameEn() {
+        return artist != null ? artist.getNameEn() : "";
+    }
+
     public String getStageName() {
         if (stageName != null) return stageName;
         return stage != null ? stage.getName() : null;

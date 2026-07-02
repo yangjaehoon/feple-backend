@@ -129,6 +129,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
                         .artistFestivalId(af.getId())
                         .artistId(af.getArtistId())
                         .artistName(af.getArtistName())
+                        .artistNameEn(af.getArtistNameEn())
                         .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
                         .songs(songsByAfId.getOrDefault(af.getId(), List.of()))
                         .build())
