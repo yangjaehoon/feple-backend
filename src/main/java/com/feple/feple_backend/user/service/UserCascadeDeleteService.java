@@ -17,6 +17,7 @@ import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +46,7 @@ public class UserCascadeDeleteService {
     private final SongRequestRepository songRequestRepository;
     private final ArtistSuggestionRepository artistSuggestionRepository;
 
+    private final UserBlockService userBlockService;
     private final FileStorageService fileStorageService;
 
     public void delete(User user) {
@@ -70,6 +72,7 @@ public class UserCascadeDeleteService {
         certificationRepository.deleteByUserId(id);
         songRequestRepository.deleteByUserId(id);
         artistSuggestionRepository.deleteByUserId(id);
+        userBlockService.removeAllByUser(id);
 
         // 게시글·댓글은 익명 처리 후 유지 (작성자 닉네임은 "(탈퇴한 사용자)"로 표시됨)
         user.softDelete();

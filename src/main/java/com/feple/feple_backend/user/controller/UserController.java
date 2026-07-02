@@ -17,6 +17,8 @@ import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserService;
+import com.feple.feple_backend.userblock.dto.BlockedUserDto;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -44,6 +46,7 @@ public class UserController {
     private final DeviceTokenService deviceTokenService;
     private final SongRequestService songRequestService;
     private final FestivalCertificationService certificationService;
+    private final UserBlockService userBlockService;
 
     @GetMapping("/check-nickname")
     public ResponseEntity<java.util.Map<String, Object>> checkNickname(
@@ -158,6 +161,30 @@ public class UserController {
         requireSelf(id, userId);
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── 차단 ──
+
+    @PostMapping("/{targetId}/block")
+    public ResponseEntity<Void> blockUser(
+            @PathVariable Long targetId,
+            @AuthenticationPrincipal Long userId) {
+        userBlockService.block(userId, targetId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{targetId}/block")
+    public ResponseEntity<Void> unblockUser(
+            @PathVariable Long targetId,
+            @AuthenticationPrincipal Long userId) {
+        userBlockService.unblock(userId, targetId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/blocked")
+    public ResponseEntity<List<BlockedUserDto>> getBlockedUsers(
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(userBlockService.getBlockedUsers(userId));
     }
 
     private void requireSelf(Long pathId, Long authenticatedId) {
