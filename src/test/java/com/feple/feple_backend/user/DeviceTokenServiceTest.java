@@ -33,7 +33,7 @@ class DeviceTokenServiceTest {
         given(tokenRepository.findByUserIdAndToken(1L, "token"))
                 .willReturn(Optional.of(mock(UserDeviceToken.class)));
 
-        deviceTokenService.register(1L, "token", "android");
+        deviceTokenService.register(1L, "token", "android", "ko");
 
         then(tokenRepository).should().deleteByTokenAndOtherUsers("token", 1L);
         then(tokenRepository).should(never()).save(any());
@@ -44,7 +44,7 @@ class DeviceTokenServiceTest {
         given(tokenRepository.findByUserIdAndToken(1L, "token")).willReturn(Optional.empty());
         given(userRepository.findById(1L)).willReturn(Optional.of(mock(User.class)));
 
-        deviceTokenService.register(1L, "token", "android");
+        deviceTokenService.register(1L, "token", "android", "ko");
 
         then(tokenRepository).should().save(any(UserDeviceToken.class));
     }
@@ -54,7 +54,7 @@ class DeviceTokenServiceTest {
         given(tokenRepository.findByUserIdAndToken(1L, "token")).willReturn(Optional.empty());
         given(userRepository.findById(1L)).willReturn(Optional.of(mock(User.class)));
 
-        deviceTokenService.register(1L, "token", "android");
+        deviceTokenService.register(1L, "token", "android", "ko");
 
         then(tokenRepository).should().deleteByTokenAndOtherUsers("token", 1L);
     }
