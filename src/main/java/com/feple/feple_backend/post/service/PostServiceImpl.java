@@ -25,6 +25,7 @@ import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.post.event.PostCreatedEvent;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -64,7 +65,9 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.save(buildPost(dto, user, new PostContext(dto.getBoardType(), null, null))).getId();
+        Long postId = postRepository.save(buildPost(dto, user, new PostContext(dto.getBoardType(), null, null))).getId();
+        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
+        return postId;
     }
 
     @Override
@@ -249,7 +252,9 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.save(buildPost(dto, user, new PostContext(null, artist, null))).getId();
+        Long postId = postRepository.save(buildPost(dto, user, new PostContext(null, artist, null))).getId();
+        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
+        return postId;
     }
 
     @Override
@@ -278,7 +283,9 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.save(buildPost(dto, user, new PostContext(null, null, festival))).getId();
+        Long postId = postRepository.save(buildPost(dto, user, new PostContext(null, null, festival))).getId();
+        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
+        return postId;
     }
 
     @Override
@@ -307,7 +314,9 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
     public Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        return postRepository.save(buildPost(dto, user, new PostContext(boardType, null, festival))).getId();
+        Long postId = postRepository.save(buildPost(dto, user, new PostContext(boardType, null, festival))).getId();
+        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
+        return postId;
     }
 
     @Override

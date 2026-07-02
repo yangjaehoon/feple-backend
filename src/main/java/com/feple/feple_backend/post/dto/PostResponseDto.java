@@ -37,6 +37,7 @@ public class PostResponseDto {
     private boolean anonymous;
     private String imageUrl;
     private LocalDateTime deletedAt;
+    private String authorLevel;
 
     public static PostResponseDto from(Post post) {
         return from(post, false);
@@ -66,6 +67,7 @@ public class PostResponseDto {
                 .anonymous(anon)
                 .imageUrl(post.getImageUrl())
                 .deletedAt(post.getDeletedAt())
+                .authorLevel(anon ? null : post.getAuthorLevel())
                 .build();
     }
 }

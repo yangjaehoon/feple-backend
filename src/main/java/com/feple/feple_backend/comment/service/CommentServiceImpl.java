@@ -66,11 +66,15 @@ public class CommentServiceImpl implements CommentService {
 
         if (!postAuthorId.equals(userId)) {
             eventPublisher.publishEvent(
-                    new CommentCreatedEvent(postAuthorId, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId));
+                    new CommentCreatedEvent(postAuthorId, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId, userId));
         } else if (parentCommentAuthorId != null) {
             // 게시글 작성자가 자기 게시글에 댓글을 달아도 원댓글 작성자에게는 알림 필요
             eventPublisher.publishEvent(
-                    new CommentCreatedEvent(null, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId));
+                    new CommentCreatedEvent(null, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId, userId));
+        } else {
+            // 게시글 작성자가 자기 게시글에 최상위 댓글 — 알림 없음, 포인트만 지급
+            eventPublisher.publishEvent(
+                    new CommentCreatedEvent(null, commenterName, post.getTitle(), post.getId(), null, userId));
         }
 
         boolean certified = post.getFestivalId() != null &&

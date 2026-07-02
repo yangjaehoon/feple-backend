@@ -18,6 +18,7 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
@@ -45,6 +46,7 @@ public class FestivalCertificationService {
     private final FestivalRepository festivalRepository;
     private final S3PresignService s3PresignService;
     private final NotificationService notificationService;
+    private final PointService pointService;
 
     @Transactional
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
@@ -132,6 +134,7 @@ public class FestivalCertificationService {
     public void approve(Long certId, String reviewerName) {
         FestivalCertification cert = getById(certId);
         cert.approve(reviewerName);
+        pointService.addCertApprovedPoint(cert.getUserId(), certId);
         // 비동기 알림
         notificationService.notifyCertApproved(
                 cert.getUserId(),

@@ -68,6 +68,10 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int point = 0;
+
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
     public boolean isDeleted() { return deletedAt != null; }
@@ -108,6 +112,14 @@ public class User {
 
     public void updateBio(String bio) {
         this.bio = bio;
+    }
+
+    public void addPoint(int delta) {
+        this.point = Math.max(0, this.point + delta);
+    }
+
+    public UserLevel getLevel() {
+        return UserLevel.of(this.point);
     }
 
     public void softDelete() {

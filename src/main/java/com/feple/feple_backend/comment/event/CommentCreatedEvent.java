@@ -5,5 +5,6 @@ public record CommentCreatedEvent(
     String commenterNickname,
     String postTitle,
     Long postId,
-    Long parentCommentAuthorId  // null이면 최상위 댓글
+    Long parentCommentAuthorId,  // null이면 최상위 댓글
+    Long commenterId             // 포인트 지급 대상
 ) {}

@@ -159,4 +159,8 @@ public class Post {
     public UserRole getAuthorRole() {
         return user.getRole();
     }
+
+    public String getAuthorLevel() {
+        return user.getLevel().name();
+    }
 }
