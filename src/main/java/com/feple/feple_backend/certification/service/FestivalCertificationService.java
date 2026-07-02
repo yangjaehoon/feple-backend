@@ -95,6 +95,19 @@ public class FestivalCertificationService {
     }
 
     @Transactional(readOnly = true)
+    public List<CertificationResponseDto> getPublicCertifications(Long userId) {
+        return certificationRepository.findByUserIdAndStatus(userId, CertificationStatus.APPROVED).stream()
+                .map(cert -> {
+                    String posterUrl = cert.getFestivalPosterKey() != null
+                            ? s3PresignService.presignGetUrl(cert.getFestivalPosterKey())
+                            : null;
+                    String photoUrl = s3PresignService.presignGetUrl(cert.getPhotoKey());
+                    return CertificationResponseDto.from(cert, posterUrl, photoUrl);
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public Page<FestivalCertification> getByStatus(CertificationStatus status, int page) {
         Pageable pageable = PageableFactory.latestFirst(page, 20);
         if (status == null) {

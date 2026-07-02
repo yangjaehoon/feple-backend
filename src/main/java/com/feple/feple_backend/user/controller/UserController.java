@@ -3,6 +3,8 @@ package com.feple.feple_backend.user.controller;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
+import com.feple.feple_backend.certification.dto.CertificationResponseDto;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.global.PageSize;
@@ -41,6 +43,7 @@ public class UserController {
     private final MyPageService myPageService;
     private final DeviceTokenService deviceTokenService;
     private final SongRequestService songRequestService;
+    private final FestivalCertificationService certificationService;
 
     @GetMapping("/check-nickname")
     public ResponseEntity<java.util.Map<String, Object>> checkNickname(
@@ -100,6 +103,11 @@ public class UserController {
     @GetMapping("/{id}/stats")
     public ResponseEntity<UserStatsDto> getUserStats(@PathVariable Long id) {
         return ResponseEntity.ok(myPageService.getUserStats(id));
+    }
+
+    @GetMapping("/{id}/certifications")
+    public ResponseEntity<List<CertificationResponseDto>> getUserCertifications(@PathVariable Long id) {
+        return ResponseEntity.ok(certificationService.getPublicCertifications(id));
     }
 
     @GetMapping("/{id}/posts")
