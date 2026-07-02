@@ -21,15 +21,17 @@ public class DeviceTokenService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void register(Long userId, String token, String platform) {
+    public void register(Long userId, String token, String platform, String language) {
         // 같은 기기에서 계정 전환 시 동일 토큰이 다른 계정에 남아 있으면 제거
         tokenRepository.deleteByTokenAndOtherUsers(token, userId);
 
-        if (tokenRepository.findByUserIdAndToken(userId, token).isPresent()) {
-            return;
-        }
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        tokenRepository.save(UserDeviceToken.of(user, token, DevicePlatform.from(platform)));
+        tokenRepository.findByUserIdAndToken(userId, token).ifPresentOrElse(
+            existing -> existing.updateLanguage(language),
+            () -> {
+                User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+                tokenRepository.save(UserDeviceToken.of(user, token, DevicePlatform.from(platform), language));
+            }
+        );
     }
 
     @Transactional

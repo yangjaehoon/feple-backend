@@ -30,8 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.feple.feple_backend.user.repository.UserDeviceTokenRepository.TokenLanguageProjection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -86,7 +88,7 @@ public class NotificationService {
         String titleEn = NotificationMessages.CERT_APPROVED_TITLE_EN;
         String bodyEn = NotificationMessages.certApprovedBodyEn(festivalTitleEn);
         notificationRepository.save(Notification.of(user, NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, festival));
-        maybePush(userId, NotificationType.CERT_APPROVED, title, body, String.valueOf(festivalId));
+        maybePush(userId, NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, String.valueOf(festivalId));
     }
 
     /** 인증 거절 알림 */
@@ -101,7 +103,7 @@ public class NotificationService {
         String titleEn = NotificationMessages.CERT_REJECTED_TITLE_EN;
         String bodyEn = NotificationMessages.certRejectedBodyEn(festivalTitleEn, reason);
         notificationRepository.save(Notification.of(user, NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, festival));
-        maybePush(userId, NotificationType.CERT_REJECTED, title, body, String.valueOf(festivalId));
+        maybePush(userId, NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, String.valueOf(festivalId));
     }
 
     @Async
@@ -117,7 +119,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistName());
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, artist));
-        maybePush(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, String.valueOf(event.artistId()));
+        maybePush(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
     }
 
     @Async
@@ -133,7 +135,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason());
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, artist));
-        maybePush(event.userId(), NotificationType.SONG_REQUEST_REJECTED, title, body, String.valueOf(event.artistId()));
+        maybePush(event.userId(), NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
     }
 
     @Async
@@ -155,7 +157,7 @@ public class NotificationService {
             notificationRepository.save(
                     Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, (Festival) null));
         }
-        maybePush(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, linkId);
+        maybePush(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, linkId);
     }
 
     @Async
@@ -185,7 +187,7 @@ public class NotificationService {
         Post post = postRepository.findById(event.postId()).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.POST_LIKED, title, body, titleEn, bodyEn, post));
-        maybePush(event.postAuthorId(), NotificationType.POST_LIKED, title, body, String.valueOf(event.postId()));
+        maybePush(event.postAuthorId(), NotificationType.POST_LIKED, title, body, titleEn, bodyEn, String.valueOf(event.postId()));
     }
 
     @Async
@@ -200,7 +202,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.postDeletedByAdminBodyEn(event.postTitle());
         notificationRepository.save(
                 Notification.of(author, NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, (Festival) null));
-        maybePush(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN, title, body, null);
+        maybePush(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, null);
     }
 
     /** 내 게시글에 댓글 알림 */
@@ -220,7 +222,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, post));
-        maybePush(postAuthorId, NotificationType.NEW_COMMENT, title, body, null);
+        maybePush(postAuthorId, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, null);
     }
 
     /** 내 댓글에 대댓글 알림 */
@@ -237,7 +239,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, post));
-        maybePush(parentCommentAuthorId, NotificationType.NEW_REPLY, title, body, null);
+        maybePush(parentCommentAuthorId, NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, null);
     }
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
@@ -257,12 +259,13 @@ public class NotificationService {
         log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, users.size(), festivalId);
     }
 
-    private void maybePush(Long userId, NotificationType type, String title, String body, String linkId) {
+    private void maybePush(Long userId, NotificationType type,
+                            String title, String body, String titleEn, String bodyEn, String linkId) {
         NotificationPreference pref = preferenceService.getOrCreate(userId);
-        if (pref.isEnabledFor(type)) {
-            List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.of(userId));
-            fcmPushService.sendMulticast(tokens, title, body, linkId, type);
-        }
+        if (!pref.isEnabledFor(type)) return;
+        List<TokenLanguageProjection> tokens =
+                deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(userId));
+        sendByLanguage(tokens, title, body, titleEn, bodyEn, linkId, type);
     }
 
     private void saveAndPush(List<User> users, NotificationType type,
@@ -277,8 +280,23 @@ public class NotificationService {
         List<Long> enabledUserIds = allUserIds.stream()
                 .filter(id -> prefMap.get(id).isEnabledFor(type))
                 .toList();
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(enabledUserIds);
-        fcmPushService.sendMulticast(tokens, title, body, linkId, type);
+        List<TokenLanguageProjection> tokens =
+                deviceTokenRepository.findTokensWithLanguageByUserIds(enabledUserIds);
+        sendByLanguage(tokens, title, body, titleEn, bodyEn, linkId, type);
+    }
+
+    private void sendByLanguage(List<TokenLanguageProjection> tokens,
+                                 String title, String body, String titleEn, String bodyEn,
+                                 String linkId, NotificationType type) {
+        Map<String, List<String>> byLang = tokens.stream()
+                .collect(Collectors.groupingBy(
+                        t -> "en".equals(t.getLanguage()) ? "en" : "ko",
+                        Collectors.mapping(TokenLanguageProjection::getToken, Collectors.toList())
+                ));
+        List<String> koTokens = byLang.getOrDefault("ko", List.of());
+        List<String> enTokens = byLang.getOrDefault("en", List.of());
+        if (!koTokens.isEmpty()) fcmPushService.sendMulticast(koTokens, title, body, linkId, type);
+        if (!enTokens.isEmpty()) fcmPushService.sendMulticast(enTokens, titleEn, bodyEn, linkId, type);
     }
 
 }

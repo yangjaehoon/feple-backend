@@ -22,6 +22,15 @@ public interface UserDeviceTokenRepository extends JpaRepository<UserDeviceToken
     @Query("SELECT t.token FROM UserDeviceToken t WHERE t.user.id IN :userIds")
     List<String> findTokensByUserIds(@Param("userIds") List<Long> userIds);
 
+    /** 언어 포함 토큰 조회 — 언어별 분기 푸시용 */
+    @Query("SELECT t.token as token, t.language as language FROM UserDeviceToken t WHERE t.user.id IN :userIds")
+    List<TokenLanguageProjection> findTokensWithLanguageByUserIds(@Param("userIds") List<Long> userIds);
+
+    interface TokenLanguageProjection {
+        String getToken();
+        String getLanguage();
+    }
+
     @Modifying
     @Transactional
     @Query("DELETE FROM UserDeviceToken t WHERE t.user.id = :userId")

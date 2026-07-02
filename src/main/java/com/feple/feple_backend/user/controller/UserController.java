@@ -194,7 +194,8 @@ public class UserController {
 
     record RegisterDeviceTokenRequest(
         @NotBlank(message = "토큰이 필요합니다.") String token,
-        String platform
+        String platform,
+        String language
     ) {}
 
     @PostMapping("/device-token")
@@ -202,7 +203,8 @@ public class UserController {
             @Valid @RequestBody RegisterDeviceTokenRequest req,
             @AuthenticationPrincipal Long userId) {
         String platform = req.platform() != null ? req.platform() : "android";
-        deviceTokenService.register(userId, req.token(), platform);
+        String language = req.language() != null ? req.language() : "ko";
+        deviceTokenService.register(userId, req.token(), platform, language);
         return ResponseEntity.noContent().build();
     }
 

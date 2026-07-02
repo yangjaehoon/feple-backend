@@ -28,14 +28,24 @@ public class UserDeviceToken {
     @Column(length = 10)
     private DevicePlatform platform;
 
+    @Column(length = 10, nullable = false)
+    private String language = "ko";
+
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public static UserDeviceToken of(User user, String token, DevicePlatform platform) {
+    public static UserDeviceToken of(User user, String token, DevicePlatform platform, String language) {
         UserDeviceToken deviceToken = new UserDeviceToken();
         deviceToken.user = user;
         deviceToken.token = token;
         deviceToken.platform = platform;
+        deviceToken.language = (language != null && !language.isBlank()) ? language : "ko";
         return deviceToken;
+    }
+
+    public void updateLanguage(String language) {
+        if (language != null && !language.isBlank()) {
+            this.language = language;
+        }
     }
 }

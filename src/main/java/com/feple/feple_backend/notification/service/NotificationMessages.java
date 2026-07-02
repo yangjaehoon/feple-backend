@@ -5,6 +5,13 @@ public final class NotificationMessages {
 
     private NotificationMessages() {}
 
+    private static final java.util.Map<String, String> ARTIST_REASON_EN_MAP = java.util.Map.of(
+        "요청하신 아티스트를 등록했어요!", "Your requested artist has been registered!",
+        "이미 등록된 아티스트예요.", "The artist is already in our database.",
+        "정보가 부족해서 등록이 어려워요.", "We couldn't register the artist due to insufficient information.",
+        "활동 이력이 없어서 등록이 어려워요.", "The artist doesn't have enough activity history for registration."
+    );
+
     public static String newFestivalTitle(String artistName) {
         return artistName + "의 새 페스티벌";
     }
@@ -129,7 +136,11 @@ public final class NotificationMessages {
 
     public static String artistSuggestionProcessedBodyEn(String artistName, String note) {
         String base = "Your request for '" + artistName + "'";
-        return (note != null && !note.isBlank()) ? base + ": " + note : base + " has been reviewed.";
+        if (note != null && !note.isBlank()) {
+            String translated = ARTIST_REASON_EN_MAP.getOrDefault(note.trim(), note);
+            return base + ": " + translated;
+        }
+        return base + " has been reviewed.";
     }
 
     public static String newReplyTitle(String replierNickname) {
