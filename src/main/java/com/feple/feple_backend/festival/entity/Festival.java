@@ -51,6 +51,7 @@ public class Festival {
     @BatchSize(size = 50)
     @ElementCollection(targetClass = Genre.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "festival_genres", joinColumns = @JoinColumn(name = "festival_id"))
+    @Column(name = "genres", length = 20)
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private List<Genre> genres = new ArrayList<>();
