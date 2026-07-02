@@ -69,6 +69,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     Page<Post> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
+    // 타인 프로필 표시용 — 익명 게시글 제외
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    Page<Post> findByUserAndAnonymousFalseOrderByCreatedAtDesc(User user, Pageable pageable);
+
     // 관리자 상세 — userId 직접 사용 (User 엔티티 사전 조회 불필요)
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query(value = "SELECT p FROM Post p WHERE p.user.id = :userId ORDER BY p.createdAt DESC",

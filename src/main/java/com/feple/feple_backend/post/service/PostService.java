@@ -29,6 +29,7 @@ public interface PostService {
     List<PostResponseDto> searchPosts(String keyword, String boardType);
     List<PostResponseDto> getMyPosts(Long userId);
     CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size);
+    CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size);
     long countMyPosts(Long userId);
     void incrementViewCount(Long postId);
     List<PostResponseDto> getLikedPosts(Long userId);

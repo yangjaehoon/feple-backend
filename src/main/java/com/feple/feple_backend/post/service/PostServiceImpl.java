@@ -360,6 +360,16 @@ public class PostServiceImpl implements PostService, PostAdminService, PostCasca
 
     @Override
     @Transactional(readOnly = true)
+    public CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size) {
+        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        int page = toPage(cursor);
+        Page<Post> result = postRepository.findByUserAndAnonymousFalseOrderByCreatedAtDesc(user, PageRequest.of(page, size));
+        List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
+        return toCursorPage(result, content, cursor);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<PostResponseDto> getRecentPostsByUser(Long userId, int limit) {
         return postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, limit))
                 .stream().map(PostResponseDto::from).toList();

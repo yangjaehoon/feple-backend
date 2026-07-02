@@ -47,6 +47,10 @@ public class MyPageService {
         return postService.getMyPostsPaged(userId, cursor, size);
     }
 
+    public CursorPage<PostResponseDto> getPublicPostsPaged(@NonNull Long userId, Long cursor, int size) {
+        return postService.getPublicPostsPaged(userId, cursor, size);
+    }
+
     public List<PostResponseDto> getLikedPosts(@NonNull Long userId) {
         return postService.getLikedPosts(userId);
     }
