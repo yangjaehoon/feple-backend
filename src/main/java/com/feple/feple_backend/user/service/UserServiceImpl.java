@@ -182,6 +182,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
                 .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl()))
                 .role(user.getRole())
                 .bio(user.getBio())
+                .level(user.getLevel().name())
                 .build();
     }
 

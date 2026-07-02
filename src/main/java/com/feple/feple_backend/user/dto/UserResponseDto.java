@@ -17,6 +17,7 @@ public class UserResponseDto {
     private String profileImageUrl;
     private UserRole role;
     private String bio;
+    private String level;
     /** 관리자 페이지에서만 사용. 공개 API 응답에는 포함하지 않음. */
     private String email;
     /** 관리자 페이지에서만 사용. */
