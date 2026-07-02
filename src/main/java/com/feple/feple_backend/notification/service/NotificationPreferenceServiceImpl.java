@@ -1,0 +1,68 @@
+package com.feple.feple_backend.notification.service;
+
+import com.feple.feple_backend.notification.dto.NotificationPreferenceDto;
+import com.feple.feple_backend.notification.dto.UpdateNotificationPreferenceDto;
+import com.feple.feple_backend.notification.entity.NotificationPreference;
+import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class NotificationPreferenceServiceImpl implements NotificationPreferenceService {
+
+    private final NotificationPreferenceRepository preferenceRepository;
+
+    @Override
+    @Transactional
+    public NotificationPreferenceDto getPreferences(Long userId) {
+        return NotificationPreferenceDto.from(getOrCreate(userId));
+    }
+
+    @Override
+    @Transactional
+    public void updatePreferences(Long userId, UpdateNotificationPreferenceDto dto) {
+        NotificationPreference pref = getOrCreate(userId);
+        pref.update(dto.isCertEnabled(), dto.isCommentEnabled(),
+                dto.isFestivalEnabled(), dto.isSongRequestEnabled());
+    }
+
+    @Override
+    @Transactional
+    public NotificationPreference getOrCreate(Long userId) {
+        return preferenceRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    try {
+                        return preferenceRepository.save(
+                                NotificationPreference.defaultFor(userId));
+                    } catch (DataIntegrityViolationException e) {
+                        // 동시 요청으로 다른 트랜잭션이 먼저 insert한 경우
+                        return preferenceRepository.findByUserId(userId)
+                                .orElseThrow(() -> e);
+                    }
+                });
+    }
+
+    @Override
+    @Transactional
+    public Map<Long, NotificationPreference> getOrCreateBatch(List<Long> userIds) {
+        Map<Long, NotificationPreference> map = new HashMap<>();
+        preferenceRepository.findAllByUserIdIn(userIds).forEach(p -> map.put(p.getUserId(), p));
+
+        List<NotificationPreference> toCreate = userIds.stream()
+                .filter(id -> !map.containsKey(id))
+                .map(NotificationPreference::defaultFor)
+                .toList();
+
+        if (!toCreate.isEmpty()) {
+            preferenceRepository.saveAll(toCreate).forEach(p -> map.put(p.getUserId(), p));
+        }
+        return map;
+    }
+}

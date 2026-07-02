@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('삭제된 게시글')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('posts')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('삭제된 게시글 (휴지통)', '게시글')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="search-bar">
+                <span class="cell-primary">소프트 삭제된 게시글 — 복구 가능</span>
+                <a th:href="@{/admin/posts}" class="btn btn-secondary btn-sm">← 게시글 목록으로</a>
+            </div>
+
+            <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>게시판</th>
+                        <th>삭제일시</th>
+                        <th>복구</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${posts.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(6, '삭제된 게시글이 없습니다.')}"></tr>
+                    <tr th:each="post : ${posts}">
+                        <td th:text="${post.id}"></td>
+                        <td>
+                            <span th:text="${#strings.abbreviate(post.title, 60)}"></span>
+                        </td>
+                        <td th:text="${post.nickname}"></td>
+                        <td th:text="${post.boardType != null ? post.boardType : '-'}"></td>
+                        <td th:text="${post.deletedAt != null ? #temporals.format(post.deletedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                        <td>
+                            <form th:action="@{/admin/posts/{id}/restore(id=${post.id})}" method="post"
+                                  data-confirm="이 게시글을 복구하시겠습니까?">
+                                <button type="submit" class="btn btn-primary btn-sm">복구</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

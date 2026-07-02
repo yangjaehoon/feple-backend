@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('푸시 알림 발송')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('push')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('푸시 알림 발송', '푸시 알림')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 전체 회원 공지 발송 -->
+        <div class="card card-form">
+            <div class="card-header">
+                <div class="card-title">전체 회원 공지 발송</div>
+                <div class="card-count" th:text="${deviceCount} + '명 수신 가능'"></div>
+            </div>
+            <div class="card-body">
+                <form id="broadcast-form" th:action="@{/admin/push}" method="post"
+                      data-confirm="전체 기기에 푸시 알림을 발송하시겠습니까?">
+                    <div class="form-field">
+                        <label class="form-label">제목 *</label>
+                        <input type="text" name="title" required maxlength="100"
+                               placeholder="알림 제목 (최대 100자)"
+                               class="form-input"/>
+                    </div>
+                    <div class="form-field-lg">
+                        <label class="form-label">내용 *</label>
+                        <textarea name="body" required maxlength="500" rows="4"
+                                  placeholder="알림 내용 (최대 500자)"
+                                  class="form-textarea"></textarea>
+                    </div>
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary">발송하기</button>
+                        <span id="device-count" class="hint"
+                              th:text="${deviceCount} + '명'"></span>
+                        <span class="hint">의 기기로 발송됩니다.</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 테스트 발송 -->
+        <div class="card card-form card-dashed mt-16">
+            <div class="card-header card-header-muted">
+                <div class="card-title card-title-muted">테스트 발송</div>
+                <span class="badge-env">TEST</span>
+            </div>
+            <div class="card-body">
+                <form id="test-form" th:action="@{/admin/push/test}" method="post">
+                    <div class="form-field">
+                        <label class="form-label">제목 *</label>
+                        <input type="text" name="title" required maxlength="100"
+                               placeholder="알림 제목 (최대 100자)"
+                               class="form-input"/>
+                    </div>
+                    <div class="form-field-lg">
+                        <label class="form-label">내용 *</label>
+                        <textarea name="body" required maxlength="500" rows="3"
+                                  placeholder="알림 내용 (최대 500자)"
+                                  class="form-textarea"></textarea>
+                    </div>
+
+                    <!-- 닉네임 검색 -->
+                    <div class="form-field">
+                        <label class="form-label-sub">닉네임으로 검색</label>
+                        <div class="input-flex">
+                            <input type="text" id="nickname-search" placeholder="앱 닉네임 입력"
+                                   class="form-input-sm w-200"/>
+                            <button type="button" id="nickname-search-btn" class="btn btn-secondary btn-sm">검색</button>
+                        </div>
+                        <div id="search-result" class="search-result"></div>
+                    </div>
+
+                    <!-- 사용자 ID + 발송 -->
+                    <div id="push-test-error" class="alert alert-danger d-none"></div>
+                    <div class="form-footer-end">
+                        <div>
+                            <label class="form-label-sub">앱 사용자 ID</label>
+                            <input type="number" name="targetUserId" id="target-user-id" min="1"
+                                   placeholder="예) 42"
+                                   class="form-input-sm w-130"/>
+                        </div>
+                        <button type="submit" id="test-send-btn"
+                                class="btn btn-secondary">테스트 발송</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 타겟 발송 카드 -->
+        <div class="card card-form mt-20">
+            <div class="card-header">
+                <div class="card-title">타겟 발송</div>
+            </div>
+            <div class="card-body stack-20">
+                <div class="form-field">
+                    <label class="form-label">제목 *</label>
+                    <input type="text" id="target-card-title" maxlength="100"
+                           placeholder="알림 제목 (최대 100자)"
+                           class="form-input"/>
+                </div>
+                <div class="form-field-lg">
+                    <label class="form-label">내용 *</label>
+                    <textarea id="target-card-body" maxlength="300" rows="3"
+                              placeholder="알림 내용 (최대 300자)"
+                              class="form-textarea"></textarea>
+                </div>
+                <div id="push-target-error" class="alert alert-danger d-none"></div>
+
+                <!-- 아티스트 팔로워 -->
+                <div>
+                    <div class="target-label">아티스트 팔로워에게 발송</div>
+                    <form th:action="@{/admin/push/artist-followers}" method="post"
+                          class="input-flex">
+                        <input type="hidden" name="title" id="target-title-artist"/>
+                        <input type="hidden" name="body"  id="target-body-artist"/>
+                        <select name="artistId" class="select-flex">
+                            <option value="">아티스트 선택</option>
+                            <option th:each="a : ${artists}" th:value="${a.id}" th:text="${a.name}"></option>
+                        </select>
+                        <button type="submit"
+                                class="btn btn-secondary target-send-btn"
+                                data-target="artist">팔로워에게 발송</button>
+                    </form>
+                </div>
+
+                <!-- 페스티벌 인증자 -->
+                <div>
+                    <div class="target-label">페스티벌 인증 참여자에게 발송</div>
+                    <form th:action="@{/admin/push/festival-certified}" method="post"
+                          class="input-flex">
+                        <input type="hidden" name="title" id="target-title-festival"/>
+                        <input type="hidden" name="body"  id="target-body-festival"/>
+                        <select name="festivalId" class="select-flex">
+                            <option value="">페스티벌 선택</option>
+                            <option th:each="f : ${festivals}" th:value="${f.id}" th:text="${f.title}"></option>
+                        </select>
+                        <button type="submit"
+                                class="btn btn-secondary target-send-btn"
+                                data-target="festival">인증자에게 발송</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 주의사항 -->
+        <div class="card card-form mt-20">
+            <div class="card-header">
+                <div class="card-title">주의사항</div>
+            </div>
+            <div class="note-card-body">
+                <ul class="note-list">
+                    <li>앱에 로그인하여 알림 권한을 허용한 회원에게만 발송됩니다.</li>
+                    <li>발송된 알림은 취소할 수 없습니다.</li>
+                    <li>모든 발송 내역은 감사 로그에 기록됩니다.</li>
+                    <li>테스트 발송은 별도 테스트 계정에서 진행해주세요.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 공지 발송 이력 -->
+        <div class="card mt-32">
+            <div class="card-header">
+                <div class="card-title">공지 발송 이력</div>
+                <div class="card-count" th:text="${#lists.size(history)} + '건'"></div>
+            </div>
+            <div th:if="${#lists.isEmpty(history)}" class="card-empty">
+                발송 이력이 없습니다.
+            </div>
+            <div th:unless="${#lists.isEmpty(history)}" class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-w160">발송 시각</th>
+                            <th class="col-w220">제목</th>
+                            <th>내용</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="broadcastEntry : ${history}">
+                            <td class="td-date"
+                                th:text="${#temporals.format(broadcastEntry.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td class="td-bold" th:text="${broadcastEntry.title}"></td>
+                            <td class="td-body">
+                                <span th:text="${#strings.length(broadcastEntry.body) > 80 ? #strings.substring(broadcastEntry.body, 0, 80) + '…' : broadcastEntry.body}"></span>
+                                <button th:if="${#strings.length(broadcastEntry.body) > 80}"
+                                        type="button"
+                                        class="btn-link-inline broadcast-modal-btn"
+                                        th:data-title="${broadcastEntry.title}"
+                                        th:data-body="${broadcastEntry.body}"
+                                        th:data-created-at="${#temporals.format(broadcastEntry.createdAt, 'yyyy-MM-dd HH:mm')}">전체보기</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 공지 내용 전체보기 모달 -->
+<div id="broadcast-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <div id="modal-title" class="modal-title"></div>
+                <div id="modal-date"  class="modal-date"></div>
+            </div>
+            <button type="button" id="modal-close-btn"
+                    class="modal-close">&times;</button>
+        </div>
+        <div id="modal-body" class="modal-body"></div>
+        <div class="modal-footer">
+            <button type="button" id="modal-footer-close-btn" class="btn btn-secondary">닫기</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.PushUrls = { searchUser: /*[[@{/admin/push/search-user}]]*/ '' };
+/*]]>*/
+</script>
+<script th:src="@{/js/admin-push.js}"></script>
+</body>
+</html>

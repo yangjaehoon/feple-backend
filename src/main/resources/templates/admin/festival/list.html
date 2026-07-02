@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('페스티벌 목록')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div th:replace="~{admin/fragments :: pageHeaderInner('페스티벌 목록', '페스티벌')}"></div>
+        <div class="page-actions">
+            <div class="header-tab-group">
+                <button class="header-tab-btn"
+                        th:classappend="${keyword != null and !#strings.isEmpty(keyword)} ? 'active'"
+                        data-tab="list">페스티벌 목록</button>
+                <button class="header-tab-btn"
+                        th:classappend="${keyword == null or #strings.isEmpty(keyword)} ? 'active'"
+                        data-tab="checklist">등록 체크리스트</button>
+            </div>
+            <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌 등록</a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- ══ 탭 1: 페스티벌 목록 ══ -->
+        <div id="tab-list" class="tab-panel"
+             th:classappend="${keyword != null and !#strings.isEmpty(keyword)} ? 'active'">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">전체 페스티벌</div>
+                </div>
+                <div class="search-bar">
+                    <form th:action="@{/admin/festivals}" method="get">
+                        <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '페스티벌명 검색...', @{/admin/festivals})}"></th:block>
+                    </form>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>페스티벌</th>
+                            <th class="col-w80">상태</th>
+                            <th class="col-w100">❤ 좋아요</th>
+                            <th class="col-w80">상세</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="festival, stat : ${festivalsPage.content}">
+                            <!-- 종료 구분선: 첫 번째 종료 항목 앞에만 표시 -->
+                            <tr th:if="${festival.ended
+                                         and (stat.first or !festivalsPage.content[stat.index - 1].ended)}">
+                                <td colspan="4" class="table-section-sep">─── 종료된 페스티벌</td>
+                            </tr>
+
+                            <tr th:classappend="${festival.ended} ? 'row-ended' : ''">
+                                <td>
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                       th:text="${festival.title}"
+                                       class="table-title-link"></a>
+                                    <div class="cell-secondary cell-row">
+                                        <span th:text="${festival.location}"></span>
+                                        <span>·</span>
+                                        <span th:text="${festival.startDate} + ' ~ ' + ${festival.endDate}"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:if="${festival.ended}"    class="badge badge-ended">종료</span>
+                                    <span th:if="${festival.ongoing}"  class="badge badge-ongoing">진행 중</span>
+                                    <span th:if="${festival.upcoming}" class="badge badge-upcoming">예정</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary"
+                                          th:text="'❤ ' + ${festival.likeCount}"
+                                          th:if="${festival.likeCount > 0}"></span>
+                                    <span class="cell-secondary" th:if="${festival.likeCount == 0}">0</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                       class="btn btn-secondary btn-sm">상세</a>
+                                </td>
+                            </tr>
+                        </th:block>
+                        <tr class="empty-row" th:if="${festivalsPage.totalElements == 0}">
+                            <td colspan="4">
+                                <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                                <th:block th:unless="${keyword != null and !#strings.isEmpty(keyword)}">
+                                    등록된 페스티벌이 없습니다.
+                                    <a th:href="@{/admin/festivals/new}" class="btn btn-primary btn-sm empty-cta">+ 페스티벌 등록</a>
+                                </th:block>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:insert="~{admin/fragments :: pagination(${festivalsPage}, '/admin/festivals', ${keyword != null and !#strings.isEmpty(keyword)} ? 'keyword=' + ${keyword} : '')}"></div>
+            </div>
+        </div>
+
+        <!-- ══ 탭 2: 등록 체크리스트 ══ -->
+        <div id="tab-checklist" class="tab-panel"
+             th:classappend="${keyword == null or #strings.isEmpty(keyword)} ? 'active'">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">등록 체크리스트</div>
+                    <span class="card-title-note">종료된 페스티벌 제외 · 체크박스 클릭 시 자동 저장</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="cl-table">
+                        <thead>
+                        <tr>
+                            <th class="left col-w200">페스티벌</th>
+                            <th class="col-w90">1차 라인업</th>
+                            <th class="col-w90">2차 라인업</th>
+                            <th class="col-w90">3차 라인업</th>
+                            <th class="col-w90">부스 지도</th>
+                            <th class="col-w90">타임테이블</th>
+                            <th class="col-w80">진행률</th>
+                            <th class="left col-w200">메모</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="festival : ${festivals}">
+                            <tr th:with="cl=${checklistMap[festival.id]}"
+                                th:classappend="${cl != null and cl.allCompleted} ? ' all-done'">
+                                <td class="left">
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                       th:text="${festival.title}"></a>
+                                    <div class="cell-secondary"
+                                         th:text="${festival.startDate != null ? #temporals.format(festival.startDate, 'yyyy.M.d') : '?'} + ' ~ ' + ${festival.endDate != null ? #temporals.format(festival.endDate, 'M.d') : '?'}"></div>
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.lineup1}"
+                                           th:data-festival-id="${festival.id}"
+                                           data-field="lineup1" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.lineup2}"
+                                           th:data-festival-id="${festival.id}"
+                                           data-field="lineup2" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.lineup3}"
+                                           th:data-festival-id="${festival.id}"
+                                           data-field="lineup3" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.boothMap}"
+                                           th:data-festival-id="${festival.id}"
+                                           data-field="boothMap" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="cl-check"
+                                           th:checked="${cl != null and cl.timetable}"
+                                           th:data-festival-id="${festival.id}"
+                                           data-field="timetable" />
+                                </td>
+                                <td>
+                                    <span th:classappend="${cl != null and cl.allCompleted} ? ' status-done' : ' status-pend'"
+                                          th:text="${cl != null ? cl.completedCount : 0} + '/' + ${cl != null ? cl.fieldCount : 5}"></span>
+                                </td>
+                                <td class="left">
+                                    <textarea class="memo-textarea"
+                                              th:data-festival-id="${festival.id}"
+                                              placeholder="메모 입력 (자동 저장)"
+                                              th:text="${cl != null ? cl.memo : ''}"></textarea>
+                                </td>
+                            </tr>
+                        </th:block>
+                        <tr th:if="${activeFestivalCount == 0}" th:replace="~{admin/fragments :: emptyRow(8, '진행 중이거나 예정된 페스티벌이 없습니다.')}"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /content-area -->
+</div><!-- /main-content -->
+
+<div class="save-toast" id="saveToast">저장됨</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.FestivalListUrls = { festivalBase: /*[[@{/admin/festivals}]]*/ '' };
+/*]]>*/
+</script>
+<script th:src="@{/js/admin-festival-list.js}"></script>
+
+</body>
+</html>

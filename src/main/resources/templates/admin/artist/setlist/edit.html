@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('셋리스트 수정')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">셋리스트 수정</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <th:block th:if="${festivalId != null}">
+                    <a th:href="@{/admin/festivals}">페스티벌</a>
+                    <span class="bc-sep">›</span>
+                    <a th:href="@{/admin/festivals/{id}(id=${festivalId})}" th:text="${artistFestival.festival.title}"></a>
+                    <span class="bc-sep">›</span>
+                    <span th:text="${artist.name} + ' 셋리스트'"></span>
+                </th:block>
+                <th:block th:if="${festivalId == null}">
+                    <a th:href="@{/admin/artists}">아티스트</a>
+                    <span class="bc-sep">›</span>
+                    <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}" th:text="${artist.name}"></a>
+                    <span class="bc-sep">›</span>
+                    <a th:href="@{/admin/artists/{id}/setlist(id=${artist.id})}">셋리스트</a>
+                    <span class="bc-sep">›</span>
+                    <span th:text="${artistFestival.festival.title}"></span>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="card card-form">
+            <div class="card-header">
+                <div class="card-title">
+                    <span th:text="${artistFestival.festival.title}"></span>
+                    <span class="card-title-note"
+                          th:text="${artistFestival.festival.startDate} + ' ~ ' + ${artistFestival.festival.endDate}"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div th:if="${songs.isEmpty()}" class="inline-hint">
+                    등록된 곡이 없습니다.
+                    <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}">곡을 먼저 등록해주세요.</a>
+                </div>
+
+                <form th:unless="${songs.isEmpty()}"
+                      th:action="@{/admin/artists/{aId}/setlist/{afId}(aId=${artist.id}, afId=${artistFestival.id})}"
+                      method="post">
+                    <input th:if="${festivalId != null}" type="hidden" name="festivalId" th:value="${festivalId}"/>
+
+                    <div class="form-desc">이 페스티벌에서 부른 곡을 선택하세요.</div>
+
+                    <div class="song-select-grid">
+                        <label th:each="song : ${songs}" class="song-row">
+                            <input type="checkbox" name="songIds" th:value="${song.id}"
+                                   th:checked="${selectedSongIds.contains(song.id)}"
+                                   class="song-check"/>
+                            <img th:if="${song.thumbnailUrl != null}"
+                                 th:src="${song.thumbnailUrl}"
+                                 class="song-thumb" alt="thumbnail"/>
+                            <div class="item-body">
+                                <div class="song-title-text" th:text="${song.title}"></div>
+                                <div th:if="${song.festivalCount > 0}"
+                                     class="festival-count"
+                                     th:text="'총 ' + ${song.festivalCount} + '회 공연'"></div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">저장</button>
+                        <a th:if="${festivalId != null}"
+                           th:href="@{/admin/festivals/{id}(id=${festivalId})}"
+                           class="btn btn-secondary">취소</a>
+                        <a th:if="${festivalId == null}"
+                           th:href="@{/admin/artists/{id}/setlist(id=${artist.id})}"
+                           class="btn btn-secondary">취소</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('신고 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('reports')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('신고 관리', '신고')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <!-- 검색 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/reports}" method="get">
+                    <input type="hidden" name="type" th:value="${type}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '신고 내용 또는 신고자 닉네임 검색...', @{/admin/reports(type=${type}, status=${status}, page=0)})}"></th:block>
+                </form>
+            </div>
+
+            <!-- 유형 탭 -->
+            <div class="type-tab-wrap">
+                <a th:href="@{/admin/reports(type='post', status=${status}, page=0)}"
+                   th:classappend="${type == 'post'} ? ' active' : ''"
+                   class="type-tab">
+                    게시글 신고
+                    <span th:if="${postPendingCount > 0}" class="card-count" th:text="${postPendingCount}"></span>
+                </a>
+                <a th:href="@{/admin/reports(type='comment', status=${status}, page=0)}"
+                   th:classappend="${type == 'comment'} ? ' active' : ''"
+                   class="type-tab">
+                    댓글 신고
+                    <span th:if="${commentPendingCount > 0}" class="card-count" th:text="${commentPendingCount}"></span>
+                </a>
+                <a th:href="@{/admin/reports(type='photo', status=${status}, page=0)}"
+                   th:classappend="${type == 'photo'} ? ' active' : ''"
+                   class="type-tab">
+                    사진 신고
+                    <span th:if="${photoPendingCount > 0}" class="card-count" th:text="${photoPendingCount}"></span>
+                </a>
+            </div>
+
+            <!-- 상태 탭 + CSV 내보내기 -->
+            <div class="type-tab-wrap">
+                <a th:href="@{/admin/reports(type=${type}, status='PENDING', page=0)}"
+                   th:classappend="${status == 'PENDING'} ? ' active' : ''"
+                   class="type-tab">
+                    대기 중
+                    <span class="card-count" th:text="${pendingCount}"></span>
+                </a>
+                <a th:href="@{/admin/reports(type=${type}, status='ALL', page=0)}"
+                   th:classappend="${status == 'ALL'} ? ' active' : ''"
+                   class="type-tab">
+                    전체
+                    <span class="card-count" th:text="${totalCount}"></span>
+                </a>
+                <a th:if="${type == 'post' or type == 'comment'}"
+                   th:href="@{/admin/export/reports.csv(type=${type})}"
+                   class="btn btn-secondary btn-sm type-tab-end">
+                    CSV 내보내기
+                </a>
+            </div>
+
+            <!-- 게시글 신고 테이블 -->
+            <div th:if="${type == 'post'}">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
+                    <input type="hidden" name="type" value="post"/>
+                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                </form>
+                <div class="bulk-toolbar" id="bulk-toolbar">
+                    <span class="bulk-count" id="select-count">0건 선택됨</span>
+                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-dismiss"
+                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-delete"
+                            data-confirm-tpl="선택한 {n}건의 게시글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 글 삭제</button>
+                </div>
+                <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48"><input type="checkbox" id="select-all"/></th>
+                        <th class="col-w48">ID</th>
+                        <th>신고된 게시글</th>
+                        <th class="col-w90">신고 사유</th>
+                        <th class="col-w100">신고자</th>
+                        <th class="col-w90">일시</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w200">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-check" th:value="${report.id}"/></td>
+                        <td class="td-id" th:text="${report.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${report.postId})}"
+                               th:text="${report.postTitle}"
+                               class="report-title-link"></a>
+                            <div class="cell-secondary">
+                                <a th:href="@{/admin/users/{id}(id=${report.postAuthorId})}"
+                                   th:text="${report.posterNickname}"
+                                   class="td-link"></a>
+                                <span th:with="cnt=${authorReportCounts.get(report.postAuthorId)}"
+                                      th:if="${cnt != null}"
+                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
+                                      class="report-count-badge"
+                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
+                            </div>
+                            <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                 class="report-detail"
+                                 th:text="${report.detail}"></div>
+                        </td>
+                        <td>
+                            <span class="reason-badge"
+                                  th:classappend="'reason-' + ${report.reason}"
+                                  th:text="${report.reason.displayName}">
+                            </span>
+                        </td>
+                        <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="'status-' + ${report.status}"
+                                  th:text="${report.status.displayName}">
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${report.pending}" class="cell-actions">
+                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="post"/>
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            data-confirm="게시글을 삭제하고 신고를 처리할까요?">
+                                        글 삭제
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="post"/>
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                            data-confirm="이 신고를 기각할까요?">
+                                        기각
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <!-- 댓글 신고 테이블 -->
+            <div th:if="${type == 'comment'}">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
+                    <input type="hidden" name="type" value="comment"/>
+                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                </form>
+                <div class="bulk-toolbar" id="bulk-toolbar">
+                    <span class="bulk-count" id="select-count">0건 선택됨</span>
+                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-dismiss"
+                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-delete"
+                            data-confirm-tpl="선택한 {n}건의 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 댓글 삭제</button>
+                </div>
+                <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48"><input type="checkbox" id="select-all"/></th>
+                        <th class="col-w48">ID</th>
+                        <th>신고된 댓글</th>
+                        <th class="col-w90">신고 사유</th>
+                        <th class="col-w100">신고자</th>
+                        <th class="col-w90">일시</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w200">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-check" th:value="${report.id}"/></td>
+                        <td class="td-id" th:text="${report.id}"></td>
+                        <td>
+                            <div class="report-content-cell" th:text="${report.commentContent}"></div>
+                            <div class="cell-secondary">
+                                <a th:href="@{/admin/users/{id}(id=${report.commentAuthorId})}"
+                                   th:text="${report.commentUserNickname}"
+                                   class="td-link"></a>
+                                <span th:with="cnt=${authorReportCounts.get(report.commentAuthorId)}"
+                                      th:if="${cnt != null}"
+                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
+                                      class="report-count-badge"
+                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
+                                <span class="report-sep">•</span>
+                                <a th:href="@{/admin/posts/{id}(id=${report.commentPostId})}"
+                                   th:text="${report.commentPostTitle}"
+                                   class="report-post-link"></a>
+                            </div>
+                            <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                 class="report-detail"
+                                 th:text="${report.detail}"></div>
+                        </td>
+                        <td>
+                            <span class="reason-badge"
+                                  th:classappend="'reason-' + ${report.reason}"
+                                  th:text="${report.reason.displayName}">
+                            </span>
+                        </td>
+                        <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="'status-' + ${report.status}"
+                                  th:text="${report.status.displayName}">
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${report.pending}" class="cell-actions">
+                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="comment"/>
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            data-confirm="댓글을 삭제하고 신고를 처리할까요?">
+                                        댓글 삭제
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="comment"/>
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                            data-confirm="이 신고를 기각할까요?">
+                                        기각
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <!-- 사진 신고 테이블 -->
+            <div th:if="${type == 'photo'}">
+                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
+                    <input type="hidden" name="type" value="photo"/>
+                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                </form>
+                <div class="bulk-toolbar" id="bulk-toolbar">
+                    <span class="bulk-count" id="select-count">0건 선택됨</span>
+                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-dismiss"
+                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
+                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
+                            data-endpoint="/admin/reports/bulk-delete"
+                            data-confirm-tpl="선택한 {n}건의 사진을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 사진 삭제</button>
+                </div>
+                <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48"><input type="checkbox" id="select-all"/></th>
+                        <th class="col-w48">ID</th>
+                        <th>신고된 사진</th>
+                        <th class="col-w90">신고 사유</th>
+                        <th class="col-w100">신고자</th>
+                        <th class="col-w90">일시</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w200">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td><input th:if="${report.pending}" type="checkbox" class="row-check" th:value="${report.id}"/></td>
+                        <td class="td-id" th:text="${report.id}"></td>
+                        <td>
+                            <div class="cell-primary">
+                                사진 #<span th:text="${report.photoId}"></span>
+                                <span class="report-photo-sub" th:text="${report.photoTitle}"></span>
+                            </div>
+                            <div class="cell-secondary">
+                                업로더:
+                                <a th:href="@{/admin/users/{id}(id=${report.photoUploaderId})}"
+                                   th:text="${report.photoUploaderNickname}"
+                                   class="td-link"></a>
+                                <span th:with="cnt=${authorReportCounts.get(report.photoUploaderId)}"
+                                      th:if="${cnt != null}"
+                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
+                                      class="report-count-badge"
+                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
+                                <span class="report-sep">•</span>
+                                <span>아티스트: <span th:text="${report.photoArtistName}"></span></span>
+                            </div>
+                            <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                 class="report-detail"
+                                 th:text="${report.detail}"></div>
+                        </td>
+                        <td>
+                            <span class="reason-badge"
+                                  th:classappend="'reason-' + ${report.reason}"
+                                  th:text="${report.reason.displayName}">
+                            </span>
+                        </td>
+                        <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="'status-' + ${report.status}"
+                                  th:text="${report.status.displayName}">
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${report.pending}" class="cell-actions">
+                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="photo"/>
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            data-confirm="사진을 삭제하고 신고를 처리할까요?">
+                                        사진 삭제
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
+                                    <input type="hidden" name="type" value="photo"/>
+                                    <input type="hidden" name="page" th:value="${reports.number}"/>
+                                    <input type="hidden" name="status" th:value="${status}"/>
+                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
+                                    <button type="submit" class="btn btn-secondary btn-sm"
+                                            data-confirm="이 신고를 기각할까요?">
+                                        기각
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '사진 신고 내역이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${reports}, '/admin/reports',
+                'type=' + ${type} + '&status=' + ${status} + (${keyword != null and !#strings.isEmpty(keyword)} ? '&keyword=' + ${keyword} : ''))}"></div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/admin-report-list.js}"></script>
+</body>
+</html>

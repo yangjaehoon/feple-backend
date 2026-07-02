@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('아티스트 수정')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader2(${artist.name} + ' 수정', '아티스트', @{/admin/artists}, '수정')}"></div>
+    <div class="content-area">
+        <div th:replace="~{admin/fragments :: formErrors}"></div>
+
+        <div class="card card-form">
+            <div class="card-header">
+                <div class="card-title">✏ 아티스트 수정</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/artists/{id}/edit(id=${artistId})}"
+                      th:object="${artist}"
+                      method="post"
+                      enctype="multipart/form-data">
+                    <input type="hidden" name="page" th:value="${page}"/>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>이름</label>
+                            <input type="text" th:field="*{name}" required/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>영어 이름</label>
+                            <input type="text" th:field="*{nameEn}" placeholder="English Name (선택)"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>별명 <span class="label-optional">(선택)</span> <span class="hint">쉼표(,)로 구분하여 여러 개 입력 가능 (예: 쌈디, SD)</span></label>
+                            <input type="text" th:field="*{aliases}" placeholder="예: 쌈디, SD"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>카테고리 <span class="required-star">*</span></label>
+                            <div class="genre-check-group">
+                                <label th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
+                                       class="genre-check-label">
+                                    <input type="checkbox" th:field="*{genres}" th:value="${g}"/>
+                                    <span th:text="${g.displayName}"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 현재 프로필 이미지 -->
+                        <div class="form-group" th:if="${artist.profileImageKey != null}">
+                            <label>현재 프로필 이미지</label>
+                            <div class="img-current-row">
+                                <img th:src="${artist.profileImageKey}"
+                                     alt="현재 프로필"
+                                     class="artist-thumb-sm"/>
+                                <span th:text="${artist.name}" class="current-thumb-label"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>프로필 이미지 변경</label>
+                            <input type="file" name="profileImageFile" accept="image/*"/>
+                            <span class="hint">선택하지 않으면 기존 이미지가 유지됩니다.</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">수정 저장</button>
+                        <a th:href="@{/admin/artists(page=${page})}" class="btn btn-secondary">취소</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
