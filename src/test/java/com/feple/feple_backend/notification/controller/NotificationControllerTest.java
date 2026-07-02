@@ -59,7 +59,7 @@ class NotificationControllerTest {
 
     @Test
     void 알림_목록_조회() throws Exception {
-        given(notificationQueryService.getMyNotifications(eq(1L), any()))
+        given(notificationQueryService.getMyNotifications(eq(1L), any(), any()))
                 .willReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get("/notifications")

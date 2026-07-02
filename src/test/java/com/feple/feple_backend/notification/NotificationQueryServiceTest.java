@@ -64,7 +64,7 @@ class NotificationQueryServiceTest {
                 .willReturn(List.of(b));
 
         Pageable pageable = PageRequest.of(0, 10);
-        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, pageable);
+        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, pageable, null);
 
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).id()).isEqualTo(1L);
@@ -105,7 +105,7 @@ class NotificationQueryServiceTest {
 
         // 2개 존재, page=1 size=10 → offset=10 > 2
         Pageable pageable = PageRequest.of(1, 10);
-        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, pageable);
+        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, pageable, null);
 
         assertThat(result.getContent()).isEmpty();
         assertThat(result.getTotalElements()).isEqualTo(2);
