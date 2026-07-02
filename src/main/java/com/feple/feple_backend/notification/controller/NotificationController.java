@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@Tag(name = "알림", description = "알림 목록 조회·읽음 처리")
+@Tag(name = "알림", description = "알림 목록 조회·읽음 처리·삭제")
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -24,13 +24,14 @@ public class NotificationController {
 
     private final NotificationQueryService notificationQueryService;
 
-    /** 내 알림 목록 (페이지네이션) */
+    /** 내 알림 목록. typeGroup: cert | comment | festival | null(전체) */
     @GetMapping
     public ResponseEntity<Page<NotificationDto>> getMyNotifications(
             @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return ResponseEntity.ok(notificationQueryService.getMyNotifications(userId, PageRequest.of(page, size)));
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @RequestParam(required = false) String typeGroup) {
+        return ResponseEntity.ok(notificationQueryService.getMyNotifications(userId, PageRequest.of(page, size), typeGroup));
     }
 
     /** 읽지 않은 알림 수 */
@@ -54,6 +55,23 @@ public class NotificationController {
     public ResponseEntity<Void> markAllRead(
             @AuthenticationPrincipal Long userId) {
         notificationQueryService.markAllRead(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** 단건 삭제 */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOne(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        notificationQueryService.deleteById(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** 전체 삭제 */
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll(
+            @AuthenticationPrincipal Long userId) {
+        notificationQueryService.deleteAll(userId);
         return ResponseEntity.noContent().build();
     }
 }

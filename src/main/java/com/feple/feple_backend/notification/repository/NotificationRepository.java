@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,4 +38,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Transactional
     @Query(value = "DELETE FROM notifications WHERE post_id IN :postIds", nativeQuery = true)
     void deleteByPostIdIn(@Param("postIds") List<Long> postIds);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Notification n WHERE n.id = :id AND n.user.id = :userId")
+    int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Notification n WHERE n.createdAt < :cutoff")
+    void deleteOlderThan(@Param("cutoff") LocalDateTime cutoff);
 }
