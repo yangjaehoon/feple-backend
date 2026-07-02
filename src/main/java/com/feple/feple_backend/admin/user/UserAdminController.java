@@ -172,6 +172,7 @@ public class UserAdminController {
         model.addAttribute("recentComments",  detail.recentComments());
         model.addAttribute("likedFestivals",  detail.likedFestivals());
         model.addAttribute("followedArtists", detail.followedArtists());
+        model.addAttribute("blockedUsers",    detail.blockedUsers());
     }
 
     private String userListRedirect(UserListFilter listFilter) {
