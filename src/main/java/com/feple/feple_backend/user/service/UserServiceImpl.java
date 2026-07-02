@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,10 @@ public class UserServiceImpl implements UserService, UserAdminService {
             throw new ConflictException("이미 사용 중인 닉네임입니다.");
         }
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        if (!user.canChangeNickname()) {
+            long daysLeft = ChronoUnit.DAYS.between(LocalDateTime.now(), user.nextNicknameChangeAt()) + 1;
+            throw new IllegalArgumentException("닉네임은 90일에 한 번만 변경할 수 있습니다. " + daysLeft + "일 후에 변경 가능합니다.");
+        }
         user.changeNickname(nickname.trim());
     }
 
@@ -183,6 +188,7 @@ public class UserServiceImpl implements UserService, UserAdminService {
                 .role(user.getRole())
                 .bio(user.getBio())
                 .level(user.getLevel().name())
+                .nicknameChangedAt(user.getNicknameChangedAt())
                 .build();
     }
 

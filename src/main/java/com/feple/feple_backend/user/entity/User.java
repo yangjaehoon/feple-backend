@@ -72,6 +72,11 @@ public class User {
     @Builder.Default
     private int point = 0;
 
+    @Column(name = "nickname_changed_at")
+    private LocalDateTime nicknameChangedAt;
+
+    private static final int NICKNAME_COOLDOWN_DAYS = 90;
+
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }
     public boolean isDeleted() { return deletedAt != null; }
@@ -98,8 +103,18 @@ public class User {
         this.role = newRole;
     }
 
+    public boolean canChangeNickname() {
+        return nicknameChangedAt == null ||
+               LocalDateTime.now().isAfter(nicknameChangedAt.plusDays(NICKNAME_COOLDOWN_DAYS));
+    }
+
+    public LocalDateTime nextNicknameChangeAt() {
+        return nicknameChangedAt == null ? null : nicknameChangedAt.plusDays(NICKNAME_COOLDOWN_DAYS);
+    }
+
     public void changeNickname(String newNickname) {
         this.nickname = newNickname;
+        this.nicknameChangedAt = LocalDateTime.now();
     }
 
     public void changeProfileImage(String imageUrl) {
