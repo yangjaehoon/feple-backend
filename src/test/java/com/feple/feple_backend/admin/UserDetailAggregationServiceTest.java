@@ -10,6 +10,7 @@ import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserAdminService;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,6 +32,7 @@ class UserDetailAggregationServiceTest {
     @Mock MyPageService myPageService;
     @Mock CommentService commentService;
     @Mock PostAdminService postAdminService;
+    @Mock UserBlockService userBlockService;
 
     @InjectMocks UserDetailAggregationService service;
 
@@ -47,6 +49,7 @@ class UserDetailAggregationServiceTest {
         given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(List.of());
         given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
         given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
+        given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
 
         UserDetailDto model = service.getDetail(userId);
 
@@ -63,6 +66,7 @@ class UserDetailAggregationServiceTest {
         given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(List.of());
         given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
         given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
+        given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
 
         service.getDetail(userId);
 
@@ -83,6 +87,7 @@ class UserDetailAggregationServiceTest {
         given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(comments);
         given(myPageService.getLikedFestivals(userId)).willReturn(festivals);
         given(myPageService.getFollowedArtists(userId)).willReturn(artists);
+        given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
 
         UserDetailDto model = service.getDetail(userId);
 
