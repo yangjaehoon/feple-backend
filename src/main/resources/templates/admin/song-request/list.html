@@ -99,6 +99,7 @@
                                     <input type="hidden" name="page"    th:value="${requests.number}"/>
                                     <input type="hidden" name="keyword" th:value="${keyword}"/>
                                     <input type="text" name="reason"
+                                           list="songRejectReasons"
                                            placeholder="거절 사유 (선택)"
                                            class="inline-input col-w160"
                                            maxlength="200"/>
@@ -118,5 +119,11 @@
         </div>
     </div>
 </div>
+
+<datalist id="songRejectReasons">
+    <option value="이미 등록된 곡이에요."></option>
+    <option value="해당 아티스트의 곡이 아닌 것 같아요."></option>
+    <option value="정보가 부족해요."></option>
+</datalist>
 </body>
 </html>

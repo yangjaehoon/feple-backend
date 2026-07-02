@@ -12,6 +12,18 @@ public final class NotificationMessages {
         "활동 이력이 없어서 등록이 어려워요.", "The artist doesn't have enough activity history for registration."
     );
 
+    private static final java.util.Map<String, String> CERT_REASON_EN_MAP = java.util.Map.of(
+        "사진이 불분명해요.", "The submitted photo is unclear.",
+        "해당 페스티벌 인증이 아닌 것 같아요.", "This doesn't appear to be a valid festival certification.",
+        "이미 인증된 내역이 있어요.", "You already have a certification for this festival."
+    );
+
+    private static final java.util.Map<String, String> SONG_REASON_EN_MAP = java.util.Map.of(
+        "이미 등록된 곡이에요.", "This song is already in our database.",
+        "해당 아티스트의 곡이 아닌 것 같아요.", "This doesn't appear to be this artist's song.",
+        "정보가 부족해요.", "Insufficient information provided."
+    );
+
     public static String newFestivalTitle(String artistName) {
         return artistName + "의 새 페스티벌";
     }
@@ -59,7 +71,11 @@ public final class NotificationMessages {
         String base = title.isEmpty()
                 ? "Your festival certification was rejected."
                 : "Your certification for '" + title + "' was rejected.";
-        return (reason != null && !reason.isBlank()) ? base + " Reason: " + reason : base;
+        if (reason != null && !reason.isBlank()) {
+            String translated = CERT_REASON_EN_MAP.getOrDefault(reason.trim(), reason);
+            return base + " Reason: " + translated;
+        }
+        return base;
     }
 
     public static String newCommentTitle(String commenterNickname) {
@@ -122,7 +138,11 @@ public final class NotificationMessages {
 
     public static String songRequestRejectedBodyEn(String songTitle, String reason) {
         String base = "Your request for '" + songTitle + "' was rejected.";
-        return (reason != null && !reason.isBlank()) ? base + " Reason: " + reason : base;
+        if (reason != null && !reason.isBlank()) {
+            String translated = SONG_REASON_EN_MAP.getOrDefault(reason.trim(), reason);
+            return base + " Reason: " + translated;
+        }
+        return base;
     }
 
     public static final String ARTIST_SUGGESTION_PROCESSED_TITLE = "아티스트 신청 결과";
