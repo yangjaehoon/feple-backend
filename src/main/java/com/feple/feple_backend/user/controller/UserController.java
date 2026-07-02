@@ -98,20 +98,15 @@ public class UserController {
     }
 
     @GetMapping("/{id}/stats")
-    public ResponseEntity<UserStatsDto> getUserStats(
-            @PathVariable Long id,
-            @AuthenticationPrincipal Long userId) {
-        requireSelf(id, userId);
+    public ResponseEntity<UserStatsDto> getUserStats(@PathVariable Long id) {
         return ResponseEntity.ok(myPageService.getUserStats(id));
     }
 
     @GetMapping("/{id}/posts")
-    public ResponseEntity<CursorPage<PostResponseDto>> getMyPosts(
+    public ResponseEntity<CursorPage<PostResponseDto>> getUserPosts(
             @PathVariable Long id,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int size,
-            @AuthenticationPrincipal Long userId) {
-        requireSelf(id, userId);
+            @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(myPageService.getMyPostsPaged(id, cursor, Math.min(size, 50)));
     }
 
