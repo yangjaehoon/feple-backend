@@ -86,6 +86,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId")
     long countByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.anonymous = false")
+    long countPublicByUserId(@Param("userId") Long userId);
+
     // ── 핫 게시글 (N+1: user/artist/festival 접근) ───────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.createdAt >= :since ORDER BY p.likeCount DESC")

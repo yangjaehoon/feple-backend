@@ -31,6 +31,7 @@ public interface PostService {
     CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size);
     CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size);
     long countMyPosts(Long userId);
+    long countPublicPosts(Long userId);
     void incrementViewCount(Long postId);
     List<PostResponseDto> getLikedPosts(Long userId);
     long countLikedPosts(Long userId);

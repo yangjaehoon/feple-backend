@@ -81,7 +81,7 @@ public class MyPageService {
                 + commentReportService.getReportCountForUser(userId)
                 + photoReportService.getReportCountForUser(userId);
         return new UserStatsDto(
-                postService.countMyPosts(userId),
+                postService.countPublicPosts(userId),
                 commentService.countMyComments(userId),
                 reportCount,
                 postService.countLikedPosts(userId),
