@@ -17,6 +17,7 @@ import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,6 +48,7 @@ class UserCascadeDeleteServiceTest {
     @Mock FestivalCertificationService certificationService;
     @Mock SongRequestRepository songRequestRepository;
     @Mock ArtistSuggestionRepository artistSuggestionRepository;
+    @Mock UserBlockService userBlockService;
     @Mock FileStorageService fileStorageService;
 
     @InjectMocks UserCascadeDeleteService userCascadeDeleteService;

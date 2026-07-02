@@ -96,7 +96,7 @@ class UserAdminControllerTest {
     @Test
     void 상세_조회_성공() throws Exception {
         UserDetailDto detail = new UserDetailDto(
-                mock(UserResponseDto.class), null, List.of(), List.of(), List.of(), List.of());
+                mock(UserResponseDto.class), null, List.of(), List.of(), List.of(), List.of(), List.of());
         given(userDetailAggregationService.getDetail(1L)).willReturn(detail);
 
         mockMvc.perform(get("/admin/users/1"))
