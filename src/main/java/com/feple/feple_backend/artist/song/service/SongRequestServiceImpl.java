@@ -140,7 +140,8 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         }
 
         eventPublisher.publishEvent(new SongRequestApprovedEvent(
-                request.getUserId(), request.getArtistId(), request.getSongTitle(), request.getArtistName()));
+                request.getUserId(), request.getArtistId(), request.getSongTitle(),
+                request.getArtistName(), request.getArtistNameEn()));
         return songSaved;
     }
 

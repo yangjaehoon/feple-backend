@@ -4,5 +4,6 @@ public record SongRequestApprovedEvent(
         Long userId,
         Long artistId,
         String songTitle,
-        String artistName
+        String artistName,
+        String artistNameEn
 ) {}

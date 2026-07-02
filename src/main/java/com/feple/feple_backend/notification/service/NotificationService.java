@@ -116,7 +116,7 @@ public class NotificationService {
         String title = NotificationMessages.SONG_REQUEST_APPROVED_TITLE;
         String body = NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName());
         String titleEn = NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN;
-        String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistName());
+        String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistNameEn());
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, artist));
         maybePush(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
@@ -147,10 +147,12 @@ public class NotificationService {
         String title = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE;
         String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
         String titleEn = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN;
-        String bodyEn = NotificationMessages.artistSuggestionProcessedBodyEn(event.artistName(), event.note());
         String linkId = event.artistId() != null ? String.valueOf(event.artistId()) : null;
-        if (event.artistId() != null) {
-            Artist artist = artistRepository.findById(event.artistId()).orElse(null);
+        Artist artist = event.artistId() != null ? artistRepository.findById(event.artistId()).orElse(null) : null;
+        String artistNameEn = (artist != null && artist.getNameEn() != null && !artist.getNameEn().isBlank())
+                ? artist.getNameEn() : event.artistName();
+        String bodyEn = NotificationMessages.artistSuggestionProcessedBodyEn(artistNameEn, event.note());
+        if (artist != null) {
             notificationRepository.save(
                     Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, artist));
         } else {
