@@ -43,10 +43,10 @@ public class SearchService {
         String kw = keyword.trim();
         Stream<SuggestionDto> artists = artistService.searchArtists(kw).stream()
                 .limit(MAX_SUGGESTIONS)
-                .map(a -> new SuggestionDto(a.getId(), a.getName(), "artist"));
+                .map(a -> new SuggestionDto(a.getId(), a.getName(), "artist", a.getProfileImageUrl()));
         Stream<SuggestionDto> festivals = festivalService.searchFestivals(kw).stream()
                 .limit(MAX_SUGGESTIONS)
-                .map(f -> new SuggestionDto(f.getId(), f.getTitle(), "festival"));
+                .map(f -> new SuggestionDto(f.getId(), f.getTitle(), "festival", f.getPosterUrl()));
         return Stream.concat(artists, festivals).toList();
     }
 }
