@@ -21,12 +21,14 @@ public class AdminSidebarAdvice {
             model.addAttribute("sidebarCertCount", counts.certCount());
             model.addAttribute("sidebarSongRequestCount", counts.songRequestCount());
             model.addAttribute("sidebarArtistSuggestionCount", counts.suggestionCount());
+            model.addAttribute("sidebarSetlistRequestCount", counts.setlistRequestCount());
         } catch (Exception e) {
             log.warn("사이드바 카운트 조회 실패 — 0으로 폴백", e);
             model.addAttribute("sidebarReportCount", 0L);
             model.addAttribute("sidebarCertCount", 0L);
             model.addAttribute("sidebarSongRequestCount", 0L);
             model.addAttribute("sidebarArtistSuggestionCount", 0L);
+            model.addAttribute("sidebarSetlistRequestCount", 0L);
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.feple.feple_backend.festival.controller;
 
 import com.feple.feple_backend.artist.song.dto.FestivalSetlistEntryDto;
-import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
@@ -14,15 +13,18 @@ import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
+import com.feple.feple_backend.festival.setlistrequest.service.SetlistChangeRequestService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @Tag(name = "페스티벌", description = "페스티벌 조회, 좋아요, 참석 여부, 날씨")
 @RestController
@@ -35,7 +37,7 @@ public class FestivalController {
     private final FestivalAttendanceService festivalAttendanceService;
     private final WeatherService weatherService;
     private final SongService songService;
-    private final SongAdminService songAdminService;
+    private final SetlistChangeRequestService setlistChangeRequestService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -91,12 +93,18 @@ public class FestivalController {
         return songService.getFestivalSetlist(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/artists/{artistFestivalId}/setlist")
-    public ResponseEntity<Void> updateSetlist(@PathVariable Long id,
-                                              @PathVariable Long artistFestivalId,
-                                              @RequestBody(required = false) Set<Long> songIds) {
-        songAdminService.updateSetlist(id, artistFestivalId, songIds != null ? songIds : Set.of());
+    record SetlistChangeRequestBody(
+        @NotNull Long artistFestivalId,
+        @NotBlank @Size(max = 100) String artistName,
+        @NotBlank @Size(max = 500) String message
+    ) {}
+
+    @PostMapping("/{id}/setlist-requests")
+    public ResponseEntity<Void> submitSetlistRequest(
+            @PathVariable Long id,
+            @Valid @RequestBody SetlistChangeRequestBody body,
+            @AuthenticationPrincipal Long userId) {
+        setlistChangeRequestService.submit(userId, id, body.artistFestivalId(), body.artistName(), body.message());
         return ResponseEntity.noContent().build();
     }
 }

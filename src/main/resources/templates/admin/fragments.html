@@ -84,6 +84,13 @@
             <span th:if="${sidebarSongRequestCount != null and sidebarSongRequestCount > 0}"
                   class="sb-badge sb-badge-red" th:text="${sidebarSongRequestCount}"></span>
         </a>
+        <a sec:authorize="hasRole('ADMIN')"
+           th:href="@{/admin/setlist-requests}" class="sb-link"
+           th:classappend="${active == 'setlist-requests'} ? ' active'">
+            <span class="sb-icon">📋</span> 셋리스트 수정 요청
+            <span th:if="${sidebarSetlistRequestCount != null and sidebarSetlistRequestCount > 0}"
+                  class="sb-badge sb-badge-red" th:text="${sidebarSetlistRequestCount}"></span>
+        </a>
         <a sec:authorize="hasAuthority('PERM_CERTIFICATIONS')"
            th:href="@{/admin/certifications}" class="sb-link"
            th:classappend="${active == 'certifications'} ? ' active'">
