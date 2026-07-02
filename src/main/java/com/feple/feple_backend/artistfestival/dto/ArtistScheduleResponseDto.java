@@ -25,6 +25,7 @@ public class ArtistScheduleResponseDto {
     public static class CoArtistInfo {
         private Long artistId;
         private String artistName;
+        private String artistNameEn;
         private String profileImageUrl;
     }
 }

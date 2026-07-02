@@ -52,6 +52,7 @@ public class ArtistScheduleService {
                         .map(other -> ArtistScheduleResponseDto.CoArtistInfo.builder()
                                 .artistId(other.getArtistId())
                                 .artistName(other.getArtistName())
+                                .artistNameEn(other.getArtistNameEn())
                                 .profileImageUrl(fileStorageService.buildUrl(
                                         other.getArtistProfileImageKey()))
                                 .build())
