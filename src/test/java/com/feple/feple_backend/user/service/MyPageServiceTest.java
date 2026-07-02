@@ -105,7 +105,7 @@ class MyPageServiceTest {
 
     @Test
     void 사용자_통계_게시글수와_댓글수_합산_반환() {
-        given(postService.countMyPosts(1L)).willReturn(5L);
+        given(postService.countPublicPosts(1L)).willReturn(5L);
         given(commentService.countMyComments(1L)).willReturn(12L);
         given(postService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
@@ -123,7 +123,7 @@ class MyPageServiceTest {
 
     @Test
     void 게시글과_댓글이_없으면_통계가_0() {
-        given(postService.countMyPosts(1L)).willReturn(0L);
+        given(postService.countPublicPosts(1L)).willReturn(0L);
         given(commentService.countMyComments(1L)).willReturn(0L);
         given(postService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
