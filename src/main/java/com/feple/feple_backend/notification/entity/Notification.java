@@ -113,6 +113,13 @@ public class Notification {
 
     public Long getUserId() { return user.getId(); }
 
+    public String getImageKey() {
+        if (festival != null) return festival.getPosterKey();
+        if (artist != null) return artist.getProfileImageKey();
+        if (post != null && post.getFestival() != null) return post.getFestival().getPosterKey();
+        return null;
+    }
+
     public void markRead() {
         this.isRead = true;
     }

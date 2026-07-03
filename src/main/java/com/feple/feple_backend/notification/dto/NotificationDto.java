@@ -15,9 +15,10 @@ public record NotificationDto(
         String bodyEn,
         Long referenceId,
         boolean read,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String imageUrl
 ) {
-    public static NotificationDto from(Notification n) {
+    public static NotificationDto from(Notification n, String imageUrl) {
         return new NotificationDto(
                 n.getId(),
                 n.getType(),
@@ -27,7 +28,8 @@ public record NotificationDto(
                 n.getBodyEn(),
                 n.getReferenceId(),
                 n.isRead(),
-                n.getCreatedAt()
+                n.getCreatedAt(),
+                imageUrl
         );
     }
 
@@ -41,7 +43,8 @@ public record NotificationDto(
                 null,
                 null,
                 true,
-                b.getCreatedAt()
+                b.getCreatedAt(),
+                null
         );
     }
 }

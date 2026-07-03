@@ -13,7 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    @Query("SELECT n FROM Notification n WHERE n.user.id = :userId ORDER BY n.createdAt DESC")
+    @Query("""
+            SELECT n FROM Notification n
+            LEFT JOIN FETCH n.festival
+            LEFT JOIN FETCH n.artist
+            LEFT JOIN FETCH n.post np
+            LEFT JOIN FETCH np.festival
+            WHERE n.user.id = :userId
+            ORDER BY n.createdAt DESC
+            """)
     List<Notification> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.isRead = false")

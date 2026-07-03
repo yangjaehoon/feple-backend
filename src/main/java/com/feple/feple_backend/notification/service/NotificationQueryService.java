@@ -1,5 +1,6 @@
 package com.feple.feple_backend.notification.service;
 
+import com.feple.feple_backend.artist.service.S3PresignService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.notification.dto.NotificationDto;
 import com.feple.feple_backend.notification.entity.Notification;
@@ -42,6 +43,7 @@ public class NotificationQueryService {
 
     private final NotificationRepository notificationRepository;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
+    private final S3PresignService s3PresignService;
 
     public Page<NotificationDto> getMyNotifications(Long userId, Pageable pageable, String typeGroup) {
         Set<NotificationType> typeFilter = resolveTypeFilter(typeGroup);
@@ -49,7 +51,7 @@ public class NotificationQueryService {
         List<NotificationDto> personal = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, MAX_PERSONAL))
                 .stream()
-                .map(NotificationDto::from)
+                .map(n -> NotificationDto.from(n, resolveImageUrl(n)))
                 .toList();
 
         Stream<NotificationDto> mergedStream = personal.stream();
@@ -105,6 +107,11 @@ public class NotificationQueryService {
     @Transactional
     public void deleteAll(Long userId) {
         notificationRepository.deleteByUserId(userId);
+    }
+
+    private String resolveImageUrl(Notification n) {
+        String key = n.getImageKey();
+        return key != null ? s3PresignService.presignGetUrl(key) : null;
     }
 
     private Set<NotificationType> resolveTypeFilter(String typeGroup) {
