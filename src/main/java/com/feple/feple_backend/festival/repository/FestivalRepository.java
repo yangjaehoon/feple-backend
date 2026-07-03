@@ -27,6 +27,17 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query(value = "UPDATE festival SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementLikeCount(@Param("id") Long id);
 
+    // ── 참석 카운터 (원자적 증감 — race condition 방지) ─────────────────────
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE Festival f SET f.attendingCount = f.attendingCount + 1 WHERE f.id = :id")
+    void incrementAttendingCount(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE festival SET attending_count = GREATEST(attending_count - 1, 0) WHERE id = :id", nativeQuery = true)
+    void decrementAttendingCount(@Param("id") Long id);
+
     List<Festival> findAllByOrderByStartDateDesc();
 
     List<Festival> findByStartDate(LocalDate startDate);

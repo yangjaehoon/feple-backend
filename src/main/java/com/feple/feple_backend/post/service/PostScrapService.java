@@ -39,11 +39,11 @@ public class PostScrapService {
 
         int deleted = postScrapRepository.deleteByUserIdAndPostId(userId, postId);
         if (deleted > 0) {
-            post.decrementScrapCount();
+            postRepository.decrementScrapCount(postId);
             return false;
         }
         postScrapRepository.save(new PostScrap(user, post));
-        post.incrementScrapCount();
+        postRepository.incrementScrapCount(postId);
         return true;
     }
 

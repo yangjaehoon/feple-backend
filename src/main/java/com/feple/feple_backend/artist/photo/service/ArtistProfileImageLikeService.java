@@ -7,6 +7,7 @@ import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRep
 import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.user.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,26 +24,23 @@ public class ArtistProfileImageLikeService {
         ArtistProfileImage image = EntityFinder.getOrThrow(imageRepository::findById, imageId, "이미지");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        boolean alreadyLiked = likeRepository.findByUserAndArtistProfileImage(user, image).isPresent();
-        if (!alreadyLiked) {
-            likeRepository.save(ArtistProfileImageLike.builder()
+        try {
+            likeRepository.saveAndFlush(ArtistProfileImageLike.builder()
                     .user(user)
                     .artistProfileImage(image)
                     .build());
-            image.incrementLikeCount();
+            imageRepository.incrementLikeCount(imageId);
+        } catch (DataIntegrityViolationException ignored) {
+            // 동시 요청으로 이미 좋아요됨
         }
     }
 
     @Transactional
     public void unlikeImage(Long imageId, Long userId) {
-        ArtistProfileImage image = EntityFinder.getOrThrow(imageRepository::findById, imageId, "이미지");
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-
-        likeRepository.findByUserAndArtistProfileImage(user, image)
-                .ifPresent(like -> {
-                    likeRepository.delete(like);
-                    image.decrementLikeCount();
-                });
+        int deleted = likeRepository.deleteByUserIdAndImageId(userId, imageId);
+        if (deleted > 0) {
+            imageRepository.decrementLikeCount(imageId);
+        }
     }
 
     /** 회원 탈퇴 시 해당 유저의 아티스트 사진 좋아요 및 업로더 정보 일괄 제거 */

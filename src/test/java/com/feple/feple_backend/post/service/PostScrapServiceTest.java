@@ -76,7 +76,7 @@ class PostScrapServiceTest {
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
         assertThat(result).isFalse();
-        assertThat(post.getScrapCount()).isEqualTo(0);
+        verify(postRepository).decrementScrapCount(10L);
         verify(postScrapRepository).deleteByUserIdAndPostId(1L, 10L);
         verify(postScrapRepository, never()).save(any(PostScrap.class));
     }
@@ -92,8 +92,8 @@ class PostScrapServiceTest {
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
         assertThat(result).isTrue();
-        assertThat(post.getScrapCount()).isEqualTo(1);
         verify(postScrapRepository).save(any(PostScrap.class));
+        verify(postRepository).incrementScrapCount(10L);
     }
 
     @Test

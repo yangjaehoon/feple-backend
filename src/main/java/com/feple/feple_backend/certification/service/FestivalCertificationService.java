@@ -16,6 +16,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.exception.ConflictException;
+import org.springframework.dao.DataIntegrityViolationException;
 import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.service.PointService;
@@ -64,7 +65,11 @@ public class FestivalCertificationService {
                 });
 
         FestivalCertification cert = FestivalCertification.create(user, festival, photoKey);
-        certificationRepository.save(cert);
+        try {
+            certificationRepository.saveAndFlush(cert);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
+        }
 
         String posterUrl = festival.getPosterKey() != null ? s3PresignService.presignGetUrl(festival.getPosterKey()) : null;
         String photoUrl = s3PresignService.presignGetUrl(photoKey);
@@ -257,11 +262,11 @@ public class FestivalCertificationService {
         }
         int deleted = reviewLikeRepository.deleteByUserIdAndCertificationId(userId, certId);
         if (deleted > 0) {
-            cert.decrementLikeCount();
+            certificationRepository.decrementLikeCount(certId);
             return false;
         }
         reviewLikeRepository.save(ReviewLike.of(userId, certId));
-        cert.incrementLikeCount();
+        certificationRepository.incrementLikeCount(certId);
         return true;
     }
 

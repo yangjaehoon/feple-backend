@@ -97,7 +97,7 @@ class ArtistFollowServiceTest {
     @Test
     void 팔로우_성공시_save와_followerCount_증가하고_followed_true_반환() {
         User user = user(1L);
-        Artist artist = artist(10L, 0);
+        Artist artist = artist(10L, 1);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
@@ -106,7 +106,8 @@ class ArtistFollowServiceTest {
 
         assertThat(result.followed()).isTrue();
         assertThat(result.followerCount()).isEqualTo(1);
-        verify(artistFollowRepository).save(any(ArtistFollow.class));
+        verify(artistFollowRepository).saveAndFlush(any(ArtistFollow.class));
+        verify(artistRepository).incrementFollowerCount(10L);
     }
 
     @Test
@@ -137,7 +138,7 @@ class ArtistFollowServiceTest {
 
     @Test
     void 언팔로우_성공시_delete와_followerCount_감소하고_followed_false_반환() {
-        Artist artist = artist(10L, 1);
+        Artist artist = artist(10L, 0);
         given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
         given(artistFollowRepository.deleteByUserIdAndArtistId(1L, 10L)).willReturn(1);
 
@@ -146,6 +147,7 @@ class ArtistFollowServiceTest {
         assertThat(result.followed()).isFalse();
         assertThat(result.followerCount()).isEqualTo(0);
         verify(artistFollowRepository).deleteByUserIdAndArtistId(1L, 10L);
+        verify(artistRepository).decrementFollowerCount(10L);
     }
 
     @Test

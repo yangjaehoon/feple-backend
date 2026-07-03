@@ -30,6 +30,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "UPDATE post SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementLikeCount(@Param("id") Long id);
 
+    // ── 스크랩 카운터 (원자적 증감 — race condition 방지) ─────────────────────
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE Post p SET p.scrapCount = p.scrapCount + 1 WHERE p.id = :id")
+    void incrementScrapCount(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE post SET scrap_count = GREATEST(scrap_count - 1, 0) WHERE id = :id", nativeQuery = true)
+    void decrementScrapCount(@Param("id") Long id);
+
     // ── 단건 조회 (user/artist/festival 연관 즉시 로딩) ─────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.id = :id")

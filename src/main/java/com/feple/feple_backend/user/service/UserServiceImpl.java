@@ -8,6 +8,7 @@ import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
+import org.springframework.dao.DataIntegrityViolationException;
 import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
@@ -111,6 +112,11 @@ public class UserServiceImpl implements UserService, UserAdminService {
             throw new IllegalArgumentException("닉네임은 90일에 한 번만 변경할 수 있습니다. " + daysLeft + "일 후에 변경 가능합니다.");
         }
         user.changeNickname(nickname.trim());
+        try {
+            userRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("이미 사용 중인 닉네임입니다.");
+        }
     }
 
     @Override

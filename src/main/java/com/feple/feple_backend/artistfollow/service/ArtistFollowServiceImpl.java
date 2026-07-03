@@ -10,6 +10,7 @@ import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,25 +44,25 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
-            artistFollowRepository.save(ArtistFollow.of(user, artist));
-            artist.incrementFollowerCount();
-            return new FollowResponseDto(true, artist.getFollowerCount());
+            try {
+                artistFollowRepository.saveAndFlush(ArtistFollow.of(user, artist));
+                artistRepository.incrementFollowerCount(artistId);
+                artist = artistRepository.findById(artistId).orElse(artist);
+            } catch (DataIntegrityViolationException ignored) {
+                // 동시 요청으로 이미 팔로우됨 — 카운터 그대로
+            }
         }
-
         return new FollowResponseDto(true, artist.getFollowerCount());
     }
 
     @Override
     @Transactional
     public FollowResponseDto unfollow(Long userId, Long artistId) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
-
         int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
         if (deleted > 0) {
-            artist.decrementFollowerCount();
-            return new FollowResponseDto(false, artist.getFollowerCount());
+            artistRepository.decrementFollowerCount(artistId);
         }
-
+        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         return new FollowResponseDto(false, artist.getFollowerCount());
     }
 

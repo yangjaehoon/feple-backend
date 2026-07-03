@@ -96,7 +96,7 @@ class FestivalCertificationServiceTest {
         CertificationResponseDto result =
                 festivalCertificationService.submit(USER_ID, FESTIVAL_ID, VALID_PHOTO_KEY);
 
-        then(certificationRepository).should().save(any(FestivalCertification.class));
+        then(certificationRepository).should().saveAndFlush(any(FestivalCertification.class));
         then(s3PresignService).should().presignGetUrl(VALID_PHOTO_KEY);
     }
 

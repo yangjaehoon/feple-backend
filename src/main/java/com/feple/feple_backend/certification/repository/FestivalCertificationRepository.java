@@ -87,4 +87,15 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Transactional
     @Query("DELETE FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
+
+    // ── 리뷰 좋아요 카운터 (원자적 증감 — race condition 방지) ──────────────────
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE FestivalCertification c SET c.likeCount = c.likeCount + 1 WHERE c.id = :id")
+    void incrementLikeCount(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE festival_certification SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
+    void decrementLikeCount(@Param("id") Long id);
 }

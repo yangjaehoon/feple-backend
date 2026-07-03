@@ -24,4 +24,9 @@ public interface ArtistProfileImageLikeRepository extends JpaRepository<ArtistPr
     @Transactional
     @Query("DELETE FROM ArtistProfileImageLike ail WHERE ail.artistProfileImage.id IN :imageIds")
     void deleteByArtistProfileImageIdIn(@Param("imageIds") List<Long> imageIds);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ArtistProfileImageLike ail WHERE ail.user.id = :userId AND ail.artistProfileImage.id = :imageId")
+    int deleteByUserIdAndImageId(@Param("userId") Long userId, @Param("imageId") Long imageId);
 }

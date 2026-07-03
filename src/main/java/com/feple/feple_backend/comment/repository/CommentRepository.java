@@ -74,4 +74,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Transactional
     @Query("DELETE FROM Comment c WHERE c.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
+    // ── 좋아요 카운터 (원자적 증감 — race condition 방지) ─────────────────────
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE Comment c SET c.likeCount = c.likeCount + 1 WHERE c.id = :id")
+    void incrementLikeCount(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE comment SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
+    void decrementLikeCount(@Param("id") Long id);
 }

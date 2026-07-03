@@ -197,16 +197,14 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
-        boolean alreadyLiked = commentLikeRepository.existsByUserIdAndCommentId(userId, commentId);
-        if (alreadyLiked) {
-            commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
-            comment.decrementLikeCount();
-            return new CommentLikeResult(false, comment.getLikeCount());
-        } else {
-            commentLikeRepository.save(new CommentLike(comment, user));
-            comment.incrementLikeCount();
-            return new CommentLikeResult(true, comment.getLikeCount());
+        int deleted = commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
+        if (deleted > 0) {
+            commentRepository.decrementLikeCount(commentId);
+            return new CommentLikeResult(false, Math.max(0, comment.getLikeCount() - 1));
         }
+        commentLikeRepository.save(new CommentLike(comment, user));
+        commentRepository.incrementLikeCount(commentId);
+        return new CommentLikeResult(true, comment.getLikeCount() + 1);
     }
 
     @Override

@@ -19,13 +19,8 @@ public class GeminiUsageTracker {
 
     private final GeminiDailyUsageRepository repository;
 
-    @Transactional
-    public synchronized void increment() {
-        LocalDate today = LocalDate.now(PACIFIC);
-        GeminiDailyUsage usage = repository.findById(today)
-                .orElse(GeminiDailyUsage.of(today));
-        usage.increment();
-        repository.save(usage);
+    public void increment() {
+        repository.upsertIncrement(LocalDate.now(PACIFIC));
     }
 
     @Transactional(readOnly = true)

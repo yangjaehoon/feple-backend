@@ -76,7 +76,7 @@ class PostLikeServiceTest {
         boolean result = postLikeService.toggleLike(10L, 1L);
 
         assertThat(result).isFalse();
-        assertThat(post.getLikeCount()).isEqualTo(0);
+        verify(postRepository).decrementLikeCount(10L);
         verify(postLikeRepository, never()).save(any(PostLike.class));
     }
 
@@ -92,7 +92,7 @@ class PostLikeServiceTest {
 
         assertThat(result).isTrue();
         verify(postLikeRepository).save(any(PostLike.class));
-        assertThat(post.getLikeCount()).isEqualTo(1);
+        verify(postRepository).incrementLikeCount(10L);
     }
 
     @Test
