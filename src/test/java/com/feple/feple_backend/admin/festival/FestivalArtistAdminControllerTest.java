@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -32,6 +33,7 @@ class FestivalArtistAdminControllerTest {
     @Mock FestivalService festivalService;
     @Mock ArtistService artistService;
     @Mock ArtistFestivalService artistFestivalService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks FestivalArtistAdminController controller;
 

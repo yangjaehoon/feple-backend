@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.booth.service.BoothService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FestivalBoothAdminControllerTest {
 
     @Mock BoothService boothService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks FestivalBoothAdminController controller;
 
