@@ -76,6 +76,18 @@
         });
     }
 
+    var startDateInput = document.getElementById('startDate');
+    var endDateInput   = document.getElementById('endDate');
+    if (startDateInput && endDateInput) {
+        startDateInput.addEventListener('change', function () {
+            var val = this.value;
+            endDateInput.min = val;
+            if (!endDateInput.value || endDateInput.value < val) {
+                endDateInput.value = val;
+            }
+        });
+    }
+
     var artistSearchInput = document.getElementById('artistSearch');
     if (artistSearchInput) {
         artistSearchInput.addEventListener('input', function () {
