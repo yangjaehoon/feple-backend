@@ -137,7 +137,7 @@
                             <td>
                                 <input type="hidden" name="afIds" th:value="${af.artistFestivalId}"/>
                                 <input type="date" name="performanceDates"
-                                       th:value="${af.performanceDate}"
+                                       th:value="${af.performanceDate != null ? af.performanceDate : (festival.startDate == festival.endDate ? festival.startDate : null)}"
                                        th:min="${festival.startDate}"
                                        th:max="${festival.endDate}"
                                        class="compact-input-date"/>
