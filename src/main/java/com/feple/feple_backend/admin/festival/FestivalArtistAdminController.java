@@ -1,6 +1,8 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -33,6 +35,7 @@ public class FestivalArtistAdminController {
     private final FestivalService festivalService;
     private final ArtistService artistService;
     private final ArtistFestivalService artistFestivalService;
+    private final AdminLogService adminLogService;
 
     @GetMapping("/new")
     @Transactional(readOnly = true)
@@ -63,6 +66,9 @@ public class FestivalArtistAdminController {
         }
         ArtistAddResult result = processAdditions(festivalId, artistIds);
         applyFlashMessage(result, ra);
+        if (result.added() > 0) {
+            adminLogService.log(AdminAction.FESTIVAL_ARTIST_ADD, "FESTIVAL", festivalId, result.added() + "명 추가");
+        }
         return AdminFestivalRedirects.detail(festivalId);
     }
 
@@ -110,7 +116,10 @@ public class FestivalArtistAdminController {
                                @RequestParam(required = false) String performanceDate,
                                RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate)),
+                () -> {
+                    artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate));
+                    adminLogService.log(AdminAction.FESTIVAL_ARTIST_UPDATE, "FESTIVAL", festivalId, "afId=" + artistFestivalId);
+                },
                 "라인업이 수정되었습니다.",
                 e -> log.error("라인업 수정 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e),
                 "라인업 수정 중 오류가 발생했습니다.",
@@ -136,10 +145,14 @@ public class FestivalArtistAdminController {
                 errorCount++;
             }
         }
+        int successCount = afIds.size() - errorCount;
         if (errorCount > 0) {
             ra.addFlashAttribute("errorMessage", errorCount + "건 수정 실패. 항목을 확인해 주세요.");
         } else {
             ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
+        }
+        if (successCount > 0) {
+            adminLogService.log(AdminAction.FESTIVAL_ARTIST_UPDATE, "FESTIVAL", festivalId, successCount + "건 일괄 수정");
         }
         return AdminFestivalRedirects.artists(festivalId);
     }
@@ -158,7 +171,10 @@ public class FestivalArtistAdminController {
             @PathVariable Long artistFestivalId,
             RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId),
+                () -> {
+                    artistFestivalService.removeArtistFromFestival(festivalId, artistFestivalId);
+                    adminLogService.log(AdminAction.FESTIVAL_ARTIST_REMOVE, "FESTIVAL", festivalId, "afId=" + artistFestivalId);
+                },
                 null,
                 e -> log.error("아티스트 제거 실패: festivalId={}, afId={}", festivalId, artistFestivalId, e),
                 "아티스트 제거 중 오류가 발생했습니다.",

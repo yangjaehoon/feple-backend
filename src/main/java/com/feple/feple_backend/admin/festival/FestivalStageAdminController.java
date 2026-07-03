@@ -1,6 +1,8 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +19,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class FestivalStageAdminController {
 
     private final StageService stageService;
+    private final AdminLogService adminLogService;
 
     @PostMapping
     public String createStage(@PathVariable Long festivalId,
                               @RequestParam String name,
                               RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> stageService.createStage(festivalId, name),
+                () -> {
+                    stageService.createStage(festivalId, name);
+                    adminLogService.log(AdminAction.FESTIVAL_STAGE_ADD, "FESTIVAL", festivalId, name);
+                },
                 "스테이지가 추가되었습니다.",
                 e -> log.error("스테이지 추가 실패: festivalId={}", festivalId, e),
                 "스테이지 추가에 실패했습니다.",
@@ -36,7 +42,10 @@ public class FestivalStageAdminController {
                               @PathVariable Long stageId,
                               RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> stageService.deleteStage(stageId),
+                () -> {
+                    stageService.deleteStage(stageId);
+                    adminLogService.log(AdminAction.FESTIVAL_STAGE_DELETE, "FESTIVAL", festivalId, "stageId=" + stageId);
+                },
                 "스테이지가 삭제되었습니다.",
                 e -> log.error("스테이지 삭제 실패: festivalId={}, stageId={}", festivalId, stageId, e),
                 "스테이지 삭제에 실패했습니다.",

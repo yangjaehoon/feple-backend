@@ -2,6 +2,8 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
 import jakarta.validation.Valid;
@@ -24,6 +26,7 @@ import java.io.IOException;
 public class FestivalBoothAdminController {
 
     private final BoothService boothService;
+    private final AdminLogService adminLogService;
 
     @PostMapping
     public String createBooth(@PathVariable Long festivalId,
@@ -49,7 +52,10 @@ public class FestivalBoothAdminController {
             }
         }
         AdminActionUtils.tryAction(
-                () -> boothService.createBooth(festivalId, dto),
+                () -> {
+                    boothService.createBooth(festivalId, dto);
+                    adminLogService.log(AdminAction.FESTIVAL_BOOTH_ADD, "FESTIVAL", festivalId, dto.getName());
+                },
                 "부스가 추가되었습니다.",
                 e -> log.error("부스 추가 실패 festivalId={}", festivalId, e),
                 "부스 추가에 실패했습니다.",
@@ -62,7 +68,10 @@ public class FestivalBoothAdminController {
                               @PathVariable Long boothId,
                               RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> boothService.deleteBooth(festivalId, boothId),
+                () -> {
+                    boothService.deleteBooth(festivalId, boothId);
+                    adminLogService.log(AdminAction.FESTIVAL_BOOTH_DELETE, "FESTIVAL", festivalId, "boothId=" + boothId);
+                },
                 "부스가 삭제되었습니다.",
                 e -> log.error("부스 삭제 실패 festivalId={}, boothId={}", festivalId, boothId, e),
                 "부스 삭제에 실패했습니다.",

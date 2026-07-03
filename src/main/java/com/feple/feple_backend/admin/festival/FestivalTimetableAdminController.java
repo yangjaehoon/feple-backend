@@ -2,6 +2,8 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import jakarta.validation.Valid;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class FestivalTimetableAdminController {
 
     private final TimetableService timetableService;
+    private final AdminLogService adminLogService;
 
     @PostMapping
     public String createTimetableEntry(@PathVariable Long festivalId,
@@ -32,7 +35,10 @@ public class FestivalTimetableAdminController {
             return AdminFestivalRedirects.timetable(festivalId);
         }
         AdminActionUtils.tryAction(
-                () -> timetableService.createEntry(festivalId, req),
+                () -> {
+                    timetableService.createEntry(festivalId, req);
+                    adminLogService.log(AdminAction.FESTIVAL_TIMETABLE_ADD, "FESTIVAL", festivalId, req.getArtistName());
+                },
                 "타임테이블 항목이 추가되었습니다.",
                 e -> log.error("타임테이블 항목 추가 실패: festivalId={}", festivalId, e),
                 "항목 추가 중 오류가 발생했습니다.",
@@ -51,7 +57,10 @@ public class FestivalTimetableAdminController {
             return AdminFestivalRedirects.timetable(festivalId);
         }
         AdminActionUtils.tryAction(
-                () -> timetableService.updateEntry(festivalId, entryId, req),
+                () -> {
+                    timetableService.updateEntry(festivalId, entryId, req);
+                    adminLogService.log(AdminAction.FESTIVAL_TIMETABLE_UPDATE, "FESTIVAL", festivalId, "entryId=" + entryId);
+                },
                 "타임테이블 항목이 수정되었습니다.",
                 e -> log.error("타임테이블 항목 수정 실패: festivalId={}, entryId={}", festivalId, entryId, e),
                 "항목 수정 중 오류가 발생했습니다.",
@@ -64,7 +73,10 @@ public class FestivalTimetableAdminController {
                                        @PathVariable Long entryId,
                                        RedirectAttributes ra) {
         AdminActionUtils.tryAction(
-                () -> timetableService.deleteEntry(festivalId, entryId),
+                () -> {
+                    timetableService.deleteEntry(festivalId, entryId);
+                    adminLogService.log(AdminAction.FESTIVAL_TIMETABLE_DELETE, "FESTIVAL", festivalId, "entryId=" + entryId);
+                },
                 "항목이 삭제되었습니다.",
                 e -> log.error("타임테이블 항목 삭제 실패: festivalId={}, entryId={}", festivalId, entryId, e),
                 "항목 삭제에 실패했습니다.",
