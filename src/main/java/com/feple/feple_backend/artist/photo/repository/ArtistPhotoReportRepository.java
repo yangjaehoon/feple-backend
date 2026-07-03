@@ -31,6 +31,7 @@ public interface ArtistPhotoReportRepository extends BaseReportRepository<Artist
            "(:status IS NULL OR apr.status = :status) AND " +
            "(LOWER(apr.photo.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
            " LOWER(apr.photo.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
+           " (apr.photo.artist.aliases IS NOT NULL AND LOWER(apr.photo.artist.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') OR " +
            " LOWER(apr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
            "ORDER BY apr.createdAt DESC")
     Page<ArtistPhotoReport> searchByKeyword(@Param("keyword") String keyword,

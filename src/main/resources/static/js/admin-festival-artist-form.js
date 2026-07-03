@@ -2,7 +2,7 @@
     function filterArtists(query) {
         var q = query.toLowerCase();
         document.querySelectorAll('#artistList .artist-item').forEach(function (item) {
-            var matches = item.dataset.name.includes(q) || (item.dataset.nameEn || '').includes(q);
+            var matches = item.dataset.name.includes(q) || (item.dataset.nameEn || '').includes(q) || (item.dataset.aliases || '').includes(q);
             item.style.display = matches ? '' : 'none';
         });
     }

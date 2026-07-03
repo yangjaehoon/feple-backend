@@ -32,12 +32,14 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
     @Query(value = "SELECT sr FROM SongRequest sr JOIN FETCH sr.artist WHERE " +
                    "(:status IS NULL OR sr.status = :status) AND " +
                    "(:keyword IS NULL OR LOWER(sr.songTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
-                   "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
+                   "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+                   "     OR (sr.artist.aliases IS NOT NULL AND LOWER(sr.artist.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')) " +
                    "ORDER BY sr.createdAt DESC",
            countQuery = "SELECT COUNT(sr) FROM SongRequest sr WHERE " +
                         "(:status IS NULL OR sr.status = :status) AND " +
                         "(:keyword IS NULL OR LOWER(sr.songTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
-                        "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")
+                        "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+                        "     OR (sr.artist.aliases IS NOT NULL AND LOWER(sr.artist.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!'))")
     Page<SongRequest> findWithFilters(@Param("status") SongRequestStatus status,
                                       @Param("keyword") String keyword,
                                       Pageable pageable);
