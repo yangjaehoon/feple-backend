@@ -34,7 +34,7 @@ class UserServiceImplTest {
 
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
-    @Mock UserCascadeDeleteService cascadeDeleteService;
+    @Mock UserAdminService userAdminService;
     @Mock BadWordFilter badWordFilter;
     @Mock ArtistNameFilter artistNameFilter;
     @Mock NicknameRestrictionFilter nicknameRestrictionFilter;
@@ -218,41 +218,13 @@ class UserServiceImplTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    // ── updateUserRole ────────────────────────────────────────────────
+    // ── deleteUser ───────────────────────────────────────────────────
 
     @Test
-    void 사용자_역할_변경_성공() {
-        User user = user(1L, "유저");
-        given(userRepository.findById(1L)).willReturn(Optional.of(user));
-
-        userService.updateUserRole(1L, UserRole.ADMIN);
-
-        assertThat(user.getRole()).isEqualTo(UserRole.ADMIN);
-    }
-
-    // ── deleteUser / bulkDeleteUsers ──────────────────────────────────
-
-    @Test
-    void 사용자_삭제시_cascadeDeleteService에_위임() {
-        User user = user(1L, "삭제유저");
-        given(userRepository.findById(1L)).willReturn(Optional.of(user));
-
+    void 사용자_삭제시_userAdminService에_위임() {
         userService.deleteUser(1L);
 
-        verify(cascadeDeleteService).delete(user);
-    }
-
-    @Test
-    void bulkDeleteUsers_각_id에_대해_삭제_수행() {
-        User u1 = user(1L, "유저1");
-        User u2 = user(2L, "유저2");
-        given(userRepository.findById(1L)).willReturn(Optional.of(u1));
-        given(userRepository.findById(2L)).willReturn(Optional.of(u2));
-
-        userService.bulkDeleteUsers(List.of(1L, 2L));
-
-        verify(cascadeDeleteService).delete(u1);
-        verify(cascadeDeleteService).delete(u2);
+        verify(userAdminService).adminDeleteUser(1L);
     }
 
     // ── currentUserId ─────────────────────────────────────────────────
