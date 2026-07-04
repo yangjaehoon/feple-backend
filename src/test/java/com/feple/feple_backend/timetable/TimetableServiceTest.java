@@ -4,7 +4,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.stage.repository.StageRepository;
+import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
@@ -35,7 +35,7 @@ class TimetableServiceTest {
 
     @Mock TimetableRepository timetableRepository;
     @Mock FestivalRepository festivalRepository;
-    @Mock StageRepository stageRepository;
+    @Mock StageService stageService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock ArtistRepository artistRepository;
 
@@ -80,7 +80,7 @@ class TimetableServiceTest {
 
         timetableService.createEntry(1L, req);
 
-        then(stageRepository).should(never()).findByFestivalIdAndName(anyLong(), anyString());
+        then(stageService).should(never()).findByFestivalIdAndName(anyLong(), anyString());
     }
 
     @Test
@@ -105,7 +105,7 @@ class TimetableServiceTest {
         req.setStartTime(LocalTime.of(14, 0));
         req.setEndTime(LocalTime.of(16, 0));
 
-        given(stageRepository.findByFestivalIdAndName(eq(1L), eq("MAIN")))
+        given(stageService.findByFestivalIdAndName(eq(1L), eq("MAIN")))
                 .willReturn(Optional.empty());
 
         TimetableEntryResponseDto response = timetableService.createEntry(1L, req);
