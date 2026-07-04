@@ -120,7 +120,8 @@
     function loadQuota() {
         fetch(CrawlUrls.quota)
             .then(function (r) { return r.json(); })
-            .then(function (q) { renderQuota(q); });
+            .then(function (q) { renderQuota(q); })
+            .catch(function () {});
     }
 
     function renderQuota(q) {
@@ -289,7 +290,8 @@
             festivals.forEach(function (f) { festivalMap[f.id] = f; });
             ocrSelect.populate(festivals);
             lineupSelect.populate(festivals);
-        });
+        })
+        .catch(function () {});
 
     /* ── 페스티벌 선택 시 날짜 범위 + 아티스트/스테이지 로드 ── */
     ocrSelect.addEventListener('change', function () {
@@ -326,7 +328,7 @@
             });
             stageNames = results[1];
             refreshExistingSelects();
-        });
+        }).catch(function () {});
     });
 
     /* ── 날짜 미설정 행 보충: 비어있는 행에만 날짜 적용 ── */
@@ -426,7 +428,7 @@
             .catch(function (err) {
                 clearInterval(timer);
                 document.getElementById('ocrProgress').classList.remove('visible');
-                showApplyResult('error', '오류: ' + err.message);
+                showApplyResult('error', '오류: ' + window.AdminUtils.escapeHtml(err.message));
             });
     }
 
@@ -723,7 +725,7 @@
         .catch(function (err) {
             btn.disabled = false;
             btn.innerHTML = '타임테이블에 적용';
-            showApplyResult('error', '오류: ' + err.message);
+            showApplyResult('error', '오류: ' + window.AdminUtils.escapeHtml(err.message));
         });
     });
 
@@ -970,7 +972,7 @@
         .catch(function (err) {
             btn.disabled = false;
             btn.innerHTML = '참여 아티스트로 등록';
-            showApplyResult('error', '오류: ' + err.message);
+            showApplyResult('error', '오류: ' + window.AdminUtils.escapeHtml(err.message));
         });
     });
 

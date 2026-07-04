@@ -71,31 +71,31 @@
             <div class="card-header">
                 <div class="card-title">별점 통계</div>
             </div>
-            <div th:if="${ratingStats.ratingCount == 0}" class="cell-secondary" style="padding:8px 0">
+            <div th:if="${ratingStats.ratingCount == 0}" class="cell-secondary rating-empty-hint">
                 아직 별점 평가가 없습니다.
             </div>
             <div th:if="${ratingStats.ratingCount > 0}">
-                <div style="display:flex;align-items:center;gap:24px;margin-bottom:16px">
-                    <div style="text-align:center">
-                        <div style="font-size:36px;font-weight:700;color:#f59e0b"
+                <div class="rating-summary">
+                    <div class="rating-score-block">
+                        <div class="rating-score-num"
                              th:text="${#numbers.formatDecimal(ratingStats.averageRating, 1, 1)}"></div>
-                        <div style="font-size:22px;color:#f59e0b;letter-spacing:2px">
+                        <div class="rating-stars-display">
                             <th:block th:each="i : ${#numbers.sequence(1,5)}"
                                       th:text="${i <= ratingStats.averageRating} ? '★' : '☆'"></th:block>
                         </div>
-                        <div class="cell-secondary" style="margin-top:4px"
+                        <div class="cell-secondary rating-count-hint"
                              th:text="${ratingStats.ratingCount} + '명 평가'"></div>
                     </div>
-                    <div style="flex:1">
+                    <div class="rating-bar-section">
                         <th:block th:each="entry : ${ratingStats.distribution}">
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                                <span style="min-width:24px;color:#f59e0b;font-weight:700"
+                            <div class="rating-bar-row">
+                                <span class="rating-bar-label"
                                       th:text="${entry.key} + '★'"></span>
-                                <div style="flex:1;background:#f3f4f6;border-radius:4px;height:12px;overflow:hidden">
-                                    <div style="height:100%;background:#f59e0b;border-radius:4px;transition:width 0.3s"
+                                <div class="rating-bar-track">
+                                    <div class="rating-bar-fill"
                                          th:style="'width:' + (${ratingStats.ratingCount > 0} ? ${#numbers.formatDecimal(entry.value * 100.0 / ratingStats.ratingCount, 1, 0)} : 0) + '%'"></div>
                                 </div>
-                                <span class="cell-secondary" style="min-width:28px;text-align:right"
+                                <span class="cell-secondary rating-bar-count"
                                       th:text="${entry.value} + '명'"></span>
                             </div>
                         </th:block>
@@ -296,27 +296,25 @@
                         </div>
                     </div>
                     <!-- 크루 공연 설정 (전체 너비) -->
-                    <div style="grid-column: 1 / -1" th:if="${!participatingArtistsByName.isEmpty()}">
-                        <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; background:#f9fafb;">
-                            <div style="font-size:12px; font-weight:600; color:#374151; margin-bottom:10px;">
+                    <div class="timetable-crew-col" th:if="${!participatingArtistsByName.isEmpty()}">
+                        <div class="crew-section">
+                            <div class="crew-section-title">
                                 크루 공연 설정 (선택 — 일반 공연은 비워두세요)
                             </div>
-                            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
-                                <div style="flex:1; min-width:200px;">
+                            <div class="crew-fields-row">
+                                <div class="crew-name-field">
                                     <label class="form-label-sm">크루 이름</label>
                                     <input type="text" id="crewNameInput" class="compact-input"
-                                           style="width:100%; margin-top:4px;"
                                            maxlength="200" placeholder="예: LOUDX, BE:MBLEM 크루"/>
                                 </div>
                                 <div>
                                     <label class="form-label-sm">날짜</label>
                                     <input type="date" id="crewDateInput" class="compact-input"
-                                           style="margin-top:4px;"
                                            th:min="${festival.startDate}" th:max="${festival.endDate}"/>
                                 </div>
                                 <div>
                                     <label class="form-label-sm">스테이지</label>
-                                    <select id="crewStageInput" class="compact-input" style="margin-top:4px;">
+                                    <select id="crewStageInput" class="compact-input">
                                         <option value="">스테이지 선택</option>
                                         <option th:each="s : ${stages}" th:value="${s.name}" th:text="${s.name}"></option>
                                     </select>
@@ -324,18 +322,18 @@
                             </div>
                             <div>
                                 <label class="form-label-sm">크루 멤버</label>
-                                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                                <div class="crew-member-list">
                                     <label th:each="af : ${participatingArtistsByName}"
-                                           style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; font-size:12px; background:#fff; user-select:none;">
+                                           class="crew-member-chip">
                                         <input type="checkbox" name="memberArtistIds"
-                                               th:value="${af.artistId}" style="margin:0; cursor:pointer;"/>
+                                               th:value="${af.artistId}"/>
                                         <span th:text="${af.artistName}"></span>
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end; margin-top:4px;">
+                    <div class="timetable-form-footer">
                         <button type="submit" class="btn btn-primary">+ 추가</button>
                     </div>
                 </form>

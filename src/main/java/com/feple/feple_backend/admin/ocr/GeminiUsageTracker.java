@@ -19,6 +19,7 @@ public class GeminiUsageTracker {
 
     private final GeminiDailyUsageRepository repository;
 
+    @Transactional
     public void increment() {
         repository.upsertIncrement(LocalDate.now(PACIFIC));
     }

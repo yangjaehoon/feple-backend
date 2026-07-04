@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public class FestivalServiceImpl implements FestivalService {
+public class FestivalServiceImpl implements FestivalService, FestivalAdminService {
 
     private static final String ERR_END_BEFORE_START = "종료일은 시작일보다 이전일 수 없습니다.";
 
@@ -209,13 +209,6 @@ public class FestivalServiceImpl implements FestivalService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "activeFestivalCount", key = "#today")
-    public long countActiveFestivals(LocalDate today) {
-        return festivalRepository.countActiveFestivals(today);
-    }
-
-    @Override
     public String uploadPosterFile(MultipartFile file, LocalDate startDate) throws IOException {
         return fileStorageService.storeFestivalPoster(file, startDate);
     }
@@ -235,14 +228,6 @@ public class FestivalServiceImpl implements FestivalService {
                 .limit(10)
                 .map(this::toDto)
                 .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<FestivalResponseDto> getFestivalsPage(int page, int size) {
-        Page<Festival> result = festivalRepository
-                .findAll(PageableFactory.latestStartDate(page, size));
-        return result.map(this::toDto);
     }
 
     @Override

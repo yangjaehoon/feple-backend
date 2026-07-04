@@ -41,7 +41,7 @@ public class AdminLogController {
         model.addAttribute("actionLabels", AdminAction.actionLabelMap());
 
         List<String> params = new ArrayList<>();
-        if (!targetType.isBlank()) params.add("targetType=" + targetType);
+        if (!targetType.isBlank()) params.add("targetType=" + URLEncoder.encode(targetType, StandardCharsets.UTF_8));
         if (!adminUsername.isBlank()) params.add("adminUsername=" + URLEncoder.encode(adminUsername, StandardCharsets.UTF_8));
         if (from != null) params.add("from=" + from);
         if (to != null) params.add("to=" + to);

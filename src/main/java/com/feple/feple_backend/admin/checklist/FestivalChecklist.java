@@ -42,7 +42,7 @@ public class FestivalChecklist {
         return checklist;
     }
 
-    public void toggle(String field) {
+    public boolean toggle(String field) {
         switch (field) {
             case "lineup1"   -> this.lineup1   = !this.lineup1;
             case "lineup2"   -> this.lineup2   = !this.lineup2;
@@ -51,6 +51,7 @@ public class FestivalChecklist {
             case "timetable" -> this.timetable = !this.timetable;
             default -> throw new IllegalArgumentException("알 수 없는 항목: " + field);
         }
+        return valueOf(field);
     }
 
     public int getFieldCount() {

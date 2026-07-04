@@ -10,7 +10,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/admin/festivals/{festivalId}/artists")
 public class FestivalArtistAdminController {
 
-    private final FestivalService festivalService;
+    private final FestivalAdminService festivalService;
     private final ArtistAdminService artistService;
     private final ArtistFestivalService artistFestivalService;
     private final AdminLogService adminLogService;

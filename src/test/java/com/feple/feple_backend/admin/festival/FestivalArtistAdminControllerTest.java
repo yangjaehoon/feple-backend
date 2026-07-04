@@ -6,7 +6,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class FestivalArtistAdminControllerTest {
 
-    @Mock FestivalService festivalService;
+    @Mock FestivalAdminService festivalService;
     @Mock ArtistAdminService artistService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock AdminLogService adminLogService;

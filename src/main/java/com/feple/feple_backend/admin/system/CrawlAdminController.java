@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.ocr.ArtistLineupOcrResult;
 import com.feple.feple_backend.admin.ocr.LineupApplyOcrRequestDto;
 import com.feple.feple_backend.admin.ocr.LineupApplyResult;
@@ -16,6 +18,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
@@ -46,8 +49,10 @@ public class CrawlAdminController {
     private final OcrService ocrService;
     private final WebScraperService webScraperService;
     private final FestivalService festivalService;
+    private final FestivalAdminService festivalAdminService;
     private final StageService stageService;
     private final ArtistFestivalService artistFestivalService;
+    private final AdminLogService adminLogService;
 
     @GetMapping
     public String crawlDashboard() {
@@ -81,7 +86,8 @@ public class CrawlAdminController {
         String validationError = validateScraperApplyRequestDto(req);
         if (validationError != null) return badRequest(validationError);
         try {
-            Long festivalId = festivalService.createFestival(ScrapedFestivalMapper.toFestivalRequestDto(req));
+            Long festivalId = festivalAdminService.createFestival(ScrapedFestivalMapper.toFestivalRequestDto(req));
+            adminLogService.log(AdminAction.FESTIVAL_SCRAPE_CREATE, "FESTIVAL", festivalId, req.title());
             return ResponseEntity.ok(Map.of("festivalId", festivalId));
         } catch (IllegalArgumentException e) {
             return badRequest(e.getMessage());
@@ -120,6 +126,8 @@ public class CrawlAdminController {
         if (request.entries() == null || request.entries().isEmpty()) return badRequest("저장할 항목이 없습니다.");
         try {
             OcrApplyResultDto result = ocrService.applyEntries(request);
+            adminLogService.log(AdminAction.TIMETABLE_OCR_APPLY, "FESTIVAL", request.festivalId(),
+                    "saved=" + result.savedCount() + " failed=" + result.failedCount());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("OCR 타임테이블 적용 실패", e);
@@ -153,6 +161,8 @@ public class CrawlAdminController {
         if (request.artistIds() == null || request.artistIds().isEmpty()) return badRequest("등록할 아티스트가 없습니다.");
         try {
             LineupApplyResult result = ocrService.applyArtistLineup(request.festivalId(), request.artistIds(), request.unmatchedNames());
+            adminLogService.log(AdminAction.LINEUP_OCR_APPLY, "FESTIVAL", request.festivalId(),
+                    "added=" + result.added() + " duplicates=" + result.duplicates());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("라인업 OCR 적용 실패: festivalId={}", request.festivalId(), e);
@@ -170,6 +180,7 @@ public class CrawlAdminController {
     @ResponseBody
     public ResponseEntity<Void> deleteSuggestion(@PathVariable Long id) {
         ocrService.deleteSuggestion(id);
+        adminLogService.log(AdminAction.UNMATCHED_SUGGESTION_DELETE, "UNMATCHED_SUGGESTION", id, null);
         return ResponseEntity.noContent().build();
     }
 

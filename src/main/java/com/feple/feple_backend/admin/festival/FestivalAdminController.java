@@ -13,7 +13,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Genre;
 import com.feple.feple_backend.festival.entity.Region;
-import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,7 +46,7 @@ public class FestivalAdminController {
     @Value("${app.kakao.maps.key:}")
     private String kakaoMapsKey;
 
-    private final FestivalService festivalService;
+    private final FestivalAdminService festivalService;
     private final ArtistAdminService artistService;
     private final ArtistFestivalService artistFestivalService;
     private final FestivalDetailAggregationService festivalDetailAggregationService;
@@ -132,10 +132,11 @@ public class FestivalAdminController {
                                  RedirectAttributes ra
     ) {
         applyPosterFile(posterFile, dto, bindingResult);
+        String currentPosterUrl = festivalService.getFestival(id).getPosterUrl();
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             model.addAttribute("festivalId", id);
-            model.addAttribute("currentPosterUrl", festivalService.getFestival(id).getPosterUrl());
+            model.addAttribute("currentPosterUrl", currentPosterUrl);
             populateFestivalFormModel(model);
             return "admin/festival/edit";
         }
@@ -146,7 +147,7 @@ public class FestivalAdminController {
             bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             model.addAttribute("festivalId", id);
-            model.addAttribute("currentPosterUrl", festivalService.getFestival(id).getPosterUrl());
+            model.addAttribute("currentPosterUrl", currentPosterUrl);
             populateFestivalFormModel(model);
             return "admin/festival/edit";
         } catch (NoSuchElementException e) {

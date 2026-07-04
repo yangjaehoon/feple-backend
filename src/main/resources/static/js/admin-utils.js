@@ -25,10 +25,11 @@
             }
         },
         getCsrfHeaders: function () {
-            var token  = document.querySelector('meta[name="_csrf"]').content;
-            var header = document.querySelector('meta[name="_csrf_header"]').content;
+            var tokenEl  = document.querySelector('meta[name="_csrf"]');
+            var headerEl = document.querySelector('meta[name="_csrf_header"]');
+            if (!tokenEl || !headerEl) return {};
             var h = {};
-            h[header] = token;
+            h[headerEl.content] = tokenEl.content;
             return h;
         },
         escapeHtml: function (str) {

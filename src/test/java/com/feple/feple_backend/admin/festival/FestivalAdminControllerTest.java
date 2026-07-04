@@ -9,7 +9,7 @@ import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class FestivalAdminControllerTest {
 
-    @Mock FestivalService festivalService;
+    @Mock FestivalAdminService festivalService;
     @Mock ArtistAdminService artistService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock FestivalDetailAggregationService festivalDetailAggregationService;

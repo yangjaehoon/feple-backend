@@ -30,6 +30,7 @@ import static org.mockito.BDDMockito.given;
 class FestivalServiceIntegrationTest {
 
     @Autowired FestivalService festivalService;
+    @Autowired FestivalAdminService festivalAdminService;
     @Autowired FestivalRepository festivalRepository;
 
     // S3 호출을 가짜로 교체 (실제 AWS 연결 없이)
@@ -49,9 +50,9 @@ class FestivalServiceIntegrationTest {
         FestivalRequestDto dto = makeDto("서울재즈페스티벌",
                 LocalDate.of(2025, 5, 23), LocalDate.of(2025, 5, 25));
 
-        Long id = festivalService.createFestival(dto);
+        Long id = festivalAdminService.createFestival(dto);
 
-        FestivalResponseDto result = festivalService.getFestival(id);
+        FestivalResponseDto result = festivalAdminService.getFestival(id);
         assertThat(result.getTitle()).isEqualTo("서울재즈페스티벌");
         assertThat(result.getLocation()).isEqualTo("올림픽공원");
         assertThat(result.getRegion()).isEqualTo(Region.SEOUL);
@@ -61,7 +62,7 @@ class FestivalServiceIntegrationTest {
     void 생성된_페스티벌은_DB에_저장됨() {
         long before = festivalRepository.count();
 
-        festivalService.createFestival(makeDto("테스트페스티벌",
+        festivalAdminService.createFestival(makeDto("테스트페스티벌",
                 LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 3)));
 
         assertThat(festivalRepository.count()).isEqualTo(before + 1);
@@ -71,7 +72,7 @@ class FestivalServiceIntegrationTest {
 
     @Test
     void 없는_페스티벌_조회시_404_예외() {
-        assertThatThrownBy(() -> festivalService.getFestival(9999L))
+        assertThatThrownBy(() -> festivalAdminService.getFestival(9999L))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessageContaining("9999");
     }
@@ -80,14 +81,14 @@ class FestivalServiceIntegrationTest {
 
     @Test
     void 페스티벌_제목_수정() {
-        Long id = festivalService.createFestival(makeDto("원래제목",
+        Long id = festivalAdminService.createFestival(makeDto("원래제목",
                 LocalDate.of(2025, 7, 1), LocalDate.of(2025, 7, 3)));
 
         FestivalRequestDto updateDto = makeDto("수정된제목",
                 LocalDate.of(2025, 7, 1), LocalDate.of(2025, 7, 3));
-        festivalService.updateFestival(id, updateDto);
+        festivalAdminService.updateFestival(id, updateDto);
 
-        FestivalResponseDto result = festivalService.getFestival(id);
+        FestivalResponseDto result = festivalAdminService.getFestival(id);
         assertThat(result.getTitle()).isEqualTo("수정된제목");
     }
 
@@ -95,7 +96,7 @@ class FestivalServiceIntegrationTest {
     void 없는_페스티벌_수정시_404_예외() {
         FestivalRequestDto dto = makeDto("제목", LocalDate.now(), LocalDate.now().plusDays(1));
 
-        assertThatThrownBy(() -> festivalService.updateFestival(9999L, dto))
+        assertThatThrownBy(() -> festivalAdminService.updateFestival(9999L, dto))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -103,12 +104,12 @@ class FestivalServiceIntegrationTest {
 
     @Test
     void 페스티벌_삭제_후_조회_불가() {
-        Long id = festivalService.createFestival(makeDto("삭제예정",
+        Long id = festivalAdminService.createFestival(makeDto("삭제예정",
                 LocalDate.of(2025, 8, 1), LocalDate.of(2025, 8, 2)));
 
-        festivalService.deleteFestival(id);
+        festivalAdminService.deleteFestival(id);
 
-        assertThatThrownBy(() -> festivalService.getFestival(id))
+        assertThatThrownBy(() -> festivalAdminService.getFestival(id))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -119,8 +120,8 @@ class FestivalServiceIntegrationTest {
         LocalDate future = LocalDate.now().plusDays(10);
         LocalDate past = LocalDate.now().minusDays(5);
 
-        festivalService.createFestival(makeDto("진행중", future, future.plusDays(3)));
-        festivalService.createFestival(makeDtoEnded("종료됨", past.minusDays(3), past));
+        festivalAdminService.createFestival(makeDto("진행중", future, future.plusDays(3)));
+        festivalAdminService.createFestival(makeDtoEnded("종료됨", past.minusDays(3), past));
 
         List<FestivalResponseDto> activeOnly =
                 festivalService.getAllFestivals(new FestivalFilterCriteria(null, null, null, false, null));
@@ -139,8 +140,8 @@ class FestivalServiceIntegrationTest {
 
     @Test
     void 장르_필터링() {
-        festivalService.createFestival(makeDtoWithGenre("밴드페스티벌", Genre.BAND));
-        festivalService.createFestival(makeDtoWithGenre("힙합페스티벌", Genre.HIP_HOP));
+        festivalAdminService.createFestival(makeDtoWithGenre("밴드페스티벌", Genre.BAND));
+        festivalAdminService.createFestival(makeDtoWithGenre("힙합페스티벌", Genre.HIP_HOP));
 
         List<FestivalResponseDto> result =
                 festivalService.getAllFestivals(new FestivalFilterCriteria(List.of(Genre.BAND), null, null, true, null));

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.filter;
 
-import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
@@ -9,7 +9,7 @@ import org.springframework.ui.Model;
 @RequiredArgsConstructor
 class FestivalFilterDropdownProvider implements FilterDropdownProvider {
 
-    private final FestivalService festivalService;
+    private final FestivalAdminService festivalService;
 
     @Override public String filter() { return "FESTIVAL"; }
 

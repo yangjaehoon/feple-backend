@@ -26,10 +26,10 @@ public class FestivalChecklistService {
 
     @Transactional
     @CacheEvict(value = "festivalChecklistMap", allEntries = true)
-    public void toggle(Long festivalId, String field) {
+    public boolean toggle(Long festivalId, String field) {
         FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
                 .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
-        checklist.toggle(field);
+        return checklist.toggle(field);
     }
 
     @Transactional(readOnly = true)

@@ -8,7 +8,7 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.service.BoothService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class FestivalDetailAggregationServiceTest {
 
-    @Mock FestivalService festivalService;
+    @Mock FestivalAdminService festivalService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock TimetableService timetableService;
     @Mock StageService stageService;

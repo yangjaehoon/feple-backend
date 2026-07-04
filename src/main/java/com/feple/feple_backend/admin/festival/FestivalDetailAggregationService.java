@@ -7,7 +7,7 @@ import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.booth.service.BoothService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
@@ -30,7 +30,7 @@ public class FestivalDetailAggregationService {
 
     private static final String ANNOUNCEMENT_STAGE = "📢";
 
-    private final FestivalService festivalService;
+    private final FestivalAdminService festivalService;
     private final ArtistFestivalService artistFestivalService;
     private final TimetableService timetableService;
     private final StageService stageService;

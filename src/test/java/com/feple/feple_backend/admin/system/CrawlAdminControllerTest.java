@@ -14,6 +14,7 @@ import com.feple.feple_backend.admin.scraper.WebScraperService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.stage.service.StageService;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +43,7 @@ class CrawlAdminControllerTest {
     @Mock OcrService ocrService;
     @Mock WebScraperService webScraperService;
     @Mock FestivalService festivalService;
+    @Mock FestivalAdminService festivalAdminService;
     @Mock StageService stageService;
     @Mock ArtistFestivalService artistFestivalService;
 
@@ -122,7 +124,7 @@ class CrawlAdminControllerTest {
 
     @Test
     void 스크래핑_결과_적용_성공_festivalId_반환() throws Exception {
-        given(festivalService.createFestival(any())).willReturn(1L);
+        given(festivalAdminService.createFestival(any())).willReturn(1L);
 
         ScraperApplyRequestDto req = new ScraperApplyRequestDto(
                 "테스트 페스티벌", null, null, null,
