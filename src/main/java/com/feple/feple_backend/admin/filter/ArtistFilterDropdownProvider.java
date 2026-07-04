@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.filter;
 
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
@@ -9,7 +9,7 @@ import org.springframework.ui.Model;
 @RequiredArgsConstructor
 class ArtistFilterDropdownProvider implements FilterDropdownProvider {
 
-    private final ArtistService artistService;
+    private final ArtistAdminService artistService;
 
     @Override public String filter() { return "ARTIST"; }
 

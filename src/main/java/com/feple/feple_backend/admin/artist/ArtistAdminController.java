@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import jakarta.validation.Valid;
@@ -34,6 +35,7 @@ import java.util.NoSuchElementException;
 public class ArtistAdminController {
 
     private final ArtistService artistService;
+    private final ArtistAdminService artistAdminService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
     private final AdminLogService adminLogService;
 
@@ -63,8 +65,8 @@ public class ArtistAdminController {
         }
 
         try {
-            dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
-            Long artistId = artistService.createArtist(dto);
+            dto.setProfileImageKey(artistAdminService.uploadProfile(profileImageFile, dto.getName()));
+            Long artistId = artistAdminService.createArtist(dto);
             adminLogService.log(AdminAction.ARTIST_CREATE, "ARTIST", artistId, dto.getName());
             ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
         } catch (Exception e) {
@@ -82,7 +84,7 @@ public class ArtistAdminController {
                               @RequestParam(required = false) ArtistGenre genre,
                               @RequestParam(defaultValue = "0") int page,
                               Model model) {
-        Page<ArtistResponseDto> artistsPage = artistService.getAdminArtistList(sort, keyword, genre, page);
+        Page<ArtistResponseDto> artistsPage = artistAdminService.getAdminArtistList(sort, keyword, genre, page);
         model.addAttribute("artistsPage", artistsPage);
         model.addAttribute("artists", artistsPage.getContent());
         model.addAttribute("keyword", keyword);
@@ -127,8 +129,8 @@ public class ArtistAdminController {
         }
         try {
             ArtistResponseDto artist = artistService.getArtistById(id);
-            String imageKey = artistService.uploadProfile(file, artist.getName());
-            artistService.updateArtistPhoto(id, imageKey);
+            String imageKey = artistAdminService.uploadProfile(file, artist.getName());
+            artistAdminService.updateArtistPhoto(id, imageKey);
             adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", id, artist.getName() + " 사진 변경");
             ra.addFlashAttribute("successMessage", "사진이 업데이트되었습니다.");
         } catch (Exception e) {
@@ -146,7 +148,7 @@ public class ArtistAdminController {
                                Model model, RedirectAttributes ra) {
         try {
             model.addAttribute("artistId", id);
-            model.addAttribute("artist", artistService.getArtistForEdit(id));
+            model.addAttribute("artist", artistAdminService.getArtistForEdit(id));
             model.addAttribute("page", page);
             model.addAttribute("keyword", keyword);
             model.addAttribute("sort", sort);
@@ -177,9 +179,9 @@ public class ArtistAdminController {
         }
         try {
             if (profileImageFile != null && !profileImageFile.isEmpty()) {
-                dto.setProfileImageKey(artistService.uploadProfile(profileImageFile, dto.getName()));
+                dto.setProfileImageKey(artistAdminService.uploadProfile(profileImageFile, dto.getName()));
             }
-            artistService.updateArtist(id, dto);
+            artistAdminService.updateArtist(id, dto);
             adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", id, dto.getName());
             ra.addFlashAttribute("successMessage", "아티스트 정보가 수정되었습니다.");
         } catch (NoSuchElementException e) {
@@ -200,7 +202,7 @@ public class ArtistAdminController {
                                     RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
-                    artistService.batchUpdateNameEn(artistIds, nameEns);
+                    artistAdminService.batchUpdateNameEn(artistIds, nameEns);
                     adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", null, "영어 이름 일괄 수정 " + artistIds.size() + "건");
                 },
                 "영어 이름이 저장되었습니다.",
@@ -214,7 +216,7 @@ public class ArtistAdminController {
     public String deleteArtist(@PathVariable Long id, RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
-                    artistService.deleteArtist(id);
+                    artistAdminService.deleteArtist(id);
                     adminLogService.log(AdminAction.ARTIST_DELETE, "ARTIST", id, null);
                 },
                 null,

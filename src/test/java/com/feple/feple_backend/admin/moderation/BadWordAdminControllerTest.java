@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.moderation;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.badword.service.BadWordService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.nickname.service.NicknameRestrictionService;
@@ -30,7 +30,7 @@ class BadWordAdminControllerTest {
     @Mock CommentService commentService;
     @Mock AdminLogService adminLogService;
     @Mock NicknameRestrictionService nicknameRestrictionService;
-    @Mock ArtistService artistService;
+    @Mock ArtistAdminService artistService;
 
     @InjectMocks BadWordAdminController controller;
 

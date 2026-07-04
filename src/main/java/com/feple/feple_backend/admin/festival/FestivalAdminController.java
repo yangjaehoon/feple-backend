@@ -5,7 +5,7 @@ import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import com.feple.feple_backend.admin.festival.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import lombok.extern.slf4j.Slf4j;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
@@ -47,7 +47,7 @@ public class FestivalAdminController {
     private String kakaoMapsKey;
 
     private final FestivalService festivalService;
-    private final ArtistService artistService;
+    private final ArtistAdminService artistService;
     private final ArtistFestivalService artistFestivalService;
     private final FestivalDetailAggregationService festivalDetailAggregationService;
     private final FestivalChecklistService festivalChecklistService;

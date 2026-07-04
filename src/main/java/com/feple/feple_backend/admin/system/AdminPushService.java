@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.system.BroadcastNotificationView;
 import com.feple.feple_backend.admin.system.PushFormData;
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
@@ -40,7 +40,7 @@ public class AdminPushService {
     private final BroadcastNotificationRepository broadcastNotificationRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final FestivalCertificationRepository festivalCertificationRepository;
-    private final ArtistService artistService;
+    private final ArtistAdminService artistService;
     private final FestivalService festivalService;
 
     @Transactional(readOnly = true)

@@ -5,7 +5,7 @@ import com.feple.feple_backend.admin.festival.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.festival.FestivalDetailDto;
 import com.feple.feple_backend.admin.festival.FestivalRatingStatsDto;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FestivalAdminControllerTest {
 
     @Mock FestivalService festivalService;
-    @Mock ArtistService artistService;
+    @Mock ArtistAdminService artistService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock FestivalDetailAggregationService festivalDetailAggregationService;
     @Mock FestivalChecklistService festivalChecklistService;

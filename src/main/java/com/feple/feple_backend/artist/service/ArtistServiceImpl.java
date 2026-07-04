@@ -23,7 +23,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import com.feple.feple_backend.global.PageableFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +39,7 @@ import org.springframework.data.domain.Sort.Direction;
 
 @Service
 @RequiredArgsConstructor
-public class ArtistServiceImpl implements ArtistService {
+public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
     private static final int ADMIN_PAGE_SIZE = 30;
 
@@ -188,14 +187,6 @@ public class ArtistServiceImpl implements ArtistService {
     public ArtistResponseDto getArtistById(Long id) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
         return toDto(artist);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<ArtistResponseDto> getArtistsPage(int page, int size) {
-        Page<Artist> result = artistRepository
-                .findAll(PageableFactory.newestId(page, size));
-        return result.map(this::toDto);
     }
 
     @Override

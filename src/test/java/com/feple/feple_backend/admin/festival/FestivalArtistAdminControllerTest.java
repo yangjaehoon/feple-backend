@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FestivalArtistAdminControllerTest {
 
     @Mock FestivalService festivalService;
-    @Mock ArtistService artistService;
+    @Mock ArtistAdminService artistService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock AdminLogService adminLogService;
 

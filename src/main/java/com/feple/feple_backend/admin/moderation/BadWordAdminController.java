@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin.moderation;
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.badword.service.BadWordService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.nickname.service.NicknameRestrictionService;
@@ -31,7 +31,7 @@ public class BadWordAdminController {
     private final CommentService commentService;
     private final AdminLogService adminLogService;
     private final NicknameRestrictionService nicknameRestrictionService;
-    private final ArtistService artistService;
+    private final ArtistAdminService artistService;
 
     @GetMapping
     public String list(Model model) {

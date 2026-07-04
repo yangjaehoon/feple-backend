@@ -4,7 +4,7 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class FestivalArtistAdminController {
 
     private final FestivalService festivalService;
-    private final ArtistService artistService;
+    private final ArtistAdminService artistService;
     private final ArtistFestivalService artistFestivalService;
     private final AdminLogService adminLogService;
 
