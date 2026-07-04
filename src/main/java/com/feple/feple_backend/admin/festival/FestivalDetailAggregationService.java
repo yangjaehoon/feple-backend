@@ -5,7 +5,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.booth.service.BoothService;
-import com.feple.feple_backend.certification.service.FestivalCertificationService;
+import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.stage.service.StageService;
@@ -36,7 +36,7 @@ public class FestivalDetailAggregationService {
     private final StageService stageService;
     private final BoothService boothService;
     private final SongAdminService songAdminService;
-    private final FestivalCertificationService certificationService;
+    private final FestivalReviewService reviewService;
 
     @Value("${app.google.maps.key:}")
     private String googleMapsKey;
@@ -50,10 +50,10 @@ public class FestivalDetailAggregationService {
         Map<String, String> stageByArtistName = buildStageByArtistName(entries);
         List<ArtistFestivalResponseDto> artists = artistFestivalService.getArtistFestivals(festivalId, datesByArtistName, stageByArtistName);
 
-        double avg = certificationService.getAverageRating(festivalId);
-        int cnt = certificationService.getRatingCount(festivalId);
+        double avg = reviewService.getAverageRating(festivalId);
+        int cnt = reviewService.getRatingCount(festivalId);
         FestivalRatingStatsDto ratingStats = cnt > 0
-                ? new FestivalRatingStatsDto(avg, cnt, certificationService.getRatingDistribution(festivalId))
+                ? new FestivalRatingStatsDto(avg, cnt, reviewService.getRatingDistribution(festivalId))
                 : FestivalRatingStatsDto.EMPTY;
 
         return new FestivalDetailDto(

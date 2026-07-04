@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.admin.service.ReportQueryService;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
-import com.feple.feple_backend.certification.service.FestivalCertificationService;
+import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.festival.setlistrequest.service.SetlistChangeRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,7 +16,7 @@ import java.util.List;
 public class AdminSidebarCountService {
 
     private final List<ReportQueryService> reportServices;
-    private final FestivalCertificationService certificationService;
+    private final FestivalCertificationAdminService certificationService;
     private final SongRequestAdminService songRequestAdminService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
     private final SetlistChangeRequestService setlistChangeRequestService;

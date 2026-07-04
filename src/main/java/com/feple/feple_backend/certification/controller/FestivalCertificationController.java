@@ -5,6 +5,7 @@ import com.feple.feple_backend.certification.dto.CertificationRequestDto;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
+import com.feple.feple_backend.certification.service.FestivalReviewService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,6 +33,7 @@ public class FestivalCertificationController {
     );
 
     private final FestivalCertificationService certificationService;
+    private final FestivalReviewService reviewService;
 
     @PostMapping("/presign")
     public PresignResult presign(
@@ -83,14 +85,14 @@ public class FestivalCertificationController {
             @Valid @RequestBody CertificationRatingRequestDto req,
             @AuthenticationPrincipal Long userId
     ) {
-        certificationService.submitRating(userId, id, req.rating(), req.review());
+        reviewService.submitRating(userId, id, req.rating(), req.review());
     }
 
     @GetMapping("/festival/{festivalId}/rating")
     public Map<String, Object> getFestivalRating(@PathVariable Long festivalId) {
         return Map.of(
-                "averageRating", certificationService.getAverageRating(festivalId),
-                "ratingCount", certificationService.getRatingCount(festivalId)
+                "averageRating", reviewService.getAverageRating(festivalId),
+                "ratingCount", reviewService.getRatingCount(festivalId)
         );
     }
 
@@ -101,7 +103,7 @@ public class FestivalCertificationController {
             Authentication authentication
     ) {
         Long userId = (authentication != null) ? (Long) authentication.getPrincipal() : null;
-        return certificationService.getFestivalReviewsPage(festivalId, page, userId);
+        return reviewService.getFestivalReviewsPage(festivalId, page, userId);
     }
 
     @PostMapping("/{id}/review-like")
@@ -109,7 +111,7 @@ public class FestivalCertificationController {
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId
     ) {
-        boolean liked = certificationService.toggleReviewLike(userId, id);
+        boolean liked = reviewService.toggleReviewLike(userId, id);
         return Map.of("liked", liked);
     }
 

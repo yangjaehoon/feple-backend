@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin.certification;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
-import com.feple.feple_backend.certification.service.FestivalCertificationService;
+import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class CertificationAdminControllerTest {
 
-    @Mock FestivalCertificationService certificationService;
+    @Mock FestivalCertificationAdminService certificationService;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks CertificationAdminController controller;

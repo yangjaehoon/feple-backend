@@ -6,7 +6,7 @@ import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.service.BoothService;
-import com.feple.feple_backend.certification.service.FestivalCertificationService;
+import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.stage.service.StageService;
@@ -39,7 +39,7 @@ class FestivalDetailAggregationServiceTest {
     @Mock StageService stageService;
     @Mock BoothService boothService;
     @Mock SongAdminService songAdminService;
-    @Mock FestivalCertificationService certificationService;
+    @Mock FestivalReviewService reviewService;
 
     @InjectMocks FestivalDetailAggregationService service;
 
@@ -53,8 +53,8 @@ class FestivalDetailAggregationServiceTest {
         given(artistFestivalService.getArtistFestivals(eq(festivalId), any(), any())).willReturn(artists);
         given(stageService.getStages(festivalId)).willReturn(List.of());
         given(boothService.getBooths(festivalId)).willReturn(List.of());
-        given(certificationService.getAverageRating(festivalId)).willReturn(0.0);
-        given(certificationService.getRatingCount(festivalId)).willReturn(0);
+        given(reviewService.getAverageRating(festivalId)).willReturn(0.0);
+        given(reviewService.getRatingCount(festivalId)).willReturn(0);
     }
 
     /** 아티스트가 있을 때 — songAdminService 스텁 포함 */
