@@ -67,6 +67,7 @@ public class UserAdminController {
             if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
             if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
             model.addAttribute("returnUrl", builder.build().toUriString());
+            model.addAttribute("listFilter", listFilter);
             return "admin/user/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

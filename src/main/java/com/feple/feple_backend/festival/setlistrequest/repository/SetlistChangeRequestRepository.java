@@ -13,5 +13,8 @@ public interface SetlistChangeRequestRepository extends JpaRepository<SetlistCha
     @Query("SELECT r FROM SetlistChangeRequest r WHERE (:status IS NULL OR r.status = :status) ORDER BY r.createdAt DESC")
     Page<SetlistChangeRequest> findByStatus(@Param("status") SetlistChangeRequestStatus status, Pageable pageable);
 
+    @Query("SELECT r FROM SetlistChangeRequest r WHERE (:status IS NULL OR r.status = :status) AND (LOWER(r.artistName) LIKE LOWER(CONCAT('%',:keyword,'%')) OR LOWER(r.festivalTitle) LIKE LOWER(CONCAT('%',:keyword,'%'))) ORDER BY r.createdAt DESC")
+    Page<SetlistChangeRequest> findByStatusAndKeyword(@Param("status") SetlistChangeRequestStatus status, @Param("keyword") String keyword, Pageable pageable);
+
     long countByStatus(SetlistChangeRequestStatus status);
 }

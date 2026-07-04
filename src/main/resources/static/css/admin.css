@@ -684,6 +684,8 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
   padding: 10px 18px; border-bottom: 1px solid var(--border);
 }
 .act-item:last-child { border-bottom: none; }
+.act-item-link { text-decoration: none; cursor: pointer; }
+.act-item-link:hover { background: var(--hover-bg, #f8f9fa); }
 .act-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 5px; }
 .act-dot.red   { background: var(--danger); }
 .act-dot.green { background: var(--success); }
@@ -969,6 +971,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .inline-input { padding: 4px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; }
 .inline-input:focus { border-color: var(--primary); }
 .yt-link    { font-size: 11px; color: var(--primary); }
+.request-message { white-space: pre-wrap; max-width: 300px; }
 .action-cell { display: flex; flex-direction: column; gap: 6px; min-width: 320px; }
 
 /* ============================================================

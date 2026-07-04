@@ -60,7 +60,7 @@
                             <div class="cell-primary" th:text="${req.songTitle}"></div>
                             <a th:if="${req.youtubeUrl != null and !req.youtubeUrl.isEmpty()}"
                                th:href="${req.youtubeUrl}" target="_blank"
-                               class="yt-link" th:text="${req.youtubeUrl}"></a>
+                               class="yt-link">YouTube &nearr;</a>
                         </td>
                         <td>
                             <a th:href="@{/admin/artists/{id}/songs(id=${req.artistId})}"
@@ -77,7 +77,7 @@
                                   th:classappend="${req.status == 'PENDING'} ? 'badge-warning' : (${req.status == 'APPROVED'} ? 'badge-success' : 'badge-danger')"
                                   th:text="${req.status == 'PENDING'} ? '대기중' : (${req.status == 'APPROVED'} ? '승인됨' : '거절됨')"></span>
                         </td>
-                        <td class="cell-secondary" th:text="${req.createdAt}"></td>
+                        <td class="cell-secondary" th:text="${#temporals.format(req.createdAt, 'MM-dd HH:mm')}"></td>
                         <td th:if="${req.status == 'PENDING'}">
                             <div class="action-cell">
                                 <form th:action="@{/admin/song-requests/{id}/approve(id=${req.id})}"

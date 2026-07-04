@@ -97,7 +97,15 @@
                                    th:href="@{/admin/posts/{id}(id=${entry.targetId})}"
                                    th:text="${entry.targetId}"
                                    class="link-primary"></a>
-                                <span th:if="${entry.targetType != 'USER' and entry.targetType != 'FESTIVAL' and entry.targetType != 'POST'}"
+                                <a th:if="${entry.targetType == 'ARTIST'}"
+                                   th:href="@{/admin/artists/{id}/edit(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   class="link-primary"></a>
+                                <a th:if="${entry.targetType == 'CERTIFICATION'}"
+                                   th:href="@{/admin/certifications/{id}(id=${entry.targetId})}"
+                                   th:text="${entry.targetId}"
+                                   class="link-primary"></a>
+                                <span th:if="${entry.targetType != 'USER' and entry.targetType != 'FESTIVAL' and entry.targetType != 'POST' and entry.targetType != 'ARTIST' and entry.targetType != 'CERTIFICATION'}"
                                       th:text="${entry.targetId}"
                                       class="td-muted"></span>
                             </th:block>

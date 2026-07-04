@@ -31,7 +31,8 @@
                         <a class="btn btn-secondary btn-sm" th:href="@{/admin/certifications(status='PENDING')}">전체보기</a>
                     </div>
                     <div class="activity-list">
-                        <div th:each="cert : ${dashboard.pending.certs}" class="act-item">
+                        <a th:each="cert : ${dashboard.pending.certs}" class="act-item act-item-link"
+                           th:href="@{/admin/certifications/{id}(id=${cert.id})}">
                             <div class="act-dot yellow"></div>
                             <div class="act-body">
                                 <div class="act-type" th:text="${cert.festivalTitle}"></div>
@@ -39,7 +40,7 @@
                             </div>
                             <div class="act-meta"
                                  th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></div>
-                        </div>
+                        </a>
                         <div th:if="${#lists.isEmpty(dashboard.pending.certs)}" class="empty-state">
                             대기 중인 인증 신청이 없습니다.
                         </div>

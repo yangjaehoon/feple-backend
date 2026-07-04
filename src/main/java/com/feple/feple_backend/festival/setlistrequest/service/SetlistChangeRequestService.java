@@ -31,13 +31,21 @@ public class SetlistChangeRequestService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SetlistChangeRequest> list(SetlistChangeRequestStatus status, Pageable pageable) {
+    public Page<SetlistChangeRequest> list(SetlistChangeRequestStatus status, String keyword, Pageable pageable) {
+        if (keyword != null && !keyword.isBlank()) {
+            return repository.findByStatusAndKeyword(status, keyword, pageable);
+        }
         return repository.findByStatus(status, pageable);
     }
 
     @Transactional(readOnly = true)
     public long countPending() {
         return repository.countByStatus(SetlistChangeRequestStatus.PENDING);
+    }
+
+    @Transactional(readOnly = true)
+    public long countByStatus(SetlistChangeRequestStatus status) {
+        return repository.countByStatus(status);
     }
 
     @Transactional

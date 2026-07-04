@@ -14,6 +14,10 @@
             <div class="card-header">
                 <div class="card-title">👤 회원 정보</div>
                 <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
+                    <input type="hidden" name="filter"  th:value="${listFilter.filter}"/>
+                    <input type="hidden" name="sort"    th:value="${listFilter.sort}"/>
+                    <input type="hidden" name="page"    th:value="${listFilter.page}"/>
+                    <input type="hidden" name="keyword" th:value="${listFilter.keyword}"/>
                     <button type="submit"
                             class="btn btn-danger"
                             data-confirm="이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.">탈퇴</button>

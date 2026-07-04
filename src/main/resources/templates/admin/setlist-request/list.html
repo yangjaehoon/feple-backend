@@ -10,15 +10,23 @@
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
         <div class="card">
+            <!-- 검색 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/setlist-requests}" method="get">
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '아티스트 또는 페스티벌 검색...', @{/admin/setlist-requests(status=${status}, page=0)})}"></th:block>
+                </form>
+            </div>
+
             <!-- 상태 필터 탭 -->
             <div class="type-tab-wrap">
-                <a th:href="@{/admin/setlist-requests(status='PENDING', page=0)}"
+                <a th:href="@{/admin/setlist-requests(status='PENDING', page=0, keyword=${keyword})}"
                    th:classappend="${status == 'PENDING'} ? ' active' : ''"
                    class="type-tab">
                     대기중
                     <span th:if="${pendingCount > 0}" class="card-count" th:text="${pendingCount}"></span>
                 </a>
-                <a th:href="@{/admin/setlist-requests(status='RESOLVED', page=0)}"
+                <a th:href="@{/admin/setlist-requests(status='RESOLVED', page=0, keyword=${keyword})}"
                    th:classappend="${status == 'RESOLVED'} ? ' active' : ''"
                    class="type-tab">처리완료</a>
             </div>
@@ -48,7 +56,7 @@
                         <td class="cell-primary" th:text="${req.artistName}"></td>
                         <td class="cell-primary" th:text="${req.festivalTitle}"></td>
                         <td>
-                            <div class="cell-primary" style="white-space: pre-wrap; max-width: 300px;"
+                            <div class="cell-primary request-message"
                                  th:text="${req.message}"></div>
                         </td>
                         <td>
@@ -63,7 +71,9 @@
                                   th:action="@{/admin/setlist-requests/{id}/resolve(id=${req.id})}"
                                   method="post" class="inline-form"
                                   data-confirm="처리 완료로 표시할까요?">
-                                <input type="hidden" name="status" th:value="${status}"/>
+                                <input type="hidden" name="status"  th:value="${status}"/>
+                                <input type="hidden" name="page"    th:value="${requests.number}"/>
+                                <input type="hidden" name="keyword" th:value="${keyword}"/>
                                 <button type="submit" class="btn btn-primary btn-sm">처리완료</button>
                             </form>
                             <span th:unless="${req.status.name() == 'PENDING'}"
@@ -77,7 +87,7 @@
             </div>
 
             <div th:insert="~{admin/fragments :: pagination(${requests}, '/admin/setlist-requests',
-                'status=' + ${status})}"></div>
+                'status=' + ${status} + (${keyword != null and !#strings.isEmpty(keyword)} ? '&keyword=' + ${keyword} : ''))}"></div>
         </div>
     </div>
 </div>
