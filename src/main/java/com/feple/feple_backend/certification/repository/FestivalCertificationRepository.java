@@ -98,4 +98,7 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Transactional
     @Query(value = "UPDATE festival_certification SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementLikeCount(@Param("id") Long id);
+
+    @Query("SELECT fc.id FROM FestivalCertification fc WHERE fc.status = 'PENDING' AND fc.id > :currentId ORDER BY fc.id ASC")
+    List<Long> findNextPendingIds(@Param("currentId") Long currentId, Pageable pageable);
 }

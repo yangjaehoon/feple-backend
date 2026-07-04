@@ -279,4 +279,10 @@ public class FestivalCertificationService {
         String objectKey = S3Keys.certificationPrefix(userId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);
     }
+
+    @Transactional(readOnly = true)
+    public java.util.Optional<Long> findNextPendingId(Long currentId) {
+        List<Long> ids = certificationRepository.findNextPendingIds(currentId, PageRequest.of(0, 1));
+        return ids.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(ids.get(0));
+    }
 }

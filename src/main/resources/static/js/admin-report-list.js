@@ -29,19 +29,20 @@
         var selectedCheckboxes = document.querySelectorAll('.row-check:checked');
         if (selectedCheckboxes.length === 0) return;
         var msg = confirmTpl.replace('{n}', selectedCheckboxes.length);
-        if (!confirm(msg)) return;
-
-        var form = document.getElementById('bulk-form');
-        form.action = endpoint;
-        form.querySelectorAll('input[name="ids"]').forEach(function (el) { el.remove(); });
-        selectedCheckboxes.forEach(function (cb) {
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'ids';
-            input.value = cb.value;
-            form.appendChild(input);
+        var ids = Array.from(selectedCheckboxes).map(function (cb) { return cb.value; });
+        AdminConfirm.show(msg, function () {
+            var form = document.getElementById('bulk-form');
+            form.action = endpoint;
+            form.querySelectorAll('input[name="ids"]').forEach(function (el) { el.remove(); });
+            ids.forEach(function (id) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids';
+                input.value = id;
+                form.appendChild(input);
+            });
+            form.submit();
         });
-        form.submit();
     }
 
     /* 일괄 처리 버튼 — 이벤트 위임 */

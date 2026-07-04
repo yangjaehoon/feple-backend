@@ -9,8 +9,17 @@
 
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
+        <!-- 섹션 빠른 이동 -->
+        <nav class="detail-section-nav" aria-label="페이지 내 섹션">
+            <a href="#info"      class="detail-nav-link">기본 정보</a>
+            <a href="#artists"   class="detail-nav-link">참여 아티스트</a>
+            <a href="#timetable" class="detail-nav-link">타임테이블</a>
+            <a href="#booths"    class="detail-nav-link">부스</a>
+            <a href="#setlist"   class="detail-nav-link">셋리스트</a>
+        </nav>
+
         <!-- 기본 정보 -->
-        <div class="card">
+        <div id="info" class="card">
             <div class="card-header">
                 <div class="card-title">🎵 페스티벌 정보</div>
             </div>

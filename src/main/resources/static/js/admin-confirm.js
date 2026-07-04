@@ -1,5 +1,6 @@
 (function () {
     var pendingAction = null;
+    var previousFocus = null;
 
     function setButtonLoading(btn) {
         if (!btn) return;
@@ -12,19 +13,22 @@
     function showModal(message, action) {
         var modal = document.getElementById('adminConfirmModal');
         if (!modal) {
-            // 모달 없을 때 폴백 (정상 상황에서는 발생하지 않음)
             if (window.confirm(message)) action();
             return;
         }
+        previousFocus = document.activeElement;
         document.getElementById('adminConfirmMsg').textContent = message;
         pendingAction = action;
         modal.style.display = 'flex';
+        var cancelBtn = document.getElementById('adminConfirmCancel');
+        if (cancelBtn) cancelBtn.focus();
     }
 
     function hideModal() {
         var modal = document.getElementById('adminConfirmModal');
         if (modal) modal.style.display = 'none';
         pendingAction = null;
+        if (previousFocus) { previousFocus.focus(); previousFocus = null; }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -43,9 +47,23 @@
         modal.addEventListener('click', function (e) {
             if (e.target === modal) hideModal();
         });
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && modal.style.display !== 'none') hideModal();
-        });
+    });
+
+    // 키보드: Escape 닫기 + Tab 포커스 트랩
+    document.addEventListener('keydown', function (e) {
+        var modal = document.getElementById('adminConfirmModal');
+        if (!modal || modal.style.display === 'none') return;
+        if (e.key === 'Escape') { hideModal(); return; }
+        if (e.key === 'Tab') {
+            var cancelBtn = document.getElementById('adminConfirmCancel');
+            var okBtn = document.getElementById('adminConfirmOk');
+            if (!cancelBtn || !okBtn) return;
+            if (e.shiftKey) {
+                if (document.activeElement === cancelBtn) { e.preventDefault(); okBtn.focus(); }
+            } else {
+                if (document.activeElement === okBtn) { e.preventDefault(); cancelBtn.focus(); }
+            }
+        }
     });
 
     // 버튼[data-confirm] 클릭 가로채기
@@ -76,12 +94,17 @@
     });
 
     // data-confirm 없는 폼 제출 시 로딩 상태
+    // bubble phase + setTimeout: 페이지별 검증 핸들러가 e.preventDefault()를 호출했으면 버튼 상태를 변경하지 않음
     document.addEventListener('submit', function (e) {
         var form = e.target;
         if (form.hasAttribute('data-confirm')) return;
-        var btn = form.querySelector('button[type=submit], input[type=submit]');
-        setButtonLoading(btn);
-    }, true);
+        var capturedEvent = e;
+        setTimeout(function () {
+            if (capturedEvent.defaultPrevented) return;
+            var btn = form.querySelector('button[type=submit], input[type=submit]');
+            setButtonLoading(btn);
+        }, 0);
+    });
 
     // select[data-autosubmit] 자동 제출
     document.addEventListener('change', function (e) {
@@ -90,4 +113,6 @@
         var form = sel.closest('form');
         if (form) form.submit();
     });
+
+    window.AdminConfirm = { show: showModal };
 })();

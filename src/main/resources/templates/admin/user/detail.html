@@ -224,8 +224,8 @@
                 </div>
             </div>
             <div class="card-body">
-                <div th:if="${!#lists.isEmpty(blockedUsers)}">
-                    <table class="table">
+                <div th:if="${!#lists.isEmpty(blockedUsers)}" class="table-wrap">
+                    <table>
                         <thead>
                             <tr>
                                 <th>사용자 ID</th>
@@ -237,10 +237,10 @@
                             <tr th:each="blocked : ${blockedUsers}">
                                 <td>
                                     <a th:href="@{/admin/users/{id}(id=${blocked.userId})}"
-                                       th:text="${blocked.userId}"></a>
+                                       th:text="${blocked.userId}" class="td-link-normal"></a>
                                 </td>
                                 <td th:text="${blocked.nickname}"></td>
-                                <td th:text="${#temporals.format(blocked.blockedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td class="td-date" th:text="${#temporals.format(blocked.blockedAt, 'yyyy-MM-dd HH:mm')}"></td>
                             </tr>
                         </tbody>
                     </table>

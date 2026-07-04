@@ -73,9 +73,13 @@
                                   th:text="${cert.status.displayName}"></span>
                         </td>
                         <td>
-                            <span th:if="${cert.approved and cert.rating != null}"
-                                  style="color:#f59e0b;letter-spacing:1px"
-                                  th:text="${'★'.repeat(cert.rating) + '☆'.repeat(5 - cert.rating)}"></span>
+                            <span th:if="${cert.approved and cert.rating != null}">
+                                <span th:each="i : ${#numbers.sequence(1,5)}"
+                                      th:text="${i <= cert.rating} ? '★' : '☆'"
+                                      th:class="${i <= cert.rating} ? 'star-active' : 'star-empty'"
+                                      th:attr="aria-hidden='true'"></span>
+                                <span class="sr-only" th:text="${cert.rating} + '점'"></span>
+                            </span>
                             <span th:if="${cert.approved and cert.rating == null}"
                                   class="cell-secondary">-</span>
                             <span th:unless="${cert.approved}" class="cell-secondary">-</span>

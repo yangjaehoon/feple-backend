@@ -16,8 +16,7 @@
                 <div class="card-count" th:text="${deviceCount} + '명 수신 가능'"></div>
             </div>
             <div class="card-body">
-                <form id="broadcast-form" th:action="@{/admin/push}" method="post"
-                      data-confirm="전체 기기에 푸시 알림을 발송하시겠습니까?">
+                <form id="broadcast-form" th:action="@{/admin/push}" method="post">
                     <div class="form-field">
                         <label class="form-label">제목 *</label>
                         <input type="text" name="title" required maxlength="100"
@@ -107,6 +106,7 @@
                               class="form-textarea"></textarea>
                 </div>
                 <div id="push-target-error" class="alert alert-danger d-none"></div>
+                <p class="hint">위 제목/내용을 먼저 입력한 후, 아래 버튼으로 원하는 그룹에 발송하세요.</p>
 
                 <!-- 아티스트 팔로워 -->
                 <div>

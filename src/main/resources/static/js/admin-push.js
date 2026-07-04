@@ -5,19 +5,6 @@
         el.classList.remove('d-none');
     }
 
-    function fillTargetAndConfirm(type) {
-        var title = document.getElementById('target-card-title').value.trim();
-        var body  = document.getElementById('target-card-body').value.trim();
-        if (!title || !body) {
-            showPushTargetError('제목과 내용을 먼저 입력해주세요.');
-            return false;
-        }
-        document.getElementById('push-target-error').classList.add('d-none');
-        document.getElementById('target-title-' + type).value = title;
-        document.getElementById('target-body-'  + type).value = body;
-        return confirm('해당 그룹에게 발송하시겠습니까?');
-    }
-
     function setSearchState(el, stateClass) {
         el.classList.remove('text-muted', 'text-primary', 'text-danger');
         if (stateClass) el.classList.add(stateClass);
@@ -75,16 +62,6 @@
         el.classList.remove('d-none');
     }
 
-    function validateTest(testForm) {
-        var title = testForm.querySelector('[name="title"]').value.trim();
-        var body  = testForm.querySelector('[name="body"]').value.trim();
-        var uid   = testForm.querySelector('[name="targetUserId"]').value.trim();
-        if (!title || !body) { showPushTestError('제목과 내용을 입력해주세요.'); return false; }
-        if (!uid)            { showPushTestError('테스트 대상 사용자 ID를 입력해주세요.'); return false; }
-        document.getElementById('push-test-error').classList.add('d-none');
-        return confirm('테스트 발송하시겠습니까?');
-    }
-
     function openBroadcastModal(btn) {
         document.getElementById('modal-title').textContent = btn.dataset.title;
         document.getElementById('modal-date').textContent  = btn.dataset.createdAt;
@@ -96,11 +73,38 @@
         document.getElementById('broadcast-modal').style.display = 'none';
     }
 
-    /* 전체 발송 폼 — data-confirm 처리는 admin-confirm.js에서 수행 */
+    /* 전체 발송 폼 — 제목/내용 미리보기 포함 확인 */
+    var broadcastForm = document.getElementById('broadcast-form');
+    if (broadcastForm) {
+        broadcastForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var title = this.querySelector('[name="title"]').value.trim();
+            var body  = this.querySelector('[name="body"]').value.trim();
+            var msg = '전체 기기에 푸시를 발송합니다.\n\n제목: ' + title + '\n내용: ' + body;
+            var form = this;
+            AdminConfirm.show(msg, function () {
+                form.submit();
+            });
+        });
+    }
 
+    /* 타겟 발송 버튼 */
     document.querySelectorAll('.target-send-btn').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
-            if (!fillTargetAndConfirm(btn.dataset.target)) e.preventDefault();
+            e.preventDefault();
+            var title = document.getElementById('target-card-title').value.trim();
+            var body  = document.getElementById('target-card-body').value.trim();
+            if (!title || !body) {
+                showPushTargetError('제목과 내용을 먼저 입력해주세요.');
+                return;
+            }
+            document.getElementById('push-target-error').classList.add('d-none');
+            document.getElementById('target-title-' + btn.dataset.target).value = title;
+            document.getElementById('target-body-'  + btn.dataset.target).value = body;
+            var targetForm = btn.closest('form');
+            AdminConfirm.show('해당 그룹에게 발송하시겠습니까?', function () {
+                targetForm.submit();
+            });
         });
     });
 
@@ -110,8 +114,19 @@
         if (e.key === 'Enter') { e.preventDefault(); searchNickname(); }
     });
 
+    /* 테스트 발송 버튼 */
     document.getElementById('test-send-btn').addEventListener('click', function (e) {
-        if (!validateTest(document.getElementById('test-form'))) e.preventDefault();
+        e.preventDefault();
+        var testForm = document.getElementById('test-form');
+        var title = testForm.querySelector('[name="title"]').value.trim();
+        var body  = testForm.querySelector('[name="body"]').value.trim();
+        var uid   = testForm.querySelector('[name="targetUserId"]').value.trim();
+        if (!title || !body) { showPushTestError('제목과 내용을 입력해주세요.'); return; }
+        if (!uid)            { showPushTestError('테스트 대상 사용자 ID를 입력해주세요.'); return; }
+        document.getElementById('push-test-error').classList.add('d-none');
+        AdminConfirm.show('테스트 발송하시겠습니까?', function () {
+            testForm.submit();
+        });
     });
 
     document.addEventListener('click', function (e) {

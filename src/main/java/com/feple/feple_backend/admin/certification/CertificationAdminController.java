@@ -62,6 +62,7 @@ public class CertificationAdminController {
                     model.addAttribute("returnStatus", status);
                     model.addAttribute("returnPage", page);
                     model.addAttribute("returnKeyword", keyword);
+                    model.addAttribute("nextCertId", certificationService.findNextPendingId(id).orElse(null));
                     UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications")
                             .queryParam("status", status)
                             .queryParam("page", page);
@@ -78,6 +79,7 @@ public class CertificationAdminController {
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id,
                           @ModelAttribute CertFilter filter,
+                          @RequestParam(required = false) Long nextCertId,
                           Authentication auth,
                           RedirectAttributes ra) {
         AdminActionUtils.tryAction(
@@ -89,6 +91,7 @@ public class CertificationAdminController {
                 e -> log.error("인증 승인 실패 id={}", id, e),
                 "승인 처리 중 오류가 발생했습니다.",
                 ra);
+        if (nextCertId != null) return triageRedirect(nextCertId, filter);
         return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
     }
 
@@ -96,6 +99,7 @@ public class CertificationAdminController {
     public String reject(@PathVariable Long id,
                          @RequestParam(defaultValue = "") String rejectionMessage,
                          @ModelAttribute CertFilter filter,
+                         @RequestParam(required = false) Long nextCertId,
                          Authentication auth,
                          RedirectAttributes ra) {
         AdminActionUtils.tryAction(
@@ -108,6 +112,15 @@ public class CertificationAdminController {
                 e -> log.error("인증 거절 실패 id={}", id, e),
                 "거절 처리 중 오류가 발생했습니다.",
                 ra);
+        if (nextCertId != null) return triageRedirect(nextCertId, filter);
         return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+    }
+
+    private String triageRedirect(Long nextCertId, CertFilter filter) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications/" + nextCertId)
+                .queryParam("status", filter.status())
+                .queryParam("page", filter.page());
+        if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
+        return "redirect:" + builder.build().toUriString();
     }
 }

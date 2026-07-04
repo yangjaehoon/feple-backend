@@ -51,6 +51,8 @@
                  placeholder="비밀번호" required
                  autocomplete="current-password"
                  th:classappend="${loginError != null} ? 'input-error'"/>
+          <button type="button" id="pw-toggle-btn" class="login-pw-toggle"
+                  aria-label="비밀번호 표시">표시</button>
         </div>
       </div>
 
@@ -62,5 +64,18 @@
       © Feple. All rights reserved.
     </div>
   </div>
+<script>
+(function () {
+    var btn = document.getElementById('pw-toggle-btn');
+    var pw  = document.getElementById('password');
+    if (!btn || !pw) return;
+    btn.addEventListener('click', function () {
+        var isHidden = pw.type === 'password';
+        pw.type = isHidden ? 'text' : 'password';
+        btn.textContent = isHidden ? '숨김' : '표시';
+        btn.setAttribute('aria-label', isHidden ? '비밀번호 숨기기' : '비밀번호 표시');
+    });
+})();
+</script>
 </body>
 </html>

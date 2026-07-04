@@ -6,7 +6,8 @@
 
     function updateToolbar() {
         const checked = document.querySelectorAll('.row-check:checked').length;
-        countLabel.textContent = checked + unit + ' 선택됨';
+        const total = document.querySelectorAll('.row-check').length;
+        countLabel.textContent = checked + '/' + total + unit + ' 선택 (현재 페이지)';
         if (checked > 0) toolbar.classList.add('visible');
         else toolbar.classList.remove('visible');
         const all = document.querySelectorAll('.row-check');
