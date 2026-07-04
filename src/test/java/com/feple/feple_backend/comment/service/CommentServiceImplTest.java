@@ -1,7 +1,7 @@
 package com.feple.feple_backend.comment.service;
 
 import com.feple.feple_backend.badword.BadWordFilter;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.global.exception.BadWordException;
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
@@ -52,7 +52,7 @@ class CommentServiceImplTest {
     @Mock PostRepository postRepository;
     @Mock UserRepository userRepository;
     @Mock ApplicationEventPublisher eventPublisher;
-    @Mock FestivalCertificationRepository certificationRepository;
+    @Mock FestivalCertificationService certificationService;
     @Mock BadWordFilter badWordFilter;
 
     @InjectMocks CommentServiceImpl commentService;
@@ -227,7 +227,7 @@ class CommentServiceImplTest {
         Comment c = comment(100L, post, author);
 
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
-        given(certificationRepository.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(c)));
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))

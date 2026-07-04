@@ -3,7 +3,7 @@ package com.feple.feple_backend.post.service;
 import com.feple.feple_backend.post.repository.PostRepository;
 
 import com.feple.feple_backend.badword.BadWordFilter;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.post.dto.CursorPage;
@@ -49,7 +49,7 @@ class PostServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock ArtistRepository artistRepository;
     @Mock FestivalRepository festivalRepository;
-    @Mock FestivalCertificationRepository certificationRepository;
+    @Mock FestivalCertificationService certificationService;
     @Mock BadWordFilter badWordFilter;
     @Mock ApplicationEventPublisher eventPublisher;
 
@@ -310,7 +310,7 @@ class PostServiceImplTest {
                 .build();
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(certificationRepository.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
         given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 
@@ -332,7 +332,7 @@ class PostServiceImplTest {
                 .build();
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(certificationRepository.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
         given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 
