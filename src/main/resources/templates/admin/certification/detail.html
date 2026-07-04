@@ -70,6 +70,9 @@
                     <!-- 액션 버튼 -->
                     <div th:if="${cert.pending}" class="cert-actions">
                         <form th:action="@{/admin/certifications/{id}/approve(id=${cert.id})}" method="post">
+                            <input type="hidden" name="status"  th:value="${returnStatus}"/>
+                            <input type="hidden" name="page"    th:value="${returnPage}"/>
+                            <input type="hidden" name="keyword" th:value="${returnKeyword}"/>
                             <button type="submit" class="btn btn-primary"
                                     data-confirm="이 인증을 승인할까요?">
                                 승인
@@ -78,6 +81,9 @@
 
                         <form th:action="@{/admin/certifications/{id}/reject(id=${cert.id})}" method="post"
                               class="cert-reject-form">
+                            <input type="hidden" name="status"  th:value="${returnStatus}"/>
+                            <input type="hidden" name="page"    th:value="${returnPage}"/>
+                            <input type="hidden" name="keyword" th:value="${returnKeyword}"/>
                             <div>
                                 <label class="cert-label-sm">거절 사유</label>
                                 <div class="reason-chip-row">
@@ -118,7 +124,7 @@
         </div>
 
         <div class="cert-back-link">
-            <a th:href="@{/admin/certifications}" class="btn btn-secondary">← 목록으로</a>
+            <a th:href="${returnUrl}" class="btn btn-secondary">← 목록으로</a>
         </div>
     </div>
 </div>

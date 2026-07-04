@@ -63,7 +63,7 @@
                             <div class="cell-secondary" th:text="${cert.userEmail}"></div>
                         </td>
                         <td>
-                            <a th:href="@{/admin/certifications/{id}(id=${cert.id})}"
+                            <a th:href="@{/admin/certifications/{id}(id=${cert.id}, status=${status}, page=${page}, keyword=${keyword})}"
                                th:text="${cert.festivalTitle}"
                                class="cell-primary cell-link"></a>
                         </td>
@@ -82,7 +82,7 @@
                         </td>
                         <td class="cell-secondary" th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></td>
                         <td>
-                            <a th:href="@{/admin/certifications/{id}(id=${cert.id})}"
+                            <a th:href="@{/admin/certifications/{id}(id=${cert.id}, status=${status}, page=${page}, keyword=${keyword})}"
                                class="btn btn-secondary btn-sm">상세</a>
                         </td>
                     </tr>

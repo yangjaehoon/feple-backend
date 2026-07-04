@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -48,12 +49,24 @@ public class CertificationAdminController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model, RedirectAttributes ra) {
+    public String detail(@PathVariable Long id,
+                         @RequestParam(required = false, defaultValue = "") String status,
+                         @RequestParam(defaultValue = "0") int page,
+                         @RequestParam(required = false, defaultValue = "") String keyword,
+                         Model model, RedirectAttributes ra) {
         return AdminActionUtils.tryRender(
                 () -> {
                     FestivalCertification cert = certificationService.getById(id);
                     model.addAttribute("cert", cert);
                     model.addAttribute("photoUrl", certificationService.buildPhotoUrl(cert.getPhotoKey()));
+                    model.addAttribute("returnStatus", status);
+                    model.addAttribute("returnPage", page);
+                    model.addAttribute("returnKeyword", keyword);
+                    UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications")
+                            .queryParam("status", status)
+                            .queryParam("page", page);
+                    if (!keyword.isBlank()) builder.queryParam("keyword", keyword);
+                    model.addAttribute("returnUrl", builder.build().toUriString());
                 },
                 "admin/certification/detail",
                 e -> log.error("인증 상세 조회 실패 id={}", id, e),
