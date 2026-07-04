@@ -69,7 +69,9 @@ public class PostAdminController {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     public String postDetail(@PathVariable Long id,
+                             @RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "") String filter,
+                             @RequestParam(defaultValue = "") String keyword,
                              @RequestParam(required = false) Long artistId,
                              @RequestParam(required = false) Long festivalId,
                              Model model,
@@ -77,7 +79,8 @@ public class PostAdminController {
         try {
             model.addAttribute("post", postService.getPost(id));
             model.addAttribute("comments", commentService.getCommentsByPost(id, null));
-            model.addAttribute("backUrl", new PostListParams(filter, null, artistId, festivalId).toBackUrl());
+            model.addAttribute("backUrl", "/admin/posts?page=" + page + "&" +
+                    new PostListParams(filter, keyword, artistId, festivalId).toExtraParams());
             return "admin/post/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

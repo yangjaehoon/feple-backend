@@ -126,7 +126,7 @@
                         </td>
                         <td class="td-id" th:text="${post.id}"></td>
                         <td>
-                            <a th:href="@{/admin/posts/{id}(id=${post.id}, filter=${filter}, artistId=${artistId}, festivalId=${festivalId})}"
+                            <a th:href="@{/admin/posts/{id}(id=${post.id}, page=${posts.number}, filter=${filter}, keyword=${keyword}, artistId=${artistId}, festivalId=${festivalId})}"
                                th:text="${post.title}"
                                class="table-title-link"></a>
                             <div class="cell-secondary cell-row">

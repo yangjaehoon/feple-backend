@@ -56,9 +56,17 @@ public class UserAdminController {
     }
 
     @GetMapping("/{id}")
-    public String userDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
+    public String userDetail(@PathVariable Long id,
+                             @ModelAttribute UserListFilter listFilter,
+                             Model model, RedirectAttributes ra) {
         try {
             addDetailModel(model, userDetailAggregationService.getDetail(id));
+            UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/users")
+                    .queryParam("filter", listFilter.filter())
+                    .queryParam("page", listFilter.page());
+            if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
+            if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
+            model.addAttribute("returnUrl", builder.build().toUriString());
             return "admin/user/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());

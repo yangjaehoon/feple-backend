@@ -91,7 +91,7 @@
                                 <div th:if="${user.profileImageUrl == null}" class="avatar-ph">👤</div>
                                 <div>
                                     <div class="cell-actions">
-                                        <a th:href="@{/admin/users/{id}(id=${user.id})}"
+                                        <a th:href="@{/admin/users/{id}(id=${user.id}, page=${users.number}, filter=${filter}, sort=${sort}, keyword=${keyword})}"
                                            class="td-link"
                                            th:text="${user.nickname}"></a>
                                         <span th:if="${user.banned}" class="badge badge-ban">정지</span>
@@ -129,7 +129,7 @@
                             class="td-date"
                             th:text="${user.permanentBan ? '영구' : (user.bannedUntil != null ? #temporals.format(user.bannedUntil, 'yyyy-MM-dd') : '-')}"></td>
                         <td>
-                            <a th:href="@{/admin/users/{id}(id=${user.id})}"
+                            <a th:href="@{/admin/users/{id}(id=${user.id}, page=${users.number}, filter=${filter}, sort=${sort}, keyword=${keyword})}"
                                class="btn btn-secondary btn-sm">상세</a>
                         </td>
                         <td>
