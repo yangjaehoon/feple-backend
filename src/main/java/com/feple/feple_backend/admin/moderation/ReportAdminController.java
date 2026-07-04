@@ -135,11 +135,22 @@ public class ReportAdminController {
     private String redirectReports(ReportFilter filter) {
         String safeType   = handlers.containsKey(filter.type()) ? filter.type() : AdminConstants.REPORT_TYPE_POST;
         String safeStatus = AdminConstants.STATUS_PENDING.equals(filter.status()) ? AdminConstants.STATUS_PENDING : AdminConstants.STATUS_ALL;
+        // 처리 후 총 건수 기준으로 유효 페이지 범위를 재계산해 빈 페이지 착지를 방지
+        // keyword 검색 시에는 전체 카운트가 필터 결과를 반영하지 않으므로 조정 생략
+        int safePage = filter.page();
+        if (filter.keyword().isBlank()) {
+            ReportAdminService<?> handler = handlers.get(safeType);
+            long newTotal = AdminConstants.STATUS_PENDING.equals(safeStatus)
+                    ? handler.getPendingCount()
+                    : handler.getTotalCount();
+            int maxPage = newTotal > 0 ? (int) ((newTotal - 1) / AdminConstants.LIST_PAGE_SIZE) : 0;
+            safePage = Math.min(filter.page(), maxPage);
+        }
         return AdminActionUtils.toRedirect(
                 UriComponentsBuilder.fromPath("/admin/reports")
                         .queryParam("type", safeType)
                         .queryParam("status", safeStatus)
-                        .queryParam("page", filter.page()),
+                        .queryParam("page", safePage),
                 filter.keyword());
     }
 }
