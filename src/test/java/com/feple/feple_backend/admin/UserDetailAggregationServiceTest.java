@@ -4,6 +4,7 @@ import com.feple.feple_backend.admin.user.UserDetailAggregationService;
 import com.feple.feple_backend.admin.user.UserDetailDto;
 import com.feple.feple_backend.admin.user.UserListCountsDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -36,6 +37,7 @@ class UserDetailAggregationServiceTest {
     @Mock CommentService commentService;
     @Mock PostAdminService postAdminService;
     @Mock UserBlockService userBlockService;
+    @Mock FestivalCertificationAdminService certificationAdminService;
 
     @InjectMocks UserDetailAggregationService service;
 
@@ -53,6 +55,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
         given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
         given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
+        given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
 
         UserDetailDto model = service.getDetail(userId);
 
@@ -70,6 +73,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
         given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
         given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
+        given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
 
         service.getDetail(userId);
 
@@ -91,6 +95,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getLikedFestivals(userId)).willReturn(festivals);
         given(myPageService.getFollowedArtists(userId)).willReturn(artists);
         given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
+        given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
 
         UserDetailDto model = service.getDetail(userId);
 
