@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
@@ -29,6 +30,7 @@ class ArtistSongAdminControllerTest {
     @Mock SongAdminService songAdminService;
     @Mock ArtistService artistService;
     @Mock SongRequestAdminService songRequestAdminService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks ArtistSongAdminController controller;
 

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
@@ -31,6 +32,7 @@ class ArtistSetlistAdminControllerTest {
     @Mock SongAdminService songAdminService;
     @Mock ArtistService artistService;
     @Mock ArtistFestivalService artistFestivalService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks ArtistSetlistAdminController controller;
 
@@ -95,7 +97,7 @@ class ArtistSetlistAdminControllerTest {
                 .willThrow(new IllegalArgumentException("잘못된 접근"));
 
         mockMvc.perform(get("/admin/artists/1/setlist/2"))
-                .andExpect(redirectedUrl("/admin/artists/1/setlist"))
+                .andExpect(redirectedUrl("/admin/artists"))
                 .andExpect(flash().attribute("errorMessage", "잘못된 접근"));
     }
 

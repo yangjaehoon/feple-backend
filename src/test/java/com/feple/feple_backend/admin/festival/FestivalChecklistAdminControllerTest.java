@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FestivalChecklistAdminControllerTest {
 
     @Mock FestivalChecklistService festivalChecklistService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks FestivalChecklistAdminController controller;
 
@@ -33,14 +35,12 @@ class FestivalChecklistAdminControllerTest {
 
     @Test
     void 체크리스트_토글_성공_checked값_반환() throws Exception {
-        given(festivalChecklistService.isChecked(1L, "poster")).willReturn(true);
+        given(festivalChecklistService.toggle(1L, "poster")).willReturn(true);
 
         mockMvc.perform(post("/admin/festivals/1/checklist")
                         .param("field", "poster"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.checked").value(true));
-
-        then(festivalChecklistService).should().toggle(1L, "poster");
     }
 
     @Test

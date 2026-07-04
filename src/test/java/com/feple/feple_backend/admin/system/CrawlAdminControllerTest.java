@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.ocr.ArtistLineupOcrResult;
 import com.feple.feple_backend.admin.ocr.LineupApplyOcrRequestDto;
 import com.feple.feple_backend.admin.ocr.LineupApplyResult;
@@ -46,6 +47,7 @@ class CrawlAdminControllerTest {
     @Mock FestivalAdminService festivalAdminService;
     @Mock StageService stageService;
     @Mock ArtistFestivalService artistFestivalService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks CrawlAdminController controller;
 
