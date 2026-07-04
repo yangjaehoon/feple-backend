@@ -47,12 +47,11 @@
                             유저 ID: <span th:text="${request.userId}"></span>
                             (<span th:text="${request.userNickname}"></span>)
                             &nbsp;·&nbsp;
-                            <span th:text="${request.createdAt}"></span>
+                            <span th:text="${#temporals.format(request.createdAt, 'MM-dd HH:mm')}"></span>
                         </div>
                         <div th:if="${request.youtubeUrl != null and !request.youtubeUrl.isBlank()}"
                              class="item-yt-url">
-                            <a th:href="${request.youtubeUrl}" target="_blank"
-                               th:text="${request.youtubeUrl}"></a>
+                            <a th:href="${request.youtubeUrl}" target="_blank">YouTube &nearr;</a>
                         </div>
                     </div>
                     <form th:action="@{/admin/artists/{aId}/songs/song-requests/{rId}/approve(aId=${artist.id}, rId=${request.id})}"

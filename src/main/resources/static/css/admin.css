@@ -1366,6 +1366,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
   text-transform: uppercase; letter-spacing: .6px;
   border-top: 1px solid var(--border);
 }
+.card-section-hint { padding: 0 20px 16px; }
 .artist-name-restriction-wrap {
   display: flex; flex-wrap: wrap; gap: 6px;
   padding: 10px 20px 16px;
