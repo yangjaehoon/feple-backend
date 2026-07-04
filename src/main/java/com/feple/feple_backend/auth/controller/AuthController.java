@@ -2,12 +2,10 @@ package com.feple.feple_backend.auth.controller;
 
 import com.feple.feple_backend.auth.dto.AuthResponseDto;
 import com.feple.feple_backend.auth.dto.FirebaseLoginRequestDto;
-import com.feple.feple_backend.auth.dto.LocalLoginRequestDto;
 import com.feple.feple_backend.auth.dto.RefreshRequestDto;
 import com.feple.feple_backend.auth.jwt.JwtConstants;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
-import com.feple.feple_backend.auth.service.LocalAuthService;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.user.entity.User;
@@ -30,7 +28,6 @@ public class AuthController {
 
     private final OAuthLoginService kakaoAuthService;
     private final OAuthLoginService firebaseAuthService;
-    private final LocalAuthService localAuthService;
     private final UserService userService;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
@@ -64,19 +61,6 @@ public class AuthController {
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
         refreshTokenService.save(user.getId(), refreshToken);
         return new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken);
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(
-            @Valid @RequestBody LocalLoginRequestDto req,
-            HttpServletRequest httpRequest
-    ) {
-        loginRateLimiter.check(getClientIp(httpRequest));
-        User user = localAuthService.login(req);
-        String accessToken = jwtProvider.createAccessToken(user.getId());
-        String refreshToken = jwtProvider.createRefreshToken(user.getId());
-        refreshTokenService.save(user.getId(), refreshToken);
-        return ResponseEntity.ok(new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken));
     }
 
     @PostMapping("/refresh")

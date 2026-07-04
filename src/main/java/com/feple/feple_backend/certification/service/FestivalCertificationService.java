@@ -1,6 +1,6 @@
 package com.feple.feple_backend.certification.service;
 
-import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.dto.FestivalReviewDto;
 import com.feple.feple_backend.certification.entity.ReviewLike;

@@ -1,10 +1,7 @@
 package com.feple.feple_backend.auth.controller;
 
-import com.feple.feple_backend.auth.dto.AuthResponseDto;
-import com.feple.feple_backend.auth.dto.LocalLoginRequestDto;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
-import com.feple.feple_backend.auth.service.LocalAuthService;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
@@ -22,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import reactor.core.publisher.Mono;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -34,7 +30,6 @@ class AuthControllerTest {
 
     @Mock OAuthLoginService kakaoAuthService;
     @Mock OAuthLoginService firebaseAuthService;
-    @Mock LocalAuthService localAuthService;
     @Mock UserService userService;
     @Mock JwtProvider jwtProvider;
     @Mock RefreshTokenService refreshTokenService;
@@ -45,28 +40,12 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() {
         AuthController controller = new AuthController(
-                kakaoAuthService, firebaseAuthService, localAuthService,
+                kakaoAuthService, firebaseAuthService,
                 userService, jwtProvider, refreshTokenService, loginRateLimiter);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
-    }
-
-    @Test
-    void 로컬_로그인_성공() throws Exception {
-        User user = mock(User.class);
-        given(user.getId()).willReturn(1L);
-        given(localAuthService.login(any(LocalLoginRequestDto.class))).willReturn(user);
-        given(jwtProvider.createAccessToken(1L)).willReturn("access-token");
-        given(jwtProvider.createRefreshToken(1L)).willReturn("refresh-token");
-        UserResponseDto userDto = mock(UserResponseDto.class);
-        given(userService.toUserDto(user)).willReturn(userDto);
-
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"test@test.com\",\"password\":\"pass123\"}"))
-                .andExpect(status().isOk());
     }
 
     @Test

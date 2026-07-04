@@ -8,7 +8,7 @@ import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.file.S3Keys;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.file.service.FileStorageService;

@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.dashboard;
 
-import com.feple.feple_backend.admin.ContentTrendDto;
-import com.feple.feple_backend.admin.UserActivityStatsDto;
+import com.feple.feple_backend.admin.dashboard.ContentTrendDto;
+import com.feple.feple_backend.admin.user.UserActivityStatsDto;
 import com.feple.feple_backend.admin.service.AdminStatsMetrics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

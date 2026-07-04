@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.admin.DailyStatDto;
-import com.feple.feple_backend.admin.UserSummaryDto;
+import com.feple.feple_backend.admin.dashboard.DailyStatDto;
+import com.feple.feple_backend.admin.user.UserSummaryDto;
 
 import java.util.List;
 

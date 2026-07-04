@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.feple.feple_backend.global.EntityFinder;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,11 @@ public class StageService {
     @Transactional(readOnly = true)
     public List<Stage> getStages(Long festivalId) {
         return stageRepository.findByFestivalIdOrderByDisplayOrder(festivalId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Stage> findByFestivalIdAndName(Long festivalId, String name) {
+        return stageRepository.findByFestivalIdAndName(festivalId, name);
     }
 
     public Stage createStage(Long festivalId, String name) {

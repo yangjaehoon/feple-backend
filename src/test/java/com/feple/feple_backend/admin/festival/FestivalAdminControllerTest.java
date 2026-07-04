@@ -1,9 +1,9 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
-import com.feple.feple_backend.admin.FestivalDetailAggregationService;
-import com.feple.feple_backend.admin.FestivalDetailDto;
-import com.feple.feple_backend.admin.FestivalRatingStatsDto;
+import com.feple.feple_backend.admin.festival.FestivalDetailAggregationService;
+import com.feple.feple_backend.admin.festival.FestivalDetailDto;
+import com.feple.feple_backend.admin.festival.FestivalRatingStatsDto;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;

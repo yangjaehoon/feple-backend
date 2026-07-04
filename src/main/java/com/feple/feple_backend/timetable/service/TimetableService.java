@@ -6,7 +6,7 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.stage.entity.Stage;
-import com.feple.feple_backend.stage.repository.StageRepository;
+import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
@@ -30,7 +30,7 @@ public class TimetableService {
 
     private final TimetableRepository timetableRepository;
     private final FestivalRepository festivalRepository;
-    private final StageRepository stageRepository;
+    private final StageService stageService;
     private final ArtistFestivalService artistFestivalService;
     private final ArtistRepository artistRepository;
 
@@ -56,7 +56,7 @@ public class TimetableService {
         }
         String rawStageName = req.getStageName();
         String stageName = (rawStageName == null || rawStageName.isBlank()) ? "" : rawStageName.trim();
-        Stage stage = stageName.isEmpty() ? null : stageRepository.findByFestivalIdAndName(festivalId, stageName).orElse(null);
+        Stage stage = stageName.isEmpty() ? null : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
 
         String color = (req.getColor() != null && !req.getColor().isBlank()) ? req.getColor().trim() : null;
         TimetableEntry entry = TimetableEntry.builder()
@@ -92,7 +92,7 @@ public class TimetableService {
         }
         String stageName = req.getStageName() == null ? "" : req.getStageName().trim();
         Stage stage = stageName.isEmpty() ? null
-                : stageRepository.findByFestivalIdAndName(festivalId, stageName).orElse(null);
+                : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
         entry.update(
                 req.getArtistName() != null ? req.getArtistName().trim() : "",
                 stageName,

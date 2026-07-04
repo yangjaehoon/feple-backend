@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
-import com.feple.feple_backend.admin.AdminPushService;
+import com.feple.feple_backend.admin.system.AdminPushService;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.global.exception.ErrorCode;

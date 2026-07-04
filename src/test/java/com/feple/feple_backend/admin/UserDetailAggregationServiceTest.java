@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.admin.user.UserDetailAggregationService;
+import com.feple.feple_backend.admin.user.UserDetailDto;
+import com.feple.feple_backend.admin.user.UserListCountsDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.comment.service.CommentService;

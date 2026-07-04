@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.dashboard;
 
-import com.feple.feple_backend.admin.AdminDashboardAssembler;
-import com.feple.feple_backend.admin.AdminDashboardDto;
+import com.feple.feple_backend.admin.dashboard.AdminDashboardAssembler;
+import com.feple.feple_backend.admin.dashboard.AdminDashboardDto;
 import com.feple.feple_backend.admin.account.AdminAccount;
 import com.feple.feple_backend.admin.account.AdminAccountService;
 import com.feple.feple_backend.admin.log.AdminLogService;

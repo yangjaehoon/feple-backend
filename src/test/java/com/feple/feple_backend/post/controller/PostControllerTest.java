@@ -1,12 +1,13 @@
 package com.feple.feple_backend.post.controller;
 
-import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostLikeService;
 import com.feple.feple_backend.post.service.PostScrapService;
+import com.feple.feple_backend.post.service.PostSearchService;
 import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.support.AuthTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PostControllerTest {
 
     @Mock PostService postService;
+    @Mock PostSearchService postSearchService;
     @Mock PostLikeService postLikeService;
     @Mock PostScrapService postScrapService;
     @Mock S3PresignService s3PresignService;
@@ -103,7 +105,7 @@ class PostControllerTest {
 
     @Test
     void 게시글_검색_성공() throws Exception {
-        given(postService.searchPosts("테스트", null)).willReturn(List.of());
+        given(postSearchService.searchPosts("테스트", null)).willReturn(List.of());
 
         mockMvc.perform(get("/posts/search")
                         .param("keyword", "테스트"))

@@ -1,8 +1,8 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.CsvExporter;
-import com.feple.feple_backend.admin.ReportCsvExporter;
+import com.feple.feple_backend.admin.moderation.CsvExporter;
+import com.feple.feple_backend.admin.moderation.ReportCsvExporter;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;

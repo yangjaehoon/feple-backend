@@ -1,9 +1,0 @@
-package com.feple.feple_backend.admin;
-
-import java.util.Map;
-
-public record UserListCountsDto(
-        Map<Long, Long> reportCounts,
-        Map<Long, Long> postCounts,
-        Map<Long, Long> commentCounts
-) {}

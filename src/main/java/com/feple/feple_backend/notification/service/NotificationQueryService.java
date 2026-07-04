@@ -1,6 +1,6 @@
 package com.feple.feple_backend.notification.service;
 
-import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.notification.dto.NotificationDto;
 import com.feple.feple_backend.notification.entity.Notification;

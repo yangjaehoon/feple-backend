@@ -2,9 +2,9 @@ package com.feple.feple_backend.admin.user;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.UserDetailAggregationService;
-import com.feple.feple_backend.admin.UserDetailDto;
-import com.feple.feple_backend.admin.UserListCountsDto;
+import com.feple.feple_backend.admin.user.UserDetailAggregationService;
+import com.feple.feple_backend.admin.user.UserDetailDto;
+import com.feple.feple_backend.admin.user.UserListCountsDto;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;

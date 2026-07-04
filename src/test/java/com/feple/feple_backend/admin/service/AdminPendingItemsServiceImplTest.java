@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.admin.CertSummaryDto;
-import com.feple.feple_backend.admin.ReportSummaryDto;
+import com.feple.feple_backend.admin.certification.CertSummaryDto;
+import com.feple.feple_backend.admin.moderation.ReportSummaryDto;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;

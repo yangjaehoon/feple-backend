@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin.post;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.FilterDropdownProvider;
+import com.feple.feple_backend.admin.filter.FilterDropdownProvider;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.comment.service.CommentService;

@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
-import com.feple.feple_backend.admin.FestivalDetailAggregationService;
+import com.feple.feple_backend.admin.festival.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.feple.feple_backend.admin.BindingResultUtils;
-import com.feple.feple_backend.admin.FestivalDetailDto;
+import com.feple.feple_backend.admin.festival.FestivalDetailDto;
 import org.springframework.data.domain.Page;
 import org.springframework.web.util.UriComponentsBuilder;
 

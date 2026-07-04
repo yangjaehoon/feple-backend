@@ -1,6 +1,6 @@
 package com.feple.feple_backend.post.controller;
 
-import com.feple.feple_backend.artist.service.S3PresignService;
+import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.exception.ErrorCode;
@@ -11,6 +11,7 @@ import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostLikeService;
 import com.feple.feple_backend.post.service.PostScrapService;
+import com.feple.feple_backend.post.service.PostSearchService;
 import com.feple.feple_backend.post.service.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -35,6 +36,7 @@ import java.util.UUID;
 public class PostController {
 
     private final PostService postService;
+    private final PostSearchService postSearchService;
     private final PostLikeService postLikeService;
     private final PostScrapService postScrapService;
     private final S3PresignService s3PresignService;
@@ -117,7 +119,7 @@ public class PostController {
     public ResponseEntity<List<PostResponseDto>> searchPosts(
             @RequestParam @NotBlank @Size(max = 100, message = "검색어는 100자 이내로 입력해주세요.") String keyword,
             @RequestParam(required = false) String boardType) {
-        return ResponseEntity.ok(postService.searchPosts(keyword, boardType));
+        return ResponseEntity.ok(postSearchService.searchPosts(keyword, boardType));
     }
 
     // ── 스크랩 ──
