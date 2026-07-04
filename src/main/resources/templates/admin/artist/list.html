@@ -188,12 +188,20 @@
                                 <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
                                     <button type="submit"
                                             class="btn btn-ghost-danger btn-sm"
-                                            data-confirm="삭제하시겠습니까?">삭제</button>
+                                            data-confirm="아티스트를 삭제하시겠습니까?">삭제</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(artists)}" th:replace="~{admin/fragments :: emptyRowSearch(5, ${keyword}, '등록된 아티스트가 없습니다.')}"></tr>
+                    <tr th:if="${#lists.isEmpty(artists)}" class="empty-row">
+                        <td colspan="5">
+                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                            <th:block th:unless="${keyword != null and !#strings.isEmpty(keyword)}">
+                                등록된 아티스트가 없습니다.
+                                <a th:href="@{/admin/artists/new}" class="btn btn-primary btn-sm empty-cta">+ 아티스트 등록</a>
+                            </th:block>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>

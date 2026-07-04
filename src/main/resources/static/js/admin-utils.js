@@ -57,6 +57,45 @@
             var reader = new FileReader();
             reader.onload = function (e) { callback(e.target.result); };
             reader.readAsDataURL(file);
+        },
+        /**
+         * 폼 입력값 변경 시 페이지 이탈 경고 등록.
+         * 폼 submit 시 자동 해제되어 서버 제출 시에는 경고가 뜨지 않음.
+         */
+        initDirtyGuard: function () {
+            var dirty = false;
+            document.querySelectorAll('form input, form textarea, form select').forEach(function (el) {
+                el.addEventListener('input', function () { dirty = true; });
+                el.addEventListener('change', function () { dirty = true; });
+            });
+            document.querySelectorAll('form').forEach(function (form) {
+                form.addEventListener('submit', function () { dirty = false; });
+            });
+            window.addEventListener('beforeunload', function (e) {
+                if (!dirty) return;
+                e.preventDefault();
+                e.returnValue = '';
+            });
+        },
+        /**
+         * 전역 토스트 알림 표시. type: 'success' | 'error' | 'partial'
+         */
+        showToast: function (msg, type) {
+            var toast = document.getElementById('applyToast');
+            var body = document.getElementById('applyToastBody');
+            var closeBtn = document.getElementById('applyToastClose');
+            if (!toast || !body) return;
+            body.textContent = msg;
+            toast.className = (type || 'success') + ' visible';
+            var timer = setTimeout(function () {
+                toast.classList.remove('visible');
+            }, 4000);
+            if (closeBtn) {
+                closeBtn.onclick = function () {
+                    clearTimeout(timer);
+                    toast.classList.remove('visible');
+                };
+            }
         }
     };
 

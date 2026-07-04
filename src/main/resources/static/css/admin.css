@@ -909,9 +909,6 @@ select.stage-select { padding: 5px 8px; border: 1px solid var(--border); border-
 .status-done { color: #166534; background: #DCFCE7; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
 .status-pend { color: var(--warning-text); background: #FEF3C7; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
 .memo-row td { padding: 0 14px 10px; border-bottom: 1px solid var(--border); background: var(--bg-2); }
-.save-toast { position: fixed; bottom: 28px; right: 28px; background: #1a1a2e; color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 9999; }
-.save-toast.show { opacity: 1; }
-.save-toast.error { background: var(--danger); }
 
 /* ============================================================
    ARTISTS LIST — SORT BUTTONS
@@ -1103,6 +1100,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .pagination a.pg-num          { padding: 5px 10px; border-radius: 7px; font-size: 13px; color: var(--text-2); text-decoration: none; background: transparent; transition: background .15s; }
 .pagination a.pg-num:hover    { background: var(--primary-lt); color: var(--primary-dk); }
 .pagination a.pg-num.current  { background: var(--primary); color: #fff; font-weight: 700; pointer-events: none; }
+.pagination a.pg-edge         { padding: 5px 9px; border-radius: 7px; font-size: 13px; color: var(--muted); text-decoration: none; background: transparent; transition: background .15s; letter-spacing: 1px; }
+.pagination a.pg-edge:hover   { background: var(--primary-lt); color: var(--primary-dk); }
 
 /* ── 빈 상태 CTA ── */
 .empty-row td a.empty-cta { margin-left: 10px; font-size: 12px; }
@@ -1736,3 +1735,38 @@ input[type=date]   { cursor: pointer; }
 .fest-cb-item:hover   { background: var(--primary-lt); color: var(--primary-dk); }
 .fest-cb-item.selected { background: var(--primary-lt); font-weight: 700; color: var(--primary-dk); }
 .fest-cb-empty { padding: 10px 14px; font-size: 12px; color: var(--text-2); }
+
+/* ── 키보드 포커스 링 (WCAG 2.1 AA) ── */
+.btn:focus-visible,
+.pagination a:focus-visible,
+.sb-link:focus-visible,
+.type-tab:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── 폼 제출 로딩 상태 ── */
+.btn-submitting {
+  opacity: .7 !important;
+  cursor: wait !important;
+  pointer-events: none !important;
+}
+
+/* ── 비밀번호 토글 ── */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 68px; }
+.pw-toggle {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  padding: 4px 6px; line-height: 1;
+  transition: color .15s;
+}
+.pw-toggle:hover { color: var(--text); }
+
+/* ── 확인 다이얼로그 모달 ── */
+.modal-box-sm { width: 360px; }
+.confirm-msg { font-size: 14px; color: var(--text); margin: 0 0 22px; line-height: 1.7; }
+.modal-footer-actions { display: flex; justify-content: flex-end; gap: 8px; }

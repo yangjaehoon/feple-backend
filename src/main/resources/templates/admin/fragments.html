@@ -146,6 +146,24 @@
 
     <script th:src="@{/js/admin-genre-colors.js}"></script>
 </aside>
+
+<!-- ── 전역 확인 다이얼로그 모달 ── -->
+<div id="adminConfirmModal" class="modal-overlay" role="dialog" aria-modal="true" style="display:none">
+    <div class="modal-box modal-box-sm">
+        <p id="adminConfirmMsg" class="confirm-msg"></p>
+        <div class="modal-footer-actions">
+            <button id="adminConfirmCancel" class="btn btn-secondary">취소</button>
+            <button id="adminConfirmOk" class="btn btn-danger">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── 전역 토스트 알림 ── -->
+<div id="applyToast">
+    <div class="toast-body" id="applyToastBody"></div>
+    <button class="toast-close" id="applyToastClose">&#x2715;</button>
+</div>
+
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/admin-utils.js}"></script>
 <script th:src="@{/js/admin-alert.js}"></script>
@@ -245,6 +263,9 @@
                   tot=${page.totalPages},
                   s=${cur > 2 ? cur - 2 : 0},
                   e=${cur + 2 < tot ? cur + 2 : tot - 1}">
+        <a th:if="${tot > 1 and cur > 0}"
+           th:href="${baseUrl + '?page=0' + ep}"
+           class="pg-edge" title="처음 페이지">«</a>
         <a th:if="${page.hasPrevious()}"
            th:href="${baseUrl + '?page=' + (cur - 1) + ep}">← 이전</a>
         <a th:each="i : ${#numbers.sequence(s, e >= s ? e : s)}"
@@ -253,6 +274,9 @@
            th:classappend="${i == cur} ? 'pg-num current' : 'pg-num'"></a>
         <a th:if="${page.hasNext()}"
            th:href="${baseUrl + '?page=' + (cur + 1) + ep}">다음 →</a>
+        <a th:if="${tot > 1 and cur < tot - 1}"
+           th:href="${baseUrl + '?page=' + (tot - 1) + ep}"
+           class="pg-edge" title="마지막 페이지">»</a>
     </div>
 </div>
 

@@ -61,7 +61,22 @@
         document.querySelectorAll('#perm-section input[type=checkbox]').forEach(function (c) { c.checked = false; });
     });
 
+    /* 비밀번호 표시/숨기기 토글 */
+    (function () {
+        var pwInput = document.getElementById('password-input');
+        var toggle = document.getElementById('pw-toggle-btn');
+        if (!pwInput || !toggle) return;
+        toggle.addEventListener('click', function () {
+            var visible = pwInput.type === 'text';
+            pwInput.type = visible ? 'password' : 'text';
+            toggle.textContent = visible ? '표시' : '숨기기';
+        });
+    })();
+
     /* 초기화 */
     var checked = document.querySelector('input[name="role"]:checked');
     if (checked) onRoleChange(checked.value);
+
+    /* 페이지 이탈 경고 */
+    AdminUtils.initDirtyGuard();
 })();

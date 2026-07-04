@@ -58,7 +58,7 @@
                                         th:data-word="${bw.word}">스캔</button>
                                 <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
                                     <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                            data-confirm="삭제하시겠습니까?">삭제</button>
+                                            data-confirm="금칙어를 삭제하시겠습니까?">삭제</button>
                                 </form>
                             </div>
                             <div class="scan-result bw-scan-result"></div>
@@ -107,7 +107,7 @@
                             <form th:action="@{/admin/bad-words/nickname-restrictions/{id}/delete(id=${nr.id})}"
                                   method="post">
                                 <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                        data-confirm="삭제하시겠습니까?">삭제</button>
+                                        data-confirm="닉네임 제한 단어를 삭제하시겠습니까?">삭제</button>
                             </form>
                         </td>
                     </tr>

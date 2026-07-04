@@ -79,10 +79,13 @@
                                 비밀번호
                                 <span class="required-star" th:if="${account == null}">*</span>
                             </label>
-                            <input class="form-input"
-                                   type="password" name="password"
-                                   th:attr="placeholder=${account != null} ? '새 비밀번호 (변경 시에만 입력)' : '비밀번호',required=${account == null ? 'required' : null}"
-                                   autocomplete="new-password"/>
+                            <div class="pw-wrap">
+                                <input class="form-input"
+                                       type="password" name="password" id="password-input"
+                                       th:attr="placeholder=${account != null} ? '새 비밀번호 (변경 시에만 입력)' : '비밀번호',required=${account == null ? 'required' : null}"
+                                       autocomplete="new-password"/>
+                                <button type="button" id="pw-toggle-btn" class="pw-toggle">표시</button>
+                            </div>
                             <div class="field-hint" th:if="${account != null}">비워두면 기존 비밀번호가 유지됩니다.</div>
                         </div>
                     </div>
