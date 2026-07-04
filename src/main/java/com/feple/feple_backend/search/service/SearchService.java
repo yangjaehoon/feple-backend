@@ -2,7 +2,7 @@ package com.feple.feple_backend.search.service;
 
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.festival.service.FestivalService;
-import com.feple.feple_backend.post.service.PostService;
+import com.feple.feple_backend.post.service.PostSearchService;
 import com.feple.feple_backend.search.dto.SearchResultDto;
 import com.feple.feple_backend.search.dto.SuggestionDto;
 import com.feple.feple_backend.search.entity.SearchLog;
@@ -19,7 +19,7 @@ public class SearchService {
 
     private final ArtistService artistService;
     private final FestivalService festivalService;
-    private final PostService postService;
+    private final PostSearchService postSearchService;
     private final SearchLogRepository searchLogRepository;
 
     private static final int MAX_RESULTS = 10;
@@ -34,7 +34,7 @@ public class SearchService {
         return new SearchResultDto(
                 artistService.searchArtists(kw).stream().limit(MAX_RESULTS).toList(),
                 festivalService.searchFestivals(kw).stream().limit(MAX_RESULTS).toList(),
-                postService.searchPosts(kw, null).stream().limit(MAX_RESULTS).toList()
+                postSearchService.searchPosts(kw, null).stream().limit(MAX_RESULTS).toList()
         );
     }
 

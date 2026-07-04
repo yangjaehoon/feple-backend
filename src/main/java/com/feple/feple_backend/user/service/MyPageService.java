@@ -11,9 +11,9 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.service.PostActivityService;
 import com.feple.feple_backend.post.service.PostReportService;
 import com.feple.feple_backend.post.service.PostScrapService;
-import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class MyPageService {
 
-    private final PostService postService;
+    private final PostActivityService postActivityService;
     private final PostScrapService postScrapService;
     private final CommentService commentService;
     private final FestivalService festivalService;
@@ -40,19 +40,19 @@ public class MyPageService {
     private final FestivalCertificationService certificationService;
 
     public List<PostResponseDto> getMyPosts(@NonNull Long userId) {
-        return postService.getMyPosts(userId);
+        return postActivityService.getMyPosts(userId);
     }
 
     public CursorPage<PostResponseDto> getMyPostsPaged(@NonNull Long userId, Long cursor, int size) {
-        return postService.getMyPostsPaged(userId, cursor, size);
+        return postActivityService.getMyPostsPaged(userId, cursor, size);
     }
 
     public CursorPage<PostResponseDto> getPublicPostsPaged(@NonNull Long userId, Long cursor, int size) {
-        return postService.getPublicPostsPaged(userId, cursor, size);
+        return postActivityService.getPublicPostsPaged(userId, cursor, size);
     }
 
     public List<PostResponseDto> getLikedPosts(@NonNull Long userId) {
-        return postService.getLikedPosts(userId);
+        return postActivityService.getLikedPosts(userId);
     }
 
     public List<MyCommentResponseDto> getMyComments(@NonNull Long userId) {
@@ -81,10 +81,10 @@ public class MyPageService {
                 + commentReportService.getReportCountForUser(userId)
                 + photoReportService.getReportCountForUser(userId);
         return new UserStatsDto(
-                postService.countPublicPosts(userId),
+                postActivityService.countPublicPosts(userId),
                 commentService.countMyComments(userId),
                 reportCount,
-                postService.countLikedPosts(userId),
+                postActivityService.countLikedPosts(userId),
                 postScrapService.countMyScraps(userId),
                 certificationService.countApprovedByUser(userId));
     }

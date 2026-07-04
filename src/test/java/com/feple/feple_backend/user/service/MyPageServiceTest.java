@@ -10,8 +10,8 @@ import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.service.PostActivityService;
 import com.feple.feple_backend.post.service.PostReportService;
-import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class MyPageServiceTest {
 
-    @Mock PostService postService;
+    @Mock PostActivityService postActivityService;
     @Mock CommentService commentService;
     @Mock FestivalService festivalService;
     @Mock ArtistService artistService;
@@ -46,14 +46,14 @@ class MyPageServiceTest {
     // ── getMyPosts ────────────────────────────────────────────────────
 
     @Test
-    void 내_게시글_목록_조회시_postService에_위임() {
+    void 내_게시글_목록_조회시_postActivityService에_위임() {
         List<PostResponseDto> posts = List.of(mock(PostResponseDto.class));
-        given(postService.getMyPosts(1L)).willReturn(posts);
+        given(postActivityService.getMyPosts(1L)).willReturn(posts);
 
         List<PostResponseDto> result = myPageService.getMyPosts(1L);
 
         assertThat(result).isEqualTo(posts);
-        verify(postService).getMyPosts(1L);
+        verify(postActivityService).getMyPosts(1L);
     }
 
     @Test
@@ -105,9 +105,9 @@ class MyPageServiceTest {
 
     @Test
     void 사용자_통계_게시글수와_댓글수_합산_반환() {
-        given(postService.countPublicPosts(1L)).willReturn(5L);
+        given(postActivityService.countPublicPosts(1L)).willReturn(5L);
         given(commentService.countMyComments(1L)).willReturn(12L);
-        given(postService.countLikedPosts(1L)).willReturn(0L);
+        given(postActivityService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
         given(certificationService.countApprovedByUser(1L)).willReturn(0L);
         given(postReportService.getReportCountForUser(1L)).willReturn(3L);
@@ -123,9 +123,9 @@ class MyPageServiceTest {
 
     @Test
     void 게시글과_댓글이_없으면_통계가_0() {
-        given(postService.countPublicPosts(1L)).willReturn(0L);
+        given(postActivityService.countPublicPosts(1L)).willReturn(0L);
         given(commentService.countMyComments(1L)).willReturn(0L);
-        given(postService.countLikedPosts(1L)).willReturn(0L);
+        given(postActivityService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
         given(certificationService.countApprovedByUser(1L)).willReturn(0L);
         given(postReportService.getReportCountForUser(1L)).willReturn(0L);

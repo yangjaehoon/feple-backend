@@ -5,7 +5,7 @@ import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
-import com.feple.feple_backend.post.service.PostService;
+import com.feple.feple_backend.post.service.PostSearchService;
 import com.feple.feple_backend.search.dto.SearchResultDto;
 import com.feple.feple_backend.search.dto.SuggestionDto;
 import com.feple.feple_backend.search.entity.SearchLog;
@@ -34,7 +34,7 @@ class SearchServiceTest {
 
     @Mock ArtistService artistService;
     @Mock FestivalService festivalService;
-    @Mock PostService postService;
+    @Mock PostSearchService postSearchService;
     @Mock SearchLogRepository searchLogRepository;
 
     @InjectMocks SearchService searchService;
@@ -64,7 +64,7 @@ class SearchServiceTest {
         ArtistResponseDto artist = mock(ArtistResponseDto.class);
         given(artistService.searchArtists("test")).willReturn(List.of(artist));
         given(festivalService.searchFestivals("test")).willReturn(List.of());
-        given(postService.searchPosts("test", null)).willReturn(List.of());
+        given(postSearchService.searchPosts("test", null)).willReturn(List.of());
 
         SearchResultDto result = searchService.search("test");
 
@@ -80,7 +80,7 @@ class SearchServiceTest {
         }
         given(artistService.searchArtists("test")).willReturn(artists);
         given(festivalService.searchFestivals("test")).willReturn(List.of());
-        given(postService.searchPosts("test", null)).willReturn(List.of());
+        given(postSearchService.searchPosts("test", null)).willReturn(List.of());
 
         SearchResultDto result = searchService.search("test");
 
