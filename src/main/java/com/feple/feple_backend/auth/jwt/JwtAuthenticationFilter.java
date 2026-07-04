@@ -87,6 +87,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 log.error("[JWT] 예상하지 못한 토큰 파싱 오류", e);
                 SecurityContextHolder.clearContext();
+                writeJson(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
+                return;
             }
         }
 

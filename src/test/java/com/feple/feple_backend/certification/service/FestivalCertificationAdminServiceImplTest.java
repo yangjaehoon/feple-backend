@@ -2,15 +2,17 @@ package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
+import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
+import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.service.PointService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -30,7 +32,7 @@ class FestivalCertificationAdminServiceImplTest {
 
     @Mock FestivalCertificationRepository certificationRepository;
     @Mock S3PresignService s3PresignService;
-    @Mock NotificationService notificationService;
+    @Mock ApplicationEventPublisher eventPublisher;
     @Mock PointService pointService;
 
     @InjectMocks FestivalCertificationAdminServiceImpl adminService;
@@ -92,7 +94,7 @@ class FestivalCertificationAdminServiceImplTest {
 
         then(cert).should().approve("admin");
         then(pointService).should().addCertApprovedPoint(1L, 10L);
-        then(notificationService).should().notifyCertApproved(eq(1L), any(), any(), any());
+        then(eventPublisher).should().publishEvent(any(CertificationApprovedEvent.class));
     }
 
     @Test
@@ -104,7 +106,7 @@ class FestivalCertificationAdminServiceImplTest {
         adminService.reject(10L, "사진 불명확", "admin");
 
         then(cert).should().reject("사진 불명확", "admin");
-        then(notificationService).should().notifyCertRejected(eq(1L), any(), any(), any(), eq("사진 불명확"));
+        then(eventPublisher).should().publishEvent(any(CertificationRejectedEvent.class));
     }
 
     // ── getPendingCount / findNextPendingId / buildPhotoUrl ─────────────

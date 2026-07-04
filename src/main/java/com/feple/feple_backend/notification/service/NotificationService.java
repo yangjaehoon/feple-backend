@@ -20,6 +20,9 @@ import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
+import com.feple.feple_backend.artistfestival.event.ArtistAddedToFestivalEvent;
+import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
+import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
@@ -50,60 +53,59 @@ public class NotificationService {
     private final PushNotificationClient fcmPushService;
     private final NotificationPreferenceService preferenceService;
 
-    /**
-     * 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송
-     * 비동기 처리 — 메인 트랜잭션 지연 없음
-     */
+    /** 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송 — 커밋 후에만 발송 */
     @Async
-    @Transactional
-    public void notifyNewFestivalForArtist(Long artistId, String artistName, String artistNameEn,
-                                            Long festivalId, String festivalTitle, String festivalTitleEn) {
-        List<ArtistFollow> follows = artistFollowRepository.findByArtistId(artistId);
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onArtistAddedToFestival(ArtistAddedToFestivalEvent event) {
+        List<ArtistFollow> follows = artistFollowRepository.findByArtistId(event.artistId());
         if (follows.isEmpty()) return;
 
-        Festival festival = festivalRepository.findById(festivalId).orElse(null);
+        Festival festival = festivalRepository.findById(event.festivalId()).orElse(null);
         if (festival == null) return;
 
-        String title = NotificationMessages.newFestivalTitle(artistName);
-        String body = NotificationMessages.newFestivalBody(festivalTitle);
-        String titleEn = NotificationMessages.newFestivalTitleEn(artistNameEn);
-        String bodyEn = NotificationMessages.newFestivalBodyEn(festivalTitleEn);
+        String title = NotificationMessages.newFestivalTitle(event.artistName());
+        String body = NotificationMessages.newFestivalBody(event.festivalTitle());
+        String titleEn = NotificationMessages.newFestivalTitleEn(event.artistNameEn());
+        String bodyEn = NotificationMessages.newFestivalBodyEn(event.festivalTitleEn());
 
         List<Long> userIds = follows.stream().map(ArtistFollow::getUserId).toList();
         List<User> users = userRepository.findAllById(userIds);
 
-        saveAndPush(users, NotificationType.NEW_FESTIVAL, title, body, titleEn, bodyEn, festival, String.valueOf(festivalId));
-        log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})", users.size(), artistId, festivalId);
+        saveAndPush(users, NotificationType.NEW_FESTIVAL, title, body, titleEn, bodyEn, festival, String.valueOf(event.festivalId()));
+        log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})", users.size(), event.artistId(), event.festivalId());
     }
 
-    /** 인증 승인 알림 */
+    /** 인증 승인 알림 — 커밋 후에만 발송 */
     @Async
-    @Transactional
-    public void notifyCertApproved(Long userId, String festivalTitle, String festivalTitleEn, Long festivalId) {
-        User user = userRepository.findById(userId).orElse(null);
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onCertificationApproved(CertificationApprovedEvent event) {
+        User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
-        Festival festival = festivalRepository.findById(festivalId).orElse(null);
+        Festival festival = festivalRepository.findById(event.festivalId()).orElse(null);
         String title = NotificationMessages.CERT_APPROVED_TITLE;
-        String body = NotificationMessages.certApprovedBody(festivalTitle);
+        String body = NotificationMessages.certApprovedBody(event.festivalTitle());
         String titleEn = NotificationMessages.CERT_APPROVED_TITLE_EN;
-        String bodyEn = NotificationMessages.certApprovedBodyEn(festivalTitleEn);
+        String bodyEn = NotificationMessages.certApprovedBodyEn(event.festivalTitleEn());
         notificationRepository.save(Notification.of(user, NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, festival));
-        maybePush(userId, NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, String.valueOf(festivalId));
+        maybePush(event.userId(), NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
     }
 
-    /** 인증 거절 알림 */
+    /** 인증 거절 알림 — 커밋 후에만 발송 */
     @Async
-    @Transactional
-    public void notifyCertRejected(Long userId, String festivalTitle, String festivalTitleEn, Long festivalId, String reason) {
-        User user = userRepository.findById(userId).orElse(null);
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onCertificationRejected(CertificationRejectedEvent event) {
+        User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
-        Festival festival = festivalRepository.findById(festivalId).orElse(null);
+        Festival festival = festivalRepository.findById(event.festivalId()).orElse(null);
         String title = NotificationMessages.CERT_REJECTED_TITLE;
-        String body = NotificationMessages.certRejectedBody(festivalTitle, reason);
+        String body = NotificationMessages.certRejectedBody(event.festivalTitle(), event.reason());
         String titleEn = NotificationMessages.CERT_REJECTED_TITLE_EN;
-        String bodyEn = NotificationMessages.certRejectedBodyEn(festivalTitleEn, reason);
+        String bodyEn = NotificationMessages.certRejectedBodyEn(event.festivalTitleEn(), event.reason());
         notificationRepository.save(Notification.of(user, NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, festival));
-        maybePush(userId, NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, String.valueOf(festivalId));
+        maybePush(event.userId(), NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
     }
 
     @Async
@@ -207,10 +209,8 @@ public class NotificationService {
         maybePush(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, null);
     }
 
-    /** 내 게시글에 댓글 알림 */
-    @Async
-    @Transactional
-    public void notifyNewComment(Long postAuthorId, String commenterNickname,
+    /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
+    private void notifyNewComment(Long postAuthorId, String commenterNickname,
                                   String postTitle, Long postId) {
         // 자기 자신의 댓글이면 알림 없음
         User author = userRepository.findById(postAuthorId).orElse(null);
@@ -227,10 +227,8 @@ public class NotificationService {
         maybePush(postAuthorId, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, null);
     }
 
-    /** 내 댓글에 대댓글 알림 */
-    @Async
-    @Transactional
-    public void notifyNewReply(Long parentCommentAuthorId, String replierNickname,
+    /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
+    private void notifyNewReply(Long parentCommentAuthorId, String replierNickname,
                                 String postTitle, Long postId) {
         User author = userRepository.findById(parentCommentAuthorId).orElse(null);
         if (author == null) return;

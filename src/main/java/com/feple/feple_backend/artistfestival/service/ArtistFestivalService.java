@@ -6,16 +6,17 @@ import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
+import com.feple.feple_backend.artistfestival.event.ArtistAddedToFestivalEvent;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class ArtistFestivalService {
     private final FileStorageService fileStorageService;
     private final TimetableRepository timetableRepository;
     private final StageRepository stageRepository;
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<ArtistFestivalResponseDto> getArtistFestivals(Long festivalId) {
         List<ArtistFestival> artistFestivals =
@@ -102,11 +103,11 @@ public class ArtistFestivalService {
 
         ArtistFestival saved = artistFestivalRepository.save(artistFestival);
 
-        // 비동기 알림 발송 — 아직 시작 전인 페스티벌에만 발송
+        // 트랜잭션 커밋 후에만 알림 발송 — 아직 시작 전인 페스티벌에만 발송
         if (festival.getStartDate() != null && festival.getStartDate().isAfter(java.time.LocalDate.now())) {
-            notificationService.notifyNewFestivalForArtist(
+            eventPublisher.publishEvent(new ArtistAddedToFestivalEvent(
                     artist.getId(), artist.getName(), artist.getNameEn(),
-                    festival.getId(), festival.getTitle(), festival.getTitleEn());
+                    festival.getId(), festival.getTitle(), festival.getTitleEn()));
         }
 
         return saved.getId();

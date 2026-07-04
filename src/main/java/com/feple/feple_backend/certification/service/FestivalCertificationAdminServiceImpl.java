@@ -2,15 +2,17 @@ package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
+import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
+import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
-import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.user.service.PointService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +28,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
 
     private final FestivalCertificationRepository certificationRepository;
     private final S3PresignService s3PresignService;
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
     private final PointService pointService;
 
     @Override
@@ -59,12 +61,12 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
         FestivalCertification cert = getById(certId);
         cert.approve(reviewerName);
         pointService.addCertApprovedPoint(cert.getUserId(), certId);
-        // 비동기 알림
-        notificationService.notifyCertApproved(
+        // 트랜잭션 커밋 후에만 알림 발송 (커밋 실패 시 승인되지 않은 알림이 나가는 것을 방지)
+        eventPublisher.publishEvent(new CertificationApprovedEvent(
                 cert.getUserId(),
                 cert.getFestivalTitle(),
                 cert.getFestivalTitleEn(),
-                cert.getFestivalId());
+                cert.getFestivalId()));
     }
 
     @Override
@@ -73,13 +75,13 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     public void reject(Long certId, String rejectionMessage, String reviewerName) {
         FestivalCertification cert = getById(certId);
         cert.reject(rejectionMessage, reviewerName);
-        // 비동기 알림
-        notificationService.notifyCertRejected(
+        // 트랜잭션 커밋 후에만 알림 발송 (커밋 실패 시 거절되지 않은 알림이 나가는 것을 방지)
+        eventPublisher.publishEvent(new CertificationRejectedEvent(
                 cert.getUserId(),
                 cert.getFestivalTitle(),
                 cert.getFestivalTitleEn(),
                 cert.getFestivalId(),
-                rejectionMessage);
+                rejectionMessage));
     }
 
     @Override
@@ -91,11 +93,11 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
                 .forEach(cert -> {
                     cert.approve(reviewerName);
                     pointService.addCertApprovedPoint(cert.getUserId(), cert.getId());
-                    notificationService.notifyCertApproved(
+                    eventPublisher.publishEvent(new CertificationApprovedEvent(
                             cert.getUserId(),
                             cert.getFestivalTitle(),
                             cert.getFestivalTitleEn(),
-                            cert.getFestivalId());
+                            cert.getFestivalId()));
                 });
     }
 
@@ -107,12 +109,12 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
                 .filter(FestivalCertification::isPending)
                 .forEach(cert -> {
                     cert.reject(rejectionMessage, reviewerName);
-                    notificationService.notifyCertRejected(
+                    eventPublisher.publishEvent(new CertificationRejectedEvent(
                             cert.getUserId(),
                             cert.getFestivalTitle(),
                             cert.getFestivalTitleEn(),
                             cert.getFestivalId(),
-                            rejectionMessage);
+                            rejectionMessage));
                 });
     }
 
