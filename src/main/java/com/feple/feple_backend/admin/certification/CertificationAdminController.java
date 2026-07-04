@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -113,6 +115,43 @@ public class CertificationAdminController {
                 "거절 처리 중 오류가 발생했습니다.",
                 ra);
         if (nextCertId != null) return triageRedirect(nextCertId, filter);
+        return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+    }
+
+    @PostMapping("/bulk-approve")
+    public String bulkApprove(@RequestParam List<Long> ids,
+                              @ModelAttribute CertFilter filter,
+                              Authentication auth,
+                              RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    certificationService.bulkApprove(ids, auth.getName());
+                    adminLogService.log(AdminAction.CERTIFICATION_BULK_APPROVE, "CERTIFICATION", null,
+                            ids.size() + "건 일괄 승인");
+                },
+                ids.size() + "건이 승인되었습니다.",
+                e -> log.error("인증 일괄 승인 실패 ids={}", ids, e),
+                "일괄 승인 처리 중 오류가 발생했습니다.",
+                ra);
+        return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+    }
+
+    @PostMapping("/bulk-reject")
+    public String bulkReject(@RequestParam List<Long> ids,
+                             @RequestParam(defaultValue = "") String rejectionMessage,
+                             @ModelAttribute CertFilter filter,
+                             Authentication auth,
+                             RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    certificationService.bulkReject(ids, rejectionMessage, auth.getName());
+                    adminLogService.log(AdminAction.CERTIFICATION_BULK_REJECT, "CERTIFICATION", null,
+                            ids.size() + "건 일괄 거절");
+                },
+                ids.size() + "건이 거절되었습니다.",
+                e -> log.error("인증 일괄 거절 실패 ids={}", ids, e),
+                "일괄 거절 처리 중 오류가 발생했습니다.",
+                ra);
         return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
     }
 

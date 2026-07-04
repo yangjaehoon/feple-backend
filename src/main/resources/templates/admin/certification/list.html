@@ -9,6 +9,28 @@
 
         <div th:insert="~{admin/fragments :: alerts}"></div>
 
+        <!-- 일괄 처리 툴바 (PENDING 탭에서만 표시) -->
+        <div th:if="${status == 'PENDING' or (status == '' or status == null)}" id="bulkToolbar" class="bulk-toolbar" style="display:none;">
+            <span id="bulkCount" class="bulk-count">0건 선택됨</span>
+            <form id="formBulkApprove" th:action="@{/admin/certifications/bulk-approve}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="status" th:value="${status}"/>
+                <input type="hidden" name="page" th:value="${page}"/>
+                <input type="hidden" name="keyword" th:value="${keyword}"/>
+                <div id="approveIds"></div>
+                <button type="submit" class="btn btn-success btn-sm">일괄 승인</button>
+            </form>
+            <form id="formBulkReject" th:action="@{/admin/certifications/bulk-reject}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="status" th:value="${status}"/>
+                <input type="hidden" name="page" th:value="${page}"/>
+                <input type="hidden" name="keyword" th:value="${keyword}"/>
+                <div id="rejectIds"></div>
+                <input type="text" name="rejectionMessage" placeholder="거절 사유 (선택)" class="form-control form-control-sm" style="width:200px; display:inline-block;"/>
+                <button type="submit" class="btn btn-danger btn-sm">일괄 거절</button>
+            </form>
+        </div>
+
         <div class="card">
             <!-- 검색 바 -->
             <div class="search-bar">
@@ -44,6 +66,9 @@
                 <table>
                     <thead>
                     <tr>
+                        <th class="col-w36">
+                            <input type="checkbox" id="checkAll" title="전체 선택" onchange="toggleAll(this)"/>
+                        </th>
                         <th class="col-w48">ID</th>
                         <th>신청자</th>
                         <th>페스티벌</th>
@@ -55,6 +80,11 @@
                     </thead>
                     <tbody>
                     <tr th:each="cert : ${certifications.content}">
+                        <td>
+                            <input th:if="${cert.pending}" type="checkbox" class="cert-check"
+                                   th:value="${cert.id}" onchange="updateBulkToolbar()"/>
+                            <span th:unless="${cert.pending}"></span>
+                        </td>
                         <td class="td-id" th:text="${cert.id}"></td>
                         <td>
                             <a th:href="@{/admin/users/{id}(id=${cert.userId})}"
@@ -90,7 +120,7 @@
                                class="btn btn-secondary btn-sm">상세</a>
                         </td>
                     </tr>
-                    <tr th:if="${certifications.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(7, '인증 신청이 없습니다.')}"></tr>
+                    <tr th:if="${certifications.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '인증 신청이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>
@@ -100,5 +130,37 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleAll(master) {
+        document.querySelectorAll('.cert-check').forEach(cb => cb.checked = master.checked);
+        updateBulkToolbar();
+    }
+
+    function updateBulkToolbar() {
+        const checked = [...document.querySelectorAll('.cert-check:checked')];
+        const toolbar = document.getElementById('bulkToolbar');
+        if (!toolbar) return;
+
+        toolbar.style.display = checked.length > 0 ? 'flex' : 'none';
+        document.getElementById('bulkCount').textContent = checked.length + '건 선택됨';
+
+        const ids = checked.map(cb => cb.value);
+        syncIds('approveIds', ids);
+        syncIds('rejectIds', ids);
+    }
+
+    function syncIds(containerId, ids) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        ids.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids';
+            input.value = id;
+            container.appendChild(input);
+        });
+    }
+</script>
 </body>
 </html>

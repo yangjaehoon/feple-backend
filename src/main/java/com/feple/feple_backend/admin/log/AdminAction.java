@@ -49,6 +49,8 @@ public enum AdminAction {
 
     CERTIFICATION_APPROVE("인증 승인"),
     CERTIFICATION_REJECT("인증 거절"),
+    CERTIFICATION_BULK_APPROVE("인증 일괄 승인"),
+    CERTIFICATION_BULK_REJECT("인증 일괄 거절"),
 
     SONG_REQUEST_APPROVE("노래 요청 승인"),
     SONG_REQUEST_REJECT("노래 요청 거절"),
