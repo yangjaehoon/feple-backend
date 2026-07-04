@@ -300,6 +300,12 @@
                         <td><input th:if="${report.pending}" type="checkbox" class="row-check" th:value="${report.id}"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
+                            <div class="report-photo-preview-wrap">
+                                <img th:if="${photoUrls.containsKey(report.photoId)}"
+                                     th:src="${photoUrls.get(report.photoId)}"
+                                     class="report-photo-thumb"
+                                     alt="신고된 사진"/>
+                            </div>
                             <div class="cell-primary">
                                 사진 #<span th:text="${report.photoId}"></span>
                                 <span class="report-photo-sub" th:text="${report.photoTitle}"></span>

@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.photo.entity.ArtistPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
+import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.ReportDismissHelper;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     private final ArtistGalleryPhotoRepository photoRepository;
     private final ArtistGalleryPhotoLikeRepository photoLikeRepository;
     private final UserRepository userRepository;
+    private final S3PresignService s3PresignService;
 
     @Transactional
     public void submitReport(Long photoId, Long reporterId, SubmitReportCommand command) {
@@ -111,6 +114,15 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     @Transactional
     public void bulkDismiss(List<Long> ids) {
         ReportDismissHelper.bulkDismiss(reportRepository, ids);
+    }
+
+    @Override
+    public Map<Long, String> buildPhotoPresignedUrls(Page<?> reports) {
+        return reports.getContent().stream()
+                .filter(r -> r instanceof ArtistPhotoReport)
+                .map(r -> (ArtistPhotoReport) r)
+                .collect(Collectors.toMap(ArtistPhotoReport::getPhotoId,
+                        r -> s3PresignService.presignGetUrl(r.getPhotoKey())));
     }
 
     @Override

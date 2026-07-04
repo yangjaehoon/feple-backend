@@ -1264,7 +1264,10 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .report-post-link    { margin-left: 6px; color: var(--muted); text-decoration: none; font-size: 12.5px; }
 .report-post-link:hover { text-decoration: underline; }
 .report-sep          { margin: 0 4px; color: var(--muted); }
-.report-photo-sub    { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.report-photo-sub         { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.report-photo-preview-wrap { margin-bottom: 6px; }
+.report-photo-thumb        { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; }
+.report-photo-thumb:hover  { opacity: 0.85; }
 .report-content-cell { font-size: 14px; font-weight: 600; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list-csv-row       { padding: 8px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: flex-end; }
 .stat-num           { font-size: 22px; font-weight: 800; }
@@ -1791,3 +1794,30 @@ a:focus-visible {
 }
 .detail-nav-link:last-child { border-right: none; }
 .detail-nav-link:hover      { background: var(--primary-lt); color: var(--primary-dk); }
+
+/* ── 별점 통계 (festival/detail) ── */
+.rating-summary       { display: flex; align-items: center; gap: 24px; margin-bottom: 16px; }
+.rating-score-block   { text-align: center; }
+.rating-score-num     { font-size: 36px; font-weight: 700; color: #f59e0b; }
+.rating-stars-display { font-size: 22px; color: #f59e0b; letter-spacing: 2px; }
+.rating-count-hint    { margin-top: 4px; }
+.rating-bar-section   { flex: 1; }
+.rating-bar-row       { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.rating-bar-label     { min-width: 24px; color: #f59e0b; font-weight: 700; }
+.rating-bar-track     { flex: 1; background: #f3f4f6; border-radius: 4px; height: 12px; overflow: hidden; }
+.rating-bar-fill      { height: 100%; background: #f59e0b; border-radius: 4px; transition: width 0.3s; }
+.rating-bar-count     { min-width: 28px; text-align: right; }
+.rating-empty-hint    { padding: 8px 0; }
+
+/* ── 크루 공연 설정 (festival/detail) ── */
+.crew-section       { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #f9fafb; }
+.crew-section-title { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 10px; }
+.crew-fields-row    { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.crew-name-field    { flex: 1; min-width: 200px; }
+.crew-member-list   { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.crew-member-chip   { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+                      border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;
+                      font-size: 12px; background: #fff; user-select: none; }
+.crew-member-chip input { margin: 0; cursor: pointer; }
+.timetable-form-footer  { grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 4px; }
+.timetable-crew-col     { grid-column: 1 / -1; }

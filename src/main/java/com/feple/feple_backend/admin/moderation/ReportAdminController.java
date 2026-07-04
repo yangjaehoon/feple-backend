@@ -47,6 +47,7 @@ public class ReportAdminController {
         model.addAttribute("type",    filter.type());
         model.addAttribute("keyword", filter.keyword());
         model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : buildCounts(handler, reports));
+        model.addAttribute("photoUrls", handler.buildPhotoPresignedUrls(reports));
         handlers.forEach((t, h) -> model.addAttribute(t + "PendingCount", h.getPendingCount()));
         return "admin/moderation/reports";
     }
