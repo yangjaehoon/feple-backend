@@ -29,11 +29,11 @@ public class ArtistFestival {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "artist_id")
+    @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id")
+    @JoinColumn(name = "festival_id", nullable = false)
     private Festival festival;
 
     private Integer lineupOrder;
