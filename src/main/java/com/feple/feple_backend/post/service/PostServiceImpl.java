@@ -3,7 +3,7 @@ package com.feple.feple_backend.post.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.badword.BadWordFilter;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityFinder;
@@ -39,7 +39,7 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
-    private final FestivalCertificationRepository certificationRepository;
+    private final FestivalCertificationService certificationService;
     private final BadWordFilter badWordFilter;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -131,7 +131,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, Long cursor, int size) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findGeneralFestivalPosts(festival, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream()
@@ -153,7 +153,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, Long cursor, int size) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findByFestivalAndBoardTypeOrderByCreatedAtDesc(festival, boardType, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream()
@@ -175,7 +175,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostResponseDto> getPopularFestivalPosts(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        Set<Long> certifiedUserIds = certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         return postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();

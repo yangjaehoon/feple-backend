@@ -285,4 +285,14 @@ public class FestivalCertificationService {
         List<Long> ids = certificationRepository.findNextPendingIds(currentId, PageRequest.of(0, 1));
         return ids.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(ids.get(0));
     }
+
+    @Transactional(readOnly = true)
+    public boolean existsApprovedCertification(Long festivalId, Long userId) {
+        return certificationRepository.existsApprovedCertification(festivalId, userId);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<Long> findApprovedUserIdsByFestivalId(Long festivalId) {
+        return certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+    }
 }

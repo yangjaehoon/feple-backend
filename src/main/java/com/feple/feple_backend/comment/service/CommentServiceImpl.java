@@ -2,7 +2,7 @@ package com.feple.feple_backend.comment.service;
 
 
 import com.feple.feple_backend.badword.BadWordFilter;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
 import com.feple.feple_backend.comment.dto.CreateCommentDto;
@@ -41,7 +41,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final FestivalCertificationRepository certificationRepository;
+    private final FestivalCertificationService certificationService;
     private final BadWordFilter badWordFilter;
 
     @Override
@@ -78,7 +78,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         boolean certified = post.getFestivalId() != null &&
-                certificationRepository.existsApprovedCertification(post.getFestivalId(), userId);
+                certificationService.existsApprovedCertification(post.getFestivalId(), userId);
 
         return CommentResponseDto.from(saved, certified, false);
     }
@@ -174,7 +174,7 @@ public class CommentServiceImpl implements CommentService {
 
     private Set<Long> getCertifiedUserIds(Post post) {
         if (post.getFestivalId() == null) return Set.of();
-        return certificationRepository.findApprovedUserIdsByFestivalId(post.getFestivalId());
+        return certificationService.findApprovedUserIdsByFestivalId(post.getFestivalId());
     }
 
     @Override
