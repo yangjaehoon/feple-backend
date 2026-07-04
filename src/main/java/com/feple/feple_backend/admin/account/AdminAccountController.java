@@ -16,7 +16,7 @@ import java.util.Set;
 @Slf4j
 @Controller
 @RequestMapping("/admin/accounts")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class AdminAccountController {
 

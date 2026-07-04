@@ -268,7 +268,7 @@
            class="pg-edge" title="처음 페이지">«</a>
         <a th:if="${page.hasPrevious()}"
            th:href="${baseUrl + '?page=' + (cur - 1) + ep}">← 이전</a>
-        <a th:each="i : ${#numbers.sequence(s, e >= s ? e : s)}"
+        <a th:if="${tot > 0}" th:each="i : ${#numbers.sequence(s, e >= s ? e : s)}"
            th:href="${baseUrl + '?page=' + i + ep}"
            th:text="${i + 1}"
            th:classappend="${i == cur} ? 'pg-num current' : 'pg-num'"></a>

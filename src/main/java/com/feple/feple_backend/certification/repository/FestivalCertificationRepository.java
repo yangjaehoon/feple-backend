@@ -35,6 +35,10 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @EntityGraph(attributePaths = {"user", "festival"})
     Optional<FestivalCertification> findWithUserAndFestivalById(Long id);
 
+    @EntityGraph(attributePaths = {"user", "festival"})
+    @Query("SELECT fc FROM FestivalCertification fc WHERE fc.id IN :ids")
+    List<FestivalCertification> findWithUserAndFestivalByIdIn(@Param("ids") List<Long> ids);
+
     long countByStatus(CertificationStatus status);
 
     @Query("SELECT COUNT(fc) FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")

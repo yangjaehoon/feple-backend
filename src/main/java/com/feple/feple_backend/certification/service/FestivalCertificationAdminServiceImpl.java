@@ -86,34 +86,34 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @EvictAdminPendingCaches
     @Transactional
     public void bulkApprove(List<Long> ids, String reviewerName) {
-        for (Long id : ids) {
-            FestivalCertification cert = getById(id);
-            if (!cert.isPending()) continue;
-            cert.approve(reviewerName);
-            pointService.addCertApprovedPoint(cert.getUserId(), id);
-            notificationService.notifyCertApproved(
-                    cert.getUserId(),
-                    cert.getFestivalTitle(),
-                    cert.getFestivalTitleEn(),
-                    cert.getFestivalId());
-        }
+        certificationRepository.findWithUserAndFestivalByIdIn(ids).stream()
+                .filter(FestivalCertification::isPending)
+                .forEach(cert -> {
+                    cert.approve(reviewerName);
+                    pointService.addCertApprovedPoint(cert.getUserId(), cert.getId());
+                    notificationService.notifyCertApproved(
+                            cert.getUserId(),
+                            cert.getFestivalTitle(),
+                            cert.getFestivalTitleEn(),
+                            cert.getFestivalId());
+                });
     }
 
     @Override
     @EvictAdminPendingCaches
     @Transactional
     public void bulkReject(List<Long> ids, String rejectionMessage, String reviewerName) {
-        for (Long id : ids) {
-            FestivalCertification cert = getById(id);
-            if (!cert.isPending()) continue;
-            cert.reject(rejectionMessage, reviewerName);
-            notificationService.notifyCertRejected(
-                    cert.getUserId(),
-                    cert.getFestivalTitle(),
-                    cert.getFestivalTitleEn(),
-                    cert.getFestivalId(),
-                    rejectionMessage);
-        }
+        certificationRepository.findWithUserAndFestivalByIdIn(ids).stream()
+                .filter(FestivalCertification::isPending)
+                .forEach(cert -> {
+                    cert.reject(rejectionMessage, reviewerName);
+                    notificationService.notifyCertRejected(
+                            cert.getUserId(),
+                            cert.getFestivalTitle(),
+                            cert.getFestivalTitleEn(),
+                            cert.getFestivalId(),
+                            rejectionMessage);
+                });
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminSidebarCountService {
 
-    private final List<ReportQueryService> reportServices;
+    private final List<ReportQueryService<?>> reportServices;
     private final FestivalCertificationAdminService certificationService;
     private final SongRequestAdminService songRequestAdminService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;

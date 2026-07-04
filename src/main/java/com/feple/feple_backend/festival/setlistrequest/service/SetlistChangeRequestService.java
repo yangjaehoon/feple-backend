@@ -6,6 +6,7 @@ import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeReque
 import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequestStatus;
 import com.feple.feple_backend.festival.setlistrequest.repository.SetlistChangeRequestRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class SetlistChangeRequestService {
         return repository.countByStatus(status);
     }
 
+    @EvictAdminPendingCaches
     @Transactional
     public void resolve(Long requestId) {
         SetlistChangeRequest req = EntityFinder.getOrThrow(repository::findById, requestId, "셋리스트 수정 요청");

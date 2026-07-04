@@ -39,7 +39,7 @@ public class ArtistSuggestionAdminController {
         AdminActionUtils.tryAction(
                 () -> {
                     artistSuggestionAdminService.approve(id, artistId);
-                    adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST_SUGGESTION", id, null);
+                    adminLogService.log(AdminAction.ARTIST_SUGGESTION_APPROVE, "ARTIST_SUGGESTION", id, null);
                 },
                 "아티스트 신청이 승인되었습니다.",
                 e -> log.error("아티스트 신청 승인 실패: id={}, artistId={}", id, artistId, e),

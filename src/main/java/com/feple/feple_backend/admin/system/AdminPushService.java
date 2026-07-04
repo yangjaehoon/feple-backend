@@ -119,13 +119,11 @@ public class AdminPushService {
 
     @Transactional
     public void sendToAll(String title, String body) {
-        broadcastNotificationRepository.save(BroadcastNotification.of(title, body));
-
         List<String> tokens = deviceTokenRepository.findAllTokens();
         if (tokens.isEmpty()) {
-            log.info("[AdminPush] 등록된 디바이스 토큰 없음 — FCM 발송 생략");
-            return;
+            throw new IllegalArgumentException("등록된 디바이스 토큰이 없습니다.");
         }
+        broadcastNotificationRepository.save(BroadcastNotification.of(title, body));
         log.info("[AdminPush] 전체 푸시 발송 시작 — 토큰 {}개, 제목: {}", tokens.size(), title);
         fcmPushService.sendBroadcast(tokens, title, body);
     }

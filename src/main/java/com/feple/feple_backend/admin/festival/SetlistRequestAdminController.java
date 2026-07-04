@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequestStatus;
 import com.feple.feple_backend.festival.setlistrequest.service.SetlistChangeRequestService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SetlistRequestAdminController {
 
     private final SetlistChangeRequestService service;
+    private final AdminLogService adminLogService;
 
     @GetMapping
     public String list(
@@ -41,13 +45,16 @@ public class SetlistRequestAdminController {
                           @RequestParam(defaultValue = "0") int page,
                           @RequestParam(defaultValue = "") String keyword,
                           RedirectAttributes ra) {
-        try {
-            service.resolve(id);
-            ra.addFlashAttribute("successMessage", "처리 완료로 표시했습니다.");
-        } catch (Exception e) {
-            log.error("셋리스트 요청 처리 실패: id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    service.resolve(id);
+                    adminLogService.log(AdminAction.SETLIST_REQUEST_RESOLVE, "SETLIST_REQUEST", id, null);
+                },
+                "처리 완료로 표시했습니다.",
+                e -> log.error("셋리스트 요청 처리 실패: id={}", id, e),
+                "처리 중 오류가 발생했습니다.",
+                ra);
+
         long remaining = service.countByStatus(parseStatus(status));
         int maxPage = remaining > 0 ? (int) ((remaining - 1) / 20) : 0;
         int safePage = Math.min(page, maxPage);

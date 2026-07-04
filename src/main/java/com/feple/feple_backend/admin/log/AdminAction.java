@@ -22,7 +22,8 @@ public enum AdminAction {
     ARTIST_CREATE("아티스트 등록"),
     ARTIST_UPDATE("아티스트 수정"),
     ARTIST_DELETE("아티스트 삭제"),
-    ARTIST_SUGGESTION_DISMISS("아티스트 신청 처리"),
+    ARTIST_SUGGESTION_APPROVE("아티스트 신청 승인"),
+    ARTIST_SUGGESTION_DISMISS("아티스트 신청 기각"),
 
     USER_BAN("회원 정지"),
     USER_UNBAN("정지 해제"),
@@ -54,6 +55,8 @@ public enum AdminAction {
 
     SONG_REQUEST_APPROVE("노래 요청 승인"),
     SONG_REQUEST_REJECT("노래 요청 거절"),
+
+    SETLIST_REQUEST_RESOLVE("셋리스트 수정 요청 처리"),
 
     PUSH_BROADCAST("전체 푸시 발송"),
     PUSH_ARTIST_FOLLOWERS("아티스트 팔로워 발송"),
