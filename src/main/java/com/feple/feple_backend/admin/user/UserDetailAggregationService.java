@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.user;
 
+import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.user.service.MyPageService;
@@ -23,6 +24,7 @@ public class UserDetailAggregationService {
     private final CommentService commentService;
     private final PostAdminService postAdminService;
     private final UserBlockService userBlockService;
+    private final FestivalCertificationAdminService certificationAdminService;
 
     public UserListCountsDto getListCounts(List<Long> userIds) {
         return new UserListCountsDto(
@@ -40,7 +42,8 @@ public class UserDetailAggregationService {
                 commentService.getRecentCommentsByUser(userId, RECENT_LIMIT),
                 myPageService.getLikedFestivals(userId),
                 myPageService.getFollowedArtists(userId),
-                userBlockService.getBlockedUsers(userId)
+                userBlockService.getBlockedUsers(userId),
+                certificationAdminService.getByUserId(userId)
         );
     }
 }

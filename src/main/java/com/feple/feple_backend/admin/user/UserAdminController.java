@@ -182,6 +182,7 @@ public class UserAdminController {
         model.addAttribute("likedFestivals",  detail.likedFestivals());
         model.addAttribute("followedArtists", detail.followedArtists());
         model.addAttribute("blockedUsers",    detail.blockedUsers());
+        model.addAttribute("certifications",  detail.certifications());
     }
 
     private String userListRedirect(UserListFilter listFilter) {

@@ -118,6 +118,12 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
 
     @Override
     @Transactional(readOnly = true)
+    public List<FestivalCertification> getByUserId(Long userId) {
+        return certificationRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public long getPendingCount() {
         return certificationRepository.countByStatus(CertificationStatus.PENDING);
     }

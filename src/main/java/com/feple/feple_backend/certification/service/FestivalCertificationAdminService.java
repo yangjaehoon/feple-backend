@@ -15,6 +15,7 @@ public interface FestivalCertificationAdminService {
     void reject(Long certId, String rejectionMessage, String reviewerName);
     void bulkApprove(List<Long> ids, String reviewerName);
     void bulkReject(List<Long> ids, String rejectionMessage, String reviewerName);
+    List<FestivalCertification> getByUserId(Long userId);
     long getPendingCount();
     Optional<Long> findNextPendingId(Long currentId);
     String buildPhotoUrl(String photoKey);

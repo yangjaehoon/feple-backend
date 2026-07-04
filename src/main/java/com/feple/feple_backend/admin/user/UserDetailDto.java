@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.user;
 
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -17,5 +18,6 @@ public record UserDetailDto(
         List<MyCommentResponseDto> recentComments,
         List<FestivalResponseDto> likedFestivals,
         List<ArtistResponseDto> followedArtists,
-        List<BlockedUserDto> blockedUsers
+        List<BlockedUserDto> blockedUsers,
+        List<FestivalCertification> certifications
 ) {}

@@ -174,6 +174,61 @@
             </div>
         </div>
 
+        <!-- 페스티벌 인증 이력 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    인증 이력
+                    <span class="card-count" th:text="${#lists.size(certifications)}"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48">ID</th>
+                        <th>페스티벌</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w80">별점</th>
+                        <th class="col-w120">신청일</th>
+                        <th class="col-w120">처리일</th>
+                        <th class="col-w80">상세</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="cert : ${certifications}">
+                        <td class="td-id" th:text="${cert.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/festivals/{id}(id=${cert.festivalId})}"
+                               th:text="${cert.festivalTitle}"
+                               class="detail-title-link"></a>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${cert.pending} ? 'badge-warning' : (${cert.approved} ? 'badge-success' : 'badge-danger')"
+                                  th:text="${cert.status.displayName}"></span>
+                        </td>
+                        <td class="td-muted">
+                            <span th:if="${cert.rating != null}" th:text="${cert.rating} + '점'"></span>
+                            <span th:if="${cert.rating == null}">-</span>
+                        </td>
+                        <td class="td-date" th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td class="td-date">
+                            <span th:if="${cert.reviewedAt != null}"
+                                  th:text="${#temporals.format(cert.reviewedAt, 'MM-dd HH:mm')}"></span>
+                            <span th:if="${cert.reviewedAt == null}">-</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/certifications/{id}(id=${cert.id})}"
+                               class="btn btn-secondary btn-sm">보기</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(certifications)}" th:replace="~{admin/fragments :: emptyRow(7, '인증 이력이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- 팔로우 아티스트 -->
         <div class="card">
             <div class="card-header">
