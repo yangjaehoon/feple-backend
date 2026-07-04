@@ -25,6 +25,7 @@ import com.feple.feple_backend.global.EntityFinder;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -121,7 +122,7 @@ public class ArtistFestivalService {
                 ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
                 req.setArtistId(artistId);
                 addArtistToFestival(festivalId, req);
-            } catch (ConflictException ignored) {
+            } catch (ConflictException | NoSuchElementException ignored) {
             }
         }
     }

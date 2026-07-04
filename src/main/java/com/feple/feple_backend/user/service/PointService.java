@@ -38,6 +38,7 @@ public class PointService {
         pointLogRepository.save(UserPointLog.of(user, delta, reason, refId));
     }
 
+    @Transactional
     public void addCertApprovedPoint(Long userId, Long certId) {
         addPoint(userId, POINT_CERT_APPROVED, PointReason.CERT_APPROVED, certId);
     }

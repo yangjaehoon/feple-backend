@@ -80,8 +80,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        // 이 핸들러에 도달했다면 서비스 레이어에서 ConflictException 변환이 누락된 것 — error 레벨로 기록
-        log.error("DataIntegrityViolationException reached handler — service layer missed ConflictException conversion: {}",
+        // 좋아요/팔로우 등 check-then-act 토글의 동시 요청 경합(unique 제약 위반)도 여기로 들어옴 — 정상 트래픽이므로 warn
+        log.warn("DataIntegrityViolationException reached handler (동시 요청 경합 또는 서비스 레이어 ConflictException 변환 누락 가능): {}",
                 ex.getMostSpecificCause().getClass().getSimpleName());
         log.debug("Data integrity violation detail", ex.getMostSpecificCause());
         return body(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다.", ErrorCode.CONFLICT);

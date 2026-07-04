@@ -122,13 +122,22 @@ class UserAdminServiceImplTest {
     void bulkDeleteUsers_각_id에_대해_삭제_수행() {
         User u1 = user(1L, "유저1");
         User u2 = user(2L, "유저2");
-        given(userRepository.findById(1L)).willReturn(Optional.of(u1));
-        given(userRepository.findById(2L)).willReturn(Optional.of(u2));
+        given(userRepository.findAllById(List.of(1L, 2L))).willReturn(List.of(u1, u2));
 
         userAdminService.bulkDeleteUsers(List.of(1L, 2L));
 
         verify(cascadeDeleteService).delete(u1);
         verify(cascadeDeleteService).delete(u2);
+    }
+
+    @Test
+    void bulkDeleteUsers_존재하지_않는_id는_건너뛰고_나머지만_삭제() {
+        User u1 = user(1L, "유저1");
+        given(userRepository.findAllById(List.of(1L, 999L))).willReturn(List.of(u1));
+
+        userAdminService.bulkDeleteUsers(List.of(1L, 999L));
+
+        verify(cascadeDeleteService).delete(u1);
     }
 
     // ── updateUserRole ────────────────────────────────────────────────

@@ -73,9 +73,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional
     public void bulkDeleteUsers(List<Long> ids) {
-        for (Long id : ids) {
-            adminDeleteUser(id);
-        }
+        userRepository.findAllById(ids).forEach(cascadeDeleteService::delete);
     }
 
     @Override
