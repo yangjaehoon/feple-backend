@@ -30,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.FestivalDetailDto;
 import org.springframework.data.domain.Page;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -197,7 +198,10 @@ public class FestivalAdminController {
     }
 
     @GetMapping("/{id}")
-    public String festivalDetail(@PathVariable Long id, Model model, RedirectAttributes ra) {
+    public String festivalDetail(@PathVariable Long id,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "") String keyword,
+                                 Model model, RedirectAttributes ra) {
         return AdminActionUtils.tryRender(
                 () -> {
                     FestivalDetailDto detail = festivalDetailAggregationService.getDetail(id);
@@ -213,6 +217,10 @@ public class FestivalAdminController {
                     model.addAttribute("setlistCounts",              detail.setlistCounts());
                     model.addAttribute("opsStageIndicator",          detail.opsStageIndicator());
                     model.addAttribute("ratingStats",                detail.ratingStats());
+                    UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/festivals")
+                            .queryParam("page", page);
+                    if (!keyword.isBlank()) builder.queryParam("keyword", keyword);
+                    model.addAttribute("returnUrl", builder.build().toUriString());
                 },
                 "admin/festival/detail",
                 e -> log.error("페스티벌 상세 조회 실패. id={}", id, e),

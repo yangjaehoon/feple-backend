@@ -116,7 +116,7 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">수정 저장</button>
-                        <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록으로</a>
+                        <a th:href="@{/admin/festivals/{id}(id=${festivalId})}" class="btn btn-secondary">취소</a>
                     </div>
                 </form>
             </div>

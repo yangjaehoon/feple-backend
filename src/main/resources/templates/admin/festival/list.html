@@ -54,7 +54,7 @@
 
                             <tr th:classappend="${festival.ended} ? 'row-ended' : ''">
                                 <td>
-                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id}, page=${festivalsPage.number}, keyword=${keyword})}"
                                        th:text="${festival.title}"
                                        class="table-title-link"></a>
                                     <div class="cell-secondary cell-row">
@@ -75,7 +75,7 @@
                                     <span class="cell-secondary" th:if="${festival.likeCount == 0}">0</span>
                                 </td>
                                 <td>
-                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id})}"
+                                    <a th:href="@{/admin/festivals/{id}(id=${festival.id}, page=${festivalsPage.number}, keyword=${keyword})}"
                                        class="btn btn-secondary btn-sm">상세</a>
                                 </td>
                             </tr>

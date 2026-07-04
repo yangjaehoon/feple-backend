@@ -48,7 +48,7 @@
                 <div class="detail-actions">
                     <a th:href="@{/admin/festivals/{id}/edit(id=${festival.id})}" class="btn btn-warning">✏ 수정</a>
                     <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
-                    <a th:href="@{/admin/festivals}" class="btn btn-secondary">목록</a>
+                    <a th:href="${returnUrl}" class="btn btn-secondary">목록</a>
                     <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
                           method="post" data-confirm="이 페스티벌을 삭제할까요?">
                         <button type="submit" class="btn btn-danger">삭제</button>

@@ -21,6 +21,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -140,11 +141,15 @@ public class ArtistAdminController {
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id,
                                @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "") String keyword,
+                               @RequestParam(defaultValue = "") String sort,
                                Model model, RedirectAttributes ra) {
         try {
             model.addAttribute("artistId", id);
             model.addAttribute("artist", artistService.getArtistForEdit(id));
             model.addAttribute("page", page);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("sort", sort);
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
@@ -158,11 +163,15 @@ public class ArtistAdminController {
                                BindingResult bindingResult,
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
                                @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "") String keyword,
+                               @RequestParam(defaultValue = "") String sort,
                                Model model,
                                RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("artistId", id);
             model.addAttribute("page", page);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("sort", sort);
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             return "admin/artist/edit";
         }
@@ -179,7 +188,10 @@ public class ArtistAdminController {
             log.error("아티스트 수정 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
         }
-        return "redirect:/admin/artists?page=" + page;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/artists").queryParam("page", page);
+        if (!keyword.isBlank()) builder.queryParam("keyword", keyword);
+        if (!sort.isBlank()) builder.queryParam("sort", sort);
+        return "redirect:" + builder.build().toUriString();
     }
 
     @PostMapping("/batch-name-en")
