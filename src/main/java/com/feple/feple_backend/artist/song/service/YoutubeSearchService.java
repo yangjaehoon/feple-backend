@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.HtmlUtils;
@@ -21,18 +22,27 @@ public class YoutubeSearchService {
 
     private static final String YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
     private static final String YOUTUBE_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos";
+    private static final int CONNECT_TIMEOUT_MS = 5_000;
+    private static final int READ_TIMEOUT_MS = 10_000;
 
     @Value("${app.youtube.api-key:}")
     private String apiKey;
 
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
+
+    public YoutubeSearchService(RestClient.Builder restClientBuilder) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        requestFactory.setReadTimeout(READ_TIMEOUT_MS);
+        this.restClient = restClientBuilder.requestFactory(requestFactory).build();
+    }
 
     /**
      * @param artistName 아티스트명 — Topic 채널 탐색에 사용
      * @param query      곡명 — Topic 채널 결과 필터링 or 키워드 검색에 사용
      */
     public List<YoutubeVideoDto> search(String artistName, String query) {
-        log.info("[YT] search called — artistName='{}', query='{}'", artistName, query);
+        log.debug("[YT] search called — artistName='{}', query='{}'", artistName, query);
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("[YT] API key is blank — returning empty");
             return Collections.emptyList();
@@ -41,15 +51,15 @@ public class YoutubeSearchService {
         // 1) 아티스트명으로 YouTube Music Topic 채널 탐색
         String topicChannelId = findTopicChannelId(artistName);
         if (topicChannelId != null) {
-            log.info("[YT] Topic channel found: {}", topicChannelId);
+            log.debug("[YT] Topic channel found: {}", topicChannelId);
             List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
-            log.info("[YT] Channel videos count: {}", channelVideos.size());
+            log.debug("[YT] Channel videos count: {}", channelVideos.size());
             if (query != null && !query.isBlank()) {
                 String lower = query.toLowerCase();
                 List<YoutubeVideoDto> filtered = channelVideos.stream()
                         .filter(v -> v.getTitle().toLowerCase().contains(lower))
                         .toList();
-                log.info("[YT] Filtered by '{}': {} results", lower, filtered.size());
+                log.debug("[YT] Filtered by '{}': {} results", lower, filtered.size());
                 return filtered.isEmpty() ? channelVideos : filtered;
             }
             return channelVideos;
@@ -57,12 +67,12 @@ public class YoutubeSearchService {
 
         // 2) Topic 채널 없음 → 곡명만으로 검색 (아티스트명 붙이면 API 품질 저하)
         String keywordQuery = (query != null && !query.isBlank()) ? query : artistName;
-        log.info("[YT] No Topic channel — keyword fallback: '{}'", keywordQuery);
+        log.debug("[YT] No Topic channel — keyword fallback: '{}'", keywordQuery);
         return searchByKeyword(artistName, keywordQuery);
     }
 
     private String findTopicChannelId(String artistName) {
-        String uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_SEARCH_URL)
+        String uri = UriComponentsBuilder.fromUriString(YOUTUBE_SEARCH_URL)
                 .queryParam("part", "snippet")
                 .queryParam("q", artistName)
                 .queryParam("type", "channel")
@@ -76,7 +86,7 @@ public class YoutubeSearchService {
         if (response == null || response.items() == null) return null;
 
         response.items().forEach(item ->
-                log.info("[YT] channel candidate: id={}, title='{}'",
+                log.debug("[YT] channel candidate: id={}, title='{}'",
                         item.id() != null ? item.id().channelId() : "null",
                         item.snippet() != null ? item.snippet().channelTitle() : "null"));
 
@@ -91,7 +101,7 @@ public class YoutubeSearchService {
     }
 
     private List<YoutubeVideoDto> searchByChannel(String channelId) {
-        String uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_SEARCH_URL)
+        String uri = UriComponentsBuilder.fromUriString(YOUTUBE_SEARCH_URL)
                 .queryParam("part", "snippet")
                 .queryParam("channelId", channelId)
                 .queryParam("type", "video")
@@ -112,7 +122,7 @@ public class YoutubeSearchService {
     }
 
     private List<YoutubeVideoDto> searchByKeyword(String artistName, String query) {
-        String uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_SEARCH_URL)
+        String uri = UriComponentsBuilder.fromUriString(YOUTUBE_SEARCH_URL)
                 .queryParam("part", "snippet")
                 .queryParam("q", query)
                 .queryParam("type", "video")
@@ -138,8 +148,8 @@ public class YoutubeSearchService {
                         || v.getTitle().toLowerCase().contains(lowerArtist))
                 .toList();
 
-        all.forEach(v -> log.info("[YT] result: title='{}', channel='{}'", v.getTitle(), v.getChannelTitle()));
-        log.info("[YT] Keyword '{}': total={}, byArtist={}", query, all.size(), byArtist.size());
+        all.forEach(v -> log.debug("[YT] result: title='{}', channel='{}'", v.getTitle(), v.getChannelTitle()));
+        log.debug("[YT] Keyword '{}': total={}, byArtist={}", query, all.size(), byArtist.size());
         return byArtist.isEmpty() ? all : byArtist;
     }
 
@@ -169,7 +179,7 @@ public class YoutubeSearchService {
             return Optional.empty();
         }
         try {
-            URI uri = UriComponentsBuilder.fromHttpUrl(YOUTUBE_VIDEOS_URL)
+            URI uri = UriComponentsBuilder.fromUriString(YOUTUBE_VIDEOS_URL)
                     .queryParam("part", "snippet")
                     .queryParam("id", videoId)
                     .queryParam("key", apiKey)
