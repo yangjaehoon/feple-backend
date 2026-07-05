@@ -1,5 +1,7 @@
 package com.feple.feple_backend.festival.setlistrequest.service;
 
+import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
+import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequest;
@@ -22,12 +24,18 @@ public class SetlistChangeRequestService {
     private final SetlistChangeRequestRepository repository;
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
+    private final ArtistFestivalRepository artistFestivalRepository;
 
     @Transactional
     public void submit(Long userId, Long festivalId, Long artistFestivalId,
                        String artistName, String message) {
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        ArtistFestival artistFestival = EntityFinder.getOrThrow(
+                artistFestivalRepository::findById, artistFestivalId, "아티스트 참여 정보");
+        if (!festivalId.equals(artistFestival.getFestivalId())) {
+            throw new IllegalArgumentException("해당 페스티벌의 참여 정보가 아닙니다.");
+        }
         repository.save(SetlistChangeRequest.of(user, festivalId, artistFestivalId, artistName, festival.getTitle(), message));
     }
 
