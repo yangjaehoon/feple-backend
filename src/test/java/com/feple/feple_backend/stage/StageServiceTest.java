@@ -85,6 +85,7 @@ class StageServiceTest {
     @Test
     void moveUp_앞_스테이지와_순서_교환() {
         Festival festival = org.mockito.Mockito.mock(Festival.class);
+        given(festival.getId()).willReturn(1L);
         Stage current = Stage.builder().festival(festival).name("CURRENT").displayOrder(3).build();
         Stage prev = Stage.builder().festival(festival).name("PREV").displayOrder(2).build();
 
@@ -101,6 +102,7 @@ class StageServiceTest {
     @Test
     void moveUp_앞_스테이지_없으면_교환_없음() {
         Festival festival = org.mockito.Mockito.mock(Festival.class);
+        given(festival.getId()).willReturn(1L);
         Stage current = Stage.builder().festival(festival).name("CURRENT").displayOrder(1).build();
 
         given(stageRepository.findById(10L)).willReturn(Optional.of(current));
@@ -115,6 +117,7 @@ class StageServiceTest {
     @Test
     void moveDown_뒤_스테이지와_순서_교환() {
         Festival festival = org.mockito.Mockito.mock(Festival.class);
+        given(festival.getId()).willReturn(1L);
         Stage current = Stage.builder().festival(festival).name("CURRENT").displayOrder(2).build();
         Stage next = Stage.builder().festival(festival).name("NEXT").displayOrder(3).build();
 
@@ -126,5 +129,31 @@ class StageServiceTest {
 
         assertThat(current.getDisplayOrder()).isEqualTo(3);
         assertThat(next.getDisplayOrder()).isEqualTo(2);
+    }
+
+    @Test
+    void moveUp_다른_페스티벌_스테이지면_예외() {
+        Festival festival = org.mockito.Mockito.mock(Festival.class);
+        given(festival.getId()).willReturn(2L);
+        Stage current = Stage.builder().festival(festival).name("CURRENT").displayOrder(3).build();
+
+        given(stageRepository.findById(10L)).willReturn(Optional.of(current));
+
+        assertThatThrownBy(() -> stageService.moveUp(1L, 10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("해당 페스티벌의 스테이지가 아닙니다.");
+    }
+
+    @Test
+    void moveDown_다른_페스티벌_스테이지면_예외() {
+        Festival festival = org.mockito.Mockito.mock(Festival.class);
+        given(festival.getId()).willReturn(2L);
+        Stage current = Stage.builder().festival(festival).name("CURRENT").displayOrder(3).build();
+
+        given(stageRepository.findById(10L)).willReturn(Optional.of(current));
+
+        assertThatThrownBy(() -> stageService.moveDown(1L, 10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("해당 페스티벌의 스테이지가 아닙니다.");
     }
 }

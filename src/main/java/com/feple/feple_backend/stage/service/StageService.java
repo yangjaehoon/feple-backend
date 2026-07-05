@@ -56,7 +56,7 @@ public class StageService {
 
     /** 위로 이동: 바로 앞 스테이지와 순서를 교환 */
     public void moveUp(Long festivalId, Long stageId) {
-        Stage current = EntityFinder.getOrThrow(stageRepository::findById, stageId, "스테이지");
+        Stage current = getStageInFestival(festivalId, stageId);
         stageRepository
                 .findFirstByFestivalIdAndDisplayOrderLessThanOrderByDisplayOrderDesc(
                         festivalId, current.getDisplayOrder())
@@ -65,10 +65,18 @@ public class StageService {
 
     /** 아래로 이동: 바로 뒤 스테이지와 순서를 교환 */
     public void moveDown(Long festivalId, Long stageId) {
-        Stage current = EntityFinder.getOrThrow(stageRepository::findById, stageId, "스테이지");
+        Stage current = getStageInFestival(festivalId, stageId);
         stageRepository
                 .findFirstByFestivalIdAndDisplayOrderGreaterThanOrderByDisplayOrderAsc(
                         festivalId, current.getDisplayOrder())
                 .ifPresent(next -> next.swapDisplayOrder(current));
+    }
+
+    private Stage getStageInFestival(Long festivalId, Long stageId) {
+        Stage stage = EntityFinder.getOrThrow(stageRepository::findById, stageId, "스테이지");
+        if (!festivalId.equals(stage.getFestivalId())) {
+            throw new IllegalArgumentException("해당 페스티벌의 스테이지가 아닙니다.");
+        }
+        return stage;
     }
 }

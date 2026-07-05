@@ -33,4 +33,8 @@ public class Stage {
         this.displayOrder = other.displayOrder;
         other.displayOrder = savedOrder;
     }
+
+    public Long getFestivalId() {
+        return festival.getId();
+    }
 }
