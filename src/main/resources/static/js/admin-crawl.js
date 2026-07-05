@@ -835,7 +835,7 @@
             .catch(function (err) {
                 clearInterval(timer);
                 document.getElementById('lineupProgress').classList.remove('visible');
-                showApplyResult('error', '오류: ' + err.message);
+                showApplyResult('error', '오류: ' + window.AdminUtils.escapeHtml(err.message));
             });
     }
 

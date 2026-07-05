@@ -444,10 +444,7 @@
 
     // ── 색상 피커 공통 유틸 ──────────────────────────────────────
 
-    /**
-     * targetId: hidden input ID, color: 현재 색상값(빈 문자열 = 없음)
-     * 해당 hidden input 주변의 .color-swatch, .color-custom-label 상태를 갱신
-     */
+    // targetId: hidden input ID, color: 색상값 (빈 문자열 = 없음)
     function applyColorPicker(targetId, color) {
         var hidden = document.getElementById(targetId);
         if (!hidden) return;
