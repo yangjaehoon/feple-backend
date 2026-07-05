@@ -16,6 +16,10 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 200   # 200ms 초과 쿼리 WARN 로깅 — 슬로우 쿼리 가시성 확보
 
   flyway:
     enabled: true
@@ -88,10 +92,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        # health는 permitAll(로드밸런서 헬스체크), prometheus/metrics는 SecurityConfig의
+        # anyRequest().authenticated()에 걸려 인증 없이는 접근 불가 — 별도 스크레이핑
+        # 계정/네트워크 접근 제어(보안 그룹 등)는 실제 Prometheus 연동 시점에 결정 필요
+        include: health, prometheus, metrics
   endpoint:
     health:
       show-details: never
+  metrics:
+    tags:
+      application: feple-backend
 
 file:
   upload-dir: uploads/posters
