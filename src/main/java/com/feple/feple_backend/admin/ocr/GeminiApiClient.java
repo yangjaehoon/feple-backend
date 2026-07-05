@@ -20,11 +20,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 class GeminiApiClient {
 
-    private final WebClient webClient;
+    private final WebClient geminiWebClient;
 
     @SuppressWarnings("unchecked")
     Map<?, ?> call(String url, String apiKey, Map<String, Object> requestBody, Duration timeout) {
-        return webClient.post()
+        return geminiWebClient.post()
                 .uri(url)
                 .header("x-goog-api-key", apiKey)
                 .header("Content-Type", "application/json")

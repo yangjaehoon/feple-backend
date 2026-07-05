@@ -13,10 +13,10 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class KakaoApiClient {
 
-    private final WebClient webClient;
+    private final WebClient kakaoWebClient;
 
     public Mono<KakaoUserResponseDto> getMe(String kakaoAccessToken) {
-        return webClient.post()
+        return kakaoWebClient.post()
                 .uri("https://kapi.kakao.com/v2/user/me")
                 .header(HttpHeaders.AUTHORIZATION, JwtConstants.BEARER_PREFIX + kakaoAccessToken)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
