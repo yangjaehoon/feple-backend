@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -50,9 +49,9 @@ public class GeminiOcrClient {
     @Value("${app.gemini.api-key:}")
     private String apiKey;
 
-    private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final GeminiUsageTracker usageTracker;
+    private final GeminiApiClient geminiApiClient;
 
     boolean isConfigured() {
         return apiKey != null && !apiKey.isBlank();
@@ -70,7 +69,7 @@ public class GeminiOcrClient {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
         String prompt = year != null ? buildPromptWithYear(year) : PROMPT;
-        String content = extractContent(callGeminiApi(buildGeminiRequest(prompt, base64, mimeType)));
+        String content = geminiApiClient.extractText(callGeminiApi(buildGeminiRequest(prompt, base64, mimeType)));
         log.debug("Gemini OCR raw response: {}", content);
         return parseJsonArray(content);
     }
@@ -83,7 +82,7 @@ public class GeminiOcrClient {
     public List<LineupRawResult> parseLineup(MultipartFile image) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
-        String content = extractContent(callGeminiApi(buildGeminiRequest(LINEUP_PROMPT, base64, mimeType)));
+        String content = geminiApiClient.extractText(callGeminiApi(buildGeminiRequest(LINEUP_PROMPT, base64, mimeType)));
         log.debug("Gemini Lineup OCR raw response: {}", content);
         return parseLineupJsonArray(content);
     }
@@ -103,30 +102,9 @@ public class GeminiOcrClient {
         );
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
         usageTracker.increment();
-        return webClient.post()
-                .uri(GEMINI_BASE_URL)
-                .header("x-goog-api-key", apiKey)
-                .header("Content-Type", "application/json")
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block(Duration.ofSeconds(90));
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private String extractContent(Map response) {
-        try {
-            List<Map> candidates = (List<Map>) response.get("candidates");
-            Map content = (Map) candidates.get(0).get("content");
-            List<Map> parts = (List<Map>) content.get("parts");
-            return (String) parts.get(0).get("text");
-        } catch (Exception e) {
-            log.warn("Gemini OCR 응답 파싱 실패: {}", e.getMessage());
-            return "";
-        }
+        return geminiApiClient.call(GEMINI_BASE_URL, apiKey, request, Duration.ofSeconds(90));
     }
 
     private List<LineupRawResult> parseLineupJsonArray(String content) {

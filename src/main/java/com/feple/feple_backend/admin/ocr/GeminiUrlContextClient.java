@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
 import java.util.List;
@@ -24,8 +23,8 @@ public class GeminiUrlContextClient {
     @Value("${app.gemini.api-key:}")
     private String geminiApiKey;
 
-    private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final GeminiApiClient geminiApiClient;
 
     public boolean isConfigured() {
         return geminiApiKey != null && !geminiApiKey.isBlank();
@@ -33,7 +32,7 @@ public class GeminiUrlContextClient {
 
     public ScrapedFestivalDto scrape(String url, String source) {
         Map<String, Object> request = buildUrlContextRequest(url);
-        Map<?, ?> response = callGeminiApi(request);
+        Map<?, ?> response = geminiApiClient.call(GEMINI_URL, geminiApiKey, request, Duration.ofSeconds(60));
 
         if (isUrlBlocked(response)) {
             log.warn("Gemini URL context blocked for: {}", url);
@@ -41,7 +40,7 @@ public class GeminiUrlContextClient {
                 "이 사이트는 외부 접근이 차단되어 있습니다. 페이지 스크린샷을 'OCR 파싱' 탭에 업로드하면 정보를 자동 추출할 수 있습니다.");
         }
 
-        String raw = extractGeminiText(response);
+        String raw = geminiApiClient.extractText(response);
         log.debug("Gemini URL context raw: {}", raw);
 
         return parseGeminiFestivalJson(raw, url, source);
@@ -64,59 +63,14 @@ public class GeminiUrlContextClient {
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<?, ?> callGeminiApi(Map<String, Object> request) {
-        return webClient.post()
-            .uri(GEMINI_URL)
-            .header("x-goog-api-key", geminiApiKey)
-            .header("Content-Type", "application/json")
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(Map.class)
-            .block(Duration.ofSeconds(60));
-    }
-
     private boolean isUrlBlocked(Map<?, ?> response) {
         try {
-            Object status = getNestedValue(response, "candidates", 0,
+            Object status = geminiApiClient.getNestedValue(response, "candidates", 0,
                     "urlContextMetadata", "urlMetadata", 0, "urlRetrievalStatus");
             return "URL_RETRIEVAL_STATUS_ERROR".equals(status);
         } catch (Exception e) {
             return false;
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private String extractGeminiText(Map<?, ?> response) {
-        try {
-            Object partsObj = getNestedValue(response, "candidates", 0, "content", "parts");
-            if (!(partsObj instanceof List<?> parts)) return "";
-            StringBuilder sb = new StringBuilder();
-            for (Object part : parts) {
-                if (part instanceof Map<?, ?> map) {
-                    Object text = map.get("text");
-                    if (text instanceof String s && !s.isBlank()) sb.append(s);
-                }
-            }
-            return sb.toString().trim();
-        } catch (Exception e) {
-            log.warn("Failed to extract Gemini response text", e);
-            return "";
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Object getNestedValue(Object current, Object... path) {
-        for (Object key : path) {
-            if (current == null) return null;
-            if (key instanceof Integer i && current instanceof List<?> list)
-                current = i < list.size() ? list.get(i) : null;
-            else if (key instanceof String s && current instanceof Map<?, ?> map)
-                current = map.get(s);
-            else
-                return null;
-        }
-        return current;
     }
 
     private ScrapedFestivalDto parseGeminiFestivalJson(String raw, String url, String source) {
