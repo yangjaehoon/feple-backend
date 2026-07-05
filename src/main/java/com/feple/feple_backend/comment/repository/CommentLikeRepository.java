@@ -11,9 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> {
 
-    @Query("SELECT CASE WHEN COUNT(cl) > 0 THEN TRUE ELSE FALSE END FROM CommentLike cl WHERE cl.user.id = :userId AND cl.comment.id = :commentId")
-    boolean existsByUserIdAndCommentId(@Param("userId") Long userId, @Param("commentId") Long commentId);
-
     @Modifying
     @Transactional
     @Query("DELETE FROM CommentLike cl WHERE cl.user.id = :userId AND cl.comment.id = :commentId")

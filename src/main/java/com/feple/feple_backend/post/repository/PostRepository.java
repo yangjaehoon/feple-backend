@@ -50,7 +50,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     java.util.Optional<Post> findWithAssociationsById(@Param("id") Long id);
 
     // ── 아티스트 게시글 ──────────────────────────────────────────────────────
-    List<Post> findByBoardType(BoardType boardType);
     List<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType);
     List<Post> findByArtist(Artist artist);
     List<Post> findByArtistOrderByCreatedAtDesc(Artist artist);
@@ -61,7 +60,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // ── 페스티벌 게시글 ──────────────────────────────────────────────────────
     List<Post> findByFestival(Festival festival);
-    List<Post> findByFestivalOrderByCreatedAtDesc(Festival festival);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL ORDER BY p.createdAt DESC")
@@ -224,9 +222,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            "WHERE p.createdAt >= :from AND p.createdAt < :to GROUP BY FUNCTION('DATE', p.createdAt)")
     List<Object[]> countGroupByDate(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    @Query("SELECT COALESCE(SUM(p.likeCount), 0) FROM Post p WHERE p.artist.id = :artistId AND p.createdAt >= :since")
-    long sumLikeCountByArtistAndSince(@Param("artistId") Long artistId, @Param("since") LocalDateTime since);
-
     @Query("SELECT COUNT(p) FROM Post p WHERE p.artist.id = :artistId AND p.createdAt >= :since")
     long countByArtistAndSince(@Param("artistId") Long artistId, @Param("since") LocalDateTime since);
 
@@ -248,9 +243,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Transactional
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
     void incrementViewCount(@Param("postId") Long postId);
-
-    @Query("SELECT p.viewCount FROM Post p WHERE p.id = :postId")
-    int findViewCountById(@Param("postId") Long postId);
 
     // ── Soft delete 관련 FK 무효화 (cascade delete 시 soft-deleted 행의 FK 정리) ──
     @Modifying(clearAutomatically = true)

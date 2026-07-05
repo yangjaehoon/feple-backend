@@ -25,9 +25,6 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     @Query("SELECT s FROM Stage s WHERE s.festival.id = :festivalId AND s.name = :name")
     Optional<Stage> findByFestivalIdAndName(@Param("festivalId") Long festivalId, @Param("name") String name);
 
-    @Query("SELECT COUNT(s) FROM Stage s WHERE s.festival.id = :festivalId")
-    int countByFestivalId(@Param("festivalId") Long festivalId);
-
     @Modifying
     @Transactional
     @Query("DELETE FROM Stage s WHERE s.festival.id = :festivalId")

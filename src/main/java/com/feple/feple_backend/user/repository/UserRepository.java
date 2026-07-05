@@ -14,10 +14,6 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByEmail(String email);
-
-    Optional<User> findByOauthId(String oauthId);
-
     Optional<User> findByProviderAndOauthId(AuthProvider provider, String oauthId);
 
     @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND " +

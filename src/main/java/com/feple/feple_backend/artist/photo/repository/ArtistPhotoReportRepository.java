@@ -38,9 +38,6 @@ public interface ArtistPhotoReportRepository extends BaseReportRepository<Artist
                                              @Param("status") ReportStatus status,
                                              Pageable pageable);
 
-    @Query("SELECT apr FROM ArtistPhotoReport apr WHERE apr.photo.id = :photoId")
-    List<ArtistPhotoReport> findByPhotoId(@Param("photoId") Long photoId);
-
     @org.springframework.data.jpa.repository.Modifying
     @Query("DELETE FROM ArtistPhotoReport apr WHERE apr.photo.id = :photoId")
     void deleteAllByPhotoId(@Param("photoId") Long photoId);

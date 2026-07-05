@@ -38,8 +38,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query(value = "UPDATE festival SET attending_count = GREATEST(attending_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementAttendingCount(@Param("id") Long id);
 
-    List<Festival> findAllByOrderByStartDateDesc();
-
     List<Festival> findByStartDate(LocalDate startDate);
 
     // 진행 중이거나 N일 이내 시작하는 페스티벌 (날씨 수집 대상)
@@ -74,8 +72,5 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             @Param("today") LocalDate today,
             @Param("until") LocalDate until,
             Pageable pageable);
-
-    @Query("SELECT COUNT(f) FROM Festival f WHERE f.endDate IS NULL OR f.endDate >= :today")
-    long countActiveFestivals(@Param("today") LocalDate today);
 
 }
