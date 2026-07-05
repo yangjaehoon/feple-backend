@@ -20,27 +20,26 @@ public class ArtistProfileImageLikeService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void likeImage(Long imageId, Long userId) {
+    public boolean toggleLike(Long imageId, Long userId) {
         ArtistProfileImage image = EntityFinder.getOrThrow(imageRepository::findById, imageId, "이미지");
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
+        int deleted = likeRepository.deleteByUserIdAndImageId(userId, imageId);
+        if (deleted > 0) {
+            imageRepository.decrementLikeCount(imageId);
+            return false;
+        }
         try {
             likeRepository.saveAndFlush(ArtistProfileImageLike.builder()
                     .user(user)
                     .artistProfileImage(image)
                     .build());
-            imageRepository.incrementLikeCount(imageId);
         } catch (DataIntegrityViolationException ignored) {
-            // 동시 요청으로 이미 좋아요됨
+            // 동시 요청으로 이미 저장됨
+            return true;
         }
-    }
-
-    @Transactional
-    public void unlikeImage(Long imageId, Long userId) {
-        int deleted = likeRepository.deleteByUserIdAndImageId(userId, imageId);
-        if (deleted > 0) {
-            imageRepository.decrementLikeCount(imageId);
-        }
+        imageRepository.incrementLikeCount(imageId);
+        return true;
     }
 
     /** 회원 탈퇴 시 해당 유저의 아티스트 사진 좋아요 및 업로더 정보 일괄 제거 */

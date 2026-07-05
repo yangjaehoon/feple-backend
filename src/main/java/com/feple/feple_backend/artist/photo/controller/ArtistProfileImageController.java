@@ -15,14 +15,7 @@ public class ArtistProfileImageController {
     private final ArtistProfileImageLikeService likeService;
 
     @PostMapping("/{id}/like")
-    public ResponseEntity<Void> likeImage(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
-        likeService.likeImage(id, userId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{id}/like")
-    public ResponseEntity<Void> unlikeImage(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
-        likeService.unlikeImage(id, userId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Boolean> toggleLike(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(likeService.toggleLike(id, userId));
     }
 }

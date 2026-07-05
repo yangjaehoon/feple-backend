@@ -12,7 +12,9 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,16 +34,22 @@ class ArtistProfileImageControllerTest {
     }
 
     @Test
-    void 아티스트_이미지_좋아요() throws Exception {
+    void 아티스트_이미지_좋아요_토글_좋아요됨() throws Exception {
+        given(likeService.toggleLike(1L, 1L)).willReturn(true);
+
         mockMvc.perform(post("/artist-image/1/like")
                         .with(AuthTestHelper.userAuth(1L)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
     }
 
     @Test
-    void 아티스트_이미지_좋아요_취소() throws Exception {
-        mockMvc.perform(delete("/artist-image/1/like")
+    void 아티스트_이미지_좋아요_토글_좋아요_취소됨() throws Exception {
+        given(likeService.toggleLike(1L, 1L)).willReturn(false);
+
+        mockMvc.perform(post("/artist-image/1/like")
                         .with(AuthTestHelper.userAuth(1L)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(false));
     }
 }
