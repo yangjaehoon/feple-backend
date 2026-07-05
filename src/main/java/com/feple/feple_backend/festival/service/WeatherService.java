@@ -119,7 +119,7 @@ public class WeatherService {
     }
 
     private WeatherDto fetchFromApi(int nx, int ny, LocalDate targetDate, String[] baseDatetime) {
-        var uri = UriComponentsBuilder.fromHttpUrl(baseUrl + "/getVilageFcst")
+        var uri = UriComponentsBuilder.fromUriString(baseUrl + "/getVilageFcst")
                 .queryParam("serviceKey", serviceKey)
                 .queryParam("pageNo", 1)
                 .queryParam("numOfRows", 1000)

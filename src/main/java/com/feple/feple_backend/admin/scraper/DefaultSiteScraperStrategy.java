@@ -6,6 +6,8 @@ class DefaultSiteScraperStrategy implements SiteScraperStrategy {
 
     private DefaultSiteScraperStrategy() {}
 
+    // Spring 빈이 아니라 FestivalPageScraper가 getOrDefault()로 직접 꺼내 쓰는
+    // 폴백 인스턴스라 source()는 맵 키로 조회되지 않는다 — 인터페이스 계약 충족용.
     @Override public String source() { return ""; }
     @Override public String[] titleSelectors() { return new String[0]; }
     @Override public String[] descriptionSelectors() { return new String[0]; }
