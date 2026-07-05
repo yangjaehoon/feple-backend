@@ -27,6 +27,13 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
            nativeQuery = true)
     Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
 
+    // 사용자 통합 검색 전용 FULLTEXT ngram 매치 — LIKE '%keyword%'는 B-tree 인덱스를
+    // 못 타 풀스캔이었음. 관리자 목록 검색·OCR 아티스트 자동매칭은 정확한 부분일치가
+    // 필요해 아래 findByNameOrNameEnContainingIgnoreCase(LIKE)를 그대로 사용한다.
+    @Query(value = "SELECT * FROM artist WHERE MATCH(name, name_en, aliases) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE) ORDER BY name ASC",
+           nativeQuery = true)
+    java.util.List<Artist> searchArtistsByNameFullText(@Param("keyword") String keyword);
+
     @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR (a.aliases IS NOT NULL AND LOWER(a.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') ORDER BY a.name ASC")
     java.util.List<Artist> findByNameOrNameEnContainingIgnoreCase(@Param("keyword") String keyword);
 

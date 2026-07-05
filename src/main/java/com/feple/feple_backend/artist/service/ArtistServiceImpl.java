@@ -116,7 +116,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
-        return artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(keyword)).stream()
+        return artistRepository.searchArtistsByNameFullText(keyword.trim()).stream()
                 .map(this::toDto)
                 .toList();
     }

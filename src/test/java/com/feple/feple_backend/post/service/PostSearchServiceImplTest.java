@@ -33,7 +33,7 @@ class PostSearchServiceImplTest {
     @Test
     void 게시판타입_지정하여_검색() {
         User author = user(1L);
-        given(postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
+        given(postRepository.searchPostsByBoardTypeAndTitleFullText(
                 eq(BoardType.FREE), anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
 
@@ -45,7 +45,7 @@ class PostSearchServiceImplTest {
     @Test
     void 게시판타입_없이_전체_검색() {
         User author = user(1L);
-        given(postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(anyString(), any(Pageable.class)))
+        given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
 
         List<PostResponseDto> result = postSearchService.searchPosts("제목", null);

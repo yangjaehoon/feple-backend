@@ -15,6 +15,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
@@ -122,7 +125,42 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     Page<Post> findByBoardTypeOrderByLikeCountDescCreatedAtDesc(BoardType boardType, Pageable pageable);
 
-    // ── 검색 (관리자) ────────────────────────────────────────────────────────
+    // ── 검색 (사용자 통합 검색 전용 — FULLTEXT ngram, 대량 데이터에서도 인덱스 사용) ──
+    // LIKE '%kw%'는 B-tree 인덱스를 못 타 풀스캔이었음 — FULLTEXT 매치로 id만 먼저
+    // 뽑은 뒤 EntityGraph로 연관 엔티티를 한 번에 가져와 N+1을 피한다.
+    // REPLACE로 큰따옴표를 제거해 boolean 모드 phrase 구문이 깨지지 않게 방어한다.
+    // 관리자 필터 검색(findByTitleContainingIgnoreCaseOrderByCreatedAtDesc 등)은
+    // LikeEscaper로 이스케이프한 값을 그대로 쓰므로 이 메서드들과 공유하지 않는다.
+    @Query(value = "SELECT id FROM post WHERE MATCH(title) AGAINST (CONCAT('\"', REPLACE(:kw, '\"', ''), '\"') IN BOOLEAN MODE) ORDER BY created_at DESC",
+           countQuery = "SELECT COUNT(*) FROM post WHERE MATCH(title) AGAINST (CONCAT('\"', REPLACE(:kw, '\"', ''), '\"') IN BOOLEAN MODE)",
+           nativeQuery = true)
+    Page<Long> searchTitleIds(@Param("kw") String kw, Pageable pageable);
+
+    @Query(value = "SELECT id FROM post WHERE board_type = :boardType AND MATCH(title) AGAINST (CONCAT('\"', REPLACE(:kw, '\"', ''), '\"') IN BOOLEAN MODE) ORDER BY created_at DESC",
+           countQuery = "SELECT COUNT(*) FROM post WHERE board_type = :boardType AND MATCH(title) AGAINST (CONCAT('\"', REPLACE(:kw, '\"', ''), '\"') IN BOOLEAN MODE)",
+           nativeQuery = true)
+    Page<Long> searchTitleIdsByBoardType(@Param("boardType") String boardType, @Param("kw") String kw, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.id IN :ids")
+    List<Post> findAllWithAssociationsByIdIn(@Param("ids") List<Long> ids);
+
+    default Page<Post> searchPostsByTitleFullText(String kw, Pageable pageable) {
+        return reorderByFullTextMatch(searchTitleIds(kw, pageable), pageable);
+    }
+
+    default Page<Post> searchPostsByBoardTypeAndTitleFullText(BoardType boardType, String kw, Pageable pageable) {
+        return reorderByFullTextMatch(searchTitleIdsByBoardType(boardType.name(), kw, pageable), pageable);
+    }
+
+    private Page<Post> reorderByFullTextMatch(Page<Long> idsPage, Pageable pageable) {
+        Map<Long, Post> byId = findAllWithAssociationsByIdIn(idsPage.getContent()).stream()
+                .collect(java.util.stream.Collectors.toMap(Post::getId, Function.identity()));
+        List<Post> ordered = idsPage.getContent().stream().map(byId::get).filter(java.util.Objects::nonNull).toList();
+        return new PageImpl<>(ordered, pageable, idsPage.getTotalElements());
+    }
+
+    // ── 검색 (관리자 필터) ───────────────────────────────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :kw, '%')) ESCAPE '!' ORDER BY p.createdAt DESC")
     Page<Post> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(@Param("kw") String kw, Pageable pageable);

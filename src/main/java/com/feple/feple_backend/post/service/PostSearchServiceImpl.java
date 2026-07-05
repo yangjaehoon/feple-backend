@@ -1,6 +1,5 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -22,17 +21,17 @@ public class PostSearchServiceImpl implements PostSearchService {
 
     @Override
     public List<PostResponseDto> searchPosts(String keyword, String boardType) {
-        String escaped = LikeEscaper.escape(keyword.trim());
+        String kw = keyword.trim();
         Optional<BoardType> type = parseBoardType(boardType);
         if (type.isPresent()) {
-            return postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
-                            type.get(), escaped, PageRequest.of(0, PageSize.SEARCH))
+            return postRepository.searchPostsByBoardTypeAndTitleFullText(
+                            type.get(), kw, PageRequest.of(0, PageSize.SEARCH))
                     .stream()
                     .map(PostResponseDto::from)
                     .toList();
         }
-        return postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(
-                        escaped, PageRequest.of(0, PageSize.SEARCH))
+        return postRepository.searchPostsByTitleFullText(
+                        kw, PageRequest.of(0, PageSize.SEARCH))
                 .stream()
                 .map(PostResponseDto::from)
                 .toList();

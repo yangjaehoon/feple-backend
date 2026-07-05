@@ -224,7 +224,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> searchFestivals(String keyword) {
-        return festivalRepository.findByTitleKeyword(LikeEscaper.escape(keyword)).stream()
+        return festivalRepository.findByTitleKeyword(keyword.trim()).stream()
                 .limit(10)
                 .map(this::toDto)
                 .toList();
