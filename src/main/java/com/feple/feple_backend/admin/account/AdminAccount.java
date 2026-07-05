@@ -22,6 +22,10 @@ public class AdminAccount extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 관리자 동시 편집 시 lost update 방지
+    @Version
+    private Long version;
+
     @Column(unique = true, nullable = false, length = 50)
     private String username;
 

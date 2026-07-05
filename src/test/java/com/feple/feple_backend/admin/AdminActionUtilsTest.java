@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -64,6 +65,19 @@ class AdminActionUtilsTest {
     }
 
     @Test
+    void tryAction_OptimisticLockingFailureException은_고정_안내_메시지_노출_raw_메시지_미노출() {
+        RedirectAttributesModelMap ra = ra();
+        AtomicReference<Exception> captured = new AtomicReference<>();
+
+        AdminActionUtils.tryAction(
+                () -> { throw new OptimisticLockingFailureException("Row was updated by another transaction"); },
+                "성공", captured::set, "실패", ra);
+
+        assertThat(captured.get()).isNull();
+        assertThat(flash(ra, "errorMessage")).isEqualTo("다른 관리자가 방금 먼저 수정했습니다. 새로고침 후 다시 시도해주세요.");
+    }
+
+    @Test
     void tryAction_기타_Exception은_onError_호출하고_failMsg_설정() {
         RedirectAttributesModelMap ra = ra();
         AtomicReference<Exception> captured = new AtomicReference<>();
@@ -124,6 +138,21 @@ class AdminActionUtilsTest {
 
         assertThat(result).isEqualTo("redirect:/admin/festivals");
         assertThat(flash(ra, "errorMessage")).isEqualTo("없음");
+    }
+
+    @Test
+    void tryRender_OptimisticLockingFailureException은_고정_안내_메시지_후_fallback_반환() {
+        RedirectAttributesModelMap ra = ra();
+        AtomicReference<Exception> captured = new AtomicReference<>();
+
+        String result = AdminActionUtils.tryRender(
+                () -> { throw new OptimisticLockingFailureException("Row was updated by another transaction"); },
+                "admin/festival/detail",
+                captured::set, "실패", "redirect:/admin/festivals", ra);
+
+        assertThat(result).isEqualTo("redirect:/admin/festivals");
+        assertThat(captured.get()).isNull();
+        assertThat(flash(ra, "errorMessage")).isEqualTo("다른 관리자가 방금 먼저 수정했습니다. 새로고침 후 다시 시도해주세요.");
     }
 
     @Test

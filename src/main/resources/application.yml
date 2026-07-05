@@ -16,6 +16,7 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        default_batch_fetch_size: 100   # 미처 발견 못한 N+1 지점의 지연 로딩을 IN절 배치로 완화
         session:
           events:
             log:

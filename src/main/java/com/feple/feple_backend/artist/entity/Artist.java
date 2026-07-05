@@ -22,6 +22,10 @@ public class Artist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 관리자 동시 편집 시 lost update 방지
+    @Version
+    private Long version;
+
     private String name;
 
     private String nameEn;
