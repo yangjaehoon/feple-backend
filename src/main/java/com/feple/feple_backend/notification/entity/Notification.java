@@ -116,7 +116,7 @@ public class Notification {
     public String getImageKey() {
         if (festival != null) return festival.getPosterKey();
         if (artist != null) return artist.getProfileImageKey();
-        if (post != null && post.getFestival() != null) return post.getFestival().getPosterKey();
+        if (post != null && post.getFestivalPosterKey() != null) return post.getFestivalPosterKey();
         return null;
     }
 

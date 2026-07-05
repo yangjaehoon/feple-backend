@@ -148,6 +148,10 @@ public class Post {
         return festival != null ? festival.getId() : null;
     }
 
+    public String getFestivalPosterKey() {
+        return festival != null ? festival.getPosterKey() : null;
+    }
+
     public String getAuthorNickname() {
         return user.getNickname();
     }
