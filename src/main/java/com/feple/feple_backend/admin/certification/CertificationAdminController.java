@@ -119,10 +119,14 @@ public class CertificationAdminController {
     }
 
     @PostMapping("/bulk-approve")
-    public String bulkApprove(@RequestParam List<Long> ids,
+    public String bulkApprove(@RequestParam(required = false) List<Long> ids,
                               @ModelAttribute CertFilter filter,
                               Authentication auth,
                               RedirectAttributes ra) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+        }
         AdminActionUtils.tryAction(
                 () -> {
                     certificationService.bulkApprove(ids, auth.getName());
@@ -137,11 +141,15 @@ public class CertificationAdminController {
     }
 
     @PostMapping("/bulk-reject")
-    public String bulkReject(@RequestParam List<Long> ids,
+    public String bulkReject(@RequestParam(required = false) List<Long> ids,
                              @RequestParam(defaultValue = "") String rejectionMessage,
                              @ModelAttribute CertFilter filter,
                              Authentication auth,
                              RedirectAttributes ra) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+        }
         AdminActionUtils.tryAction(
                 () -> {
                     certificationService.bulkReject(ids, rejectionMessage, auth.getName());

@@ -159,7 +159,7 @@ public class PostAdminController {
 
     @GetMapping("/deleted")
     public String deletedPosts(Model model) {
-        model.addAttribute("posts", postAdminService.getDeletedPosts(200));
+        model.addAttribute("posts", postAdminService.getDeletedPosts(AdminConstants.DELETED_POSTS_LIMIT));
         return "admin/post/deleted";
     }
 

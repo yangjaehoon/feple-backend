@@ -85,7 +85,7 @@ public class ReportAdminController {
     }
 
     @PostMapping("/bulk-dismiss")
-    public String bulkDismiss(@RequestParam List<Long> ids,
+    public String bulkDismiss(@RequestParam(required = false) List<Long> ids,
                               @ModelAttribute ReportFilter filter,
                               RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) return emptySelectionRedirect(filter, ra);
@@ -102,7 +102,7 @@ public class ReportAdminController {
     }
 
     @PostMapping("/bulk-delete")
-    public String bulkDelete(@RequestParam List<Long> ids,
+    public String bulkDelete(@RequestParam(required = false) List<Long> ids,
                              @ModelAttribute ReportFilter filter,
                              RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) return emptySelectionRedirect(filter, ra);

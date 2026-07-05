@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.account;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminAccountControllerTest {
 
     @Mock AdminAccountService accountService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks AdminAccountController controller;
 
