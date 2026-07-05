@@ -53,6 +53,8 @@ public class ArtistGalleryPhotoService {
         return s3PresignService.presignPut(objectKey, contentType);
     }
 
+    // S3 headObject 조회는 커넥션 점유 없이 수행; 완료 후 각 리포지토리 호출이
+    // 자체 트랜잭션으로 DB에 반영한다 (UserServiceImpl.updateProfileImage와 동일 패턴)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ArtistGalleryPhotoResponseDto register(
             Long artistId,
