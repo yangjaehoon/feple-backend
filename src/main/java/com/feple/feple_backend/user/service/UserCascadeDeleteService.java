@@ -1,7 +1,6 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
-import com.feple.feple_backend.artist.photo.service.ArtistProfileImageLikeService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
@@ -37,7 +36,6 @@ public class UserCascadeDeleteService {
     private final PostCascadeService postCascadeService;
     private final CommentService commentService;
     private final ArtistGalleryPhotoService artistGalleryPhotoService;
-    private final ArtistProfileImageLikeService artistProfileImageLikeService;
 
     private final NotificationRepository notificationRepository;
     private final NotificationPreferenceRepository notificationPreferenceRepository;
@@ -63,7 +61,6 @@ public class UserCascadeDeleteService {
         artistFollowService.removeAllByUser(id);
         postCascadeService.removePostActivityByUser(id);
         commentService.removeLikesByUser(id);
-        artistProfileImageLikeService.removeByUser(id);
         artistGalleryPhotoService.removeByUser(id);
 
         notificationRepository.deleteByUserId(id);

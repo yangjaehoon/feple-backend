@@ -1,12 +1,9 @@
 package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.artist.photo.entity.ArtistProfileImage;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
-import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageLikeRepository;
-import com.feple.feple_backend.artist.photo.repository.ArtistProfileImageRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
@@ -22,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +27,6 @@ public class ArtistCascadeDeleteService {
     private final ArtistRepository artistRepository;
     private final ArtistGalleryPhotoRepository galleryPhotoRepository;
     private final ArtistGalleryPhotoLikeRepository galleryPhotoLikeRepository;
-    private final ArtistProfileImageRepository artistImageRepository;
-    private final ArtistProfileImageLikeRepository artistImageLikeRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFestivalSongRepository artistFestivalSongRepository;
     private final ArtistFollowRepository artistFollowRepository;
@@ -52,15 +46,6 @@ public class ArtistCascadeDeleteService {
         galleryPhotoLikeRepository.deleteByArtistId(artist.getId());
         galleryPhotoRepository.deleteByArtistId(artist.getId());
 
-        // 프로필 이미지 좋아요 → 프로필 이미지
-        List<ArtistProfileImage> images = artistImageRepository.findByArtist(artist);
-        List<String> profileImageKeys = images.stream().map(ArtistProfileImage::getImageKey).toList();
-        if (!images.isEmpty()) {
-            List<Long> imageIds = images.stream().map(ArtistProfileImage::getId).collect(Collectors.toList());
-            artistImageLikeRepository.deleteByArtistProfileImageIdIn(imageIds);
-        }
-        artistImageRepository.deleteAllInBatch(images);
-
         List<Long> artistFestivalIds = artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artist.getId())
                 .stream().map(ArtistFestival::getId).toList();
         if (!artistFestivalIds.isEmpty()) {
@@ -79,7 +64,6 @@ public class ArtistCascadeDeleteService {
         artistRepository.deleteById(artist.getId());
 
         galleryPhotoKeys.forEach(fileStorageService::deleteFileAfterCommit);
-        profileImageKeys.forEach(fileStorageService::deleteFileAfterCommit);
         fileStorageService.deleteFileAfterCommit(profileImageKey);
     }
 }
