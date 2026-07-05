@@ -1,11 +1,15 @@
 package com.feple.feple_backend.admin.scraper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -25,21 +29,17 @@ public class FestivalPageScraper {
     );
 
     private final Map<String, SiteScraperStrategy> strategies;
+    private final CloseableHttpClient httpClient;
 
-    public FestivalPageScraper(List<SiteScraperStrategy> strategyList) {
+    public FestivalPageScraper(List<SiteScraperStrategy> strategyList, CloseableHttpClient safeScraperHttpClient) {
         this.strategies = strategyList.stream()
                 .collect(Collectors.toMap(SiteScraperStrategy::source, strategy -> strategy));
+        this.httpClient = safeScraperHttpClient;
     }
 
     public ScrapedFestivalDto scrape(String url, String source) throws IOException {
         SsrfUrlValidator.validate(url);
-        Document doc = Jsoup.connect(url)
-            .userAgent(USER_AGENT)
-            .header("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8")
-            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-            .referrer("https://www.google.com")
-            .timeout(15_000)
-            .get();
+        Document doc = fetchDocument(url);
 
         String title       = extractTitle(doc, source);
         String description = extractDescription(doc, source);
@@ -51,6 +51,22 @@ public class FestivalPageScraper {
 
         return new ScrapedFestivalDto(title, description, location,
             dates[0], dates[1], imageUrl, url, source, null);
+    }
+
+    private Document fetchDocument(String url) throws IOException {
+        HttpGet request = new HttpGet(url);
+        request.setHeader("User-Agent", USER_AGENT);
+        request.setHeader("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8");
+        request.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        request.setHeader("Referer", "https://www.google.com");
+        return httpClient.execute(request, response -> {
+            int status = response.getCode();
+            if (status < 200 || status >= 300) {
+                throw new IOException("페이지 요청 실패: HTTP " + status);
+            }
+            byte[] body = EntityUtils.toByteArray(response.getEntity());
+            return Jsoup.parse(new ByteArrayInputStream(body), null, url);
+        });
     }
 
     boolean isSpaOrEmpty(ScrapedFestivalDto r) {

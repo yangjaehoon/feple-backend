@@ -95,7 +95,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
-        PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
+        PermissionValidator.checkOwner(post.getUserId(), requestUserId, "게시글", "수정");
         validatePostContent(dto);
         post.update(dto.getTitle(), dto.getContent(), dto.getImageUrl());
     }

@@ -167,7 +167,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
         Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
-        PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
+        PermissionValidator.checkOwner(comment.getUserId(), requestUserId, "댓글", "수정");
         badWordFilter.validateField("content", content);
         comment.update(content);
     }

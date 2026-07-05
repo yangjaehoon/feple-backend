@@ -30,10 +30,16 @@ final class SsrfUrlValidator {
         } catch (UnknownHostException e) {
             throw new IllegalArgumentException("호스트를 찾을 수 없습니다: " + host);
         }
-        if (addr.isLoopbackAddress() || addr.isLinkLocalAddress()
-                || addr.isSiteLocalAddress() || addr.isAnyLocalAddress()
-                || addr.isMulticastAddress()) {
+        if (isUnsafeAddress(addr)) {
             throw new IllegalArgumentException("내부 네트워크 주소는 허용되지 않습니다.");
         }
+    }
+
+    // 이 시점의 검증은 스킴·호스트 형식에 대한 빠른 실패용이다. 실제 연결 시점의
+    // DNS 재조회(TOCTOU/DNS 리바인딩)에 대한 방어는 SsrfSafeDnsResolver가 담당한다.
+    static boolean isUnsafeAddress(InetAddress addr) {
+        return addr.isLoopbackAddress() || addr.isLinkLocalAddress()
+                || addr.isSiteLocalAddress() || addr.isAnyLocalAddress()
+                || addr.isMulticastAddress();
     }
 }
