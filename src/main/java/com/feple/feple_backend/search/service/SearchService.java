@@ -34,7 +34,7 @@ public class SearchService {
         return new SearchResultDto(
                 artistService.searchArtists(kw).stream().limit(MAX_RESULTS).toList(),
                 festivalService.searchFestivals(kw).stream().limit(MAX_RESULTS).toList(),
-                postSearchService.searchPosts(kw, null).stream().limit(MAX_RESULTS).toList()
+                postSearchService.searchPosts(kw, null, null).stream().limit(MAX_RESULTS).toList()
         );
     }
 

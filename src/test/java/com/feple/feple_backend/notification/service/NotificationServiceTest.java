@@ -24,6 +24,7 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository.TokenLanguageProjection;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +57,7 @@ class NotificationServiceTest {
     @Mock PostRepository postRepository;
     @Mock PushNotificationClient fcmPushService;
     @Mock NotificationPreferenceService preferenceService;
+    @Mock UserBlockService userBlockService;
 
     @InjectMocks NotificationService service;
 
@@ -246,7 +248,7 @@ class NotificationServiceTest {
     void 게시글좋아요_작성자_없으면_무시() {
         given(userRepository.findById(1L)).willReturn(Optional.empty());
 
-        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L));
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
         then(notificationRepository).shouldHaveNoInteractions();
     }
@@ -256,7 +258,7 @@ class NotificationServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
         given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
 
-        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L));
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
         then(notificationRepository).should().save(any());
     }
@@ -301,7 +303,7 @@ class NotificationServiceTest {
         given(disabled.isEnabledFor(any())).willReturn(false);
         given(preferenceService.getOrCreate(1L)).willReturn(disabled);
 
-        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L));
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
         then(notificationRepository).should().save(any());
         then(deviceTokenRepository).should(never()).findTokensWithLanguageByUserIds(any());
@@ -318,7 +320,7 @@ class NotificationServiceTest {
         given(deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(1L)))
                 .willReturn(List.of(koToken, enToken));
 
-        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L));
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
         then(fcmPushService).should().sendMulticast(eq(List.of("ko-tok")), any(), any(), any(), eq(NotificationType.POST_LIKED));
         then(fcmPushService).should().sendMulticast(eq(List.of("en-tok")), any(), any(), any(), eq(NotificationType.POST_LIKED));

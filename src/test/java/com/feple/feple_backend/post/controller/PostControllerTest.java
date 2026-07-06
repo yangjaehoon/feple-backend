@@ -10,6 +10,7 @@ import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.post.service.PostSearchService;
 import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.support.AuthTestHelper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -42,12 +44,21 @@ class PostControllerTest {
 
     MockMvc mockMvc;
 
+    // AuthTestHelper.userAuth()가 SecurityContextHolder에 직접 세팅하므로
+    // 다른 테스트(클래스)가 남긴 인증 정보가 섞이지 않도록 시작 전에도 정리한다.
     @BeforeEach
     void setUp() {
+        SecurityContextHolder.clearContext();
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
+    }
+
+    // 이 클래스가 다음 테스트(클래스)로 인증 정보를 남기지 않도록 정리한다.
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -61,7 +72,7 @@ class PostControllerTest {
 
     @Test
     void 인기_게시글_조회() throws Exception {
-        given(postService.getHotPosts()).willReturn(List.of());
+        given(postService.getHotPosts(isNull())).willReturn(List.of());
 
         mockMvc.perform(get("/posts/hot"))
                 .andExpect(status().isOk());
@@ -70,7 +81,7 @@ class PostControllerTest {
     @Test
     void 자유_게시글_목록_조회() throws Exception {
         CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
-        given(postService.getPostsByBoardTypePaged(any(), isNull(), anyInt())).willReturn(page);
+        given(postService.getPostsByBoardTypePaged(any(), isNull(), anyInt(), isNull())).willReturn(page);
 
         mockMvc.perform(get("/posts/free"))
                 .andExpect(status().isOk());
@@ -105,7 +116,7 @@ class PostControllerTest {
 
     @Test
     void 게시글_검색_성공() throws Exception {
-        given(postSearchService.searchPosts("테스트", null)).willReturn(List.of());
+        given(postSearchService.searchPosts("테스트", null, null)).willReturn(List.of());
 
         mockMvc.perform(get("/posts/search")
                         .param("keyword", "테스트"))

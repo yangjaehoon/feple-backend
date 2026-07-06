@@ -4,5 +4,6 @@ public record PostLikedEvent(
         Long postAuthorId,
         String likerNickname,
         String postTitle,
-        Long postId
+        Long postId,
+        Long likerId
 ) {}

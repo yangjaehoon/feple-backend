@@ -26,6 +26,7 @@ import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -52,6 +53,7 @@ public class NotificationService {
     private final PostRepository postRepository;
     private final PushNotificationClient fcmPushService;
     private final NotificationPreferenceService preferenceService;
+    private final UserBlockService userBlockService;
 
     /** 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송 — 커밋 후에만 발송 */
     @Async
@@ -168,11 +170,11 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCommentCreated(CommentCreatedEvent event) {
-        if (event.postAuthorId() != null) {
+        if (event.postAuthorId() != null && !userBlockService.isBlocked(event.postAuthorId(), event.commenterId())) {
             notifyNewComment(event.postAuthorId(), event.commenterNickname(),
                     event.postTitle(), event.postId());
         }
-        if (event.parentCommentAuthorId() != null) {
+        if (event.parentCommentAuthorId() != null && !userBlockService.isBlocked(event.parentCommentAuthorId(), event.commenterId())) {
             notifyNewReply(event.parentCommentAuthorId(), event.commenterNickname(),
                     event.postTitle(), event.postId());
         }
@@ -182,6 +184,7 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostLiked(PostLikedEvent event) {
+        if (userBlockService.isBlocked(event.postAuthorId(), event.likerId())) return;
         User author = userRepository.findById(event.postAuthorId()).orElse(null);
         if (author == null) return;
         String title = NotificationMessages.postLikedTitle(event.likerNickname());

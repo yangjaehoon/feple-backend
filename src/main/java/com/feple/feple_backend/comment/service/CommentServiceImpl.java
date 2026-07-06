@@ -21,9 +21,12 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,12 +46,19 @@ public class CommentServiceImpl implements CommentService {
     private final ApplicationEventPublisher eventPublisher;
     private final FestivalCertificationService certificationService;
     private final BadWordFilter badWordFilter;
+    private final UserBlockService userBlockService;
+    private final BlockedContentFilter blockedContentFilter;
 
     @Override
     @Transactional
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
         badWordFilter.validateField("content", dto.getContent());
         Post post = EntityFinder.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
+
+        if (userBlockService.isBlocked(post.getUserId(), userId)) {
+            throw new AccessDeniedException("차단된 사용자의 게시글에는 댓글을 작성할 수 없습니다.");
+        }
+
         User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
 
         Comment parent = null;
@@ -93,12 +103,13 @@ public class CommentServiceImpl implements CommentService {
         Set<Long> certifiedUserIds = getCertifiedUserIds(post);
         Set<Long> likedCommentIds = getLikedCommentIds(userId, commentIds);
 
-        return comments.stream()
+        List<CommentResponseDto> result = comments.stream()
                 .map(c -> CommentResponseDto.from(
                         c,
                         certifiedUserIds.contains(c.getUserId()),
                         likedCommentIds.contains(c.getId())))
                 .toList();
+        return blockedContentFilter.excludeBlocked(result, userId, CommentResponseDto::getUserId);
     }
 
     @Override

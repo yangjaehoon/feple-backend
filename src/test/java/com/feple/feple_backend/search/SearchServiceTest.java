@@ -64,7 +64,7 @@ class SearchServiceTest {
         ArtistResponseDto artist = mock(ArtistResponseDto.class);
         given(artistService.searchArtists("test")).willReturn(List.of(artist));
         given(festivalService.searchFestivals("test")).willReturn(List.of());
-        given(postSearchService.searchPosts("test", null)).willReturn(List.of());
+        given(postSearchService.searchPosts("test", null, null)).willReturn(List.of());
 
         SearchResultDto result = searchService.search("test");
 
@@ -80,7 +80,7 @@ class SearchServiceTest {
         }
         given(artistService.searchArtists("test")).willReturn(artists);
         given(festivalService.searchFestivals("test")).willReturn(List.of());
-        given(postSearchService.searchPosts("test", null)).willReturn(List.of());
+        given(postSearchService.searchPosts("test", null, null)).willReturn(List.of());
 
         SearchResultDto result = searchService.search("test");
 

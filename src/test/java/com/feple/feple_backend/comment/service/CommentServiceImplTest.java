@@ -16,10 +16,13 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
@@ -54,6 +57,8 @@ class CommentServiceImplTest {
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock FestivalCertificationService certificationService;
     @Mock BadWordFilter badWordFilter;
+    @Mock UserBlockService userBlockService;
+    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
     @InjectMocks CommentServiceImpl commentService;
 
@@ -87,6 +92,23 @@ class CommentServiceImplTest {
 
         assertThat(result.getId()).isEqualTo(100L);
         assertThat(result.getNickname()).isEqualTo("user2");
+    }
+
+    @Test
+    void 게시글_작성자가_차단한_사용자는_댓글_작성_불가() {
+        User postAuthor = user(1L);
+        Post post = freePost(10L, postAuthor);
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("댓글내용");
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userBlockService.isBlocked(1L, 2L)).willReturn(true);
+
+        assertThatThrownBy(() -> commentService.createComment(dto, 2L))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(commentRepository, never()).save(any());
     }
 
     @Test

@@ -60,19 +60,20 @@ public class PostController {
     }
 
     @GetMapping("/hot")
-    public ResponseEntity<List<PostResponseDto>> getHotPosts() {
-        return ResponseEntity.ok(postService.getHotPosts());
+    public ResponseEntity<List<PostResponseDto>> getHotPosts(@AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getHotPosts(userId));
     }
 
     @GetMapping("/free")
     public ResponseEntity<CursorPage<PostResponseDto>> getFreePosts(
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "latest") String sort) {
+            @RequestParam(defaultValue = "latest") String sort,
+            @AuthenticationPrincipal Long userId) {
         if ("popular".equals(sort)) {
-            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/mate")
@@ -86,11 +87,12 @@ public class PostController {
     public ResponseEntity<CursorPage<PostResponseDto>> getMatePosts(
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "latest") String sort) {
+            @RequestParam(defaultValue = "latest") String sort,
+            @AuthenticationPrincipal Long userId) {
         if ("popular".equals(sort)) {
-            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+            return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/{postId}/like")
@@ -118,8 +120,9 @@ public class PostController {
     @GetMapping("/search")
     public ResponseEntity<List<PostResponseDto>> searchPosts(
             @RequestParam @NotBlank @Size(max = 100, message = "검색어는 100자 이내로 입력해주세요.") String keyword,
-            @RequestParam(required = false) String boardType) {
-        return ResponseEntity.ok(postSearchService.searchPosts(keyword, boardType));
+            @RequestParam(required = false) String boardType,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postSearchService.searchPosts(keyword, boardType, userId));
     }
 
     // ── 스크랩 ──
@@ -145,8 +148,9 @@ public class PostController {
     public ResponseEntity<CursorPage<PostResponseDto>> getArtistPosts(
             @PathVariable Long artistId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByArtistIdPaged(artistId, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getPostsByArtistIdPaged(artistId, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/artist/{artistId}")
@@ -160,8 +164,9 @@ public class PostController {
     public ResponseEntity<CursorPage<PostResponseDto>> getFestivalPosts(
             @PathVariable Long festivalId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdPaged(festivalId, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdPaged(festivalId, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/festival/{festivalId}")
@@ -172,16 +177,18 @@ public class PostController {
     }
 
     @GetMapping("/festival/{festivalId}/popular")
-    public ResponseEntity<List<PostResponseDto>> getPopularFestivalPosts(@PathVariable Long festivalId) {
-        return ResponseEntity.ok(postService.getPopularFestivalPosts(festivalId));
+    public ResponseEntity<List<PostResponseDto>> getPopularFestivalPosts(
+            @PathVariable Long festivalId, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getPopularFestivalPosts(festivalId, userId));
     }
 
     @GetMapping("/festival/{festivalId}/companion")
     public ResponseEntity<CursorPage<PostResponseDto>> getFestivalCompanionPosts(
             @PathVariable Long festivalId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_COMPANION, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_COMPANION, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/festival/{festivalId}/companion")
@@ -195,8 +202,9 @@ public class PostController {
     public ResponseEntity<CursorPage<PostResponseDto>> getFestivalTicketPosts(
             @PathVariable Long festivalId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_TICKET, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_TICKET, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/festival/{festivalId}/ticket")

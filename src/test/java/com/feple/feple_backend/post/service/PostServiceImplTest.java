@@ -15,10 +15,13 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
@@ -39,6 +42,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static com.feple.feple_backend.support.TestEntityFactory.freePost;
 import static com.feple.feple_backend.support.TestEntityFactory.user;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -52,6 +56,8 @@ class PostServiceImplTest {
     @Mock FestivalCertificationService certificationService;
     @Mock BadWordFilter badWordFilter;
     @Mock ApplicationEventPublisher eventPublisher;
+    @Mock HotPostCache hotPostCache;
+    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
     @InjectMocks PostServiceImpl postService;
 
@@ -224,24 +230,23 @@ class PostServiceImplTest {
 
     @Test
     void 핫_게시글_최대_4개_반환() {
-        User author = user(1L);
-        List<Post> hotPosts = List.of(
-                freePost(1L, author), freePost(2L, author),
-                freePost(3L, author), freePost(4L, author));
-        given(postRepository.findHotPosts(any(LocalDateTime.class), any(Pageable.class)))
-                .willReturn(hotPosts);
+        List<PostResponseDto> hotPosts = List.of(
+                PostResponseDto.builder().id(1L).userId(1L).build(),
+                PostResponseDto.builder().id(2L).userId(1L).build(),
+                PostResponseDto.builder().id(3L).userId(1L).build(),
+                PostResponseDto.builder().id(4L).userId(1L).build());
+        given(hotPostCache.get()).willReturn(hotPosts);
 
-        List<PostResponseDto> result = postService.getHotPosts();
+        List<PostResponseDto> result = postService.getHotPosts(null);
 
         assertThat(result).hasSize(4);
     }
 
     @Test
     void 핫_게시글_없으면_빈_리스트() {
-        given(postRepository.findHotPosts(any(LocalDateTime.class), any(Pageable.class)))
-                .willReturn(List.of());
+        given(hotPostCache.get()).willReturn(List.of());
 
-        assertThat(postService.getHotPosts()).isEmpty();
+        assertThat(postService.getHotPosts(null)).isEmpty();
     }
 
     // ── getPostsByBoardTypePaged ───────────────────────────────────────
@@ -253,7 +258,7 @@ class PostServiceImplTest {
         given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
-        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePaged(BoardType.FREE, null, 2);
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePaged(BoardType.FREE, null, 2, null);
 
         assertThat(result.content()).hasSize(2);
         assertThat(result.hasNext()).isTrue();
@@ -267,7 +272,7 @@ class PostServiceImplTest {
         given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
-        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePaged(BoardType.FREE, null, 2);
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePaged(BoardType.FREE, null, 2, null);
 
         assertThat(result.hasNext()).isFalse();
         assertThat(result.nextCursor()).isNull();
@@ -290,7 +295,7 @@ class PostServiceImplTest {
         given(postRepository.findByArtistOrderByCreatedAtDesc(eq(artist), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 
-        CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, null, 20);
+        CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, null, 20, null);
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.content().get(0).getBoardDisplayName()).isEqualTo("아이유 게시판");
@@ -314,7 +319,7 @@ class PostServiceImplTest {
         given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 
-        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20);
+        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20, null);
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.content().get(0).isCertified()).isTrue();
@@ -336,7 +341,7 @@ class PostServiceImplTest {
         given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 
-        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20);
+        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20, null);
 
         assertThat(result.content().get(0).isCertified()).isFalse();
     }

@@ -18,11 +18,11 @@ import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +42,8 @@ public class PostServiceImpl implements PostService {
     private final FestivalCertificationService certificationService;
     private final BadWordFilter badWordFilter;
     private final ApplicationEventPublisher eventPublisher;
+    private final HotPostCache hotPostCache;
+    private final BlockedContentFilter blockedContentFilter;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
 
@@ -61,33 +63,32 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Cacheable("hotPosts")
-    public List<PostResponseDto> getHotPosts() {
-        return postRepository.findHotPosts(oneWeekAgo(), PageRequest.of(0, PageSize.HOT_POSTS)).stream()
-                .map(PostResponseDto::from)
-                .toList();
+    public List<PostResponseDto> getHotPosts(Long viewerId) {
+        return blockedContentFilter.excludeBlocked(hotPostCache.get(), viewerId, PostResponseDto::getUserId);
     }
 
     @Override
-    public CursorPage<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, Long cursor, int size) {
+    public CursorPage<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, Long cursor, int size, Long viewerId) {
         int fetchSize = size + 1;
         PageRequest limit = PageRequest.of(0, fetchSize);
         List<Post> posts = (cursor == null)
                 ? postRepository.findByBoardTypeOrderByIdDesc(boardType, limit)
                 : postRepository.findByBoardTypeAndIdLessThanOrderByIdDesc(boardType, cursor, limit);
         boolean hasNext = posts.size() == fetchSize;
-        List<PostResponseDto> content = posts.stream().limit(size).map(PostResponseDto::from).toList();
-        Long nextCursor = hasNext ? content.get(content.size() - 1).getId() : null;
+        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
+                posts.stream().limit(size).map(PostResponseDto::from).toList(), viewerId, PostResponseDto::getUserId);
+        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
         return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override
-    public CursorPage<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, Long cursor, int size) {
+    public CursorPage<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, Long cursor, int size, Long viewerId) {
         // likeCount는 동적으로 변하므로 offset 기반 유지, cursor는 페이지 번호를 opaque Long으로 전달
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDesc(
                 boardType, PageRequest.of(page, size));
-        List<PostResponseDto> content = result.map(PostResponseDto::from).toList();
+        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
+                result.map(PostResponseDto::from).toList(), viewerId, PostResponseDto::getUserId);
         return CursorPage.of(result, content, cursor);
     }
 
@@ -110,11 +111,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CursorPage<PostResponseDto> getPostsByArtistIdPaged(Long artistId, Long cursor, int size) {
+    public CursorPage<PostResponseDto> getPostsByArtistIdPaged(Long artistId, Long cursor, int size, Long viewerId) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(page, size));
-        List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
+        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
+                result.getContent().stream().map(PostResponseDto::from).toList(), viewerId, PostResponseDto::getUserId);
         return CursorPage.of(result, content, cursor);
     }
 
@@ -129,14 +131,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, Long cursor, int size) {
+    public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, Long cursor, int size, Long viewerId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findGeneralFestivalPosts(festival, PageRequest.of(page, size));
-        List<PostResponseDto> content = result.getContent().stream()
+        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(result.getContent().stream()
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
-                .toList();
+                .toList(), viewerId, PostResponseDto::getUserId);
         return CursorPage.of(result, content, cursor);
     }
 
@@ -151,14 +153,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, Long cursor, int size) {
+    public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, Long cursor, int size, Long viewerId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findByFestivalAndBoardTypeOrderByCreatedAtDesc(festival, boardType, PageRequest.of(page, size));
-        List<PostResponseDto> content = result.getContent().stream()
+        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(result.getContent().stream()
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
-                .toList();
+                .toList(), viewerId, PostResponseDto::getUserId);
         return CursorPage.of(result, content, cursor);
     }
 
@@ -173,12 +175,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostResponseDto> getPopularFestivalPosts(Long festivalId) {
+    public List<PostResponseDto> getPopularFestivalPosts(Long festivalId, Long viewerId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
-        return postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
+        List<PostResponseDto> posts = postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList();
+        return blockedContentFilter.excludeBlocked(posts, viewerId, PostResponseDto::getUserId);
     }
 
     @Override
@@ -205,9 +208,6 @@ public class PostServiceImpl implements PostService {
                 .build();
     }
 
-    private LocalDateTime oneWeekAgo() {
-        return LocalDateTime.now().minusWeeks(1);
-    }
 
     private void validatePostContent(PostRequestDto dto) {
         badWordFilter.validateField("title", dto.getTitle());
