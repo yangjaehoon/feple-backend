@@ -9,15 +9,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class AdminPermissionInterceptor implements HandlerInterceptor {
 
-    // LinkedHashMap preserves insertion order for correct prefix matching
-    // (longer/more-specific prefixes first where needed)
-    private static final Map<String, AdminPermission> PREFIX_MAP = new LinkedHashMap<>();
+    // 순서 무관: preHandle에서 가장 긴(가장 구체적인) prefix를 매칭해 선택한다
+    private static final Map<String, AdminPermission> PREFIX_MAP = new HashMap<>();
 
     static {
         PREFIX_MAP.put("/admin/export/users",        AdminPermission.USERS);
@@ -51,25 +50,28 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         }
 
         String uri = request.getRequestURI();
+        String matchedPrefix = null;
+        for (String prefix : PREFIX_MAP.keySet()) {
+            if (uri.startsWith(prefix) && (matchedPrefix == null || prefix.length() > matchedPrefix.length())) {
+                matchedPrefix = prefix;
+            }
+        }
 
-        for (Map.Entry<String, AdminPermission> entry : PREFIX_MAP.entrySet()) {
-            if (uri.startsWith(entry.getKey())) {
-                AdminPermission required = entry.getValue();
+        if (matchedPrefix != null) {
+            AdminPermission required = PREFIX_MAP.get(matchedPrefix);
 
-                if (required == null) {
-                    // SUPER_ADMIN only path
-                    if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))) {
-                        response.sendRedirect("/admin/access-denied");
-                        return false;
-                    }
-                } else {
-                    String permAuthority = "PERM_" + required.name();
-                    if (!auth.getAuthorities().contains(new SimpleGrantedAuthority(permAuthority))) {
-                        response.sendRedirect("/admin/access-denied");
-                        return false;
-                    }
+            if (required == null) {
+                // SUPER_ADMIN only path
+                if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))) {
+                    response.sendRedirect("/admin/access-denied");
+                    return false;
                 }
-                break;
+            } else {
+                String permAuthority = "PERM_" + required.name();
+                if (!auth.getAuthorities().contains(new SimpleGrantedAuthority(permAuthority))) {
+                    response.sendRedirect("/admin/access-denied");
+                    return false;
+                }
             }
         }
 
