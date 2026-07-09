@@ -311,7 +311,7 @@ CREATE TABLE IF NOT EXISTS `festival_certification` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_fc_user_festival` (`user_id`, `festival_id`),
     CONSTRAINT `fk_fc_user`     FOREIGN KEY (`user_id`)     REFERENCES `users`    (`id`),
-    CONSTRAINT `fk_fc_festival` FOREIGN KEY (`festival_id`) REFERENCES `festival` (`id`)
+    CONSTRAINT `fk_festcert_festival` FOREIGN KEY (`festival_id`) REFERENCES `festival` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
