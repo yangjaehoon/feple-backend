@@ -27,17 +27,27 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
            nativeQuery = true)
     Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
 
-    // 사용자 통합 검색 전용 FULLTEXT ngram 매치 — LIKE '%keyword%'는 B-tree 인덱스를
-    // 못 타 풀스캔이었음. 관리자 목록 검색·OCR 아티스트 자동매칭은 정확한 부분일치가
-    // 필요해 아래 findByNameOrNameEnContainingIgnoreCase(LIKE)를 그대로 사용한다.
-    @Query(value = "SELECT * FROM artist WHERE MATCH(name, name_en, aliases) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE) ORDER BY name ASC",
+    // FULLTEXT 검색: artist.name/name_en + artist_aliases.alias 각각 인덱스 사용
+    @Query(value = "SELECT DISTINCT a.* FROM artist a " +
+                   "LEFT JOIN artist_aliases aa ON aa.artist_id = a.id " +
+                   "WHERE MATCH(a.name, a.name_en) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE) " +
+                   "   OR MATCH(aa.alias) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE) " +
+                   "ORDER BY a.name ASC",
            nativeQuery = true)
     java.util.List<Artist> searchArtistsByNameFullText(@Param("keyword") String keyword);
 
-    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR (a.aliases IS NOT NULL AND LOWER(a.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') ORDER BY a.name ASC")
+    // LIKE fallback (관리자 목록 검색·OCR 자동매칭 — 정확한 부분일치 필요)
+    @Query("SELECT DISTINCT a FROM Artist a LEFT JOIN a.aliases alias " +
+           "WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+           "OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+           "OR LOWER(alias) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+           "ORDER BY a.name ASC")
     java.util.List<Artist> findByNameOrNameEnContainingIgnoreCase(@Param("keyword") String keyword);
 
-    @Query("SELECT a FROM Artist a WHERE LOWER(a.name) = LOWER(:name) OR LOWER(a.nameEn) = LOWER(:name) OR (a.aliases IS NOT NULL AND LOWER(a.aliases) LIKE LOWER(CONCAT('%', :name, '%')) ESCAPE '!')")
+    @Query("SELECT DISTINCT a FROM Artist a LEFT JOIN a.aliases alias " +
+           "WHERE LOWER(a.name) = LOWER(:name) " +
+           "OR LOWER(a.nameEn) = LOWER(:name) " +
+           "OR LOWER(alias) = LOWER(:name)")
     java.util.Optional<Artist> findExactByNameIgnoreCase(@Param("name") String name);
 
     java.util.List<Artist> findTop10ByOrderByFollowerCountDesc();

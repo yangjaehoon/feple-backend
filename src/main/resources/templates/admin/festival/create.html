@@ -116,7 +116,7 @@
                                      class="artist-item"
                                      th:data-name="${#strings.toLowerCase(artist.name)}"
                                      th:data-name-en="${artist.nameEn != null ? #strings.toLowerCase(artist.nameEn) : ''}"
-                                     th:data-aliases="${artist.aliases != null ? #strings.toLowerCase(artist.aliases) : ''}">
+                                     th:data-aliases="${artist.aliasesDisplay != null ? #strings.toLowerCase(artist.aliasesDisplay) : ''}">
                                     <label class="artist-item-label">
                                         <input type="checkbox" name="artistIds" th:value="${artist.id}" class="cb-input"/>
                                         <span th:text="${artist.name + (artist.genre != null ? ' (' + artist.genre + ')' : '')}"></span>

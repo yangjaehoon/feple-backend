@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -23,11 +25,11 @@ public class FestivalChecklist {
     @Column(name = "festival_id", nullable = false, unique = true)
     private Long festivalId;
 
-    private boolean lineup1;
-    private boolean lineup2;
-    private boolean lineup3;
-    private boolean boothMap;
-    private boolean timetable;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "festival_checklist_item", joinColumns = @JoinColumn(name = "checklist_id"))
+    @MapKeyColumn(name = "item_key", length = 20)
+    @Column(name = "checked")
+    private Map<String, Boolean> items = new HashMap<>();
 
     @Column(columnDefinition = "TEXT")
     private String memo;
@@ -43,15 +45,12 @@ public class FestivalChecklist {
     }
 
     public boolean toggle(String field) {
-        switch (field) {
-            case "lineup1"   -> this.lineup1   = !this.lineup1;
-            case "lineup2"   -> this.lineup2   = !this.lineup2;
-            case "lineup3"   -> this.lineup3   = !this.lineup3;
-            case "boothMap"  -> this.boothMap  = !this.boothMap;
-            case "timetable" -> this.timetable = !this.timetable;
-            default -> throw new IllegalArgumentException("알 수 없는 항목: " + field);
+        if (!ALL_FIELDS.contains(field)) {
+            throw new IllegalArgumentException("알 수 없는 항목: " + field);
         }
-        return valueOf(field);
+        boolean next = !items.getOrDefault(field, false);
+        items.put(field, next);
+        return next;
     }
 
     public int getFieldCount() {
@@ -59,11 +58,11 @@ public class FestivalChecklist {
     }
 
     public int getCompletedCount() {
-        return (int) ALL_FIELDS.stream().filter(this::valueOf).count();
+        return (int) ALL_FIELDS.stream().filter(f -> Boolean.TRUE.equals(items.get(f))).count();
     }
 
     public boolean isAllCompleted() {
-        return ALL_FIELDS.stream().allMatch(this::valueOf);
+        return ALL_FIELDS.stream().allMatch(f -> Boolean.TRUE.equals(items.get(f)));
     }
 
     public void updateMemo(String memo) {
@@ -71,13 +70,13 @@ public class FestivalChecklist {
     }
 
     public boolean valueOf(String field) {
-        return switch (field) {
-            case "lineup1"   -> this.lineup1;
-            case "lineup2"   -> this.lineup2;
-            case "lineup3"   -> this.lineup3;
-            case "boothMap"  -> this.boothMap;
-            case "timetable" -> this.timetable;
-            default -> false;
-        };
+        return Boolean.TRUE.equals(items.get(field));
     }
+
+    // Thymeleaf ${cl.lineup1} 등 기존 템플릿 접근 지원
+    public boolean isLineup1()   { return valueOf("lineup1"); }
+    public boolean isLineup2()   { return valueOf("lineup2"); }
+    public boolean isLineup3()   { return valueOf("lineup3"); }
+    public boolean isBoothMap()  { return valueOf("boothMap"); }
+    public boolean isTimetable() { return valueOf("timetable"); }
 }

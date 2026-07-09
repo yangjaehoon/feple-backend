@@ -30,8 +30,11 @@ public class Artist {
 
     private String nameEn;
 
-    // 쉼표로 구분된 별명 목록 (예: "쌈디,SD")
-    private String aliases;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "artist_aliases", joinColumns = @JoinColumn(name = "artist_id"))
+    @Column(name = "alias", length = 200)
+    @Builder.Default
+    private List<String> aliases = new ArrayList<>();
 
     @Convert(converter = ArtistGenreConverter.class)
     @Column(name = "genre")
@@ -49,6 +52,10 @@ public class Artist {
 
     private LocalDateTime rankUpdatedAt;
 
+    public String getAliasesDisplay() {
+        return (aliases == null || aliases.isEmpty()) ? null : String.join(", ", aliases);
+    }
+
     public void incrementFollowerCount() {
         this.followerCount++;
     }
@@ -62,11 +69,12 @@ public class Artist {
         this.rankUpdatedAt = LocalDateTime.now();
     }
 
-    public void update(String name, String nameEn, List<ArtistGenre> genres, String aliases) {
+    public void update(String name, String nameEn, List<ArtistGenre> genres, List<String> aliases) {
         this.name = name;
         this.nameEn = nameEn;
         this.genres = genres != null ? genres : new ArrayList<>();
-        this.aliases = (aliases != null && !aliases.isBlank()) ? aliases.trim() : null;
+        this.aliases.clear();
+        if (aliases != null) this.aliases.addAll(aliases);
     }
 
     public void updateProfileImage(String newKey) {

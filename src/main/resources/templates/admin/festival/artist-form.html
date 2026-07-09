@@ -46,7 +46,7 @@
                                  class="artist-item"
                                  th:data-name="${#strings.toLowerCase(artist.name)}"
                                  th:data-name-en="${artist.nameEn != null ? #strings.toLowerCase(artist.nameEn) : ''}"
-                                 th:data-aliases="${artist.aliases != null ? #strings.toLowerCase(artist.aliases) : ''}"
+                                 th:data-aliases="${artist.aliasesDisplay != null ? #strings.toLowerCase(artist.aliasesDisplay) : ''}"
                                  th:classappend="${participatingIds.contains(artist.id)} ? ' already-in' : ''">
                                 <label>
                                     <input type="checkbox" name="artistIds" th:value="${artist.id}"

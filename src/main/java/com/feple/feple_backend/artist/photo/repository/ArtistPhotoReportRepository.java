@@ -26,12 +26,16 @@ public interface ArtistPhotoReportRepository extends BaseReportRepository<Artist
     Page<ArtistPhotoReport> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     @Override
-    @EntityGraph(attributePaths = {"photo", "photo.artist", "photo.uploader", "reporter"})
-    @Query("SELECT apr FROM ArtistPhotoReport apr WHERE " +
-           "(:status IS NULL OR apr.status = :status) AND " +
-           "(LOWER(apr.photo.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
-           " LOWER(apr.photo.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
-           " (apr.photo.artist.aliases IS NOT NULL AND LOWER(apr.photo.artist.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') OR " +
+    @Query("SELECT DISTINCT apr FROM ArtistPhotoReport apr " +
+           "JOIN FETCH apr.photo ph " +
+           "JOIN FETCH ph.artist a " +
+           "JOIN FETCH ph.uploader " +
+           "JOIN FETCH apr.reporter " +
+           "LEFT JOIN a.aliases alias " +
+           "WHERE (:status IS NULL OR apr.status = :status) AND " +
+           "(LOWER(ph.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
+           " LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
+           " LOWER(alias) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR " +
            " LOWER(apr.reporter.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
            "ORDER BY apr.createdAt DESC")
     Page<ArtistPhotoReport> searchByKeyword(@Param("keyword") String keyword,

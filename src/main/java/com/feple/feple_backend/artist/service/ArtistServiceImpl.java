@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         Artist artist = Artist.builder()
                 .name(dto.getName())
                 .nameEn(dto.getNameEn())
-                .aliases(dto.getAliases())
+                .aliases(parseAliases(dto.getAliases()))
                 .genres(dto.getGenres())
                 .profileImageKey(dto.getProfileImageKey())
                 .build();
@@ -197,6 +198,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 .id(artist.getId())
                 .name(artist.getName())
                 .nameEn(artist.getNameEn())
+                .aliases(artist.getAliasesDisplay())
                 .genres(artist.getGenres())
                 .profileImageKey(fileStorageService.buildUrl(artist.getProfileImageKey()))
                 .followerCount(artist.getFollowerCount())
@@ -209,7 +211,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
-        artist.update(dto.getName(), dto.getNameEn(), dto.getGenres(), dto.getAliases());
+        artist.update(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAliases(dto.getAliases()));
         if (dto.getProfileImageKey() != null) {
             String oldKey = artist.getProfileImageKey();
             artist.updateProfileImage(dto.getProfileImageKey());
@@ -308,5 +310,13 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     public long getTotalCount() {
         return artistRepository.count();
+    }
+
+    private List<String> parseAliases(String raw) {
+        if (raw == null || raw.isBlank()) return List.of();
+        return Arrays.stream(raw.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 }

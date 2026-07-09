@@ -29,17 +29,17 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
 
     List<SongRequest> findByStatusOrderByCreatedAtDesc(SongRequestStatus status, Pageable pageable);
 
-    @Query(value = "SELECT sr FROM SongRequest sr JOIN FETCH sr.artist WHERE " +
+    @Query(value = "SELECT DISTINCT sr FROM SongRequest sr JOIN FETCH sr.artist a LEFT JOIN a.aliases alias WHERE " +
                    "(:status IS NULL OR sr.status = :status) AND " +
                    "(:keyword IS NULL OR LOWER(sr.songTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
-                   "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
-                   "     OR (sr.artist.aliases IS NOT NULL AND LOWER(sr.artist.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')) " +
+                   "     OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+                   "     OR LOWER(alias) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
                    "ORDER BY sr.createdAt DESC",
-           countQuery = "SELECT COUNT(sr) FROM SongRequest sr WHERE " +
+           countQuery = "SELECT COUNT(DISTINCT sr) FROM SongRequest sr JOIN sr.artist a LEFT JOIN a.aliases alias WHERE " +
                         "(:status IS NULL OR sr.status = :status) AND " +
                         "(:keyword IS NULL OR LOWER(sr.songTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
-                        "     OR LOWER(sr.artist.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
-                        "     OR (sr.artist.aliases IS NOT NULL AND LOWER(sr.artist.aliases) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!'))")
+                        "     OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
+                        "     OR LOWER(alias) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")
     Page<SongRequest> findWithFilters(@Param("status") SongRequestStatus status,
                                       @Param("keyword") String keyword,
                                       Pageable pageable);

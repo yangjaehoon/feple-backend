@@ -5,6 +5,8 @@ import com.feple.feple_backend.artist.entity.ArtistGenre;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 public class ArtistResponseDto {
@@ -12,7 +14,7 @@ public class ArtistResponseDto {
     private Long id;
     private String name;
     private String nameEn;
-    private String aliases;
+    private List<String> aliases;
     private String genre;
     private String profileImageUrl;
     private int followerCount;
