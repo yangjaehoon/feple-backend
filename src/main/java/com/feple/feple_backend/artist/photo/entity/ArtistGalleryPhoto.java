@@ -28,7 +28,7 @@ public class ArtistGalleryPhoto extends BaseTimeEntity {
     @JoinColumn(name = "uploader_user_id", nullable = false)
     private User uploader;
 
-    @Column(nullable = false, length = 500)
+    @Column(name = "s3_key", nullable = false, length = 500)
     private String s3Key;
 
     @Column(nullable = false, length = 100)

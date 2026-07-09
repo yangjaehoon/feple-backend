@@ -47,7 +47,7 @@ public class FestivalCertification extends BaseTimeEntity {
 
     private String reviewedBy;
 
-    @Column
+    @Column(columnDefinition = "TINYINT")
     private Integer rating;
 
     @Column(length = 100)
