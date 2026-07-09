@@ -29,6 +29,9 @@ class FlywayMigrationValidationTest {
     static void overrideSchemaManagement(DynamicPropertyRegistry registry) {
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
+        // Hibernate의 자동 dialect 추론이 MySQL 커넥션에서 information_schema.SEQUENCES를
+        // 조회하는 경로로 빠지는 경우가 있어(MySQL은 시퀀스 미지원) 명시적으로 고정한다.
+        registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.MySQLDialect");
     }
 
     @MockBean
