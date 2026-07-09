@@ -22,8 +22,8 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     @Query(value = "UPDATE artist SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementFollowerCount(@Param("id") Long id);
 
-    @Query(value = "SELECT * FROM artist WHERE genre LIKE CONCAT('%', :genreName, '%')",
-           countQuery = "SELECT COUNT(*) FROM artist WHERE genre LIKE CONCAT('%', :genreName, '%')",
+    @Query(value = "SELECT DISTINCT a.* FROM artist a JOIN artist_genres ag ON ag.artist_id = a.id WHERE ag.genres = :genreName",
+           countQuery = "SELECT COUNT(DISTINCT a.id) FROM artist a JOIN artist_genres ag ON ag.artist_id = a.id WHERE ag.genres = :genreName",
            nativeQuery = true)
     Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
 

@@ -36,8 +36,10 @@ public class Artist {
     @Builder.Default
     private List<String> aliases = new ArrayList<>();
 
-    @Convert(converter = ArtistGenreConverter.class)
-    @Column(name = "genre")
+    @ElementCollection(targetClass = ArtistGenre.class, fetch = FetchType.LAZY)
+    @CollectionTable(name = "artist_genres", joinColumns = @JoinColumn(name = "artist_id"))
+    @Column(name = "genres", length = 20)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private List<ArtistGenre> genres = new ArrayList<>();
 
@@ -72,7 +74,8 @@ public class Artist {
     public void update(String name, String nameEn, List<ArtistGenre> genres, List<String> aliases) {
         this.name = name;
         this.nameEn = nameEn;
-        this.genres = genres != null ? genres : new ArrayList<>();
+        this.genres.clear();
+        if (genres != null) this.genres.addAll(genres);
         this.aliases.clear();
         if (aliases != null) this.aliases.addAll(aliases);
     }
