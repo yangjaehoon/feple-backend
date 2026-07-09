@@ -100,4 +100,9 @@ jacocoTestReport {
 tasks.named('test') {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
+	testLogging {
+		exceptionFormat = "full"
+		showCauses = true
+		showStackTraces = true
+	}
 }
