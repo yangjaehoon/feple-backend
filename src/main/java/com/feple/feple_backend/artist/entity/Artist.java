@@ -74,8 +74,7 @@ public class Artist {
     public void update(String name, String nameEn, List<ArtistGenre> genres, List<String> aliases) {
         this.name = name;
         this.nameEn = nameEn;
-        this.genres.clear();
-        if (genres != null) this.genres.addAll(genres);
+        this.genres = genres != null ? new ArrayList<>(genres) : new ArrayList<>();
         this.aliases.clear();
         if (aliases != null) this.aliases.addAll(aliases);
     }
