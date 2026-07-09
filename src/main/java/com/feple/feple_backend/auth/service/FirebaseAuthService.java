@@ -9,13 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class FirebaseAuthService implements OAuthLoginService {
 
     private static final Logger log = LoggerFactory.getLogger(FirebaseAuthService.class);

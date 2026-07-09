@@ -7,14 +7,12 @@ import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class KakaoAuthService implements OAuthLoginService {
 
     private final KakaoApiClient kakaoApiClient;
