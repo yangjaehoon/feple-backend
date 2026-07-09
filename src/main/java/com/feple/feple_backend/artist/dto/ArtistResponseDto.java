@@ -38,7 +38,7 @@ public class ArtistResponseDto {
                 .id(artist.getId())
                 .name(artist.getName())
                 .nameEn(artist.getNameEn())
-                .aliases(artist.getAliases())
+                .aliases(List.copyOf(artist.getAliases()))
                 .genre(genreDisplay)
                 .profileImageUrl(imageUrl)
                 .followerCount(artist.getFollowerCount())
