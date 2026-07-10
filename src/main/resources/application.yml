@@ -124,7 +124,7 @@ springdoc:
 logging:
   structured:
     format:
-      console: logstash   # JSON 구조화 로그 — Grafana Loki / ELK 연동용
+      console: ecs   # JSON 구조화 로그 — Grafana Loki / ELK 연동용 (Spring Boot 빌트인, 추가 의존성 불필요)
   level:
     root: INFO
     com.feple: INFO
