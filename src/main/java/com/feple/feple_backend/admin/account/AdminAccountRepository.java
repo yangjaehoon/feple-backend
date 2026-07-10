@@ -12,6 +12,8 @@ public interface AdminAccountRepository extends JpaRepository<AdminAccount, Long
 
     boolean existsByUsername(String username);
 
+    boolean existsByRole(AdminRole role);
+
     long countByRole(AdminRole role);
 
     @Query("SELECT COUNT(a) FROM AdminAccount a WHERE a.role = :role AND a.enabled = :enabled")
