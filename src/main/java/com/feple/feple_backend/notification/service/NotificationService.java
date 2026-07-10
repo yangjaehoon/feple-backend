@@ -29,8 +29,6 @@ import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -58,7 +56,6 @@ public class NotificationService {
     /** 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송 — 커밋 후에만 발송 */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onArtistAddedToFestival(ArtistAddedToFestivalEvent event) {
         List<ArtistFollow> follows = artistFollowRepository.findByArtistId(event.artistId());
         if (follows.isEmpty()) return;
@@ -81,7 +78,6 @@ public class NotificationService {
     /** 인증 승인 알림 — 커밋 후에만 발송 */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCertificationApproved(CertificationApprovedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -97,7 +93,6 @@ public class NotificationService {
     /** 인증 거절 알림 — 커밋 후에만 발송 */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCertificationRejected(CertificationRejectedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -112,7 +107,6 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestApproved(SongRequestApprovedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -128,7 +122,6 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestRejected(SongRequestRejectedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -144,7 +137,6 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onArtistSuggestionProcessed(ArtistSuggestionProcessedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
@@ -168,7 +160,6 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCommentCreated(CommentCreatedEvent event) {
         if (event.postAuthorId() != null && !userBlockService.isBlocked(event.postAuthorId(), event.commenterId())) {
             notifyNewComment(event.postAuthorId(), event.commenterNickname(),
@@ -182,7 +173,6 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostLiked(PostLikedEvent event) {
         if (userBlockService.isBlocked(event.postAuthorId(), event.likerId())) return;
         User author = userRepository.findById(event.postAuthorId()).orElse(null);
@@ -199,7 +189,6 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostDeletedByAdmin(PostDeletedByAdminEvent event) {
         User author = userRepository.findById(event.postAuthorId()).orElse(null);
         if (author == null) return;
@@ -246,7 +235,6 @@ public class NotificationService {
     }
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
-    @Transactional
     public void sendFestivalReminders(Long festivalId, String festivalTitle, String festivalTitleEn,
                                        List<Long> userIds, int dDay) {
         if (userIds.isEmpty()) return;
