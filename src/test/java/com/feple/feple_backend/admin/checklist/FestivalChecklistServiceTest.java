@@ -30,18 +30,18 @@ class FestivalChecklistServiceTest {
     void getChecklistMap_festivalId를_키로_변환() {
         FestivalChecklist c1 = FestivalChecklist.of(1L);
         FestivalChecklist c2 = FestivalChecklist.of(2L);
-        given(checklistRepository.findByFestivalIdIn(List.of(1L, 2L))).willReturn(List.of(c1, c2));
+        given(checklistRepository.findAll()).willReturn(List.of(c1, c2));
 
-        Map<Long, FestivalChecklist> result = service.getChecklistMap(List.of(1L, 2L));
+        Map<Long, FestivalChecklist> result = service.getChecklistMap();
 
         assertThat(result).containsEntry(1L, c1).containsEntry(2L, c2);
     }
 
     @Test
     void getChecklistMap_빈_입력이면_빈_맵_반환() {
-        given(checklistRepository.findByFestivalIdIn(List.of())).willReturn(List.of());
+        given(checklistRepository.findAll()).willReturn(List.of());
 
-        assertThat(service.getChecklistMap(List.of())).isEmpty();
+        assertThat(service.getChecklistMap()).isEmpty();
     }
 
     // ── toggle ────────────────────────────────────────────────────────────────

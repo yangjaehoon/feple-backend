@@ -69,7 +69,7 @@ class FestivalAdminControllerTest {
         given(festivalService.getFestivalsAdminPage(anyString(), anyInt(), anyInt()))
                 .willReturn(new PageImpl<>(List.of()));
         given(festivalService.getAllActiveFestivalsForAdmin()).willReturn(List.of());
-        given(festivalChecklistService.getChecklistMap(any())).willReturn(Map.of());
+        given(festivalChecklistService.getChecklistMap()).willReturn(Map.of());
 
         mockMvc.perform(get("/admin/festivals"))
                 .andExpect(status().isOk())
