@@ -39,6 +39,8 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, jakarta.servlet.ServletException {
+        // forward-headers-strategy=native 설정으로 Spring이 RemoteAddr를 X-Forwarded-For 첫 번째 값으로
+        // 자동 교체 — 리버스 프록시 뒤에서도 실제 클라이언트 IP가 잡힌다.
         String ip = request.getRemoteAddr();
         Bucket bucket = cache.get(ip, k -> Bucket.builder()
                 .addLimit(Bandwidth.builder()

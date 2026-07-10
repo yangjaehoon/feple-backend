@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +39,6 @@ public class UserAdminController {
     private final AdminLogService adminLogService;
 
     @GetMapping
-    @Transactional(readOnly = true)
     public String listUsers(@ModelAttribute UserListFilter listFilter, Model model) {
         Page<UserResponseDto> users = fetchUsersPage(listFilter.page(), listFilter.keyword(), listFilter.sort(), listFilter.filter());
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
