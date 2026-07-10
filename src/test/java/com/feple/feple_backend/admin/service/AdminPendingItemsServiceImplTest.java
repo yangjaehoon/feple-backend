@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.admin.certification.CertSummaryDto;
+import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
 import com.feple.feple_backend.admin.moderation.ReportSummaryDto;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
@@ -49,7 +49,7 @@ class AdminPendingItemsServiceImplTest {
                 CertificationStatus.PENDING, PageRequest.of(0, 5)))
                 .willReturn(new PageImpl<>(List.of(cert)));
 
-        List<CertSummaryDto> result = adminPendingItemsService.getPendingCerts(5);
+        List<CertificationSummaryDto> result = adminPendingItemsService.getPendingCerts(5);
 
         assertThat(result).hasSize(1);
     }

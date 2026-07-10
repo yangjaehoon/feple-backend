@@ -78,7 +78,7 @@ public class CertificationAdminController {
 
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id,
-                          @ModelAttribute CertFilter filter,
+                          @ModelAttribute CertificationFilter filter,
                           @RequestParam(required = false) Long nextCertId,
                           Authentication auth,
                           RedirectAttributes ra) {
@@ -98,7 +98,7 @@ public class CertificationAdminController {
     @PostMapping("/{id}/reject")
     public String reject(@PathVariable Long id,
                          @RequestParam(defaultValue = "") String rejectionMessage,
-                         @ModelAttribute CertFilter filter,
+                         @ModelAttribute CertificationFilter filter,
                          @RequestParam(required = false) Long nextCertId,
                          Authentication auth,
                          RedirectAttributes ra) {
@@ -118,7 +118,7 @@ public class CertificationAdminController {
 
     @PostMapping("/bulk-approve")
     public String bulkApprove(@RequestParam(required = false) List<Long> ids,
-                              @ModelAttribute CertFilter filter,
+                              @ModelAttribute CertificationFilter filter,
                               Authentication auth,
                               RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) {
@@ -141,7 +141,7 @@ public class CertificationAdminController {
     @PostMapping("/bulk-reject")
     public String bulkReject(@RequestParam(required = false) List<Long> ids,
                              @RequestParam(defaultValue = "") String rejectionMessage,
-                             @ModelAttribute CertFilter filter,
+                             @ModelAttribute CertificationFilter filter,
                              Authentication auth,
                              RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) {
@@ -161,7 +161,7 @@ public class CertificationAdminController {
         return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
     }
 
-    private String triageRedirect(Long nextCertId, CertFilter filter) {
+    private String triageRedirect(Long nextCertId, CertificationFilter filter) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications/" + nextCertId)
                 .queryParam("status", filter.status())
                 .queryParam("page", filter.page());

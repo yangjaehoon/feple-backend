@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.admin.certification.CertSummaryDto;
+import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
 import com.feple.feple_backend.admin.moderation.ReportSummaryDto;
 import com.feple.feple_backend.admin.system.SongRequestSummaryDto;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
@@ -30,11 +30,11 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
 
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'certs_' + #limit")
-    public List<CertSummaryDto> getPendingCerts(int limit) {
+    public List<CertificationSummaryDto> getPendingCerts(int limit) {
         return certificationRepository
                 .findByStatusOrderByCreatedAtDesc(CertificationStatus.PENDING, PageRequest.of(0, limit))
                 .getContent()
-                .stream().map(CertSummaryDto::from).toList();
+                .stream().map(CertificationSummaryDto::from).toList();
     }
 
     @Override
