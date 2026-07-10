@@ -10,7 +10,6 @@ import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -31,7 +30,7 @@ public class OcrService {
     private final TimetableService timetableService;
     private final ArtistRepository artistRepository;
     private final ArtistFestivalService artistFestivalService;
-    private final UnmatchedArtistSuggestionRepository suggestionRepository;
+    private final UnmatchedArtistSuggestionService suggestionService;
 
     public boolean isConfigured() {
         return geminiOcrClient.isConfigured();
@@ -137,32 +136,17 @@ public class OcrService {
             }
         }
         if (unmatchedNames != null) {
-            saveSuggestions(unmatchedNames);
+            suggestionService.saveAll(unmatchedNames);
         }
         return new LineupApplyResult(artistIds.size(), added, duplicates);
     }
 
-    private void saveSuggestions(List<String> names) {
-        for (String name : names) {
-            if (name == null || name.isBlank()) continue;
-            String trimmed = name.trim();
-            // 트랜잭션 없이 호출되므로 더티 체킹 대신 명시적 save() 필요
-            suggestionRepository.findByNameIgnoreCase(trimmed).ifPresentOrElse(
-                    s -> { s.incrementMentionCount(); suggestionRepository.save(s); },
-                    () -> suggestionRepository.save(UnmatchedArtistSuggestion.of(trimmed))
-            );
-        }
-    }
-
-    @Transactional(readOnly = true)
     public List<UnmatchedArtistSuggestionDto> getSuggestions() {
-        return suggestionRepository.findAllOrderByMentionCountDesc()
-                .stream().map(UnmatchedArtistSuggestionDto::from).toList();
+        return suggestionService.getAll();
     }
 
-    @Transactional
     public void deleteSuggestion(Long id) {
-        suggestionRepository.deleteById(id);
+        suggestionService.delete(id);
     }
 
     // ── 타임테이블 OCR ──────────────────────────────────────

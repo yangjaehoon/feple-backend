@@ -19,7 +19,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -30,7 +29,7 @@ class OcrServiceTest {
     @Mock TimetableService timetableService;
     @Mock ArtistRepository artistRepository;
     @Mock ArtistFestivalService artistFestivalService;
-    @Mock UnmatchedArtistSuggestionRepository suggestionRepository;
+    @Mock UnmatchedArtistSuggestionService suggestionService;
 
     @InjectMocks OcrService ocrService;
 
@@ -255,61 +254,37 @@ class OcrServiceTest {
     }
 
     @Test
-    void applyArtistLineup_미매칭_이름은_suggestion_저장됨() {
-        given(suggestionRepository.findByNameIgnoreCase("신인가수")).willReturn(Optional.empty());
+    void applyArtistLineup_미매칭_이름은_suggestionService에_위임() {
+        List<String> unmatched = List.of("신인가수");
 
-        ocrService.applyArtistLineup(1L, List.of(), List.of("신인가수"));
+        ocrService.applyArtistLineup(1L, List.of(), unmatched);
 
-        verify(suggestionRepository).save(any(UnmatchedArtistSuggestion.class));
+        verify(suggestionService).saveAll(unmatched);
     }
 
     @Test
-    void applyArtistLineup_이미_있는_미매칭_이름은_mentionCount_증가() {
-        UnmatchedArtistSuggestion existing = mock(UnmatchedArtistSuggestion.class);
-        given(suggestionRepository.findByNameIgnoreCase("신인가수")).willReturn(Optional.of(existing));
-
-        ocrService.applyArtistLineup(1L, List.of(), List.of("신인가수"));
-
-        verify(existing).incrementMentionCount();
-        verify(suggestionRepository).save(existing);
-    }
-
-    @Test
-    void applyArtistLineup_빈_미매칭_이름은_저장_건너뜀() {
-        ocrService.applyArtistLineup(1L, List.of(), List.of("  ", ""));
-
-        verify(suggestionRepository, never()).save(any());
-    }
-
-    @Test
-    void applyArtistLineup_unmatchedNames_null이면_suggestion_저장_안됨() {
+    void applyArtistLineup_unmatchedNames_null이면_suggestionService_호출_안됨() {
         ocrService.applyArtistLineup(1L, List.of(), null);
 
-        verify(suggestionRepository, never()).findByNameIgnoreCase(any());
+        verify(suggestionService, never()).saveAll(any());
     }
 
     // ── getSuggestions / deleteSuggestion ────────────────────────────────────
 
     @Test
-    void getSuggestions_repository_위임_후_DTO_변환() {
-        UnmatchedArtistSuggestion s = mock(UnmatchedArtistSuggestion.class);
-        given(s.getId()).willReturn(1L);
-        given(s.getName()).willReturn("신인가수");
-        given(s.getMentionCount()).willReturn(3);
-        given(suggestionRepository.findAllOrderByMentionCountDesc()).willReturn(List.of(s));
+    void getSuggestions_suggestionService_getAll_위임() {
+        given(suggestionService.getAll()).willReturn(List.of());
 
-        List<UnmatchedArtistSuggestionDto> result = ocrService.getSuggestions();
+        ocrService.getSuggestions();
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).name()).isEqualTo("신인가수");
-        assertThat(result.get(0).mentionCount()).isEqualTo(3);
+        verify(suggestionService).getAll();
     }
 
     @Test
-    void deleteSuggestion_repository_deleteById_위임() {
+    void deleteSuggestion_suggestionService_delete_위임() {
         ocrService.deleteSuggestion(42L);
 
-        verify(suggestionRepository).deleteById(42L);
+        verify(suggestionService).delete(42L);
     }
 
     // ── geminiOcrClient 위임 메서드 ───────────────────────────────────────────
