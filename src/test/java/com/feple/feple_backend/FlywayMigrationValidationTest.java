@@ -3,7 +3,7 @@ package com.feple.feple_backend;
 import io.awspring.cloud.s3.S3Template;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -34,7 +34,7 @@ class FlywayMigrationValidationTest {
         registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.MySQLDialect");
     }
 
-    @MockBean
+    @MockitoBean
     S3Template s3Template;
 
     @Test

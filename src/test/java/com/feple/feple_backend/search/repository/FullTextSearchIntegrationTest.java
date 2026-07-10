@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
@@ -66,8 +66,8 @@ class FullTextSearchIntegrationTest {
     @PersistenceContext EntityManager em;
     @Autowired PlatformTransactionManager txManager;
 
-    @MockBean FileStorageService fileStorageService;
-    @MockBean S3Template s3Template;
+    @MockitoBean FileStorageService fileStorageService;
+    @MockitoBean S3Template s3Template;
 
     private User user;
     private Post post;
