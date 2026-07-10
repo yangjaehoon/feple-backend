@@ -128,23 +128,23 @@ public class OcrService {
     // @Transactional 제거: addArtistToFestival(ConflictException 발생 시)이 외부 트랜잭션을
     // rollback-only로 마킹해 UnexpectedRollbackException이 발생하는 것을 방지.
     // 각 addArtistToFestival 호출은 자신의 독립 트랜잭션을 사용함.
-    public LineupApplyResult applyArtistLineup(Long festivalId, List<Long> artistIds, List<String> unmatchedNames) {
+    public LineupApplyResult applyArtistLineup(LineupOcrApplyRequestDto request) {
         int added = 0;
         int duplicates = 0;
-        for (Long id : artistIds) {
+        for (Long id : request.artistIds()) {
             try {
                 ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
                 req.setArtistId(id);
-                artistFestivalService.addArtistToFestival(festivalId, req);
+                artistFestivalService.addArtistToFestival(request.festivalId(), req);
                 added++;
             } catch (ConflictException e) {
                 duplicates++;
             }
         }
-        if (unmatchedNames != null) {
-            suggestionService.saveAll(unmatchedNames);
+        if (request.unmatchedNames() != null) {
+            suggestionService.saveAll(request.unmatchedNames());
         }
-        return new LineupApplyResult(artistIds.size(), added, duplicates);
+        return new LineupApplyResult(request.artistIds().size(), added, duplicates);
     }
 
     public List<UnmatchedArtistSuggestionDto> getSuggestions() {

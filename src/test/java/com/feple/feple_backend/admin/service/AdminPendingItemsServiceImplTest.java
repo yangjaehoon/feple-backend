@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
-import com.feple.feple_backend.admin.moderation.ReportSummaryDto;
+import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
@@ -71,7 +71,7 @@ class AdminPendingItemsServiceImplTest {
                 ReportStatus.PENDING, PageRequest.of(0, 10)))
                 .willReturn(new PageImpl<>(List.of(report)));
 
-        List<ReportSummaryDto> result = adminPendingItemsService.getPendingReports(10);
+        List<PostReportSummaryDto> result = adminPendingItemsService.getPendingPostReports(10);
 
         assertThat(result).hasSize(1);
     }
@@ -80,7 +80,7 @@ class AdminPendingItemsServiceImplTest {
     void 대기중_신고_건수_게시글_신고만_집계() {
         given(postReportRepository.countByStatus(ReportStatus.PENDING)).willReturn(5L);
 
-        long count = adminPendingItemsService.getPendingReportCount();
+        long count = adminPendingItemsService.getPendingPostReportCount();
 
         assertThat(count).isEqualTo(5L);
         verify(postReportRepository).countByStatus(ReportStatus.PENDING);

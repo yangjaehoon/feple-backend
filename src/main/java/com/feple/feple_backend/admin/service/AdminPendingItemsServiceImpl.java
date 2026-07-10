@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
-import com.feple.feple_backend.admin.moderation.ReportSummaryDto;
+import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
 import com.feple.feple_backend.admin.system.SongRequestSummaryDto;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
@@ -23,7 +23,7 @@ import java.util.List;
 public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
 
     private final FestivalCertificationRepository certificationRepository;
-    // 목록·카운트 모두 게시글 신고만 표시한다(ReportSummaryDto가 게시글 전용이므로).
+    // 목록·카운트 모두 게시글 신고만 표시한다(PostReportSummaryDto가 게시글 전용이므로).
     // 사이드바 전체 신고 뱃지는 AdminSidebarCountService가 별도로 집계한다.
     private final PostReportRepository postReportRepository;
     private final SongRequestRepository songRequestRepository;
@@ -45,16 +45,16 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
 
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'reports_' + #limit")
-    public List<ReportSummaryDto> getPendingReports(int limit) {
+    public List<PostReportSummaryDto> getPendingPostReports(int limit) {
         return postReportRepository
                 .findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, PageRequest.of(0, limit))
                 .getContent()
-                .stream().map(ReportSummaryDto::from).toList();
+                .stream().map(PostReportSummaryDto::from).toList();
     }
 
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'reportCount'")
-    public long getPendingReportCount() {
+    public long getPendingPostReportCount() {
         return postReportRepository.countByStatus(ReportStatus.PENDING);
     }
 

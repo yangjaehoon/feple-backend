@@ -11,7 +11,7 @@ class ArtistFilterDropdownProvider implements FilterDropdownProvider {
 
     private final ArtistAdminService artistService;
 
-    @Override public String filter() { return "ARTIST"; }
+    @Override public String filterKey() { return "ARTIST"; }
 
     @Override public void populate(Model model) {
         model.addAttribute("artists", artistService.getAllArtistsSortedByName());

@@ -47,7 +47,7 @@ public class FestivalArtistAdminController {
                 .collect(Collectors.toSet());
 
         model.addAttribute("festival", festival);
-        model.addAttribute("artists", allArtists);
+        model.addAttribute("allArtists", allArtists);
         model.addAttribute("participatingIds", participatingIds);
         model.addAttribute("request", new ArtistFestivalCreateRequestDto());
         return "admin/festival/artist-form";

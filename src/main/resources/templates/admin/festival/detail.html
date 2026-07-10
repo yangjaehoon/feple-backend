@@ -337,7 +337,6 @@
                         <button type="submit" class="btn btn-primary">+ 추가</button>
                     </div>
                 </form>
-                <div th:if="${timetableSuccess}" class="alert alert-success" th:text="${timetableSuccess}"></div>
 
                 <!-- 운영 항목 추가 폼 -->
                 <div class="ops-box">
@@ -346,7 +345,7 @@
                           th:action="@{/admin/festivals/{id}/timetable(id=${festival.id})}"
                           method="post"
                           class="form-grid-ops">
-                        <input type="hidden" name="stageName" th:value="${opsStageIndicator}"/>
+                        <input type="hidden" name="stageName" th:value="${announcementStageName}"/>
                         <input type="hidden" name="color" id="ops-color-value"/>
                         <div>
                             <label class="form-label-ops">항목명 (엔터로 줄바꿈)</label>
@@ -425,16 +424,16 @@
                                 </td>
                             </tr>
                             <!-- 항목 행: 운영 항목은 노란 배경 -->
-                            <tr th:classappend="${entry.stageName == opsStageIndicator} ? 'bg-warning-subtle' : ''"
-                                th:style="${entry.stageName == opsStageIndicator and entry.color != null and !#strings.isEmpty(entry.color)} ? 'border-left: 4px solid ' + ${entry.color} + '; padding-left: 0;' : ''">
+                            <tr th:classappend="${entry.stageName == announcementStageName} ? 'bg-warning-subtle' : ''"
+                                th:style="${entry.stageName == announcementStageName and entry.color != null and !#strings.isEmpty(entry.color)} ? 'border-left: 4px solid ' + ${entry.color} + '; padding-left: 0;' : ''">
                                 <td>
-                                    <span th:if="${entry.stageName == opsStageIndicator}" class="ops-label">
+                                    <span th:if="${entry.stageName == announcementStageName}" class="ops-label">
                                         <span th:if="${entry.color != null and !#strings.isEmpty(entry.color)}"
                                               class="color-dot"
                                               th:style="'background:' + ${entry.color}"></span>
-                                        <span th:text="${opsStageIndicator + ' 운영'}"></span>
+                                        <span th:text="${announcementStageName + ' 운영'}"></span>
                                     </span>
-                                    <span th:unless="${entry.stageName == opsStageIndicator}"
+                                    <span th:unless="${entry.stageName == announcementStageName}"
                                           class="badge badge-stage" th:data-stage="${entry.stageName}"
                                           th:text="${!#strings.isEmpty(entry.stageName) ? entry.stageName : '미지정'}"></span>
                                 </td>

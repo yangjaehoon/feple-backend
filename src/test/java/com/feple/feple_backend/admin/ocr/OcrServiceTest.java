@@ -238,7 +238,7 @@ class OcrServiceTest {
 
     @Test
     void applyArtistLineup_모두_성공시_added_카운트_일치() {
-        ocrService.applyArtistLineup(1L, List.of(10L, 20L), null);
+        ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
 
         verify(artistFestivalService, times(2)).addArtistToFestival(eq(1L), any());
     }
@@ -247,7 +247,7 @@ class OcrServiceTest {
     void applyArtistLineup_중복_아티스트는_ConflictException_처리후_duplicates_카운트() {
         willThrow(new ConflictException("중복")).given(artistFestivalService).addArtistToFestival(eq(1L), any());
 
-        LineupApplyResult result = ocrService.applyArtistLineup(1L, List.of(10L, 20L), null);
+        LineupApplyResult result = ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
 
         assertThat(result.added()).isEqualTo(0);
         assertThat(result.duplicates()).isEqualTo(2);
@@ -258,7 +258,7 @@ class OcrServiceTest {
         given(artistFestivalService.addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(10L)))).willReturn(10L);
         willThrow(new ConflictException("중복")).given(artistFestivalService).addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(20L)));
 
-        LineupApplyResult result = ocrService.applyArtistLineup(1L, List.of(10L, 20L), null);
+        LineupApplyResult result = ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
 
         assertThat(result.requested()).isEqualTo(2);
         assertThat(result.added()).isEqualTo(1);
@@ -269,14 +269,14 @@ class OcrServiceTest {
     void applyArtistLineup_미매칭_이름은_suggestionService에_위임() {
         List<String> unmatched = List.of("신인가수");
 
-        ocrService.applyArtistLineup(1L, List.of(), unmatched);
+        ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(), unmatched));
 
         verify(suggestionService).saveAll(unmatched);
     }
 
     @Test
     void applyArtistLineup_unmatchedNames_null이면_suggestionService_호출_안됨() {
-        ocrService.applyArtistLineup(1L, List.of(), null);
+        ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(), null));
 
         verify(suggestionService, never()).saveAll(any());
     }

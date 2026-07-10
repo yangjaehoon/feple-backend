@@ -17,9 +17,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GeminiUrlContextClient {
 
-    private static final String GEMINI_URL =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
     @Value("${app.gemini.api-key:}")
     private String geminiApiKey;
 
@@ -34,7 +31,7 @@ public class GeminiUrlContextClient {
     public ScrapedFestivalDto scrape(String url, String source) {
         Map<String, Object> request = buildUrlContextRequest(url);
         usageTracker.increment();
-        Map<?, ?> response = geminiApiClient.call(GEMINI_URL, geminiApiKey, request, Duration.ofSeconds(60));
+        Map<?, ?> response = geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiApiKey, request, Duration.ofSeconds(60));
 
         if (isUrlBlocked(response)) {
             log.warn("Gemini URL context blocked for: {}", url);

@@ -50,7 +50,7 @@ class PostAdminServiceImplTest {
         postAdminService.deletePost(10L);
 
         verify(eventPublisher).publishEvent(any(PostDeletedByAdminEvent.class));
-        verify(postRepository).deleteById(10L);
+        verify(postRepository).softDeleteByIds(List.of(10L));
     }
 
     // ── bulkDeletePosts ──────────────────────────────────────────────

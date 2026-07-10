@@ -55,7 +55,7 @@ class FestivalArtistAdminControllerTest {
         mockMvc.perform(get("/admin/festivals/1/artists/new"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/festival/artist-form"))
-                .andExpect(model().attributeExists("festival", "artists", "participatingIds", "request"));
+                .andExpect(model().attributeExists("festival", "allArtists", "participatingIds", "request"));
     }
 
     // ── POST /admin/festivals/{festivalId}/artists ────────────────────────────

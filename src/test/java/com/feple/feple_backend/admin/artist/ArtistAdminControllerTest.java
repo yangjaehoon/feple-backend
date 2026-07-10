@@ -51,7 +51,7 @@ class ArtistAdminControllerTest {
                 .willReturn(new PageImpl<>(List.of()));
         given(artistSuggestionAdminService.getPendingSuggestionsPreview(anyInt())).willReturn(List.of());
         given(artistSuggestionAdminService.getProcessedSuggestionsPreview(anyInt())).willReturn(List.of());
-        given(artistSuggestionAdminService.countProcessed()).willReturn(0L);
+        given(artistSuggestionAdminService.getProcessedCount()).willReturn(0L);
 
         mockMvc.perform(get("/admin/artists"))
                 .andExpect(status().isOk())
@@ -66,7 +66,7 @@ class ArtistAdminControllerTest {
                 .willReturn(new PageImpl<>(List.of()));
         given(artistSuggestionAdminService.getPendingSuggestionsPreview(anyInt())).willReturn(List.of());
         given(artistSuggestionAdminService.getProcessedSuggestionsPreview(anyInt())).willReturn(List.of());
-        given(artistSuggestionAdminService.countProcessed()).willReturn(0L);
+        given(artistSuggestionAdminService.getProcessedCount()).willReturn(0L);
 
         mockMvc.perform(get("/admin/artists").param("genre", "INDIE"))
                 .andExpect(status().isOk());

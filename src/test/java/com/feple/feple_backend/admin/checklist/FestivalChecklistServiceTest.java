@@ -53,7 +53,7 @@ class FestivalChecklistServiceTest {
 
         service.toggle(1L, "lineup1");
 
-        assertThat(checklist.valueOf("lineup1")).isTrue();
+        assertThat(checklist.isChecked("lineup1")).isTrue();
         verify(checklistRepository, never()).save(any());
     }
 
@@ -65,7 +65,7 @@ class FestivalChecklistServiceTest {
 
         service.toggle(1L, "boothMap");
 
-        assertThat(newChecklist.valueOf("boothMap")).isTrue();
+        assertThat(newChecklist.isChecked("boothMap")).isTrue();
         verify(checklistRepository).save(any());
     }
 

@@ -43,7 +43,7 @@ public class PostAdminController {
         this.commentService = commentService;
         this.adminLogService = adminLogService;
         this.dropdownProviders = providers.stream()
-                .collect(Collectors.toMap(FilterDropdownProvider::filter, p -> p));
+                .collect(Collectors.toMap(FilterDropdownProvider::filterKey, p -> p));
     }
 
     @GetMapping

@@ -13,8 +13,8 @@ public interface FestivalAdminService {
     Long createFestival(FestivalRequestDto dto);
     List<FestivalResponseDto> getAllFestivalsForAdmin();
     List<FestivalResponseDto> getAllActiveFestivalsForAdmin();
-    FestivalResponseDto getFestival(Long id);
-    void updateFestival(Long id, FestivalRequestDto dto);
+    FestivalResponseDto getFestival(Long festivalId);
+    void updateFestival(Long festivalId, FestivalRequestDto dto);
     void deleteFestival(Long festivalId);
     Page<FestivalResponseDto> getFestivalsAdminPage(String keyword, int page, int size);
     String uploadPosterFile(MultipartFile file, LocalDate startDate) throws IOException;

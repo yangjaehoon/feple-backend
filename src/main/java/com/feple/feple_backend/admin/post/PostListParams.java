@@ -17,8 +17,4 @@ record PostListParams(String filter, String keyword, Long artistId, Long festiva
         return sb.toString();
     }
 
-    String toBackUrl() {
-        if (filter.isBlank() && artistId == null && festivalId == null) return "/admin/posts";
-        return "/admin/posts?" + toExtraParams();
-    }
 }

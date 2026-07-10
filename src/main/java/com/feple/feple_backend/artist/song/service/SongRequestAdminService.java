@@ -13,7 +13,7 @@ public interface SongRequestAdminService {
 
     long getPendingCount();
 
-    boolean approve(Long requestId, String youtubeUrl);
+    boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl);
 
     void reject(Long requestId, String reason);
 }

@@ -45,7 +45,7 @@ class AdminSidebarCountServiceTest {
         given(commentReportService.getPendingCount()).willReturn(2L);
         given(certificationService.getPendingCount()).willReturn(5L);
         given(songRequestAdminService.getPendingCount()).willReturn(1L);
-        given(artistSuggestionAdminService.countPending()).willReturn(4L);
+        given(artistSuggestionAdminService.getPendingCount()).willReturn(4L);
         given(setlistChangeRequestService.countPending()).willReturn(7L);
 
         AdminSidebarCountService.Counts counts = sidebarCountService.getCounts();
@@ -69,7 +69,7 @@ class AdminSidebarCountServiceTest {
         given(postReportService.getPendingCount()).willReturn(10L);
         given(certificationService.getPendingCount()).willReturn(0L);
         given(songRequestAdminService.getPendingCount()).willReturn(0L);
-        given(artistSuggestionAdminService.countPending()).willReturn(0L);
+        given(artistSuggestionAdminService.getPendingCount()).willReturn(0L);
         given(setlistChangeRequestService.countPending()).willReturn(0L);
 
         AdminSidebarCountService.Counts counts = sidebarCountService.getCounts();
@@ -83,7 +83,7 @@ class AdminSidebarCountServiceTest {
         given(commentReportService.getPendingCount()).willReturn(0L);
         given(certificationService.getPendingCount()).willReturn(0L);
         given(songRequestAdminService.getPendingCount()).willReturn(0L);
-        given(artistSuggestionAdminService.countPending()).willReturn(0L);
+        given(artistSuggestionAdminService.getPendingCount()).willReturn(0L);
         given(setlistChangeRequestService.countPending()).willReturn(0L);
 
         AdminSidebarCountService.Counts counts = sidebarCountService.getCounts();

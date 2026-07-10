@@ -29,7 +29,7 @@ public class AdminSidebarCountService {
                 reportServices.stream().mapToLong(ReportQueryService::getPendingCount).sum(),
                 certificationService.getPendingCount(),
                 songRequestAdminService.getPendingCount(),
-                artistSuggestionAdminService.countPending(),
+                artistSuggestionAdminService.getPendingCount(),
                 setlistChangeRequestService.countPending()
         );
     }

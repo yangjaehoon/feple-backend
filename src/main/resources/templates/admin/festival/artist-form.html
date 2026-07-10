@@ -42,7 +42,7 @@
                             <span class="artist-legend-dot"></span>이미 참여 중인 아티스트
                         </div>
                         <div id="artistList" class="artist-list-box">
-                            <div th:each="artist : ${artists}"
+                            <div th:each="artist : ${allArtists}"
                                  class="artist-item"
                                  th:data-name="${#strings.toLowerCase(artist.name)}"
                                  th:data-name-en="${artist.nameEn != null ? #strings.toLowerCase(artist.nameEn) : ''}"

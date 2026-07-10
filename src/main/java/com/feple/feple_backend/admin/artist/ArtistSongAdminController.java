@@ -22,6 +22,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/**
+ * 아티스트 상세 페이지의 "곡" 탭 전용 컨트롤러 — 곡 등록/삭제 + 해당 아티스트로
+ * 범위가 한정된 노래 신청 승인/거절을 다룬다. 승인/거절 자체는
+ * {@link SongRequestAdminService}에 위임하므로 {@link com.feple.feple_backend.admin.song.SongRequestAdminController}
+ * (전체 아티스트 대상 노래 신청 목록/필터 페이지)와 도메인 로직을 공유하되,
+ * 화면 진입 경로와 리다이렉트 대상(artistId 기준 vs status/page/keyword 기준)이 달라 별도 컨트롤러로 유지한다.
+ */
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 @Controller
@@ -103,7 +110,7 @@ public class ArtistSongAdminController {
         AtomicReference<String> successMsg = new AtomicReference<>();
         AdminActionUtils.tryAction(
                 () -> {
-                    boolean songSaved = songRequestAdminService.approve(requestId, youtubeUrl);
+                    boolean songSaved = songRequestAdminService.approveAndMaybeSaveSong(requestId, youtubeUrl);
                     adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", requestId, null);
                     successMsg.set(SongApproveMessage.build(songSaved, youtubeUrl));
                 },

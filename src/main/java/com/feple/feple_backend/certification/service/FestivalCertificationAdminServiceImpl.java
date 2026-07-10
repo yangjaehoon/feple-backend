@@ -1,5 +1,6 @@
 package com.feple.feple_backend.certification.service;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
@@ -34,7 +35,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalCertification> getByStatus(CertificationStatus status, int page) {
-        Pageable pageable = PageableFactory.latestFirst(page, 20);
+        Pageable pageable = PageableFactory.latestFirst(page, AdminConstants.LIST_PAGE_SIZE);
         if (status == null) {
             return certificationRepository.findAll(pageable);
         }
@@ -44,7 +45,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
-        Pageable pageable = PageableFactory.latestFirst(page, 20);
+        Pageable pageable = PageableFactory.latestFirst(page, AdminConstants.LIST_PAGE_SIZE);
         return certificationRepository.searchByKeyword(LikeEscaper.escape(keyword.trim()), status, pageable);
     }
 

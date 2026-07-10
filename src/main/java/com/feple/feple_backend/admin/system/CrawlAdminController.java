@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin.system;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.ocr.ArtistLineupOcrResult;
-import com.feple.feple_backend.admin.ocr.LineupApplyOcrRequestDto;
+import com.feple.feple_backend.admin.ocr.LineupOcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.LineupApplyResult;
 import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
@@ -157,11 +157,11 @@ public class CrawlAdminController {
 
     @PostMapping("/ocr/lineup/apply")
     @ResponseBody
-    public ResponseEntity<?> applyLineupOcr(@RequestBody LineupApplyOcrRequestDto request) {
+    public ResponseEntity<?> applyLineupOcr(@RequestBody LineupOcrApplyRequestDto request) {
         if (request.festivalId() == null)                            return badRequest("페스티벌을 선택해주세요.");
         if (request.artistIds() == null || request.artistIds().isEmpty()) return badRequest("등록할 아티스트가 없습니다.");
         try {
-            LineupApplyResult result = ocrService.applyArtistLineup(request.festivalId(), request.artistIds(), request.unmatchedNames());
+            LineupApplyResult result = ocrService.applyArtistLineup(request);
             adminLogService.log(AdminAction.LINEUP_OCR_APPLY, "FESTIVAL", request.festivalId(),
                     "added=" + result.added() + " duplicates=" + result.duplicates());
             return ResponseEntity.ok(result);

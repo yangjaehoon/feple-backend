@@ -154,22 +154,22 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "festivalDetail", key = "#id")
-    public FestivalResponseDto getFestival(Long id) {
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
+    @Cacheable(value = "festivalDetail", key = "#festivalId")
+    public FestivalResponseDto getFestival(Long festivalId) {
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         return toDto(festival);
     }
 
     @Override
     @Transactional
     @EvictFestivalCaches
-    @CacheEvict(value = "festivalDetail", key = "#id")
-    public void updateFestival(Long id, FestivalRequestDto dto) {
+    @CacheEvict(value = "festivalDetail", key = "#festivalId")
+    public void updateFestival(Long festivalId, FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
             throw new IllegalArgumentException(ERR_END_BEFORE_START);
         }
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
+        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
                 dto.getStartDate(), dto.getEndDate(),

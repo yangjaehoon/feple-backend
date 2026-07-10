@@ -226,7 +226,7 @@ public class FestivalAdminController {
                     model.addAttribute("allBoothTypes",              detail.allBoothTypes());
                     model.addAttribute("googleMapsKey",              detail.googleMapsKey());
                     model.addAttribute("setlistCounts",              detail.setlistCounts());
-                    model.addAttribute("opsStageIndicator",          detail.opsStageIndicator());
+                    model.addAttribute("announcementStageName",          detail.announcementStageName());
                     model.addAttribute("ratingStats",                detail.ratingStats());
                     UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/festivals")
                             .queryParam("page", page);

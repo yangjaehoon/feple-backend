@@ -29,7 +29,7 @@ class FestivalChecklistTest {
 
         checklist.toggle(field);
 
-        assertThat(checklist.valueOf(field)).isTrue();
+        assertThat(checklist.isChecked(field)).isTrue();
     }
 
     @Test
@@ -39,7 +39,7 @@ class FestivalChecklistTest {
         checklist.toggle("lineup1");
         checklist.toggle("lineup1");
 
-        assertThat(checklist.valueOf("lineup1")).isFalse();
+        assertThat(checklist.isChecked("lineup1")).isFalse();
     }
 
     @Test
@@ -51,21 +51,21 @@ class FestivalChecklistTest {
                 .hasMessageContaining("알 수 없는 항목");
     }
 
-    // ── valueOf ───────────────────────────────────────────────────────────────
+    // ── isChecked ───────────────────────────────────────────────────────────────
 
     @Test
-    void valueOf_토글_전후_값_반영() {
+    void isChecked_토글_전후_값_반영() {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
-        assertThat(checklist.valueOf("boothMap")).isFalse();
+        assertThat(checklist.isChecked("boothMap")).isFalse();
 
         checklist.toggle("boothMap");
 
-        assertThat(checklist.valueOf("boothMap")).isTrue();
+        assertThat(checklist.isChecked("boothMap")).isTrue();
     }
 
     @Test
-    void valueOf_알_수_없는_항목은_false_반환() {
-        assertThat(FestivalChecklist.of(1L).valueOf("nonexistent")).isFalse();
+    void isChecked_알_수_없는_항목은_false_반환() {
+        assertThat(FestivalChecklist.of(1L).isChecked("nonexistent")).isFalse();
     }
 
     // ── getCompletedCount / isAllCompleted ────────────────────────────────────

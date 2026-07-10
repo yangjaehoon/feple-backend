@@ -50,12 +50,12 @@ public class AdminDashboardAssembler {
             return new AdminPendingItemsSummary(
                     adminPendingItemsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                     adminPendingItemsService.getPendingCertCount(),
-                    adminPendingItemsService.getPendingReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                    adminPendingItemsService.getPendingReportCount(),
+                    adminPendingItemsService.getPendingPostReports(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                    adminPendingItemsService.getPendingPostReportCount(),
                     adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                     adminPendingItemsService.getPendingSongRequestCount(),
                     artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                    artistSuggestionAdminService.countPending());
+                    artistSuggestionAdminService.getPendingCount());
         } catch (Exception e) {
             log.error("대시보드 처리대기 항목 조회 실패", e);
             return new AdminPendingItemsSummary(List.of(), 0, List.of(), 0, List.of(), 0, List.of(), 0);

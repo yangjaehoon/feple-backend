@@ -9,8 +9,8 @@ public interface ArtistSuggestionAdminService {
     Page<ArtistSuggestionResponseDto> getSuggestionsPage(int page, int size);
     List<ArtistSuggestionResponseDto> getPendingSuggestionsPreview(int limit);
     List<ArtistSuggestionResponseDto> getProcessedSuggestionsPreview(int limit);
-    long countPending();
-    long countProcessed();
+    long getPendingCount();
+    long getProcessedCount();
     void approve(Long suggestionId, Long artistId);
     void dismiss(Long suggestionId, String processNote);
 }

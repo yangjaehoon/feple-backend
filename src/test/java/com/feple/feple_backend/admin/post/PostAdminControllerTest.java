@@ -57,7 +57,7 @@ class PostAdminControllerTest {
     @Test
     void 목록_조회_filter_매칭_provider_populate_호출() throws Exception {
         FilterDropdownProvider provider = mock(FilterDropdownProvider.class);
-        given(provider.filter()).willReturn("artist");
+        given(provider.filterKey()).willReturn("artist");
         given(postAdminService.getPostsForAdmin(any())).willReturn(new PageImpl<>(List.of()));
 
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
@@ -73,7 +73,7 @@ class PostAdminControllerTest {
     @Test
     void 목록_조회_filter_없으면_provider_populate_미호출() throws Exception {
         FilterDropdownProvider provider = mock(FilterDropdownProvider.class);
-        given(provider.filter()).willReturn("artist");
+        given(provider.filterKey()).willReturn("artist");
         given(postAdminService.getPostsForAdmin(any())).willReturn(new PageImpl<>(List.of()));
 
         MockMvc mvc = MockMvcBuilders.standaloneSetup(

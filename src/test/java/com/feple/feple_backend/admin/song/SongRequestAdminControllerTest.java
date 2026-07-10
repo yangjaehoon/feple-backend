@@ -52,7 +52,7 @@ class SongRequestAdminControllerTest {
 
     @Test
     void 승인_성공_노래_등록됨() throws Exception {
-        given(songRequestAdminService.approve(1L, null)).willReturn(true);
+        given(songRequestAdminService.approveAndMaybeSaveSong(1L, null)).willReturn(true);
 
         mockMvc.perform(post("/admin/song-requests/1/approve"))
                 .andExpect(status().is3xxRedirection())
@@ -61,7 +61,7 @@ class SongRequestAdminControllerTest {
 
     @Test
     void 승인_성공_노래_미등록_youtubeUrl_없음() throws Exception {
-        given(songRequestAdminService.approve(1L, null)).willReturn(false);
+        given(songRequestAdminService.approveAndMaybeSaveSong(1L, null)).willReturn(false);
 
         mockMvc.perform(post("/admin/song-requests/1/approve"))
                 .andExpect(flash().attribute("successMessage", "노래 요청이 승인되었습니다."));
@@ -69,7 +69,7 @@ class SongRequestAdminControllerTest {
 
     @Test
     void 승인_성공_노래_미등록_youtubeUrl_있음() throws Exception {
-        given(songRequestAdminService.approve(1L, "https://youtu.be/abc")).willReturn(false);
+        given(songRequestAdminService.approveAndMaybeSaveSong(1L, "https://youtu.be/abc")).willReturn(false);
 
         mockMvc.perform(post("/admin/song-requests/1/approve")
                         .param("youtubeUrl", "https://youtu.be/abc"))
@@ -79,7 +79,7 @@ class SongRequestAdminControllerTest {
 
     @Test
     void 승인_실패_errorMessage_설정() throws Exception {
-        willThrow(new RuntimeException("오류")).given(songRequestAdminService).approve(anyLong(), any());
+        willThrow(new RuntimeException("오류")).given(songRequestAdminService).approveAndMaybeSaveSong(anyLong(), any());
 
         mockMvc.perform(post("/admin/song-requests/1/approve"))
                 .andExpect(flash().attribute("errorMessage", "승인 처리 중 오류가 발생했습니다."));
@@ -87,7 +87,7 @@ class SongRequestAdminControllerTest {
 
     @Test
     void 승인_후_listRedirect_반환() throws Exception {
-        given(songRequestAdminService.approve(1L, null)).willReturn(true);
+        given(songRequestAdminService.approveAndMaybeSaveSong(1L, null)).willReturn(true);
 
         mockMvc.perform(post("/admin/song-requests/1/approve")
                         .param("status", "PENDING").param("page", "0").param("keyword", ""))

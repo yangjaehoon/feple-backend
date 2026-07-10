@@ -107,12 +107,12 @@ class ArtistSuggestionServiceTest {
                 .isInstanceOf(java.util.NoSuchElementException.class);
     }
 
-    // ── countPending ──────────────────────────────────────────────────
+    // ── getPendingCount ──────────────────────────────────────────────────
 
     @Test
-    void countPending_레포지토리에_위임됨() {
+    void getPendingCount_레포지토리에_위임됨() {
         given(suggestionRepository.countByStatus(ArtistSuggestionStatus.PENDING)).willReturn(5L);
 
-        assertThat(suggestionService.countPending()).isEqualTo(5L);
+        assertThat(suggestionService.getPendingCount()).isEqualTo(5L);
     }
 }

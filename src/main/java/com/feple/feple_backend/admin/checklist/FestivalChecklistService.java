@@ -28,13 +28,14 @@ public class FestivalChecklistService {
     public boolean toggle(Long festivalId, String field) {
         FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
                 .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
-        return checklist.toggle(field);
+        checklist.toggle(field);
+        return checklist.isChecked(field);
     }
 
     @Transactional(readOnly = true)
     public boolean isChecked(Long festivalId, String field) {
         return checklistRepository.findByFestivalId(festivalId)
-                .map(c -> c.valueOf(field))
+                .map(c -> c.isChecked(field))
                 .orElse(false);
     }
 

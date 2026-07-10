@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class GeminiOcrClient {
 
-    private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
     private static final String LINEUP_PROMPT = """
             이 이미지는 음악 페스티벌 라인업 포스터입니다.
             이미지에 나타난 모든 출연 아티스트 이름을 추출하여 JSON 배열 형식으로만 반환하세요.
@@ -112,7 +111,7 @@ public class GeminiOcrClient {
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
         usageTracker.increment();
         // 대형 포스터 이미지 처리 시간을 고려해 넉넉히 설정
-        return geminiApiClient.call(GEMINI_BASE_URL, apiKey, request, Duration.ofSeconds(90));
+        return geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, apiKey, request, Duration.ofSeconds(90));
     }
 
     private List<LineupRawResult> parseLineupJsonArray(String content) {

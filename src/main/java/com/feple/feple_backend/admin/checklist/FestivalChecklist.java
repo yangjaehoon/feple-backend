@@ -43,11 +43,9 @@ public class FestivalChecklist {
         return checklist;
     }
 
-    public boolean toggle(String field) {
+    public void toggle(String field) {
         String key = ChecklistField.fromKey(field).getKey();
-        boolean next = !items.getOrDefault(key, false);
-        items.put(key, next);
-        return next;
+        items.put(key, !items.getOrDefault(key, false));
     }
 
     public int getFieldCount() {
@@ -68,14 +66,14 @@ public class FestivalChecklist {
         this.memo = memo;
     }
 
-    public boolean valueOf(String field) {
+    public boolean isChecked(String field) {
         return Boolean.TRUE.equals(items.get(field));
     }
 
     // Thymeleaf ${cl.lineup1} 등 기존 템플릿 접근 지원
-    public boolean isLineup1()   { return valueOf("lineup1"); }
-    public boolean isLineup2()   { return valueOf("lineup2"); }
-    public boolean isLineup3()   { return valueOf("lineup3"); }
-    public boolean isBoothMap()  { return valueOf("boothMap"); }
-    public boolean isTimetable() { return valueOf("timetable"); }
+    public boolean isLineup1()   { return isChecked("lineup1"); }
+    public boolean isLineup2()   { return isChecked("lineup2"); }
+    public boolean isLineup3()   { return isChecked("lineup3"); }
+    public boolean isBoothMap()  { return isChecked("boothMap"); }
+    public boolean isTimetable() { return isChecked("timetable"); }
 }

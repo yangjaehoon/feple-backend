@@ -114,7 +114,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Override
     @EvictAdminPendingCaches
     @Transactional
-    public boolean approve(Long requestId, String youtubeUrl) {
+    public boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl) {
         SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
 
         request.approve();

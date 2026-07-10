@@ -52,7 +52,7 @@ class BadWordAdminControllerTest {
         mockMvc.perform(get("/admin/bad-words"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/moderation/bad-words"))
-                .andExpect(model().attributeExists("badWords", "nicknameRestrictions", "artistNames"));
+                .andExpect(model().attributeExists("badWords", "nicknameRestrictions", "allArtists"));
     }
 
     // ── POST /admin/bad-words/add ─────────────────────────────────────────────

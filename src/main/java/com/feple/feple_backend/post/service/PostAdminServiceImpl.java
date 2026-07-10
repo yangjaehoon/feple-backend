@@ -92,7 +92,9 @@ public class PostAdminServiceImpl implements PostAdminService {
     public void deletePost(Long postId) {
         Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
         eventPublisher.publishEvent(new PostDeletedByAdminEvent(post.getUserId(), post.getTitle()));
-        postRepository.deleteById(postId);
+        // bulkDeletePosts와 동일하게 소프트 삭제 — 휴지통(getDeletedPosts/restorePost)에서
+        // 복구 가능해야 하므로 단건 삭제만 하드 삭제하면 안 됨
+        postRepository.softDeleteByIds(List.of(postId));
     }
 
     @Override

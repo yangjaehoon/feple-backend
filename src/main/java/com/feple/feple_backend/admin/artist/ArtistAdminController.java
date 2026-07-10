@@ -92,7 +92,7 @@ public class ArtistAdminController {
         model.addAttribute("allGenres", ArtistGenre.values());
         model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
         model.addAttribute("processedSuggestions", artistSuggestionAdminService.getProcessedSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
-        model.addAttribute("processedSuggestionsTotal", artistSuggestionAdminService.countProcessed());
+        model.addAttribute("processedSuggestionsTotal", artistSuggestionAdminService.getProcessedCount());
         return "admin/artist/list";
     }
 
@@ -103,7 +103,7 @@ public class ArtistAdminController {
         AdminActionUtils.tryAction(
                 () -> {
                     artistSuggestionAdminService.dismiss(id, processNote.isBlank() ? null : processNote.trim());
-                    adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST", id, null);
+                    adminLogService.log(AdminAction.ARTIST_SUGGESTION_DISMISS, "ARTIST_SUGGESTION", id, null);
                 },
                 "아티스트 신청이 처리되었습니다.",
                 e -> log.error("아티스트 신청 처리 실패: {}", id, e),

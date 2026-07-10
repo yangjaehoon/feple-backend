@@ -20,6 +20,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 class GeminiApiClient {
 
+    static final String GEMINI_GENERATE_CONTENT_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+
     private final WebClient geminiWebClient;
 
     @SuppressWarnings("unchecked")

@@ -37,7 +37,7 @@ public class BadWordAdminController {
     public String list(Model model) {
         model.addAttribute("badWords", badWordService.findAll());
         model.addAttribute("nicknameRestrictions", nicknameRestrictionService.findAll());
-        model.addAttribute("artistNames", artistService.getAllArtistsSortedByName());
+        model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
         return "admin/moderation/bad-words";
     }
 

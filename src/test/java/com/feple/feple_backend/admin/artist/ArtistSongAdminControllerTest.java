@@ -117,7 +117,7 @@ class ArtistSongAdminControllerTest {
 
     @Test
     void 노래_요청_승인_곡_등록됨_successMessage() throws Exception {
-        given(songRequestAdminService.approve(1L, null)).willReturn(true);
+        given(songRequestAdminService.approveAndMaybeSaveSong(1L, null)).willReturn(true);
 
         mockMvc.perform(post("/admin/artists/1/songs/song-requests/1/approve"))
                 .andExpect(redirectedUrl("/admin/artists/1/songs"))
@@ -127,7 +127,7 @@ class ArtistSongAdminControllerTest {
 
     @Test
     void 노래_요청_승인_youtubeUrl있지만_곡_미등록_successMessage() throws Exception {
-        given(songRequestAdminService.approve(1L, "https://youtu.be/abc")).willReturn(false);
+        given(songRequestAdminService.approveAndMaybeSaveSong(1L, "https://youtu.be/abc")).willReturn(false);
 
         mockMvc.perform(post("/admin/artists/1/songs/song-requests/1/approve")
                         .param("youtubeUrl", "https://youtu.be/abc"))
@@ -137,7 +137,7 @@ class ArtistSongAdminControllerTest {
 
     @Test
     void 노래_요청_승인_url없이_곡_미등록_successMessage() throws Exception {
-        given(songRequestAdminService.approve(1L, null)).willReturn(false);
+        given(songRequestAdminService.approveAndMaybeSaveSong(1L, null)).willReturn(false);
 
         mockMvc.perform(post("/admin/artists/1/songs/song-requests/1/approve"))
                 .andExpect(flash().attribute("successMessage", "노래 요청이 승인되었습니다."));
@@ -145,7 +145,7 @@ class ArtistSongAdminControllerTest {
 
     @Test
     void 노래_요청_승인_실패_errorMessage_설정() throws Exception {
-        willThrow(new RuntimeException("오류")).given(songRequestAdminService).approve(anyLong(), any());
+        willThrow(new RuntimeException("오류")).given(songRequestAdminService).approveAndMaybeSaveSong(anyLong(), any());
 
         mockMvc.perform(post("/admin/artists/1/songs/song-requests/1/approve"))
                 .andExpect(flash().attribute("errorMessage", "노래 요청 승인에 실패했습니다. 다시 시도해주세요."));

@@ -120,10 +120,10 @@
             <div class="card-section-label">
                 아티스트 이름 (자동 적용)
                 <span class="card-title-note"
-                      th:text="${#lists.size(artistNames)} + '명'"></span>
+                      th:text="${#lists.size(allArtists)} + '명'"></span>
             </div>
             <div class="artist-name-restriction-wrap">
-                <th:block th:each="a : ${artistNames}">
+                <th:block th:each="a : ${allArtists}">
                     <span th:if="${a.name != null and !a.name.isEmpty()}"
                           class="nick-restrict-tag"
                           th:text="${a.name}"></span>
@@ -131,7 +131,7 @@
                           class="nick-restrict-tag nick-restrict-tag-en"
                           th:text="${a.nameEn}"></span>
                 </th:block>
-                <span th:if="${#lists.isEmpty(artistNames)}" class="td-muted">등록된 아티스트가 없습니다.</span>
+                <span th:if="${#lists.isEmpty(allArtists)}" class="td-muted">등록된 아티스트가 없습니다.</span>
             </div>
             <p class="hint card-section-hint">
                 아티스트 이름은 닉네임에 포함될 수 없습니다. 아티스트 등록·수정·삭제 시 자동으로 반영됩니다.

@@ -117,7 +117,7 @@ class SongRequestServiceTest {
         given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
 
         // youtubeUrl null → youtube 조회 없이 바로 승인
-        songRequestService.approve(1L, null);
+        songRequestService.approveAndMaybeSaveSong(1L, null);
 
         assertThat(request.getStatus()).isEqualTo(SongRequestStatus.APPROVED);
     }
@@ -137,7 +137,7 @@ class SongRequestServiceTest {
     void 존재하지_않는_요청_승인시_예외() {
         given(songRequestRepository.findById(99L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> songRequestService.approve(99L, null))
+        assertThatThrownBy(() -> songRequestService.approveAndMaybeSaveSong(99L, null))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
