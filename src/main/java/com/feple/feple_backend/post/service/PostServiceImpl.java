@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Service
@@ -187,8 +188,10 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void incrementViewCount(Long postId) {
-        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
-        post.incrementViewCount();
+        if (!postRepository.existsById(postId)) {
+            throw new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId);
+        }
+        postRepository.incrementViewCount(postId);
     }
 
     private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {

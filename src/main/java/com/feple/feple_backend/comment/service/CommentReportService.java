@@ -7,7 +7,6 @@ import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportStatus;
-import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -94,8 +93,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         commentLikeRepository.deleteByCommentId(commentId);
         reportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
-        Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
-        post.decrementCommentCount();
+        postRepository.decrementCommentCount(comment.getPostId());
     }
 
     @EvictAdminReportCaches

@@ -67,7 +67,7 @@ public class CommentServiceImpl implements CommentService {
         }
         Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
         Comment saved = commentRepository.save(comment);
-        post.incrementCommentCount();
+        postRepository.incrementCommentCount(post.getId());
 
         Long postAuthorId = post.getUserId();
         String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
@@ -110,6 +110,15 @@ public class CommentServiceImpl implements CommentService {
                         likedCommentIds.contains(c.getId())))
                 .toList();
         return blockedContentFilter.excludeBlocked(result, userId, CommentResponseDto::getUserId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit) {
+        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, limit))
+                .getContent().stream()
+                .map(c -> CommentResponseDto.from(c, false, false))
+                .toList();
     }
 
     @Override
@@ -157,8 +166,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void deleteAndDecrement(Comment comment) {
         commentRepository.deleteById(comment.getId());
-        Post post = EntityFinder.getOrThrow(postRepository::findById, comment.getPostId(), "게시글");
-        post.decrementCommentCount();
+        postRepository.decrementCommentCount(comment.getPostId());
     }
 
     @Override

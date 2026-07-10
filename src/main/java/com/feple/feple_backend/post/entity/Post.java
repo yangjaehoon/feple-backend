@@ -94,10 +94,6 @@ public class Post {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void incrementViewCount() {
-        this.viewCount++;
-    }
-
     public void incrementLikeCount() {
         this.likeCount++;
     }
@@ -117,12 +113,6 @@ public class Post {
     private int commentCount = 0;
 
     public int getCommentCount() { return commentCount; }
-
-    public void incrementCommentCount() { this.commentCount++; }
-
-    public void decrementCommentCount() {
-        if (this.commentCount > 0) this.commentCount--;
-    }
 
     @Builder.Default
     @OneToMany(mappedBy = "post")

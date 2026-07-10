@@ -34,15 +34,6 @@ public final class TestEntityFactory {
                 .build();
     }
 
-    public static Post freePostWithCommentCount(Long id, User author, int commentCount) {
-        return Post.builder()
-                .id(id).title("제목" + id).content("내용")
-                .user(author).boardType(BoardType.FREE)
-                .likeCount(0).scrapCount(0).commentCount(commentCount)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
-                .build();
-    }
-
     public static Post freePostWithScrapCount(Long id, User author, int scrapCount) {
         return Post.builder()
                 .id(id).title("제목" + id).content("내용")

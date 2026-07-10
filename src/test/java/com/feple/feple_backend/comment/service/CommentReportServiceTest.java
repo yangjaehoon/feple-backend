@@ -13,9 +13,7 @@ import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 
-import static com.feple.feple_backend.support.TestEntityFactory.freePostWithCommentCount;
 import static com.feple.feple_backend.support.TestEntityFactory.user;
-import com.feple.feple_backend.post.entity.Post;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -116,17 +114,15 @@ class CommentReportServiceTest {
         given(comment.getPostId()).willReturn(5L);
         User reporter = user(1L);
         CommentReport report = pendingReport(1L, comment, reporter);
-        Post post = freePostWithCommentCount(5L, reporter, 1);
         given(reportRepository.findById(1L)).willReturn(Optional.of(report));
         given(commentRepository.findById(10L)).willReturn(Optional.of(comment));
-        given(postRepository.findById(5L)).willReturn(Optional.of(post));
 
         commentReportService.deleteContentAndResolve(1L);
 
         verify(commentLikeRepository).deleteByCommentId(10L);
         verify(reportRepository).deleteByCommentId(10L);
         verify(commentRepository).deleteById(10L);
-        assertThat(post.getCommentCount()).isEqualTo(0);
+        verify(postRepository).decrementCommentCount(5L);
     }
 
     // ── dismissReport ────────────────────────────────────────────────
