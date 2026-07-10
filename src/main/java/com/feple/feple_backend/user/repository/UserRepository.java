@@ -5,8 +5,10 @@ import com.feple.feple_backend.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +17,13 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByProviderAndOauthId(AuthProvider provider, String oauthId);
+
+    // point += delta를 원자적 UPDATE로 처리 — 동시 이벤트(좋아요/댓글/게시글 작성 등)가
+    // REQUIRES_NEW로 병렬 커밋될 때 read-modify-write로 인한 lost update를 방지한다.
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE users SET point = GREATEST(0, point + :delta) WHERE id = :id", nativeQuery = true)
+    void addPointAtomically(@Param("id") Long id, @Param("delta") int delta);
 
     @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND " +
            "(LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")

@@ -32,9 +32,10 @@ public class PointService {
 
     @Transactional
     public void addPoint(Long userId, int delta, PointReason reason, Long refId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) return;
-        user.addPoint(delta);
+        if (!userRepository.existsById(userId)) return;
+        // 원자적 UPDATE로 point를 갱신 — 동시 이벤트 간 lost update 방지(User.point 참조).
+        userRepository.addPointAtomically(userId, delta);
+        User user = userRepository.getReferenceById(userId);
         pointLogRepository.save(UserPointLog.of(user, delta, reason, refId));
     }
 

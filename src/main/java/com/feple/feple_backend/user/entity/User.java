@@ -130,10 +130,6 @@ public class User {
         this.bio = bio;
     }
 
-    public void addPoint(int delta) {
-        this.point = Math.max(0, this.point + delta);
-    }
-
     public UserLevel getLevel() {
         return UserLevel.of(this.point);
     }
