@@ -45,6 +45,8 @@ public class NicknameGenerator {
         if (base.length() > 8) base = base.substring(0, 8);
         if (base.length() < 2) base = "User";
         if (!userRepository.existsByNickname(base)) return base;
+        // base(최대 6자) + i(최대 3자리)로 최대 9자 — NicknameValidator의 8자 제한을 넘을 수 있음
+        // (OAuth 자동 생성 경로는 NicknameValidator를 거치지 않아 여기서 걸러지지 않으면 그대로 저장됨)
         for (int i = 2; i <= 999; i++) {
             String candidate = base.substring(0, Math.min(base.length(), 6)) + i;
             if (!userRepository.existsByNickname(candidate)) return candidate;

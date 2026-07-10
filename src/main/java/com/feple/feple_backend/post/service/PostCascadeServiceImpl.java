@@ -53,6 +53,7 @@ public class PostCascadeServiceImpl implements PostCascadeService {
     private void deletePostLikesAndPosts(List<Post> posts) {
         if (posts.isEmpty()) return;
         List<Long> postIds = posts.stream().map(Post::getId).toList();
+        // 자식 → 부모 순서로 삭제 (FK 제약)
         commentService.deleteByPostIds(postIds);
         postLikeRepository.deleteByPostIds(postIds);
         postScrapRepository.deleteByPostIds(postIds);

@@ -76,6 +76,7 @@ public class PostServiceImpl implements PostService {
                 ? postRepository.findByBoardTypeOrderByIdDesc(boardType, limit)
                 : postRepository.findByBoardTypeAndIdLessThanOrderByIdDesc(boardType, cursor, limit);
         boolean hasNext = posts.size() == fetchSize;
+        // 차단 필터링은 자른 뒤 적용 — hasNext는 필터링 전 fetch 개수 기준
         List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
                 posts.stream().limit(size).map(PostResponseDto::from).toList(), viewerId, PostResponseDto::getUserId);
         Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;

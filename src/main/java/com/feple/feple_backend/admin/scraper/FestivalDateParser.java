@@ -17,6 +17,7 @@ final class FestivalDateParser {
         Matcher matcher = DATE_PATTERN.matcher(raw);
         if (!matcher.find()) return new String[]{"", ""};
         String start = format(matcher.group(1), matcher.group(2), matcher.group(3));
+        // 동일 Matcher로 find() 재호출 — 첫 매치 이후 위치에서 종료일 탐색
         String end   = matcher.find() ? format(matcher.group(1), matcher.group(2), matcher.group(3)) : start;
         return new String[]{start, end};
     }

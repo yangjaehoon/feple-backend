@@ -46,6 +46,7 @@ public class ArtistCascadeDeleteService {
         galleryPhotoLikeRepository.deleteByArtistId(artist.getId());
         galleryPhotoRepository.deleteByArtistId(artist.getId());
 
+        // 이후 각 단계도 FK 참조 순서를 따름 (artist 삭제 전 모든 참조 정리)
         List<Long> artistFestivalIds = artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artist.getId())
                 .stream().map(ArtistFestival::getId).toList();
         if (!artistFestivalIds.isEmpty()) {

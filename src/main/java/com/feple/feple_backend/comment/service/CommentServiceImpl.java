@@ -200,6 +200,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteByPostIds(List<Long> postIds) {
         if (postIds.isEmpty()) return;
+        // FK 순서: CommentLike → CommentReport → Comment
         commentLikeRepository.deleteByPostIds(postIds);
         commentReportRepository.deleteByPostIds(postIds);
         commentRepository.deleteByPostIds(postIds);
