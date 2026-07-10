@@ -85,4 +85,31 @@ class GeminiApiClientTest {
 
         assertThat(result).isEmpty();
     }
+
+    // ── isTruncated ───────────────────────────────────────────────────────────
+
+    @Test
+    void isTruncated_finishReason이_MAX_TOKENS이면_true() {
+        Map<String, Object> response = Map.of(
+                "candidates", List.of(Map.of("finishReason", "MAX_TOKENS"))
+        );
+
+        assertThat(geminiApiClient.isTruncated(response)).isTrue();
+    }
+
+    @Test
+    void isTruncated_finishReason이_STOP이면_false() {
+        Map<String, Object> response = Map.of(
+                "candidates", List.of(Map.of("finishReason", "STOP"))
+        );
+
+        assertThat(geminiApiClient.isTruncated(response)).isFalse();
+    }
+
+    @Test
+    void isTruncated_finishReason이_없으면_false() {
+        Map<String, Object> response = Map.of("candidates", List.of(Map.of()));
+
+        assertThat(geminiApiClient.isTruncated(response)).isFalse();
+    }
 }

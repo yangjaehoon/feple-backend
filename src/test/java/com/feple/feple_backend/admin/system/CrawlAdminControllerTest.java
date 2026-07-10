@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.ocr.LineupApplyOcrRequestDto;
 import com.feple.feple_backend.admin.ocr.LineupApplyResult;
 import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
+import com.feple.feple_backend.admin.ocr.OcrParseResult;
 import com.feple.feple_backend.admin.ocr.OcrResultDto;
 import com.feple.feple_backend.admin.ocr.OcrService;
 import com.feple.feple_backend.admin.scraper.ScrapedFestivalDto;
@@ -164,7 +165,7 @@ class CrawlAdminControllerTest {
         MockMultipartFile image = new MockMultipartFile("image", "test.jpg",
                 MediaType.IMAGE_JPEG_VALUE, new byte[]{1, 2, 3});
         given(ocrService.isConfigured()).willReturn(true);
-        given(ocrService.parseTimeTable(any(), any())).willReturn(List.of());
+        given(ocrService.parseTimeTable(any(), any())).willReturn(new OcrParseResult<>(List.of(), false));
 
         mockMvc.perform(multipart("/admin/crawl/ocr").file(image))
                 .andExpect(status().isOk());

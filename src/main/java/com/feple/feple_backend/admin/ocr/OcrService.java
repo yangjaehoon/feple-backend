@@ -45,7 +45,7 @@ public class OcrService {
         return geminiOcrClient.getDailyLimit();
     }
 
-    public List<OcrResultDto> parseTimeTable(MultipartFile image, Integer year) throws IOException {
+    public OcrParseResult<OcrResultDto> parseTimeTable(MultipartFile image, Integer year) throws IOException {
         return geminiOcrClient.parseTimeTable(image, year);
     }
 
@@ -104,9 +104,10 @@ public class OcrService {
 
     // ── 라인업 OCR ──────────────────────────────────────────
 
-    public List<ArtistLineupOcrResult> parseArtistLineup(MultipartFile image) throws IOException {
-        List<LineupRawResult> raw = geminiOcrClient.parseLineup(image);
-        return raw.stream().map(this::matchArtist).toList();
+    public OcrParseResult<ArtistLineupOcrResult> parseArtistLineup(MultipartFile image) throws IOException {
+        OcrParseResult<LineupRawResult> raw = geminiOcrClient.parseLineup(image);
+        List<ArtistLineupOcrResult> matched = raw.entries().stream().map(this::matchArtist).toList();
+        return new OcrParseResult<>(matched, raw.truncated());
     }
 
     private ArtistLineupOcrResult matchArtist(LineupRawResult raw) {

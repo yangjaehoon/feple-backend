@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.ocr.LineupApplyOcrRequestDto;
 import com.feple.feple_backend.admin.ocr.LineupApplyResult;
 import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
+import com.feple.feple_backend.admin.ocr.OcrParseResult;
 import com.feple.feple_backend.admin.ocr.OcrResultDto;
 import com.feple.feple_backend.admin.ocr.OcrService;
 import com.feple.feple_backend.admin.ocr.UnmatchedArtistSuggestionDto;
@@ -111,7 +112,7 @@ public class CrawlAdminController {
                             ErrorCode.SERVICE_UNAVAILABLE));
         }
         try {
-            List<OcrResultDto> results = ocrService.parseTimeTable(image, year);
+            OcrParseResult<OcrResultDto> results = ocrService.parseTimeTable(image, year);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             log.error("OCR 파싱 실패", e);
@@ -146,7 +147,7 @@ public class CrawlAdminController {
                             ErrorCode.SERVICE_UNAVAILABLE));
         }
         try {
-            List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image);
+            OcrParseResult<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             log.error("라인업 OCR 파싱 실패", e);

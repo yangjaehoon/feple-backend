@@ -47,6 +47,12 @@ class GeminiApiClient {
         return current;
     }
 
+    /** Gemini가 maxOutputTokens 한도에 걸려 응답을 중간에 끊었는지 여부 */
+    boolean isTruncated(Map<?, ?> response) {
+        Object finishReason = getNestedValue(response, "candidates", 0, "finishReason");
+        return "MAX_TOKENS".equals(finishReason);
+    }
+
     String extractText(Map<?, ?> response) {
         try {
             Object partsObj = getNestedValue(response, "candidates", 0, "content", "parts");

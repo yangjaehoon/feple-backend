@@ -65,13 +65,14 @@ public class GeminiOcrClient {
         return usageTracker.getDailyLimit();
     }
 
-    public List<OcrResultDto> parseTimeTable(MultipartFile image, Integer year) throws IOException {
+    public OcrParseResult<OcrResultDto> parseTimeTable(MultipartFile image, Integer year) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
         String prompt = year != null ? buildPromptWithYear(year) : PROMPT;
-        String content = geminiApiClient.extractText(callGeminiApi(buildGeminiRequest(prompt, base64, mimeType)));
+        Map<?, ?> response = callGeminiApi(buildGeminiRequest(prompt, base64, mimeType));
+        String content = geminiApiClient.extractText(response);
         log.debug("Gemini OCR raw response: {}", content);
-        return parseJsonArray(content);
+        return new OcrParseResult<>(parseJsonArray(content), geminiApiClient.isTruncated(response));
     }
 
     private String buildPromptWithYear(int year) {
@@ -79,12 +80,13 @@ public class GeminiOcrClient {
                 + year + "년으로 간주하여 " + year + "-MM-dd 형식으로 변환하세요.";
     }
 
-    public List<LineupRawResult> parseLineup(MultipartFile image) throws IOException {
+    public OcrParseResult<LineupRawResult> parseLineup(MultipartFile image) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
-        String content = geminiApiClient.extractText(callGeminiApi(buildGeminiRequest(LINEUP_PROMPT, base64, mimeType)));
+        Map<?, ?> response = callGeminiApi(buildGeminiRequest(LINEUP_PROMPT, base64, mimeType));
+        String content = geminiApiClient.extractText(response);
         log.debug("Gemini Lineup OCR raw response: {}", content);
-        return parseLineupJsonArray(content);
+        return new OcrParseResult<>(parseLineupJsonArray(content), geminiApiClient.isTruncated(response));
     }
 
     private Map<String, Object> buildGeminiRequest(String prompt, String base64, String mimeType) {
@@ -98,8 +100,12 @@ public class GeminiOcrClient {
                                 ))
                         )
                 )),
-                // 응답이 이 토큰 수를 넘으면 잘림 — parseJsonArray의 partial recovery 로직과 연결됨
-                "generationConfig", Map.of("maxOutputTokens", 8192)
+                // responseMimeType으로 마크다운 코드블록 없이 순수 JSON을 강제하고,
+                // maxOutputTokens을 넉넉히 잡아 대형 포스터에서의 절단 빈도를 낮춘다.
+                // 그래도 잘리는 경우는 isTruncated()로 감지해 호출부에 명시적으로 알린다.
+                "generationConfig", Map.of(
+                        "maxOutputTokens", 16384,
+                        "responseMimeType", "application/json")
         );
     }
 

@@ -420,9 +420,9 @@
                 if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '파싱 실패'); });
                 return r.json();
             })
-            .then(function (results) {
+            .then(function (data) {
                 setTimeout(function () { document.getElementById('ocrProgress').classList.remove('visible'); }, 500);
-                renderOcrResults(results);
+                renderOcrResults(data.entries, data.truncated);
                 loadQuota();
             })
             .catch(function (err) {
@@ -491,11 +491,13 @@
         submitOcrRequest(ocrPendingFile);
     });
 
-    function renderOcrResults(results) {
+    function renderOcrResults(results, truncated) {
         var body = document.getElementById('ocrParseBody');
         body.innerHTML = '';
         rowIndex = 0;
         var hasLow = false;
+
+        document.getElementById('ocrTruncatedBox').classList.toggle('d-none', !truncated);
 
         results.forEach(function (row) {
             var conf = row.confidence != null ? row.confidence : 0;
@@ -827,9 +829,9 @@
                 if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || '파싱 실패'); });
                 return r.json();
             })
-            .then(function (results) {
+            .then(function (data) {
                 setTimeout(function () { document.getElementById('lineupProgress').classList.remove('visible'); }, 500);
-                renderLineupResults(results);
+                renderLineupResults(data.entries, data.truncated);
                 loadQuota();
             })
             .catch(function (err) {
@@ -868,10 +870,12 @@
         submitLineupRequest(lineupPendingFile);
     });
 
-    function renderLineupResults(results) {
+    function renderLineupResults(results, truncated) {
         var body = document.getElementById('lineupParseBody');
         body.innerHTML = '';
         var hasUnmatched = false;
+
+        document.getElementById('lineupTruncatedBox').classList.toggle('d-none', !truncated);
 
         results.forEach(function (row) {
             var matched = row.artistId != null;

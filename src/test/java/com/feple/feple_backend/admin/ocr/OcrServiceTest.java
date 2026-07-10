@@ -159,10 +159,10 @@ class OcrServiceTest {
         Artist artist = mock(Artist.class);
         given(artist.getId()).willReturn(10L);
         given(artist.getName()).willReturn("아이유");
-        given(geminiOcrClient.parseLineup(any())).willReturn(List.of(new LineupRawResult("아이유", 95)));
+        given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("아이유", 95)), false));
         given(artistRepository.findExactByNameIgnoreCase("아이유")).willReturn(Optional.of(artist));
 
-        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null);
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
         assertThat(results).hasSize(1);
         assertThat(results.get(0).artistId()).isEqualTo(10L);
@@ -174,11 +174,11 @@ class OcrServiceTest {
         Artist artist = mock(Artist.class);
         given(artist.getId()).willReturn(20L);
         given(artist.getName()).willReturn("아이유");
-        given(geminiOcrClient.parseLineup(any())).willReturn(List.of(new LineupRawResult("IU", 80)));
+        given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("IU", 80)), false));
         given(artistRepository.findExactByNameIgnoreCase("IU")).willReturn(Optional.empty());
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase("IU")).willReturn(List.of(artist));
 
-        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null);
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
         assertThat(results.get(0).artistId()).isEqualTo(20L);
     }
@@ -187,11 +187,11 @@ class OcrServiceTest {
     void parseArtistLineup_부분_매칭이_복수면_artistId_null_반환() throws Exception {
         Artist a1 = mock(Artist.class);
         Artist a2 = mock(Artist.class);
-        given(geminiOcrClient.parseLineup(any())).willReturn(List.of(new LineupRawResult("IU", 70)));
+        given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("IU", 70)), false));
         given(artistRepository.findExactByNameIgnoreCase("IU")).willReturn(Optional.empty());
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase("IU")).willReturn(List.of(a1, a2));
 
-        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null);
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
         assertThat(results.get(0).artistId()).isNull();
         assertThat(results.get(0).matchedName()).isNull();
@@ -199,11 +199,11 @@ class OcrServiceTest {
 
     @Test
     void parseArtistLineup_매칭_없으면_artistId_null_반환() throws Exception {
-        given(geminiOcrClient.parseLineup(any())).willReturn(List.of(new LineupRawResult("존재안함", 50)));
+        given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("존재안함", 50)), false));
         given(artistRepository.findExactByNameIgnoreCase("존재안함")).willReturn(Optional.empty());
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase("존재안함")).willReturn(List.of());
 
-        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null);
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
         assertThat(results.get(0).artistId()).isNull();
         assertThat(results.get(0).parsedName()).isEqualTo("존재안함");
@@ -214,12 +214,24 @@ class OcrServiceTest {
         Artist artist = mock(Artist.class);
         given(artist.getId()).willReturn(1L);
         given(artist.getName()).willReturn("아이유");
-        given(geminiOcrClient.parseLineup(any())).willReturn(List.of(new LineupRawResult("아이유", null)));
+        given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("아이유", null)), false));
         given(artistRepository.findExactByNameIgnoreCase("아이유")).willReturn(Optional.of(artist));
 
-        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null);
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
         assertThat(results.get(0).confidence()).isEqualTo(0);
+    }
+
+    @Test
+    void parseArtistLineup_geminiOcrClient가_truncated_true면_그대로_전파() throws Exception {
+        given(geminiOcrClient.parseLineup(any()))
+                .willReturn(new OcrParseResult<>(List.of(new LineupRawResult("아이유", 95)), true));
+        given(artistRepository.findExactByNameIgnoreCase("아이유")).willReturn(Optional.empty());
+        given(artistRepository.findByNameOrNameEnContainingIgnoreCase("아이유")).willReturn(List.of());
+
+        OcrParseResult<ArtistLineupOcrResult> result = ocrService.parseArtistLineup(null);
+
+        assertThat(result.truncated()).isTrue();
     }
 
     // ── applyArtistLineup ─────────────────────────────────────────────────────
