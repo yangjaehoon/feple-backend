@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.system.BroadcastNotificationView;
 import com.feple.feple_backend.admin.system.PushFormData;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
@@ -58,7 +59,7 @@ public class AdminPushService {
     }
 
     private List<BroadcastNotificationView> getBroadcastHistory() {
-        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 100))
+        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, AdminConstants.BROADCAST_HISTORY_LIMIT))
                 .stream().map(BroadcastNotificationView::from).toList();
     }
 
