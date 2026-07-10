@@ -41,6 +41,7 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         PREFIX_MAP.put("/admin/crawl",               AdminPermission.CRAWL);
         PREFIX_MAP.put("/admin/logs",                AdminPermission.LOGS);
         PREFIX_MAP.put("/admin/accounts",            null); // SUPER_ADMIN 전용
+        PREFIX_MAP.put("/admin/push",                null); // SUPER_ADMIN 전용
     }
 
     @Override

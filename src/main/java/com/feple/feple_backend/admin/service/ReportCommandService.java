@@ -8,13 +8,16 @@ public interface ReportCommandService {
     void dismissReport(Long reportId);
     void bulkDismiss(List<Long> ids);
     void deleteContentAndResolve(Long reportId);
-    default void bulkDeleteContent(List<Long> ids) {
+    default int bulkDeleteContent(List<Long> ids) {
+        int success = 0;
         for (Long id : ids) {
             try {
                 deleteContentAndResolve(id);
+                success++;
             } catch (Exception e) {
                 LoggerFactory.getLogger(ReportCommandService.class).warn("bulk delete failed id={}", id, e);
             }
         }
+        return success;
     }
 }

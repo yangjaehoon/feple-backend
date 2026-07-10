@@ -87,8 +87,8 @@ class FestivalChecklistTest {
     @Test
     void 모든_항목_토글하면_completedCount_5이고_isAllCompleted_true() {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
-        for (String field : FestivalChecklist.ALL_FIELDS) {
-            checklist.toggle(field);
+        for (ChecklistField f : ChecklistField.values()) {
+            checklist.toggle(f.getKey());
         }
 
         assertThat(checklist.getCompletedCount()).isEqualTo(5);

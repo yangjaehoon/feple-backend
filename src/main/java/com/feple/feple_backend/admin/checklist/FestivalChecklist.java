@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -16,7 +16,6 @@ import java.util.Map;
 @Table(name = "festival_checklist")
 public class FestivalChecklist {
 
-    static final List<String> ALL_FIELDS = List.of("lineup1", "lineup2", "lineup3", "boothMap", "timetable");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,24 +44,24 @@ public class FestivalChecklist {
     }
 
     public boolean toggle(String field) {
-        if (!ALL_FIELDS.contains(field)) {
-            throw new IllegalArgumentException("알 수 없는 항목: " + field);
-        }
-        boolean next = !items.getOrDefault(field, false);
-        items.put(field, next);
+        String key = ChecklistField.fromKey(field).getKey();
+        boolean next = !items.getOrDefault(key, false);
+        items.put(key, next);
         return next;
     }
 
     public int getFieldCount() {
-        return ALL_FIELDS.size();
+        return ChecklistField.values().length;
     }
 
     public int getCompletedCount() {
-        return (int) ALL_FIELDS.stream().filter(f -> Boolean.TRUE.equals(items.get(f))).count();
+        return (int) Arrays.stream(ChecklistField.values())
+                .filter(f -> Boolean.TRUE.equals(items.get(f.getKey()))).count();
     }
 
     public boolean isAllCompleted() {
-        return ALL_FIELDS.stream().allMatch(f -> Boolean.TRUE.equals(items.get(f)));
+        return Arrays.stream(ChecklistField.values())
+                .allMatch(f -> Boolean.TRUE.equals(items.get(f.getKey())));
     }
 
     public void updateMemo(String memo) {
@@ -70,7 +69,7 @@ public class FestivalChecklist {
     }
 
     public boolean valueOf(String field) {
-        return Boolean.TRUE.equals(items.get(field));
+        return Boolean.TRUE.equals(items.get(ChecklistField.fromKey(field).getKey()));
     }
 
     // Thymeleaf ${cl.lineup1} 등 기존 템플릿 접근 지원

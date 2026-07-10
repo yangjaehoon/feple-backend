@@ -4,6 +4,8 @@ import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import static jakarta.persistence.EnumType.STRING;
+
 @Entity
 @Table(name = "admin_logs", indexes = {
         @Index(name = "idx_admin_logs_created_at", columnList = "created_at"),
@@ -22,8 +24,9 @@ public class AdminLog extends BaseTimeEntity {
     @Column(name = "admin_username", length = 100)
     private String adminUsername;
 
+    @Enumerated(STRING)
     @Column(nullable = false, length = 50)
-    private String action;
+    private AdminAction action;
 
     @Column(name = "target_type", length = 30)
     private String targetType;

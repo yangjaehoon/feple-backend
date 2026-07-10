@@ -70,13 +70,13 @@
                             th:text="${entry.ipAddress != null ? entry.ipAddress : '—'}"></td>
 
                         <td>
-                            <span th:with="a=${entry.action}"
+                            <span th:with="a=${entry.action.name()}"
                                   th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT')}
                                            ? 'log-badge log-danger'
                                            : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'}
                                               ? 'log-badge log-success'
                                               : 'log-badge log-info')"
-                                  th:text="${actionLabels.getOrDefault(entry.action, #strings.replace(entry.action, '_', ' '))}">
+                                  th:text="${actionLabels.getOrDefault(a, #strings.replace(a, '_', ' '))}">
                             </span>
                         </td>
 

@@ -104,15 +104,23 @@ public class ReportAdminController {
                              @ModelAttribute ReportFilter filter,
                              RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) return emptySelectionRedirect(filter, ra);
+        int[] done = {0};
         AdminActionUtils.tryAction(
                 () -> {
-                    resolveHandler(filter.type()).bulkDeleteContent(ids);
-                    adminLogService.log(AdminAction.REPORT_BULK_DELETE, "REPORT", null, filter.type() + " " + ids.size() + "건");
+                    done[0] = resolveHandler(filter.type()).bulkDeleteContent(ids);
+                    adminLogService.log(AdminAction.REPORT_BULK_DELETE, "REPORT", null,
+                            filter.type() + " " + done[0] + "/" + ids.size() + "건");
                 },
-                ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다.",
+                null,
                 e -> log.error("신고 일괄 삭제 실패 type={} ids={}", filter.type(), ids, e),
                 "일괄 삭제 처리 중 오류가 발생했습니다.",
                 ra);
+        if (!ra.getFlashAttributes().containsKey("errorMessage")) {
+            String msg = done[0] == ids.size()
+                    ? ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다."
+                    : done[0] + "/" + ids.size() + "건 처리 완료 (일부 실패)";
+            ra.addFlashAttribute("successMessage", msg);
+        }
         return redirectReports(filter);
     }
 

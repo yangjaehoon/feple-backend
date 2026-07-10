@@ -283,11 +283,12 @@
                     </div>
                     <div class="activity-list">
                         <div th:each="entry : ${recentLogs}" class="act-item">
-                            <div th:class="${#strings.contains(entry.action,'DELETE') or #strings.contains(entry.action,'BAN') or #strings.contains(entry.action,'REJECT')} ? 'act-dot red'
-                                         : (${#strings.contains(entry.action,'CREATE') or #strings.contains(entry.action,'ADD') or #strings.contains(entry.action,'APPROVE') or entry.action == 'USER_UNBAN'} ? 'act-dot green'
+                            <div th:with="a=${entry.action.name()}"
+                                 th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT')} ? 'act-dot red'
+                                         : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'} ? 'act-dot green'
                                          : 'act-dot yellow')"></div>
                             <div class="act-body">
-                                <div class="act-type" th:text="${actionLabels.getOrDefault(entry.action, #strings.replace(entry.action, '_', ' '))}"></div>
+                                <div class="act-type" th:text="${actionLabels.getOrDefault(entry.action.name(), #strings.replace(entry.action.name(), '_', ' '))}"></div>
                                 <div class="act-title" th:text="${entry.detail != null ? entry.detail : (entry.targetType != null ? entry.targetType + (entry.targetId != null ? ' #' + entry.targetId : '') : '—')}"></div>
                             </div>
                             <div class="act-meta"
@@ -311,6 +312,7 @@
                                   placeholder="메모를 입력하세요..." maxlength="500"></textarea>
                         <div class="memo-btns">
                             <button id="memo-add-btn" class="btn btn-primary btn-sm">저장</button>
+                            <span class="memo-storage-hint">이 브라우저에만 저장됩니다.</span>
                         </div>
                         <div class="memo-saved" id="memo-saved"></div>
                     </div>

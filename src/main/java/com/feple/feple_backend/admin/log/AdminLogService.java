@@ -40,7 +40,7 @@ public class AdminLogService {
         try {
             repository.save(AdminLog.builder()
                     .adminUsername(adminUsername)
-                    .action(action.name())
+                    .action(action)
                     .targetType(targetType)
                     .targetId(targetId)
                     .detail(detail)
@@ -48,7 +48,7 @@ public class AdminLogService {
                     .build());
         } catch (Exception e) {
             // 감사 로그 저장 실패가 관리자 액션 자체를 중단시켜선 안 됨 — fail-safe
-            log.error("감사 로그 저장 실패: action={}, targetType={}, targetId={}", action.name(), targetType, targetId, e);
+            log.error("감사 로그 저장 실패: action={}, targetType={}, targetId={}", action, targetType, targetId, e);
         }
     }
 

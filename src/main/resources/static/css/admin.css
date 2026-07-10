@@ -735,7 +735,8 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
   background: var(--bg-2); color: var(--text); outline: none; transition: border-color .15s; line-height: 1.55;
 }
 .memo-textarea:focus { border-color: var(--primary); background: var(--surface); }
-.memo-btns { display: flex; gap: 6px; margin-top: 7px; }
+.memo-btns { display: flex; gap: 6px; margin-top: 7px; align-items: center; }
+.memo-storage-hint { font-size: 11px; color: var(--muted); }
 .memo-saved { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
 .memo-chip {
   background: var(--accent-bg); border: 1px solid var(--warning-bd);
