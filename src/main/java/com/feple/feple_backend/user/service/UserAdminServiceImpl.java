@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityFinder;
 import com.feple.feple_backend.global.LikeEscaper;
@@ -114,7 +115,7 @@ public class UserAdminServiceImpl implements UserAdminService {
             batch = userRepository.findAllByDeletedAtIsNull(
                     PageableFactory.newestId(page++, batchSize));
             batch.forEach(u -> result.add(toAdminUserDto(u)));
-        } while (batch.hasNext());
+        } while (batch.hasNext() && result.size() < AdminConstants.MAX_EXPORT_ROWS);
         return result;
     }
 

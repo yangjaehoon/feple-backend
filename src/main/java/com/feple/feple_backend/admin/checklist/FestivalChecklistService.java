@@ -6,7 +6,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -18,8 +17,8 @@ public class FestivalChecklistService {
 
     @Transactional(readOnly = true)
     @Cacheable(value = "festivalChecklistMap", key = "'all'")
-    public Map<Long, FestivalChecklist> getChecklistMap(List<Long> festivalIds) {
-        return checklistRepository.findByFestivalIdIn(festivalIds)
+    public Map<Long, FestivalChecklist> getChecklistMap() {
+        return checklistRepository.findAll()
                 .stream()
                 .collect(Collectors.toMap(FestivalChecklist::getFestivalId, c -> c));
     }

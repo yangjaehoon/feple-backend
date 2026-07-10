@@ -94,12 +94,11 @@ public class FestivalAdminController {
         Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, 30);
 
         List<FestivalResponseDto> activeFestivals = festivalService.getAllActiveFestivalsForAdmin();
-        List<Long> activeIds = activeFestivals.stream().map(FestivalResponseDto::getId).toList();
 
         model.addAttribute("festivalsPage", festivalsPage);
         model.addAttribute("festivals", activeFestivals);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap(activeIds));
+        model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap());
         model.addAttribute("activeFestivalCount", (long) activeFestivals.size());
         return "admin/festival/list";
     }

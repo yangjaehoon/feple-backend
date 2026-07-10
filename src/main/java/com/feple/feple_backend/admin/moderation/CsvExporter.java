@@ -41,11 +41,14 @@ public final class CsvExporter {
     }
 
     public static ResponseEntity<byte[]> csvResponse(String content, String filename) {
+        // UTF-8 BOM(EF BB BF): Excel이 파일을 UTF-8로 인식하게 강제. BOM 없으면 한글이 깨짐.
         byte[] bom    = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
         byte[] body   = content.getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[bom.length + body.length];
         System.arraycopy(bom,  0, result, 0,          bom.length);
         System.arraycopy(body, 0, result, bom.length, body.length);
+        // RFC 5987: filename*=UTF-8''<percent-encoded> 형식으로 한글 파일명 지원.
+        // 구형 브라우저용 filename= 폴백은 생략 (관리자 전용이므로 최신 브라우저 가정).
         String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "text/csv;charset=UTF-8")

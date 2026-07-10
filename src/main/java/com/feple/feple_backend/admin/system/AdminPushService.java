@@ -123,6 +123,11 @@ public class AdminPushService {
         if (tokens.isEmpty()) {
             throw new IllegalArgumentException("등록된 디바이스 토큰이 없습니다.");
         }
+        // 전체 발송은 BroadcastNotification 단일 레코드만 저장한다.
+        // 개별 Notification을 유저 수만큼 INSERT하면 대규모 DB 부하가 생기고,
+        // 앱은 BroadcastNotification 타임라인을 별도로 조회해 알림 목록에 노출한다.
+        // 특정 대상 발송(sendToArtistFollowers, sendToFestivalCertified)은 실제 Notification을 저장해
+        // 개인 알림 목록에도 표시되게 한다.
         broadcastNotificationRepository.save(BroadcastNotification.of(title, body));
         log.info("[AdminPush] 전체 푸시 발송 시작 — 토큰 {}개, 제목: {}", tokens.size(), title);
         fcmPushService.sendBroadcast(tokens, title, body);
