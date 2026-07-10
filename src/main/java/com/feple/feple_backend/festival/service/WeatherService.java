@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -72,8 +71,8 @@ public class WeatherService {
      * 스케줄러 전용: API에서 날씨를 수집해 DB에 저장.
      * 종료된 페스티벌·API 키 미설정·날짜 범위 초과 시 false 반환(정상 스킵).
      * API 호출 실패 시 예외를 그대로 전파.
+     * 외부 API 호출(fetchFromApi)이 커넥션을 물고 있지 않도록 트랜잭션은 DB 저장(saveOrUpdate)에만 건다.
      */
-    @Transactional
     public boolean collectWeather(Festival festival) {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
@@ -94,7 +93,6 @@ public class WeatherService {
     }
 
     /** 컨트롤러 전용: API 실패 시 캐시 데이터로 폴백. */
-    @Transactional
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
         Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
