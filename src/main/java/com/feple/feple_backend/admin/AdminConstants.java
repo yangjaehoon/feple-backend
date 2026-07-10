@@ -13,7 +13,8 @@ public final class AdminConstants {
     public static final int DELETED_POSTS_LIMIT     = 200;
     public static final int TREND_TOP_LIMIT         = 10;
     public static final int TREND_UPCOMING_DAYS     = 30;
-    public static final int BROADCAST_HISTORY_LIMIT = 100;
+    public static final int BROADCAST_HISTORY_LIMIT  = 100;
+    public static final int POST_DETAIL_COMMENT_LIMIT = 100;
 
     public static final String REPORT_TYPE_POST    = "post";
     public static final String REPORT_TYPE_COMMENT = "comment";

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -64,7 +65,11 @@ public class OcrService {
                 timetableService.createEntry(request.festivalId(), toTimetableRequest(entry));
                 savedCount++;
             } catch (Exception e) {
-                failures.add(buildFailureMap(entry, e.getMessage(), i));
+                // 사용자에게 드러낼 수 있는 검증 오류만 메시지 전달, 내부 예외는 고정 문구 사용
+                String reason = (e instanceof IllegalArgumentException || e instanceof NoSuchElementException)
+                        ? e.getMessage()
+                        : "처리 중 오류 발생";
+                failures.add(buildFailureMap(entry, reason, i));
             }
         }
         return new OcrApplyResultDto(savedCount, failures.size(), failures);

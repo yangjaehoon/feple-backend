@@ -75,7 +75,7 @@ public class PostAdminController {
                              RedirectAttributes ra) {
         try {
             model.addAttribute("post", postService.getPost(id));
-            model.addAttribute("comments", commentService.getCommentsByPost(id, null));
+            model.addAttribute("comments", commentService.getAdminCommentsByPost(id, AdminConstants.POST_DETAIL_COMMENT_LIMIT));
             model.addAttribute("backUrl", "/admin/posts?page=" + page + "&" +
                     new PostListParams(filter, keyword, artistId, festivalId).toExtraParams());
             return "admin/post/detail";
@@ -96,7 +96,9 @@ public class PostAdminController {
                                   @RequestParam(required = false) Long artistId,
                                   @RequestParam(required = false) Long festivalId,
                                   RedirectAttributes ra) {
-        if (ids != null && !ids.isEmpty()) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+        } else {
             AdminActionUtils.tryAction(
                     () -> {
                         postAdminService.bulkDeletePosts(ids);

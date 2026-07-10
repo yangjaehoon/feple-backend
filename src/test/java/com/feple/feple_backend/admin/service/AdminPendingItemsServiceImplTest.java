@@ -29,8 +29,6 @@ class AdminPendingItemsServiceImplTest {
 
     @Mock FestivalCertificationRepository certificationRepository;
     @Mock PostReportRepository postReportRepository;
-    @Mock ReportQueryService<?> postReportService;
-    @Mock ReportQueryService<?> commentReportService;
     @Mock SongRequestRepository songRequestRepository;
 
     AdminPendingItemsServiceImpl adminPendingItemsService;
@@ -40,7 +38,6 @@ class AdminPendingItemsServiceImplTest {
         adminPendingItemsService = new AdminPendingItemsServiceImpl(
                 certificationRepository,
                 postReportRepository,
-                List.of(postReportService, commentReportService),
                 songRequestRepository
         );
     }
@@ -80,12 +77,12 @@ class AdminPendingItemsServiceImplTest {
     }
 
     @Test
-    void 대기중_신고_건수_전_신고_유형_합산() {
-        given(postReportService.getPendingCount()).willReturn(3L);
-        given(commentReportService.getPendingCount()).willReturn(2L);
+    void 대기중_신고_건수_게시글_신고만_집계() {
+        given(postReportRepository.countByStatus(ReportStatus.PENDING)).willReturn(5L);
 
         long count = adminPendingItemsService.getPendingReportCount();
 
         assertThat(count).isEqualTo(5L);
+        verify(postReportRepository).countByStatus(ReportStatus.PENDING);
     }
 }

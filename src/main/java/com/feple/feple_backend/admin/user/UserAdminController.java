@@ -80,7 +80,9 @@ public class UserAdminController {
     @PostMapping("/bulk-delete")
     public String bulkDeleteUsers(@RequestParam(required = false) List<Long> ids,
             RedirectAttributes ra) {
-        if (ids != null && !ids.isEmpty()) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+        } else {
             AdminActionUtils.tryAction(
                     () -> {
                         userService.bulkDeleteUsers(ids);

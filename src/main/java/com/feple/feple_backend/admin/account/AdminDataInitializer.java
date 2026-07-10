@@ -15,6 +15,7 @@ public class AdminDataInitializer implements CommandLineRunner {
 
     private final AdminAccountRepository adminAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminAccountService adminAccountService;
 
     @Value("${app.admin.username:admin}")
     private String adminUsername;
@@ -32,6 +33,12 @@ public class AdminDataInitializer implements CommandLineRunner {
         if (adminPassword.isBlank()) {
             log.warn("초기 관리자 비밀번호(app.admin.password)가 설정되지 않아 초기 계정을 생성하지 않습니다.");
             return;
+        }
+
+        try {
+            AdminAccountService.validatePasswordComplexity(adminPassword);
+        } catch (IllegalArgumentException e) {
+            log.warn("초기 관리자 비밀번호 복잡도 미충족: {} — 운영 환경에서는 강력한 비밀번호 사용을 권장합니다.", e.getMessage());
         }
 
         AdminAccount superAdmin = AdminAccount.builder()

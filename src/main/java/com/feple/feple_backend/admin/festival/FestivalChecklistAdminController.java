@@ -33,12 +33,18 @@ public class FestivalChecklistAdminController {
         }
     }
 
+    private static final int MEMO_MAX_LENGTH = 1000;
+
     @PostMapping("/{id}/checklist/memo")
     @ResponseBody
-    public ResponseEntity<Void> saveMemo(@PathVariable Long id,
-                                         @RequestParam String memo) {
+    public ResponseEntity<Map<String, Object>> saveMemo(@PathVariable Long id,
+                                                        @RequestParam String memo) {
+        if (memo.length() > MEMO_MAX_LENGTH) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "메모는 " + MEMO_MAX_LENGTH + "자 이하여야 합니다."));
+        }
         festivalChecklistService.saveMemo(id, memo);
         adminLogService.log(AdminAction.FESTIVAL_CHECKLIST_MEMO, "FESTIVAL", id, null);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("saved", true));
     }
 }

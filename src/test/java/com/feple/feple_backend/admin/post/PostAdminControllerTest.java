@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.post;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.filter.FilterDropdownProvider;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.comment.service.CommentService;
@@ -90,7 +91,7 @@ class PostAdminControllerTest {
     @Test
     void 상세_조회_성공() throws Exception {
         given(postService.getPost(1L)).willReturn(mock(PostResponseDto.class));
-        given(commentService.getCommentsByPost(1L, null)).willReturn(List.of());
+        given(commentService.getAdminCommentsByPost(1L, AdminConstants.POST_DETAIL_COMMENT_LIMIT)).willReturn(List.of());
 
         mockMvc.perform(get("/admin/posts/1"))
                 .andExpect(status().isOk())

@@ -10,6 +10,7 @@ import java.util.List;
 public interface CommentService {
     CommentResponseDto createComment(CreateCommentDto dto, Long userId);
     List<CommentResponseDto> getCommentsByPost(Long postId, Long userId);
+    List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit);
     void deleteComment(Long commentId);
     void deleteOwnComment(Long commentId, Long requestUserId);
     void deleteByPostIds(List<Long> postIds);

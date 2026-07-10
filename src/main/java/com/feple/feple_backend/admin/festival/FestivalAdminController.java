@@ -130,7 +130,13 @@ public class FestivalAdminController {
                                  RedirectAttributes ra
     ) {
         applyPosterFile(posterFile, dto, bindingResult);
-        String currentPosterUrl = festivalService.getFestival(id).getPosterUrl();
+        String currentPosterUrl;
+        try {
+            currentPosterUrl = festivalService.getFestival(id).getPosterUrl();
+        } catch (NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/festivals";
+        }
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             model.addAttribute("festivalId", id);
@@ -148,9 +154,6 @@ public class FestivalAdminController {
             model.addAttribute("currentPosterUrl", currentPosterUrl);
             populateFestivalFormModel(model);
             return "admin/festival/edit";
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/festivals";
         } catch (Exception e) {
             log.error("페스티벌 수정 실패. id={}", id, e);
             ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");

@@ -41,7 +41,7 @@ public class AdminAccountService {
         return EntityFinder.getOrThrow(accountRepository::findById, id, "관리자 계정");
     }
 
-    public void create(AdminAccountCreateRequestDto req) throws IOException {
+    public void create(AdminAccountCreateRequestDto req) {
         validateNewAccount(req.username(), req.password());
         AdminAccount account = accountRepository.save(AdminAccount.builder()
                 .username(req.username())
@@ -54,7 +54,7 @@ public class AdminAccountService {
         adminLogService.log(AdminAction.ADMIN_ACCOUNT_CREATE, "ADMIN_ACCOUNT", account.getId(), req.username());
     }
 
-    public void update(Long id, AdminAccountUpdateRequestDto req) throws IOException {
+    public void update(Long id, AdminAccountUpdateRequestDto req) {
         AdminAccount account = findById(id);
         validateRoleChange(account, req.role());
         account.updateProfile(req.displayName(), req.role(), resolvePermissions(req.role(), req.permissions()));
@@ -110,7 +110,7 @@ public class AdminAccountService {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
     }
 
-    private static void validatePasswordComplexity(String password) {
+    static void validatePasswordComplexity(String password) {
         if (password == null || password.length() < 8)
             throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
         if (password.length() > 100)
@@ -122,11 +122,15 @@ public class AdminAccountService {
             throw new IllegalArgumentException("비밀번호는 영문자, 숫자, 특수문자를 각각 1자 이상 포함해야 합니다.");
     }
 
+    // IOException을 RuntimeException으로 감싸 서비스 시그니처에서 체크드 예외를 제거한다.
     private String uploadProfileIfPresent(org.springframework.web.multipart.MultipartFile profileImage,
-                                          String username) throws IOException {
-        return (profileImage != null && !profileImage.isEmpty())
-                ? fileStorageService.storeAdminProfile(profileImage, username)
-                : null;
+                                          String username) {
+        if (profileImage == null || profileImage.isEmpty()) return null;
+        try {
+            return fileStorageService.storeAdminProfile(profileImage, username);
+        } catch (IOException e) {
+            throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
+        }
     }
 
     private void validateRoleChange(AdminAccount account, AdminRole newRole) {
@@ -137,12 +141,16 @@ public class AdminAccountService {
         }
     }
 
-    private void applyProfileImageUpdate(AdminAccount account, AdminAccountUpdateRequestDto req) throws IOException {
+    private void applyProfileImageUpdate(AdminAccount account, AdminAccountUpdateRequestDto req) {
         if (req.deleteProfileImage()) {
             account.updateProfileImage(null);
         } else if (req.profileImage() != null && !req.profileImage().isEmpty()) {
-            account.updateProfileImage(
-                    fileStorageService.storeAdminProfile(req.profileImage(), account.getUsername()));
+            try {
+                account.updateProfileImage(
+                        fileStorageService.storeAdminProfile(req.profileImage(), account.getUsername()));
+            } catch (IOException e) {
+                throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
+            }
         }
     }
 
