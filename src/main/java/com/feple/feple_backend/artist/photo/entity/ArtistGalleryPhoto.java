@@ -43,7 +43,7 @@ public class ArtistGalleryPhoto extends BaseTimeEntity {
     @Column(name = "like_count", nullable = false, columnDefinition = "INT DEFAULT 0")
     private int likeCount = 0;
 
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    @Column(name = "is_anonymous", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private boolean anonymous = false;
 
     public ArtistGalleryPhoto(Artist artist, User uploader, String s3Key, String contentType, String title,
