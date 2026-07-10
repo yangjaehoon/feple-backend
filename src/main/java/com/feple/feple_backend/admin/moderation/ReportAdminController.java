@@ -9,7 +9,6 @@ import com.feple.feple_backend.admin.service.ReportSearchParams;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +35,6 @@ public class ReportAdminController {
     }
 
     @GetMapping
-    @Transactional(readOnly = true)
     public String list(@ModelAttribute ReportFilter filter, Model model) {
         ReportAdminService<?> handler = resolveHandler(filter.type());
         Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(filter.page(), AdminConstants.LIST_PAGE_SIZE, filter.status(), filter.keyword()));
@@ -119,8 +117,7 @@ public class ReportAdminController {
     }
 
     private ReportAdminService<?> resolveHandler(String type) {
-        ReportAdminService<?> handler = handlers.get(type);
-        return handler != null ? handler : handlers.get(AdminConstants.REPORT_TYPE_POST);
+        return handlers.getOrDefault(type, handlers.get(AdminConstants.REPORT_TYPE_POST));
     }
 
     @SuppressWarnings("unchecked")
