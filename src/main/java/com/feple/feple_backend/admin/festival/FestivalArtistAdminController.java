@@ -144,7 +144,10 @@ public class FestivalArtistAdminController {
             }
         }
         int successCount = afIds.size() - errorCount;
-        if (errorCount > 0) {
+        if (errorCount > 0 && successCount > 0) {
+            ra.addFlashAttribute("errorMessage",
+                    successCount + "건 수정 완료, " + errorCount + "건 실패. 항목을 확인해 주세요.");
+        } else if (errorCount > 0) {
             ra.addFlashAttribute("errorMessage", errorCount + "건 수정 실패. 항목을 확인해 주세요.");
         } else {
             ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");

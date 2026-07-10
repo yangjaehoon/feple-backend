@@ -82,6 +82,8 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
         LocalDateTime weekStart = today.minusDays(6).atStartOfDay();
         LocalDateTime monthStart = today.minusDays(29).atStartOfDay();
 
+        // countActiveUsersBetween은 @Query COUNT 집계라 대상 행 없을 때 null 반환 가능 → requireNonNullElse 필요.
+        // countByCreatedAtBetween은 JPA 파생 count 쿼리라 항상 0L 반환.
         return new UserActivityStatsDto(
                 Objects.requireNonNullElse(userRepository.countActiveUsersBetween(dayStart, dayEnd), 0L),
                 Objects.requireNonNullElse(userRepository.countActiveUsersBetween(weekStart, dayEnd), 0L),
