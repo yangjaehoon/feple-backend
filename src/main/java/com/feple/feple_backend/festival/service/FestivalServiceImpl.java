@@ -22,6 +22,7 @@ import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.FullTextSearchSupport;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.stage.repository.StageRepository;
@@ -224,7 +225,11 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> searchFestivals(String keyword) {
-        return festivalRepository.findByTitleKeyword(keyword.trim()).stream()
+        String trimmed = keyword.trim();
+        List<Festival> festivals = FullTextSearchSupport.isTooShortForFullText(trimmed)
+                ? festivalRepository.findByTitleKeywordPaged(LikeEscaper.escape(trimmed), PageRequest.of(0, 10)).getContent()
+                : festivalRepository.findByTitleKeyword(trimmed);
+        return festivals.stream()
                 .limit(10)
                 .map(this::toDto)
                 .toList();

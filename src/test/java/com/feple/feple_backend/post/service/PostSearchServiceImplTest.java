@@ -42,7 +42,7 @@ class PostSearchServiceImplTest {
                 eq(BoardType.FREE), anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
 
-        List<PostResponseDto> result = postSearchService.searchPosts("제목", "FREE", null);
+        List<PostResponseDto> result = postSearchService.searchPosts("제목검색", "FREE", null);
 
         assertThat(result).hasSize(1);
     }
@@ -51,6 +51,18 @@ class PostSearchServiceImplTest {
     void 게시판타입_없이_전체_검색() {
         User author = user(1L);
         given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+
+        List<PostResponseDto> result = postSearchService.searchPosts("제목검색", null, null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void 두글자_이하_키워드는_LIKE_폴백_검색() {
+        // "제목"은 2자 — innodb_ft_min_token_size(3) 미만이라 FULLTEXT 대신 LIKE 폴백을 탄다.
+        User author = user(1L);
+        given(postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
 
         List<PostResponseDto> result = postSearchService.searchPosts("제목", null, null);

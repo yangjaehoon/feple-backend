@@ -1,5 +1,7 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.global.FullTextSearchSupport;
+import com.feple.feple_backend.global.LikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -25,14 +27,28 @@ public class PostSearchServiceImpl implements PostSearchService {
     public List<PostResponseDto> searchPosts(String keyword, String boardType, Long viewerId) {
         String kw = keyword.trim();
         Optional<BoardType> type = parseBoardType(boardType);
-        List<PostResponseDto> results = type.isPresent()
-                ? postRepository.searchPostsByBoardTypeAndTitleFullText(
-                        type.get(), kw, PageRequest.of(0, PageSize.SEARCH))
-                    .stream().map(PostResponseDto::from).toList()
-                : postRepository.searchPostsByTitleFullText(
-                        kw, PageRequest.of(0, PageSize.SEARCH))
-                    .stream().map(PostResponseDto::from).toList();
+        PageRequest pageable = PageRequest.of(0, PageSize.SEARCH);
+        List<PostResponseDto> results = FullTextSearchSupport.isTooShortForFullText(kw)
+                ? searchByTitleLike(type, kw, pageable)
+                : searchByTitleFullText(type, kw, pageable);
         return blockedContentFilter.excludeBlocked(results, viewerId, PostResponseDto::getUserId);
+    }
+
+    private List<PostResponseDto> searchByTitleFullText(Optional<BoardType> type, String kw, PageRequest pageable) {
+        return type.isPresent()
+                ? postRepository.searchPostsByBoardTypeAndTitleFullText(type.get(), kw, pageable)
+                        .stream().map(PostResponseDto::from).toList()
+                : postRepository.searchPostsByTitleFullText(kw, pageable)
+                        .stream().map(PostResponseDto::from).toList();
+    }
+
+    private List<PostResponseDto> searchByTitleLike(Optional<BoardType> type, String kw, PageRequest pageable) {
+        String escaped = LikeEscaper.escape(kw);
+        return type.isPresent()
+                ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(type.get(), escaped, pageable)
+                        .stream().map(PostResponseDto::from).toList()
+                : postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(escaped, pageable)
+                        .stream().map(PostResponseDto::from).toList();
     }
 
     private Optional<BoardType> parseBoardType(String filter) {

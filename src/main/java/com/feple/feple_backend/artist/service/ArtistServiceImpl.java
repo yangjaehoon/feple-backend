@@ -14,6 +14,7 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.CountRowMapper;
 import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.FullTextSearchSupport;
 import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictArtistCaches;
@@ -117,7 +118,11 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
-        return artistRepository.searchArtistsByNameFullText(keyword.trim()).stream()
+        String trimmed = keyword.trim();
+        List<Artist> artists = FullTextSearchSupport.isTooShortForFullText(trimmed)
+                ? artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(trimmed))
+                : artistRepository.searchArtistsByNameFullText(trimmed);
+        return artists.stream()
                 .map(this::toDto)
                 .toList();
     }
