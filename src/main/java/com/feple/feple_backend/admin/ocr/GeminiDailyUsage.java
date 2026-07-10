@@ -22,14 +22,4 @@ public class GeminiDailyUsage {
     @Column(nullable = false)
     private int count;
 
-    public static GeminiDailyUsage of(LocalDate date) {
-        GeminiDailyUsage u = new GeminiDailyUsage();
-        u.date = date;
-        u.count = 0;
-        return u;
-    }
-
-    public void increment() {
-        this.count++;
-    }
 }

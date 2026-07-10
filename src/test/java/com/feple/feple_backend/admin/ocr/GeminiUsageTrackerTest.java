@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class GeminiUsageTrackerTest {
@@ -41,8 +42,8 @@ class GeminiUsageTrackerTest {
     @Test
     void getTodayCount_레코드_있으면_count_반환() {
         LocalDate today = LocalDate.now(ZoneId.of("America/Los_Angeles"));
-        GeminiDailyUsage usage = GeminiDailyUsage.of(today);
-        usage.increment();
+        GeminiDailyUsage usage = mock(GeminiDailyUsage.class);
+        given(usage.getCount()).willReturn(1);
         given(repository.findById(today)).willReturn(Optional.of(usage));
 
         int count = tracker.getTodayCount();
