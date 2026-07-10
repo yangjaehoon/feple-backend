@@ -74,7 +74,7 @@ class SongRequestAdminControllerTest {
         mockMvc.perform(post("/admin/song-requests/1/approve")
                         .param("youtubeUrl", "https://youtu.be/abc"))
                 .andExpect(flash().attribute("successMessage",
-                        "승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)"));
+                        "노래 요청이 승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)"));
     }
 
     @Test

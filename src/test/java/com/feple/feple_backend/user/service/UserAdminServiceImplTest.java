@@ -109,12 +109,13 @@ class UserAdminServiceImplTest {
     // ── deleteUser / bulkDeleteUsers ──────────────────────────────────
 
     @Test
-    void 사용자_삭제시_cascadeDeleteService에_위임() {
+    void 사용자_삭제시_cascadeDeleteService에_위임하고_닉네임_반환() {
         User user = user(1L, "삭제유저");
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
-        userAdminService.adminDeleteUser(1L);
+        String nickname = userAdminService.adminDeleteUser(1L);
 
+        assertThat(nickname).isEqualTo("삭제유저");
         verify(cascadeDeleteService).delete(user);
     }
 

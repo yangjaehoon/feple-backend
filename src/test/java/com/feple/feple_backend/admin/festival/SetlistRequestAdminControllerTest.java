@@ -104,7 +104,7 @@ class SetlistRequestAdminControllerTest {
 
     @Test
     void 처리_후_남은_항목이_현재_페이지보다_적으면_마지막_유효_페이지로_이동() throws Exception {
-        // 남은 5건: maxPage = (5-1)/20 = 0 → page=2는 0으로 클램핑
+        // 남은 5건: maxPage = (5-1)/LIST_PAGE_SIZE(20) = 0 → page=2는 0으로 클램핑
         given(service.countByStatus(SetlistChangeRequestStatus.PENDING)).willReturn(5L);
 
         mockMvc.perform(post("/admin/setlist-requests/1/resolve")

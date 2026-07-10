@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.song;
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import java.util.concurrent.atomic.AtomicReference;
+import com.feple.feple_backend.admin.song.SongApproveMessage;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
@@ -51,7 +52,7 @@ public class SongRequestAdminController {
                 () -> {
                     boolean songSaved = songRequestAdminService.approve(id, youtubeUrl);
                     adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", id, null);
-                    successMsg.set(approveMessage(songSaved, youtubeUrl));
+                    successMsg.set(SongApproveMessage.build(songSaved, youtubeUrl));
                 },
                 null,
                 e -> log.error("노래 요청 승인 실패 id={}", id, e),
@@ -59,12 +60,6 @@ public class SongRequestAdminController {
                 ra);
         if (successMsg.get() != null) ra.addFlashAttribute("successMessage", successMsg.get());
         return AdminActionUtils.listRedirect("/admin/song-requests", status, page, keyword);
-    }
-
-    private static String approveMessage(boolean songSaved, String youtubeUrl) {
-        if (songSaved) return "노래 요청이 승인되었습니다. 곡이 등록되었습니다.";
-        if (youtubeUrl != null && !youtubeUrl.isBlank()) return "승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)";
-        return "노래 요청이 승인되었습니다.";
     }
 
     @PostMapping("/{id}/reject")

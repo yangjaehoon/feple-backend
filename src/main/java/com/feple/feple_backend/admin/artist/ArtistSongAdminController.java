@@ -2,6 +2,8 @@ package com.feple.feple_backend.admin.artist;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
+import com.feple.feple_backend.admin.song.SongApproveMessage;
+import java.util.concurrent.atomic.AtomicReference;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -98,23 +100,19 @@ public class ArtistSongAdminController {
                                      @PathVariable Long requestId,
                                      @RequestParam(required = false) String youtubeUrl,
                                      RedirectAttributes ra) {
+        AtomicReference<String> successMsg = new AtomicReference<>();
         AdminActionUtils.tryAction(
                 () -> {
                     boolean songSaved = songRequestAdminService.approve(requestId, youtubeUrl);
                     adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", requestId, null);
-                    ra.addFlashAttribute("successMessage", approveMessage(songSaved, youtubeUrl));
+                    successMsg.set(SongApproveMessage.build(songSaved, youtubeUrl));
                 },
                 null,
                 e -> log.error("노래 요청 승인 실패 requestId={}", requestId, e),
                 "노래 요청 승인에 실패했습니다. 다시 시도해주세요.",
                 ra);
+        if (successMsg.get() != null) ra.addFlashAttribute("successMessage", successMsg.get());
         return songsRedirect(artistId);
-    }
-
-    private static String approveMessage(boolean songSaved, String youtubeUrl) {
-        if (songSaved) return "노래 요청이 승인되었습니다. 곡이 등록되었습니다.";
-        if (youtubeUrl != null && !youtubeUrl.isBlank()) return "노래 요청이 승인되었습니다. (YouTube 영상 정보를 가져오지 못해 곡은 등록되지 않았습니다.)";
-        return "노래 요청이 승인되었습니다.";
     }
 
     @PostMapping("/song-requests/{requestId}/reject")

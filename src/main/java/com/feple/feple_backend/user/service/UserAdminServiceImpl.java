@@ -78,9 +78,11 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
-    public void adminDeleteUser(@NonNull Long id) {
+    public String adminDeleteUser(@NonNull Long id) {
         User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        String nickname = user.getNickname();
         cascadeDeleteService.delete(user);
+        return nickname;
     }
 
     @Override

@@ -100,8 +100,7 @@ public class UserAdminController {
                              RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
-                    String nickname = userService.getAdminUser(id).getNickname();
-                    userService.adminDeleteUser(id);
+                    String nickname = userService.adminDeleteUser(id);
                     adminLogService.log(AdminAction.USER_DELETE, "USER", id, nickname);
                 },
                 "회원이 삭제되었습니다.",

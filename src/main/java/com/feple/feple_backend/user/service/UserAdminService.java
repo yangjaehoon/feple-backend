@@ -13,7 +13,7 @@ public interface UserAdminService {
     Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword);
     Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword);
     void bulkDeleteUsers(List<Long> ids);
-    void adminDeleteUser(Long id);
+    String adminDeleteUser(Long id);
     void updateUserRole(Long userId, UserRole role);
     void banUser(Long id, int days, String reason);
     void unbanUser(Long id);

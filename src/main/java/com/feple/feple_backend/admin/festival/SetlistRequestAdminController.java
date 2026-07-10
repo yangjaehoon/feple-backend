@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequestStatus;
@@ -31,7 +32,7 @@ public class SetlistRequestAdminController {
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
         SetlistChangeRequestStatus statusEnum = parseStatus(status);
-        var requests = service.list(statusEnum, keyword, PageRequest.of(page, 20));
+        var requests = service.list(statusEnum, keyword, PageRequest.of(page, AdminConstants.LIST_PAGE_SIZE));
         model.addAttribute("requests", requests);
         model.addAttribute("status", status);
         model.addAttribute("keyword", keyword);
@@ -56,7 +57,7 @@ public class SetlistRequestAdminController {
                 ra);
 
         long remaining = service.countByStatus(parseStatus(status));
-        int maxPage = remaining > 0 ? (int) ((remaining - 1) / 20) : 0;
+        int maxPage = remaining > 0 ? (int) ((remaining - 1) / AdminConstants.LIST_PAGE_SIZE) : 0;
         int safePage = Math.min(page, maxPage);
         String redirect = "redirect:/admin/setlist-requests?status=" + status + "&page=" + safePage;
         if (!keyword.isBlank()) redirect += "&keyword=" + keyword;

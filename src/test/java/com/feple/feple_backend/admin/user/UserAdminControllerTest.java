@@ -153,22 +153,18 @@ class UserAdminControllerTest {
 
     @Test
     void 회원_삭제_성공() throws Exception {
-        UserResponseDto user = mock(UserResponseDto.class);
-        given(user.getNickname()).willReturn("테스트유저");
-        given(userService.getAdminUser(1L)).willReturn(user);
+        given(userService.adminDeleteUser(1L)).willReturn("테스트유저");
 
         mockMvc.perform(post("/admin/users/1/delete"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(flash().attribute("successMessage", "회원이 삭제되었습니다."));
 
         then(userService).should().adminDeleteUser(1L);
+        then(userService).should(never()).getAdminUser(anyLong());
     }
 
     @Test
     void 회원_삭제_실패_errorMessage_설정() throws Exception {
-        UserResponseDto user = mock(UserResponseDto.class);
-        given(user.getNickname()).willReturn("테스트유저");
-        given(userService.getAdminUser(1L)).willReturn(user);
         willThrow(new RuntimeException("오류")).given(userService).adminDeleteUser(1L);
 
         mockMvc.perform(post("/admin/users/1/delete"))

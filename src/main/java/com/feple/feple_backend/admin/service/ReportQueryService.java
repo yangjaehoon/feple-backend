@@ -28,9 +28,9 @@ public interface ReportQueryService<T> {
 
     default Page<T> getReportsForAdmin(int page, int size, String statusFilter) {
         PageRequest pageable = PageRequest.of(page, size);
-        return ReportStatus.fromFilter(statusFilter) != null
-                ? findPendingReports(pageable)
-                : findAllReports(pageable);
+        // fromFilter는 "PENDING"에만 non-null 반환. pendingOnly=true면 미처리만, false면 전체.
+        boolean pendingOnly = ReportStatus.fromFilter(statusFilter) != null;
+        return pendingOnly ? findPendingReports(pageable) : findAllReports(pageable);
     }
 
     default Page<T> searchReportsForAdmin(ReportSearchParams params) {
