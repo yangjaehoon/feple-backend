@@ -1,9 +1,8 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.moderation.ReportCsvExporter;
+import com.feple.feple_backend.admin.moderation.UserCsvExporter;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.user.dto.UserResponseDto;
-import com.feple.feple_backend.user.service.UserAdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class AdminCsvControllerTest {
 
-    @Mock UserAdminService userAdminService;
+    @Mock UserCsvExporter userCsvExporter;
     @Mock AdminLogService adminLogService;
 
     ReportCsvExporter postExporter = mock(ReportCsvExporter.class);
@@ -35,7 +34,7 @@ class AdminCsvControllerTest {
     @BeforeEach
     void setUp() {
         given(postExporter.getReportType()).willReturn("post");
-        controller = new AdminCsvController(userAdminService, adminLogService, List.of(postExporter));
+        controller = new AdminCsvController(userCsvExporter, adminLogService, List.of(postExporter));
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -43,13 +42,7 @@ class AdminCsvControllerTest {
 
     @Test
     void users_csv_내보내기_성공() throws Exception {
-        UserResponseDto user = mock(UserResponseDto.class);
-        given(user.getId()).willReturn(1L);
-        given(user.getNickname()).willReturn("tester");
-        given(user.getEmail()).willReturn("tester@example.com");
-        given(user.getRoleDisplayName()).willReturn("일반");
-        given(user.isBanned()).willReturn(false);
-        given(userAdminService.getAllUsersForExport()).willReturn(List.of(user));
+        given(userCsvExporter.buildCsv()).willReturn("ID,닉네임,이메일,역할,가입일,정지여부\n1,tester,tester@example.com,일반,,\n");
 
         mockMvc.perform(get("/admin/export/users.csv"))
                 .andExpect(status().isOk())
@@ -59,7 +52,7 @@ class AdminCsvControllerTest {
 
     @Test
     void users_csv_목록_비어있어도_헤더_행_포함() throws Exception {
-        given(userAdminService.getAllUsersForExport()).willReturn(List.of());
+        given(userCsvExporter.buildCsv()).willReturn("ID,닉네임,이메일,역할,가입일,정지여부\n");
 
         mockMvc.perform(get("/admin/export/users.csv"))
                 .andExpect(status().isOk())
@@ -90,7 +83,7 @@ class AdminCsvControllerTest {
     @Test
     void reports_csv_엑스포터_없으면_400_반환() throws Exception {
         AdminCsvController emptyController =
-                new AdminCsvController(userAdminService, adminLogService, List.of());
+                new AdminCsvController(userCsvExporter, adminLogService, List.of());
         MockMvc emptyMvc = MockMvcBuilders.standaloneSetup(emptyController).build();
 
         emptyMvc.perform(get("/admin/export/reports.csv").param("type", "unknown"))
