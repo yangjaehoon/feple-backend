@@ -65,7 +65,8 @@ public class FestivalAdminController {
                                  BindingResult bindingResult,
                                  @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
                                  @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
-                                 Model model) {
+                                 Model model,
+                                 RedirectAttributes ra) {
 
         applyPosterFile(posterFile, dto, bindingResult);
 
@@ -78,7 +79,14 @@ public class FestivalAdminController {
         try {
             Long festivalId = festivalService.createFestival(dto);
             adminLogService.log(AdminAction.FESTIVAL_CREATE, "FESTIVAL", festivalId, dto.getTitle());
-            artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
+            try {
+                artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
+            } catch (Exception linkEx) {
+                log.error("아티스트 연결 실패 festivalId={}", festivalId, linkEx);
+                ra.addFlashAttribute("warningMessage", "페스티벌은 등록되었으나 일부 아티스트 연결에 실패했습니다. 상세 탭에서 수동으로 추가해주세요.");
+                return "redirect:/admin/festivals/" + festivalId;
+            }
+            ra.addFlashAttribute("successMessage", "'" + dto.getTitle() + "' 페스티벌이 등록되었습니다.");
             return "redirect:/admin/festivals/" + festivalId;
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
@@ -147,6 +155,7 @@ public class FestivalAdminController {
         try {
             festivalService.updateFestival(id, dto);
             adminLogService.log(AdminAction.FESTIVAL_UPDATE, "FESTIVAL", id, dto.getTitle());
+            ra.addFlashAttribute("successMessage", "페스티벌이 수정되었습니다.");
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
@@ -169,7 +178,7 @@ public class FestivalAdminController {
                     festivalService.deleteFestival(id);
                     adminLogService.log(AdminAction.FESTIVAL_DELETE, "FESTIVAL", id, null);
                 },
-                null,
+                "페스티벌이 삭제되었습니다.",
                 e -> log.error("페스티벌 삭제 실패. id={}", id, e),
                 "삭제 중 오류가 발생했습니다.",
                 ra);

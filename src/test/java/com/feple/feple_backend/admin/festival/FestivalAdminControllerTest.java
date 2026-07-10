@@ -146,10 +146,10 @@ class FestivalAdminControllerTest {
     // ── POST /admin/festivals/{id}/delete ─────────────────────────────────────
 
     @Test
-    void 페스티벌_삭제_성공_successMessage_없음() throws Exception {
+    void 페스티벌_삭제_성공_successMessage_설정() throws Exception {
         mockMvc.perform(post("/admin/festivals/1/delete"))
                 .andExpect(redirectedUrl("/admin/festivals"))
-                .andExpect(flash().attributeCount(0));
+                .andExpect(flash().attribute("successMessage", "페스티벌이 삭제되었습니다."));
 
         then(festivalService).should().deleteFestival(1L);
     }

@@ -25,6 +25,7 @@ public class GeminiUrlContextClient {
 
     private final ObjectMapper objectMapper;
     private final GeminiApiClient geminiApiClient;
+    private final GeminiUsageTracker usageTracker;
 
     public boolean isConfigured() {
         return geminiApiKey != null && !geminiApiKey.isBlank();
@@ -32,6 +33,7 @@ public class GeminiUrlContextClient {
 
     public ScrapedFestivalDto scrape(String url, String source) {
         Map<String, Object> request = buildUrlContextRequest(url);
+        usageTracker.increment();
         Map<?, ?> response = geminiApiClient.call(GEMINI_URL, geminiApiKey, request, Duration.ofSeconds(60));
 
         if (isUrlBlocked(response)) {

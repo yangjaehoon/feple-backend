@@ -76,9 +76,13 @@ public class AdminPushController {
     @PostMapping("/artist-followers")
     public String sendToArtistFollowers(@RequestParam String title,
                                         @RequestParam String body,
-                                        @RequestParam Long artistId,
+                                        @RequestParam(required = false) Long artistId,
                                         RedirectAttributes ra) {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
+        if (artistId == null) {
+            ra.addFlashAttribute("errorMessage", "아티스트를 선택해주세요.");
+            return PUSH_REDIRECT;
+        }
         AdminActionUtils.tryAction(
                 () -> {
                     adminPushService.sendToArtistFollowers(artistId, title.strip(), body.strip());
@@ -94,9 +98,13 @@ public class AdminPushController {
     @PostMapping("/festival-certified")
     public String sendToFestivalCertified(@RequestParam String title,
                                           @RequestParam String body,
-                                          @RequestParam Long festivalId,
+                                          @RequestParam(required = false) Long festivalId,
                                           RedirectAttributes ra) {
         if (!validatePushInput(title, body, ra)) return PUSH_REDIRECT;
+        if (festivalId == null) {
+            ra.addFlashAttribute("errorMessage", "페스티벌을 선택해주세요.");
+            return PUSH_REDIRECT;
+        }
         AdminActionUtils.tryAction(
                 () -> {
                     adminPushService.sendToFestivalCertified(festivalId, title.strip(), body.strip());

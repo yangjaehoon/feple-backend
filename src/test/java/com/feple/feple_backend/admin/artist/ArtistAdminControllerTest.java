@@ -134,10 +134,10 @@ class ArtistAdminControllerTest {
     // ── POST /admin/artists/{id}/delete ──────────────────────────────────────
 
     @Test
-    void 아티스트_삭제_성공_successMessage_없음() throws Exception {
+    void 아티스트_삭제_성공_successMessage_설정() throws Exception {
         mockMvc.perform(post("/admin/artists/1/delete"))
                 .andExpect(redirectedUrl("/admin/artists"))
-                .andExpect(flash().attributeCount(0));
+                .andExpect(flash().attribute("successMessage", "아티스트가 삭제되었습니다."));
 
         then(artistAdminService).should().deleteArtist(1L);
     }

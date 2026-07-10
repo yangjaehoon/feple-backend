@@ -61,7 +61,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
     }
 
     @Override
-    @Cacheable(value = "adminDashboardStats", key = "'dailyStats'")
+    @Cacheable(value = "adminDashboardStats", key = "'dailyStats_' + T(java.time.LocalDate).now().toString()")
     public List<DailyStatDto> getDailyStats() {
         LocalDate today = LocalDate.now();
         return buildDailyStats(today.minusDays(AdminConstants.STATS_RECENT_DAYS - 1), today);

@@ -218,7 +218,7 @@ public class ArtistAdminController {
                     artistAdminService.deleteArtist(id);
                     adminLogService.log(AdminAction.ARTIST_DELETE, "ARTIST", id, null);
                 },
-                null,
+                "아티스트가 삭제되었습니다.",
                 e -> log.error("아티스트 삭제 실패. id={}", id, e),
                 "삭제 중 오류가 발생했습니다.",
                 ra);

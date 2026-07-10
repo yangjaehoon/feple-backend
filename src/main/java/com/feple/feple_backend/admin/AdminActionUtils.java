@@ -15,7 +15,7 @@ public final class AdminActionUtils {
             "다른 관리자가 방금 먼저 수정했습니다. 새로고침 후 다시 시도해주세요.";
 
     @FunctionalInterface
-    public interface AdminAction {
+    public interface AdminTask {
         void run() throws Exception;
     }
 
@@ -26,7 +26,7 @@ public final class AdminActionUtils {
      * - OptimisticLockingFailureException(@Version 충돌): 고정 안내 메시지 노출 (raw 메시지 미노출)
      * - 그 외 Exception: onError 콜백(log.error)을 호출하고 failMsg를 errorMessage로 노출
      */
-    public static void tryAction(AdminAction action,
+    public static void tryAction(AdminTask action,
                                  String successMsg,
                                  Consumer<Exception> onError,
                                  String failMsg,
@@ -51,7 +51,7 @@ public final class AdminActionUtils {
      * - OptimisticLockingFailureException(@Version 충돌): 고정 안내 메시지 설정 후 fallbackRedirect 반환
      * - 그 외 Exception: onError 콜백 호출 후 failMsg를 errorMessage로 설정, fallbackRedirect 반환
      */
-    public static String tryRender(AdminAction action,
+    public static String tryRender(AdminTask action,
                                    String viewName,
                                    Consumer<Exception> onError,
                                    String failMsg,

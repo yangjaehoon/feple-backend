@@ -98,10 +98,15 @@
                 showPushTargetError('제목과 내용을 먼저 입력해주세요.');
                 return;
             }
+            var targetForm = btn.closest('form');
+            var selectEl = targetForm.querySelector('select');
+            if (selectEl && !selectEl.value) {
+                showPushTargetError(selectEl.name === 'artistId' ? '아티스트를 선택해주세요.' : '페스티벌을 선택해주세요.');
+                return;
+            }
             document.getElementById('push-target-error').classList.add('d-none');
             document.getElementById('target-title-' + btn.dataset.target).value = title;
             document.getElementById('target-body-'  + btn.dataset.target).value = body;
-            var targetForm = btn.closest('form');
             AdminConfirm.show('해당 그룹에게 발송하시겠습니까?', function () {
                 targetForm.submit();
             });
