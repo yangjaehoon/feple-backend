@@ -3,7 +3,7 @@ package com.feple.feple_backend.artist.song.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.dto.FestivalSetlistEntryDto;
-import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
+import com.feple.feple_backend.artist.song.dto.SaveSongDto;
 import com.feple.feple_backend.artist.song.dto.SongFestivalDto;
 import com.feple.feple_backend.artist.song.dto.SongResponseDto;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
@@ -84,7 +84,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
 
     @Override
     @Transactional
-    public SongResponseDto saveSong(Long artistId, SaveSongRequestDto dto) {
+    public SongResponseDto saveSong(Long artistId, SaveSongDto dto) {
         Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
         if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
             throw new IllegalArgumentException("이미 등록된 곡입니다.");

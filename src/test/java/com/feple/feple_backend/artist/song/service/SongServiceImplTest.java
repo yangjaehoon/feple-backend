@@ -3,7 +3,7 @@ package com.feple.feple_backend.artist.song.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.dto.FestivalSetlistEntryDto;
-import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
+import com.feple.feple_backend.artist.song.dto.SaveSongDto;
 import com.feple.feple_backend.artist.song.dto.SongFestivalDto;
 import com.feple.feple_backend.artist.song.dto.SongResponseDto;
 import com.feple.feple_backend.artist.song.entity.ArtistFestivalSong;
@@ -121,7 +121,7 @@ class SongServiceImplTest {
         given(songRepository.existsByYoutubeVideoIdAndArtistId("yt1", 1L)).willReturn(false);
         given(songRepository.save(any())).willReturn(song(100L, "제목", artist));
 
-        SaveSongRequestDto dto = new SaveSongRequestDto();
+        SaveSongDto dto = new SaveSongDto();
         dto.setYoutubeVideoId("yt1");
         dto.setTitle("제목");
 
@@ -135,7 +135,7 @@ class SongServiceImplTest {
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L)));
         given(songRepository.existsByYoutubeVideoIdAndArtistId("yt1", 1L)).willReturn(true);
 
-        SaveSongRequestDto dto = new SaveSongRequestDto();
+        SaveSongDto dto = new SaveSongDto();
         dto.setYoutubeVideoId("yt1");
         dto.setTitle("제목");
 
@@ -148,7 +148,7 @@ class SongServiceImplTest {
     void 곡_저장_아티스트_없으면_예외() {
         given(artistRepository.findById(1L)).willReturn(Optional.empty());
 
-        SaveSongRequestDto dto = new SaveSongRequestDto();
+        SaveSongDto dto = new SaveSongDto();
         dto.setYoutubeVideoId("yt1");
         dto.setTitle("제목");
 

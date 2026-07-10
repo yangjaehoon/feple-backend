@@ -8,7 +8,7 @@ import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.artist.song.dto.SaveSongRequestDto;
+import com.feple.feple_backend.artist.song.dto.SaveSongDto;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
@@ -60,7 +60,7 @@ public class ArtistSongAdminController {
 
     @PostMapping
     public String saveSong(@PathVariable Long artistId,
-                           @Valid @ModelAttribute SaveSongRequestDto dto,
+                           @Valid @ModelAttribute SaveSongDto dto,
                            BindingResult bindingResult,
                            RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {

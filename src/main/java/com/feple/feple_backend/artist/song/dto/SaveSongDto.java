@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SaveSongRequestDto {
+public class SaveSongDto {
     @NotBlank(message = "YouTube Video ID를 입력해주세요.")
     @Size(max = 20)
     private String youtubeVideoId;
