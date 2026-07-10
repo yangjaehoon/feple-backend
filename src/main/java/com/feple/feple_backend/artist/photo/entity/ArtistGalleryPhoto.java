@@ -44,17 +44,17 @@ public class ArtistGalleryPhoto extends BaseTimeEntity {
     private int likeCount = 0;
 
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
-    private boolean isAnonymous = false;
+    private boolean anonymous = false;
 
     public ArtistGalleryPhoto(Artist artist, User uploader, String s3Key, String contentType, String title,
-            String description, boolean isAnonymous) {
+            String description, boolean anonymous) {
         this.artist = artist;
         this.uploader = uploader;
         this.s3Key = s3Key;
         this.contentType = contentType;
         this.title = title;
         this.description = description;
-        this.isAnonymous = isAnonymous;
+        this.anonymous = anonymous;
     }
 
     public void updateTitleAndDescription(String title, String description) {
