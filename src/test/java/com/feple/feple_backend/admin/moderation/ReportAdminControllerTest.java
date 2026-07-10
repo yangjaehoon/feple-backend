@@ -117,6 +117,8 @@ class ReportAdminControllerTest {
 
     @Test
     void 일괄_삭제_성공_successMessage_설정() throws Exception {
+        given(postHandler.bulkDeleteContent(anyList())).willReturn(2);
+
         mockMvc.perform(post("/admin/reports/bulk-delete")
                         .param("type", "post").param("status", "PENDING")
                         .param("ids", "1", "2"))

@@ -69,7 +69,7 @@ public class FestivalChecklist {
     }
 
     public boolean valueOf(String field) {
-        return Boolean.TRUE.equals(items.get(ChecklistField.fromKey(field).getKey()));
+        return Boolean.TRUE.equals(items.get(field));
     }
 
     // Thymeleaf ${cl.lineup1} 등 기존 템플릿 접근 지원

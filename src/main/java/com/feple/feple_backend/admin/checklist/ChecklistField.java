@@ -23,6 +23,6 @@ public enum ChecklistField {
         return Arrays.stream(values())
                 .filter(f -> f.key.equals(key))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("알 수 없는 체크리스트 항목: " + key));
+                .orElseThrow(() -> new IllegalArgumentException("알 수 없는 항목: " + key));
     }
 }
