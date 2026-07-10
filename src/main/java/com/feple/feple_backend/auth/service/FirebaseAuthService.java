@@ -23,6 +23,7 @@ public class FirebaseAuthService implements OAuthLoginService {
 
     @Override
     public Mono<User> authenticate(String idToken) {
+        // verifyIdToken은 블로킹 네트워크 호출 — 이벤트 루프 스레드 점유 방지를 위해 boundedElastic 사용
         return Mono.fromCallable(() -> authenticateSync(idToken))
                 .subscribeOn(Schedulers.boundedElastic());
     }

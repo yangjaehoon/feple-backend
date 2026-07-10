@@ -44,6 +44,7 @@ public class PointService {
         addPoint(userId, POINT_CERT_APPROVED, PointReason.CERT_APPROVED, certId);
     }
 
+    // @Async로 별도 스레드에서 실행돼 원 트랜잭션 컨텍스트가 없음 — REQUIRES_NEW로 새 트랜잭션 시작
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)

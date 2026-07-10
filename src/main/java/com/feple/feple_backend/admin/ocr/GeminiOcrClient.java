@@ -98,12 +98,14 @@ public class GeminiOcrClient {
                                 ))
                         )
                 )),
+                // 응답이 이 토큰 수를 넘으면 잘림 — parseJsonArray의 partial recovery 로직과 연결됨
                 "generationConfig", Map.of("maxOutputTokens", 8192)
         );
     }
 
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
         usageTracker.increment();
+        // 대형 포스터 이미지 처리 시간을 고려해 넉넉히 설정
         return geminiApiClient.call(GEMINI_BASE_URL, apiKey, request, Duration.ofSeconds(90));
     }
 

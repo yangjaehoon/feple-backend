@@ -49,6 +49,7 @@ public class WeatherService {
             Map.entry(Region.JEJU,      new int[]{52, 38})
     );
 
+    // 기상청 초단기예보 발표시각(3시간 간격, 고정값) — 임의 조정 불가
     private static final int[] BASE_HOURS = {2, 5, 8, 11, 14, 17, 20, 23};
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final String KMA_SUCCESS_CODE = "00";
@@ -205,6 +206,7 @@ public class WeatherService {
     }
 
     private String[] resolveBaseDatetime(LocalDate targetDate, LocalDate today) {
+        // 기상청 API 조회 가능 범위: 과거 2일 ~ 미래 3일
         if (targetDate.isBefore(today.minusDays(2))) return null;
         if (targetDate.isAfter(today.plusDays(3))) return null;
 
@@ -212,6 +214,7 @@ public class WeatherService {
             return new String[]{targetDate.format(DATE_FMT), EARLY_MORNING_BASE_TIME};
         }
 
+        // 기상청 API는 발표시각 이후 약 10분 뒤 데이터가 올라옴 — 그 전에 조회하면 최신 시간대 누락
         LocalTime nowKST = LocalTime.now(ZoneId.of("Asia/Seoul")).minusMinutes(10);
         int currentHour = nowKST.getHour();
         LocalDate apiDate = today;
