@@ -10,6 +10,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
+import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class FestivalDetailAggregationService {
 
-    private static final String ANNOUNCEMENT_STAGE = "📢";
 
     private final FestivalAdminService festivalService;
     private final ArtistFestivalService artistFestivalService;
@@ -67,7 +67,7 @@ public class FestivalDetailAggregationService {
                 BoothType.values(),
                 googleMapsKey,
                 buildSetlistCounts(artists),
-                ANNOUNCEMENT_STAGE,
+                TimetableEntry.ANNOUNCEMENT_STAGE_NAME,
                 ratingStats
         );
     }
@@ -96,7 +96,7 @@ public class FestivalDetailAggregationService {
             List<ArtistFestivalResponseDto> artists, List<TimetableEntryResponseDto> entries) {
         Map<String, List<TimetableEntryResponseDto>> result = entries.stream()
                 .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
-                             && !ANNOUNCEMENT_STAGE.equals(e.getStageName()))
+                             && !TimetableEntry.ANNOUNCEMENT_STAGE_NAME.equals(e.getStageName()))
                 .collect(Collectors.groupingBy(TimetableEntryResponseDto::getArtistName,
                         HashMap::new, Collectors.toList()));
         artists.forEach(a -> result.putIfAbsent(a.getArtistName(), List.of()));

@@ -41,6 +41,9 @@ public class TimetableEntry {
     @Column(nullable = false)
     private String artistName;
 
+    // 공지/운영 슬롯(아티스트 없는 타임테이블 항목) 판별용 sentinel
+    public static final String ANNOUNCEMENT_STAGE_NAME = "📢";
+
     @Column(name = "stage_name", nullable = false)
     private String stageName;
 
@@ -77,6 +80,10 @@ public class TimetableEntry {
     public String getStageName() {
         if (stageName != null) return stageName;
         return stage != null ? stage.getName() : null;
+    }
+
+    public boolean isAnnouncement() {
+        return ANNOUNCEMENT_STAGE_NAME.equals(stageName);
     }
 
     public Long getFestivalId() {

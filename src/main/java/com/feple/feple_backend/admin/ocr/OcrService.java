@@ -6,6 +6,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
+import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -83,12 +84,10 @@ public class OcrService {
         return Optional.empty();
     }
 
-    private static final String OPS_STAGE = "📢";
-
     private TimetableEntryRequestDto toTimetableRequest(OcrResultDto entry) {
         TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         if (entry.isOps()) {
-            req.setStageName(OPS_STAGE);
+            req.setStageName(TimetableEntry.ANNOUNCEMENT_STAGE_NAME);
         } else {
             req.setStageName(entry.stage() != null ? entry.stage().trim() : "");
         }
