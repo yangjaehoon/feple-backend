@@ -26,6 +26,8 @@ public class AdminLogService {
 
     private final AdminLogRepository repository;
 
+    // REQUIRES_NEW: 호출 측 트랜잭션이 롤백되더라도 감사 로그는 별도 트랜잭션으로 반드시 커밋한다.
+    // 예) 아티스트 삭제 중 예외 → 삭제 트랜잭션은 롤백되지만 "삭제 시도" 로그는 DB에 남아야 함.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(AdminAction action, String targetType, Long targetId, String detail) {
         String adminUsername = null;
@@ -45,6 +47,7 @@ public class AdminLogService {
                     .ipAddress(extractClientIp())
                     .build());
         } catch (Exception e) {
+            // 감사 로그 저장 실패가 관리자 액션 자체를 중단시켜선 안 됨 — fail-safe
             log.error("감사 로그 저장 실패: action={}, targetType={}, targetId={}", action.name(), targetType, targetId, e);
         }
     }
