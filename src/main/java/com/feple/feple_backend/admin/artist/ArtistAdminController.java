@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.artist;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -89,8 +90,8 @@ public class ArtistAdminController {
         model.addAttribute("sort", sort);
         model.addAttribute("genre", genre);
         model.addAttribute("allGenres", ArtistGenre.values());
-        model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestionsPreview(50));
-        model.addAttribute("processedSuggestions", artistSuggestionAdminService.getProcessedSuggestionsPreview(50));
+        model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
+        model.addAttribute("processedSuggestions", artistSuggestionAdminService.getProcessedSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
         model.addAttribute("processedSuggestionsTotal", artistSuggestionAdminService.countProcessed());
         return "admin/artist/list";
     }

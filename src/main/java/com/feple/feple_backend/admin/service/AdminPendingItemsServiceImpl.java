@@ -23,7 +23,10 @@ import java.util.List;
 public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
 
     private final FestivalCertificationRepository certificationRepository;
-    private final PostReportRepository reportRepository;
+    // 목록은 게시글 신고 전용 DTO(ReportSummaryDto)를 사용하므로 PostReportRepository로 직접 조회.
+    // 카운트는 reportServices로 전 신고 유형(게시글·댓글·사진)을 합산해 사이드바 뱃지와 일치시킨다.
+    private final PostReportRepository postReportRepository;
+    private final List<ReportQueryService<?>> reportServices;
     private final SongRequestRepository songRequestRepository;
 
     @Override
@@ -44,7 +47,7 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'reports_' + #limit")
     public List<ReportSummaryDto> getPendingReports(int limit) {
-        return reportRepository
+        return postReportRepository
                 .findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, PageRequest.of(0, limit))
                 .getContent()
                 .stream().map(ReportSummaryDto::from).toList();
@@ -53,7 +56,7 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'reportCount'")
     public long getPendingReportCount() {
-        return reportRepository.countByStatus(ReportStatus.PENDING);
+        return reportServices.stream().mapToLong(ReportQueryService::getPendingCount).sum();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import com.feple.feple_backend.admin.festival.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -91,7 +92,7 @@ public class FestivalAdminController {
     public String listFestivals(@RequestParam(defaultValue = "") String keyword,
                                 @RequestParam(defaultValue = "0") int page,
                                 Model model) {
-        Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, 30);
+        Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, AdminConstants.FESTIVAL_LIST_PAGE_SIZE);
 
         List<FestivalResponseDto> activeFestivals = festivalService.getAllActiveFestivalsForAdmin();
 

@@ -9,9 +9,9 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostReportRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -28,10 +28,22 @@ import static org.mockito.Mockito.verify;
 class AdminPendingItemsServiceImplTest {
 
     @Mock FestivalCertificationRepository certificationRepository;
-    @Mock PostReportRepository reportRepository;
+    @Mock PostReportRepository postReportRepository;
+    @Mock ReportQueryService<?> postReportService;
+    @Mock ReportQueryService<?> commentReportService;
     @Mock SongRequestRepository songRequestRepository;
 
-    @InjectMocks AdminPendingItemsServiceImpl adminPendingItemsService;
+    AdminPendingItemsServiceImpl adminPendingItemsService;
+
+    @BeforeEach
+    void setUp() {
+        adminPendingItemsService = new AdminPendingItemsServiceImpl(
+                certificationRepository,
+                postReportRepository,
+                List.of(postReportService, commentReportService),
+                songRequestRepository
+        );
+    }
 
     @Test
     void 대기중_인증_목록_limit만큼_반환() {
@@ -56,9 +68,9 @@ class AdminPendingItemsServiceImplTest {
     }
 
     @Test
-    void 대기중_신고_목록_limit만큼_반환() {
+    void 대기중_신고_목록_게시글_신고만_반환() {
         PostReport report = mock(PostReport.class);
-        given(reportRepository.findByStatusOrderByCreatedAtDesc(
+        given(postReportRepository.findByStatusOrderByCreatedAtDesc(
                 ReportStatus.PENDING, PageRequest.of(0, 10)))
                 .willReturn(new PageImpl<>(List.of(report)));
 
@@ -68,12 +80,12 @@ class AdminPendingItemsServiceImplTest {
     }
 
     @Test
-    void 대기중_신고_건수_조회() {
-        given(reportRepository.countByStatus(ReportStatus.PENDING)).willReturn(4L);
+    void 대기중_신고_건수_전_신고_유형_합산() {
+        given(postReportService.getPendingCount()).willReturn(3L);
+        given(commentReportService.getPendingCount()).willReturn(2L);
 
         long count = adminPendingItemsService.getPendingReportCount();
 
-        assertThat(count).isEqualTo(4L);
-        verify(reportRepository).countByStatus(ReportStatus.PENDING);
+        assertThat(count).isEqualTo(5L);
     }
 }
