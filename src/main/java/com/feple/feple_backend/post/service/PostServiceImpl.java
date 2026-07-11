@@ -115,11 +115,16 @@ public class PostServiceImpl implements PostService {
     @Override
     public CursorPage<PostResponseDto> getPostsByArtistIdPaged(Long artistId, Long cursor, int size, Long viewerId) {
         Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        int page = CursorPage.toPage(cursor);
-        Page<Post> result = postRepository.findByArtistOrderByCreatedAtDesc(artist, PageRequest.of(page, size));
+        int fetchSize = size + 1;
+        PageRequest limit = PageRequest.of(0, fetchSize);
+        List<Post> posts = (cursor == null)
+                ? postRepository.findByArtistOrderByIdDesc(artist, limit)
+                : postRepository.findByArtistAndIdLessThanOrderByIdDesc(artist, cursor, limit);
+        boolean hasNext = posts.size() == fetchSize;
         List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
-                result.getContent().stream().map(PostResponseDto::from).toList(), viewerId, PostResponseDto::getUserId);
-        return CursorPage.of(result, content, cursor);
+                posts.stream().limit(size).map(PostResponseDto::from).toList(), viewerId, PostResponseDto::getUserId);
+        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override
@@ -136,12 +141,17 @@ public class PostServiceImpl implements PostService {
     public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, Long cursor, int size, Long viewerId) {
         Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
-        int page = CursorPage.toPage(cursor);
-        Page<Post> result = postRepository.findGeneralFestivalPosts(festival, PageRequest.of(page, size));
-        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(result.getContent().stream()
+        int fetchSize = size + 1;
+        PageRequest limit = PageRequest.of(0, fetchSize);
+        List<Post> posts = (cursor == null)
+                ? postRepository.findGeneralFestivalPostsOrderByIdDesc(festival, limit)
+                : postRepository.findGeneralFestivalPostsAndIdLessThanOrderByIdDesc(festival, cursor, limit);
+        boolean hasNext = posts.size() == fetchSize;
+        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(posts.stream().limit(size)
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList(), viewerId, PostResponseDto::getUserId);
-        return CursorPage.of(result, content, cursor);
+        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override
@@ -158,12 +168,17 @@ public class PostServiceImpl implements PostService {
     public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, Long cursor, int size, Long viewerId) {
         Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
-        int page = CursorPage.toPage(cursor);
-        Page<Post> result = postRepository.findByFestivalAndBoardTypeOrderByCreatedAtDesc(festival, boardType, PageRequest.of(page, size));
-        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(result.getContent().stream()
+        int fetchSize = size + 1;
+        PageRequest limit = PageRequest.of(0, fetchSize);
+        List<Post> posts = (cursor == null)
+                ? postRepository.findByFestivalAndBoardTypeOrderByIdDesc(festival, boardType, limit)
+                : postRepository.findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(festival, boardType, cursor, limit);
+        boolean hasNext = posts.size() == fetchSize;
+        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(posts.stream().limit(size)
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
                 .toList(), viewerId, PostResponseDto::getUserId);
-        return CursorPage.of(result, content, cursor);
+        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override

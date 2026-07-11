@@ -58,6 +58,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.artist = :artist ORDER BY p.createdAt DESC")
     Page<Post> findByArtistOrderByCreatedAtDesc(@Param("artist") Artist artist, Pageable pageable);
 
+    // ── 아티스트 게시글 커서 페이징 (id 기반 — 신규 게시글 삽입에 영향받지 않음) ──
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.artist = :artist ORDER BY p.id DESC")
+    List<Post> findByArtistOrderByIdDesc(@Param("artist") Artist artist, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.artist = :artist AND p.id < :cursor ORDER BY p.id DESC")
+    List<Post> findByArtistAndIdLessThanOrderByIdDesc(@Param("artist") Artist artist, @Param("cursor") Long cursor, Pageable pageable);
+
     // ── 페스티벌 게시글 ──────────────────────────────────────────────────────
     List<Post> findByFestival(Festival festival);
 
@@ -65,9 +74,27 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL ORDER BY p.createdAt DESC")
     Page<Post> findGeneralFestivalPosts(@Param("festival") Festival festival, Pageable pageable);
 
+    // ── 페스티벌 일반 게시글 커서 페이징 (id 기반) ──────────────────────────
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL ORDER BY p.id DESC")
+    List<Post> findGeneralFestivalPostsOrderByIdDesc(@Param("festival") Festival festival, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL AND p.id < :cursor ORDER BY p.id DESC")
+    List<Post> findGeneralFestivalPostsAndIdLessThanOrderByIdDesc(@Param("festival") Festival festival, @Param("cursor") Long cursor, Pageable pageable);
+
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType ORDER BY p.createdAt DESC")
     Page<Post> findByFestivalAndBoardTypeOrderByCreatedAtDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, Pageable pageable);
+
+    // ── 페스티벌+게시판타입 커서 페이징 (id 기반) ────────────────────────────
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType ORDER BY p.id DESC")
+    List<Post> findByFestivalAndBoardTypeOrderByIdDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType AND p.id < :cursor ORDER BY p.id DESC")
+    List<Post> findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, @Param("cursor") Long cursor, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.festival = :festival ORDER BY p.likeCount DESC, p.createdAt DESC")
@@ -81,10 +108,24 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     Page<Post> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
+    // ── 내 게시글 커서 페이징 (id 기반) ──────────────────────────────────────
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    List<Post> findByUserOrderByIdDesc(User user, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    List<Post> findByUserAndIdLessThanOrderByIdDesc(User user, Long id, Pageable pageable);
+
     // 타인 프로필 표시용 — 익명 게시글 제외
     @Query(value = "SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.artist LEFT JOIN FETCH p.festival WHERE p.user = :user AND p.anonymous = false ORDER BY p.createdAt DESC",
            countQuery = "SELECT COUNT(p) FROM Post p WHERE p.user = :user AND p.anonymous = false")
     Page<Post> findPublicByUserOrderByCreatedAtDesc(@Param("user") User user, Pageable pageable);
+
+    // ── 공개(타인 프로필) 게시글 커서 페이징 (id 기반) ────────────────────────
+    @Query("SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.artist LEFT JOIN FETCH p.festival WHERE p.user = :user AND p.anonymous = false ORDER BY p.id DESC")
+    List<Post> findPublicByUserOrderByIdDesc(@Param("user") User user, Pageable pageable);
+
+    @Query("SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN FETCH p.artist LEFT JOIN FETCH p.festival WHERE p.user = :user AND p.anonymous = false AND p.id < :cursor ORDER BY p.id DESC")
+    List<Post> findPublicByUserAndIdLessThanOrderByIdDesc(@Param("user") User user, @Param("cursor") Long cursor, Pageable pageable);
 
 
     // 관리자 상세 — userId 직접 사용 (User 엔티티 사전 조회 불필요)

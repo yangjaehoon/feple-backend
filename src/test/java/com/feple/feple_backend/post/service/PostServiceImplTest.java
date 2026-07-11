@@ -300,13 +300,31 @@ class PostServiceImplTest {
                 .build();
 
         given(artistRepository.findById(3L)).willReturn(Optional.of(artist));
-        given(postRepository.findByArtistOrderByCreatedAtDesc(eq(artist), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(post)));
+        given(postRepository.findByArtistOrderByIdDesc(eq(artist), any(Pageable.class)))
+                .willReturn(List.of(post));
 
         CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, null, 20, null);
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.content().get(0).getBoardDisplayName()).isEqualTo("아이유 게시판");
+    }
+
+    @Test
+    void 아티스트_게시글_id_기반_커서로_다음페이지_조회() {
+        User author = user(1L);
+        Artist artist = Artist.builder().id(3L).name("아이유").build();
+        List<Post> posts = List.of(freePost(3L, author), freePost(2L, author), freePost(1L, author));
+
+        given(artistRepository.findById(3L)).willReturn(Optional.of(artist));
+        given(postRepository.findByArtistAndIdLessThanOrderByIdDesc(eq(artist), eq(5L), any(Pageable.class)))
+                .willReturn(posts);
+
+        CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, 5L, 2, null);
+
+        assertThat(result.content()).hasSize(2);
+        assertThat(result.hasNext()).isTrue();
+        assertThat(result.nextCursor()).isEqualTo(2L);
+        verify(postRepository, never()).findByArtistOrderByCreatedAtDesc(any(Artist.class), any(Pageable.class));
     }
 
     // ── getPostsByFestivalIdPaged ──────────────────────────────────────
@@ -324,8 +342,8 @@ class PostServiceImplTest {
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
-        given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(post)));
+        given(postRepository.findGeneralFestivalPostsOrderByIdDesc(eq(festival), any(Pageable.class)))
+                .willReturn(List.of(post));
 
         CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20, null);
 
@@ -346,8 +364,8 @@ class PostServiceImplTest {
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
-        given(postRepository.findGeneralFestivalPosts(eq(festival), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(post)));
+        given(postRepository.findGeneralFestivalPostsOrderByIdDesc(eq(festival), any(Pageable.class)))
+                .willReturn(List.of(post));
 
         CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20, null);
 

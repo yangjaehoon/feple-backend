@@ -10,7 +10,6 @@ import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,19 +35,29 @@ public class PostActivityServiceImpl implements PostActivityService {
     @Override
     public CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size) {
         User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
-        int page = CursorPage.toPage(cursor);
-        Page<Post> result = postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(page, size));
-        List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
-        return CursorPage.of(result, content, cursor);
+        int fetchSize = size + 1;
+        PageRequest limit = PageRequest.of(0, fetchSize);
+        List<Post> posts = (cursor == null)
+                ? postRepository.findByUserOrderByIdDesc(user, limit)
+                : postRepository.findByUserAndIdLessThanOrderByIdDesc(user, cursor, limit);
+        boolean hasNext = posts.size() == fetchSize;
+        List<PostResponseDto> content = posts.stream().limit(size).map(PostResponseDto::from).toList();
+        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override
     public CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size) {
         User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
-        int page = CursorPage.toPage(cursor);
-        Page<Post> result = postRepository.findPublicByUserOrderByCreatedAtDesc(user, PageRequest.of(page, size));
-        List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
-        return CursorPage.of(result, content, cursor);
+        int fetchSize = size + 1;
+        PageRequest limit = PageRequest.of(0, fetchSize);
+        List<Post> posts = (cursor == null)
+                ? postRepository.findPublicByUserOrderByIdDesc(user, limit)
+                : postRepository.findPublicByUserAndIdLessThanOrderByIdDesc(user, cursor, limit);
+        boolean hasNext = posts.size() == fetchSize;
+        List<PostResponseDto> content = posts.stream().limit(size).map(PostResponseDto::from).toList();
+        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
+        return new CursorPage<>(content, nextCursor, hasNext);
     }
 
     @Override

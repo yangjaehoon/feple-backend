@@ -63,8 +63,8 @@ class PostActivityServiceImplTest {
     void 내_게시글_커서_페이징_조회() {
         User author = user(1L);
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.findByUserOrderByCreatedAtDesc(eq(author), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+        given(postRepository.findByUserOrderByIdDesc(eq(author), any(Pageable.class)))
+                .willReturn(List.of(freePost(1L, author)));
 
         CursorPage<PostResponseDto> result = postActivityService.getMyPostsPaged(1L, null, 20);
 
@@ -77,8 +77,8 @@ class PostActivityServiceImplTest {
     void 공개_게시글_커서_페이징_조회() {
         User author = user(1L);
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.findPublicByUserOrderByCreatedAtDesc(eq(author), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+        given(postRepository.findPublicByUserOrderByIdDesc(eq(author), any(Pageable.class)))
+                .willReturn(List.of(freePost(1L, author)));
 
         CursorPage<PostResponseDto> result = postActivityService.getPublicPostsPaged(1L, null, 20);
 
