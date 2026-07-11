@@ -69,8 +69,8 @@ public class TimetableEntry {
     }
 
     public String getArtistName() {
-        if (artistName != null && !artistName.isBlank()) return artistName;
-        return artist != null ? artist.getName() : "";
+        if (artist != null) return artist.getName();
+        return artistName != null ? artistName : "";
     }
 
     public String getArtistNameEn() {

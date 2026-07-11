@@ -4,6 +4,8 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -47,6 +49,8 @@ public class FestivalCertification extends BaseTimeEntity {
 
     private String reviewedBy;
 
+    @Min(1)
+    @Max(5)
     @Column(columnDefinition = "TINYINT")
     private Integer rating;
 

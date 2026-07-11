@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-    name = "review_like",
+    name = "certification_review_like",
     uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "certification_id"})
 )
 public class CertificationReviewLike {
