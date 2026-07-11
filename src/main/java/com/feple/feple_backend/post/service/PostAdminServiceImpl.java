@@ -9,7 +9,6 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.post.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -20,14 +19,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PostAdminServiceImpl implements PostAdminService {
 
     private final PostRepository postRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final Map<String, PostRelationFilterStrategy> relationFilterStrategies;
+
+    public PostAdminServiceImpl(PostRepository postRepository,
+                                ApplicationEventPublisher eventPublisher,
+                                List<PostRelationFilterStrategy> relationFilterStrategies) {
+        this.postRepository = postRepository;
+        this.eventPublisher = eventPublisher;
+        this.relationFilterStrategies = relationFilterStrategies.stream()
+                .collect(Collectors.toMap(PostRelationFilterStrategy::filterKey, s -> s));
+    }
 
     @Override
     public Page<PostResponseDto> getPostsForAdmin(PostAdminFilterDto params) {
@@ -36,36 +45,24 @@ public class PostAdminServiceImpl implements PostAdminService {
         String kw = JpqlLikeEscaper.escapeOrEmpty(params.keyword());
 
         // BoardType enum에 해당하는 필터(FREE, MATE, FESTIVAL_COMPANION 등)는 enum이 직접 처리.
-        // 새 BoardType을 추가해도 이 메서드를 수정할 필요 없음.
+        // 관계 필터(ARTIST, FESTIVAL 등)는 PostRelationFilterStrategy 빈으로 위임.
+        // 새 BoardType/관계 필터를 추가해도 이 메서드를 수정할 필요 없음.
         return BoardType.fromAdminFilter(params.filter())
                 .map(boardType -> hasKeyword
                         ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(boardType, kw, pageable)
                         : postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, pageable))
-                .orElseGet(() -> resolveRelationFilter(params.filter(), params.artistId(), params.festivalId(), hasKeyword, kw, pageable))
+                .orElseGet(() -> resolveRelationFilter(params, hasKeyword, kw, pageable))
                 .map(PostResponseDto::from);
     }
 
-    private Page<Post> resolveRelationFilter(String filter, Long artistId, Long festivalId,
-                                             boolean hasKeyword, String kw, PageRequest pageable) {
-        return switch (filter == null ? "" : filter) {
-            case "ARTIST" -> artistId != null
-                    ? (hasKeyword
-                        ? postRepository.findByArtistIdAndTitleLikeOrderByCreatedAtDesc(artistId, kw, pageable)
-                        : postRepository.findByArtistIdOrderByCreatedAtDesc(artistId, pageable))
-                    : (hasKeyword
-                        ? postRepository.findByArtistIsNotNullAndTitleLikeOrderByCreatedAtDesc(kw, pageable)
-                        : postRepository.findByArtistIsNotNullOrderByCreatedAtDesc(pageable));
-            case "FESTIVAL" -> festivalId != null
-                    ? (hasKeyword
-                        ? postRepository.findByFestivalIdAndTitleLikeOrderByCreatedAtDesc(festivalId, kw, pageable)
-                        : postRepository.findByFestivalIdOrderByCreatedAtDesc(festivalId, pageable))
-                    : (hasKeyword
-                        ? postRepository.findByFestivalIsNotNullAndTitleLikeOrderByCreatedAtDesc(kw, pageable)
-                        : postRepository.findByFestivalIsNotNullOrderByCreatedAtDesc(pageable));
-            default -> hasKeyword
-                    ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(kw, pageable)
-                    : postRepository.findAllByOrderByCreatedAtDesc(pageable);
-        };
+    private Page<Post> resolveRelationFilter(PostAdminFilterDto params, boolean hasKeyword, String kw, PageRequest pageable) {
+        PostRelationFilterStrategy strategy = relationFilterStrategies.get(params.filter());
+        if (strategy != null) {
+            return strategy.findPosts(params, hasKeyword, kw, pageable);
+        }
+        return hasKeyword
+                ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(kw, pageable)
+                : postRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     @Override

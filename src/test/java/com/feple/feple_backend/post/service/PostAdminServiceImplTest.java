@@ -8,9 +8,9 @@ import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.user.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,7 +37,13 @@ class PostAdminServiceImplTest {
     @Mock PostRepository postRepository;
     @Mock ApplicationEventPublisher eventPublisher;
 
-    @InjectMocks PostAdminServiceImpl postAdminService;
+    PostAdminServiceImpl postAdminService;
+
+    @BeforeEach
+    void setUp() {
+        postAdminService = new PostAdminServiceImpl(postRepository, eventPublisher,
+                List.of(new ArtistPostFilterStrategy(postRepository), new FestivalPostFilterStrategy(postRepository)));
+    }
 
     // ── deletePost ───────────────────────────────────────────────────
 
