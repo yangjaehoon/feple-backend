@@ -22,7 +22,7 @@ public class WriteOperationRateLimiter {
             .maximumSize(50_000)
             .build();
 
-    private Bucket resolveBucket(String ip) {
+    private Bucket getOrCreateBucket(String ip) {
         return cache.get(ip, k -> Bucket.builder()
                 .addLimit(Bandwidth.builder()
                         .capacity(30)
@@ -32,7 +32,7 @@ public class WriteOperationRateLimiter {
     }
 
     public void check(String ip) {
-        if (!resolveBucket(ip).tryConsume(1)) {
+        if (!getOrCreateBucket(ip).tryConsume(1)) {
             throw new TooManyRequestsException("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
         }
     }

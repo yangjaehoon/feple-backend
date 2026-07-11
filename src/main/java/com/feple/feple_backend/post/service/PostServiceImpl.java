@@ -43,7 +43,7 @@ public class PostServiceImpl implements PostService {
     private final FestivalCertificationService certificationService;
     private final BadWordValidator badWordFilter;
     private final ApplicationEventPublisher eventPublisher;
-    private final HotPostCache hotPostCache;
+    private final PopularPostCache hotPostCache;
     private final BlockedContentFilter blockedContentFilter;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}

@@ -17,13 +17,13 @@ public class NicknameRestrictionValidator {
     private final BadWordSet wordSet = new BadWordSet();
 
     @PostConstruct
-    public void reload() {
+    public void reloadRestrictions() {
         wordSet.load(repository.findAllWords());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChange(NicknameRestrictionChangedEvent event) {
-        reload();
+        reloadRestrictions();
     }
 
     public void validate(String nickname) {

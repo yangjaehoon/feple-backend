@@ -91,7 +91,7 @@ public class OcrService {
     private TimetableEntryRequestDto toTimetableRequest(OcrResultDto entry) {
         TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         if (entry.isAnnouncement()) {
-            req.setStageName(TimetableEntry.ANNOUNCEMENT_STAGE_NAME);
+            req.setStageName(TimetableEntry.ANNOUNCEMENT_SENTINEL);
         } else {
             req.setStageName(entry.stage() != null ? entry.stage().trim() : "");
         }

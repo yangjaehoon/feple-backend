@@ -18,13 +18,13 @@ public class BadWordValidator {
     private final BadWordSet wordSet = new BadWordSet();
 
     @PostConstruct
-    public void reload() {
+    public void reloadWords() {
         wordSet.load(badWordRepository.findAllWords());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChange(BadWordChangedEvent event) {
-        reload();
+        reloadWords();
     }
 
     public void validate(String... texts) {

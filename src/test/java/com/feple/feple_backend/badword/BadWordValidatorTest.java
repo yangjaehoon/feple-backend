@@ -23,7 +23,7 @@ class BadWordFilterTest {
 
     private void loadWords(String... words) {
         given(badWordRepository.findAllWords()).willReturn(List.of(words));
-        filter.reload();
+        filter.reloadWords();
     }
 
     // ── validate ─────────────────────────────────────────────────────

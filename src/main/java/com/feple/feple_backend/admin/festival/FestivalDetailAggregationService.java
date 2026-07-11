@@ -67,7 +67,7 @@ public class FestivalDetailAggregationService {
                 BoothType.values(),
                 googleMapsKey,
                 buildSetlistCounts(artists),
-                TimetableEntry.ANNOUNCEMENT_STAGE_NAME,
+                TimetableEntry.ANNOUNCEMENT_SENTINEL,
                 ratingStats
         );
     }
@@ -96,7 +96,7 @@ public class FestivalDetailAggregationService {
             List<ArtistFestivalResponseDto> artists, List<TimetableEntryResponseDto> entries) {
         Map<String, List<TimetableEntryResponseDto>> result = entries.stream()
                 .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
-                             && !TimetableEntry.ANNOUNCEMENT_STAGE_NAME.equals(e.getStageName()))
+                             && !TimetableEntry.ANNOUNCEMENT_SENTINEL.equals(e.getStageName()))
                 .collect(Collectors.groupingBy(TimetableEntryResponseDto::getArtistName,
                         HashMap::new, Collectors.toList()));
         artists.forEach(a -> result.putIfAbsent(a.getArtistName(), List.of()));
