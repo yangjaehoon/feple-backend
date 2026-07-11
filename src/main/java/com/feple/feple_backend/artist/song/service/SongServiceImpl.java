@@ -30,7 +30,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class SongServiceImpl implements SongService, SongAdminService {
+public class SongServiceImpl implements SongService, SongAdminService, SetlistAdminService {
 
     private final SongRepository songRepository;
     private final ArtistRepository artistRepository;

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.festival;
 
-import com.feple.feple_backend.artist.song.service.SongAdminService;
+import com.feple.feple_backend.artist.song.service.SetlistAdminService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.entity.BoothType;
@@ -35,7 +35,7 @@ public class FestivalDetailAggregationService {
     private final TimetableService timetableService;
     private final StageService stageService;
     private final BoothService boothService;
-    private final SongAdminService songAdminService;
+    private final SetlistAdminService setlistAdminService;
     private final FestivalReviewService reviewService;
 
     @Value("${app.google.maps.key:}")
@@ -111,6 +111,6 @@ public class FestivalDetailAggregationService {
 
     private Map<Long, Integer> buildSetlistCounts(List<ArtistFestivalResponseDto> artists) {
         List<Long> afIds = artists.stream().map(ArtistFestivalResponseDto::getArtistFestivalId).toList();
-        return afIds.isEmpty() ? Collections.emptyMap() : songAdminService.getSetlistCounts(afIds);
+        return afIds.isEmpty() ? Collections.emptyMap() : setlistAdminService.getSetlistCounts(afIds);
     }
 }

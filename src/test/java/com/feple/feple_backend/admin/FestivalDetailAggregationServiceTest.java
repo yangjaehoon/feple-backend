@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.admin.festival.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.festival.FestivalDetailDto;
-import com.feple.feple_backend.artist.song.service.SongAdminService;
+import com.feple.feple_backend.artist.song.service.SetlistAdminService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.service.BoothService;
@@ -38,14 +38,14 @@ class FestivalDetailAggregationServiceTest {
     @Mock TimetableService timetableService;
     @Mock StageService stageService;
     @Mock BoothService boothService;
-    @Mock SongAdminService songAdminService;
+    @Mock SetlistAdminService setlistAdminService;
     @Mock FestivalReviewService reviewService;
 
     @InjectMocks FestivalDetailAggregationService service;
 
     // ── 헬퍼 ─────────────────────────────────────────────────────────────────
 
-    /** 아티스트 목록이 비어있을 때 — songAdminService 호출 없음 */
+    /** 아티스트 목록이 비어있을 때 — setlistAdminService 호출 없음 */
     private void stubBase(Long festivalId, List<TimetableEntryResponseDto> entries,
                           List<ArtistFestivalResponseDto> artists) {
         given(festivalService.getFestival(festivalId)).willReturn(mock(FestivalResponseDto.class));
@@ -57,11 +57,11 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(festivalId)).willReturn(0);
     }
 
-    /** 아티스트가 있을 때 — songAdminService 스텁 포함 */
+    /** 아티스트가 있을 때 — setlistAdminService 스텁 포함 */
     private void stubBaseWithArtists(Long festivalId, List<TimetableEntryResponseDto> entries,
                                      List<ArtistFestivalResponseDto> artists) {
         stubBase(festivalId, entries, artists);
-        given(songAdminService.getSetlistCounts(any())).willReturn(Map.of());
+        given(setlistAdminService.getSetlistCounts(any())).willReturn(Map.of());
     }
 
     private static TimetableEntryResponseDto entry(String artistName, String stageName, String date) {
@@ -84,7 +84,7 @@ class FestivalDetailAggregationServiceTest {
     @Test
     void getDetail_모든_서비스에_festivalId_전달() {
         Long festivalId = 1L;
-        // 아티스트 없음 → songAdminService 미호출
+        // 아티스트 없음 → setlistAdminService 미호출
         stubBase(festivalId, List.of(), List.of());
 
         service.getDetail(festivalId);
@@ -237,7 +237,7 @@ class FestivalDetailAggregationServiceTest {
 
         service.getDetail(festivalId);
 
-        verify(songAdminService, never()).getSetlistCounts(any());
+        verify(setlistAdminService, never()).getSetlistCounts(any());
     }
 
     @Test
@@ -245,10 +245,10 @@ class FestivalDetailAggregationServiceTest {
         Long festivalId = 1L;
         List<ArtistFestivalResponseDto> artists = List.of(artist(10L, "A"), artist(20L, "B"));
         stubBase(festivalId, List.of(), artists);
-        given(songAdminService.getSetlistCounts(List.of(10L, 20L))).willReturn(Map.of(10L, 3, 20L, 1));
+        given(setlistAdminService.getSetlistCounts(List.of(10L, 20L))).willReturn(Map.of(10L, 3, 20L, 1));
 
         service.getDetail(festivalId);
 
-        verify(songAdminService).getSetlistCounts(List.of(10L, 20L));
+        verify(setlistAdminService).getSetlistCounts(List.of(10L, 20L));
     }
 }

@@ -7,7 +7,7 @@ import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.song.entity.ArtistFestivalSong;
-import com.feple.feple_backend.artist.song.service.SongAdminService;
+import com.feple.feple_backend.artist.song.service.SetlistAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -31,7 +31,7 @@ import java.util.Set;
 public class ArtistSetlistAdminController {
 
     private final SongService songService;
-    private final SongAdminService songAdminService;
+    private final SetlistAdminService setlistAdminService;
     private final ArtistService artistService;
     private final ArtistFestivalService artistFestivalService;
     private final AdminLogService adminLogService;
@@ -62,7 +62,7 @@ public class ArtistSetlistAdminController {
                     ArtistResponseDto artist = artistService.getArtistById(artistId);
                     ArtistFestival artistFestival = artistFestivalService.getArtistFestivalByIdAndArtistId(artistFestivalId, artistId);
 
-                    List<ArtistFestivalSong> currentSetlist = songAdminService.getSetlist(artistFestivalId);
+                    List<ArtistFestivalSong> currentSetlist = setlistAdminService.getSetlist(artistFestivalId);
                     Set<Long> selectedSongIds = new HashSet<>();
                     currentSetlist.forEach(afs -> selectedSongIds.add(afs.getSongId()));
 
@@ -92,7 +92,7 @@ public class ArtistSetlistAdminController {
         Set<Long> ids = songIds != null ? songIds : Set.of();
         AdminActionUtils.tryAction(
                 () -> {
-                    songAdminService.saveSetlist(artistFestivalId, ids);
+                    setlistAdminService.saveSetlist(artistFestivalId, ids);
                     adminLogService.log(AdminAction.ARTIST_SETLIST_SAVE, "ARTIST", artistId, "afId=" + artistFestivalId + " songs=" + ids.size());
                 },
                 "셋리스트가 저장되었습니다.",

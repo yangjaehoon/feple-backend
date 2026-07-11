@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin.artist;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
-import com.feple.feple_backend.artist.song.service.SongAdminService;
+import com.feple.feple_backend.artist.song.service.SetlistAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ArtistSetlistAdminControllerTest {
 
     @Mock SongService songService;
-    @Mock SongAdminService songAdminService;
+    @Mock SetlistAdminService setlistAdminService;
     @Mock ArtistService artistService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock AdminLogService adminLogService;
@@ -81,7 +81,7 @@ class ArtistSetlistAdminControllerTest {
         given(artistService.getArtistById(1L)).willReturn(mock(ArtistResponseDto.class));
         given(artistFestivalService.getArtistFestivalByIdAndArtistId(2L, 1L))
                 .willReturn(mock(ArtistFestival.class));
-        given(songAdminService.getSetlist(2L)).willReturn(List.of());
+        given(setlistAdminService.getSetlist(2L)).willReturn(List.of());
         given(songService.getSongsByArtistId(1L)).willReturn(List.of());
 
         mockMvc.perform(get("/admin/artists/1/setlist/2"))
