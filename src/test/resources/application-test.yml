@@ -44,5 +44,4 @@ jwt:
 app:
   s3:
     bucket: test-bucket
-    prefix: test-prefix
     presign-minutes: 10

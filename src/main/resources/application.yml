@@ -67,7 +67,6 @@ jwt:
 
 app:
   s3:
-    prefix: artist-photos
     presign-minutes: 10
   cdn:
     base-url: ${CDN_BASE_URL:}
