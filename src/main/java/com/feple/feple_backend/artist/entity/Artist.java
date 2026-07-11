@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.entity;
 
+import com.feple.feple_backend.global.MusicGenre;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,12 +37,12 @@ public class Artist {
     @Builder.Default
     private List<String> aliases = new ArrayList<>();
 
-    @ElementCollection(targetClass = ArtistGenre.class, fetch = FetchType.LAZY)
+    @ElementCollection(targetClass = MusicGenre.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "artist_genres", joinColumns = @JoinColumn(name = "artist_id"))
     @Column(name = "genres", length = 20)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private List<ArtistGenre> genres = new ArrayList<>();
+    private List<MusicGenre> genres = new ArrayList<>();
 
     private String profileImageKey;
 
@@ -71,7 +72,7 @@ public class Artist {
         this.rankUpdatedAt = LocalDateTime.now();
     }
 
-    public void update(String name, String nameEn, List<ArtistGenre> genres, List<String> aliases) {
+    public void update(String name, String nameEn, List<MusicGenre> genres, List<String> aliases) {
         this.name = name;
         this.nameEn = nameEn;
         this.genres = genres != null ? new ArrayList<>(genres) : new ArrayList<>();

@@ -5,7 +5,7 @@ import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.artist.entity.ArtistGenre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
@@ -137,7 +137,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ArtistResponseDto> getAdminArtistList(String sort, String keyword, ArtistGenre genre, int page) {
+    public Page<ArtistResponseDto> getAdminArtistList(String sort, String keyword, MusicGenre genre, int page) {
         boolean songSort   = isSongCountSort(sort);
         boolean hasKeyword = hasSearchKeyword(keyword);
 

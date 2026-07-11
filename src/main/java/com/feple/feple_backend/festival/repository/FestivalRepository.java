@@ -2,7 +2,7 @@ package com.feple.feple_backend.festival.repository;
 
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -60,7 +60,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
            "AND (:regions IS NULL OR f.region IN :regions) " +
            "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions) " +
            "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom)")
-    List<Festival> findByFilters(@Param("genres") List<Genre> genres,
+    List<Festival> findByFilters(@Param("genres") List<MusicGenre> genres,
                                  @Param("regions") List<Region> regions,
                                  @Param("ageRestrictions") List<AgeRestriction> ageRestrictions,
                                  @Param("activeFrom") LocalDate activeFrom);

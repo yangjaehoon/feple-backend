@@ -12,7 +12,7 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import jakarta.validation.Valid;
@@ -203,7 +203,7 @@ public class FestivalAdminController {
     private void populateFestivalFormModel(Model model) {
         model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
         model.addAttribute("allRegions", Region.values());
-        model.addAttribute("allGenres", Genre.values());
+        model.addAttribute("allGenres", MusicGenre.values());
         model.addAttribute("allAgeRestrictions", AgeRestriction.values());
         model.addAttribute("kakaoMapsKey", kakaoMapsKey);
     }

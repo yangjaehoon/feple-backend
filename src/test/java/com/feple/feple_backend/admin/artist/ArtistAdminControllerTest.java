@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin.artist;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.artist.entity.ArtistGenre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
@@ -62,7 +62,7 @@ class ArtistAdminControllerTest {
 
     @Test
     void 장르_필터_있으면_getAdminArtistList에_전달() throws Exception {
-        given(artistAdminService.getAdminArtistList(anyString(), anyString(), eq(ArtistGenre.INDIE), anyInt()))
+        given(artistAdminService.getAdminArtistList(anyString(), anyString(), eq(MusicGenre.INDIE), anyInt()))
                 .willReturn(new PageImpl<>(List.of()));
         given(artistSuggestionAdminService.getPendingSuggestionsPreview(anyInt())).willReturn(List.of());
         given(artistSuggestionAdminService.getProcessedSuggestionsPreview(anyInt())).willReturn(List.of());
@@ -71,7 +71,7 @@ class ArtistAdminControllerTest {
         mockMvc.perform(get("/admin/artists").param("genre", "INDIE"))
                 .andExpect(status().isOk());
 
-        then(artistAdminService).should().getAdminArtistList(anyString(), anyString(), eq(ArtistGenre.INDIE), anyInt());
+        then(artistAdminService).should().getAdminArtistList(anyString(), anyString(), eq(MusicGenre.INDIE), anyInt());
     }
 
     // ── GET /admin/artists/new ────────────────────────────────────────────────

@@ -1,13 +1,13 @@
 package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.festival.entity.AgeRestriction;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 
 import java.util.List;
 
 public record FestivalFilterCriteria(
-        List<Genre> genres,
+        List<MusicGenre> genres,
         List<Region> regions,
         List<AgeRestriction> ageRestrictions,
         boolean includeEnded,

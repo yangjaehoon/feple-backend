@@ -1,8 +1,8 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequestStatus;
-import com.feple.feple_backend.festival.setlistrequest.service.SetlistChangeRequestService;
+import com.feple.feple_backend.festival.lineupchangerequest.entity.LineupChangeRequestStatus;
+import com.feple.feple_backend.festival.lineupchangerequest.service.LineupChangeRequestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class SetlistRequestAdminControllerTest {
 
-    @Mock SetlistChangeRequestService service;
+    @Mock LineupChangeRequestService service;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks SetlistRequestAdminController controller;
@@ -42,7 +42,7 @@ class SetlistRequestAdminControllerTest {
 
     @Test
     void 목록_조회_뷰와_모델_속성_확인() throws Exception {
-        given(service.list(eq(SetlistChangeRequestStatus.PENDING), eq(""), any()))
+        given(service.list(eq(LineupChangeRequestStatus.PENDING), eq(""), any()))
                 .willReturn(new PageImpl<>(List.of()));
         given(service.getPendingCount()).willReturn(3L);
 
@@ -55,33 +55,33 @@ class SetlistRequestAdminControllerTest {
 
     @Test
     void 유효하지_않은_status는_PENDING으로_fallback() throws Exception {
-        given(service.list(eq(SetlistChangeRequestStatus.PENDING), any(), any()))
+        given(service.list(eq(LineupChangeRequestStatus.PENDING), any(), any()))
                 .willReturn(new PageImpl<>(List.of()));
         given(service.getPendingCount()).willReturn(0L);
 
         mockMvc.perform(get("/admin/setlist-requests").param("status", "INVALID"))
                 .andExpect(status().isOk());
 
-        then(service).should().list(eq(SetlistChangeRequestStatus.PENDING), any(), any());
+        then(service).should().list(eq(LineupChangeRequestStatus.PENDING), any(), any());
     }
 
     @Test
     void PROCESSED_status_조회() throws Exception {
-        given(service.list(eq(SetlistChangeRequestStatus.PROCESSED), any(), any()))
+        given(service.list(eq(LineupChangeRequestStatus.PROCESSED), any(), any()))
                 .willReturn(new PageImpl<>(List.of()));
         given(service.getPendingCount()).willReturn(0L);
 
         mockMvc.perform(get("/admin/setlist-requests").param("status", "PROCESSED"))
                 .andExpect(status().isOk());
 
-        then(service).should().list(eq(SetlistChangeRequestStatus.PROCESSED), any(), any());
+        then(service).should().list(eq(LineupChangeRequestStatus.PROCESSED), any(), any());
     }
 
     // ── POST /admin/setlist-requests/{id}/resolve ─────────────────────────────
 
     @Test
     void 처리_성공_successMessage_설정() throws Exception {
-        given(service.countByStatus(SetlistChangeRequestStatus.PENDING)).willReturn(5L);
+        given(service.countByStatus(LineupChangeRequestStatus.PENDING)).willReturn(5L);
 
         mockMvc.perform(post("/admin/setlist-requests/1/resolve")
                         .param("status", "PENDING")
@@ -94,7 +94,7 @@ class SetlistRequestAdminControllerTest {
 
     @Test
     void 처리_성공_리다이렉트_URL에_status와_page_포함() throws Exception {
-        given(service.countByStatus(SetlistChangeRequestStatus.PENDING)).willReturn(20L);
+        given(service.countByStatus(LineupChangeRequestStatus.PENDING)).willReturn(20L);
 
         mockMvc.perform(post("/admin/setlist-requests/1/resolve")
                         .param("status", "PENDING")
@@ -105,7 +105,7 @@ class SetlistRequestAdminControllerTest {
     @Test
     void 처리_후_남은_항목이_현재_페이지보다_적으면_마지막_유효_페이지로_이동() throws Exception {
         // 남은 5건: maxPage = (5-1)/LIST_PAGE_SIZE(20) = 0 → page=2는 0으로 클램핑
-        given(service.countByStatus(SetlistChangeRequestStatus.PENDING)).willReturn(5L);
+        given(service.countByStatus(LineupChangeRequestStatus.PENDING)).willReturn(5L);
 
         mockMvc.perform(post("/admin/setlist-requests/1/resolve")
                         .param("status", "PENDING")
@@ -115,7 +115,7 @@ class SetlistRequestAdminControllerTest {
 
     @Test
     void 처리_성공_keyword_있으면_리다이렉트_URL에_포함() throws Exception {
-        given(service.countByStatus(SetlistChangeRequestStatus.PENDING)).willReturn(1L);
+        given(service.countByStatus(LineupChangeRequestStatus.PENDING)).willReturn(1L);
 
         mockMvc.perform(post("/admin/setlist-requests/1/resolve")
                         .param("status", "PENDING")

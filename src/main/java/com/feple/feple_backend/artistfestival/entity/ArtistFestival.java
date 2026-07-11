@@ -3,6 +3,7 @@ package com.feple.feple_backend.artistfestival.entity;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.global.MusicGenre;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -56,7 +57,7 @@ public class ArtistFestival {
     public String getArtistGenreDisplayName() {
         if (artist.getGenres() == null || artist.getGenres().isEmpty()) return null;
         return artist.getGenres().stream()
-                .map(com.feple.feple_backend.artist.entity.ArtistGenre::getDisplayName)
+                .map(MusicGenre::getDisplayName)
                 .collect(java.util.stream.Collectors.joining(", "));
     }
     public String getArtistProfileImageKey() { return artist.getProfileImageKey(); }

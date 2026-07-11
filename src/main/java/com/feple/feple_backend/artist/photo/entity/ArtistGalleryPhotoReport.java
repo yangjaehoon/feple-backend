@@ -19,7 +19,7 @@ import lombok.*;
         @UniqueConstraint(columnNames = {"reporter_id", "photo_id"})
     }
 )
-public class ArtistPhotoReport extends BaseTimeEntity implements ResolvableReport {
+public class ArtistGalleryPhotoReport extends BaseTimeEntity implements ResolvableReport {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

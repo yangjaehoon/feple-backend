@@ -4,7 +4,7 @@ import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.artist.entity.ArtistGenre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
@@ -47,13 +47,13 @@ class ArtistServiceTest {
         ArtistRequestDto dto = ArtistRequestDto.builder()
                 .name("아이유")
                 .nameEn("IU")
-                .genres(List.of(ArtistGenre.BALLAD))
+                .genres(List.of(MusicGenre.BALLAD))
                 .profileImageKey("artists/iu.jpg")
                 .build();
 
         Artist saved = Artist.builder()
                 .id(1L).name("아이유").nameEn("IU")
-                .genres(List.of(ArtistGenre.BALLAD)).profileImageKey("artists/iu.jpg")
+                .genres(List.of(MusicGenre.BALLAD)).profileImageKey("artists/iu.jpg")
                 .build();
 
         given(artistRepository.save(any(Artist.class))).willReturn(saved);
@@ -96,12 +96,12 @@ class ArtistServiceTest {
     void 아티스트_수정_이미지_변경() {
         Artist artist = Artist.builder()
                 .id(1L).name("아이유").nameEn("IU")
-                .genres(List.of(ArtistGenre.BALLAD)).profileImageKey("old.jpg")
+                .genres(List.of(MusicGenre.BALLAD)).profileImageKey("old.jpg")
                 .build();
 
         ArtistRequestDto dto = ArtistRequestDto.builder()
                 .name("아이유").nameEn("IU")
-                .genres(List.of(ArtistGenre.BALLAD))
+                .genres(List.of(MusicGenre.BALLAD))
                 .profileImageKey("new.jpg")
                 .build();
 
@@ -117,13 +117,13 @@ class ArtistServiceTest {
     void 아티스트_수정_이미지_없으면_기존_유지() {
         Artist artist = Artist.builder()
                 .id(1L).name("아이유").nameEn("IU")
-                .genres(List.of(ArtistGenre.BALLAD)).profileImageKey("old.jpg")
+                .genres(List.of(MusicGenre.BALLAD)).profileImageKey("old.jpg")
                 .build();
 
         // profileImageKey null → 이미지 변경 없음
         ArtistRequestDto dto = ArtistRequestDto.builder()
                 .name("아이유 (수정)").nameEn("IU")
-                .genres(List.of(ArtistGenre.BALLAD))
+                .genres(List.of(MusicGenre.BALLAD))
                 .build();
 
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist));

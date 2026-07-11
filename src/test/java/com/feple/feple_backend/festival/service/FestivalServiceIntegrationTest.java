@@ -3,7 +3,7 @@ package com.feple.feple_backend.festival.service;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
@@ -140,13 +140,13 @@ class FestivalServiceIntegrationTest {
 
     @Test
     void 장르_필터링() {
-        festivalAdminService.createFestival(makeDtoWithGenre("밴드페스티벌", Genre.BAND));
-        festivalAdminService.createFestival(makeDtoWithGenre("힙합페스티벌", Genre.HIP_HOP));
+        festivalAdminService.createFestival(makeDtoWithGenre("밴드페스티벌", MusicGenre.BAND));
+        festivalAdminService.createFestival(makeDtoWithGenre("힙합페스티벌", MusicGenre.HIP_HOP));
 
         List<FestivalResponseDto> result =
-                festivalService.getAllFestivals(new FestivalFilterCriteria(List.of(Genre.BAND), null, null, true, null));
+                festivalService.getAllFestivals(new FestivalFilterCriteria(List.of(MusicGenre.BAND), null, null, true, null));
 
-        assertThat(result).allMatch(f -> f.getGenres().contains(Genre.BAND));
+        assertThat(result).allMatch(f -> f.getGenres().contains(MusicGenre.BAND));
     }
 
     // ── 헬퍼 메서드 ───────────────────────────────────────────────
@@ -159,7 +159,7 @@ class FestivalServiceIntegrationTest {
         dto.setStartDate(start);
         dto.setEndDate(end);
         dto.setRegion(Region.SEOUL);
-        dto.setGenres(List.of(Genre.BAND));
+        dto.setGenres(List.of(MusicGenre.BAND));
         return dto;
     }
 
@@ -168,7 +168,7 @@ class FestivalServiceIntegrationTest {
         return makeDto(title, start, end);
     }
 
-    private FestivalRequestDto makeDtoWithGenre(String title, Genre genre) {
+    private FestivalRequestDto makeDtoWithGenre(String title, MusicGenre genre) {
         FestivalRequestDto dto = makeDto(title,
                 LocalDate.now().plusDays(5), LocalDate.now().plusDays(7));
         dto.setGenres(List.of(genre));
