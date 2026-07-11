@@ -6,6 +6,7 @@ import com.feple.feple_backend.certification.entity.CertificationReviewLike;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -97,14 +98,13 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
         if (!cert.isApproved() || cert.getRating() == null) {
             throw new IllegalArgumentException("존재하지 않는 리뷰입니다.");
         }
-        int deleted = reviewLikeRepository.deleteByUserIdAndCertificationId(userId, certId);
-        if (deleted > 0) {
-            certificationRepository.decrementLikeCount(certId);
-            return false;
-        }
-        reviewLikeRepository.save(CertificationReviewLike.of(userId, certId));
-        certificationRepository.incrementLikeCount(certId);
-        return true;
+        return LikeToggler.toggle(
+                () -> reviewLikeRepository.deleteByUserIdAndCertificationId(userId, certId),
+                () -> certificationRepository.decrementLikeCount(certId),
+                () -> {
+                    reviewLikeRepository.save(CertificationReviewLike.of(userId, certId));
+                    certificationRepository.incrementLikeCount(certId);
+                });
     }
 
     @Override

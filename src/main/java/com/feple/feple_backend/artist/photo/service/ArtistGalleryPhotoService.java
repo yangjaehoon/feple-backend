@@ -13,6 +13,7 @@ import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -156,18 +157,16 @@ public class ArtistGalleryPhotoService {
         ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        int deleted = artistGalleryPhotoLikeRepository.deleteByPhotoIdAndUserId(photoId, userId);
-        if (deleted > 0) {
-            artistGalleryPhotoRepository.decrementLikeCount(photoId);
-            return false;
-        }
-        try {
-            artistGalleryPhotoLikeRepository.saveAndFlush(new ArtistGalleryPhotoLike(photo, user));
-        } catch (DataIntegrityViolationException ignored) {
-            // unique(artist_photo_id, user_id): 동시 요청으로 이미 저장됨
-            return true;
-        }
-        artistGalleryPhotoRepository.incrementLikeCount(photoId);
-        return true;
+        return LikeToggler.toggle(
+                () -> artistGalleryPhotoLikeRepository.deleteByPhotoIdAndUserId(photoId, userId),
+                () -> artistGalleryPhotoRepository.decrementLikeCount(photoId),
+                () -> {
+                    try {
+                        artistGalleryPhotoLikeRepository.saveAndFlush(new ArtistGalleryPhotoLike(photo, user));
+                        artistGalleryPhotoRepository.incrementLikeCount(photoId);
+                    } catch (DataIntegrityViolationException ignored) {
+                        // unique(artist_photo_id, user_id): 동시 요청으로 이미 저장됨 — 카운트 증가 생략
+                    }
+                });
     }
 }

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
 import com.feple.feple_backend.post.event.PostLikedEvent;
@@ -33,16 +34,15 @@ public class PostLikeService {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        int deleted = postLikeRepository.deleteByUserIdAndPostId(userId, postId);
-        if (deleted > 0) {
-            postRepository.decrementLikeCount(postId);
-            return false;
-        }
-        postLikeRepository.save(new PostLike(user, post));
-        postRepository.incrementLikeCount(postId);
-        if (!post.getUserId().equals(userId)) {
-            eventPublisher.publishEvent(new PostLikedEvent(post.getUserId(), user.getNickname(), post.getTitle(), postId, userId));
-        }
-        return true;
+        return LikeToggler.toggle(
+                () -> postLikeRepository.deleteByUserIdAndPostId(userId, postId),
+                () -> postRepository.decrementLikeCount(postId),
+                () -> {
+                    postLikeRepository.save(new PostLike(user, post));
+                    postRepository.incrementLikeCount(postId);
+                    if (!post.getUserId().equals(userId)) {
+                        eventPublisher.publishEvent(new PostLikedEvent(post.getUserId(), user.getNickname(), post.getTitle(), postId, userId));
+                    }
+                });
     }
 }

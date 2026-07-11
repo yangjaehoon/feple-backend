@@ -15,6 +15,7 @@ import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.post.entity.Post;
@@ -217,14 +218,15 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        int deleted = commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
-        if (deleted > 0) {
-            commentRepository.decrementLikeCount(commentId);
-            return new CommentLikeResult(false, Math.max(0, comment.getLikeCount() - 1));
-        }
-        commentLikeRepository.save(new CommentLike(comment, user));
-        commentRepository.incrementLikeCount(commentId);
-        return new CommentLikeResult(true, comment.getLikeCount() + 1);
+        boolean liked = LikeToggler.toggle(
+                () -> commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId),
+                () -> commentRepository.decrementLikeCount(commentId),
+                () -> {
+                    commentLikeRepository.save(new CommentLike(comment, user));
+                    commentRepository.incrementLikeCount(commentId);
+                });
+        int newLikeCount = liked ? comment.getLikeCount() + 1 : Math.max(0, comment.getLikeCount() - 1);
+        return new CommentLikeResult(liked, newLikeCount);
     }
 
     @Override

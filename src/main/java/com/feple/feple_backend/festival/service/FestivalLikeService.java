@@ -5,6 +5,7 @@ import com.feple.feple_backend.festival.entity.FestivalLike;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,14 +31,13 @@ public class FestivalLikeService {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        int deleted = festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId);
-        if (deleted > 0) {
-            festivalRepository.decrementLikeCount(festivalId);
-            return false;
-        }
-        festivalLikeRepository.save(FestivalLike.of(user, festival));
-        festivalRepository.incrementLikeCount(festivalId);
-        return true;
+        return LikeToggler.toggle(
+                () -> festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId),
+                () -> festivalRepository.decrementLikeCount(festivalId),
+                () -> {
+                    festivalLikeRepository.save(FestivalLike.of(user, festival));
+                    festivalRepository.incrementLikeCount(festivalId);
+                });
     }
 
     /** 회원 탈퇴 시 해당 유저의 페스티벌 좋아요 데이터 일괄 제거 */
