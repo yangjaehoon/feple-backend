@@ -112,7 +112,7 @@ public class CrawlAdminController {
                             ErrorCode.SERVICE_UNAVAILABLE));
         }
         try {
-            OcrParseResult<OcrResultDto> results = ocrService.parseTimeTable(image, year);
+            OcrParseResult<OcrResultDto> results = ocrService.parseTimetable(image, year);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             log.error("OCR 파싱 실패", e);

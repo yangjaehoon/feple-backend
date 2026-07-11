@@ -165,7 +165,7 @@ class CrawlAdminControllerTest {
         MockMultipartFile image = new MockMultipartFile("image", "test.jpg",
                 MediaType.IMAGE_JPEG_VALUE, new byte[]{1, 2, 3});
         given(ocrService.isConfigured()).willReturn(true);
-        given(ocrService.parseTimeTable(any(), any())).willReturn(new OcrParseResult<>(List.of(), false));
+        given(ocrService.parseTimetable(any(), any())).willReturn(new OcrParseResult<>(List.of(), false));
 
         mockMvc.perform(multipart("/admin/crawl/ocr").file(image))
                 .andExpect(status().isOk());

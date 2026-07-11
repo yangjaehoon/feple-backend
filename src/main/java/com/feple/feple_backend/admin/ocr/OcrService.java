@@ -45,8 +45,8 @@ public class OcrService {
         return geminiOcrClient.getDailyLimit();
     }
 
-    public OcrParseResult<OcrResultDto> parseTimeTable(MultipartFile image, Integer year) throws IOException {
-        return geminiOcrClient.parseTimeTable(image, year);
+    public OcrParseResult<OcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
+        return geminiOcrClient.parseTimetable(image, year);
     }
 
     public OcrApplyResultDto applyEntries(OcrApplyRequestDto request) {

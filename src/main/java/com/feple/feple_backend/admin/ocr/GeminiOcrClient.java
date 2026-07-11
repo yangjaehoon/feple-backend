@@ -64,7 +64,7 @@ public class GeminiOcrClient {
         return usageTracker.getDailyLimit();
     }
 
-    public OcrParseResult<OcrResultDto> parseTimeTable(MultipartFile image, Integer year) throws IOException {
+    public OcrParseResult<OcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
         String prompt = year != null ? buildPromptWithYear(year) : PROMPT;
