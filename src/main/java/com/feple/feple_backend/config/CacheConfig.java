@@ -30,8 +30,8 @@ public class CacheConfig {
                         .maximumSize(50)
                         .build());
 
-        // 핫 게시글: 7일치 DB 풀스캔 방지 — 10분 TTL (좋아요 반영 지연 허용)
-        CaffeineCache hotPostsCache = new CaffeineCache("hotPosts",
+        // 인기 게시글: 7일치 DB 풀스캔 방지 — 10분 TTL (좋아요 반영 지연 허용)
+        CaffeineCache popularPostsCache = new CaffeineCache("popularPosts",
                 Caffeine.newBuilder()
                         .recordStats()
                         .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -167,7 +167,7 @@ public class CacheConfig {
                         .build());
 
         SimpleCacheManager manager = new SimpleCacheManager();
-        manager.setCaches(List.of(weatherCache, hotPostsCache, artistRankingCache, topArtistsCache,
+        manager.setCaches(List.of(weatherCache, popularPostsCache, artistRankingCache, topArtistsCache,
                 adminSidebarCountsCache, adminActivityStatsCache, adminContentTrendCache,
                 allArtistsSortedByNameCache, allFestivalsForAdminCache, adminRangeStatsCache,
                 adminDashboardStatsCache, adminPendingCountsCache, adminReportTypeCountsCache,

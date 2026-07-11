@@ -238,12 +238,12 @@ class PostServiceImplTest {
 
     @Test
     void 핫_게시글_최대_4개_반환() {
-        List<PostResponseDto> hotPosts = List.of(
+        List<PostResponseDto> popularPosts = List.of(
                 PostResponseDto.builder().id(1L).userId(1L).build(),
                 PostResponseDto.builder().id(2L).userId(1L).build(),
                 PostResponseDto.builder().id(3L).userId(1L).build(),
                 PostResponseDto.builder().id(4L).userId(1L).build());
-        given(popularPostCache.getPopularPosts()).willReturn(hotPosts);
+        given(popularPostCache.getPopularPosts()).willReturn(popularPosts);
 
         List<PostResponseDto> result = postService.getPopularPosts(null);
 
@@ -306,7 +306,7 @@ class PostServiceImplTest {
         CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, null, 20, null);
 
         assertThat(result.content()).hasSize(1);
-        assertThat(result.content().get(0).getBoardDisplayName()).isEqualTo("아이유 게시판");
+        assertThat(result.content().get(0).getDisplayBoardName()).isEqualTo("아이유 게시판");
     }
 
     @Test

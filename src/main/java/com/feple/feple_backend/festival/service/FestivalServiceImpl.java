@@ -241,7 +241,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         PageRequest pageable = PageRequest.of(page, size);
         if (keyword == null || keyword.isBlank()) {
             return festivalRepository.findAll(
-                    PageableFactory.latestStartDate(page, size))
+                    PageableFactory.orderByLatestStartDate(page, size))
                     .map(this::toDto);
         }
         return festivalRepository.findByTitleKeywordPaged(JpqlLikeEscaper.escape(keyword), pageable).map(this::toDto);

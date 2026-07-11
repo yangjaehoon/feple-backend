@@ -4,7 +4,7 @@ import com.feple.feple_backend.certification.dto.FestivalReviewDto;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.entity.CertificationReviewLike;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
-import com.feple.feple_backend.certification.repository.ReviewLikeRepository;
+import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
 import com.feple.feple_backend.global.EntityLoader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,7 +23,7 @@ import java.util.Set;
 public class FestivalReviewServiceImpl implements FestivalReviewService {
 
     private final FestivalCertificationRepository certificationRepository;
-    private final ReviewLikeRepository reviewLikeRepository;
+    private final CertificationReviewLikeRepository reviewLikeRepository;
 
     @Override
     @Transactional

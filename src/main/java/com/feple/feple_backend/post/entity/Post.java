@@ -118,7 +118,7 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
-    public String getDisplayBoardName() {
+    public String getBoardDisplayName() {
         if (artist != null) return artist.getName() + " 게시판";
         if (festival != null) return festival.getTitle() + " 게시판";
         if (boardType == BoardType.FREE) return "자유 게시판";

@@ -7,15 +7,15 @@ import org.springframework.data.domain.Sort;
 public final class PageableFactory {
     private PageableFactory() {}
 
-    public static Pageable latestFirst(int page, int size) {
+    public static Pageable orderByLatestFirst(int page, int size) {
         return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
-    public static Pageable latestId(int page, int size) {
+    public static Pageable orderByLatestId(int page, int size) {
         return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
     }
 
-    public static Pageable latestStartDate(int page, int size) {
+    public static Pageable orderByLatestStartDate(int page, int size) {
         return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate"));
     }
 }

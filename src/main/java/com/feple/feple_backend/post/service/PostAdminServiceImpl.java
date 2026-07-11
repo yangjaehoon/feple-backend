@@ -83,7 +83,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Cacheable(value = "adminDashboardStats", key = "'adminHotPosts_' + #limit")
     public List<PostResponseDto> getAdminHotPosts(int limit) {
-        return postRepository.findHotPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, limit))
+        return postRepository.findPopularPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, limit))
                 .stream().map(PostResponseDto::from).toList();
     }
 

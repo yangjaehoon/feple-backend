@@ -48,7 +48,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
-        Pageable pageable = PageableFactory.latestId(page, size);
+        Pageable pageable = PageableFactory.orderByLatestId(page, size);
         if (keyword != null && !keyword.isBlank()) {
             return userRepository.findActiveByKeyword(JpqlLikeEscaper.escape(keyword.trim()), pageable).map(this::toAdminUserDto);
         }
@@ -115,7 +115,7 @@ public class UserAdminServiceImpl implements UserAdminService {
         Page<User> batch;
         do {
             batch = userRepository.findAllByDeletedAtIsNull(
-                    PageableFactory.latestId(page++, batchSize));
+                    PageableFactory.orderByLatestId(page++, batchSize));
             batch.forEach(u -> result.add(toAdminUserDto(u)));
         } while (batch.hasNext() && result.size() < AdminConstants.MAX_EXPORT_ROWS);
         return result;

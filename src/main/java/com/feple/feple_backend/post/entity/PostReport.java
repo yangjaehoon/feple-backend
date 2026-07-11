@@ -46,7 +46,7 @@ public class PostReport extends BaseTimeEntity implements ResolvableReport {
 
     public Long getPostId() { return post.getId(); }
     public String getPostTitle() { return post.getTitle(); }
-    public String getPosterNickname() { return post.getAuthorNickname(); }
+    public String getAuthorNickname() { return post.getAuthorNickname(); }
     public Long getPostAuthorId() { return post.getUserId(); }
     public String getReporterNickname() { return reporter.getNickname(); }
     public boolean isPending() { return status == ReportStatus.PENDING; }

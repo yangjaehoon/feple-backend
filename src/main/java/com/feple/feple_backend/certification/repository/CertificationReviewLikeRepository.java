@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
-public interface ReviewLikeRepository extends JpaRepository<CertificationReviewLike, Long> {
+public interface CertificationReviewLikeRepository extends JpaRepository<CertificationReviewLike, Long> {
 
     @Modifying
     @Transactional

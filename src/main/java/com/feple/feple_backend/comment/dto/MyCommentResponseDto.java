@@ -30,7 +30,7 @@ public class MyCommentResponseDto {
                 post.getContent(),
                 post.getAuthorNickname(),
                 post.getLikeCount(),
-                post.getDisplayBoardName(),
+                post.getBoardDisplayName(),
                 comment.getCreatedAt()
         );
     }

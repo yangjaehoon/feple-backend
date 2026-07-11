@@ -35,7 +35,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalCertification> getByStatus(CertificationStatus status, int page) {
-        Pageable pageable = PageableFactory.latestFirst(page, AdminConstants.LIST_PAGE_SIZE);
+        Pageable pageable = PageableFactory.orderByLatestFirst(page, AdminConstants.LIST_PAGE_SIZE);
         if (status == null) {
             return certificationRepository.findAll(pageable);
         }
@@ -45,7 +45,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
-        Pageable pageable = PageableFactory.latestFirst(page, AdminConstants.LIST_PAGE_SIZE);
+        Pageable pageable = PageableFactory.orderByLatestFirst(page, AdminConstants.LIST_PAGE_SIZE);
         return certificationRepository.searchByKeyword(JpqlLikeEscaper.escape(keyword.trim()), status, pageable);
     }
 

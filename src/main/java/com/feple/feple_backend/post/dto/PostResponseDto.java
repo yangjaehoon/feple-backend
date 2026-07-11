@@ -29,7 +29,7 @@ public class PostResponseDto {
     private String profileImageUrl;
     private Long artistId;
     private Long festivalId;
-    private String boardDisplayName;
+    private String displayBoardName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean certified;
@@ -59,7 +59,7 @@ public class PostResponseDto {
                 .profileImageUrl(anon ? null : post.getAuthorProfileImageUrl())
                 .artistId(post.getArtistId())
                 .festivalId(post.getFestivalId())
-                .boardDisplayName(post.getDisplayBoardName())
+                .displayBoardName(post.getBoardDisplayName())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .certified(certified && !anon)

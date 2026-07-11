@@ -21,7 +21,7 @@ public class AdminWriteOperationRateLimiter {
             .maximumSize(1_000)
             .build();
 
-    private Bucket resolveBucket(String username) {
+    private Bucket getOrCreateBucket(String username) {
         return cache.get(username, k -> Bucket.builder()
                 .addLimit(Bandwidth.builder()
                         .capacity(120)
@@ -31,6 +31,6 @@ public class AdminWriteOperationRateLimiter {
     }
 
     public boolean tryConsume(String username) {
-        return resolveBucket(username).tryConsume(1);
+        return getOrCreateBucket(username).tryConsume(1);
     }
 }

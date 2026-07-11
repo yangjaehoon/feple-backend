@@ -112,7 +112,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
 
         List<Artist> topArtistsByFollower = artistRepository.findTop10ByOrderByFollowerCountDesc();
 
-        List<Post> topPostsByLike = postRepository.findHotPosts(since30days,
+        List<Post> topPostsByLike = postRepository.findPopularPosts(since30days,
                 PageRequest.of(0, AdminConstants.TREND_TOP_LIMIT));
 
         return new ContentTrendDto(topKeywords, topFestivalsByLike, upcomingHotFestivals,
@@ -125,7 +125,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
 
         Map<LocalDate, Long> userMap    = toDateMap(userRepository.countGroupByDate(dtFrom, dtTo));
         Map<LocalDate, Long> postMap    = toDateMap(postRepository.countGroupByDate(dtFrom, dtTo));
-        Map<LocalDate, Long> commentMap = toDateMap(commentRepository.countGroupByDate(dtFrom, dtTo));
+        Map<LocalDate, Long> commentMap = toDateMap(commentRepository.countPerDate(dtFrom, dtTo));
         Map<LocalDate, Long> reportMap  = toDateMap(reportRepository.countGroupByDate(dtFrom, dtTo));
 
         List<DailyStatDto> stats = new ArrayList<>();

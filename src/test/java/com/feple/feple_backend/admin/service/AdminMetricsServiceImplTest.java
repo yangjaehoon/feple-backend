@@ -45,7 +45,7 @@ class AdminMetricsServiceImplTest {
     private void stubEmptyStats() {
         given(userRepository.countGroupByDate(any(), any())).willReturn(List.of());
         given(postRepository.countGroupByDate(any(), any())).willReturn(List.of());
-        given(commentRepository.countGroupByDate(any(), any())).willReturn(List.of());
+        given(commentRepository.countPerDate(any(), any())).willReturn(List.of());
         given(reportRepository.countGroupByDate(any(), any())).willReturn(List.of());
     }
 
@@ -118,7 +118,7 @@ class AdminMetricsServiceImplTest {
 
         verify(userRepository).countGroupByDate(any(), any());
         verify(postRepository).countGroupByDate(any(), any());
-        verify(commentRepository).countGroupByDate(any(), any());
+        verify(commentRepository).countPerDate(any(), any());
         verify(reportRepository).countGroupByDate(any(), any());
     }
 
@@ -126,7 +126,7 @@ class AdminMetricsServiceImplTest {
     void 일별통계_값이_저장소_반환값과_일치함() {
         given(userRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(3L));
         given(postRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(10L));
-        given(commentRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(25L));
+        given(commentRepository.countPerDate(any(), any())).willReturn(rowsForAllDays(25L));
         given(reportRepository.countGroupByDate(any(), any())).willReturn(rowsForAllDays(1L));
 
         List<DailyStatDto> stats = adminMetricsService.getDailyStats();

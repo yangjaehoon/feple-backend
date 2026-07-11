@@ -50,7 +50,7 @@ class PostRepositoryIntegrationTest {
         postRepository.save(freePost(10));
         em.flush(); em.clear();
 
-        List<Post> result = postRepository.findHotPosts(
+        List<Post> result = postRepository.findPopularPosts(
                 LocalDateTime.now().minusHours(1), PageRequest.of(0, 10));
 
         assertThat(result).extracting(Post::getLikeCount)
@@ -67,7 +67,7 @@ class PostRepositoryIntegrationTest {
                 .build());
         em.flush(); em.clear();
 
-        List<Post> result = postRepository.findHotPosts(
+        List<Post> result = postRepository.findPopularPosts(
                 LocalDateTime.now().minusHours(1), PageRequest.of(0, 10));
 
         List<Long> ids = result.stream().map(Post::getId).toList();

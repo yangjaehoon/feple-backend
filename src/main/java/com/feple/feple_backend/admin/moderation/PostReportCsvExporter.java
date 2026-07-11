@@ -24,7 +24,7 @@ class PostReportCsvExporter implements ReportCsvExporter {
                     CsvExporter.formatDt(r.getCreatedAt()),
                     r.getPostId(),
                     r.getPostTitle(),
-                    r.getPosterNickname(),
+                    r.getAuthorNickname(),
                     r.getReporterNickname(),
                     r.getReason().name(),
                     r.getDetail(),

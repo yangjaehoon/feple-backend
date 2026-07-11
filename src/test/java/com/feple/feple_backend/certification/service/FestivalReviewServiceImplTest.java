@@ -2,7 +2,7 @@ package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
-import com.feple.feple_backend.certification.repository.ReviewLikeRepository;
+import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.never;
 class FestivalReviewServiceImplTest {
 
     @Mock FestivalCertificationRepository certificationRepository;
-    @Mock ReviewLikeRepository reviewLikeRepository;
+    @Mock CertificationReviewLikeRepository reviewLikeRepository;
 
     @InjectMocks FestivalReviewServiceImpl reviewService;
 
