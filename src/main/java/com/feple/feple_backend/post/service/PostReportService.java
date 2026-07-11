@@ -36,6 +36,8 @@ public class PostReportService implements ReportAdminService<PostReport> {
     private final PostAdminService postAdminService;
     private final UserRepository userRepository;
 
+    // CommentReportService/ArtistPhotoReportService의 submitReport와 구조가 동일하지만,
+    // 빌더 타입이 전부 달라 제네릭으로 묶으면 콜백만 많아지고 오히려 읽기 어려워져 통합하지 않는다.
     @Transactional
     public void submitReport(Long postId, Long reporterId, ReportSubmitRequest command) {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
