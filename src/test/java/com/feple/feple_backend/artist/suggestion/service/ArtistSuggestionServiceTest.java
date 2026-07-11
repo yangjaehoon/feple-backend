@@ -62,7 +62,7 @@ class ArtistSuggestionServiceTest {
     void 신규_아티스트_신청시_저장됨() {
         given(suggestionRepository.existsByUserIdAndArtistNameIgnoreCaseAndStatus(
                 1L, "뉴진스", ArtistSuggestionStatus.PENDING)).willReturn(false);
-        given(nicknameResolver.resolve(1L)).willReturn("user1");
+        given(nicknameResolver.lookup(1L)).willReturn("user1");
         ArtistSuggestion saved = savedSuggestion(10L, 1L, "뉴진스");
         given(suggestionRepository.save(any(ArtistSuggestion.class))).willReturn(saved);
 
@@ -77,7 +77,7 @@ class ArtistSuggestionServiceTest {
     void 신청_저장_후_닉네임_조회됨() {
         given(suggestionRepository.existsByUserIdAndArtistNameIgnoreCaseAndStatus(
                 2L, "BTS", ArtistSuggestionStatus.PENDING)).willReturn(false);
-        given(nicknameResolver.resolve(2L)).willReturn("user2");
+        given(nicknameResolver.lookup(2L)).willReturn("user2");
         given(suggestionRepository.save(any(ArtistSuggestion.class)))
                 .willReturn(savedSuggestion(11L, 2L, "BTS"));
 

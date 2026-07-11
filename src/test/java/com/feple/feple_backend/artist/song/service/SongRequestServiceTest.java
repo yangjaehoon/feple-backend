@@ -77,7 +77,7 @@ class SongRequestServiceTest {
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
         given(songRequestRepository.existsByArtistIdAndUserIdAndSongTitleIgnoreCaseAndStatus(
                 1L, 10L, "Lilac", SongRequestStatus.PENDING)).willReturn(false);
-        given(nicknameResolver.resolve(10L)).willReturn("user10");
+        given(nicknameResolver.lookup(10L)).willReturn("user10");
         SongRequest saved = savedRequest(5L, artist, 10L, "Lilac");
         given(songRequestRepository.save(any(SongRequest.class))).willReturn(saved);
 

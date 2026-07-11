@@ -18,7 +18,7 @@ public class UserNicknameLookup {
 
     private final UserRepository userRepository;
 
-    public String resolve(Long userId) {
+    public String lookup(Long userId) {
         return userRepository.findById(userId)
                 .map(User::getNickname)
                 .filter(n -> n != null && !n.isBlank())

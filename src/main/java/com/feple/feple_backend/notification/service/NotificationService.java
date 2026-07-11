@@ -87,7 +87,7 @@ public class NotificationService {
         String titleEn = NotificationMessages.CERT_APPROVED_TITLE_EN;
         String bodyEn = NotificationMessages.certApprovedBodyEn(event.festivalTitleEn());
         notificationRepository.save(Notification.of(user, NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, festival));
-        maybePush(event.userId(), NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
+        pushIfEnabled(event.userId(), NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
     }
 
     /** 인증 거절 알림 — 커밋 후에만 발송 */
@@ -102,7 +102,7 @@ public class NotificationService {
         String titleEn = NotificationMessages.CERT_REJECTED_TITLE_EN;
         String bodyEn = NotificationMessages.certRejectedBodyEn(event.festivalTitleEn(), event.reason());
         notificationRepository.save(Notification.of(user, NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, festival));
-        maybePush(event.userId(), NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
+        pushIfEnabled(event.userId(), NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
     }
 
     @Async
@@ -117,7 +117,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistNameEn());
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, artist));
-        maybePush(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
+        pushIfEnabled(event.userId(), NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
     }
 
     @Async
@@ -132,7 +132,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason());
         notificationRepository.save(
                 Notification.of(user, NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, artist));
-        maybePush(event.userId(), NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
+        pushIfEnabled(event.userId(), NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
     }
 
     @Async
@@ -155,7 +155,7 @@ public class NotificationService {
             notificationRepository.save(
                     Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, (Festival) null));
         }
-        maybePush(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, linkId);
+        pushIfEnabled(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, linkId);
     }
 
     @Async
@@ -184,7 +184,7 @@ public class NotificationService {
         Post post = postRepository.findById(event.postId()).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.POST_LIKED, title, body, titleEn, bodyEn, post));
-        maybePush(event.postAuthorId(), NotificationType.POST_LIKED, title, body, titleEn, bodyEn, String.valueOf(event.postId()));
+        pushIfEnabled(event.postAuthorId(), NotificationType.POST_LIKED, title, body, titleEn, bodyEn, String.valueOf(event.postId()));
     }
 
     @Async
@@ -198,7 +198,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.postDeletedByAdminBodyEn(event.postTitle());
         notificationRepository.save(
                 Notification.of(author, NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, (Festival) null));
-        maybePush(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, null);
+        pushIfEnabled(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, null);
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
@@ -216,7 +216,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, post));
-        maybePush(postAuthorId, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, null);
+        pushIfEnabled(postAuthorId, NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, null);
     }
 
     /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
@@ -231,7 +231,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         notificationRepository.save(
                 Notification.of(author, NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, post));
-        maybePush(parentCommentAuthorId, NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, null);
+        pushIfEnabled(parentCommentAuthorId, NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, null);
     }
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
@@ -250,7 +250,7 @@ public class NotificationService {
         log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, users.size(), festivalId);
     }
 
-    private void maybePush(Long userId, NotificationType type,
+    private void pushIfEnabled(Long userId, NotificationType type,
                             String title, String body, String titleEn, String bodyEn, String linkId) {
         NotificationPreference pref = preferenceService.getOrCreate(userId);
         if (!pref.isEnabledFor(type)) return;

@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
-class HotPostCache {
+class PopularPostCache {
 
     private final PostRepository postRepository;
 

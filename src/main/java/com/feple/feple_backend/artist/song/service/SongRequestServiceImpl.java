@@ -59,14 +59,14 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 .build();
 
         SongRequest saved = songRequestRepository.save(request);
-        String nickname = nicknameResolver.resolve(userId);
+        String nickname = nicknameResolver.lookup(userId);
         return SongRequestResponseDto.from(saved, nickname);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getMyAllRequests(Long userId) {
-        String nickname = nicknameResolver.resolve(userId);
+        String nickname = nicknameResolver.lookup(userId);
         return songRequestRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(r -> SongRequestResponseDto.from(r, nickname))
@@ -76,7 +76,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Override
     @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getMyRequests(Long artistId, Long userId) {
-        String nickname = nicknameResolver.resolve(userId);
+        String nickname = nicknameResolver.lookup(userId);
         return songRequestRepository.findByArtistIdAndUserIdOrderByCreatedAtDesc(artistId, userId)
                 .stream()
                 .map(r -> SongRequestResponseDto.from(r, nickname))

@@ -4,7 +4,7 @@ package com.feple.feple_backend.festival.service;
  * WGS84 위경도 → 기상청 격자 좌표(nx, ny) 변환
  * Lambert Conformal Conic 투영 (기상청 공식 파라미터)
  */
-class KmaGridConverter {
+class WeatherGridConverter {
 
     private static final double RE = 6371.00877;
     private static final double GRID = 5.0;

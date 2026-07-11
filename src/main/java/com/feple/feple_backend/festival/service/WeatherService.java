@@ -198,7 +198,7 @@ public class WeatherService {
 
     private int[] resolveGrid(Festival festival) {
         if (festival.getLatitude() != null && festival.getLongitude() != null) {
-            return KmaGridConverter.toGrid(festival.getLatitude(), festival.getLongitude());
+            return WeatherGridConverter.toGrid(festival.getLatitude(), festival.getLongitude());
         }
         return REGION_GRID.getOrDefault(festival.getRegion(), new int[]{60, 127});
     }

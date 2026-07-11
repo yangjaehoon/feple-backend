@@ -56,7 +56,7 @@ class PostServiceImplTest {
     @Mock FestivalCertificationService certificationService;
     @Mock BadWordValidator badWordFilter;
     @Mock ApplicationEventPublisher eventPublisher;
-    @Mock HotPostCache hotPostCache;
+    @Mock PopularPostCache hotPostCache;
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
     @InjectMocks PostServiceImpl postService;

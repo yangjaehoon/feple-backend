@@ -48,7 +48,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 .build();
 
         ArtistSuggestion saved = suggestionRepository.save(suggestion);
-        return ArtistSuggestionResponseDto.from(saved, nicknameResolver.resolve(userId));
+        return ArtistSuggestionResponseDto.from(saved, nicknameResolver.lookup(userId));
     }
 
     @Override
