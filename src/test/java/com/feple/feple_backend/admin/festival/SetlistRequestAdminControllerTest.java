@@ -44,7 +44,7 @@ class SetlistRequestAdminControllerTest {
     void 목록_조회_뷰와_모델_속성_확인() throws Exception {
         given(service.list(eq(SetlistChangeRequestStatus.PENDING), eq(""), any()))
                 .willReturn(new PageImpl<>(List.of()));
-        given(service.countPending()).willReturn(3L);
+        given(service.getPendingCount()).willReturn(3L);
 
         mockMvc.perform(get("/admin/setlist-requests"))
                 .andExpect(status().isOk())
@@ -57,7 +57,7 @@ class SetlistRequestAdminControllerTest {
     void 유효하지_않은_status는_PENDING으로_fallback() throws Exception {
         given(service.list(eq(SetlistChangeRequestStatus.PENDING), any(), any()))
                 .willReturn(new PageImpl<>(List.of()));
-        given(service.countPending()).willReturn(0L);
+        given(service.getPendingCount()).willReturn(0L);
 
         mockMvc.perform(get("/admin/setlist-requests").param("status", "INVALID"))
                 .andExpect(status().isOk());
@@ -69,7 +69,7 @@ class SetlistRequestAdminControllerTest {
     void RESOLVED_status_조회() throws Exception {
         given(service.list(eq(SetlistChangeRequestStatus.RESOLVED), any(), any()))
                 .willReturn(new PageImpl<>(List.of()));
-        given(service.countPending()).willReturn(0L);
+        given(service.getPendingCount()).willReturn(0L);
 
         mockMvc.perform(get("/admin/setlist-requests").param("status", "RESOLVED"))
                 .andExpect(status().isOk());

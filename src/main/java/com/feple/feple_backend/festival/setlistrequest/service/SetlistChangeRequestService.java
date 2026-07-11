@@ -48,7 +48,7 @@ public class SetlistChangeRequestService {
     }
 
     @Transactional(readOnly = true)
-    public long countPending() {
+    public long getPendingCount() {
         return repository.countByStatus(SetlistChangeRequestStatus.PENDING);
     }
 

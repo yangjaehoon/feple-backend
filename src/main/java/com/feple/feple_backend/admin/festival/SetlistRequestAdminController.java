@@ -36,7 +36,7 @@ public class SetlistRequestAdminController {
         model.addAttribute("requests", requests);
         model.addAttribute("status", status);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("pendingCount", service.countPending());
+        model.addAttribute("pendingCount", service.getPendingCount());
         return "admin/setlist-request/list";
     }
 

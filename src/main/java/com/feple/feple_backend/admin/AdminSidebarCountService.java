@@ -30,7 +30,7 @@ public class AdminSidebarCountService {
                 certificationService.getPendingCount(),
                 songRequestAdminService.getPendingCount(),
                 artistSuggestionAdminService.getPendingCount(),
-                setlistChangeRequestService.countPending()
+                setlistChangeRequestService.getPendingCount()
         );
     }
 }

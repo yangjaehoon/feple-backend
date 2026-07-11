@@ -141,7 +141,7 @@ class SongRequestServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
-    // ── countPending ──────────────────────────────────────────────────
+    // ── getPendingCount ──────────────────────────────────────────────────
 
     @Test
     void getPendingCount_레포지토리에_위임됨() {
