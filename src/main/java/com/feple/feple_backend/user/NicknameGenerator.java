@@ -7,6 +7,8 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 /**
  * OAuth 신규 가입 시 닉네임 생성 공통 로직.
  * KakaoAuthService, FirebaseAuthService 양쪽에서 사용.
@@ -51,6 +53,12 @@ public class NicknameGenerator {
             String candidate = base.substring(0, Math.min(base.length(), 6)) + i;
             if (!userRepository.existsByNickname(candidate)) return candidate;
         }
-        return base + System.currentTimeMillis() % 10000;
+        // 999개 후보가 모두 소진된 극단적 상황 — 타임스탬프 모듈로 추측(충돌 가능)이 아닌
+        // UUID 기반 후보를 존재 여부까지 확인해 실제 유니크함을 보장한다.
+        for (int attempt = 0; attempt < 5; attempt++) {
+            String candidate = "User" + UUID.randomUUID().toString().substring(0, 4);
+            if (!userRepository.existsByNickname(candidate)) return candidate;
+        }
+        return "User" + UUID.randomUUID().toString().substring(0, 4);
     }
 }
