@@ -4,8 +4,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
 
-public final class EntityRequirer {
-    private EntityRequirer() {}
+public final class EntityLoader {
+    private EntityLoader() {}
 
     public static <T, ID> T getOrThrow(Function<ID, Optional<T>> finder, ID id, String entityName) {
         return finder.apply(id)

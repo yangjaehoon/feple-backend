@@ -21,10 +21,10 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.PageSize;
-import com.feple.feple_backend.post.service.PostCascadeService;
+import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +61,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     private final BoothRepository boothRepository;
     private final TimetableRepository timetableRepository;
     private final FestivalCertificationRepository certificationRepository;
-    private final PostCascadeService postCascadeService;
+    private final PostCascadeDeleteService postCascadeService;
     private final FestivalWeatherRepository weatherRepository;
     private final FestivalChecklistRepository festivalChecklistRepository;
 
@@ -148,7 +148,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, id, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, id, "페스티벌");
         return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
     }
 
@@ -156,7 +156,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Transactional(readOnly = true)
     @Cacheable(value = "festivalDetail", key = "#festivalId")
     public FestivalResponseDto getFestival(Long festivalId) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         return toDto(festival);
     }
 
@@ -169,7 +169,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
             throw new IllegalArgumentException(ERR_END_BEFORE_START);
         }
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
                 dto.getStartDate(), dto.getEndDate(),
@@ -187,7 +187,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @EvictFestivalCaches
     @CacheEvict(value = "festivalDetail", key = "#festivalId")
     public void deleteFestival(Long festivalId) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();
 
         timetableRepository.deleteByFestivalId(festivalId);

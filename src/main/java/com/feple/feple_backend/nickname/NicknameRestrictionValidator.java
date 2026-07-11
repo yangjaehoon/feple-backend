@@ -1,6 +1,6 @@
 package com.feple.feple_backend.nickname;
 
-import com.feple.feple_backend.global.filter.WordSet;
+import com.feple.feple_backend.global.filter.BadWordSet;
 import com.feple.feple_backend.nickname.event.NicknameRestrictionChangedEvent;
 import com.feple.feple_backend.nickname.repository.NicknameRestrictionRepository;
 import jakarta.annotation.PostConstruct;
@@ -14,7 +14,7 @@ import org.springframework.transaction.event.TransactionPhase;
 public class NicknameRestrictionValidator {
 
     private final NicknameRestrictionRepository repository;
-    private final WordSet wordSet = new WordSet();
+    private final BadWordSet wordSet = new BadWordSet();
 
     @PostConstruct
     public void reload() {

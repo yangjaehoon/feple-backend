@@ -12,7 +12,7 @@ import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -42,7 +42,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Override
     @Transactional
     public SongRequestResponseDto submit(Long artistId, Long userId, SubmitSongRequestDto dto) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         boolean alreadyRequested = songRequestRepository
                 .existsByArtistIdAndUserIdAndSongTitleIgnoreCaseAndStatus(
@@ -115,7 +115,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @EvictAdminPendingCaches
     @Transactional
     public boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl) {
-        SongRequest request = EntityRequirer.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
+        SongRequest request = EntityLoader.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
 
         request.approve();
 
@@ -158,7 +158,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @EvictAdminPendingCaches
     @Transactional
     public void reject(Long requestId, String reason) {
-        SongRequest request = EntityRequirer.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
+        SongRequest request = EntityLoader.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
         request.reject();
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
                 request.getUserId(), request.getArtistId(), request.getSongTitle(), request.getArtistName(), reason));

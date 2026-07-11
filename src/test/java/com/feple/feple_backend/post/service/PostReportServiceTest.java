@@ -1,7 +1,7 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.post.dto.SubmitReportCommand;
+import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportReason;
@@ -52,7 +52,7 @@ class PostReportServiceTest {
         given(reportRepository.existsByReporterIdAndPostId(1L, 10L)).willReturn(true);
 
         assertThatThrownBy(() -> postReportService.submitReport(
-                10L, 1L, new SubmitReportCommand(ReportReason.SPAM, null)))
+                10L, 1L, new ReportSubmitRequest(ReportReason.SPAM, null)))
                 .isInstanceOf(ConflictException.class);
     }
 
@@ -62,7 +62,7 @@ class PostReportServiceTest {
         given(postRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> postReportService.submitReport(
-                99L, 1L, new SubmitReportCommand(ReportReason.SPAM, null)))
+                99L, 1L, new ReportSubmitRequest(ReportReason.SPAM, null)))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -76,7 +76,7 @@ class PostReportServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
 
         postReportService.submitReport(10L, 1L,
-                new SubmitReportCommand(ReportReason.ABUSE, "상세 사유"));
+                new ReportSubmitRequest(ReportReason.ABUSE, "상세 사유"));
 
         verify(reportRepository).save(any(PostReport.class));
     }

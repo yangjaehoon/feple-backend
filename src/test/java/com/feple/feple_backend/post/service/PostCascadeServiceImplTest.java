@@ -35,7 +35,7 @@ class PostCascadeServiceImplTest {
     @Mock NotificationRepository notificationRepository;
     @Mock CommentService commentService;
 
-    @InjectMocks PostCascadeServiceImpl postCascadeService;
+    @InjectMocks PostCascadeDeleteServiceImpl postCascadeService;
 
     // ── removePostActivityByUser ───────────────────────────────────────
 

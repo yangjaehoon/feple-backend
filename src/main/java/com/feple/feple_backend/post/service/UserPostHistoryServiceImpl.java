@@ -1,6 +1,6 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PostActivityServiceImpl implements PostActivityService {
+public class UserPostHistoryServiceImpl implements UserPostHistoryService {
 
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
@@ -27,14 +27,14 @@ public class PostActivityServiceImpl implements PostActivityService {
 
     @Override
     public List<PostResponseDto> getMyPosts(Long userId) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream().map(PostResponseDto::from).toList();
     }
 
     @Override
     public CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         int fetchSize = size + 1;
         PageRequest limit = PageRequest.of(0, fetchSize);
         List<Post> posts = (cursor == null)
@@ -48,7 +48,7 @@ public class PostActivityServiceImpl implements PostActivityService {
 
     @Override
     public CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         int fetchSize = size + 1;
         PageRequest limit = PageRequest.of(0, fetchSize);
         List<Post> posts = (cursor == null)

@@ -2,7 +2,7 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -34,14 +34,14 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getAdminUser(@NonNull Long id) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
         return toAdminUserDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto findByNickname(String nickname) {
-        User user = EntityRequirer.getOrThrow(userRepository::findByNicknameAndNotDeleted, nickname.trim(), "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findByNicknameAndNotDeleted, nickname.trim(), "사용자");
         return toAdminUserDto(user);
     }
 
@@ -79,7 +79,7 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     public String adminDeleteUser(@NonNull Long id) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
         String nickname = user.getNickname();
         cascadeDeleteService.delete(user);
         return nickname;
@@ -87,13 +87,13 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     public void updateUserRole(Long userId, UserRole role) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         user.changeRole(role);
     }
 
     @Override
     public void banUser(Long userId, int days, String reason) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         String adminUsername = null;
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated()) adminUsername = auth.getName();
@@ -102,7 +102,7 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     public void unbanUser(Long userId) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         user.unban();
     }
 

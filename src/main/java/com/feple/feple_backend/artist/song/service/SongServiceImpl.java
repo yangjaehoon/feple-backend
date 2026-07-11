@@ -14,7 +14,7 @@ import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +85,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Override
     @Transactional
     public SongResponseDto saveSong(Long artistId, SaveSongDto dto) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
             throw new IllegalArgumentException("이미 등록된 곡입니다.");
         }
@@ -101,7 +101,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Override
     @Transactional
     public void deleteSong(Long artistId, Long songId) {
-        Song song = EntityRequirer.getOrThrow(songRepository::findById, songId, "곡");
+        Song song = EntityLoader.getOrThrow(songRepository::findById, songId, "곡");
         if (!song.getArtistId().equals(artistId)) {
             throw new IllegalArgumentException("해당 아티스트의 곡이 아닙니다.");
         }
@@ -153,7 +153,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Override
     @Transactional
     public void updateSetlist(Long festivalId, Long artistFestivalId, Set<Long> songIds) {
-        ArtistFestival artistFestival = EntityRequirer.getOrThrow(
+        ArtistFestival artistFestival = EntityLoader.getOrThrow(
                 artistFestivalRepository::findById, artistFestivalId, "아티스트 페스티벌");
         if (!artistFestival.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("해당 아티스트는 이 페스티벌에 참여하지 않습니다.");
@@ -164,7 +164,7 @@ public class SongServiceImpl implements SongService, SongAdminService {
     @Override
     @Transactional
     public void saveSetlist(Long artistFestivalId, Set<Long> songIds) {
-        ArtistFestival artistFestival = EntityRequirer.getOrThrow(
+        ArtistFestival artistFestival = EntityLoader.getOrThrow(
                 artistFestivalRepository::findById, artistFestivalId, "아티스트 페스티벌");
         doSaveSetlist(artistFestival, songIds);
     }

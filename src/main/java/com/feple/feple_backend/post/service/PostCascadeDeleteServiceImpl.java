@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PostCascadeServiceImpl implements PostCascadeService {
+public class PostCascadeDeleteServiceImpl implements PostCascadeDeleteService {
 
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;

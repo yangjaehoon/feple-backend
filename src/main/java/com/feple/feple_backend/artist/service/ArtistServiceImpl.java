@@ -13,7 +13,7 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.QueryResultMapper;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
@@ -191,14 +191,14 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Transactional(readOnly = true)
     @Cacheable(value = "artistDetail", key = "#id")
     public ArtistResponseDto getArtistById(Long id) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         return toDto(artist);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ArtistRequestDto getArtistForEdit(Long id) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         return ArtistRequestDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
@@ -215,7 +215,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @EvictArtistCaches
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAliases(dto.getAliases()));
         if (dto.getProfileImageKey() != null) {
             String oldKey = artist.getProfileImageKey();
@@ -243,7 +243,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         @CacheEvict(value = "artistDetail", key = "#id")
     })
     public void updateArtistPhoto(Long id, String imageKey) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         String oldKey = artist.getProfileImageKey();
         artist.updateProfileImage(imageKey);
         if (oldKey != null) {
@@ -271,7 +271,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @EvictArtistCaches
     @CacheEvict(value = "artistDetail", key = "#id")
     public void deleteArtist(Long id) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
         artistNameFilter.reload();
     }

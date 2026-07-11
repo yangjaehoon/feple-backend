@@ -10,7 +10,7 @@ import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
-import com.feple.feple_backend.post.service.PostActivityService;
+import com.feple.feple_backend.post.service.UserPostHistoryService;
 import com.feple.feple_backend.post.service.PostReportService;
 import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class MyPageServiceTest {
 
-    @Mock PostActivityService postActivityService;
+    @Mock UserPostHistoryService postActivityService;
     @Mock CommentService commentService;
     @Mock FestivalService festivalService;
     @Mock ArtistService artistService;

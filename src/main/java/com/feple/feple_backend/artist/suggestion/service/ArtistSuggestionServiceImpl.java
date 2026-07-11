@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 
 import java.util.List;
 import java.util.Map;
@@ -100,7 +100,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @EvictAdminPendingCaches
     @Transactional
     public void approve(Long suggestionId, Long artistId) {
-        ArtistSuggestion suggestion = EntityRequirer.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
+        ArtistSuggestion suggestion = EntityLoader.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
         suggestion.approve(artistId);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), artistId, suggestion.getArtistName(), null));
@@ -110,7 +110,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @EvictAdminPendingCaches
     @Transactional
     public void dismiss(Long suggestionId, String processNote) {
-        ArtistSuggestion suggestion = EntityRequirer.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
+        ArtistSuggestion suggestion = EntityLoader.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
         suggestion.dismiss(processNote);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), null, suggestion.getArtistName(), processNote));

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
     name = "review_like",
     uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "certification_id"})
 )
-public class ReviewLike {
+public class CertificationReviewLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +24,8 @@ public class ReviewLike {
     @Column(name = "certification_id", nullable = false)
     private Long certificationId;
 
-    public static ReviewLike of(Long userId, Long certificationId) {
-        ReviewLike like = new ReviewLike();
+    public static CertificationReviewLike of(Long userId, Long certificationId) {
+        CertificationReviewLike like = new CertificationReviewLike();
         like.userId = userId;
         like.certificationId = certificationId;
         return like;

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * 1분 동안 최대 120회 허용 — 정상 업무에 충분하고 자동화 공격은 차단.
  */
 @Component
-public class AdminMutationRateLimiter {
+public class AdminWriteOperationRateLimiter {
 
     private final Cache<String, Bucket> cache = Caffeine.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)

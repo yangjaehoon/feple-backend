@@ -7,7 +7,7 @@ import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
 import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
@@ -52,7 +52,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Override
     @Transactional(readOnly = true)
     public FestivalCertification getById(Long id) {
-        return EntityRequirer.getOrThrow(certificationRepository::findWithUserAndFestivalById, id, "인증 신청");
+        return EntityLoader.getOrThrow(certificationRepository::findWithUserAndFestivalById, id, "인증 신청");
     }
 
     @Override

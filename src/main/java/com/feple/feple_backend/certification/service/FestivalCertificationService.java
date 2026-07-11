@@ -1,7 +1,7 @@
 package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +14,7 @@ public interface FestivalCertificationService {
     long countApprovedByUser(Long userId);
     List<CertificationResponseDto> getPublicCertifications(Long userId);
     Map<String, Object> getCertDetail(Long userId, Long festivalId);
-    PresignResult generateUploadUrl(Long userId, String extension, String contentType);
+    S3PresignedUrlResult generateUploadUrl(Long userId, String extension, String contentType);
     Set<Long> findApprovedUserIdsByFestivalId(Long festivalId);
     boolean existsApprovedCertification(Long festivalId, Long userId);
 }

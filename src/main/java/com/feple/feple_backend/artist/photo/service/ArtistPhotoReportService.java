@@ -8,10 +8,10 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReposit
 import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.QueryResultMapper;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.post.dto.SubmitReportCommand;
+import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -40,12 +40,12 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     private final S3PresignService s3PresignService;
 
     @Transactional
-    public void submitReport(Long photoId, Long reporterId, SubmitReportCommand command) {
+    public void submitReport(Long photoId, Long reporterId, ReportSubmitRequest command) {
         if (reportRepository.existsByReporterIdAndPhotoId(reporterId, photoId)) {
             throw new ConflictException("이미 신고한 사진입니다.");
         }
-        ArtistGalleryPhoto photo = EntityRequirer.getOrThrow(photoRepository::findById, photoId, "사진");
-        User reporter = EntityRequirer.getOrThrow(userRepository::findById, reporterId, "사용자");
+        ArtistGalleryPhoto photo = EntityLoader.getOrThrow(photoRepository::findById, photoId, "사진");
+        User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(ArtistPhotoReport.builder()
                 .photo(photo)
@@ -94,7 +94,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
 
     @Transactional
     public void deletePhotoAndResolve(Long reportId) {
-        ArtistPhotoReport report = EntityRequirer.getOrThrow(reportRepository::findById, reportId, "신고");
+        ArtistPhotoReport report = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고");
         Long photoId = report.getPhotoId();
 
         // FK 순서: ArtistPhotoReport → ArtistGalleryPhotoLike → ArtistGalleryPhoto

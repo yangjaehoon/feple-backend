@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class StageService {
         }
         if (name.trim().length() > 50)
             throw new IllegalArgumentException("스테이지 이름은 50자 이하여야 합니다.");
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         int nextOrder = stageRepository.findMaxDisplayOrderByFestivalId(festivalId) + 1;
         Stage stage = Stage.builder()
                 .festival(festival)
@@ -73,7 +73,7 @@ public class StageService {
     }
 
     private Stage getStageInFestival(Long festivalId, Long stageId) {
-        Stage stage = EntityRequirer.getOrThrow(stageRepository::findById, stageId, "스테이지");
+        Stage stage = EntityLoader.getOrThrow(stageRepository::findById, stageId, "스테이지");
         if (!festivalId.equals(stage.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 스테이지가 아닙니다.");
         }

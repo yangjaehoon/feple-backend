@@ -6,7 +6,7 @@ import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
@@ -179,10 +179,10 @@ class FestivalCertificationServiceImplTest {
 
     @Test
     void 업로드_URL_생성() {
-        PresignResult presignResult = new PresignResult("https://s3.example.com/upload", "certifications/1/x.jpg");
+        S3PresignedUrlResult presignResult = new S3PresignedUrlResult("https://s3.example.com/upload", "certifications/1/x.jpg");
         given(s3PresignService.presignPut(any(), any())).willReturn(presignResult);
 
-        PresignResult result = certificationService.generateUploadUrl(USER_ID, "jpg", "image/jpeg");
+        S3PresignedUrlResult result = certificationService.generateUploadUrl(USER_ID, "jpg", "image/jpeg");
 
         assertThat(result).isEqualTo(presignResult);
     }

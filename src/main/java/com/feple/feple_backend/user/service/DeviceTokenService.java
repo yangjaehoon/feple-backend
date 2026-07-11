@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class DeviceTokenService {
         tokenRepository.findByUserIdAndToken(userId, token).ifPresentOrElse(
             existing -> existing.updateLanguage(language),
             () -> {
-                User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+                User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
                 tokenRepository.save(UserDeviceToken.of(user, token, DevicePlatform.from(platform), language));
             }
         );

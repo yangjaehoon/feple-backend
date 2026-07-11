@@ -35,7 +35,7 @@ class PostActivityServiceImplTest {
     @Mock PostLikeRepository postLikeRepository;
     @Mock UserRepository userRepository;
 
-    @InjectMocks PostActivityServiceImpl postActivityService;
+    @InjectMocks UserPostHistoryServiceImpl postActivityService;
 
     // ── getMyPosts / getMyPostsPaged ────────────────────────────────────
 

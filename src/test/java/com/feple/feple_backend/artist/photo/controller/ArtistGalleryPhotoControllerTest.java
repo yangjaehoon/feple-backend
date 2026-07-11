@@ -3,7 +3,7 @@ package com.feple.feple_backend.artist.photo.controller;
 import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
 import com.feple.feple_backend.support.AuthTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +45,7 @@ class ArtistGalleryPhotoControllerTest {
 
     @Test
     void presign_허용된_타입_성공() throws Exception {
-        PresignResult result = new PresignResult("https://s3.example.com/upload", "artists/1/photo.jpg");
+        S3PresignedUrlResult result = new S3PresignedUrlResult("https://s3.example.com/upload", "artists/1/photo.jpg");
         given(artistGalleryPhotoService.generateUploadUrl(1L, "jpg", "image/jpeg")).willReturn(result);
 
         mockMvc.perform(post("/artists/1/photos/presign")

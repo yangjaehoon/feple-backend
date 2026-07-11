@@ -7,9 +7,9 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.S3PathConstants;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -40,8 +40,8 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
             throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
         }
 
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .ifPresent(existing -> {
@@ -120,7 +120,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     }
 
     @Override
-    public PresignResult generateUploadUrl(Long userId, String extension, String contentType) {
+    public S3PresignedUrlResult generateUploadUrl(Long userId, String extension, String contentType) {
         String objectKey = S3PathConstants.certificationPrefix(userId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);
     }

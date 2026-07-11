@@ -1,7 +1,7 @@
 package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;

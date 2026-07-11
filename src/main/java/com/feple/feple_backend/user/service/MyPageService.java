@@ -11,7 +11,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
-import com.feple.feple_backend.post.service.PostActivityService;
+import com.feple.feple_backend.post.service.UserPostHistoryService;
 import com.feple.feple_backend.post.service.PostReportService;
 import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
@@ -29,7 +29,7 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class MyPageService {
 
-    private final PostActivityService postActivityService;
+    private final UserPostHistoryService postActivityService;
     private final PostScrapService postScrapService;
     private final CommentService commentService;
     private final FestivalService festivalService;

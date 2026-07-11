@@ -10,7 +10,7 @@ import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.post.service.PostCascadeService;
+import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +35,7 @@ class ArtistCascadeDeleteServiceTest {
     @Mock SongRepository songRepository;
     @Mock SongRequestRepository songRequestRepository;
     @Mock TimetableService timetableService;
-    @Mock PostCascadeService postCascadeService;
+    @Mock PostCascadeDeleteService postCascadeService;
     @Mock FileStorageService fileStorageService;
 
     @InjectMocks ArtistCascadeDeleteService artistCascadeDeleteService;

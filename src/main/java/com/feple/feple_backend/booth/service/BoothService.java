@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,7 +35,7 @@ public class BoothService {
 
     @Transactional
     public Long createBooth(Long festivalId, BoothRequestDto dto) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Booth booth = Booth.builder()
                 .festival(festival)
                 .name(dto.getName())
@@ -50,7 +50,7 @@ public class BoothService {
 
     @Transactional
     public void deleteBooth(Long festivalId, Long boothId) {
-        Booth booth = EntityRequirer.getOrThrow(boothRepository::findById, boothId, "부스");
+        Booth booth = EntityLoader.getOrThrow(boothRepository::findById, boothId, "부스");
         if (!festivalId.equals(booth.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 부스가 아닙니다.");
         }

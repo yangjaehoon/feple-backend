@@ -1,6 +1,6 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.Post;
@@ -34,8 +34,8 @@ public class PostScrapService {
     /** 스크랩 토글 — 현재 스크랩 상태 반환 */
     @Transactional
     public boolean toggleScrap(Long postId, Long userId) {
-        Post post = EntityRequirer.getOrThrow(postRepository::findById, postId, "게시글");
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         int deleted = postScrapRepository.deleteByUserIdAndPostId(userId, postId);
         if (deleted > 0) {

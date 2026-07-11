@@ -4,7 +4,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalLike;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +27,8 @@ public class FestivalLikeService {
 
     @Transactional
     public boolean toggleLike(Long festivalId, Long userId) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         int deleted = festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId);
         if (deleted > 0) {

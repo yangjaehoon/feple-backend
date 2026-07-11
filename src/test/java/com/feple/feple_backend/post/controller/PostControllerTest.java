@@ -1,7 +1,7 @@
 package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -125,7 +125,7 @@ class PostControllerTest {
 
     @Test
     void 이미지_업로드_URL_허용된_타입_성공() throws Exception {
-        PresignResult result = new PresignResult("https://s3.example.com/upload", "posts/1/image.jpg");
+        S3PresignedUrlResult result = new S3PresignedUrlResult("https://s3.example.com/upload", "posts/1/image.jpg");
         given(s3PresignService.presignPut(anyString(), eq("image/jpeg"))).willReturn(result);
 
         mockMvc.perform(post("/posts/image-upload-url")

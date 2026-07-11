@@ -6,7 +6,7 @@ import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.post.dto.SubmitReportCommand;
+import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -66,7 +66,7 @@ class CommentReportServiceTest {
         given(reportRepository.existsByReporterIdAndCommentId(1L, 10L)).willReturn(true);
 
         assertThatThrownBy(() -> commentReportService.submitReport(
-                10L, 1L, new SubmitReportCommand(ReportReason.SPAM, null)))
+                10L, 1L, new ReportSubmitRequest(ReportReason.SPAM, null)))
                 .isInstanceOf(ConflictException.class);
     }
 
@@ -76,7 +76,7 @@ class CommentReportServiceTest {
         given(commentRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentReportService.submitReport(
-                99L, 1L, new SubmitReportCommand(ReportReason.SPAM, null)))
+                99L, 1L, new ReportSubmitRequest(ReportReason.SPAM, null)))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -88,7 +88,7 @@ class CommentReportServiceTest {
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentReportService.submitReport(
-                10L, 99L, new SubmitReportCommand(ReportReason.ABUSE, null)))
+                10L, 99L, new ReportSubmitRequest(ReportReason.ABUSE, null)))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -101,7 +101,7 @@ class CommentReportServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
 
         commentReportService.submitReport(10L, 1L,
-                new SubmitReportCommand(ReportReason.SPAM, "상세 사유"));
+                new ReportSubmitRequest(ReportReason.SPAM, "상세 사유"));
 
         verify(reportRepository).save(any(CommentReport.class));
     }

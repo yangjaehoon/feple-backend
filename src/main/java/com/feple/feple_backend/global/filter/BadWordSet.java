@@ -3,7 +3,7 @@ package com.feple.feple_backend.global.filter;
 import java.util.List;
 import java.util.Set;
 
-public class WordSet {
+public class BadWordSet {
 
     private volatile Set<String> words = Set.of();
 

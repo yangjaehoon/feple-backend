@@ -1,6 +1,6 @@
 package com.feple.feple_backend.file.service;
 
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class S3PresignService {
     // TTL이 짧으면 만료 후 재시도 시 403 발생
     @Value("${app.s3.get-presign-hours:168}") private long getPresignHours;
 
-    public PresignResult presignPut(String objectKey, String contentType) {
+    public S3PresignedUrlResult presignPut(String objectKey, String contentType) {
         PutObjectRequest putReq = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(objectKey)
@@ -34,7 +34,7 @@ public class S3PresignService {
                 .putObjectRequest(putReq)
         );
 
-        return new PresignResult(presigned.url().toString(), objectKey);
+        return new S3PresignedUrlResult(presigned.url().toString(), objectKey);
     }
 
     public String presignGetUrl(String objectKey) {

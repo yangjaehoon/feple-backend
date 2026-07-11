@@ -3,7 +3,7 @@ package com.feple.feple_backend.badword;
 import com.feple.feple_backend.badword.event.BadWordChangedEvent;
 import com.feple.feple_backend.badword.repository.BadWordRepository;
 import com.feple.feple_backend.global.exception.BadWordException;
-import com.feple.feple_backend.global.filter.WordSet;
+import com.feple.feple_backend.global.filter.BadWordSet;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import org.springframework.transaction.event.TransactionPhase;
 public class BadWordValidator {
 
     private final BadWordRepository badWordRepository;
-    private final WordSet wordSet = new WordSet();
+    private final BadWordSet wordSet = new BadWordSet();
 
     @PostConstruct
     public void reload() {

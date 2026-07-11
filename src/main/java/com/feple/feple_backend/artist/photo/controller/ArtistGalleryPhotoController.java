@@ -5,8 +5,8 @@ import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
-import com.feple.feple_backend.file.dto.PresignResult;
-import com.feple.feple_backend.post.dto.SubmitReportCommand;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -39,7 +39,7 @@ public class ArtistGalleryPhotoController {
     private final ArtistPhotoReportService artistPhotoReportService;
 
     @PostMapping("/presign")
-    public PresignResult presign(
+    public S3PresignedUrlResult presign(
             @PathVariable Long artistId,
             @Valid @RequestBody PresignRequest req,
             @AuthenticationPrincipal Long userId
@@ -101,7 +101,7 @@ public class ArtistGalleryPhotoController {
             @PathVariable Long photoId,
             @Valid @RequestBody ReportRequest body,
             @AuthenticationPrincipal Long userId) {
-        artistPhotoReportService.submitReport(photoId, userId, new SubmitReportCommand(body.reason(), body.detail()));
+        artistPhotoReportService.submitReport(photoId, userId, new ReportSubmitRequest(body.reason(), body.detail()));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

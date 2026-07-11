@@ -13,7 +13,7 @@ import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
-import com.feple.feple_backend.post.service.PostCascadeService;
+import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
@@ -33,7 +33,7 @@ public class UserCascadeDeleteService {
     private final FestivalLikeService festivalLikeService;
     private final FestivalAttendanceService festivalAttendanceService;
     private final ArtistFollowService artistFollowService;
-    private final PostCascadeService postCascadeService;
+    private final PostCascadeDeleteService postCascadeService;
     private final CommentService commentService;
     private final ArtistGalleryPhotoService artistGalleryPhotoService;
 

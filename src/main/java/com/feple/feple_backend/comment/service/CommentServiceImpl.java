@@ -14,7 +14,7 @@ import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.QueryResultMapper;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.post.entity.Post;
@@ -53,17 +53,17 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
         badWordFilter.validateField("content", dto.getContent());
-        Post post = EntityRequirer.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
 
         if (userBlockService.isBlocked(post.getUserId(), userId)) {
             throw new AccessDeniedException("차단된 사용자의 게시글에는 댓글을 작성할 수 없습니다.");
         }
 
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         Comment parent = null;
         if (dto.getParentId() != null) {
-            parent = EntityRequirer.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
+            parent = EntityLoader.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
         }
         Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
         Comment saved = commentRepository.save(comment);
@@ -96,7 +96,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId) {
-        Post post = EntityRequirer.getOrThrow(postRepository::findById, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, PageSize.COMMENTS)).getContent();
         List<Long> commentIds = comments.stream().map(Comment::getId).toList();
 
@@ -124,7 +124,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<MyCommentResponseDto> getMyComments(Long userId) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         return commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream().map(MyCommentResponseDto::from).toList();
     }
@@ -146,13 +146,13 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(Long commentId){
         // soft delete: 신고 기록(CommentReport) 보존, 행이 남아 FK 무결성 유지
-        deleteAndDecrement(EntityRequirer.getOrThrow(commentRepository::findById, commentId, "댓글"));
+        deleteAndDecrement(EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글"));
     }
 
     @Override
     @Transactional
     public void deleteOwnComment(Long commentId, Long requestUserId) {
-        Comment comment = EntityRequirer.getOrThrow(commentRepository::findById, commentId, "댓글");
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
         deleteAndDecrement(comment);
     }
@@ -185,7 +185,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
-        Comment comment = EntityRequirer.getOrThrow(commentRepository::findById, commentId, "댓글");
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글", "수정");
         badWordFilter.validateField("content", content);
         comment.update(content);
@@ -214,8 +214,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentLikeResult toggleLike(Long commentId, Long userId) {
-        Comment comment = EntityRequirer.getOrThrow(commentRepository::findById, commentId, "댓글");
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         int deleted = commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId);
         if (deleted > 0) {

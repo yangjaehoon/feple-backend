@@ -6,7 +6,7 @@ import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.post.dto.CursorPage;
@@ -51,7 +51,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Long postId = postRepository.save(buildPost(dto, user, new PostContext(dto.getBoardType(), null, null))).getId();
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
@@ -59,7 +59,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostResponseDto getPost(Long postId) {
-        Post post = EntityRequirer.getOrThrow(postRepository::findWithAssociationsById, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findWithAssociationsById, postId, "게시글");
         return PostResponseDto.from(post);
     }
 
@@ -97,7 +97,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId) {
-        Post post = EntityRequirer.getOrThrow(postRepository::findById, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글", "수정");
         validatePostContent(dto);
         post.update(dto.getTitle(), dto.getContent(), dto.getImageUrl());
@@ -106,7 +106,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void deleteOwnPost(Long postId, Long requestUserId) {
-        Post post = EntityRequirer.getOrThrow(postRepository::findById, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
         // soft delete: 행이 남아 FK 무결성 유지, 신고 등 증거 보존
         postRepository.deleteById(postId);
@@ -114,7 +114,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public CursorPage<PostResponseDto> getPostsByArtistIdPaged(Long artistId, Long cursor, int size, Long viewerId) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         int fetchSize = size + 1;
         PageRequest limit = PageRequest.of(0, fetchSize);
         List<Post> posts = (cursor == null)
@@ -130,8 +130,8 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Long postId = postRepository.save(buildPost(dto, user, new PostContext(null, artist, null))).getId();
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
@@ -139,7 +139,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, Long cursor, int size, Long viewerId) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         int fetchSize = size + 1;
         PageRequest limit = PageRequest.of(0, fetchSize);
@@ -157,8 +157,8 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Long postId = postRepository.save(buildPost(dto, user, new PostContext(null, null, festival))).getId();
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
@@ -166,7 +166,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, Long cursor, int size, Long viewerId) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         int fetchSize = size + 1;
         PageRequest limit = PageRequest.of(0, fetchSize);
@@ -184,8 +184,8 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Long postId = postRepository.save(buildPost(dto, user, new PostContext(boardType, null, festival))).getId();
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
@@ -193,7 +193,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostResponseDto> getPopularFestivalPosts(Long festivalId, Long viewerId) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         List<PostResponseDto> posts = postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
                 .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))

@@ -12,7 +12,7 @@ import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.post.service.PostCascadeService;
+import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class ArtistCascadeDeleteService {
     private final SongRepository songRepository;
     private final SongRequestRepository songRequestRepository;
     private final TimetableService timetableService;
-    private final PostCascadeService postCascadeService;
+    private final PostCascadeDeleteService postCascadeService;
     private final FileStorageService fileStorageService;
 
     @Transactional

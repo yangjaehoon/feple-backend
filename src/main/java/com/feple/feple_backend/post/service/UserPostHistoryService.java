@@ -5,7 +5,7 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 
 import java.util.List;
 
-public interface PostActivityService {
+public interface UserPostHistoryService {
     List<PostResponseDto> getMyPosts(Long userId);
     CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size);
     CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size);

@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin.account;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,7 +38,7 @@ public class AdminAccountService {
 
     @Transactional(readOnly = true)
     public AdminAccount findById(Long id) {
-        return EntityRequirer.getOrThrow(accountRepository::findById, id, "관리자 계정");
+        return EntityLoader.getOrThrow(accountRepository::findById, id, "관리자 계정");
     }
 
     public void create(AdminAccountCreateRequestDto req) {

@@ -10,9 +10,9 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReposit
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.file.S3PathConstants;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class ArtistGalleryPhotoService {
     @Value("${app.s3.bucket}")
     private String bucket;
 
-    public PresignResult generateUploadUrl(Long artistId, String extension, String contentType) {
+    public S3PresignedUrlResult generateUploadUrl(Long artistId, String extension, String contentType) {
         String objectKey = S3PathConstants.artistPhotoPrefix(artistId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);
     }
@@ -74,8 +74,8 @@ public class ArtistGalleryPhotoService {
         // S3에 저장된 content-type이 허용된 이미지 타입인지 추가로 검증한다.
         verifyS3ImageObject(objectKey);
 
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        User uploader = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        User uploader = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         ArtistGalleryPhoto saved = artistGalleryPhotoRepository.save(
                 new ArtistGalleryPhoto(artist, uploader, objectKey, contentType, title, description, isAnonymous));
@@ -102,7 +102,7 @@ public class ArtistGalleryPhotoService {
 
     @Transactional
     public void delete(Long photoId, Long userId) {
-        ArtistGalleryPhoto photo = EntityRequirer.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
+        ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         if (!photo.getUploaderId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
         }
@@ -114,7 +114,7 @@ public class ArtistGalleryPhotoService {
 
     @Transactional
     public void update(Long photoId, Long userId, UpdatePhotoRequestDto command) {
-        ArtistGalleryPhoto photo = EntityRequirer.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
+        ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         if (!photo.getUploaderId().equals(userId)) {
             throw new IllegalArgumentException("본인이 업로드한 사진만 수정할 수 있습니다.");
         }
@@ -123,7 +123,7 @@ public class ArtistGalleryPhotoService {
 
     @Transactional(readOnly = true)
     public ArtistGalleryPhotoResponseDto getPhoto(Long photoId, Long currentUserId) {
-        ArtistGalleryPhoto photo = EntityRequirer.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
+        ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         String url = s3PresignService.presignGetUrl(photo.getS3Key());
         boolean isLiked = currentUserId != null &&
                 artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, currentUserId);
@@ -153,8 +153,8 @@ public class ArtistGalleryPhotoService {
 
     @Transactional
     public boolean toggleLike(Long photoId, Long userId) {
-        ArtistGalleryPhoto photo = EntityRequirer.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
-        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         int deleted = artistGalleryPhotoLikeRepository.deleteByPhotoIdAndUserId(photoId, userId);
         if (deleted > 0) {

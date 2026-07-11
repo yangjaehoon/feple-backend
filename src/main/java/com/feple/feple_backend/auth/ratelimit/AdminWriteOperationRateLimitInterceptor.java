@@ -10,9 +10,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 @RequiredArgsConstructor
-public class AdminMutationRateLimitInterceptor implements HandlerInterceptor {
+public class AdminWriteOperationRateLimitInterceptor implements HandlerInterceptor {
 
-    private final AdminMutationRateLimiter adminMutationRateLimiter;
+    private final AdminWriteOperationRateLimiter adminMutationRateLimiter;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

@@ -20,7 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.EntityLoader;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -88,8 +88,8 @@ public class ArtistFestivalService {
 
     @Transactional
     public Long addArtistToFestival(Long festivalId, ArtistFestivalCreateRequestDto request) {
-        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, request.getArtistId(), "아티스트");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, request.getArtistId(), "아티스트");
 
         if (artistFestivalRepository.existsByFestivalIdAndArtistId(festivalId, request.getArtistId())) {
             throw new ConflictException("이미 이 페스티벌에 참여 중인 아티스트입니다.");
@@ -130,7 +130,7 @@ public class ArtistFestivalService {
     @Transactional
     public void updateArtistFestival(Long festivalId, Long artistFestivalId,
                                      String stageName, LocalDate performanceDate) {
-        ArtistFestival af = EntityRequirer.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
+        ArtistFestival af = EntityLoader.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
         if (!af.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
@@ -145,7 +145,7 @@ public class ArtistFestivalService {
 
         // 스테이지가 변경되면 해당 아티스트의 타임테이블 스테이지도 함께 업데이트
         if (resolvedStage != null && !resolvedStage.equals(oldStage)) {
-            Stage newStage = EntityRequirer.getOrThrow(
+            Stage newStage = EntityLoader.getOrThrow(
                     name -> stageRepository.findByFestivalIdAndName(festivalId, name), resolvedStage, "스테이지");
             timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName)
                     .forEach(entry -> entry.updateStage(newStage));
@@ -193,7 +193,7 @@ public class ArtistFestivalService {
     }
 
     public ArtistFestival getArtistFestivalById(Long id) {
-        return EntityRequirer.getOrThrow(artistFestivalRepository::findByIdWithFestival, id, "아티스트 페스티벌");
+        return EntityLoader.getOrThrow(artistFestivalRepository::findByIdWithFestival, id, "아티스트 페스티벌");
     }
 
     public boolean existsByIdAndArtistId(Long artistFestivalId, Long artistId) {
@@ -204,12 +204,12 @@ public class ArtistFestivalService {
         if (!artistFestivalRepository.existsByIdAndArtistId(artistFestivalId, artistId)) {
             throw new IllegalArgumentException("해당 아티스트의 셋리스트가 아닙니다.");
         }
-        return EntityRequirer.getOrThrow(artistFestivalRepository::findByIdWithFestival, artistFestivalId, "아티스트 페스티벌");
+        return EntityLoader.getOrThrow(artistFestivalRepository::findByIdWithFestival, artistFestivalId, "아티스트 페스티벌");
     }
 
     @Transactional
     public void removeArtistFromFestival(Long festivalId, Long artistFestivalId) {
-        ArtistFestival artistFestival = EntityRequirer.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
+        ArtistFestival artistFestival = EntityLoader.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
 
         if (!artistFestival.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");

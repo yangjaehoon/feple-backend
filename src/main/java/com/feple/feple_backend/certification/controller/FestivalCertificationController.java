@@ -2,7 +2,7 @@ package com.feple.feple_backend.certification.controller;
 
 import com.feple.feple_backend.certification.dto.CertificationRatingRequestDto;
 import com.feple.feple_backend.certification.dto.CertificationRequestDto;
-import com.feple.feple_backend.file.dto.PresignResult;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
@@ -36,7 +36,7 @@ public class FestivalCertificationController {
     private final FestivalReviewService reviewService;
 
     @PostMapping("/presign")
-    public PresignResult presign(
+    public S3PresignedUrlResult presign(
             @Valid @RequestBody PresignRequest req,
             @AuthenticationPrincipal Long userId
     ) {
