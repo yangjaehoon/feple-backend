@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * 1분 동안 최대 30회 허용, 초과 시 429 응답.
  */
 @Component
-public class MutationRateLimiter {
+public class WriteOperationRateLimiter {
 
     private final Cache<String, Bucket> cache = Caffeine.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)

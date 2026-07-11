@@ -2,7 +2,7 @@ package com.feple.feple_backend.comment.entity;
 
 import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import com.feple.feple_backend.post.entity.ReportReason;
-import com.feple.feple_backend.post.entity.Resolvable;
+import com.feple.feple_backend.post.entity.ResolvableReport;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
@@ -22,7 +22,7 @@ import lombok.*;
         @Index(name = "idx_comment_report_status", columnList = "status")
     }
 )
-public class CommentReport extends BaseTimeEntity implements Resolvable {
+public class CommentReport extends BaseTimeEntity implements ResolvableReport {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

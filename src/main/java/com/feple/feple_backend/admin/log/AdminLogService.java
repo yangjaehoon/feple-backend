@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.log;
 
 import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +71,7 @@ public class AdminLogService {
     public Page<AdminLog> getLogs(int page, AdminLogFilter filter) {
         PageRequest pageable = PageRequest.of(page, AdminConstants.LOG_PAGE_SIZE);
         String type     = !filter.targetType().isBlank() ? filter.targetType() : null;
-        String username = LikeEscaper.escapeOrNull(filter.adminUsername());
+        String username = JpqlLikeEscaper.escapeOrNull(filter.adminUsername());
         LocalDateTime fromDt = filter.from() != null ? filter.from().atStartOfDay() : null;
         LocalDateTime toDt   = filter.to()   != null ? filter.to().atTime(LocalTime.MAX) : null;
         return repository.findWithFilters(type, username, fromDt, toDt, pageable);

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
 import com.feple.feple_backend.post.event.PostLikedEvent;
@@ -30,8 +30,8 @@ public class PostLikeService {
 
     @Transactional
     public boolean toggleLike(Long postId, Long userId) {
-        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        Post post = EntityRequirer.getOrThrow(postRepository::findById, postId, "게시글");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
 
         int deleted = postLikeRepository.deleteByUserIdAndPostId(userId, postId);
         if (deleted > 0) {

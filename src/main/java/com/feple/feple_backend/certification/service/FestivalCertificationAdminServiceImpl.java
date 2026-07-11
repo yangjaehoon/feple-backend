@@ -7,8 +7,8 @@ import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
 import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.user.service.PointService;
@@ -46,13 +46,13 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Transactional(readOnly = true)
     public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
         Pageable pageable = PageableFactory.latestFirst(page, AdminConstants.LIST_PAGE_SIZE);
-        return certificationRepository.searchByKeyword(LikeEscaper.escape(keyword.trim()), status, pageable);
+        return certificationRepository.searchByKeyword(JpqlLikeEscaper.escape(keyword.trim()), status, pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
     public FestivalCertification getById(Long id) {
-        return EntityFinder.getOrThrow(certificationRepository::findWithUserAndFestivalById, id, "인증 신청");
+        return EntityRequirer.getOrThrow(certificationRepository::findWithUserAndFestivalById, id, "인증 신청");
     }
 
     @Override

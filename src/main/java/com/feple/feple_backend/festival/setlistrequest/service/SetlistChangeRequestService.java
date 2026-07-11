@@ -7,7 +7,7 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequest;
 import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequestStatus;
 import com.feple.feple_backend.festival.setlistrequest.repository.SetlistChangeRequestRepository;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -29,9 +29,9 @@ public class SetlistChangeRequestService {
     @Transactional
     public void submit(Long userId, Long festivalId, Long artistFestivalId,
                        String artistName, String message) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        ArtistFestival artistFestival = EntityFinder.getOrThrow(
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        ArtistFestival artistFestival = EntityRequirer.getOrThrow(
                 artistFestivalRepository::findById, artistFestivalId, "아티스트 참여 정보");
         if (!festivalId.equals(artistFestival.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 참여 정보가 아닙니다.");
@@ -60,7 +60,7 @@ public class SetlistChangeRequestService {
     @EvictAdminPendingCaches
     @Transactional
     public void resolve(Long requestId) {
-        SetlistChangeRequest req = EntityFinder.getOrThrow(repository::findById, requestId, "셋리스트 수정 요청");
+        SetlistChangeRequest req = EntityRequirer.getOrThrow(repository::findById, requestId, "셋리스트 수정 요청");
         req.resolve();
     }
 }

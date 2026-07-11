@@ -1,6 +1,6 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
@@ -28,14 +28,14 @@ public class PostActivityServiceImpl implements PostActivityService {
 
     @Override
     public List<PostResponseDto> getMyPosts(Long userId) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream().map(PostResponseDto::from).toList();
     }
 
     @Override
     public CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();
@@ -44,7 +44,7 @@ public class PostActivityServiceImpl implements PostActivityService {
 
     @Override
     public CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findPublicByUserOrderByCreatedAtDesc(user, PageRequest.of(page, size));
         List<PostResponseDto> content = result.getContent().stream().map(PostResponseDto::from).toList();

@@ -6,7 +6,7 @@ import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
-import com.feple.feple_backend.global.UserNicknameResolver;
+import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, ArtistSuggestionAdminService {
 
     private final ArtistSuggestionRepository suggestionRepository;
-    private final UserNicknameResolver nicknameResolver;
+    private final UserNicknameLookup nicknameResolver;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -57,7 +57,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
         Page<ArtistSuggestion> pageResult = suggestionRepository.findByStatusOrderByCreatedAtDesc(
                 ArtistSuggestionStatus.PENDING, PageRequest.of(page, size));
         Map<Long, String> nicknameMap = nicknameResolver.buildMap(pageResult.getContent(), ArtistSuggestion::getUserId);
-        return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)));
+        return pageResult.map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameLookup.UNKNOWN)));
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 ArtistSuggestionStatus.DISMISSED, PageRequest.of(0, limit)).getContent();
         Map<Long, String> nicknameMap = nicknameResolver.buildMap(suggestions, ArtistSuggestion::getUserId);
         return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
+                .map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameLookup.UNKNOWN)))
                 .toList();
     }
 
@@ -92,7 +92,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 ArtistSuggestionStatus.PENDING, PageRequest.of(0, limit)).getContent();
         Map<Long, String> nicknameMap = nicknameResolver.buildMap(suggestions, ArtistSuggestion::getUserId);
         return suggestions.stream()
-                .map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameResolver.UNKNOWN)))
+                .map(s -> ArtistSuggestionResponseDto.from(s, nicknameMap.getOrDefault(s.getUserId(), UserNicknameLookup.UNKNOWN)))
                 .toList();
     }
 
@@ -100,7 +100,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @EvictAdminPendingCaches
     @Transactional
     public void approve(Long suggestionId, Long artistId) {
-        ArtistSuggestion suggestion = EntityFinder.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
+        ArtistSuggestion suggestion = EntityRequirer.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
         suggestion.approve(artistId);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), artistId, suggestion.getArtistName(), null));
@@ -110,7 +110,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @EvictAdminPendingCaches
     @Transactional
     public void dismiss(Long suggestionId, String processNote) {
-        ArtistSuggestion suggestion = EntityFinder.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
+        ArtistSuggestion suggestion = EntityRequirer.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
         suggestion.dismiss(processNote);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), null, suggestion.getArtistName(), processNote));

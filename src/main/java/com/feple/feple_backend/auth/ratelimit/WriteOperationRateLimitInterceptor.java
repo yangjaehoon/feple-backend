@@ -10,9 +10,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 @RequiredArgsConstructor
-public class MutationRateLimitInterceptor implements HandlerInterceptor {
+public class WriteOperationRateLimitInterceptor implements HandlerInterceptor {
 
-    private final MutationRateLimiter mutationRateLimiter;
+    private final WriteOperationRateLimiter mutationRateLimiter;
 
     private static final java.util.Set<String> MUTATION_METHODS =
             java.util.Set.of("POST", "PUT", "PATCH", "DELETE");

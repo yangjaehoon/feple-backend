@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class UserNicknameResolver {
+public class UserNicknameLookup {
 
     public static final String UNKNOWN = "알 수 없음";
 

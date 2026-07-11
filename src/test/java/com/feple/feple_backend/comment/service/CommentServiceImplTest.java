@@ -1,6 +1,6 @@
 package com.feple.feple_backend.comment.service;
 
-import com.feple.feple_backend.badword.BadWordFilter;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.global.exception.BadWordException;
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
@@ -56,7 +56,7 @@ class CommentServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock FestivalCertificationService certificationService;
-    @Mock BadWordFilter badWordFilter;
+    @Mock BadWordValidator badWordFilter;
     @Mock UserBlockService userBlockService;
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 

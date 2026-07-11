@@ -19,7 +19,7 @@ import lombok.*;
         @Index(name = "idx_post_report_status", columnList = "status")
     }
 )
-public class PostReport extends BaseTimeEntity implements Resolvable {
+public class PostReport extends BaseTimeEntity implements ResolvableReport {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

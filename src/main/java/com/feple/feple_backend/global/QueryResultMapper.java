@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CountRowMapper {
+public class QueryResultMapper {
 
-    private CountRowMapper() {}
+    private QueryResultMapper() {}
 
     public static Map<Long, Long> toLongMap(List<Object[]> rows) {
         return rows.stream()

@@ -1,8 +1,8 @@
 package com.feple.feple_backend.user.service;
 
-import com.feple.feple_backend.artist.ArtistNameFilter;
-import com.feple.feple_backend.badword.BadWordFilter;
-import com.feple.feple_backend.nickname.NicknameRestrictionFilter;
+import com.feple.feple_backend.artist.ArtistNameValidator;
+import com.feple.feple_backend.badword.BadWordValidator;
+import com.feple.feple_backend.nickname.NicknameRestrictionValidator;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -35,9 +35,9 @@ class UserServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
     @Mock UserAdminService userAdminService;
-    @Mock BadWordFilter badWordFilter;
-    @Mock ArtistNameFilter artistNameFilter;
-    @Mock NicknameRestrictionFilter nicknameRestrictionFilter;
+    @Mock BadWordValidator badWordFilter;
+    @Mock ArtistNameValidator artistNameFilter;
+    @Mock NicknameRestrictionValidator nicknameRestrictionFilter;
 
     @InjectMocks UserServiceImpl userService;
 

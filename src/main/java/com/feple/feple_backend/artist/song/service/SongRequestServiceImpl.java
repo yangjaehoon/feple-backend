@@ -12,9 +12,9 @@ import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.LikeEscaper;
-import com.feple.feple_backend.global.UserNicknameResolver;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
+import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
@@ -34,7 +34,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
 
     private final SongRequestRepository songRequestRepository;
     private final ArtistRepository artistRepository;
-    private final UserNicknameResolver nicknameResolver;
+    private final UserNicknameLookup nicknameResolver;
     private final YoutubeSearchService youtubeSearchService;
     private final SongRepository songRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -42,7 +42,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Override
     @Transactional
     public SongRequestResponseDto submit(Long artistId, Long userId, SubmitSongRequestDto dto) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         boolean alreadyRequested = songRequestRepository
                 .existsByArtistIdAndUserIdAndSongTitleIgnoreCaseAndStatus(
@@ -88,10 +88,10 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     public Page<SongRequestResponseDto> getRequestsPage(int page, int size, String status, String keyword) {
         PageRequest pageable = PageRequest.of(page, size);
         SongRequestStatus statusFilter = parseStatus(status);
-        String kw = LikeEscaper.escapeOrNull(keyword);
+        String kw = JpqlLikeEscaper.escapeOrNull(keyword);
         Page<SongRequest> requestsPage = songRequestRepository.findWithFilters(statusFilter, kw, pageable);
         Map<Long, String> nicknameMap = nicknameResolver.buildMap(requestsPage.getContent(), SongRequest::getUserId);
-        return requestsPage.map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameResolver.UNKNOWN)));
+        return requestsPage.map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameLookup.UNKNOWN)));
     }
 
     @Override
@@ -107,7 +107,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 .findByArtistIdAndStatusOrderByCreatedAtDesc(artistId, SongRequestStatus.PENDING);
         Map<Long, String> nicknameMap = nicknameResolver.buildMap(requests, SongRequest::getUserId);
         return requests.stream()
-                .map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameResolver.UNKNOWN)))
+                .map(r -> SongRequestResponseDto.from(r, nicknameMap.getOrDefault(r.getUserId(), UserNicknameLookup.UNKNOWN)))
                 .toList();
     }
 
@@ -115,7 +115,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @EvictAdminPendingCaches
     @Transactional
     public boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl) {
-        SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
+        SongRequest request = EntityRequirer.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
 
         request.approve();
 
@@ -158,7 +158,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @EvictAdminPendingCaches
     @Transactional
     public void reject(Long requestId, String reason) {
-        SongRequest request = EntityFinder.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
+        SongRequest request = EntityRequirer.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
         request.reject();
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
                 request.getUserId(), request.getArtistId(), request.getSongTitle(), request.getArtistName(), reason));

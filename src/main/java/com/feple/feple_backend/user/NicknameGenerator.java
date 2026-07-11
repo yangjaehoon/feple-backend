@@ -1,8 +1,8 @@
 package com.feple.feple_backend.user;
 
-import com.feple.feple_backend.artist.ArtistNameFilter;
-import com.feple.feple_backend.badword.BadWordFilter;
-import com.feple.feple_backend.nickname.NicknameRestrictionFilter;
+import com.feple.feple_backend.artist.ArtistNameValidator;
+import com.feple.feple_backend.badword.BadWordValidator;
+import com.feple.feple_backend.nickname.NicknameRestrictionValidator;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 public class NicknameGenerator {
 
     private final UserRepository userRepository;
-    private final BadWordFilter badWordFilter;
-    private final ArtistNameFilter artistNameFilter;
-    private final NicknameRestrictionFilter nicknameRestrictionFilter;
+    private final BadWordValidator badWordFilter;
+    private final ArtistNameValidator artistNameFilter;
+    private final NicknameRestrictionValidator nicknameRestrictionFilter;
 
     /**
      * 외부 displayName을 안전한 닉네임으로 정제한다.

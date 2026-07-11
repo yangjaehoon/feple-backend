@@ -10,9 +10,9 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.global.CountRowMapper;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.ReportDismissHelper;
+import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
@@ -41,8 +41,8 @@ public class PostReportService implements ReportAdminService<PostReport> {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
             throw new ConflictException("이미 신고한 게시글입니다.");
         }
-        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
-        User reporter = EntityFinder.getOrThrow(userRepository::findById, reporterId, "사용자");
+        Post post = EntityRequirer.getOrThrow(postRepository::findById, postId, "게시글");
+        User reporter = EntityRequirer.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(PostReport.builder()
                 .post(post)
@@ -84,7 +84,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @EvictAdminReportCaches
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
-        PostReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
+        PostReport report = EntityRequirer.getOrThrow(reportRepository::findById, reportId, "신고");
         Long postId = report.getPostId();
         postAdminService.deletePost(postId);
         reportRepository.findByPostId(postId)
@@ -94,14 +94,14 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        ReportDismissHelper.dismiss(reportRepository, reportId);
+        ReportRejectionService.dismiss(reportRepository, reportId);
     }
 
     @Override
     @EvictAdminReportCaches
     @Transactional
     public void bulkDismiss(List<Long> ids) {
-        ReportDismissHelper.bulkDismiss(reportRepository, ids);
+        ReportRejectionService.bulkDismiss(reportRepository, ids);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @Override
     public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
-        return CountRowMapper.toLongMap(reportRepository.countByPostAuthorIds(userIds));
+        return QueryResultMapper.toLongMap(reportRepository.countByPostAuthorIds(userIds));
     }
 
     public List<PostReport> getAllPostReportsForExport() {
@@ -118,6 +118,6 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     public long getReportCountForUser(Long userId) {
-        return CountRowMapper.extractSingleCount(reportRepository.countByPostAuthorIds(List.of(userId)));
+        return QueryResultMapper.extractSingleCount(reportRepository.countByPostAuthorIds(List.of(userId)));
     }
 }

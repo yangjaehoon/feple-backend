@@ -7,9 +7,9 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRep
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.global.CountRowMapper;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.ReportDismissHelper;
+import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.post.dto.SubmitReportCommand;
 import com.feple.feple_backend.post.entity.ReportStatus;
@@ -44,8 +44,8 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
         if (reportRepository.existsByReporterIdAndPhotoId(reporterId, photoId)) {
             throw new ConflictException("이미 신고한 사진입니다.");
         }
-        ArtistGalleryPhoto photo = EntityFinder.getOrThrow(photoRepository::findById, photoId, "사진");
-        User reporter = EntityFinder.getOrThrow(userRepository::findById, reporterId, "사용자");
+        ArtistGalleryPhoto photo = EntityRequirer.getOrThrow(photoRepository::findById, photoId, "사진");
+        User reporter = EntityRequirer.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(ArtistPhotoReport.builder()
                 .photo(photo)
@@ -94,7 +94,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
 
     @Transactional
     public void deletePhotoAndResolve(Long reportId) {
-        ArtistPhotoReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
+        ArtistPhotoReport report = EntityRequirer.getOrThrow(reportRepository::findById, reportId, "신고");
         Long photoId = report.getPhotoId();
 
         // FK 순서: ArtistPhotoReport → ArtistGalleryPhotoLike → ArtistGalleryPhoto
@@ -106,14 +106,14 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        ReportDismissHelper.dismiss(reportRepository, reportId);
+        ReportRejectionService.dismiss(reportRepository, reportId);
     }
 
     @Override
     @EvictAdminReportCaches
     @Transactional
     public void bulkDismiss(List<Long> ids) {
-        ReportDismissHelper.bulkDismiss(reportRepository, ids);
+        ReportRejectionService.bulkDismiss(reportRepository, ids);
     }
 
     @Override
@@ -131,10 +131,10 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     @Override
     public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
-        return CountRowMapper.toLongMap(reportRepository.countByPhotoUploaderIds(userIds));
+        return QueryResultMapper.toLongMap(reportRepository.countByPhotoUploaderIds(userIds));
     }
 
     public long getReportCountForUser(Long userId) {
-        return CountRowMapper.extractSingleCount(reportRepository.countByPhotoUploaderIds(List.of(userId)));
+        return QueryResultMapper.extractSingleCount(reportRepository.countByPhotoUploaderIds(List.of(userId)));
     }
 }

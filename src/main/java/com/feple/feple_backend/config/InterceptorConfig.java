@@ -2,7 +2,7 @@ package com.feple.feple_backend.config;
 
 import com.feple.feple_backend.admin.account.AdminPermissionInterceptor;
 import com.feple.feple_backend.auth.ratelimit.AdminMutationRateLimitInterceptor;
-import com.feple.feple_backend.auth.ratelimit.MutationRateLimitInterceptor;
+import com.feple.feple_backend.auth.ratelimit.WriteOperationRateLimitInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class InterceptorConfig implements WebMvcConfigurer {
 
     private final AdminPermissionInterceptor adminPermissionInterceptor;
-    private final MutationRateLimitInterceptor mutationRateLimitInterceptor;
+    private final WriteOperationRateLimitInterceptor mutationRateLimitInterceptor;
     private final AdminMutationRateLimitInterceptor adminMutationRateLimitInterceptor;
 
     @Override

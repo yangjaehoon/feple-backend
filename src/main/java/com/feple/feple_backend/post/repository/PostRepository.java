@@ -128,7 +128,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 뽑은 뒤 EntityGraph로 연관 엔티티를 한 번에 가져와 N+1을 피한다.
     // REPLACE로 큰따옴표를 제거해 boolean 모드 phrase 구문이 깨지지 않게 방어한다.
     // 관리자 필터 검색(findByTitleContainingIgnoreCaseOrderByCreatedAtDesc 등)은
-    // LikeEscaper로 이스케이프한 값을 그대로 쓰므로 이 메서드들과 공유하지 않는다.
+    // JpqlLikeEscaper로 이스케이프한 값을 그대로 쓰므로 이 메서드들과 공유하지 않는다.
     @Query(value = "SELECT id FROM post WHERE MATCH(title) AGAINST (CONCAT('\"', REPLACE(:kw, '\"', ''), '\"') IN BOOLEAN MODE) ORDER BY created_at DESC",
            countQuery = "SELECT COUNT(*) FROM post WHERE MATCH(title) AGAINST (CONCAT('\"', REPLACE(:kw, '\"', ''), '\"') IN BOOLEAN MODE)",
            nativeQuery = true)

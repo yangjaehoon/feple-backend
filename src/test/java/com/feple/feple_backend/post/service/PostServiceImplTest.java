@@ -2,7 +2,7 @@ package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.post.repository.PostRepository;
 
-import com.feple.feple_backend.badword.BadWordFilter;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -54,7 +54,7 @@ class PostServiceImplTest {
     @Mock ArtistRepository artistRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock FestivalCertificationService certificationService;
-    @Mock BadWordFilter badWordFilter;
+    @Mock BadWordValidator badWordFilter;
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock HotPostCache hotPostCache;
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
@@ -234,7 +234,7 @@ class PostServiceImplTest {
         verify(postRepository, never()).incrementViewCount(999L);
     }
 
-    // ── getHotPosts ──────────────────────────────────────────────────
+    // ── getPopularPosts ──────────────────────────────────────────────────
 
     @Test
     void 핫_게시글_최대_4개_반환() {
@@ -245,7 +245,7 @@ class PostServiceImplTest {
                 PostResponseDto.builder().id(4L).userId(1L).build());
         given(hotPostCache.get()).willReturn(hotPosts);
 
-        List<PostResponseDto> result = postService.getHotPosts(null);
+        List<PostResponseDto> result = postService.getPopularPosts(null);
 
         assertThat(result).hasSize(4);
     }
@@ -254,10 +254,10 @@ class PostServiceImplTest {
     void 핫_게시글_없으면_빈_리스트() {
         given(hotPostCache.get()).willReturn(List.of());
 
-        assertThat(postService.getHotPosts(null)).isEmpty();
+        assertThat(postService.getPopularPosts(null)).isEmpty();
     }
 
-    // ── getPostsByBoardTypePaged ───────────────────────────────────────
+    // ── getPostsByBoardTypeLatest ───────────────────────────────────────
 
     @Test
     void 게시판타입_커서_페이징_다음페이지_있음() {
@@ -266,7 +266,7 @@ class PostServiceImplTest {
         given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
-        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePaged(BoardType.FREE, null, 2, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, null, 2, null);
 
         assertThat(result.content()).hasSize(2);
         assertThat(result.hasNext()).isTrue();
@@ -280,7 +280,7 @@ class PostServiceImplTest {
         given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
-        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePaged(BoardType.FREE, null, 2, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, null, 2, null);
 
         assertThat(result.hasNext()).isFalse();
         assertThat(result.nextCursor()).isNull();

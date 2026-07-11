@@ -1,7 +1,7 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.global.FullTextSearchSupport;
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.FullTextSearchValidator;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -28,7 +28,7 @@ public class PostSearchServiceImpl implements PostSearchService {
         String kw = keyword.trim();
         Optional<BoardType> type = parseBoardType(boardType);
         PageRequest pageable = PageRequest.of(0, PageSize.SEARCH);
-        List<PostResponseDto> results = FullTextSearchSupport.isTooShortForFullText(kw)
+        List<PostResponseDto> results = FullTextSearchValidator.isTooShortForFullText(kw)
                 ? searchByTitleLike(type, kw, pageable)
                 : searchByTitleFullText(type, kw, pageable);
         return blockedContentFilter.excludeBlocked(results, viewerId, PostResponseDto::getUserId);
@@ -43,7 +43,7 @@ public class PostSearchServiceImpl implements PostSearchService {
     }
 
     private List<PostResponseDto> searchByTitleLike(Optional<BoardType> type, String kw, PageRequest pageable) {
-        String escaped = LikeEscaper.escape(kw);
+        String escaped = JpqlLikeEscaper.escape(kw);
         return type.isPresent()
                 ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(type.get(), escaped, pageable)
                         .stream().map(PostResponseDto::from).toList()

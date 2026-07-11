@@ -128,14 +128,14 @@ class CommentReportServiceTest {
     // ── dismissReport ────────────────────────────────────────────────
 
     @Test
-    void 신고_기각시_상태가_DISMISSED로_변경됨() {
+    void 신고_기각시_상태가_REJECTED로_변경됨() {
         Comment comment = mockComment();
         CommentReport report = pendingReport(1L, comment, user(1L));
         given(reportRepository.findById(1L)).willReturn(Optional.of(report));
 
         commentReportService.dismissReport(1L);
 
-        assertThat(report.getStatus()).isEqualTo(ReportStatus.DISMISSED);
+        assertThat(report.getStatus()).isEqualTo(ReportStatus.REJECTED);
     }
 
     @Test
@@ -156,10 +156,10 @@ class CommentReportServiceTest {
     }
 
     @Test
-    void bulkDismiss_PENDING_신고만_DISMISSED로_변경됨() {
+    void bulkDismiss_PENDING_신고만_REJECTED로_변경됨() {
         Comment comment = mockComment();
         CommentReport pending = pendingReport(1L, comment, user(1L));
-        // POST_DELETED: PENDING이 아닌 신고 → bulkDismiss가 resolve()를 호출하면 DISMISSED로 바뀌어 검출 가능
+        // POST_DELETED: PENDING이 아닌 신고 → bulkDismiss가 resolve()를 호출하면 REJECTED로 바뀌어 검출 가능
         CommentReport alreadyProcessed = CommentReport.builder()
                 .id(2L).comment(comment).reporter(user(2L))
                 .reason(ReportReason.SPAM).status(ReportStatus.POST_DELETED).build();
@@ -169,7 +169,7 @@ class CommentReportServiceTest {
 
         commentReportService.bulkDismiss(List.of(1L, 2L));
 
-        assertThat(pending.getStatus()).isEqualTo(ReportStatus.DISMISSED);
+        assertThat(pending.getStatus()).isEqualTo(ReportStatus.REJECTED);
         assertThat(alreadyProcessed.getStatus()).isEqualTo(ReportStatus.POST_DELETED);
     }
 

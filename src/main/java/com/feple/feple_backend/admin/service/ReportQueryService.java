@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.post.entity.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,7 +34,7 @@ public interface ReportQueryService<T> {
     }
 
     default Page<T> searchReportsForAdmin(ReportSearchParams params) {
-        String keyword = LikeEscaper.escapeOrNull(params.keyword());
+        String keyword = JpqlLikeEscaper.escapeOrNull(params.keyword());
         if (keyword == null) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
         return searchReportsByKeyword(keyword, ReportStatus.fromFilter(params.statusFilter()), PageRequest.of(params.page(), params.size()));
     }

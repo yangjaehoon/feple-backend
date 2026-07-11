@@ -12,9 +12,9 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.global.CountRowMapper;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.ReportDismissHelper;
+import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
@@ -44,8 +44,8 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         if (reportRepository.existsByReporterIdAndCommentId(reporterId, commentId)) {
             throw new ConflictException("이미 신고한 댓글입니다.");
         }
-        Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
-        User reporter = EntityFinder.getOrThrow(userRepository::findById, reporterId, "사용자");
+        Comment comment = EntityRequirer.getOrThrow(commentRepository::findById, commentId, "댓글");
+        User reporter = EntityRequirer.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(CommentReport.builder()
                 .comment(comment)
@@ -87,9 +87,9 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @EvictAdminReportCaches
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
-        CommentReport report = EntityFinder.getOrThrow(reportRepository::findById, reportId, "신고");
+        CommentReport report = EntityRequirer.getOrThrow(reportRepository::findById, reportId, "신고");
         Long commentId = report.getCommentId();
-        Comment comment = EntityFinder.getOrThrow(commentRepository::findById, commentId, "댓글");
+        Comment comment = EntityRequirer.getOrThrow(commentRepository::findById, commentId, "댓글");
         commentLikeRepository.deleteByCommentId(commentId);
         reportRepository.deleteByCommentId(commentId);
         commentRepository.deleteById(commentId);
@@ -99,14 +99,14 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        ReportDismissHelper.dismiss(reportRepository, reportId);
+        ReportRejectionService.dismiss(reportRepository, reportId);
     }
 
     @Override
     @EvictAdminReportCaches
     @Transactional
     public void bulkDismiss(List<Long> ids) {
-        ReportDismissHelper.bulkDismiss(reportRepository, ids);
+        ReportRejectionService.bulkDismiss(reportRepository, ids);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @Override
     public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
-        return CountRowMapper.toLongMap(reportRepository.countByCommentAuthorIds(userIds));
+        return QueryResultMapper.toLongMap(reportRepository.countByCommentAuthorIds(userIds));
     }
 
     public List<CommentReport> getAllCommentReportsForExport() {
@@ -123,6 +123,6 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     }
 
     public long getReportCountForUser(Long userId) {
-        return CountRowMapper.extractSingleCount(reportRepository.countByCommentAuthorIds(List.of(userId)));
+        return QueryResultMapper.extractSingleCount(reportRepository.countByCommentAuthorIds(List.of(userId)));
     }
 }

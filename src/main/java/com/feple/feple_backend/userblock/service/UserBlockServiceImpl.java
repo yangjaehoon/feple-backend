@@ -1,6 +1,6 @@
 package com.feple.feple_backend.userblock.service;
 
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -29,8 +29,8 @@ public class UserBlockServiceImpl implements UserBlockService {
         if (blockRepository.existsByBlockerIdAndBlockedId(blockerId, targetId)) {
             throw new ConflictException("이미 차단한 사용자입니다.");
         }
-        User blocker = EntityFinder.getOrThrow(userRepository::findById, blockerId, "사용자");
-        User blocked = EntityFinder.getOrThrow(userRepository::findById, targetId, "사용자");
+        User blocker = EntityRequirer.getOrThrow(userRepository::findById, blockerId, "사용자");
+        User blocked = EntityRequirer.getOrThrow(userRepository::findById, targetId, "사용자");
         blockRepository.save(UserBlock.of(blocker, blocked));
     }
 

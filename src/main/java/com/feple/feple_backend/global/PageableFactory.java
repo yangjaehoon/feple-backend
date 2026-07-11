@@ -11,7 +11,7 @@ public final class PageableFactory {
         return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
-    public static Pageable newestId(int page, int size) {
+    public static Pageable latestId(int page, int size) {
         return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
     }
 

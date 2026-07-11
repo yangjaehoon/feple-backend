@@ -10,8 +10,8 @@ import java.util.List;
 public interface PostService {
     Long createPost(PostRequestDto dto, Long userId);
     PostResponseDto getPost(Long postId);
-    List<PostResponseDto> getHotPosts(Long viewerId);
-    CursorPage<PostResponseDto> getPostsByBoardTypePaged(BoardType boardType, Long cursor, int size, Long viewerId);
+    List<PostResponseDto> getPopularPosts(Long viewerId);
+    CursorPage<PostResponseDto> getPostsByBoardTypeLatest(BoardType boardType, Long cursor, int size, Long viewerId);
     CursorPage<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, Long cursor, int size, Long viewerId);
     void deleteOwnPost(Long postId, Long requestUserId);
     void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId);

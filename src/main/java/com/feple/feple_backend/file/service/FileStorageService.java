@@ -1,6 +1,6 @@
 package com.feple.feple_backend.file.service;
 
-import com.feple.feple_backend.file.S3Keys;
+import com.feple.feple_backend.file.S3PathConstants;
 import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +48,7 @@ public class FileStorageService {
         imageResizeService.validateFile(file);
         String yearMonth = festivalStartDate == null ? ""
                 : festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        String folder = yearMonth.isEmpty() ? S3Keys.POSTERS : S3Keys.POSTERS + "/" + yearMonth;
+        String folder = yearMonth.isEmpty() ? S3PathConstants.POSTERS : S3PathConstants.POSTERS + "/" + yearMonth;
         return uploadResizedJpeg(file, folder + "/" + UUID.randomUUID() + ".jpg", FESTIVAL_POSTER_MAX_PX);
     }
 
@@ -56,7 +56,7 @@ public class FileStorageService {
         imageResizeService.validateFile(file);
         String safeName = toSafeName(nickname);
         return uploadResizedJpeg(file,
-                S3Keys.USER_PROFILES + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
+                S3PathConstants.USER_PROFILES + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
                 ARTIST_PROFILE_MAX_PX);
     }
 
@@ -64,7 +64,7 @@ public class FileStorageService {
         imageResizeService.validateFile(file);
         String safeName = toSafeName(artistName);
         return uploadResizedJpeg(file,
-                S3Keys.ARTISTS + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
+                S3PathConstants.ARTISTS + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
                 ARTIST_PROFILE_MAX_PX);
     }
 
@@ -80,7 +80,7 @@ public class FileStorageService {
     public String storeBoothImage(MultipartFile file) throws IOException {
         imageResizeService.validateFile(file);
         return uploadResizedJpeg(file,
-                S3Keys.BOOTHS + "/" + UUID.randomUUID() + ".jpg",
+                S3PathConstants.BOOTHS + "/" + UUID.randomUUID() + ".jpg",
                 BOOTH_IMAGE_MAX_PX);
     }
 

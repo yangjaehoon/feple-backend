@@ -114,14 +114,14 @@ class PostReportServiceTest {
     // ── dismissReport ────────────────────────────────────────────────
 
     @Test
-    void 신고_기각시_상태가_DISMISSED로_변경됨() {
+    void 신고_기각시_상태가_REJECTED로_변경됨() {
         User author = user(2L);
         PostReport report = pendingReport(1L, freePost(10L, author), user(1L));
         given(reportRepository.findById(1L)).willReturn(Optional.of(report));
 
         postReportService.dismissReport(1L);
 
-        assertThat(report.getStatus()).isEqualTo(ReportStatus.DISMISSED);
+        assertThat(report.getStatus()).isEqualTo(ReportStatus.REJECTED);
     }
 
     @Test
@@ -142,11 +142,11 @@ class PostReportServiceTest {
     }
 
     @Test
-    void bulkDismiss_PENDING_신고만_DISMISSED로_변경됨() {
+    void bulkDismiss_PENDING_신고만_REJECTED로_변경됨() {
         User author = user(2L);
         Post post = freePost(10L, author);
         PostReport pending = pendingReport(1L, post, user(1L));
-        // POST_DELETED: PENDING이 아닌 신고 → bulkDismiss가 resolve()를 호출하면 DISMISSED로 바뀌어 검출 가능
+        // POST_DELETED: PENDING이 아닌 신고 → bulkDismiss가 resolve()를 호출하면 REJECTED로 바뀌어 검출 가능
         PostReport alreadyDeleted = PostReport.builder()
                 .id(2L).post(post).reporter(user(3L))
                 .reason(ReportReason.SPAM).status(ReportStatus.POST_DELETED).build();
@@ -156,7 +156,7 @@ class PostReportServiceTest {
 
         postReportService.bulkDismiss(List.of(1L, 2L));
 
-        assertThat(pending.getStatus()).isEqualTo(ReportStatus.DISMISSED);
+        assertThat(pending.getStatus()).isEqualTo(ReportStatus.REJECTED);
         assertThat(alreadyDeleted.getStatus()).isEqualTo(ReportStatus.POST_DELETED);
     }
 

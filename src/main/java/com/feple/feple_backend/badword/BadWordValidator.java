@@ -12,7 +12,7 @@ import org.springframework.transaction.event.TransactionPhase;
 
 @Component
 @RequiredArgsConstructor
-public class BadWordFilter {
+public class BadWordValidator {
 
     private final BadWordRepository badWordRepository;
     private final WordSet wordSet = new WordSet();

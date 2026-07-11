@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class ArtistNameFilter {
+public class ArtistNameValidator {
 
     private final ArtistRepository artistRepository;
     private volatile Set<String> artistNames = Set.of();

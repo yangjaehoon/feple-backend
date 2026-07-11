@@ -5,7 +5,7 @@ import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.entity.ReviewLike;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.certification.repository.ReviewLikeRepository;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +28,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
     @Override
     @Transactional
     public void submitRating(Long userId, Long certId, int rating, String review) {
-        FestivalCertification cert = EntityFinder.getOrThrow(certificationRepository::findById, certId, "인증");
+        FestivalCertification cert = EntityRequirer.getOrThrow(certificationRepository::findById, certId, "인증");
         if (!cert.getUserId().equals(userId)) {
             throw new IllegalArgumentException("본인의 인증에만 평점을 남길 수 있습니다.");
         }
@@ -93,7 +93,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
     @Override
     @Transactional
     public boolean toggleReviewLike(Long userId, Long certId) {
-        FestivalCertification cert = EntityFinder.getOrThrow(certificationRepository::findById, certId, "리뷰");
+        FestivalCertification cert = EntityRequirer.getOrThrow(certificationRepository::findById, certId, "리뷰");
         if (!cert.isApproved() || cert.getRating() == null) {
             throw new IllegalArgumentException("존재하지 않는 리뷰입니다.");
         }

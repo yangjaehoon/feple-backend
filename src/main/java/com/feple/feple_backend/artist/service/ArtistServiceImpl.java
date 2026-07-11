@@ -1,8 +1,8 @@
 package com.feple.feple_backend.artist.service;
 
-import com.feple.feple_backend.artist.ArtistNameFilter;
+import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistGenre;
@@ -12,9 +12,9 @@ import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.CountRowMapper;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.FullTextSearchSupport;
+import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictArtistCaches;
@@ -61,7 +61,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     private final FileStorageService fileStorageService;
     private final ArtistCascadeDeleteService cascadeDeleteService;
     private final SongRepository songRepository;
-    private final ArtistNameFilter artistNameFilter;
+    private final ArtistNameValidator artistNameFilter;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -119,8 +119,8 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
         String trimmed = keyword.trim();
-        List<Artist> artists = FullTextSearchSupport.isTooShortForFullText(trimmed)
-                ? artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(trimmed))
+        List<Artist> artists = FullTextSearchValidator.isTooShortForFullText(trimmed)
+                ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(trimmed))
                 : artistRepository.searchArtistsByNameFullText(trimmed);
         return artists.stream()
                 .map(this::toDto)
@@ -145,7 +145,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
             // 키워드 검색·곡수 정렬은 인메모리 처리 후 PageImpl로 슬라이싱
             Map<Long, Integer> songCountMap = buildSongCountMap();
             List<Artist> artists = hasKeyword
-                    ? artistRepository.findByNameOrNameEnContainingIgnoreCase(LikeEscaper.escape(keyword.trim()))
+                    ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(keyword.trim()))
                     : artistRepository.findAll();
             if (genre != null) {
                 artists = artists.stream().filter(a -> a.getGenres().contains(genre)).toList();
@@ -179,26 +179,26 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     }
 
     private Map<Long, Integer> buildSongCountMap() {
-        return CountRowMapper.toIntMap(songRepository.countGroupedByArtist());
+        return QueryResultMapper.toIntMap(songRepository.countGroupedByArtist());
     }
 
     private Map<Long, Integer> buildSongCountMapForIds(List<Long> artistIds) {
         if (artistIds.isEmpty()) return Map.of();
-        return CountRowMapper.toIntMap(songRepository.countGroupedByArtistIds(artistIds));
+        return QueryResultMapper.toIntMap(songRepository.countGroupedByArtistIds(artistIds));
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "artistDetail", key = "#id")
     public ArtistResponseDto getArtistById(Long id) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
         return toDto(artist);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ArtistRequestDto getArtistForEdit(Long id) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
         return ArtistRequestDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
@@ -215,7 +215,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @EvictArtistCaches
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
         artist.update(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAliases(dto.getAliases()));
         if (dto.getProfileImageKey() != null) {
             String oldKey = artist.getProfileImageKey();
@@ -243,7 +243,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         @CacheEvict(value = "artistDetail", key = "#id")
     })
     public void updateArtistPhoto(Long id, String imageKey) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
         String oldKey = artist.getProfileImageKey();
         artist.updateProfileImage(imageKey);
         if (oldKey != null) {
@@ -271,7 +271,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @EvictArtistCaches
     @CacheEvict(value = "artistDetail", key = "#id")
     public void deleteArtist(Long id) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
         artistNameFilter.reload();
     }

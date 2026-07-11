@@ -5,7 +5,7 @@ import com.feple.feple_backend.artist.suggestion.dto.SubmitArtistSuggestionDto;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
-import com.feple.feple_backend.global.UserNicknameResolver;
+import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 class ArtistSuggestionServiceTest {
 
     @Mock ArtistSuggestionRepository suggestionRepository;
-    @Mock UserNicknameResolver nicknameResolver;
+    @Mock UserNicknameLookup nicknameResolver;
     @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks ArtistSuggestionServiceImpl suggestionService;

@@ -1,7 +1,7 @@
 package com.feple.feple_backend.file;
 
-public final class S3Keys {
-    private S3Keys() {}
+public final class S3PathConstants {
+    private S3PathConstants() {}
 
     public static final String POSTERS = "posters";
     public static final String USER_PROFILES = "user-profiles";

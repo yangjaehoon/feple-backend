@@ -60,8 +60,8 @@ public class PostController {
     }
 
     @GetMapping("/hot")
-    public ResponseEntity<List<PostResponseDto>> getHotPosts(@AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.getHotPosts(userId));
+    public ResponseEntity<List<PostResponseDto>> getPopularPosts(@AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getPopularPosts(userId));
     }
 
     @GetMapping("/free")
@@ -73,7 +73,7 @@ public class PostController {
         if ("popular".equals(sort)) {
             return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
+        return ResponseEntity.ok(postService.getPostsByBoardTypeLatest(BoardType.FREE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/mate")
@@ -92,7 +92,7 @@ public class PostController {
         if ("popular".equals(sort)) {
             return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
         }
-        return ResponseEntity.ok(postService.getPostsByBoardTypePaged(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
+        return ResponseEntity.ok(postService.getPostsByBoardTypeLatest(BoardType.MATE, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId));
     }
 
     @PostMapping("/{postId}/like")

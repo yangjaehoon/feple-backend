@@ -7,7 +7,7 @@ import com.feple.feple_backend.festival.entity.FestivalWeather;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,7 +94,7 @@ public class WeatherService {
 
     /** 컨트롤러 전용: API 실패 시 캐시 데이터로 폴백. */
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();

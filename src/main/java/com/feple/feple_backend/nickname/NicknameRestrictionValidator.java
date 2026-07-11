@@ -11,7 +11,7 @@ import org.springframework.transaction.event.TransactionPhase;
 
 @Component
 @RequiredArgsConstructor
-public class NicknameRestrictionFilter {
+public class NicknameRestrictionValidator {
 
     private final NicknameRestrictionRepository repository;
     private final WordSet wordSet = new WordSet();

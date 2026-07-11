@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ReportStatus {
     PENDING("대기"),
     POST_DELETED("삭제됨"),
-    DISMISSED("기각");
+    REJECTED("기각");
 
     private final String displayName;
 

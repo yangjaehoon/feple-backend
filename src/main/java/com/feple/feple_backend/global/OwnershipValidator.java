@@ -2,8 +2,8 @@ package com.feple.feple_backend.global;
 
 import org.springframework.security.access.AccessDeniedException;
 
-public final class PermissionValidator {
-    private PermissionValidator() {}
+public final class OwnershipValidator {
+    private OwnershipValidator() {}
 
     public static void checkOwner(Long ownerId, Long requesterId, String resourceName) {
         checkOwner(ownerId, requesterId, resourceName, "삭제");

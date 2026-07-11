@@ -72,7 +72,7 @@ class PostControllerTest {
 
     @Test
     void 인기_게시글_조회() throws Exception {
-        given(postService.getHotPosts(isNull())).willReturn(List.of());
+        given(postService.getPopularPosts(isNull())).willReturn(List.of());
 
         mockMvc.perform(get("/posts/hot"))
                 .andExpect(status().isOk());
@@ -81,7 +81,7 @@ class PostControllerTest {
     @Test
     void 자유_게시글_목록_조회() throws Exception {
         CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
-        given(postService.getPostsByBoardTypePaged(any(), isNull(), anyInt(), isNull())).willReturn(page);
+        given(postService.getPostsByBoardTypeLatest(any(), isNull(), anyInt(), isNull())).willReturn(page);
 
         mockMvc.perform(get("/posts/free"))
                 .andExpect(status().isOk());

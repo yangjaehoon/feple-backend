@@ -2,8 +2,8 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
@@ -34,23 +34,23 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getAdminUser(@NonNull Long id) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
         return toAdminUserDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto findByNickname(String nickname) {
-        User user = EntityFinder.getOrThrow(userRepository::findByNicknameAndNotDeleted, nickname.trim(), "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findByNicknameAndNotDeleted, nickname.trim(), "사용자");
         return toAdminUserDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
-        Pageable pageable = PageableFactory.newestId(page, size);
+        Pageable pageable = PageableFactory.latestId(page, size);
         if (keyword != null && !keyword.isBlank()) {
-            return userRepository.findActiveByKeyword(LikeEscaper.escape(keyword.trim()), pageable).map(this::toAdminUserDto);
+            return userRepository.findActiveByKeyword(JpqlLikeEscaper.escape(keyword.trim()), pageable).map(this::toAdminUserDto);
         }
         return userRepository.findAllByDeletedAtIsNull(pageable).map(this::toAdminUserDto);
     }
@@ -58,7 +58,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword) {
-        String kw = LikeEscaper.escapeOrEmpty(keyword);
+        String kw = JpqlLikeEscaper.escapeOrEmpty(keyword);
         return userRepository.findAllOrderByTotalReportCountDesc(kw, PageRequest.of(page, size))
                 .map(this::toAdminUserDto);
     }
@@ -66,7 +66,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword) {
-        String kw = LikeEscaper.escapeOrEmpty(keyword);
+        String kw = JpqlLikeEscaper.escapeOrEmpty(keyword);
         return userRepository.findBannedUsers(LocalDateTime.now(), kw, PageRequest.of(page, size))
                 .map(this::toAdminUserDto);
     }
@@ -79,7 +79,7 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     public String adminDeleteUser(@NonNull Long id) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
         String nickname = user.getNickname();
         cascadeDeleteService.delete(user);
         return nickname;
@@ -87,13 +87,13 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     public void updateUserRole(Long userId, UserRole role) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
         user.changeRole(role);
     }
 
     @Override
     public void banUser(Long userId, int days, String reason) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
         String adminUsername = null;
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated()) adminUsername = auth.getName();
@@ -102,7 +102,7 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     public void unbanUser(Long userId) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
         user.unban();
     }
 
@@ -115,7 +115,7 @@ public class UserAdminServiceImpl implements UserAdminService {
         Page<User> batch;
         do {
             batch = userRepository.findAllByDeletedAtIsNull(
-                    PageableFactory.newestId(page++, batchSize));
+                    PageableFactory.latestId(page++, batchSize));
             batch.forEach(u -> result.add(toAdminUserDto(u)));
         } while (batch.hasNext() && result.size() < AdminConstants.MAX_EXPORT_ROWS);
         return result;

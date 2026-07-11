@@ -18,7 +18,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 
 import java.util.Comparator;
 import java.util.List;
@@ -50,7 +50,7 @@ public class TimetableService {
     @Transactional
     @CacheEvict(value = "timetable", key = "#festivalId")
     public TimetableEntryResponseDto createEntry(Long festivalId, TimetableEntryRequestDto req) {
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         if (!req.getStartTime().isBefore(req.getEndTime())) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
         }
@@ -83,7 +83,7 @@ public class TimetableService {
     @Transactional
     @CacheEvict(value = "timetable", key = "#festivalId")
     public void updateEntry(Long festivalId, Long entryId, TimetableEntryRequestDto req) {
-        TimetableEntry entry = EntityFinder.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
+        TimetableEntry entry = EntityRequirer.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         if (!festivalId.equals(entry.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
         }
@@ -136,7 +136,7 @@ public class TimetableService {
     @Transactional
     @CacheEvict(value = "timetable", key = "#festivalId")
     public void deleteEntry(Long festivalId, Long entryId) {
-        TimetableEntry entry = EntityFinder.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
+        TimetableEntry entry = EntityRequirer.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         if (!festivalId.equals(entry.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
         }

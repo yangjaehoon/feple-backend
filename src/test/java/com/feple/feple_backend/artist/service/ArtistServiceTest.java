@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
-import com.feple.feple_backend.artist.ArtistNameFilter;
+import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
@@ -36,7 +36,7 @@ class ArtistServiceTest {
     @Mock FileStorageService fileStorageService;
     @Mock ArtistCascadeDeleteService cascadeDeleteService;
     @Mock SongRepository songRepository;
-    @Mock ArtistNameFilter artistNameFilter;
+    @Mock ArtistNameValidator artistNameFilter;
 
     @InjectMocks ArtistServiceImpl artistService;
 

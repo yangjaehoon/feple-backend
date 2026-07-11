@@ -6,7 +6,7 @@ import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.dto.FollowResponseDto;
 import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
     @Override
     public FollowStatusDto followStatus(Long userId, Long artistId) {
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
         boolean followed = userId != null && artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
         return new FollowStatusDto(followed, artist.getFollowerCount());
     }
@@ -40,8 +40,8 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     @Override
     @Transactional
     public FollowResponseDto follow(Long userId, Long artistId) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             try {
@@ -62,7 +62,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
         if (deleted > 0) {
             artistRepository.decrementFollowerCount(artistId);
         }
-        Artist artist = EntityFinder.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityRequirer.getOrThrow(artistRepository::findById, artistId, "아티스트");
         return new FollowResponseDto(false, artist.getFollowerCount());
     }
 

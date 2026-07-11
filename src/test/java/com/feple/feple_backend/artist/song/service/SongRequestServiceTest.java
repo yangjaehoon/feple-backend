@@ -8,7 +8,7 @@ import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
-import com.feple.feple_backend.global.UserNicknameResolver;
+import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ class SongRequestServiceTest {
 
     @Mock SongRequestRepository songRequestRepository;
     @Mock ArtistRepository artistRepository;
-    @Mock UserNicknameResolver nicknameResolver;
+    @Mock UserNicknameLookup nicknameResolver;
     @Mock YoutubeSearchService youtubeSearchService;
     @Mock SongRepository songRepository;
     @Mock ApplicationEventPublisher eventPublisher;

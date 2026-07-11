@@ -1,10 +1,10 @@
 package com.feple.feple_backend.user.service;
 
-import com.feple.feple_backend.artist.ArtistNameFilter;
-import com.feple.feple_backend.badword.BadWordFilter;
-import com.feple.feple_backend.nickname.NicknameRestrictionFilter;
+import com.feple.feple_backend.artist.ArtistNameValidator;
+import com.feple.feple_backend.badword.BadWordValidator;
+import com.feple.feple_backend.nickname.NicknameRestrictionValidator;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,9 +32,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final UserAdminService userAdminService;
-    private final BadWordFilter badWordFilter;
-    private final ArtistNameFilter artistNameFilter;
-    private final NicknameRestrictionFilter nicknameRestrictionFilter;
+    private final BadWordValidator badWordFilter;
+    private final ArtistNameValidator artistNameFilter;
+    private final NicknameRestrictionValidator nicknameRestrictionFilter;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getUser(@NonNull Long id) {
-        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
         return toUserDto(user);
     }
 
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new ConflictException("이미 사용 중인 닉네임입니다.");
         }
-        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
         if (!user.canChangeNickname()) {
             long daysLeft = ChronoUnit.DAYS.between(LocalDateTime.now(), user.nextNicknameChangeAt()) + 1;
             throw new IllegalArgumentException("닉네임은 90일에 한 번만 변경할 수 있습니다. " + daysLeft + "일 후에 변경 가능합니다.");
@@ -100,7 +100,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateBio(@NonNull Long id, String bio) {
         if (bio != null) badWordFilter.validateField("bio", bio);
-        User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
         user.updateBio(bio);
     }
 
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
     public void updateProfileImage(@NonNull Long id, MultipartFile file) {
         try {
             // S3 업로드는 커넥션 점유 없이 수행; 완료 후 별도 트랜잭션으로 DB 반영
-            User user = EntityFinder.getOrThrow(userRepository::findById, id, "사용자");
+            User user = EntityRequirer.getOrThrow(userRepository::findById, id, "사용자");
             String url = fileStorageService.storeUserProfile(file, user.getNickname());
             user.changeProfileImage(url);
             userRepository.save(user);

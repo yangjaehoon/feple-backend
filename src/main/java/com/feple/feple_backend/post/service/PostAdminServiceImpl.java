@@ -1,13 +1,13 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.global.CountRowMapper;
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -33,7 +33,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     public Page<PostResponseDto> getPostsForAdmin(PostAdminFilterDto params) {
         PageRequest pageable = PageRequest.of(params.page(), params.size());
         boolean hasKeyword = params.keyword() != null && !params.keyword().isBlank();
-        String kw = LikeEscaper.escapeOrEmpty(params.keyword());
+        String kw = JpqlLikeEscaper.escapeOrEmpty(params.keyword());
 
         // BoardType enum에 해당하는 필터(FREE, MATE, FESTIVAL_COMPANION 등)는 enum이 직접 처리.
         // 새 BoardType을 추가해도 이 메서드를 수정할 필요 없음.
@@ -90,7 +90,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional
     public void deletePost(Long postId) {
-        Post post = EntityFinder.getOrThrow(postRepository::findById, postId, "게시글");
+        Post post = EntityRequirer.getOrThrow(postRepository::findById, postId, "게시글");
         eventPublisher.publishEvent(new PostDeletedByAdminEvent(post.getUserId(), post.getTitle()));
         // bulkDeletePosts와 동일하게 소프트 삭제 — 휴지통(getDeletedPosts/restorePost)에서
         // 복구 가능해야 하므로 단건 삭제만 하드 삭제하면 안 됨
@@ -107,14 +107,14 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional(readOnly = true)
     public long countPostsContaining(String word) {
-        return postRepository.countByTitleOrContentContaining(LikeEscaper.escape(word.toLowerCase()));
+        return postRepository.countByTitleOrContentContaining(JpqlLikeEscaper.escape(word.toLowerCase()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Map<Long, Long> getPostCountsByUserIds(List<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
-        return CountRowMapper.toLongMap(postRepository.countGroupByUserId(userIds));
+        return QueryResultMapper.toLongMap(postRepository.countGroupByUserId(userIds));
     }
 
     @Override

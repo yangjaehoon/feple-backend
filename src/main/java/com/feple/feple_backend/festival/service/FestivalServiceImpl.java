@@ -3,7 +3,7 @@ package com.feple.feple_backend.festival.service;
 import com.feple.feple_backend.admin.checklist.FestivalChecklistRepository;
 import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.global.LikeEscaper;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.booth.repository.BoothRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
@@ -21,8 +21,8 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
-import com.feple.feple_backend.global.EntityFinder;
-import com.feple.feple_backend.global.FullTextSearchSupport;
+import com.feple.feple_backend.global.EntityRequirer;
+import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.service.PostCascadeService;
 import com.feple.feple_backend.stage.repository.StageRepository;
@@ -148,7 +148,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, id, "페스티벌");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, id, "페스티벌");
         return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
     }
 
@@ -156,7 +156,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Transactional(readOnly = true)
     @Cacheable(value = "festivalDetail", key = "#festivalId")
     public FestivalResponseDto getFestival(Long festivalId) {
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         return toDto(festival);
     }
 
@@ -169,7 +169,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
             throw new IllegalArgumentException(ERR_END_BEFORE_START);
         }
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
                 dto.getStartDate(), dto.getEndDate(),
@@ -187,7 +187,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @EvictFestivalCaches
     @CacheEvict(value = "festivalDetail", key = "#festivalId")
     public void deleteFestival(Long festivalId) {
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();
 
         timetableRepository.deleteByFestivalId(festivalId);
@@ -226,8 +226,8 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> searchFestivals(String keyword) {
         String trimmed = keyword.trim();
-        List<Festival> festivals = FullTextSearchSupport.isTooShortForFullText(trimmed)
-                ? festivalRepository.findByTitleKeywordPaged(LikeEscaper.escape(trimmed), PageRequest.of(0, 10)).getContent()
+        List<Festival> festivals = FullTextSearchValidator.isTooShortForFullText(trimmed)
+                ? festivalRepository.findByTitleKeywordPaged(JpqlLikeEscaper.escape(trimmed), PageRequest.of(0, 10)).getContent()
                 : festivalRepository.findByTitleKeyword(trimmed);
         return festivals.stream()
                 .limit(10)
@@ -244,7 +244,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
                     PageableFactory.latestStartDate(page, size))
                     .map(this::toDto);
         }
-        return festivalRepository.findByTitleKeywordPaged(LikeEscaper.escape(keyword), pageable).map(this::toDto);
+        return festivalRepository.findByTitleKeywordPaged(JpqlLikeEscaper.escape(keyword), pageable).map(this::toDto);
     }
 
     @Override

@@ -6,10 +6,10 @@ import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.file.S3Keys;
+import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.dto.PresignResult;
 import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.global.EntityFinder;
+import com.feple.feple_backend.global.EntityRequirer;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -35,13 +35,13 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     @Override
     @Transactional
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
-        String prefix = S3Keys.certificationPrefix(userId);
+        String prefix = S3PathConstants.certificationPrefix(userId);
         if (photoKey == null || !photoKey.startsWith(prefix)) {
             throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
         }
 
-        User user = EntityFinder.getOrThrow(userRepository::findById, userId, "사용자");
-        Festival festival = EntityFinder.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        User user = EntityRequirer.getOrThrow(userRepository::findById, userId, "사용자");
+        Festival festival = EntityRequirer.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .ifPresent(existing -> {
@@ -121,7 +121,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
 
     @Override
     public PresignResult generateUploadUrl(Long userId, String extension, String contentType) {
-        String objectKey = S3Keys.certificationPrefix(userId) + UUID.randomUUID() + "." + extension;
+        String objectKey = S3PathConstants.certificationPrefix(userId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);
     }
 

@@ -19,7 +19,7 @@ import static org.mockito.BDDMockito.given;
 class BadWordFilterTest {
 
     @Mock BadWordRepository badWordRepository;
-    @InjectMocks BadWordFilter filter;
+    @InjectMocks BadWordValidator filter;
 
     private void loadWords(String... words) {
         given(badWordRepository.findAllWords()).willReturn(List.of(words));
