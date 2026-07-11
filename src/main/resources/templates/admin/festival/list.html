@@ -130,31 +130,31 @@
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
-                                           th:checked="${cl != null and cl.lineup1}"
+                                           th:checked="${cl != null and cl.isChecked('lineup1')}"
                                            th:data-festival-id="${festival.id}"
                                            data-field="lineup1" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
-                                           th:checked="${cl != null and cl.lineup2}"
+                                           th:checked="${cl != null and cl.isChecked('lineup2')}"
                                            th:data-festival-id="${festival.id}"
                                            data-field="lineup2" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
-                                           th:checked="${cl != null and cl.lineup3}"
+                                           th:checked="${cl != null and cl.isChecked('lineup3')}"
                                            th:data-festival-id="${festival.id}"
                                            data-field="lineup3" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
-                                           th:checked="${cl != null and cl.boothMap}"
+                                           th:checked="${cl != null and cl.isChecked('boothMap')}"
                                            th:data-festival-id="${festival.id}"
                                            data-field="boothMap" />
                                 </td>
                                 <td>
                                     <input type="checkbox" class="cl-check"
-                                           th:checked="${cl != null and cl.timetable}"
+                                           th:checked="${cl != null and cl.isChecked('timetable')}"
                                            th:data-festival-id="${festival.id}"
                                            data-field="timetable" />
                                 </td>

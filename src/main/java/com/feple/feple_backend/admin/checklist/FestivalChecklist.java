@@ -69,11 +69,4 @@ public class FestivalChecklist {
     public boolean isChecked(String field) {
         return Boolean.TRUE.equals(items.get(field));
     }
-
-    // Thymeleaf ${cl.lineup1} 등 기존 템플릿 접근 지원
-    public boolean isLineup1()   { return isChecked("lineup1"); }
-    public boolean isLineup2()   { return isChecked("lineup2"); }
-    public boolean isLineup3()   { return isChecked("lineup3"); }
-    public boolean isBoothMap()  { return isChecked("boothMap"); }
-    public boolean isTimetable() { return isChecked("timetable"); }
 }
