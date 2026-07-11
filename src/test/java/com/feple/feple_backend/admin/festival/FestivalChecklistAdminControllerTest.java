@@ -35,7 +35,7 @@ class FestivalChecklistAdminControllerTest {
 
     @Test
     void 체크리스트_토글_성공_checked값_반환() throws Exception {
-        given(festivalChecklistService.toggle(1L, "poster")).willReturn(true);
+        given(festivalChecklistService.isChecked(1L, "poster")).willReturn(true);
 
         mockMvc.perform(post("/admin/festivals/1/checklist")
                         .param("field", "poster"))

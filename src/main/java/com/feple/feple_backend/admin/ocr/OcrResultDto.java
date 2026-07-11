@@ -12,7 +12,7 @@ public record OcrResultDto(
         Integer confidence,
         String type) {
 
-    public boolean isOps() {
+    public boolean isAnnouncement() {
         return "OPS".equals(type);
     }
 }
