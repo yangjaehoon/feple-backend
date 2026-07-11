@@ -23,9 +23,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileStorageService {
 
-    private static final int ARTIST_PROFILE_MAX_PX = 400;
-    private static final int FESTIVAL_POSTER_MAX_PX = 720;
-    private static final int BOOTH_IMAGE_MAX_PX = 300;
+    private static final int ARTIST_PROFILE_RESIZE_PX = 400;
+    private static final int FESTIVAL_POSTER_RESIZE_PX = 720;
+    private static final int BOOTH_IMAGE_RESIZE_PX = 300;
 
     private final S3Template s3Template;
     private final ImageResizeService imageResizeService;
@@ -51,7 +51,7 @@ public class FileStorageService {
         String yearMonth = festivalStartDate == null ? ""
                 : festivalStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
         String folder = yearMonth.isEmpty() ? S3PathConstants.POSTERS : S3PathConstants.POSTERS + "/" + yearMonth;
-        return uploadResizedJpeg(file, folder + "/" + UUID.randomUUID() + ".jpg", FESTIVAL_POSTER_MAX_PX);
+        return uploadResizedJpeg(file, folder + "/" + UUID.randomUUID() + ".jpg", FESTIVAL_POSTER_RESIZE_PX);
     }
 
     public String storeUserProfile(MultipartFile file, String nickname) throws IOException {
@@ -59,7 +59,7 @@ public class FileStorageService {
         String safeName = toSafeName(nickname);
         return uploadResizedJpeg(file,
                 S3PathConstants.USER_PROFILES + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
-                ARTIST_PROFILE_MAX_PX);
+                ARTIST_PROFILE_RESIZE_PX);
     }
 
     public String storeArtistProfile(MultipartFile file, String artistName) throws IOException {
@@ -67,7 +67,7 @@ public class FileStorageService {
         String safeName = toSafeName(artistName);
         return uploadResizedJpeg(file,
                 S3PathConstants.ARTISTS + "/" + safeName + "/" + UUID.randomUUID() + ".jpg",
-                ARTIST_PROFILE_MAX_PX);
+                ARTIST_PROFILE_RESIZE_PX);
     }
 
     public String storeAdminProfile(MultipartFile file, String username) throws IOException {
@@ -75,7 +75,7 @@ public class FileStorageService {
         String safeName = toSafeName(username);
         String key = uploadResizedJpeg(file,
                 "admin-profiles/" + safeName + "/" + UUID.randomUUID() + ".jpg",
-                ARTIST_PROFILE_MAX_PX);
+                ARTIST_PROFILE_RESIZE_PX);
         return buildUrl(key);
     }
 
@@ -83,7 +83,7 @@ public class FileStorageService {
         imageResizeService.validateFile(file);
         return uploadResizedJpeg(file,
                 S3PathConstants.BOOTHS + "/" + UUID.randomUUID() + ".jpg",
-                BOOTH_IMAGE_MAX_PX);
+                BOOTH_IMAGE_RESIZE_PX);
     }
 
     private String uploadResizedJpeg(MultipartFile file, String key, int maxPx) throws IOException {

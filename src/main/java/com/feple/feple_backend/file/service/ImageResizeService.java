@@ -45,8 +45,8 @@ public class ImageResizeService {
             throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. jpg, jpeg, png, gif 파일만 업로드할 수 있습니다.");
     }
 
-    /** 이미지를 maxPx × maxPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
-    public byte[] resizeToJpeg(InputStream inputStream, int maxPx) throws IOException {
+    /** 이미지를 targetPx × targetPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
+    public byte[] resizeToJpeg(InputStream inputStream, int targetPx) throws IOException {
         byte[] bytes = inputStream.readAllBytes();
         validateImageDimensions(bytes);
 
@@ -54,7 +54,7 @@ public class ImageResizeService {
         if (src == null)
             throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
 
-        int[] dims = computeTargetSize(src.getWidth(), src.getHeight(), maxPx);
+        int[] dims = computeTargetSize(src.getWidth(), src.getHeight(), targetPx);
         return encodeToJpeg(src, dims[0], dims[1]);
     }
 
