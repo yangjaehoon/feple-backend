@@ -2,7 +2,7 @@ package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -44,7 +44,7 @@ public class FestivalRequestDto {
 
     private List<ArtistRequestDto> artists;
 
-    private List<Genre> genres;
+    private List<MusicGenre> genres;
     private Region region;
     private AgeRestriction ageRestriction;
     @DecimalMin(value = "-90.0")

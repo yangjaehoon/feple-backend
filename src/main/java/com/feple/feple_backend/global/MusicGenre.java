@@ -1,9 +1,9 @@
-package com.feple.feple_backend.festival.entity;
+package com.feple.feple_backend.global;
 
-public enum Genre {
+public enum MusicGenre {
+    BAND("Band"),
     HIP_HOP("Hip-hop"),
     INDIE("Indie"),
-    BAND("Band"),
     BALLAD("Ballad"),
     RNB("R&B"),
     DANCE("댄스"),
@@ -12,7 +12,7 @@ public enum Genre {
 
     private final String displayName;
 
-    Genre(String displayName) {
+    MusicGenre(String displayName) {
         this.displayName = displayName;
     }
 

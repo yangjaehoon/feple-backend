@@ -7,13 +7,13 @@ import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.dto.WeatherDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
-import com.feple.feple_backend.festival.setlistrequest.service.SetlistChangeRequestService;
+import com.feple.feple_backend.festival.lineupchangerequest.service.LineupChangeRequestService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -37,11 +37,11 @@ public class FestivalController {
     private final FestivalAttendanceService festivalAttendanceService;
     private final WeatherService weatherService;
     private final SongService songService;
-    private final SetlistChangeRequestService setlistChangeRequestService;
+    private final LineupChangeRequestService lineupChangeRequestService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
-            @RequestParam(required = false) List<Genre> genres,
+            @RequestParam(required = false) List<MusicGenre> genres,
             @RequestParam(required = false) List<Region> regions,
             @RequestParam(required = false) List<AgeRestriction> ageRestrictions,
             @RequestParam(defaultValue = "false") boolean includeEnded,
@@ -104,7 +104,7 @@ public class FestivalController {
             @PathVariable Long id,
             @Valid @RequestBody SetlistChangeRequestBody body,
             @AuthenticationPrincipal Long userId) {
-        setlistChangeRequestService.submit(userId, id, body.artistFestivalId(), body.artistName(), body.message());
+        lineupChangeRequestService.submit(userId, id, body.artistFestivalId(), body.artistName(), body.message());
         return ResponseEntity.noContent().build();
     }
 }

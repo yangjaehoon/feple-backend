@@ -2,7 +2,7 @@ package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +31,7 @@ public class FestivalResponseDto {
     private String posterUrl;
     private int likeCount;
     private int attendingCount;
-    private List<Genre> genres;
+    private List<MusicGenre> genres;
     private Region region;
     private AgeRestriction ageRestriction;
     private Double latitude;

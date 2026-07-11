@@ -1,0 +1,1 @@
+RENAME TABLE setlist_change_requests TO lineup_change_requests;

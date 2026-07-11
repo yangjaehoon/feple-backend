@@ -2,10 +2,10 @@ package com.feple.feple_backend.artist.photo.service;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
-import com.feple.feple_backend.artist.photo.entity.ArtistPhotoReport;
+import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
-import com.feple.feple_backend.artist.photo.repository.ArtistPhotoReportRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.EntityLoader;
@@ -31,9 +31,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoReport> {
+public class ArtistPhotoReportService implements ReportAdminService<ArtistGalleryPhotoReport> {
 
-    private final ArtistPhotoReportRepository reportRepository;
+    private final ArtistGalleryPhotoReportRepository reportRepository;
     private final ArtistGalleryPhotoRepository photoRepository;
     private final ArtistGalleryPhotoLikeRepository photoLikeRepository;
     private final UserRepository userRepository;
@@ -49,7 +49,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
         ArtistGalleryPhoto photo = EntityLoader.getOrThrow(photoRepository::findById, photoId, "사진");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
-        reportRepository.save(ArtistPhotoReport.builder()
+        reportRepository.save(ArtistGalleryPhotoReport.builder()
                 .photo(photo)
                 .reporter(reporter)
                 .reason(command.reason())
@@ -73,17 +73,17 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     public String getReportType() { return "photo"; }
 
     @Override
-    public Page<ArtistPhotoReport> findPendingReports(PageRequest pageable) {
+    public Page<ArtistGalleryPhotoReport> findPendingReports(PageRequest pageable) {
         return reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable);
     }
 
     @Override
-    public Page<ArtistPhotoReport> findAllReports(PageRequest pageable) {
+    public Page<ArtistGalleryPhotoReport> findAllReports(PageRequest pageable) {
         return reportRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     @Override
-    public Page<ArtistPhotoReport> searchReportsByKeyword(String keyword, ReportStatus status, PageRequest pageable) {
+    public Page<ArtistGalleryPhotoReport> searchReportsByKeyword(String keyword, ReportStatus status, PageRequest pageable) {
         return reportRepository.searchByKeyword(keyword, status, pageable);
     }
 
@@ -99,10 +99,10 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
 
     @Transactional
     public void deletePhotoAndResolve(Long reportId) {
-        ArtistPhotoReport report = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고");
+        ArtistGalleryPhotoReport report = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고");
         Long photoId = report.getPhotoId();
 
-        // FK 순서: ArtistPhotoReport → ArtistGalleryPhotoLike → ArtistGalleryPhoto
+        // FK 순서: ArtistGalleryPhotoReport → ArtistGalleryPhotoLike → ArtistGalleryPhoto
         reportRepository.deleteAllByPhotoId(photoId);
         photoLikeRepository.deleteByPhotoId(photoId);
         photoRepository.deleteById(photoId);
@@ -124,14 +124,14 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     @Override
     public Map<Long, String> buildPhotoPresignedUrls(Page<?> reports) {
         return reports.getContent().stream()
-                .filter(r -> r instanceof ArtistPhotoReport)
-                .map(r -> (ArtistPhotoReport) r)
-                .collect(Collectors.toMap(ArtistPhotoReport::getPhotoId,
+                .filter(r -> r instanceof ArtistGalleryPhotoReport)
+                .map(r -> (ArtistGalleryPhotoReport) r)
+                .collect(Collectors.toMap(ArtistGalleryPhotoReport::getPhotoId,
                         r -> s3PresignService.presignGetUrl(r.getPhotoKey())));
     }
 
     @Override
-    public Long extractAuthorId(ArtistPhotoReport report) { return report.getPhotoUploaderId(); }
+    public Long extractAuthorId(ArtistGalleryPhotoReport report) { return report.getPhotoUploaderId(); }
 
     @Override
     public Map<Long, Long> getAuthorReportCounts(Collection<Long> userIds) {

@@ -1,12 +1,12 @@
-package com.feple.feple_backend.festival.setlistrequest.service;
+package com.feple.feple_backend.festival.lineupchangerequest.service;
 
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.lineupchangerequest.entity.LineupChangeRequest;
+import com.feple.feple_backend.festival.lineupchangerequest.entity.LineupChangeRequestStatus;
+import com.feple.feple_backend.festival.lineupchangerequest.repository.LineupChangeRequestRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequest;
-import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequestStatus;
-import com.feple.feple_backend.festival.setlistrequest.repository.SetlistChangeRequestRepository;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.user.entity.User;
@@ -19,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class SetlistChangeRequestService {
+public class LineupChangeRequestService {
 
-    private final SetlistChangeRequestRepository repository;
+    private final LineupChangeRequestRepository repository;
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
@@ -36,11 +36,11 @@ public class SetlistChangeRequestService {
         if (!festivalId.equals(artistFestival.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 참여 정보가 아닙니다.");
         }
-        repository.save(SetlistChangeRequest.of(user, festivalId, artistFestivalId, artistName, festival.getTitle(), message));
+        repository.save(LineupChangeRequest.of(user, festivalId, artistFestivalId, artistName, festival.getTitle(), message));
     }
 
     @Transactional(readOnly = true)
-    public Page<SetlistChangeRequest> list(SetlistChangeRequestStatus status, String keyword, Pageable pageable) {
+    public Page<LineupChangeRequest> list(LineupChangeRequestStatus status, String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
             return repository.findByStatusAndKeyword(status, keyword, pageable);
         }
@@ -49,18 +49,18 @@ public class SetlistChangeRequestService {
 
     @Transactional(readOnly = true)
     public long getPendingCount() {
-        return repository.countByStatus(SetlistChangeRequestStatus.PENDING);
+        return repository.countByStatus(LineupChangeRequestStatus.PENDING);
     }
 
     @Transactional(readOnly = true)
-    public long countByStatus(SetlistChangeRequestStatus status) {
+    public long countByStatus(LineupChangeRequestStatus status) {
         return repository.countByStatus(status);
     }
 
     @EvictAdminPendingCaches
     @Transactional
     public void resolve(Long requestId) {
-        SetlistChangeRequest req = EntityLoader.getOrThrow(repository::findById, requestId, "셋리스트 수정 요청");
+        LineupChangeRequest req = EntityLoader.getOrThrow(repository::findById, requestId, "라인업 변경 요청");
         req.resolve();
     }
 }

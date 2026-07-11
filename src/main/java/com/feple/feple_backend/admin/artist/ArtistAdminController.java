@@ -7,7 +7,7 @@ import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.artist.entity.ArtistGenre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
@@ -80,7 +80,7 @@ public class ArtistAdminController {
     @GetMapping
     public String listArtists(@RequestParam(defaultValue = "") String keyword,
                               @RequestParam(defaultValue = "") String sort,
-                              @RequestParam(required = false) ArtistGenre genre,
+                              @RequestParam(required = false) MusicGenre genre,
                               @RequestParam(defaultValue = "0") int page,
                               Model model) {
         Page<ArtistResponseDto> artistsPage = artistAdminService.getAdminArtistList(sort, keyword, genre, page);
@@ -89,7 +89,7 @@ public class ArtistAdminController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("genre", genre);
-        model.addAttribute("allGenres", ArtistGenre.values());
+        model.addAttribute("allGenres", MusicGenre.values());
         model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
         model.addAttribute("processedSuggestions", artistSuggestionAdminService.getProcessedSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
         model.addAttribute("processedSuggestionsTotal", artistSuggestionAdminService.getProcessedCount());

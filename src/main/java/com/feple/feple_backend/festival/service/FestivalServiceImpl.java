@@ -13,7 +13,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalStatus;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
@@ -100,7 +100,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         LocalDate today = LocalDate.now();
         // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
-        List<Genre> genres = criteria.genres();
+        List<MusicGenre> genres = criteria.genres();
         List<Region> regions = criteria.regions();
         List<AgeRestriction> ageRestrictions = criteria.ageRestrictions();
         List<Festival> all = festivalRepository.findByFilters(

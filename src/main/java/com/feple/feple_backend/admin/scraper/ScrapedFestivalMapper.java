@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.scraper;
 
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
-import com.feple.feple_backend.festival.entity.Genre;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 
 import java.time.LocalDate;
@@ -30,7 +30,7 @@ public final class ScrapedFestivalMapper {
             dto.setGenres(req.genres().stream()
                 .filter(g -> g != null && !g.isBlank())
                 .map(g -> {
-                    try { return Genre.valueOf(g); }
+                    try { return MusicGenre.valueOf(g); }
                     catch (IllegalArgumentException e) {
                         throw new IllegalArgumentException("유효하지 않은 장르 값입니다: " + g);
                     }

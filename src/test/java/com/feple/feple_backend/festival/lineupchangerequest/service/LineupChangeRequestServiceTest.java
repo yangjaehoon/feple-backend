@@ -1,10 +1,10 @@
-package com.feple.feple_backend.festival.setlistrequest.service;
+package com.feple.feple_backend.festival.lineupchangerequest.service;
 
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.lineupchangerequest.repository.LineupChangeRequestRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.festival.setlistrequest.repository.SetlistChangeRequestRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -23,14 +23,14 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class SetlistChangeRequestServiceTest {
+class LineupChangeRequestServiceTest {
 
-    @Mock SetlistChangeRequestRepository repository;
+    @Mock LineupChangeRequestRepository repository;
     @Mock UserRepository userRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;
 
-    @InjectMocks SetlistChangeRequestService service;
+    @InjectMocks LineupChangeRequestService service;
 
     @Test
     void submit_성공() {
@@ -43,7 +43,7 @@ class SetlistChangeRequestServiceTest {
         given(artistFestivalRepository.findById(100L)).willReturn(Optional.of(artistFestival));
         given(artistFestival.getFestivalId()).willReturn(10L);
 
-        assertThatCode(() -> service.submit(1L, 10L, 100L, "아이유", "셋리스트 추가 요청"))
+        assertThatCode(() -> service.submit(1L, 10L, 100L, "아이유", "라인업 변경 요청"))
                 .doesNotThrowAnyException();
 
         then(repository).should().save(any());

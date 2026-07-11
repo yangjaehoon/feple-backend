@@ -4,8 +4,8 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.festival.setlistrequest.entity.SetlistChangeRequestStatus;
-import com.feple.feple_backend.festival.setlistrequest.service.SetlistChangeRequestService;
+import com.feple.feple_backend.festival.lineupchangerequest.entity.LineupChangeRequestStatus;
+import com.feple.feple_backend.festival.lineupchangerequest.service.LineupChangeRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class SetlistRequestAdminController {
 
-    private final SetlistChangeRequestService service;
+    private final LineupChangeRequestService service;
     private final AdminLogService adminLogService;
 
     @GetMapping
@@ -31,7 +31,7 @@ public class SetlistRequestAdminController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
-        SetlistChangeRequestStatus statusEnum = parseStatus(status);
+        LineupChangeRequestStatus statusEnum = parseStatus(status);
         var requests = service.list(statusEnum, keyword, PageRequest.of(page, AdminConstants.LIST_PAGE_SIZE));
         model.addAttribute("requests", requests);
         model.addAttribute("status", status);
@@ -64,11 +64,11 @@ public class SetlistRequestAdminController {
         return redirect;
     }
 
-    private SetlistChangeRequestStatus parseStatus(String status) {
+    private LineupChangeRequestStatus parseStatus(String status) {
         try {
-            return SetlistChangeRequestStatus.valueOf(status);
+            return LineupChangeRequestStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            return SetlistChangeRequestStatus.PENDING;
+            return LineupChangeRequestStatus.PENDING;
         }
     }
 }

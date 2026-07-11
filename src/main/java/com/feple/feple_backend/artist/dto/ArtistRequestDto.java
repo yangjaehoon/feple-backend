@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.dto;
 
-import com.feple.feple_backend.artist.entity.ArtistGenre;
+import com.feple.feple_backend.global.MusicGenre;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -26,7 +26,7 @@ public class ArtistRequestDto {
     private String aliases;
     @NotEmpty(message = "장르를 하나 이상 선택해주세요.")
     @Builder.Default
-    private List<ArtistGenre> genres = new ArrayList<>();
+    private List<MusicGenre> genres = new ArrayList<>();
     private String profileImageKey;
     @Min(value = 0, message = "팔로워 수는 0 이상이어야 합니다.")
     private int followerCount;
