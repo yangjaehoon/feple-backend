@@ -1,8 +1,5 @@
 package com.feple.feple_backend.user;
 
-import com.feple.feple_backend.artist.ArtistNameValidator;
-import com.feple.feple_backend.badword.BadWordValidator;
-import com.feple.feple_backend.nickname.NicknameRestrictionValidator;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,9 +15,7 @@ import java.util.UUID;
 public class NicknameGenerator {
 
     private final UserRepository userRepository;
-    private final BadWordValidator badWordValidator;
-    private final ArtistNameValidator artistNameValidator;
-    private final NicknameRestrictionValidator nicknameRestrictionValidator;
+    private final NicknameContentValidator nicknameContentValidator;
 
     /**
      * 외부 displayName을 안전한 닉네임으로 정제한다.
@@ -31,9 +26,7 @@ public class NicknameGenerator {
         if (sanitized.length() < 2) return fallback;
         if (sanitized.length() > 8) sanitized = sanitized.substring(0, 8);
         try {
-            badWordValidator.validate(sanitized);
-            artistNameValidator.validate(sanitized);
-            nicknameRestrictionValidator.validate(sanitized);
+            nicknameContentValidator.validate(sanitized);
         } catch (IllegalArgumentException ignored) {
             return fallback;
         }

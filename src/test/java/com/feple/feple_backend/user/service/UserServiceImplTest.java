@@ -1,11 +1,10 @@
 package com.feple.feple_backend.user.service;
 
-import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.badword.BadWordValidator;
-import com.feple.feple_backend.nickname.NicknameRestrictionValidator;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -36,8 +35,7 @@ class UserServiceImplTest {
     @Mock FileStorageService fileStorageService;
     @Mock UserAdminService userAdminService;
     @Mock BadWordValidator badWordValidator;
-    @Mock ArtistNameValidator artistNameValidator;
-    @Mock NicknameRestrictionValidator nicknameRestrictionValidator;
+    @Mock NicknameContentValidator nicknameContentValidator;
 
     @InjectMocks UserServiceImpl userService;
 
@@ -125,6 +123,22 @@ class UserServiceImplTest {
         verify(userRepository).existsByNicknameAndIdNot("newbie", 1L);
     }
 
+    @Test
+    void 콘텐츠_검증_단계에서_실패하면_해당_단계의_코드_반환() {
+        given(nicknameContentValidator.steps()).willReturn(List.of(
+                new NicknameContentValidator.Step("BAD_WORD", n -> { }),
+                new NicknameContentValidator.Step("ARTIST_NAME", n -> {
+                    throw new IllegalArgumentException("아티스트명과 유사합니다.");
+                }),
+                new NicknameContentValidator.Step("RESTRICTED", n -> { })
+        ));
+
+        Map<String, Object> result = userService.checkNicknameAvailable("아이유", null);
+
+        assertThat(result.get("available")).isEqualTo(false);
+        assertThat(result.get("code")).isEqualTo("ARTIST_NAME");
+    }
+
     // ── getUser ───────────────────────────────────────────────────────
 
     @Test
@@ -201,6 +215,7 @@ class UserServiceImplTest {
         userService.updateNickname(1L, "새닉네임");
 
         assertThat(user.getNickname()).isEqualTo("새닉네임");
+        verify(nicknameContentValidator).validateArtistAndRestriction("새닉네임");
     }
 
     @Test

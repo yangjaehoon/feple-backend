@@ -1,9 +1,8 @@
 package com.feple.feple_backend.user.service;
 
-import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.badword.BadWordValidator;
-import com.feple.feple_backend.nickname.NicknameRestrictionValidator;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -33,8 +32,7 @@ public class UserServiceImpl implements UserService {
     private final FileStorageService fileStorageService;
     private final UserAdminService userAdminService;
     private final BadWordValidator badWordValidator;
-    private final ArtistNameValidator artistNameValidator;
-    private final NicknameRestrictionValidator nicknameRestrictionValidator;
+    private final NicknameContentValidator nicknameContentValidator;
 
     @Override
     @Transactional(readOnly = true)
@@ -44,20 +42,12 @@ public class UserServiceImpl implements UserService {
         } catch (IllegalArgumentException e) {
             return Map.of("available", false, "code", "INVALID_FORMAT", "message", e.getMessage());
         }
-        try {
-            badWordValidator.validate(nickname);
-        } catch (IllegalArgumentException e) {
-            return Map.of("available", false, "code", "BAD_WORD", "message", e.getMessage());
-        }
-        try {
-            artistNameValidator.validate(nickname);
-        } catch (IllegalArgumentException e) {
-            return Map.of("available", false, "code", "ARTIST_NAME", "message", e.getMessage());
-        }
-        try {
-            nicknameRestrictionValidator.validate(nickname);
-        } catch (IllegalArgumentException e) {
-            return Map.of("available", false, "code", "RESTRICTED", "message", e.getMessage());
+        for (NicknameContentValidator.Step step : nicknameContentValidator.steps()) {
+            try {
+                step.validate().accept(nickname);
+            } catch (IllegalArgumentException e) {
+                return Map.of("available", false, "code", step.failureCode(), "message", e.getMessage());
+            }
         }
         boolean taken = excludeUserId != null
                 ? userRepository.existsByNicknameAndIdNot(nickname.trim(), excludeUserId)
@@ -79,8 +69,7 @@ public class UserServiceImpl implements UserService {
     public void updateNickname(@NonNull Long id, String nickname) {
         NicknameValidator.validate(nickname);
         badWordValidator.validateField("nickname", nickname);
-        artistNameValidator.validate(nickname);
-        nicknameRestrictionValidator.validate(nickname);
+        nicknameContentValidator.validateArtistAndRestriction(nickname);
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new ConflictException("이미 사용 중인 닉네임입니다.");
         }
