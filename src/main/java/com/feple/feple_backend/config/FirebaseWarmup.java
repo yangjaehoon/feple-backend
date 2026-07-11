@@ -1,7 +1,9 @@
 package com.feple.feple_backend.config;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthErrorCode;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -37,8 +39,17 @@ public class FirebaseWarmup {
         CompletableFuture.runAsync(() -> {
             try {
                 FirebaseAuth.getInstance().verifyIdToken(WARMUP_TOKEN);
-            } catch (Exception ignored) {
-                log.info("[Firebase] 공개키 캐시 워밍업 완료");
+                log.warn("[Firebase] 워밍업 토큰이 검증을 통과했습니다 — WARMUP_TOKEN을 다시 생성하세요.");
+            } catch (FirebaseAuthException e) {
+                // CERTIFICATE_FETCH_FAILED: 공개키 fetch 자체가 실패 — 워밍업 효과 없음.
+                // 그 외 코드(INVALID_ID_TOKEN 등): fetch는 성공, 서명 검증 단계에서 예상대로 거부됨.
+                if (e.getAuthErrorCode() == AuthErrorCode.CERTIFICATE_FETCH_FAILED) {
+                    log.warn("[Firebase] 공개키 캐시 워밍업 실패 — 공개키 fetch 자체가 안 됨", e);
+                } else {
+                    log.info("[Firebase] 공개키 캐시 워밍업 완료 (errorCode={})", e.getAuthErrorCode());
+                }
+            } catch (Exception e) {
+                log.warn("[Firebase] 공개키 캐시 워밍업 중 예상치 못한 예외", e);
             }
         });
     }
