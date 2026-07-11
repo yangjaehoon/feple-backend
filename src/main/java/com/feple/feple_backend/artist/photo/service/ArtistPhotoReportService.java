@@ -109,7 +109,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistPhotoR
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        ReportRejectionService.dismiss(reportRepository, reportId);
+        ReportRejectionService.reject(reportRepository, reportId);
     }
 
     @Override

@@ -102,7 +102,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        ReportRejectionService.dismiss(reportRepository, reportId);
+        ReportRejectionService.reject(reportRepository, reportId);
     }
 
     @Override

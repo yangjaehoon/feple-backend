@@ -66,15 +66,15 @@ class SetlistRequestAdminControllerTest {
     }
 
     @Test
-    void RESOLVED_status_조회() throws Exception {
-        given(service.list(eq(SetlistChangeRequestStatus.RESOLVED), any(), any()))
+    void PROCESSED_status_조회() throws Exception {
+        given(service.list(eq(SetlistChangeRequestStatus.PROCESSED), any(), any()))
                 .willReturn(new PageImpl<>(List.of()));
         given(service.getPendingCount()).willReturn(0L);
 
-        mockMvc.perform(get("/admin/setlist-requests").param("status", "RESOLVED"))
+        mockMvc.perform(get("/admin/setlist-requests").param("status", "PROCESSED"))
                 .andExpect(status().isOk());
 
-        then(service).should().list(eq(SetlistChangeRequestStatus.RESOLVED), any(), any());
+        then(service).should().list(eq(SetlistChangeRequestStatus.PROCESSED), any(), any());
     }
 
     // ── POST /admin/setlist-requests/{id}/resolve ─────────────────────────────

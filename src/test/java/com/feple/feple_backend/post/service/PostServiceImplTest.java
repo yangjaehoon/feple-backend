@@ -306,7 +306,7 @@ class PostServiceImplTest {
         CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, null, 20, null);
 
         assertThat(result.content()).hasSize(1);
-        assertThat(result.content().get(0).getDisplayBoardName()).isEqualTo("아이유 게시판");
+        assertThat(result.content().get(0).getBoardDisplayName()).isEqualTo("아이유 게시판");
     }
 
     @Test

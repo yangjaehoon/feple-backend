@@ -58,6 +58,6 @@ public class SetlistChangeRequest {
     }
 
     public void resolve() {
-        this.status = SetlistChangeRequestStatus.RESOLVED;
+        this.status = SetlistChangeRequestStatus.PROCESSED;
     }
 }

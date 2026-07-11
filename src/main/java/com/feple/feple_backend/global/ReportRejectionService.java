@@ -10,7 +10,7 @@ public class ReportRejectionService {
 
     private ReportRejectionService() {}
 
-    public static <T extends ResolvableReport> void dismiss(
+    public static <T extends ResolvableReport> void reject(
             ListCrudRepository<T, Long> repo, Long reportId) {
         T report = EntityLoader.getOrThrow(repo::findById, reportId, "신고");
         report.resolve(ReportStatus.REJECTED);

@@ -97,7 +97,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        ReportRejectionService.dismiss(reportRepository, reportId);
+        ReportRejectionService.reject(reportRepository, reportId);
     }
 
     @Override
