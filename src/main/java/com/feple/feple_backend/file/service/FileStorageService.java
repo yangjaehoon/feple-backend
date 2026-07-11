@@ -3,6 +3,7 @@ package com.feple.feple_backend.file.service;
 import com.feple.feple_backend.file.S3PathConstants;
 import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileStorageService {
@@ -103,8 +105,10 @@ public class FileStorageService {
         if (key == null || key.isBlank() || key.startsWith("http")) return;
         try {
             s3Template.deleteObject(bucket, key);
-        } catch (Exception ignored) {
-            // 이미 삭제되었거나 존재하지 않는 경우 무시
+        } catch (Exception e) {
+            // S3 DeleteObject는 idempotent해서 key가 이미 없어도 예외 없이 성공한다.
+            // 즉 여기 잡히는 예외는 권한 오류·네트워크 문제 등 진짜 삭제 실패이므로 반드시 로그를 남긴다.
+            log.warn("[FileStorage] S3 파일 삭제 실패 key={}", key, e);
         }
     }
 
