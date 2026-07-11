@@ -1,7 +1,5 @@
 package com.feple.feple_backend.admin.account;
 
-import com.feple.feple_backend.admin.log.AdminAction;
-import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +22,6 @@ public class AdminAccountService {
     private final AdminAccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageService;
-    private final AdminLogService adminLogService;
 
     @Transactional(readOnly = true)
     public List<AdminAccount> findAll() {
@@ -41,9 +38,10 @@ public class AdminAccountService {
         return EntityLoader.getOrThrow(accountRepository::findById, id, "관리자 계정");
     }
 
-    public void create(AdminAccountCreateRequestDto req) {
+    /** @return 생성된 계정 — 컨트롤러가 감사 로그(id, username) 기록에 사용 */
+    public AdminAccount create(AdminAccountCreateRequestDto req) {
         validateNewAccount(req.username(), req.password());
-        AdminAccount account = accountRepository.save(AdminAccount.builder()
+        return accountRepository.save(AdminAccount.builder()
                 .username(req.username())
                 .password(passwordEncoder.encode(req.password()))
                 .displayName(req.displayName())
@@ -51,7 +49,6 @@ public class AdminAccountService {
                 .permissions(resolvePermissions(req.role(), req.permissions()))
                 .profileImageUrl(uploadProfileIfPresent(req.profileImage(), req.username()))
                 .build());
-        adminLogService.log(AdminAction.ADMIN_ACCOUNT_CREATE, "ADMIN_ACCOUNT", account.getId(), req.username());
     }
 
     public void update(Long id, AdminAccountUpdateRequestDto req) {
@@ -63,10 +60,10 @@ public class AdminAccountService {
             account.updatePassword(passwordEncoder.encode(req.newPassword()));
         }
         applyProfileImageUpdate(account, req);
-        adminLogService.log(AdminAction.ADMIN_ACCOUNT_UPDATE, "ADMIN_ACCOUNT", id, account.getUsername());
     }
 
-    public void delete(Long id, String currentUsername) {
+    /** @return 삭제된 계정 — 컨트롤러가 감사 로그(username) 기록에 사용 */
+    public AdminAccount delete(Long id, String currentUsername) {
         AdminAccount account = findById(id);
 
         if (account.getUsername().equals(currentUsername)) {
@@ -78,11 +75,12 @@ public class AdminAccountService {
             throw new IllegalArgumentException("마지막 최고 관리자 계정은 삭제할 수 없습니다.");
         }
 
-        adminLogService.log(AdminAction.ADMIN_ACCOUNT_DELETE, "ADMIN_ACCOUNT", id, account.getUsername());
         accountRepository.delete(account);
+        return account;
     }
 
-    public void toggleEnabled(Long id, String currentUsername) {
+    /** @return 토글 후 계정 — 컨트롤러가 감사 로그(username, 활성 상태) 기록에 사용 */
+    public AdminAccount toggleEnabled(Long id, String currentUsername) {
         AdminAccount account = findById(id);
 
         if (account.getUsername().equals(currentUsername) && account.isEnabled()) {
@@ -96,8 +94,7 @@ public class AdminAccountService {
         }
 
         account.toggle();
-        String detail = account.getUsername() + " → " + (account.isEnabled() ? "활성" : "비활성");
-        adminLogService.log(AdminAction.ADMIN_ACCOUNT_TOGGLE, "ADMIN_ACCOUNT", id, detail);
+        return account;
     }
 
     private void validateNewAccount(String username, String password) {

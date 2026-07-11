@@ -4,9 +4,8 @@ import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.system.BroadcastNotificationView;
 import com.feple.feple_backend.admin.system.PushFormData;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
-import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
-import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
+import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.service.FestivalService;
@@ -39,8 +38,8 @@ public class AdminPushService {
     private final NotificationRepository notificationRepository;
     private final PushNotificationClient fcmPushService;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
-    private final ArtistFollowRepository artistFollowRepository;
-    private final FestivalCertificationRepository festivalCertificationRepository;
+    private final ArtistFollowService artistFollowService;
+    private final FestivalCertificationAdminService festivalCertificationAdminService;
     private final ArtistAdminService artistService;
     private final FestivalService festivalService;
 
@@ -82,8 +81,7 @@ public class AdminPushService {
 
     @Transactional
     public void sendToArtistFollowers(Long artistId, String title, String body) {
-        List<Long> userIds = artistFollowRepository.findByArtistId(artistId)
-                .stream().map(ArtistFollow::getUserId).toList();
+        List<Long> userIds = artistFollowService.getFollowerUserIds(artistId);
         if (userIds.isEmpty()) {
             throw new IllegalArgumentException("해당 아티스트의 팔로워가 없습니다.");
         }
@@ -98,7 +96,7 @@ public class AdminPushService {
 
     @Transactional
     public void sendToFestivalCertified(Long festivalId, String title, String body) {
-        Set<Long> userIds = festivalCertificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+        Set<Long> userIds = festivalCertificationAdminService.getApprovedUserIds(festivalId);
         if (userIds.isEmpty()) {
             throw new IllegalArgumentException("해당 페스티벌의 인증된 참여자가 없습니다.");
         }

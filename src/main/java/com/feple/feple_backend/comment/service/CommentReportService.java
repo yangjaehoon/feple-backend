@@ -83,6 +83,9 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         return reportRepository.searchByKeyword(keyword, status, pageable);
     }
 
+    // 댓글은 소프트 삭제가 없어 하드 삭제하며, FK 제약상 신고 레코드도 함께
+    // 하드 삭제됨(PostReportService처럼 레코드 보존+resolve가 아님) —
+    // ReportCommandService.deleteContentAndResolve 계약 문서 참고
     @Override
     @EvictAdminReportCaches
     @Transactional

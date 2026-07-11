@@ -1,7 +1,5 @@
 package com.feple.feple_backend.admin.account;
 
-import com.feple.feple_backend.admin.log.AdminAction;
-import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.file.service.FileStorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +27,6 @@ class AdminAccountServiceTest {
     @Mock AdminAccountRepository accountRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock FileStorageService fileStorageService;
-    @Mock AdminLogService adminLogService;
 
     @InjectMocks AdminAccountService service;
 
@@ -63,10 +60,10 @@ class AdminAccountServiceTest {
         given(passwordEncoder.encode(any())).willReturn("encoded");
         given(accountRepository.save(any())).willReturn(saved);
 
-        service.create(createReq("admin1", "Pass1234!", AdminRole.MANAGER));
+        AdminAccount result = service.create(createReq("admin1", "Pass1234!", AdminRole.MANAGER));
 
         verify(accountRepository).save(any());
-        verify(adminLogService).log(eq(AdminAction.ADMIN_ACCOUNT_CREATE), eq("ADMIN_ACCOUNT"), eq(1L), eq("admin1"));
+        assertThat(result).isEqualTo(saved);
     }
 
     @Test
@@ -209,10 +206,10 @@ class AdminAccountServiceTest {
         AdminAccount account = buildAccount(1L, "manager1", AdminRole.MANAGER, true);
         stubFindById(1L, account);
 
-        service.delete(1L, "admin");
+        AdminAccount result = service.delete(1L, "admin");
 
         verify(accountRepository).delete(account);
-        verify(adminLogService).log(eq(AdminAction.ADMIN_ACCOUNT_DELETE), eq("ADMIN_ACCOUNT"), eq(1L), any());
+        assertThat(result).isEqualTo(account);
     }
 
     // ── toggleEnabled ─────────────────────────────────────────────────────────

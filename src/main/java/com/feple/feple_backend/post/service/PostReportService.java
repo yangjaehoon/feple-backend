@@ -80,6 +80,9 @@ public class PostReportService implements ReportAdminService<PostReport> {
         return reportRepository.searchByKeyword(keyword, status, pageable);
     }
 
+    // 게시글은 소프트 삭제(행 보존)라 신고 레코드도 함께 보존하고 상태만 갱신 —
+    // 하드 삭제하는 CommentReportService/ArtistPhotoReportService와 의도적으로 다름
+    // (ReportCommandService.deleteContentAndResolve 계약 문서 참고)
     @Override
     @EvictAdminReportCaches
     @Transactional

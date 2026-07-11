@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.account;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminAccountControllerTest {
 
     @Mock AdminAccountService accountService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks AdminAccountController controller;
 
@@ -60,6 +62,11 @@ class AdminAccountControllerTest {
 
     @Test
     void 계정_생성_성공_successMessage_설정() throws Exception {
+        AdminAccount created = mock(AdminAccount.class);
+        given(created.getId()).willReturn(1L);
+        given(created.getUsername()).willReturn("newadmin");
+        given(accountService.create(any())).willReturn(created);
+
         MockMultipartFile emptyFile = new MockMultipartFile("profileImage", new byte[0]);
 
         mockMvc.perform(multipart("/admin/accounts")
@@ -135,6 +142,10 @@ class AdminAccountControllerTest {
 
     @Test
     void 계정_삭제_성공_successMessage_설정() throws Exception {
+        AdminAccount deleted = mock(AdminAccount.class);
+        given(deleted.getUsername()).willReturn("target");
+        given(accountService.delete(1L, "admin")).willReturn(deleted);
+
         mockMvc.perform(post("/admin/accounts/1/delete")
                         .principal(new UsernamePasswordAuthenticationToken("admin", null)))
                 .andExpect(redirectedUrl("/admin/accounts"))
@@ -157,6 +168,11 @@ class AdminAccountControllerTest {
 
     @Test
     void 활성화_토글_성공_successMessage_설정() throws Exception {
+        AdminAccount toggled = mock(AdminAccount.class);
+        given(toggled.getUsername()).willReturn("target");
+        given(toggled.isEnabled()).willReturn(false);
+        given(accountService.toggleEnabled(1L, "admin")).willReturn(toggled);
+
         mockMvc.perform(post("/admin/accounts/1/toggle-enabled")
                         .principal(new UsernamePasswordAuthenticationToken("admin", null)))
                 .andExpect(redirectedUrl("/admin/accounts"))

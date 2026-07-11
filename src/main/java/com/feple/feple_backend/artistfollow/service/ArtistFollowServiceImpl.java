@@ -14,6 +14,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -28,6 +29,12 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     @Override
     public boolean isFollowed(Long userId, Long artistId) {
         return artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
+    }
+
+    @Override
+    public List<Long> getFollowerUserIds(Long artistId) {
+        return artistFollowRepository.findByArtistId(artistId)
+                .stream().map(ArtistFollow::getUserId).toList();
     }
 
     @Override

@@ -112,6 +112,12 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<SongRequest> getPendingPreview(int limit) {
+        return songRequestRepository.findByStatusOrderByCreatedAtDesc(SongRequestStatus.PENDING, PageRequest.of(0, limit));
+    }
+
+    @Override
     @EvictAdminPendingCaches
     @Transactional
     public boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl) {

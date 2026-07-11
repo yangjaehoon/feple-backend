@@ -2,13 +2,12 @@ package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
 import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
-import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
-import com.feple.feple_backend.certification.entity.CertificationStatus;
+import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportStatus;
-import com.feple.feple_backend.post.repository.PostReportRepository;
+import com.feple.feple_backend.post.service.PostReportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,27 +26,25 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class AdminPendingItemsServiceImplTest {
 
-    @Mock FestivalCertificationRepository certificationRepository;
-    @Mock PostReportRepository postReportRepository;
-    @Mock SongRequestRepository songRequestRepository;
+    @Mock FestivalCertificationAdminService certificationService;
+    @Mock PostReportService postReportService;
+    @Mock SongRequestAdminService songRequestAdminService;
 
     AdminPendingItemsServiceImpl adminPendingItemsService;
 
     @BeforeEach
     void setUp() {
         adminPendingItemsService = new AdminPendingItemsServiceImpl(
-                certificationRepository,
-                postReportRepository,
-                songRequestRepository
+                certificationService,
+                postReportService,
+                songRequestAdminService
         );
     }
 
     @Test
     void 대기중_인증_목록_limit만큼_반환() {
         FestivalCertification cert = mock(FestivalCertification.class);
-        given(certificationRepository.findByStatusOrderByCreatedAtDesc(
-                CertificationStatus.PENDING, PageRequest.of(0, 5)))
-                .willReturn(new PageImpl<>(List.of(cert)));
+        given(certificationService.getPendingPreview(5)).willReturn(List.of(cert));
 
         List<CertificationSummaryDto> result = adminPendingItemsService.getPendingCerts(5);
 
@@ -56,19 +53,18 @@ class AdminPendingItemsServiceImplTest {
 
     @Test
     void 대기중_인증_건수_조회() {
-        given(certificationRepository.countByStatus(CertificationStatus.PENDING)).willReturn(7L);
+        given(certificationService.getPendingCount()).willReturn(7L);
 
         long count = adminPendingItemsService.getPendingCertCount();
 
         assertThat(count).isEqualTo(7L);
-        verify(certificationRepository).countByStatus(CertificationStatus.PENDING);
+        verify(certificationService).getPendingCount();
     }
 
     @Test
     void 대기중_신고_목록_게시글_신고만_반환() {
         PostReport report = mock(PostReport.class);
-        given(postReportRepository.findByStatusOrderByCreatedAtDesc(
-                ReportStatus.PENDING, PageRequest.of(0, 10)))
+        given(postReportService.findPendingReports(PageRequest.of(0, 10)))
                 .willReturn(new PageImpl<>(List.of(report)));
 
         List<PostReportSummaryDto> result = adminPendingItemsService.getPendingPostReports(10);
@@ -78,11 +74,11 @@ class AdminPendingItemsServiceImplTest {
 
     @Test
     void 대기중_신고_건수_게시글_신고만_집계() {
-        given(postReportRepository.countByStatus(ReportStatus.PENDING)).willReturn(5L);
+        given(postReportService.getPendingCount()).willReturn(5L);
 
         long count = adminPendingItemsService.getPendingPostReportCount();
 
         assertThat(count).isEqualTo(5L);
-        verify(postReportRepository).countByStatus(ReportStatus.PENDING);
+        verify(postReportService).getPendingCount();
     }
 }
