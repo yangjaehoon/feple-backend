@@ -43,7 +43,7 @@ public class PostServiceImpl implements PostService {
     private final FestivalCertificationService certificationService;
     private final BadWordValidator badWordFilter;
     private final ApplicationEventPublisher eventPublisher;
-    private final PopularPostCache hotPostCache;
+    private final PopularPostCache popularPostCache;
     private final BlockedContentFilter blockedContentFilter;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
@@ -65,7 +65,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostResponseDto> getPopularPosts(Long viewerId) {
-        return blockedContentFilter.excludeBlocked(hotPostCache.get(), viewerId, PostResponseDto::getUserId);
+        return blockedContentFilter.excludeBlocked(popularPostCache.getPopularPosts(), viewerId, PostResponseDto::getUserId);
     }
 
     @Override

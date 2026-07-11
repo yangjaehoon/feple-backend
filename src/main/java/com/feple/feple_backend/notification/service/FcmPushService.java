@@ -27,12 +27,12 @@ public class FcmPushService implements PushNotificationClient {
 
     @Override
     public void sendMulticast(List<String> tokens, String title, String body,
-                               String linkId, NotificationType type) {
-        sendMulticast(tokens, title, body, linkId, type.name());
+                               String resourceId, NotificationType type) {
+        sendMulticast(tokens, title, body, resourceId, type.name());
     }
 
     private void sendMulticast(List<String> tokens, String title, String body,
-                               String linkId, String type) {
+                               String resourceId, String type) {
         if (tokens.isEmpty()) return;
         if (FirebaseApp.getApps().isEmpty()) {
             log.warn("[FCM] Firebase 미초기화 상태 — 푸시 생략");
@@ -52,7 +52,7 @@ public class FcmPushService implements PushNotificationClient {
                                 .setBody(body)
                                 .build())
                         .putData("type", type)
-                        .putData("festivalId", linkId != null ? linkId : "")
+                        .putData("festivalId", resourceId != null ? resourceId : "")
                         .setAndroidConfig(AndroidConfig.builder()
                                 .setPriority(AndroidConfig.Priority.HIGH)
                                 .build())

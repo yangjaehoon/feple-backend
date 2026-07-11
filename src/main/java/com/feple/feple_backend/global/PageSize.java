@@ -4,7 +4,7 @@ public final class PageSize {
     private PageSize() {}
 
     public static final int MAX_PAGE_SIZE = 50;
-    public static final int HOT_POSTS = 4;
+    public static final int POPULAR_POSTS = 4;
     public static final int POSTS = 100;
     public static final int MY_ACTIVITIES = 200;
     public static final int FESTIVALS = 200;

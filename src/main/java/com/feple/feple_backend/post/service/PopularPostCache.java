@@ -23,8 +23,8 @@ class PopularPostCache {
     private final PostRepository postRepository;
 
     @Cacheable("hotPosts")
-    List<PostResponseDto> get() {
-        return postRepository.findHotPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, PageSize.HOT_POSTS))
+    List<PostResponseDto> getPopularPosts() {
+        return postRepository.findHotPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, PageSize.POPULAR_POSTS))
                 .stream()
                 .map(PostResponseDto::from)
                 .toList();

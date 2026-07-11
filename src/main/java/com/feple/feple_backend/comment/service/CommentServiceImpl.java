@@ -45,14 +45,14 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final FestivalCertificationService certificationService;
-    private final BadWordValidator badWordFilter;
+    private final BadWordValidator badWordValidator;
     private final UserBlockService userBlockService;
     private final BlockedContentFilter blockedContentFilter;
 
     @Override
     @Transactional
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
-        badWordFilter.validateField("content", dto.getContent());
+        badWordValidator.validateField("content", dto.getContent());
         Post post = EntityLoader.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
 
         if (userBlockService.isBlocked(post.getUserId(), userId)) {
@@ -187,7 +187,7 @@ public class CommentServiceImpl implements CommentService {
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
         Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글", "수정");
-        badWordFilter.validateField("content", content);
+        badWordValidator.validateField("content", content);
         comment.update(content);
     }
 

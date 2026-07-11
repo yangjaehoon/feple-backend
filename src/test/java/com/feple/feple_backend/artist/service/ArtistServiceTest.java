@@ -36,7 +36,7 @@ class ArtistServiceTest {
     @Mock FileStorageService fileStorageService;
     @Mock ArtistCascadeDeleteService cascadeDeleteService;
     @Mock SongRepository songRepository;
-    @Mock ArtistNameValidator artistNameFilter;
+    @Mock ArtistNameValidator artistNameValidator;
 
     @InjectMocks ArtistServiceImpl artistService;
 

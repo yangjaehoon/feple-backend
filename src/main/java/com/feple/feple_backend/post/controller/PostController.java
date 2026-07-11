@@ -59,7 +59,7 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(dto, userId));
     }
 
-    @GetMapping("/hot")
+    @GetMapping("/popular")
     public ResponseEntity<List<PostResponseDto>> getPopularPosts(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(postService.getPopularPosts(userId));
     }

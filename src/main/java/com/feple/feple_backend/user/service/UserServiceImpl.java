@@ -32,9 +32,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final UserAdminService userAdminService;
-    private final BadWordValidator badWordFilter;
-    private final ArtistNameValidator artistNameFilter;
-    private final NicknameRestrictionValidator nicknameRestrictionFilter;
+    private final BadWordValidator badWordValidator;
+    private final ArtistNameValidator artistNameValidator;
+    private final NicknameRestrictionValidator nicknameRestrictionValidator;
 
     @Override
     @Transactional(readOnly = true)
@@ -45,17 +45,17 @@ public class UserServiceImpl implements UserService {
             return Map.of("available", false, "code", "INVALID_FORMAT", "message", e.getMessage());
         }
         try {
-            badWordFilter.validate(nickname);
+            badWordValidator.validate(nickname);
         } catch (IllegalArgumentException e) {
             return Map.of("available", false, "code", "BAD_WORD", "message", e.getMessage());
         }
         try {
-            artistNameFilter.validate(nickname);
+            artistNameValidator.validate(nickname);
         } catch (IllegalArgumentException e) {
             return Map.of("available", false, "code", "ARTIST_NAME", "message", e.getMessage());
         }
         try {
-            nicknameRestrictionFilter.validate(nickname);
+            nicknameRestrictionValidator.validate(nickname);
         } catch (IllegalArgumentException e) {
             return Map.of("available", false, "code", "RESTRICTED", "message", e.getMessage());
         }
@@ -78,9 +78,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateNickname(@NonNull Long id, String nickname) {
         NicknameValidator.validate(nickname);
-        badWordFilter.validateField("nickname", nickname);
-        artistNameFilter.validate(nickname);
-        nicknameRestrictionFilter.validate(nickname);
+        badWordValidator.validateField("nickname", nickname);
+        artistNameValidator.validate(nickname);
+        nicknameRestrictionValidator.validate(nickname);
         if (userRepository.existsByNicknameAndIdNot(nickname.trim(), id)) {
             throw new ConflictException("이미 사용 중인 닉네임입니다.");
         }
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateBio(@NonNull Long id, String bio) {
-        if (bio != null) badWordFilter.validateField("bio", bio);
+        if (bio != null) badWordValidator.validateField("bio", bio);
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
         user.updateBio(bio);
     }

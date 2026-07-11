@@ -18,9 +18,9 @@ import java.util.UUID;
 public class NicknameGenerator {
 
     private final UserRepository userRepository;
-    private final BadWordValidator badWordFilter;
-    private final ArtistNameValidator artistNameFilter;
-    private final NicknameRestrictionValidator nicknameRestrictionFilter;
+    private final BadWordValidator badWordValidator;
+    private final ArtistNameValidator artistNameValidator;
+    private final NicknameRestrictionValidator nicknameRestrictionValidator;
 
     /**
      * 외부 displayName을 안전한 닉네임으로 정제한다.
@@ -31,9 +31,9 @@ public class NicknameGenerator {
         if (sanitized.length() < 2) return fallback;
         if (sanitized.length() > 8) sanitized = sanitized.substring(0, 8);
         try {
-            badWordFilter.validate(sanitized);
-            artistNameFilter.validate(sanitized);
-            nicknameRestrictionFilter.validate(sanitized);
+            badWordValidator.validate(sanitized);
+            artistNameValidator.validate(sanitized);
+            nicknameRestrictionValidator.validate(sanitized);
         } catch (IllegalArgumentException ignored) {
             return fallback;
         }

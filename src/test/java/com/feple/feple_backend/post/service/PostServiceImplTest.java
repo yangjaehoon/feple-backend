@@ -56,7 +56,7 @@ class PostServiceImplTest {
     @Mock FestivalCertificationService certificationService;
     @Mock BadWordValidator badWordFilter;
     @Mock ApplicationEventPublisher eventPublisher;
-    @Mock PopularPostCache hotPostCache;
+    @Mock PopularPostCache popularPostCache;
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
     @InjectMocks PostServiceImpl postService;
@@ -243,7 +243,7 @@ class PostServiceImplTest {
                 PostResponseDto.builder().id(2L).userId(1L).build(),
                 PostResponseDto.builder().id(3L).userId(1L).build(),
                 PostResponseDto.builder().id(4L).userId(1L).build());
-        given(hotPostCache.get()).willReturn(hotPosts);
+        given(popularPostCache.getPopularPosts()).willReturn(hotPosts);
 
         List<PostResponseDto> result = postService.getPopularPosts(null);
 
@@ -252,7 +252,7 @@ class PostServiceImplTest {
 
     @Test
     void 핫_게시글_없으면_빈_리스트() {
-        given(hotPostCache.get()).willReturn(List.of());
+        given(popularPostCache.getPopularPosts()).willReturn(List.of());
 
         assertThat(postService.getPopularPosts(null)).isEmpty();
     }

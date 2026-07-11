@@ -143,7 +143,7 @@ public class NotificationService {
         String title = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE;
         String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
         String titleEn = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN;
-        String linkId = event.artistId() != null ? String.valueOf(event.artistId()) : null;
+        String resourceId = event.artistId() != null ? String.valueOf(event.artistId()) : null;
         Artist artist = event.artistId() != null ? artistRepository.findById(event.artistId()).orElse(null) : null;
         String artistNameEn = (artist != null && artist.getNameEn() != null && !artist.getNameEn().isBlank())
                 ? artist.getNameEn() : event.artistName();
@@ -155,7 +155,7 @@ public class NotificationService {
             notificationRepository.save(
                     Notification.of(user, NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, (Festival) null));
         }
-        pushIfEnabled(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, linkId);
+        pushIfEnabled(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, resourceId);
     }
 
     @Async
@@ -251,17 +251,17 @@ public class NotificationService {
     }
 
     private void pushIfEnabled(Long userId, NotificationType type,
-                            String title, String body, String titleEn, String bodyEn, String linkId) {
+                            String title, String body, String titleEn, String bodyEn, String resourceId) {
         NotificationPreference pref = preferenceService.getOrCreate(userId);
         if (!pref.isEnabledFor(type)) return;
         List<TokenLanguageProjection> tokens =
                 deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(userId));
-        sendByLanguage(tokens, title, body, titleEn, bodyEn, linkId, type);
+        sendByLanguage(tokens, title, body, titleEn, bodyEn, resourceId, type);
     }
 
     private void saveAndPush(List<User> users, NotificationType type,
                               String title, String body, String titleEn, String bodyEn,
-                              Festival festival, String linkId) {
+                              Festival festival, String resourceId) {
         notificationRepository.saveAll(users.stream()
                 .map(u -> Notification.of(u, type, title, body, titleEn, bodyEn, festival))
                 .toList());
@@ -273,12 +273,12 @@ public class NotificationService {
                 .toList();
         List<TokenLanguageProjection> tokens =
                 deviceTokenRepository.findTokensWithLanguageByUserIds(enabledUserIds);
-        sendByLanguage(tokens, title, body, titleEn, bodyEn, linkId, type);
+        sendByLanguage(tokens, title, body, titleEn, bodyEn, resourceId, type);
     }
 
     private void sendByLanguage(List<TokenLanguageProjection> tokens,
                                  String title, String body, String titleEn, String bodyEn,
-                                 String linkId, NotificationType type) {
+                                 String resourceId, NotificationType type) {
         Map<String, List<String>> byLang = tokens.stream()
                 .collect(Collectors.groupingBy(
                         t -> "en".equals(t.getLanguage()) ? "en" : "ko",
@@ -286,8 +286,8 @@ public class NotificationService {
                 ));
         List<String> koTokens = byLang.getOrDefault("ko", List.of());
         List<String> enTokens = byLang.getOrDefault("en", List.of());
-        if (!koTokens.isEmpty()) fcmPushService.sendMulticast(koTokens, title, body, linkId, type);
-        if (!enTokens.isEmpty()) fcmPushService.sendMulticast(enTokens, titleEn, bodyEn, linkId, type);
+        if (!koTokens.isEmpty()) fcmPushService.sendMulticast(koTokens, title, body, resourceId, type);
+        if (!enTokens.isEmpty()) fcmPushService.sendMulticast(enTokens, titleEn, bodyEn, resourceId, type);
     }
 
 }

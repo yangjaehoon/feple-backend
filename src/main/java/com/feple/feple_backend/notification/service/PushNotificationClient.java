@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface PushNotificationClient {
     void sendBroadcast(List<String> tokens, String title, String body);
-    void sendMulticast(List<String> tokens, String title, String body, String linkId, NotificationType type);
+    void sendMulticast(List<String> tokens, String title, String body, String resourceId, NotificationType type);
 }

@@ -56,7 +56,7 @@ class CommentServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock FestivalCertificationService certificationService;
-    @Mock BadWordValidator badWordFilter;
+    @Mock BadWordValidator badWordValidator;
     @Mock UserBlockService userBlockService;
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
@@ -116,7 +116,7 @@ class CommentServiceImplTest {
         CreateCommentDto dto = mock(CreateCommentDto.class);
         given(dto.getContent()).willReturn("욕설포함댓글");
         willThrow(new BadWordException("content"))
-                .given(badWordFilter).validateField(eq("content"), anyString());
+                .given(badWordValidator).validateField(eq("content"), anyString());
 
         assertThatThrownBy(() -> commentService.createComment(dto, 2L))
                 .isInstanceOf(BadWordException.class);

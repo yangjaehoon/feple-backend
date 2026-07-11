@@ -35,9 +35,9 @@ class UserServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
     @Mock UserAdminService userAdminService;
-    @Mock BadWordValidator badWordFilter;
-    @Mock ArtistNameValidator artistNameFilter;
-    @Mock NicknameRestrictionValidator nicknameRestrictionFilter;
+    @Mock BadWordValidator badWordValidator;
+    @Mock ArtistNameValidator artistNameValidator;
+    @Mock NicknameRestrictionValidator nicknameRestrictionValidator;
 
     @InjectMocks UserServiceImpl userService;
 

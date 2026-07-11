@@ -74,7 +74,7 @@ class PostControllerTest {
     void 인기_게시글_조회() throws Exception {
         given(postService.getPopularPosts(isNull())).willReturn(List.of());
 
-        mockMvc.perform(get("/posts/hot"))
+        mockMvc.perform(get("/posts/popular"))
                 .andExpect(status().isOk());
     }
 

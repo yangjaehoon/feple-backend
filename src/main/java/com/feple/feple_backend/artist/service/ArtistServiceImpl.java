@@ -61,7 +61,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     private final FileStorageService fileStorageService;
     private final ArtistCascadeDeleteService cascadeDeleteService;
     private final SongRepository songRepository;
-    private final ArtistNameValidator artistNameFilter;
+    private final ArtistNameValidator artistNameValidator;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -79,7 +79,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 .profileImageKey(dto.getProfileImageKey())
                 .build();
         Long id = artistRepository.save(artist).getId();
-        artistNameFilter.reload();
+        artistNameValidator.reload();
         return id;
     }
 
@@ -224,7 +224,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 fileStorageService.deleteFileAfterCommit(oldKey);
             }
         }
-        artistNameFilter.reload();
+        artistNameValidator.reload();
     }
 
     @Override
@@ -273,7 +273,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     public void deleteArtist(Long id) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         cascadeDeleteService.delete(artist);
-        artistNameFilter.reload();
+        artistNameValidator.reload();
     }
 
     @Override
