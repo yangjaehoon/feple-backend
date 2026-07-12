@@ -74,10 +74,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Transactional
     @EvictFestivalCaches
     public Long createFestival(FestivalRequestDto dto) {
-        if (dto.getEndDate() != null && dto.getStartDate() != null
-                && dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new IllegalArgumentException(ERR_END_BEFORE_START);
-        }
+        validateDateRange(dto);
         Festival festival = Festival.builder()
                 .title(dto.getTitle())
                 .titleEn(dto.getTitleEn())
@@ -166,10 +163,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @EvictFestivalCaches
     @CacheEvict(value = "festivalDetail", key = "#festivalId")
     public void updateFestival(Long festivalId, FestivalRequestDto dto) {
-        if (dto.getEndDate() != null && dto.getStartDate() != null
-                && dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new IllegalArgumentException(ERR_END_BEFORE_START);
-        }
+        validateDateRange(dto);
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
         festival.update(new FestivalUpdateFields(
@@ -181,6 +175,13 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         festival.updatePoster(dto.getPosterKey());
         if (dto.getPosterKey() != null && !dto.getPosterKey().equals(oldPosterKey)) {
             fileStorageService.deleteFileAfterCommit(oldPosterKey);
+        }
+    }
+
+    private void validateDateRange(FestivalRequestDto dto) {
+        if (dto.getEndDate() != null && dto.getStartDate() != null
+                && dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException(ERR_END_BEFORE_START);
         }
     }
 
