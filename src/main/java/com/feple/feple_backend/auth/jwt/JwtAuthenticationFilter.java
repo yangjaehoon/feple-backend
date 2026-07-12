@@ -50,49 +50,66 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String token = resolveBearerToken(request);
 
-        if (auth != null && auth.startsWith(JwtConstants.BEARER_PREFIX)) {
-            String token = auth.substring(JwtConstants.BEARER_LENGTH);
+        if (token != null) {
             try {
-                Long userId = jwtProvider.parseUserId(token);
-
-                var user = userRepository.findById(userId).orElse(null);
-                if (user == null || user.isDeleted()) {
-                    writeJson(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
+                if (!authenticateUser(token, response)) {
                     return;
                 }
-                if (user.isBanned()) {
-                    writeJson(response, HttpStatus.FORBIDDEN, "계정이 정지되었습니다.", ErrorCode.USER_BANNED);
-                    return;
-                }
-
-                String role = "ROLE_" + user.getRole().name();
-                var authentication = new UsernamePasswordAuthenticationToken(
-                        userId,
-                        null,
-                        List.of(new SimpleGrantedAuthority(role))
-                );
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (ExpiredJwtException e) {
-                // 만료된 토큰 — 클라이언트가 /auth/refresh 를 호출하도록 401 응답
-                SecurityContextHolder.clearContext();
-                writeJson(response, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다.", ErrorCode.TOKEN_EXPIRED);
-                return;
-            } catch (JwtException e) {
-                log.warn("[JWT] 변조된 토큰 감지 - URI: {}, reason: {}", request.getRequestURI(), e.getMessage());
-                SecurityContextHolder.clearContext();
-                writeJson(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
-                return;
             } catch (Exception e) {
-                log.error("[JWT] 예상하지 못한 토큰 파싱 오류", e);
-                SecurityContextHolder.clearContext();
-                writeJson(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
+                handleJwtFailure(response, e, request);
                 return;
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveBearerToken(HttpServletRequest request) {
+        String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (auth != null && auth.startsWith(JwtConstants.BEARER_PREFIX)) {
+            return auth.substring(JwtConstants.BEARER_LENGTH);
+        }
+        return null;
+    }
+
+    /** 토큰 파싱 + 사용자 검증 + SecurityContext 설정. 인증 실패 시 응답을 쓰고 false를 반환한다. */
+    private boolean authenticateUser(String token, HttpServletResponse response) throws IOException {
+        Long userId = jwtProvider.parseUserId(token);
+
+        var user = userRepository.findById(userId).orElse(null);
+        if (user == null || user.isDeleted()) {
+            writeJson(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
+            return false;
+        }
+        if (user.isBanned()) {
+            writeJson(response, HttpStatus.FORBIDDEN, "계정이 정지되었습니다.", ErrorCode.USER_BANNED);
+            return false;
+        }
+
+        String role = "ROLE_" + user.getRole().name();
+        var authentication = new UsernamePasswordAuthenticationToken(
+                userId,
+                null,
+                List.of(new SimpleGrantedAuthority(role))
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return true;
+    }
+
+    private void handleJwtFailure(HttpServletResponse response, Exception e, HttpServletRequest request) throws IOException {
+        SecurityContextHolder.clearContext();
+        if (e instanceof ExpiredJwtException) {
+            // 만료된 토큰 — 클라이언트가 /auth/refresh 를 호출하도록 401 응답
+            writeJson(response, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다.", ErrorCode.TOKEN_EXPIRED);
+        } else if (e instanceof JwtException) {
+            log.warn("[JWT] 변조된 토큰 감지 - URI: {}, reason: {}", request.getRequestURI(), e.getMessage());
+            writeJson(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
+        } else {
+            log.error("[JWT] 예상하지 못한 토큰 파싱 오류", e);
+            writeJson(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
+        }
     }
 
     private void writeJson(HttpServletResponse response, HttpStatus status, String message, ErrorCode code)
