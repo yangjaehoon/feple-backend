@@ -38,9 +38,4 @@ public interface ReportQueryService<T> {
         if (keyword == null) return getReportsForAdmin(params.page(), params.size(), params.statusFilter());
         return searchReportsByKeyword(keyword, ReportStatus.fromFilter(params.statusFilter()), PageRequest.of(params.page(), params.size()));
     }
-
-    // 사진 신고만 presigned URL이 필요. 나머지 구현체는 기본 빈 맵 반환.
-    default Map<Long, String> buildPhotoPresignedUrls(Page<?> reports) {
-        return Map.of();
-    }
 }

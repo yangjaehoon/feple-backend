@@ -4,7 +4,6 @@ import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.AdminDashboardMetrics;
 import com.feple.feple_backend.admin.service.AdminPendingItemsService;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
-import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,6 @@ class AdminDashboardAssemblerTest {
     @Mock PostAdminService postAdminService;
     @Mock AdminDashboardMetrics adminMetricsService;
     @Mock AdminPendingItemsService adminPendingItemsService;
-    @Mock ArtistSuggestionAdminService artistSuggestionAdminService;
 
     @InjectMocks AdminDashboardAssembler assembler;
 
@@ -45,8 +43,8 @@ class AdminDashboardAssemblerTest {
         given(adminPendingItemsService.getPendingPostReportCount()).willReturn(3L);
         given(adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
         given(adminPendingItemsService.getPendingSongRequestCount()).willReturn(1L);
-        given(artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
-        given(artistSuggestionAdminService.getPendingCount()).willReturn(4L);
+        given(adminPendingItemsService.getPendingArtistSuggestions(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(adminPendingItemsService.getPendingArtistSuggestionCount()).willReturn(4L);
 
         given(postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
         given(artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
@@ -80,8 +78,8 @@ class AdminDashboardAssemblerTest {
         given(adminPendingItemsService.getPendingPostReportCount()).willReturn(0L);
         given(adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
         given(adminPendingItemsService.getPendingSongRequestCount()).willReturn(0L);
-        given(artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
-        given(artistSuggestionAdminService.getPendingCount()).willReturn(0L);
+        given(adminPendingItemsService.getPendingArtistSuggestions(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(adminPendingItemsService.getPendingArtistSuggestionCount()).willReturn(0L);
         given(postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
         given(artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
         given(adminMetricsService.getRecentUsers()).willReturn(List.of());
@@ -92,7 +90,7 @@ class AdminDashboardAssemblerTest {
         then(adminPendingItemsService).should().getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE);
         then(adminPendingItemsService).should().getPendingPostReports(AdminConstants.DASHBOARD_PREVIEW_SIZE);
         then(adminPendingItemsService).should().getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE);
-        then(artistSuggestionAdminService).should().getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE);
+        then(adminPendingItemsService).should().getPendingArtistSuggestions(AdminConstants.DASHBOARD_PREVIEW_SIZE);
         then(postAdminService).should().countRecentPosts(AdminConstants.STATS_RECENT_DAYS);
     }
 }

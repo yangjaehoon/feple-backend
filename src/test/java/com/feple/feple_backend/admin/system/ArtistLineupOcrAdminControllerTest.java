@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.ocr.LineupApplyResult;
 import com.feple.feple_backend.admin.ocr.LineupOcrApplyRequestDto;
-import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.ocr.ArtistLineupOcrService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class ArtistLineupOcrAdminControllerTest {
 
-    @Mock OcrService ocrService;
+    @Mock ArtistLineupOcrService ocrService;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks ArtistLineupOcrAdminController controller;

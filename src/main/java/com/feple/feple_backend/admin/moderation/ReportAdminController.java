@@ -4,6 +4,7 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.admin.service.PhotoPresignedUrlProvider;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.admin.service.ReportSearchParams;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +46,8 @@ public class ReportAdminController {
         model.addAttribute("type",    filter.type());
         model.addAttribute("keyword", filter.keyword());
         model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : buildCounts(handler, reports));
-        model.addAttribute("photoUrls", handler.buildPhotoPresignedUrls(reports));
+        model.addAttribute("photoUrls", handler instanceof PhotoPresignedUrlProvider provider
+                ? provider.buildPhotoPresignedUrls(reports) : Map.of());
         handlers.forEach((t, h) -> model.addAttribute(t + "PendingCount", h.getPendingCount()));
         return "admin/moderation/reports";
     }

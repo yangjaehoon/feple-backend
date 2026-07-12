@@ -3,6 +3,8 @@ package com.feple.feple_backend.admin.service;
 import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
 import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
+import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
+import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.post.entity.PostReport;
@@ -29,6 +31,7 @@ class AdminPendingItemsServiceImplTest {
     @Mock FestivalCertificationAdminService certificationService;
     @Mock PostReportService postReportService;
     @Mock SongRequestAdminService songRequestAdminService;
+    @Mock ArtistSuggestionAdminService artistSuggestionAdminService;
 
     AdminPendingItemsServiceImpl adminPendingItemsService;
 
@@ -37,7 +40,8 @@ class AdminPendingItemsServiceImplTest {
         adminPendingItemsService = new AdminPendingItemsServiceImpl(
                 certificationService,
                 postReportService,
-                songRequestAdminService
+                songRequestAdminService,
+                artistSuggestionAdminService
         );
     }
 
@@ -80,5 +84,25 @@ class AdminPendingItemsServiceImplTest {
 
         assertThat(count).isEqualTo(5L);
         verify(postReportService).getPendingCount();
+    }
+
+    @Test
+    void 대기중_아티스트_신청_목록_limit만큼_반환() {
+        ArtistSuggestionResponseDto suggestion = mock(ArtistSuggestionResponseDto.class);
+        given(artistSuggestionAdminService.getPendingSuggestionsPreview(5)).willReturn(List.of(suggestion));
+
+        List<ArtistSuggestionResponseDto> result = adminPendingItemsService.getPendingArtistSuggestions(5);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void 대기중_아티스트_신청_건수_조회() {
+        given(artistSuggestionAdminService.getPendingCount()).willReturn(3L);
+
+        long count = adminPendingItemsService.getPendingArtistSuggestionCount();
+
+        assertThat(count).isEqualTo(3L);
+        verify(artistSuggestionAdminService).getPendingCount();
     }
 }

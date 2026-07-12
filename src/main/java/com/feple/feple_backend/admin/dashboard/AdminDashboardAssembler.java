@@ -4,7 +4,6 @@ import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.AdminDashboardMetrics;
 import com.feple.feple_backend.admin.service.AdminPendingItemsService;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
-import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,6 @@ public class AdminDashboardAssembler {
     private final PostAdminService postAdminService;
     private final AdminDashboardMetrics adminMetricsService;
     private final AdminPendingItemsService adminPendingItemsService;
-    private final ArtistSuggestionAdminService artistSuggestionAdminService;
 
     public AdminDashboardDto assemble() {
         return new AdminDashboardDto(buildStats(), buildPending(), buildContent());
@@ -54,8 +52,8 @@ public class AdminDashboardAssembler {
                     adminPendingItemsService.getPendingPostReportCount(),
                     adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE),
                     adminPendingItemsService.getPendingSongRequestCount(),
-                    artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.DASHBOARD_PREVIEW_SIZE),
-                    artistSuggestionAdminService.getPendingCount());
+                    adminPendingItemsService.getPendingArtistSuggestions(AdminConstants.DASHBOARD_PREVIEW_SIZE),
+                    adminPendingItemsService.getPendingArtistSuggestionCount());
         } catch (Exception e) {
             log.error("대시보드 처리대기 항목 조회 실패", e);
             return new AdminPendingItemsSummary(List.of(), 0, List.of(), 0, List.of(), 0, List.of(), 0);

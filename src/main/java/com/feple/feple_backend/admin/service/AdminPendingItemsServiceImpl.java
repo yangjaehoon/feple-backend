@@ -4,6 +4,8 @@ import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
 import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
 import com.feple.feple_backend.admin.system.SongRequestSummaryDto;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
+import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
+import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.post.service.PostReportService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
     // 사이드바 전체 신고 뱃지는 AdminSidebarCountService가 별도로 집계한다.
     private final PostReportService postReportService;
     private final SongRequestAdminService songRequestAdminService;
+    private final ArtistSuggestionAdminService artistSuggestionAdminService;
 
     @Override
     @Cacheable(value = "adminPendingCounts", key = "'certs_' + #limit")
@@ -63,5 +66,17 @@ public class AdminPendingItemsServiceImpl implements AdminPendingItemsService {
     @Cacheable(value = "adminPendingCounts", key = "'songCount'")
     public long getPendingSongRequestCount() {
         return songRequestAdminService.getPendingCount();
+    }
+
+    @Override
+    @Cacheable(value = "adminPendingCounts", key = "'suggestions_' + #limit")
+    public List<ArtistSuggestionResponseDto> getPendingArtistSuggestions(int limit) {
+        return artistSuggestionAdminService.getPendingSuggestionsPreview(limit);
+    }
+
+    @Override
+    @Cacheable(value = "adminPendingCounts", key = "'suggestionCount'")
+    public long getPendingArtistSuggestionCount() {
+        return artistSuggestionAdminService.getPendingCount();
     }
 }

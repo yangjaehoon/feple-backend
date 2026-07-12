@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.system;
 
-import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.ocr.GeminiUsageTracker;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class CrawlAdminControllerTest {
 
-    @Mock OcrService ocrService;
+    @Mock GeminiUsageTracker geminiUsageTracker;
     @Mock FestivalService festivalService;
     @Mock StageService stageService;
     @Mock ArtistFestivalService artistFestivalService;
@@ -52,8 +52,8 @@ class CrawlAdminControllerTest {
 
     @Test
     void Gemini_사용량_조회() throws Exception {
-        given(ocrService.getTodayUsage()).willReturn(5);
-        given(ocrService.getDailyLimit()).willReturn(50);
+        given(geminiUsageTracker.getTodayCount()).willReturn(5);
+        given(geminiUsageTracker.getDailyLimit()).willReturn(50);
 
         mockMvc.perform(get("/admin/crawl/quota"))
                 .andExpect(status().isOk())

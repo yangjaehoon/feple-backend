@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.photo.service;
 
+import com.feple.feple_backend.admin.service.PhotoPresignedUrlProvider;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ArtistPhotoReportService implements ReportAdminService<ArtistGalleryPhotoReport> {
+public class ArtistPhotoReportService implements ReportAdminService<ArtistGalleryPhotoReport>, PhotoPresignedUrlProvider {
 
     private final ArtistGalleryPhotoReportRepository reportRepository;
     private final ArtistGalleryPhotoRepository photoRepository;

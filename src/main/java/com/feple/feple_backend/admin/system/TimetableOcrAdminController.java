@@ -6,7 +6,7 @@ import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
 import com.feple.feple_backend.admin.ocr.OcrParseResult;
 import com.feple.feple_backend.admin.ocr.OcrResultDto;
-import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.ocr.TimetableOcrService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/admin/crawl/ocr")
 public class TimetableOcrAdminController {
 
-    private final OcrService ocrService;
+    private final TimetableOcrService ocrService;
     private final AdminLogService adminLogService;
 
     @PostMapping

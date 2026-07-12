@@ -6,7 +6,7 @@ import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.OcrApplyResultDto;
 import com.feple.feple_backend.admin.ocr.OcrParseResult;
 import com.feple.feple_backend.admin.ocr.OcrResultDto;
-import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.ocr.TimetableOcrService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class TimetableOcrAdminControllerTest {
 
-    @Mock OcrService ocrService;
+    @Mock TimetableOcrService ocrService;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks TimetableOcrAdminController controller;

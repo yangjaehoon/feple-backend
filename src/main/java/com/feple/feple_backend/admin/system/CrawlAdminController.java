@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.system;
 
-import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.ocr.GeminiUsageTracker;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -35,7 +35,7 @@ import java.util.Map;
 @RequestMapping("/admin/crawl")
 public class CrawlAdminController {
 
-    private final OcrService ocrService;
+    private final GeminiUsageTracker geminiUsageTracker;
     private final FestivalService festivalService;
     private final StageService stageService;
     private final ArtistFestivalService artistFestivalService;
@@ -50,10 +50,12 @@ public class CrawlAdminController {
     @GetMapping("/quota")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getQuota() {
+        int used = geminiUsageTracker.getTodayCount();
+        int limit = geminiUsageTracker.getDailyLimit();
         Map<String, Object> result = new HashMap<>();
-        result.put("used",  ocrService.getTodayUsage());
-        result.put("limit", ocrService.getDailyLimit());
-        result.put("remaining", Math.max(0, ocrService.getDailyLimit() - ocrService.getTodayUsage()));
+        result.put("used", used);
+        result.put("limit", limit);
+        result.put("remaining", Math.max(0, limit - used));
         return ResponseEntity.ok(result);
     }
 

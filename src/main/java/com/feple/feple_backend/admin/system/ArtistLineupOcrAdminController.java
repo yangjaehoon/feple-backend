@@ -6,7 +6,7 @@ import com.feple.feple_backend.admin.ocr.ArtistLineupOcrResult;
 import com.feple.feple_backend.admin.ocr.LineupApplyResult;
 import com.feple.feple_backend.admin.ocr.LineupOcrApplyRequestDto;
 import com.feple.feple_backend.admin.ocr.OcrParseResult;
-import com.feple.feple_backend.admin.ocr.OcrService;
+import com.feple.feple_backend.admin.ocr.ArtistLineupOcrService;
 import com.feple.feple_backend.admin.ocr.UnmatchedArtistSuggestionDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ import java.util.List;
 @RequestMapping("/admin/crawl/ocr/lineup")
 public class ArtistLineupOcrAdminController {
 
-    private final OcrService ocrService;
+    private final ArtistLineupOcrService ocrService;
     private final AdminLogService adminLogService;
 
     @PostMapping
