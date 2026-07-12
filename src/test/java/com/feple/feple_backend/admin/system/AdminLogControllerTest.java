@@ -65,4 +65,14 @@ class AdminLogControllerTest {
         mockMvc.perform(get("/admin/logs").param("adminUsername", "admin01"))
                 .andExpect(model().attribute("extraParams", "adminUsername=admin01"));
     }
+
+    @Test
+    void from_to_날짜_필터_파싱_및_extraParams_설정() throws Exception {
+        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+
+        mockMvc.perform(get("/admin/logs").param("from", "2026-01-01").param("to", "2026-01-31"))
+                .andExpect(model().attribute("from", java.time.LocalDate.of(2026, 1, 1)))
+                .andExpect(model().attribute("to", java.time.LocalDate.of(2026, 1, 31)))
+                .andExpect(model().attribute("extraParams", "from=2026-01-01&to=2026-01-31"));
+    }
 }

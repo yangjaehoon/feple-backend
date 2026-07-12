@@ -26,25 +26,19 @@ public class SetlistRequestAdminController {
     private final AdminLogService adminLogService;
 
     @GetMapping
-    public String list(
-            @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "") String keyword,
-            Model model) {
-        LineupChangeRequestStatus statusEnum = parseStatus(status);
-        var requests = service.list(statusEnum, keyword, PageRequest.of(page, AdminConstants.LIST_PAGE_SIZE));
+    public String list(@ModelAttribute SetlistRequestListParams params, Model model) {
+        LineupChangeRequestStatus statusEnum = parseStatus(params.status());
+        var requests = service.list(statusEnum, params.keyword(), PageRequest.of(params.page(), AdminConstants.LIST_PAGE_SIZE));
         model.addAttribute("requests", requests);
-        model.addAttribute("status", status);
-        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", params.status());
+        model.addAttribute("keyword", params.keyword());
         model.addAttribute("pendingCount", service.getPendingCount());
         return "admin/setlist-request/list";
     }
 
     @PostMapping("/{id}/resolve")
     public String resolve(@PathVariable Long id,
-                          @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
-                          @RequestParam(defaultValue = "0") int page,
-                          @RequestParam(defaultValue = "") String keyword,
+                          @ModelAttribute SetlistRequestListParams params,
                           RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
@@ -56,10 +50,10 @@ public class SetlistRequestAdminController {
                 "처리 중 오류가 발생했습니다.",
                 ra);
 
-        long remaining = service.countByStatus(parseStatus(status));
+        long remaining = service.countByStatus(parseStatus(params.status()));
         int maxPage = remaining > 0 ? (int) ((remaining - 1) / AdminConstants.LIST_PAGE_SIZE) : 0;
-        int safePage = Math.min(page, maxPage);
-        return AdminActionUtils.listRedirect("/admin/setlist-requests", status, safePage, keyword);
+        int safePage = Math.min(params.page(), maxPage);
+        return AdminActionUtils.listRedirect("/admin/setlist-requests", params.status(), safePage, params.keyword());
     }
 
     private LineupChangeRequestStatus parseStatus(String status) {

@@ -31,43 +31,46 @@ public class CertificationAdminController {
     private final AdminLogService adminLogService;
 
     @GetMapping
-    public String list(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false) CertificationStatus status,
-            @RequestParam(required = false) String keyword,
-            Model model) {
-
-        Page<FestivalCertification> certPage = (keyword != null && !keyword.isBlank())
-                ? certificationService.searchByKeyword(keyword, status, page)
-                : certificationService.getByStatus(status, page);
+    public String list(@ModelAttribute CertificationFilter filter, Model model) {
+        CertificationStatus status = parseStatus(filter.status());
+        Page<FestivalCertification> certPage = !filter.keyword().isBlank()
+                ? certificationService.searchByKeyword(filter.keyword(), status, filter.page())
+                : certificationService.getByStatus(status, filter.page());
 
         model.addAttribute("certifications", certPage);
-        model.addAttribute("status", status != null ? status.name() : "");
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("page", page);
+        model.addAttribute("status", filter.status());
+        model.addAttribute("keyword", filter.keyword());
+        model.addAttribute("page", filter.page());
         model.addAttribute("pendingCount", certificationService.getPendingCount());
         return "admin/certification/list";
     }
 
+    private static CertificationStatus parseStatus(String status) {
+        if (status == null || status.isBlank()) return null;
+        try {
+            return CertificationStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id,
-                         @RequestParam(required = false, defaultValue = "") String status,
-                         @RequestParam(defaultValue = "0") int page,
-                         @RequestParam(required = false, defaultValue = "") String keyword,
+                         @ModelAttribute CertificationFilter filter,
                          Model model, RedirectAttributes ra) {
         return AdminActionUtils.tryRender(
                 () -> {
                     FestivalCertification cert = certificationService.getById(id);
                     model.addAttribute("cert", cert);
                     model.addAttribute("photoUrl", certificationService.buildPhotoUrl(cert.getPhotoKey()));
-                    model.addAttribute("returnStatus", status);
-                    model.addAttribute("returnPage", page);
-                    model.addAttribute("returnKeyword", keyword);
+                    model.addAttribute("returnStatus", filter.status());
+                    model.addAttribute("returnPage", filter.page());
+                    model.addAttribute("returnKeyword", filter.keyword());
                     model.addAttribute("nextCertId", certificationService.findNextPendingId(id).orElse(null));
                     UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications")
-                            .queryParam("status", status)
-                            .queryParam("page", page);
-                    if (!keyword.isBlank()) builder.queryParam("keyword", keyword);
+                            .queryParam("status", filter.status())
+                            .queryParam("page", filter.page());
+                    if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
                     model.addAttribute("returnUrl", builder.build().toUriString());
                 },
                 "admin/certification/detail",

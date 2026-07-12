@@ -40,17 +40,19 @@ public class UserAdminController {
 
     @GetMapping
     public String listUsers(@ModelAttribute UserListFilter listFilter, Model model) {
-        Page<UserResponseDto> users = fetchUsersPage(listFilter.page(), listFilter.keyword(), listFilter.sort(), listFilter.filter());
+        Page<UserResponseDto> users = fetchUsersPage(listFilter);
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
 
         addListModel(model, users, userDetailAggregationService.getListCounts(userIds), listFilter);
         return "admin/user/list";
     }
 
-    private Page<UserResponseDto> fetchUsersPage(int page, String keyword, String sort, String filter) {
-        if (FILTER_BANNED.equals(filter))   return userService.getBannedUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
-        if (SORT_REPORTS.equals(sort))    return userService.getUsersPageSortedByReports(page, AdminConstants.LIST_PAGE_SIZE, keyword);
-        return userService.getUsersPage(page, AdminConstants.LIST_PAGE_SIZE, keyword);
+    private Page<UserResponseDto> fetchUsersPage(UserListFilter listFilter) {
+        if (FILTER_BANNED.equals(listFilter.filter()))
+            return userService.getBannedUsersPage(listFilter.page(), AdminConstants.LIST_PAGE_SIZE, listFilter.keyword());
+        if (SORT_REPORTS.equals(listFilter.sort()))
+            return userService.getUsersPageSortedByReports(listFilter.page(), AdminConstants.LIST_PAGE_SIZE, listFilter.keyword());
+        return userService.getUsersPage(listFilter.page(), AdminConstants.LIST_PAGE_SIZE, listFilter.keyword());
     }
 
     @GetMapping("/{id}")
