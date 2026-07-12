@@ -11,6 +11,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.entity.Notification;
+import com.feple.feple_backend.notification.entity.NotificationContent;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
@@ -74,7 +75,7 @@ public class AdminPushService {
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (userId=" + targetUserId + ")"));
         notificationRepository.save(
-                Notification.of(user, NotificationType.ADMIN_BROADCAST, title, body, null, null, (Festival) null));
+                Notification.of(user, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null));
         logAndSend(tokens, title, body, "[AdminPush] 테스트 발송 — userId={}, 토큰 {}개, 제목: {}", targetUserId, tokens.size(), title);
     }
 
@@ -111,7 +112,7 @@ public class AdminPushService {
     private void saveTargetedNotifications(List<Long> userIds, String title, String body) {
         List<User> users = userRepository.findAllById(userIds);
         notificationRepository.saveAll(users.stream()
-                .map(u -> Notification.of(u, NotificationType.ADMIN_BROADCAST, title, body, null, null, (Festival) null))
+                .map(u -> Notification.of(u, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null))
                 .toList());
     }
 

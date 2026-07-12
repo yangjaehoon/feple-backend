@@ -7,6 +7,7 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.notification.entity.Notification;
+import com.feple.feple_backend.notification.entity.NotificationContent;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.post.entity.Post;
@@ -54,7 +55,11 @@ public class NotificationService {
     private final UserBlockService userBlockService;
 
     private record NotificationMessage(NotificationType type, String title, String body,
-                                        String titleEn, String bodyEn, String resourceId) {}
+                                        String titleEn, String bodyEn, String resourceId) {
+        NotificationContent toContent() {
+            return new NotificationContent(type, title, body, titleEn, bodyEn);
+        }
+    }
 
     /** 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송 — 커밋 후에만 발송 */
     @Async
@@ -93,7 +98,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.certApprovedBodyEn(event.festivalTitleEn());
         NotificationMessage message = new NotificationMessage(
                 NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
-        saveAndPushSingle(Notification.of(user, message.type(), title, body, titleEn, bodyEn, festival), event.userId(), message);
+        saveAndPushSingle(Notification.of(user, message.toContent(), festival), event.userId(), message);
     }
 
     /** 인증 거절 알림 — 커밋 후에만 발송 */
@@ -109,7 +114,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.certRejectedBodyEn(event.festivalTitleEn(), event.reason());
         NotificationMessage message = new NotificationMessage(
                 NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
-        saveAndPushSingle(Notification.of(user, message.type(), title, body, titleEn, bodyEn, festival), event.userId(), message);
+        saveAndPushSingle(Notification.of(user, message.toContent(), festival), event.userId(), message);
     }
 
     @Async
@@ -124,7 +129,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistNameEn());
         NotificationMessage message = new NotificationMessage(
                 NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
-        saveAndPushSingle(Notification.of(user, message.type(), title, body, titleEn, bodyEn, artist), event.userId(), message);
+        saveAndPushSingle(Notification.of(user, message.toContent(), artist), event.userId(), message);
     }
 
     @Async
@@ -139,7 +144,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason());
         NotificationMessage message = new NotificationMessage(
                 NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
-        saveAndPushSingle(Notification.of(user, message.type(), title, body, titleEn, bodyEn, artist), event.userId(), message);
+        saveAndPushSingle(Notification.of(user, message.toContent(), artist), event.userId(), message);
     }
 
     @Async
@@ -158,8 +163,8 @@ public class NotificationService {
         NotificationMessage message = new NotificationMessage(
                 NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, resourceId);
         Notification notification = artist != null
-                ? Notification.of(user, message.type(), title, body, titleEn, bodyEn, artist)
-                : Notification.of(user, message.type(), title, body, titleEn, bodyEn, (Festival) null);
+                ? Notification.of(user, message.toContent(), artist)
+                : Notification.of(user, message.toContent(), (Festival) null);
         saveAndPushSingle(notification, event.userId(), message);
     }
 
@@ -189,7 +194,7 @@ public class NotificationService {
         Post post = postRepository.findById(event.postId()).orElse(null);
         NotificationMessage message = new NotificationMessage(
                 NotificationType.POST_LIKED, title, body, titleEn, bodyEn, String.valueOf(event.postId()));
-        saveAndPushSingle(Notification.of(author, message.type(), title, body, titleEn, bodyEn, post), event.postAuthorId(), message);
+        saveAndPushSingle(Notification.of(author, message.toContent(), post), event.postAuthorId(), message);
     }
 
     @Async
@@ -203,7 +208,7 @@ public class NotificationService {
         String bodyEn = NotificationMessages.postDeletedByAdminBodyEn(event.postTitle());
         NotificationMessage message = new NotificationMessage(
                 NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, null);
-        saveAndPushSingle(Notification.of(author, message.type(), title, body, titleEn, bodyEn, (Festival) null), event.postAuthorId(), message);
+        saveAndPushSingle(Notification.of(author, message.toContent(), (Festival) null), event.postAuthorId(), message);
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
@@ -221,7 +226,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         NotificationMessage message = new NotificationMessage(
                 NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, null);
-        saveAndPushSingle(Notification.of(author, message.type(), title, body, titleEn, bodyEn, post), postAuthorId, message);
+        saveAndPushSingle(Notification.of(author, message.toContent(), post), postAuthorId, message);
     }
 
     /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
@@ -236,7 +241,7 @@ public class NotificationService {
         Post post = postRepository.findById(postId).orElse(null);
         NotificationMessage message = new NotificationMessage(
                 NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, null);
-        saveAndPushSingle(Notification.of(author, message.type(), title, body, titleEn, bodyEn, post), parentCommentAuthorId, message);
+        saveAndPushSingle(Notification.of(author, message.toContent(), post), parentCommentAuthorId, message);
     }
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
@@ -272,7 +277,7 @@ public class NotificationService {
 
     private void saveAndPush(List<User> users, NotificationMessage message, Festival festival) {
         notificationRepository.saveAll(users.stream()
-                .map(u -> Notification.of(u, message.type(), message.title(), message.body(), message.titleEn(), message.bodyEn(), festival))
+                .map(u -> Notification.of(u, message.toContent(), festival))
                 .toList());
         List<Long> allUserIds = users.stream().map(User::getId).toList();
         Map<Long, NotificationPreference> prefMap = preferenceService.getOrCreateBatch(allUserIds);

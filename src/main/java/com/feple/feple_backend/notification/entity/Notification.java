@@ -66,48 +66,32 @@ public class Notification {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public static Notification of(User user, NotificationType type,
-                                   String title, String body,
-                                   String titleEn, String bodyEn,
-                                   Festival festival) {
-        Notification notification = new Notification();
-        notification.user = user;
-        notification.type = type;
-        notification.title = title;
-        notification.body = body;
-        notification.titleEn = titleEn;
-        notification.bodyEn = bodyEn;
+    public static Notification of(User user, NotificationContent content, Festival festival) {
+        Notification notification = base(user, content);
         notification.festival = festival;
         return notification;
     }
 
-    public static Notification of(User user, NotificationType type,
-                                   String title, String body,
-                                   String titleEn, String bodyEn,
-                                   Post post) {
-        Notification notification = new Notification();
-        notification.user = user;
-        notification.type = type;
-        notification.title = title;
-        notification.body = body;
-        notification.titleEn = titleEn;
-        notification.bodyEn = bodyEn;
+    public static Notification of(User user, NotificationContent content, Post post) {
+        Notification notification = base(user, content);
         notification.post = post;
         return notification;
     }
 
-    public static Notification of(User user, NotificationType type,
-                                   String title, String body,
-                                   String titleEn, String bodyEn,
-                                   Artist artist) {
+    public static Notification of(User user, NotificationContent content, Artist artist) {
+        Notification notification = base(user, content);
+        notification.artist = artist;
+        return notification;
+    }
+
+    private static Notification base(User user, NotificationContent content) {
         Notification notification = new Notification();
         notification.user = user;
-        notification.type = type;
-        notification.title = title;
-        notification.body = body;
-        notification.titleEn = titleEn;
-        notification.bodyEn = bodyEn;
-        notification.artist = artist;
+        notification.type = content.type();
+        notification.title = content.title();
+        notification.body = content.body();
+        notification.titleEn = content.titleEn();
+        notification.bodyEn = content.bodyEn();
         return notification;
     }
 
