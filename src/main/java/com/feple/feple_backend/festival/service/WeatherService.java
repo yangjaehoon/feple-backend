@@ -87,7 +87,7 @@ public class WeatherService {
         if (baseDatetime == null) return false;
 
         int[] grid = resolveGrid(festival);
-        WeatherDto dto = fetchFromApi(grid[0], grid[1], targetDate, baseDatetime);
+        WeatherDto dto = fetchFromApi(grid, targetDate, baseDatetime);
         saveOrUpdate(festival, dto);
         return true;
     }
@@ -117,7 +117,7 @@ public class WeatherService {
         weatherRepository.save(weather);
     }
 
-    private WeatherDto fetchFromApi(int nx, int ny, LocalDate targetDate, String[] baseDatetime) {
+    private WeatherDto fetchFromApi(int[] grid, LocalDate targetDate, String[] baseDatetime) {
         var uri = UriComponentsBuilder.fromUriString(baseUrl + "/getVilageFcst")
                 .queryParam("serviceKey", serviceKey)
                 .queryParam("pageNo", 1)
@@ -125,8 +125,8 @@ public class WeatherService {
                 .queryParam("dataType", "JSON")
                 .queryParam("base_date", baseDatetime[0])
                 .queryParam("base_time", baseDatetime[1])
-                .queryParam("nx", nx)
-                .queryParam("ny", ny)
+                .queryParam("nx", grid[0])
+                .queryParam("ny", grid[1])
                 .build().toUri();
 
         JsonNode body = restTemplate.getForObject(uri, JsonNode.class);
