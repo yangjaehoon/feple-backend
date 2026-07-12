@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.photo.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
+import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
@@ -57,15 +58,8 @@ public class ArtistGalleryPhotoService {
     // S3 headObject 조회는 커넥션 점유 없이 수행; 완료 후 각 리포지토리 호출이
     // 자체 트랜잭션으로 DB에 반영한다 (UserServiceImpl.updateProfileImage와 동일 패턴)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public ArtistGalleryPhotoResponseDto register(
-            Long artistId,
-            String objectKey,
-            String contentType,
-            String title,
-            String description,
-            boolean isAnonymous,
-            Long userId) {
-
+    public ArtistGalleryPhotoResponseDto register(Long artistId, RegisterPhotoRequestDto req, Long userId) {
+        String objectKey = req.objectKey();
         String prefix = S3PathConstants.artistPhotoPrefix(artistId);
         if (objectKey == null || !objectKey.startsWith(prefix)) {
             throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
@@ -78,8 +72,9 @@ public class ArtistGalleryPhotoService {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         User uploader = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
+        boolean anonymous = Boolean.TRUE.equals(req.isAnonymous());
         ArtistGalleryPhoto saved = artistGalleryPhotoRepository.save(
-                new ArtistGalleryPhoto(artist, uploader, objectKey, contentType, title, description, isAnonymous));
+                new ArtistGalleryPhoto(artist, uploader, objectKey, req.contentType(), req.title(), req.description(), anonymous));
 
         String url = s3PresignService.presignGetUrl(saved.getS3Key());
         return ArtistGalleryPhotoResponseDto.from(saved, url, false, userId);

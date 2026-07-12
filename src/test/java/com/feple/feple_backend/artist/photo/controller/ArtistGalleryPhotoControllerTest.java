@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.photo.controller;
 
 import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
+import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
@@ -58,7 +59,7 @@ class ArtistGalleryPhotoControllerTest {
     @Test
     void 사진_등록_성공() throws Exception {
         ArtistGalleryPhotoResponseDto dto = mock(ArtistGalleryPhotoResponseDto.class);
-        given(artistGalleryPhotoService.register(eq(1L), anyString(), anyString(), anyString(), any(), anyBoolean(), eq(1L)))
+        given(artistGalleryPhotoService.register(eq(1L), any(RegisterPhotoRequestDto.class), eq(1L)))
                 .willReturn(dto);
 
         mockMvc.perform(post("/artists/1/photos")
