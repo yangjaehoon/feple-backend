@@ -66,13 +66,26 @@ public class CommentServiceImpl implements CommentService {
         if (dto.getParentId() != null) {
             parent = EntityLoader.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
         }
+        Comment saved = saveComment(dto, post, user, parent);
+
+        publishCommentCreatedEvent(dto, post, user, parent, userId);
+
+        boolean certified = post.getFestivalId() != null &&
+                certificationService.existsApprovedCertification(post.getFestivalId(), userId);
+
+        return CommentResponseDto.from(saved, certified, false);
+    }
+
+    private Comment saveComment(CreateCommentDto dto, Post post, User user, Comment parent) {
         Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
         Comment saved = commentRepository.save(comment);
         postRepository.incrementCommentCount(post.getId());
+        return saved;
+    }
 
+    private void publishCommentCreatedEvent(CreateCommentDto dto, Post post, User user, Comment parent, Long userId) {
         Long postAuthorId = post.getUserId();
         String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
-
         Long parentCommentAuthorId = resolveParentCommentAuthorId(parent, userId, postAuthorId);
 
         if (!postAuthorId.equals(userId)) {
@@ -87,11 +100,6 @@ public class CommentServiceImpl implements CommentService {
             eventPublisher.publishEvent(
                     new CommentCreatedEvent(null, commenterName, post.getTitle(), post.getId(), null, userId));
         }
-
-        boolean certified = post.getFestivalId() != null &&
-                certificationService.existsApprovedCertification(post.getFestivalId(), userId);
-
-        return CommentResponseDto.from(saved, certified, false);
     }
 
     @Override
