@@ -72,12 +72,12 @@ public class Artist {
         this.rankUpdatedAt = LocalDateTime.now();
     }
 
-    public void update(String name, String nameEn, List<MusicGenre> genres, List<String> aliases) {
-        this.name = name;
-        this.nameEn = nameEn;
-        this.genres = genres != null ? new ArrayList<>(genres) : new ArrayList<>();
+    public void update(ArtistUpdateFields fields) {
+        this.name = fields.name();
+        this.nameEn = fields.nameEn();
+        this.genres = fields.genres() != null ? new ArrayList<>(fields.genres()) : new ArrayList<>();
         this.aliases.clear();
-        if (aliases != null) this.aliases.addAll(aliases);
+        if (fields.aliases() != null) this.aliases.addAll(fields.aliases());
     }
 
     public void updateProfileImage(String newKey) {

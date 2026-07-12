@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.entity.ArtistUpdateFields;
 import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
@@ -224,7 +225,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
-        artist.update(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAliases(dto.getAliases()));
+        artist.update(new ArtistUpdateFields(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAliases(dto.getAliases())));
         if (dto.getProfileImageKey() != null) {
             String oldKey = artist.getProfileImageKey();
             artist.updateProfileImage(dto.getProfileImageKey());
