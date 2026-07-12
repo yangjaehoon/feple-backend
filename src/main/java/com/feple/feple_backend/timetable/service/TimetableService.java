@@ -53,9 +53,7 @@ public class TimetableService {
     @CacheEvict(value = "timetable", key = "#festivalId")
     public TimetableEntryResponseDto createEntry(Long festivalId, TimetableEntryRequestDto req) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        if (!req.getStartTime().isBefore(req.getEndTime())) {
-            throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
-        }
+        validateTimeRange(req);
         String rawStageName = req.getStageName();
         String stageName = (rawStageName == null || rawStageName.isBlank()) ? "" : rawStageName.trim();
         Stage stage = stageName.isEmpty() ? null : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
@@ -73,11 +71,7 @@ public class TimetableService {
                 .build();
         TimetableEntry saved = timetableRepository.save(entry);
         syncMembers(saved, req.getMemberArtistIds());
-        LineupUpdate savedLineup = new LineupUpdate(saved.getStageName(), saved.getFestivalDate());
-        artistFestivalService.syncFromTimetableEntry(festivalId, saved.getArtistName(), savedLineup);
-        for (TimetableEntryMember member : saved.getMembers()) {
-            artistFestivalService.syncFromTimetableEntry(festivalId, member.getArtistName(), savedLineup);
-        }
+        broadcastLineupUpdate(festivalId, saved);
         return TimetableEntryResponseDto.from(saved);
     }
 
@@ -88,9 +82,7 @@ public class TimetableService {
         if (!festivalId.equals(entry.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
         }
-        if (!req.getStartTime().isBefore(req.getEndTime())) {
-            throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
-        }
+        validateTimeRange(req);
         String stageName = req.getStageName() == null ? "" : req.getStageName().trim();
         Stage stage = stageName.isEmpty() ? null
                 : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
@@ -103,10 +95,20 @@ public class TimetableService {
                 req.getEndTime(),
                 req.getColor()));
         syncMembers(entry, req.getMemberArtistIds());
-        LineupUpdate entryLineup = new LineupUpdate(entry.getStageName(), entry.getFestivalDate());
-        artistFestivalService.syncFromTimetableEntry(festivalId, entry.getArtistName(), entryLineup);
+        broadcastLineupUpdate(festivalId, entry);
+    }
+
+    private void validateTimeRange(TimetableEntryRequestDto req) {
+        if (!req.getStartTime().isBefore(req.getEndTime())) {
+            throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
+        }
+    }
+
+    private void broadcastLineupUpdate(Long festivalId, TimetableEntry entry) {
+        LineupUpdate lineup = new LineupUpdate(entry.getStageName(), entry.getFestivalDate());
+        artistFestivalService.syncFromTimetableEntry(festivalId, entry.getArtistName(), lineup);
         for (TimetableEntryMember member : entry.getMembers()) {
-            artistFestivalService.syncFromTimetableEntry(festivalId, member.getArtistName(), entryLineup);
+            artistFestivalService.syncFromTimetableEntry(festivalId, member.getArtistName(), lineup);
         }
     }
 
