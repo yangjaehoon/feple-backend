@@ -8,6 +8,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistNameOption;
 import com.feple.feple_backend.artistfestival.event.ArtistAddedToFestivalEvent;
+import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -129,15 +130,15 @@ public class ArtistFestivalService {
     }
 
     @Transactional
-    public void updateArtistFestival(Long festivalId, Long artistFestivalId,
-                                     String stageName, LocalDate performanceDate) {
+    public void updateArtistFestival(Long festivalId, Long artistFestivalId, LineupUpdate lineup) {
         ArtistFestival af = EntityLoader.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
         if (!af.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
 
         // 빈 문자열("미지정" 선택)은 null로 정규화
-        String resolvedStage = (stageName != null && !stageName.isBlank()) ? stageName : null;
+        String resolvedStage = (lineup.stageName() != null && !lineup.stageName().isBlank()) ? lineup.stageName() : null;
+        LocalDate performanceDate = lineup.date();
         String oldStage = af.getStageName();
         LocalDate oldDate = af.getPerformanceDate();
         af.updateLineup(resolvedStage, performanceDate);
@@ -168,12 +169,12 @@ public class ArtistFestivalService {
 
     // 타임테이블 항목 저장 후 ArtistFestival 날짜·스테이지 역방향 동기화
     @Transactional
-    public void syncFromTimetableEntry(Long festivalId, String artistName, LocalDate date, String stageName) {
+    public void syncFromTimetableEntry(Long festivalId, String artistName, LineupUpdate lineup) {
         if (artistName == null || artistName.isBlank()) return;
         artistFestivalRepository.findByFestivalIdAndArtistName(festivalId, artistName)
                 .ifPresent(af -> {
-                    String resolvedStage = (stageName != null && !stageName.isBlank()) ? stageName : null;
-                    af.updateLineup(resolvedStage, date);
+                    String resolvedStage = (lineup.stageName() != null && !lineup.stageName().isBlank()) ? lineup.stageName() : null;
+                    af.updateLineup(resolvedStage, lineup.date());
                 });
     }
 

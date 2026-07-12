@@ -1,6 +1,7 @@
 package com.feple.feple_backend.timetable;
 
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -111,7 +112,7 @@ class TimetableServiceTest {
         TimetableEntryResponseDto response = timetableService.createEntry(1L, req);
 
         then(artistFestivalService).should().syncFromTimetableEntry(
-                eq(1L), anyString(), any(LocalDate.class), anyString());
+                eq(1L), anyString(), any(LineupUpdate.class));
     }
 
     @Test

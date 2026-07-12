@@ -2,6 +2,7 @@ package com.feple.feple_backend.timetable.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -72,11 +73,10 @@ public class TimetableService {
                 .build();
         TimetableEntry saved = timetableRepository.save(entry);
         syncMembers(saved, req.getMemberArtistIds());
-        artistFestivalService.syncFromTimetableEntry(
-                festivalId, saved.getArtistName(), saved.getFestivalDate(), saved.getStageName());
+        LineupUpdate savedLineup = new LineupUpdate(saved.getStageName(), saved.getFestivalDate());
+        artistFestivalService.syncFromTimetableEntry(festivalId, saved.getArtistName(), savedLineup);
         for (TimetableEntryMember member : saved.getMembers()) {
-            artistFestivalService.syncFromTimetableEntry(
-                    festivalId, member.getArtistName(), saved.getFestivalDate(), saved.getStageName());
+            artistFestivalService.syncFromTimetableEntry(festivalId, member.getArtistName(), savedLineup);
         }
         return TimetableEntryResponseDto.from(saved);
     }
@@ -103,11 +103,10 @@ public class TimetableService {
                 req.getEndTime(),
                 req.getColor()));
         syncMembers(entry, req.getMemberArtistIds());
-        artistFestivalService.syncFromTimetableEntry(
-                festivalId, entry.getArtistName(), entry.getFestivalDate(), entry.getStageName());
+        LineupUpdate entryLineup = new LineupUpdate(entry.getStageName(), entry.getFestivalDate());
+        artistFestivalService.syncFromTimetableEntry(festivalId, entry.getArtistName(), entryLineup);
         for (TimetableEntryMember member : entry.getMembers()) {
-            artistFestivalService.syncFromTimetableEntry(
-                    festivalId, member.getArtistName(), entry.getFestivalDate(), entry.getStageName());
+            artistFestivalService.syncFromTimetableEntry(festivalId, member.getArtistName(), entryLineup);
         }
     }
 

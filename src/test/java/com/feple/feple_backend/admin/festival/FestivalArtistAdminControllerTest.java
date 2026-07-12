@@ -112,7 +112,7 @@ class FestivalArtistAdminControllerTest {
     @Test
     void 라인업_수정_실패_errorMessage_설정() throws Exception {
         willThrow(new RuntimeException("오류"))
-                .given(artistFestivalService).updateArtistFestival(anyLong(), anyLong(), any(), any());
+                .given(artistFestivalService).updateArtistFestival(anyLong(), anyLong(), any());
 
         mockMvc.perform(post("/admin/festivals/1/artists/2/edit"))
                 .andExpect(flash().attribute("errorMessage", "라인업 수정 중 오류가 발생했습니다."));
@@ -133,7 +133,7 @@ class FestivalArtistAdminControllerTest {
     @Test
     void 라인업_일괄수정_일부_실패_errorCount_포함() throws Exception {
         willThrow(new RuntimeException("오류"))
-                .given(artistFestivalService).updateArtistFestival(anyLong(), anyLong(), any(), any());
+                .given(artistFestivalService).updateArtistFestival(anyLong(), anyLong(), any());
 
         mockMvc.perform(post("/admin/festivals/1/artists/batch-edit")
                         .param("afIds", "2")

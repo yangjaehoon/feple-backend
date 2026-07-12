@@ -6,6 +6,7 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistNameOption;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
+import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.event.ArtistAddedToFestivalEvent;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
@@ -250,7 +251,7 @@ class ArtistFestivalServiceTest {
         ArtistFestival af = artistFestival(artist(1L, "아이유"), festival(200L, null));
         given(artistFestivalRepository.findById(10L)).willReturn(Optional.of(af));
 
-        assertThatThrownBy(() -> service.updateArtistFestival(100L, 10L, "메인스테이지", null))
+        assertThatThrownBy(() -> service.updateArtistFestival(100L, 10L, new LineupUpdate("메인스테이지", null)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("잘못된 페스티벌입니다.");
     }
@@ -270,7 +271,7 @@ class ArtistFestivalServiceTest {
                 .artistName("아이유").festivalDate(LocalDate.of(2026, 8, 1)).build();
         given(timetableRepository.findByFestivalIdAndArtistName(100L, "아이유")).willReturn(List.of(entry));
 
-        service.updateArtistFestival(100L, 10L, "메인스테이지", null);
+        service.updateArtistFestival(100L, 10L, new LineupUpdate("메인스테이지", null));
 
         assertThat(af.getStageName()).isEqualTo("메인스테이지");
         assertThat(entry.getStageName()).isEqualTo("메인스테이지");
@@ -283,7 +284,7 @@ class ArtistFestivalServiceTest {
         ArtistFestival af = ArtistFestival.builder().artist(artist).festival(festival).build();
         given(artistFestivalRepository.findById(10L)).willReturn(Optional.of(af));
 
-        service.updateArtistFestival(100L, 10L, "", null);
+        service.updateArtistFestival(100L, 10L, new LineupUpdate("", null));
 
         assertThat(af.getStageName()).isNull();
         then(timetableRepository).shouldHaveNoInteractions();
@@ -304,7 +305,7 @@ class ArtistFestivalServiceTest {
         given(timetableRepository.findByFestivalIdAndArtistName(100L, "아이유"))
                 .willReturn(List.of(sameDate, otherDate));
 
-        service.updateArtistFestival(100L, 10L, null, LocalDate.of(2026, 8, 3));
+        service.updateArtistFestival(100L, 10L, new LineupUpdate(null, LocalDate.of(2026, 8, 3)));
 
         assertThat(sameDate.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 3));
         assertThat(otherDate.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 2));
@@ -322,7 +323,7 @@ class ArtistFestivalServiceTest {
         given(timetableRepository.findByFestivalIdAndArtistName(100L, "아이유"))
                 .willReturn(List.of(entry1, entry2));
 
-        service.updateArtistFestival(100L, 10L, null, LocalDate.of(2026, 8, 3));
+        service.updateArtistFestival(100L, 10L, new LineupUpdate(null, LocalDate.of(2026, 8, 3)));
 
         assertThat(entry1.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 3));
         assertThat(entry2.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 3));
@@ -332,7 +333,7 @@ class ArtistFestivalServiceTest {
 
     @Test
     void 타임테이블에서_동기화_아티스트명_공백이면_무시() {
-        service.syncFromTimetableEntry(100L, " ", LocalDate.now(), "스테이지");
+        service.syncFromTimetableEntry(100L, " ", new LineupUpdate("스테이지", LocalDate.now()));
 
         then(artistFestivalRepository).shouldHaveNoInteractions();
     }
@@ -342,7 +343,7 @@ class ArtistFestivalServiceTest {
         ArtistFestival af = artistFestival(artist(1L, "아이유"), festival(100L, null));
         given(artistFestivalRepository.findByFestivalIdAndArtistName(100L, "아이유")).willReturn(Optional.of(af));
 
-        service.syncFromTimetableEntry(100L, "아이유", LocalDate.of(2026, 8, 1), "메인스테이지");
+        service.syncFromTimetableEntry(100L, "아이유", new LineupUpdate("메인스테이지", LocalDate.of(2026, 8, 1)));
 
         assertThat(af.getStageName()).isEqualTo("메인스테이지");
         assertThat(af.getPerformanceDate()).isEqualTo(LocalDate.of(2026, 8, 1));
@@ -352,7 +353,7 @@ class ArtistFestivalServiceTest {
     void 타임테이블에서_동기화_참여정보_없으면_무시() {
         given(artistFestivalRepository.findByFestivalIdAndArtistName(100L, "아이유")).willReturn(Optional.empty());
 
-        service.syncFromTimetableEntry(100L, "아이유", LocalDate.now(), "메인스테이지");
+        service.syncFromTimetableEntry(100L, "아이유", new LineupUpdate("메인스테이지", LocalDate.now()));
         // 예외 없이 조용히 무시됨
     }
 

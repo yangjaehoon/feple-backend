@@ -8,6 +8,7 @@ import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
+import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
@@ -115,7 +116,8 @@ public class FestivalArtistAdminController {
                                RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
-                    artistFestivalService.updateArtistFestival(festivalId, artistFestivalId, stageName, parseDate(performanceDate));
+                    artistFestivalService.updateArtistFestival(festivalId, artistFestivalId,
+                            new LineupUpdate(stageName, parseDate(performanceDate)));
                     adminLogService.log(AdminAction.FESTIVAL_ARTIST_UPDATE, "FESTIVAL", festivalId, "afId=" + artistFestivalId);
                 },
                 "라인업이 수정되었습니다.",
@@ -136,8 +138,7 @@ public class FestivalArtistAdminController {
             try {
                 artistFestivalService.updateArtistFestival(
                         festivalId, afIds.get(i),
-                        safeGet(stageNames, i),
-                        parseDate(safeGet(performanceDates, i)));
+                        new LineupUpdate(safeGet(stageNames, i), parseDate(safeGet(performanceDates, i))));
             } catch (Exception e) {
                 log.warn("batchUpdateLineup 실패: festivalId={}, afId={}", festivalId, afIds.get(i), e);
                 errorCount++;
