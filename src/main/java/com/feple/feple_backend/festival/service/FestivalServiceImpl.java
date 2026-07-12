@@ -13,6 +13,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalStatus;
+import com.feple.feple_backend.festival.entity.FestivalUpdateFields;
 import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
@@ -171,10 +172,11 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         }
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
-        festival.update(dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
+        festival.update(new FestivalUpdateFields(
+                dto.getTitle(), dto.getTitleEn(), dto.getDescription(), dto.getLocation(),
                 dto.getStartDate(), dto.getEndDate(),
                 dto.getGenres(), dto.getRegion(), dto.getAgeRestriction(),
-                dto.getLatitude(), dto.getLongitude());
+                dto.getLatitude(), dto.getLongitude()));
         String oldPosterKey = festival.getPosterKey();
         festival.updatePoster(dto.getPosterKey());
         if (dto.getPosterKey() != null && !dto.getPosterKey().equals(oldPosterKey)) {

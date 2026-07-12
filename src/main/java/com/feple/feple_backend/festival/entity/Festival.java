@@ -77,21 +77,18 @@ public class Festival {
     @OneToMany(mappedBy = "festival")
     private List<ArtistFestival> artistFestivals = new ArrayList<>();
 
-    public void update(String title, String titleEn, String description, String location,
-                       LocalDate startDate, LocalDate endDate,
-                       List<MusicGenre> genres, Region region, AgeRestriction ageRestriction,
-                       Double latitude, Double longitude) {
-        this.title = title;
-        this.titleEn = titleEn;
-        this.description = description;
-        this.location = location;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        if (genres != null) this.genres = genres;
-        if (region != null) this.region = region;
-        if (ageRestriction != null) this.ageRestriction = ageRestriction;
-        if (latitude != null) this.latitude = latitude;
-        if (longitude != null) this.longitude = longitude;
+    public void update(FestivalUpdateFields fields) {
+        this.title = fields.title();
+        this.titleEn = fields.titleEn();
+        this.description = fields.description();
+        this.location = fields.location();
+        this.startDate = fields.startDate();
+        this.endDate = fields.endDate();
+        if (fields.genres() != null) this.genres = fields.genres();
+        if (fields.region() != null) this.region = fields.region();
+        if (fields.ageRestriction() != null) this.ageRestriction = fields.ageRestriction();
+        if (fields.latitude() != null) this.latitude = fields.latitude();
+        if (fields.longitude() != null) this.longitude = fields.longitude();
     }
 
     public void updatePoster(String newKey) {
