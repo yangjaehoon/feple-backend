@@ -55,9 +55,9 @@ public class AdminAccountService {
         AdminAccount account = findById(id);
         validateRoleChange(account, req.role());
         account.updateProfile(req.displayName(), req.role(), resolvePermissions(req.role(), req.permissions()));
-        if (req.newPassword() != null && !req.newPassword().isBlank()) {
-            validatePasswordComplexity(req.newPassword());
-            account.updatePassword(passwordEncoder.encode(req.newPassword()));
+        if (req.password() != null && !req.password().isBlank()) {
+            validatePasswordComplexity(req.password());
+            account.updatePassword(passwordEncoder.encode(req.password()));
         }
         applyProfileImageUpdate(account, req);
     }

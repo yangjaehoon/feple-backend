@@ -47,18 +47,11 @@ public class PostAdminController {
     }
 
     @GetMapping
-    public String listPosts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "") String filter,
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(required = false) Long artistId,
-            @RequestParam(required = false) Long festivalId,
-            Model model) {
-        PostListParams params = new PostListParams(filter, keyword, artistId, festivalId);
+    public String listPosts(@ModelAttribute PostListParams params, Model model) {
         addListModel(model, postAdminService.getPostsForAdmin(
-                new PostAdminFilterDto(page, AdminConstants.LIST_PAGE_SIZE, filter, keyword, artistId, festivalId)), params);
+                new PostAdminFilterDto(params.page(), AdminConstants.LIST_PAGE_SIZE, params.filter(), params.keyword(), params.artistId(), params.festivalId())), params);
 
-        FilterDropdownProvider provider = dropdownProviders.get(filter);
+        FilterDropdownProvider provider = dropdownProviders.get(params.filter());
         if (provider != null) provider.populate(model);
 
         return "admin/post/list";
@@ -66,18 +59,13 @@ public class PostAdminController {
 
     @GetMapping("/{id}")
     public String postDetail(@PathVariable Long id,
-                             @RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "") String filter,
-                             @RequestParam(defaultValue = "") String keyword,
-                             @RequestParam(required = false) Long artistId,
-                             @RequestParam(required = false) Long festivalId,
+                             @ModelAttribute PostListParams params,
                              Model model,
                              RedirectAttributes ra) {
         try {
             model.addAttribute("post", postService.getPost(id));
             model.addAttribute("comments", commentService.getAdminCommentsByPost(id, AdminConstants.POST_DETAIL_COMMENT_LIMIT));
-            model.addAttribute("backUrl", "/admin/posts?page=" + page + "&" +
-                    new PostListParams(filter, keyword, artistId, festivalId).toExtraParams());
+            model.addAttribute("backUrl", "/admin/posts?page=" + params.page() + "&" + params.toExtraParams());
             return "admin/post/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -91,10 +79,7 @@ public class PostAdminController {
 
     @PostMapping("/bulk-delete")
     public String bulkDeletePosts(@RequestParam(required = false) List<Long> ids,
-                                  @RequestParam(defaultValue = "") String filter,
-                                  @RequestParam(defaultValue = "0") int page,
-                                  @RequestParam(required = false) Long artistId,
-                                  @RequestParam(required = false) Long festivalId,
+                                  @ModelAttribute PostListParams params,
                                   RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) {
             ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
@@ -109,15 +94,12 @@ public class PostAdminController {
                     "일괄 삭제 처리 중 오류가 발생했습니다.",
                     ra);
         }
-        return "redirect:/admin/posts?" + new PostListParams(filter, null, artistId, festivalId).toRedirectParams(page);
+        return "redirect:/admin/posts?" + params.toRedirectParams();
     }
 
     @PostMapping("/{id}/delete")
     public String deletePost(@PathVariable Long id,
-                             @RequestParam(defaultValue = "") String filter,
-                             @RequestParam(defaultValue = "0") int page,
-                             @RequestParam(required = false) Long artistId,
-                             @RequestParam(required = false) Long festivalId,
+                             @ModelAttribute PostListParams params,
                              RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
@@ -128,7 +110,7 @@ public class PostAdminController {
                 e -> log.error("게시글 삭제 실패 id={}", id, e),
                 "삭제 중 오류가 발생했습니다.",
                 ra);
-        return "redirect:/admin/posts?" + new PostListParams(filter, null, artistId, festivalId).toRedirectParams(page);
+        return "redirect:/admin/posts?" + params.toRedirectParams();
     }
 
     @PostMapping("/comments/{id}/delete")

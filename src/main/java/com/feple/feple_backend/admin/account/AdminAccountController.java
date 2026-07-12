@@ -10,10 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.Set;
 
 @Slf4j
 @Controller
@@ -41,15 +38,8 @@ public class AdminAccountController {
     }
 
     @PostMapping(consumes = "multipart/form-data")
-    public String create(@RequestParam String username,
-                         @RequestParam String password,
-                         @RequestParam(defaultValue = "") String displayName,
-                         @RequestParam AdminRole role,
-                         @RequestParam(required = false) Set<AdminPermission> permissions,
-                         @RequestParam(required = false) MultipartFile profileImage,
+    public String create(@ModelAttribute AdminAccountCreateRequestDto req,
                          RedirectAttributes redirectAttributes) {
-        Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-        AdminAccountCreateRequestDto req = new AdminAccountCreateRequestDto(username, password, displayName, role, perms, profileImage);
         AdminActionUtils.tryAction(
                 () -> {
                     AdminAccount account = accountService.create(req);
@@ -72,19 +62,12 @@ public class AdminAccountController {
 
     @PostMapping(value = "/{id}/update", consumes = "multipart/form-data")
     public String update(@PathVariable Long id,
-                         @RequestParam(defaultValue = "") String displayName,
-                         @RequestParam AdminRole role,
-                         @RequestParam(required = false) Set<AdminPermission> permissions,
-                         @RequestParam(defaultValue = "") String password,
-                         @RequestParam(required = false) MultipartFile profileImage,
-                         @RequestParam(defaultValue = "false") boolean deleteProfileImage,
+                         @ModelAttribute AdminAccountUpdateRequestDto req,
                          RedirectAttributes redirectAttributes) {
-        Set<AdminPermission> perms = (permissions != null) ? permissions : Set.of();
-        AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(displayName, role, perms, password, profileImage, deleteProfileImage);
         AdminActionUtils.tryAction(
                 () -> {
                     accountService.update(id, req);
-                    adminLogService.log(AdminAction.ADMIN_ACCOUNT_UPDATE, "ADMIN_ACCOUNT", id, displayName);
+                    adminLogService.log(AdminAction.ADMIN_ACCOUNT_UPDATE, "ADMIN_ACCOUNT", id, req.displayName());
                 },
                 "관리자 계정이 수정되었습니다.",
                 e -> log.error("관리자 계정 수정 중 오류 발생, id={}", id, e),

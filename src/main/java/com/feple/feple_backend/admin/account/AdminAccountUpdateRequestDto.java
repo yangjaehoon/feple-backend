@@ -8,7 +8,13 @@ public record AdminAccountUpdateRequestDto(
         String displayName,
         AdminRole role,
         Set<AdminPermission> permissions,
-        String newPassword,
+        String password,
         MultipartFile profileImage,
-        boolean deleteProfileImage
-) {}
+        Boolean deleteProfileImage
+) {
+    public AdminAccountUpdateRequestDto {
+        displayName = displayName == null ? "" : displayName;
+        permissions = permissions == null ? Set.of() : permissions;
+        deleteProfileImage = deleteProfileImage == null ? false : deleteProfileImage;
+    }
+}

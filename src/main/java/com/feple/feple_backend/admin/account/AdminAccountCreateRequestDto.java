@@ -11,4 +11,9 @@ public record AdminAccountCreateRequestDto(
         AdminRole role,
         Set<AdminPermission> permissions,
         MultipartFile profileImage
-) {}
+) {
+    public AdminAccountCreateRequestDto {
+        displayName = displayName == null ? "" : displayName;
+        permissions = permissions == null ? Set.of() : permissions;
+    }
+}
