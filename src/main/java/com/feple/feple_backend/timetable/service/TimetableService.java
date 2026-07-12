@@ -10,6 +10,7 @@ import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
+import com.feple.feple_backend.timetable.entity.TimetableEntryFields;
 import com.feple.feple_backend.timetable.entity.TimetableEntryMember;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import lombok.RequiredArgsConstructor;
@@ -93,14 +94,14 @@ public class TimetableService {
         String stageName = req.getStageName() == null ? "" : req.getStageName().trim();
         Stage stage = stageName.isEmpty() ? null
                 : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
-        entry.update(
+        entry.update(new TimetableEntryFields(
                 req.getArtistName() != null ? req.getArtistName().trim() : "",
                 stageName,
                 stage,
                 req.getFestivalDate(),
                 req.getStartTime(),
                 req.getEndTime(),
-                req.getColor());
+                req.getColor()));
         syncMembers(entry, req.getMemberArtistIds());
         artistFestivalService.syncFromTimetableEntry(
                 festivalId, entry.getArtistName(), entry.getFestivalDate(), entry.getStageName());

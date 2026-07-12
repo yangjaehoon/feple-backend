@@ -103,16 +103,13 @@ public class TimetableEntry {
         this.festivalDate = newDate;
     }
 
-    public void update(String artistName, String stageName, Stage stage,
-                       java.time.LocalDate festivalDate,
-                       java.time.LocalTime startTime, java.time.LocalTime endTime,
-                       String color) {
-        this.artistName   = artistName;
-        this.stageName    = stageName;
-        this.stage        = stage;
-        this.festivalDate = festivalDate;
-        this.startTime    = startTime;
-        this.endTime      = endTime;
-        this.color        = (color != null && !color.isBlank()) ? color.trim() : null;
+    public void update(TimetableEntryFields fields) {
+        this.artistName   = fields.artistName();
+        this.stageName    = fields.stageName();
+        this.stage        = fields.stage();
+        this.festivalDate = fields.festivalDate();
+        this.startTime    = fields.startTime();
+        this.endTime      = fields.endTime();
+        this.color        = (fields.color() != null && !fields.color().isBlank()) ? fields.color().trim() : null;
     }
 }
