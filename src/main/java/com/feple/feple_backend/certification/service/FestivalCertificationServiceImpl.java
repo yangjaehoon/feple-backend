@@ -64,14 +64,16 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     @Transactional(readOnly = true)
     public List<CertificationResponseDto> getMyCertifications(Long userId) {
         return certificationRepository.findByUserId(userId).stream()
-                .map(cert -> {
-                    String posterUrl = cert.getFestivalPosterKey() != null
-                            ? s3PresignService.presignGetUrl(cert.getFestivalPosterKey())
-                            : null;
-                    String photoUrl = s3PresignService.presignGetUrl(cert.getPhotoKey());
-                    return CertificationResponseDto.from(cert, posterUrl, photoUrl);
-                })
+                .map(this::toDto)
                 .toList();
+    }
+
+    private CertificationResponseDto toDto(FestivalCertification cert) {
+        String posterUrl = cert.getFestivalPosterKey() != null
+                ? s3PresignService.presignGetUrl(cert.getFestivalPosterKey())
+                : null;
+        String photoUrl = s3PresignService.presignGetUrl(cert.getPhotoKey());
+        return CertificationResponseDto.from(cert, posterUrl, photoUrl);
     }
 
     @Override
@@ -92,13 +94,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     @Transactional(readOnly = true)
     public List<CertificationResponseDto> getPublicCertifications(Long userId) {
         return certificationRepository.findByUserIdAndStatus(userId, CertificationStatus.APPROVED).stream()
-                .map(cert -> {
-                    String posterUrl = cert.getFestivalPosterKey() != null
-                            ? s3PresignService.presignGetUrl(cert.getFestivalPosterKey())
-                            : null;
-                    String photoUrl = s3PresignService.presignGetUrl(cert.getPhotoKey());
-                    return CertificationResponseDto.from(cert, posterUrl, photoUrl);
-                })
+                .map(this::toDto)
                 .toList();
     }
 
