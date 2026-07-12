@@ -38,6 +38,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -121,7 +122,8 @@ class NotificationServiceTest {
         service.onArtistAddedToFestival(new ArtistAddedToFestivalEvent(1L, "아이유", "IU", 10L, "펜타포트", "Pentaport"));
 
         then(notificationRepository).should().saveAll(anyList());
-        then(fcmPushService).should().sendMulticast(eq(List.of("tok1")), any(), any(), eq("10"), eq(NotificationType.NEW_FESTIVAL));
+        then(fcmPushService).should().sendMulticast(eq(List.of("tok1")),
+                argThat(m -> "10".equals(m.resourceId()) && m.type() == NotificationType.NEW_FESTIVAL));
     }
 
     // ── onCertificationApproved / onCertificationRejected ────────────────
@@ -322,7 +324,7 @@ class NotificationServiceTest {
 
         service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
-        then(fcmPushService).should().sendMulticast(eq(List.of("ko-tok")), any(), any(), any(), eq(NotificationType.POST_LIKED));
-        then(fcmPushService).should().sendMulticast(eq(List.of("en-tok")), any(), any(), any(), eq(NotificationType.POST_LIKED));
+        then(fcmPushService).should().sendMulticast(eq(List.of("ko-tok")), argThat(m -> m.type() == NotificationType.POST_LIKED));
+        then(fcmPushService).should().sendMulticast(eq(List.of("en-tok")), argThat(m -> m.type() == NotificationType.POST_LIKED));
     }
 }

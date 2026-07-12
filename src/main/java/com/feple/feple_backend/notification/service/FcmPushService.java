@@ -22,16 +22,15 @@ public class FcmPushService implements PushNotificationClient {
 
     @Override
     public void sendBroadcast(List<String> tokens, String title, String body) {
-        sendMulticast(tokens, title, body, null, NotificationType.ADMIN_BROADCAST.name());
+        sendMulticastInternal(tokens, title, body, null, NotificationType.ADMIN_BROADCAST.name());
     }
 
     @Override
-    public void sendMulticast(List<String> tokens, String title, String body,
-                               String resourceId, NotificationType type) {
-        sendMulticast(tokens, title, body, resourceId, type.name());
+    public void sendMulticast(List<String> tokens, PushMessage message) {
+        sendMulticastInternal(tokens, message.title(), message.body(), message.resourceId(), message.type().name());
     }
 
-    private void sendMulticast(List<String> tokens, String title, String body,
+    private void sendMulticastInternal(List<String> tokens, String title, String body,
                                String resourceId, String type) {
         if (tokens.isEmpty()) return;
         if (FirebaseApp.getApps().isEmpty()) {

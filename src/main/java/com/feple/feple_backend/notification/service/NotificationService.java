@@ -292,8 +292,12 @@ public class NotificationService {
                 ));
         List<String> koTokens = byLang.getOrDefault("ko", List.of());
         List<String> enTokens = byLang.getOrDefault("en", List.of());
-        if (!koTokens.isEmpty()) fcmPushService.sendMulticast(koTokens, message.title(), message.body(), message.resourceId(), message.type());
-        if (!enTokens.isEmpty()) fcmPushService.sendMulticast(enTokens, message.titleEn(), message.bodyEn(), message.resourceId(), message.type());
+        if (!koTokens.isEmpty()) {
+            fcmPushService.sendMulticast(koTokens, new PushMessage(message.title(), message.body(), message.resourceId(), message.type()));
+        }
+        if (!enTokens.isEmpty()) {
+            fcmPushService.sendMulticast(enTokens, new PushMessage(message.titleEn(), message.bodyEn(), message.resourceId(), message.type()));
+        }
     }
 
 }
