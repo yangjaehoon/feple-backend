@@ -47,7 +47,11 @@ public class NotificationQueryService {
 
     public Page<NotificationDto> getMyNotifications(Long userId, Pageable pageable, String typeGroup) {
         Set<NotificationType> typeFilter = resolveTypeFilter(typeGroup);
+        List<NotificationDto> all = fetchMergedNotifications(userId, typeFilter);
+        return paginate(all, pageable);
+    }
 
+    private List<NotificationDto> fetchMergedNotifications(Long userId, Set<NotificationType> typeFilter) {
         List<NotificationDto> personal = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, MAX_PERSONAL))
                 .stream()
@@ -66,11 +70,13 @@ public class NotificationQueryService {
             mergedStream = Stream.concat(mergedStream, broadcasts.stream());
         }
 
-        List<NotificationDto> all = mergedStream
+        return mergedStream
                 .filter(n -> typeFilter == null || typeFilter.contains(n.type()))
                 .sorted(Comparator.comparing(NotificationDto::createdAt).reversed())
                 .toList();
+    }
 
+    private Page<NotificationDto> paginate(List<NotificationDto> all, Pageable pageable) {
         int total = all.size();
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), total);

@@ -140,7 +140,25 @@ public class WeatherService {
         return parseWeather(items, targetDate.format(DATE_FMT));
     }
 
+    private record WeatherAccumulator(double minTemp, double maxTemp, int maxRainProb,
+                                       String skyCode, String ptyCode, boolean hasTmn, boolean hasTmx) {}
+
     private WeatherDto parseWeather(JsonNode items, String fcstDate) {
+        WeatherAccumulator acc = extractForecastValues(items, fcstDate);
+        if (!acc.hasTmn() || !acc.hasTmx()) {
+            acc = applyTemperatureFallback(items, fcstDate, acc);
+        }
+        return new WeatherDto(
+                fcstDate,
+                acc.minTemp() == Double.MAX_VALUE ? 0 : acc.minTemp(),
+                acc.maxTemp() == -Double.MAX_VALUE ? 0 : acc.maxTemp(),
+                acc.maxRainProb(),
+                acc.skyCode(),
+                acc.ptyCode()
+        );
+    }
+
+    private WeatherAccumulator extractForecastValues(JsonNode items, String fcstDate) {
         double minTemp = Double.MAX_VALUE;
         double maxTemp = -Double.MAX_VALUE;
         int maxRainProb = 0;
@@ -165,25 +183,20 @@ public class WeatherService {
                 }
             }
         }
+        return new WeatherAccumulator(minTemp, maxTemp, maxRainProb, skyCode, ptyCode, hasTmn, hasTmx);
+    }
 
-        if (!hasTmn || !hasTmx) {
-            for (JsonNode item : items) {
-                if (!fcstDate.equals(item.path("fcstDate").asText())) continue;
-                if (!"TMP".equals(item.path("category").asText())) continue;
-                double fcstTemp = Double.parseDouble(item.path("fcstValue").asText());
-                if (!hasTmn && fcstTemp < minTemp) minTemp = fcstTemp;
-                if (!hasTmx && fcstTemp > maxTemp) maxTemp = fcstTemp;
-            }
+    private WeatherAccumulator applyTemperatureFallback(JsonNode items, String fcstDate, WeatherAccumulator acc) {
+        double minTemp = acc.minTemp();
+        double maxTemp = acc.maxTemp();
+        for (JsonNode item : items) {
+            if (!fcstDate.equals(item.path("fcstDate").asText())) continue;
+            if (!"TMP".equals(item.path("category").asText())) continue;
+            double fcstTemp = Double.parseDouble(item.path("fcstValue").asText());
+            if (!acc.hasTmn() && fcstTemp < minTemp) minTemp = fcstTemp;
+            if (!acc.hasTmx() && fcstTemp > maxTemp) maxTemp = fcstTemp;
         }
-
-        return new WeatherDto(
-                fcstDate,
-                minTemp == Double.MAX_VALUE ? 0 : minTemp,
-                maxTemp == -Double.MAX_VALUE ? 0 : maxTemp,
-                maxRainProb,
-                skyCode,
-                ptyCode
-        );
+        return new WeatherAccumulator(minTemp, maxTemp, acc.maxRainProb(), acc.skyCode(), acc.ptyCode(), acc.hasTmn(), acc.hasTmx());
     }
 
     private LocalDate resolveTargetDate(Festival festival, LocalDate today) {
