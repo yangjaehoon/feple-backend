@@ -44,39 +44,12 @@ public class FcmPushService implements PushNotificationClient {
         for (int batchStart = 0; batchStart < tokens.size(); batchStart += BATCH_SIZE) {
             List<String> batch = tokens.subList(batchStart, Math.min(batchStart + BATCH_SIZE, tokens.size()));
             try {
-                MulticastMessage message = MulticastMessage.builder()
-                        .addAllTokens(batch)
-                        .setNotification(Notification.builder()
-                                .setTitle(title)
-                                .setBody(body)
-                                .build())
-                        .putData("type", type)
-                        .putData("festivalId", resourceId != null ? resourceId : "")
-                        .setAndroidConfig(AndroidConfig.builder()
-                                .setPriority(AndroidConfig.Priority.HIGH)
-                                .build())
-                        .setApnsConfig(ApnsConfig.builder()
-                                .setAps(Aps.builder().setSound("default").build())
-                                .build())
-                        .build();
-
+                MulticastMessage message = buildMulticastMessage(batch, title, body, resourceId, type);
                 BatchResponse response = messaging.sendEachForMulticast(message);
                 log.info("[FCM] 발송 완료 — 성공: {}, 실패: {}",
                         response.getSuccessCount(), response.getFailureCount());
 
-                List<SendResponse> responses = response.getResponses();
-                List<String> staleTokens = new ArrayList<>();
-                for (int idx = 0; idx < responses.size(); idx++) {
-                    if (!responses.get(idx).isSuccessful()) {
-                        FirebaseMessagingException ex = responses.get(idx).getException();
-                        MessagingErrorCode code = ex != null ? ex.getMessagingErrorCode() : null;
-                        log.debug("[FCM] 실패 토큰 ({}): {}", code, batch.get(idx));
-                        if (code == MessagingErrorCode.UNREGISTERED
-                                || code == MessagingErrorCode.INVALID_ARGUMENT) {
-                            staleTokens.add(batch.get(idx));
-                        }
-                    }
-                }
+                List<String> staleTokens = extractStaleTokens(response, batch);
                 if (!staleTokens.isEmpty()) {
                     deviceTokenService.deleteStaleTokens(staleTokens);
                     log.info("[FCM] 만료 토큰 {}개 삭제", staleTokens.size());
@@ -85,5 +58,41 @@ public class FcmPushService implements PushNotificationClient {
                 log.error("[FCM] 발송 오류: {}", e.getMessage());
             }
         }
+    }
+
+    private MulticastMessage buildMulticastMessage(List<String> batch, String title, String body,
+                                                     String resourceId, String type) {
+        return MulticastMessage.builder()
+                .addAllTokens(batch)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .putData("type", type)
+                .putData("festivalId", resourceId != null ? resourceId : "")
+                .setAndroidConfig(AndroidConfig.builder()
+                        .setPriority(AndroidConfig.Priority.HIGH)
+                        .build())
+                .setApnsConfig(ApnsConfig.builder()
+                        .setAps(Aps.builder().setSound("default").build())
+                        .build())
+                .build();
+    }
+
+    private List<String> extractStaleTokens(BatchResponse response, List<String> batch) {
+        List<SendResponse> responses = response.getResponses();
+        List<String> staleTokens = new ArrayList<>();
+        for (int idx = 0; idx < responses.size(); idx++) {
+            if (!responses.get(idx).isSuccessful()) {
+                FirebaseMessagingException ex = responses.get(idx).getException();
+                MessagingErrorCode code = ex != null ? ex.getMessagingErrorCode() : null;
+                log.debug("[FCM] 실패 토큰 ({}): {}", code, batch.get(idx));
+                if (code == MessagingErrorCode.UNREGISTERED
+                        || code == MessagingErrorCode.INVALID_ARGUMENT) {
+                    staleTokens.add(batch.get(idx));
+                }
+            }
+        }
+        return staleTokens;
     }
 }
