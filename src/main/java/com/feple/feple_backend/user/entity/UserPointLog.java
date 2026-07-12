@@ -34,12 +34,12 @@ public class UserPointLog {
 
     protected UserPointLog() {}
 
-    public static UserPointLog of(User user, int delta, PointReason reason, Long refId) {
+    public static UserPointLog of(User user, PointEntry entry) {
         UserPointLog log = new UserPointLog();
         log.user = user;
-        log.delta = delta;
-        log.reason = reason;
-        log.refId = refId;
+        log.delta = entry.delta();
+        log.reason = entry.reason();
+        log.refId = entry.refId();
         return log;
     }
 }
