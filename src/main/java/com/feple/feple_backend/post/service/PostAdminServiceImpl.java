@@ -51,16 +51,16 @@ public class PostAdminServiceImpl implements PostAdminService {
                 .map(boardType -> hasKeyword
                         ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(boardType, kw, pageable)
                         : postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, pageable))
-                .orElseGet(() -> resolveRelationFilter(params, hasKeyword, kw, pageable))
+                .orElseGet(() -> resolveRelationFilter(params, kw, pageable))
                 .map(PostResponseDto::from);
     }
 
-    private Page<Post> resolveRelationFilter(PostAdminFilterDto params, boolean hasKeyword, String kw, PageRequest pageable) {
+    private Page<Post> resolveRelationFilter(PostAdminFilterDto params, String kw, PageRequest pageable) {
         PostRelationFilterStrategy strategy = relationFilterStrategies.get(params.filter());
         if (strategy != null) {
-            return strategy.findPosts(params, hasKeyword, kw, pageable);
+            return strategy.findPosts(params, kw, pageable);
         }
-        return hasKeyword
+        return !kw.isEmpty()
                 ? postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(kw, pageable)
                 : postRepository.findAllByOrderByCreatedAtDesc(pageable);
     }

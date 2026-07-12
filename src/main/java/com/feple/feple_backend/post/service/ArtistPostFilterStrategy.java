@@ -18,7 +18,8 @@ class ArtistPostFilterStrategy implements PostRelationFilterStrategy {
     public String filterKey() { return "ARTIST"; }
 
     @Override
-    public Page<Post> findPosts(PostAdminFilterDto params, boolean hasKeyword, String keyword, PageRequest pageable) {
+    public Page<Post> findPosts(PostAdminFilterDto params, String keyword, PageRequest pageable) {
+        boolean hasKeyword = !keyword.isEmpty();
         Long artistId = params.artistId();
         if (artistId != null) {
             return hasKeyword

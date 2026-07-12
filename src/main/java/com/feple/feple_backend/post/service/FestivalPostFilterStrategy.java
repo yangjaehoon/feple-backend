@@ -18,7 +18,8 @@ class FestivalPostFilterStrategy implements PostRelationFilterStrategy {
     public String filterKey() { return "FESTIVAL"; }
 
     @Override
-    public Page<Post> findPosts(PostAdminFilterDto params, boolean hasKeyword, String keyword, PageRequest pageable) {
+    public Page<Post> findPosts(PostAdminFilterDto params, String keyword, PageRequest pageable) {
+        boolean hasKeyword = !keyword.isEmpty();
         Long festivalId = params.festivalId();
         if (festivalId != null) {
             return hasKeyword

@@ -12,5 +12,6 @@ import org.springframework.data.domain.PageRequest;
  */
 public interface PostRelationFilterStrategy {
     String filterKey();
-    Page<Post> findPosts(PostAdminFilterDto params, boolean hasKeyword, String keyword, PageRequest pageable);
+    /** keyword는 {@link com.feple.feple_backend.global.JpqlLikeEscaper#escapeOrEmpty}로 escape된 값 — blank면 빈 문자열. */
+    Page<Post> findPosts(PostAdminFilterDto params, String keyword, PageRequest pageable);
 }
