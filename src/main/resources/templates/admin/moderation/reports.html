@@ -64,21 +64,8 @@
 
             <!-- 게시글 신고 테이블 -->
             <div th:if="${type == 'post'}">
-                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
-                    <input type="hidden" name="type" value="post"/>
-                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                    <input type="hidden" name="status" th:value="${status}"/>
-                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                </form>
-                <div class="bulk-toolbar" id="bulk-toolbar">
-                    <span class="bulk-count" id="select-count">0건 선택됨</span>
-                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
-                            data-endpoint="/admin/reports/bulk-dismiss"
-                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
-                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
-                            data-endpoint="/admin/reports/bulk-delete"
-                            data-confirm-tpl="선택한 {n}건의 게시글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 글 삭제</button>
-                </div>
+                <form th:replace="~{admin/fragments :: reportBulkForm(${type}, ${reports.number}, ${status}, ${keyword})}"></form>
+                <div th:replace="~{admin/fragments :: reportBulkToolbar('일괄 글 삭제', '게시글')}"></div>
                 <div class="table-wrap">
                 <table>
                     <thead>
@@ -105,56 +92,18 @@
                                 <a th:href="@{/admin/users/{id}(id=${report.postAuthorId})}"
                                    th:text="${report.posterNickname}"
                                    class="td-link"></a>
-                                <span th:with="cnt=${authorReportCounts.get(report.postAuthorId)}"
-                                      th:if="${cnt != null}"
-                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
-                                      class="report-count-badge"
-                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
+                                <span th:replace="~{admin/fragments :: reportCountBadge(${authorReportCounts}, ${report.postAuthorId})}"></span>
                             </div>
                             <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
                                  class="report-detail"
                                  th:text="${report.detail}"></div>
                         </td>
-                        <td>
-                            <span class="reason-badge"
-                                  th:classappend="'reason-' + ${report.reason}"
-                                  th:text="${report.reason.displayName}">
-                            </span>
-                        </td>
+                        <td><span th:replace="~{admin/fragments :: reportReasonBadge(${report.reason})}"></span></td>
                         <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
-                        <td>
-                            <span class="status-badge"
-                                  th:classappend="'status-' + ${report.status}"
-                                  th:text="${report.status.displayName}">
-                            </span>
-                        </td>
-                        <td>
-                            <div th:if="${report.pending}" class="cell-actions">
-                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
-                                    <input type="hidden" name="type" value="post"/>
-                                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                                    <input type="hidden" name="status" th:value="${status}"/>
-                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            data-confirm="게시글을 삭제하고 신고를 처리할까요?">
-                                        글 삭제
-                                    </button>
-                                </form>
-                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
-                                    <input type="hidden" name="type" value="post"/>
-                                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                                    <input type="hidden" name="status" th:value="${status}"/>
-                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                                    <button type="submit" class="btn btn-secondary btn-sm"
-                                            data-confirm="이 신고를 기각할까요?">
-                                        기각
-                                    </button>
-                                </form>
-                            </div>
-                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
-                        </td>
+                        <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
+                        <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '글 삭제', '게시글을 삭제하고 신고를 처리할까요?')}"></td>
                     </tr>
                     <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
                     </tbody>
@@ -164,21 +113,8 @@
 
             <!-- 댓글 신고 테이블 -->
             <div th:if="${type == 'comment'}">
-                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
-                    <input type="hidden" name="type" value="comment"/>
-                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                    <input type="hidden" name="status" th:value="${status}"/>
-                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                </form>
-                <div class="bulk-toolbar" id="bulk-toolbar">
-                    <span class="bulk-count" id="select-count">0건 선택됨</span>
-                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
-                            data-endpoint="/admin/reports/bulk-dismiss"
-                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
-                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
-                            data-endpoint="/admin/reports/bulk-delete"
-                            data-confirm-tpl="선택한 {n}건의 댓글을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 댓글 삭제</button>
-                </div>
+                <form th:replace="~{admin/fragments :: reportBulkForm(${type}, ${reports.number}, ${status}, ${keyword})}"></form>
+                <div th:replace="~{admin/fragments :: reportBulkToolbar('일괄 댓글 삭제', '댓글')}"></div>
                 <div class="table-wrap">
                 <table>
                     <thead>
@@ -203,11 +139,7 @@
                                 <a th:href="@{/admin/users/{id}(id=${report.commentAuthorId})}"
                                    th:text="${report.commentUserNickname}"
                                    class="td-link"></a>
-                                <span th:with="cnt=${authorReportCounts.get(report.commentAuthorId)}"
-                                      th:if="${cnt != null}"
-                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
-                                      class="report-count-badge"
-                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
+                                <span th:replace="~{admin/fragments :: reportCountBadge(${authorReportCounts}, ${report.commentAuthorId})}"></span>
                                 <span class="report-sep">•</span>
                                 <a th:href="@{/admin/posts/{id}(id=${report.commentPostId})}"
                                    th:text="${report.commentPostTitle}"
@@ -217,46 +149,12 @@
                                  class="report-detail"
                                  th:text="${report.detail}"></div>
                         </td>
-                        <td>
-                            <span class="reason-badge"
-                                  th:classappend="'reason-' + ${report.reason}"
-                                  th:text="${report.reason.displayName}">
-                            </span>
-                        </td>
+                        <td><span th:replace="~{admin/fragments :: reportReasonBadge(${report.reason})}"></span></td>
                         <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
-                        <td>
-                            <span class="status-badge"
-                                  th:classappend="'status-' + ${report.status}"
-                                  th:text="${report.status.displayName}">
-                            </span>
-                        </td>
-                        <td>
-                            <div th:if="${report.pending}" class="cell-actions">
-                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
-                                    <input type="hidden" name="type" value="comment"/>
-                                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                                    <input type="hidden" name="status" th:value="${status}"/>
-                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            data-confirm="댓글을 삭제하고 신고를 처리할까요?">
-                                        댓글 삭제
-                                    </button>
-                                </form>
-                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
-                                    <input type="hidden" name="type" value="comment"/>
-                                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                                    <input type="hidden" name="status" th:value="${status}"/>
-                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                                    <button type="submit" class="btn btn-secondary btn-sm"
-                                            data-confirm="이 신고를 기각할까요?">
-                                        기각
-                                    </button>
-                                </form>
-                            </div>
-                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
-                        </td>
+                        <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
+                        <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '댓글 삭제', '댓글을 삭제하고 신고를 처리할까요?')}"></td>
                     </tr>
                     <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
                     </tbody>
@@ -266,21 +164,8 @@
 
             <!-- 사진 신고 테이블 -->
             <div th:if="${type == 'photo'}">
-                <form id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
-                    <input type="hidden" name="type" value="photo"/>
-                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                    <input type="hidden" name="status" th:value="${status}"/>
-                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                </form>
-                <div class="bulk-toolbar" id="bulk-toolbar">
-                    <span class="bulk-count" id="select-count">0건 선택됨</span>
-                    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
-                            data-endpoint="/admin/reports/bulk-dismiss"
-                            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
-                    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
-                            data-endpoint="/admin/reports/bulk-delete"
-                            data-confirm-tpl="선택한 {n}건의 사진을 삭제할까요? 이 작업은 되돌릴 수 없습니다.">일괄 사진 삭제</button>
-                </div>
+                <form th:replace="~{admin/fragments :: reportBulkForm(${type}, ${reports.number}, ${status}, ${keyword})}"></form>
+                <div th:replace="~{admin/fragments :: reportBulkToolbar('일괄 사진 삭제', '사진')}"></div>
                 <div class="table-wrap">
                 <table>
                     <thead>
@@ -315,11 +200,7 @@
                                 <a th:href="@{/admin/users/{id}(id=${report.photoUploaderId})}"
                                    th:text="${report.photoUploaderNickname}"
                                    class="td-link"></a>
-                                <span th:with="cnt=${authorReportCounts.get(report.photoUploaderId)}"
-                                      th:if="${cnt != null}"
-                                      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
-                                      class="report-count-badge"
-                                      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
+                                <span th:replace="~{admin/fragments :: reportCountBadge(${authorReportCounts}, ${report.photoUploaderId})}"></span>
                                 <span class="report-sep">•</span>
                                 <span>아티스트: <span th:text="${report.photoArtistName}"></span></span>
                             </div>
@@ -327,46 +208,12 @@
                                  class="report-detail"
                                  th:text="${report.detail}"></div>
                         </td>
-                        <td>
-                            <span class="reason-badge"
-                                  th:classappend="'reason-' + ${report.reason}"
-                                  th:text="${report.reason.displayName}">
-                            </span>
-                        </td>
+                        <td><span th:replace="~{admin/fragments :: reportReasonBadge(${report.reason})}"></span></td>
                         <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
-                        <td>
-                            <span class="status-badge"
-                                  th:classappend="'status-' + ${report.status}"
-                                  th:text="${report.status.displayName}">
-                            </span>
-                        </td>
-                        <td>
-                            <div th:if="${report.pending}" class="cell-actions">
-                                <form th:action="@{/admin/reports/{id}/delete(id=${report.id})}" method="post">
-                                    <input type="hidden" name="type" value="photo"/>
-                                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                                    <input type="hidden" name="status" th:value="${status}"/>
-                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            data-confirm="사진을 삭제하고 신고를 처리할까요?">
-                                        사진 삭제
-                                    </button>
-                                </form>
-                                <form th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}" method="post">
-                                    <input type="hidden" name="type" value="photo"/>
-                                    <input type="hidden" name="page" th:value="${reports.number}"/>
-                                    <input type="hidden" name="status" th:value="${status}"/>
-                                    <input type="hidden" name="keyword" th:value="${keyword}"/>
-                                    <button type="submit" class="btn btn-secondary btn-sm"
-                                            data-confirm="이 신고를 기각할까요?">
-                                        기각
-                                    </button>
-                                </form>
-                            </div>
-                            <span th:unless="${report.pending}" class="report-resolved">처리 완료</span>
-                        </td>
+                        <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
+                        <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '사진 삭제', '사진을 삭제하고 신고를 처리할까요?')}"></td>
                     </tr>
                     <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '사진 신고 내역이 없습니다.')}"></tr>
                     </tbody>

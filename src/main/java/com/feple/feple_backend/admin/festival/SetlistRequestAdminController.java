@@ -27,7 +27,7 @@ public class SetlistRequestAdminController {
 
     @GetMapping
     public String list(
-            @RequestParam(defaultValue = "PENDING") String status,
+            @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "") String keyword,
             Model model) {
@@ -42,7 +42,7 @@ public class SetlistRequestAdminController {
 
     @PostMapping("/{id}/resolve")
     public String resolve(@PathVariable Long id,
-                          @RequestParam(defaultValue = "PENDING") String status,
+                          @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
                           @RequestParam(defaultValue = "0") int page,
                           @RequestParam(defaultValue = "") String keyword,
                           RedirectAttributes ra) {
@@ -59,9 +59,7 @@ public class SetlistRequestAdminController {
         long remaining = service.countByStatus(parseStatus(status));
         int maxPage = remaining > 0 ? (int) ((remaining - 1) / AdminConstants.LIST_PAGE_SIZE) : 0;
         int safePage = Math.min(page, maxPage);
-        String redirect = "redirect:/admin/setlist-requests?status=" + status + "&page=" + safePage;
-        if (!keyword.isBlank()) redirect += "&keyword=" + keyword;
-        return redirect;
+        return AdminActionUtils.listRedirect("/admin/setlist-requests", status, safePage, keyword);
     }
 
     private LineupChangeRequestStatus parseStatus(String status) {

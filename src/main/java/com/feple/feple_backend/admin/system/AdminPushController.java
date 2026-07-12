@@ -29,6 +29,8 @@ public class AdminPushController {
 
     private static final String PUSH_REDIRECT   = "redirect:/admin/push";
     private static final String SEND_ERROR_MSG  = "발송 중 오류가 발생했습니다.";
+    private static final int PUSH_TITLE_MAX_LENGTH = 100;
+    private static final int PUSH_BODY_MAX_LENGTH  = 500;
 
     private final AdminPushService adminPushService;
     private final AdminLogService adminLogService;
@@ -140,12 +142,12 @@ public class AdminPushController {
             ra.addFlashAttribute("errorMessage", "제목과 내용을 모두 입력해주세요.");
             return false;
         }
-        if (title.length() > 100) {
-            ra.addFlashAttribute("errorMessage", "푸시 제목은 100자 이하여야 합니다.");
+        if (title.length() > PUSH_TITLE_MAX_LENGTH) {
+            ra.addFlashAttribute("errorMessage", "푸시 제목은 " + PUSH_TITLE_MAX_LENGTH + "자 이하여야 합니다.");
             return false;
         }
-        if (body.length() > 500) {
-            ra.addFlashAttribute("errorMessage", "푸시 내용은 500자 이하여야 합니다.");
+        if (body.length() > PUSH_BODY_MAX_LENGTH) {
+            ra.addFlashAttribute("errorMessage", "푸시 내용은 " + PUSH_BODY_MAX_LENGTH + "자 이하여야 합니다.");
             return false;
         }
         return true;

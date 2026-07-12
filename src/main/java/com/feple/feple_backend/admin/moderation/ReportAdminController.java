@@ -136,7 +136,7 @@ public class ReportAdminController {
     }
 
     private String emptySelectionRedirect(ReportFilter filter, RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+        ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
         return redirectReports(filter);
     }
 

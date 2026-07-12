@@ -59,10 +59,8 @@ public class UserAdminController {
                              Model model, RedirectAttributes ra) {
         try {
             addDetailModel(model, userDetailAggregationService.getDetail(id));
-            UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/users")
-                    .queryParam("filter", listFilter.filter())
+            UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.fromPath("/admin/users"), listFilter)
                     .queryParam("page", listFilter.page());
-            if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
             if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
             model.addAttribute("returnUrl", builder.build().toUriString());
             model.addAttribute("listFilter", listFilter);
@@ -81,7 +79,7 @@ public class UserAdminController {
     public String bulkDeleteUsers(@RequestParam(required = false) List<Long> ids,
             RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
         } else {
             AdminActionUtils.tryAction(
                     () -> {
@@ -185,19 +183,22 @@ public class UserAdminController {
     }
 
     private String userListRedirect(UserListFilter listFilter) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/users")
-                .queryParam("filter", listFilter.filter())
+        UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.fromPath("/admin/users"), listFilter)
                 .queryParam("page", listFilter.page());
-        if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
         return AdminActionUtils.toRedirect(builder, listFilter.keyword());
     }
 
     private static String buildListParams(UserListFilter listFilter) {
-        UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-                .queryParam("filter", listFilter.filter());
-        if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
+        UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.newInstance(), listFilter);
         if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
         String query = builder.build().toUriString();
         return query.startsWith("?") ? query.substring(1) : query;
+    }
+
+    // filter/sort는 목록·상세·리다이렉트 URL 조립에서 공통으로 쓰이는 값 (FILTER_BANNED일 때 sort 생략)
+    private static UriComponentsBuilder withFilterAndSort(UriComponentsBuilder builder, UserListFilter listFilter) {
+        builder.queryParam("filter", listFilter.filter());
+        if (!FILTER_BANNED.equals(listFilter.filter())) builder.queryParam("sort", listFilter.sort());
+        return builder;
     }
 }

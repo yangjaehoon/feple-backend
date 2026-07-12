@@ -20,4 +20,6 @@ public final class AdminConstants {
     public static final String REPORT_TYPE_COMMENT = "comment";
     public static final String STATUS_PENDING      = "PENDING";
     public static final String STATUS_ALL          = "ALL";
+
+    public static final String MSG_EMPTY_SELECTION = "선택된 항목이 없습니다.";
 }

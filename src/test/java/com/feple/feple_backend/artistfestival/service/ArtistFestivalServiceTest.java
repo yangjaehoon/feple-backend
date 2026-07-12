@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
+import com.feple.feple_backend.artistfestival.dto.ArtistNameOption;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.event.ArtistAddedToFestivalEvent;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
@@ -362,9 +363,10 @@ class ArtistFestivalServiceTest {
         ArtistFestival af = artistFestival(artist(1L, "아이유"), festival(100L, null));
         given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(100L)).willReturn(List.of(af));
 
-        List<Map<String, Object>> result = service.getArtistFestivalsWithEnName(100L);
+        List<ArtistNameOption> result = service.getArtistFestivalsWithEnName(100L);
 
-        assertThat(result.get(0)).containsEntry("name", "아이유").containsEntry("nameEn", "아이유_EN");
+        assertThat(result.get(0).name()).isEqualTo("아이유");
+        assertThat(result.get(0).nameEn()).isEqualTo("아이유_EN");
     }
 
     @Test

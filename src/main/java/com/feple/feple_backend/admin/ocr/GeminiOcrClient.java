@@ -115,39 +115,29 @@ public class GeminiOcrClient {
     }
 
     private List<LineupRawResult> parseLineupJsonArray(String content) {
-        String json = extractJsonArray(content.trim());
-        try {
-            return objectMapper.readValue(json, new TypeReference<>() {});
-        } catch (Exception e) {
-            log.warn("Lineup OCR JSON parse failed, attempting partial recovery. error: {}", e.getMessage());
-            try {
-                String partial = recoverPartialArray(json);
-                if (partial != null) {
-                    return objectMapper.readValue(partial, new TypeReference<>() {});
-                }
-            } catch (Exception ex) {
-                log.warn("Lineup OCR partial recovery also failed", ex);
-            }
-            return List.of();
-        }
+        return parseJsonArrayWithRecovery(content, new TypeReference<>() {}, "Lineup OCR");
     }
 
     private List<OcrResultDto> parseJsonArray(String content) {
+        return parseJsonArrayWithRecovery(content, new TypeReference<>() {}, "OCR");
+    }
+
+    // 응답이 maxOutputTokens에 걸려 중간에 잘린 경우 마지막 완성된 객체까지만 복구
+    private <T> List<T> parseJsonArrayWithRecovery(String content, TypeReference<List<T>> typeRef, String logLabel) {
         String json = extractJsonArray(content.trim());
         try {
-            return objectMapper.readValue(json, new TypeReference<>() {});
+            return objectMapper.readValue(json, typeRef);
         } catch (Exception e) {
-            // 응답이 maxOutputTokens에 걸려 중간에 잘린 경우 마지막 완성된 객체까지만 복구
-            log.warn("OCR JSON parse failed (likely truncated), attempting partial recovery. error: {}", e.getMessage());
+            log.warn("{} JSON parse failed (likely truncated), attempting partial recovery. error: {}", logLabel, e.getMessage());
             try {
                 String partial = recoverPartialArray(json);
                 if (partial != null) {
-                    List<OcrResultDto> recovered = objectMapper.readValue(partial, new TypeReference<>() {});
-                    log.info("OCR partial recovery succeeded: {} entries", recovered.size());
+                    List<T> recovered = objectMapper.readValue(partial, typeRef);
+                    log.info("{} partial recovery succeeded: {} entries", logLabel, recovered.size());
                     return recovered;
                 }
             } catch (Exception ex) {
-                log.warn("OCR partial recovery also failed", ex);
+                log.warn("{} partial recovery also failed", logLabel, ex);
             }
             return List.of();
         }

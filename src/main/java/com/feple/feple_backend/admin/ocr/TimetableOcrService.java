@@ -11,9 +11,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,7 +32,7 @@ public class TimetableOcrService {
     }
 
     public OcrApplyResultDto applyEntries(OcrApplyRequestDto request) {
-        List<Map<String, String>> failures = new ArrayList<>();
+        List<OcrFailure> failures = new ArrayList<>();
         int savedCount = 0;
 
         List<OcrResultDto> entries = request.entries();
@@ -42,7 +40,7 @@ public class TimetableOcrService {
             OcrResultDto entry = entries.get(i);
             Optional<String> error = validateEntry(entry);
             if (error.isPresent()) {
-                failures.add(buildFailureMap(entry, error.get(), i));
+                failures.add(toFailure(entry, error.get(), i));
                 continue;
             }
             try {
@@ -53,7 +51,7 @@ public class TimetableOcrService {
                 String reason = (e instanceof IllegalArgumentException || e instanceof NoSuchElementException)
                         ? e.getMessage()
                         : "처리 중 오류 발생";
-                failures.add(buildFailureMap(entry, reason, i));
+                failures.add(toFailure(entry, reason, i));
             }
         }
         return new OcrApplyResultDto(savedCount, failures.size(), failures);
@@ -86,12 +84,11 @@ public class TimetableOcrService {
         return req;
     }
 
-    private Map<String, String> buildFailureMap(OcrResultDto entry, String reason, int index) {
-        Map<String, String> map = new HashMap<>();
-        map.put("index",  String.valueOf(index));
-        map.put("artist", Objects.requireNonNullElse(entry.artist(), "—"));
-        map.put("stage",  Objects.requireNonNullElse(entry.stage(),  "—"));
-        map.put("reason", Objects.requireNonNullElse(reason, "알 수 없는 오류"));
-        return map;
+    private OcrFailure toFailure(OcrResultDto entry, String reason, int index) {
+        return new OcrFailure(
+                index,
+                Objects.requireNonNullElse(entry.artist(), "—"),
+                Objects.requireNonNullElse(entry.stage(), "—"),
+                Objects.requireNonNullElse(reason, "알 수 없는 오류"));
     }
 }

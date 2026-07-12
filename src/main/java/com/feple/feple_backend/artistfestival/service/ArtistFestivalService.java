@@ -6,6 +6,7 @@ import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
+import com.feple.feple_backend.artistfestival.dto.ArtistNameOption;
 import com.feple.feple_backend.artistfestival.event.ArtistAddedToFestivalEvent;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
@@ -176,15 +177,10 @@ public class ArtistFestivalService {
                 });
     }
 
-    public List<Map<String, Object>> getArtistFestivalsWithEnName(Long festivalId) {
+    public List<ArtistNameOption> getArtistFestivalsWithEnName(Long festivalId) {
         return artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId)
                 .stream()
-                .map(af -> {
-                    Map<String, Object> artistInfo = new java.util.HashMap<>();
-                    artistInfo.put("name",   af.getArtistName());
-                    artistInfo.put("nameEn", af.getArtistNameEn() != null ? af.getArtistNameEn() : "");
-                    return artistInfo;
-                })
+                .map(af -> new ArtistNameOption(af.getArtistName(), af.getArtistNameEn() != null ? af.getArtistNameEn() : ""))
                 .toList();
     }
 

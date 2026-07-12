@@ -1,10 +1,13 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.ocr.GeminiUsageTracker;
+import com.feple.feple_backend.artistfestival.dto.ArtistNameOption;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.service.StageService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +45,9 @@ public class CrawlAdminController {
     private final ArtistFestivalService artistFestivalService;
 
     @GetMapping
-    public String crawlDashboard() {
+    public String crawlDashboard(Model model) {
+        model.addAttribute("allRegions", Region.values());
+        model.addAttribute("allGenres", MusicGenre.values());
         return "admin/system/crawl";
     }
 
@@ -63,16 +69,11 @@ public class CrawlAdminController {
 
     @GetMapping("/festivals")
     @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> getFestivals() {
+    public ResponseEntity<List<CrawlFestivalOption>> getFestivals() {
         List<FestivalResponseDto> festivals = festivalService.getAllFestivals(FestivalFilterCriteria.forAdmin());
-        List<Map<String, Object>> result = festivals.stream().map(f -> {
-            Map<String, Object> m = new HashMap<>();
-            m.put("id",        f.getId());
-            m.put("title",     f.getTitle());
-            m.put("startDate", f.getStartDateIso());
-            m.put("endDate",   f.getEndDateIso());
-            return m;
-        }).toList();
+        List<CrawlFestivalOption> result = festivals.stream()
+                .map(f -> new CrawlFestivalOption(f.getId(), f.getTitle(), f.getStartDateIso(), f.getEndDateIso()))
+                .toList();
         return ResponseEntity.ok(result);
     }
 
@@ -85,11 +86,10 @@ public class CrawlAdminController {
 
     @GetMapping("/festivals/{festivalId}/artists")
     @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> getArtists(@PathVariable Long festivalId) {
+    public ResponseEntity<List<ArtistNameOption>> getArtists(@PathVariable Long festivalId) {
         return ResponseEntity.ok(
                 artistFestivalService.getArtistFestivalsWithEnName(festivalId).stream()
-                        .sorted((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(
-                                (String) a.get("name"), (String) b.get("name")))
+                        .sorted((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(a.name(), b.name()))
                         .toList());
     }
 }

@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -48,7 +47,7 @@ class TimetableOcrServiceTest {
 
         assertThat(result.savedCount()).isEqualTo(0);
         assertThat(result.failedCount()).isEqualTo(1);
-        assertThat(result.failures().get(0).get("reason")).isEqualTo("날짜 누락");
+        assertThat(result.failures().get(0).reason()).isEqualTo("날짜 누락");
         verify(timetableService, never()).createEntry(anyLong(), any());
     }
 
@@ -60,7 +59,7 @@ class TimetableOcrServiceTest {
         OcrApplyResultDto result = ocrService.applyEntries(req);
 
         assertThat(result.failedCount()).isEqualTo(1);
-        assertThat(result.failures().get(0).get("reason")).isEqualTo("날짜 누락");
+        assertThat(result.failures().get(0).reason()).isEqualTo("날짜 누락");
     }
 
     @Test
@@ -71,7 +70,7 @@ class TimetableOcrServiceTest {
         OcrApplyResultDto result = ocrService.applyEntries(req);
 
         assertThat(result.failedCount()).isEqualTo(1);
-        assertThat(result.failures().get(0).get("reason")).isEqualTo("시작/종료 시간 누락");
+        assertThat(result.failures().get(0).reason()).isEqualTo("시작/종료 시간 누락");
     }
 
     @Test
@@ -82,7 +81,7 @@ class TimetableOcrServiceTest {
         OcrApplyResultDto result = ocrService.applyEntries(req);
 
         assertThat(result.failedCount()).isEqualTo(1);
-        assertThat(result.failures().get(0).get("reason")).startsWith("날짜 형식 오류");
+        assertThat(result.failures().get(0).reason()).startsWith("날짜 형식 오류");
     }
 
     @Test
@@ -95,7 +94,7 @@ class TimetableOcrServiceTest {
 
         assertThat(result.savedCount()).isEqualTo(0);
         assertThat(result.failedCount()).isEqualTo(1);
-        assertThat(result.failures().get(0).get("reason")).isEqualTo("스테이지 없음");
+        assertThat(result.failures().get(0).reason()).isEqualTo("스테이지 없음");
     }
 
     @Test
@@ -129,9 +128,9 @@ class TimetableOcrServiceTest {
 
         OcrApplyResultDto result = ocrService.applyEntries(req);
 
-        Map<String, String> failure = result.failures().get(0);
-        assertThat(failure.get("index")).isEqualTo("0");
-        assertThat(failure.get("artist")).isEqualTo("아이유");
+        OcrFailure failure = result.failures().get(0);
+        assertThat(failure.index()).isEqualTo(0);
+        assertThat(failure.artist()).isEqualTo("아이유");
     }
 
     @Test
@@ -141,7 +140,7 @@ class TimetableOcrServiceTest {
 
         OcrApplyResultDto result = ocrService.applyEntries(req);
 
-        assertThat(result.failures().get(0).get("artist")).isEqualTo("—");
+        assertThat(result.failures().get(0).artist()).isEqualTo("—");
     }
 
     // ── geminiOcrClient 위임 메서드 ───────────────────────────────────────────

@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,8 +53,7 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         // SecurityConfig의 adminFilterChain이 /admin/** 전체에 hasRole("ADMIN")을 강제하므로
         // 이 시점엔 이미 인증된 ADMIN이어야 함. 그래도 방어적으로 미인증 요청은 거부한다(fail-closed).
         if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            response.sendRedirect("/admin/access-denied");
-            return false;
+            return denyAccess(response);
         }
 
         String uri = request.getRequestURI();
@@ -66,22 +66,17 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
 
         if (matchedPrefix != null) {
             AdminPermission required = PREFIX_MAP.get(matchedPrefix);
-
-            if (required == null) {
-                // SUPER_ADMIN only path
-                if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))) {
-                    response.sendRedirect("/admin/access-denied");
-                    return false;
-                }
-            } else {
-                String permAuthority = "PERM_" + required.name();
-                if (!auth.getAuthorities().contains(new SimpleGrantedAuthority(permAuthority))) {
-                    response.sendRedirect("/admin/access-denied");
-                    return false;
-                }
+            String requiredAuthority = required == null ? "ROLE_SUPER_ADMIN" : "PERM_" + required.name();
+            if (!auth.getAuthorities().contains(new SimpleGrantedAuthority(requiredAuthority))) {
+                return denyAccess(response);
             }
         }
 
         return true;
+    }
+
+    private static boolean denyAccess(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/admin/access-denied");
+        return false;
     }
 }

@@ -45,7 +45,8 @@ class CrawlAdminControllerTest {
     void 크롤_대시보드_뷰_반환() throws Exception {
         mockMvc.perform(get("/admin/crawl"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/system/crawl"));
+                .andExpect(view().name("admin/system/crawl"))
+                .andExpect(model().attributeExists("allRegions", "allGenres"));
     }
 
     // ── GET /admin/crawl/quota ────────────────────────────────────────────────

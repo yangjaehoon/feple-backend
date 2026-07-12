@@ -280,5 +280,97 @@
     </div>
 </div>
 
+<!-- ── 대시보드 카드 헤더 (아이콘+제목 + 선택적 배지 + 선택적 전체보기 링크) ── -->
+<div th:fragment="dashboardCardHeader(icon, title, badgeCount, badgeClass, viewAllUrl)" class="db-card-header">
+    <span class="db-card-title">[[${icon}]] [[${title}]]
+        <span th:if="${badgeCount != null and badgeCount > 0}"
+              th:class="'count-badge ' + ${badgeClass}"
+              th:text="${badgeCount}"></span>
+    </span>
+    <a th:if="${viewAllUrl != null}" class="btn btn-secondary btn-sm" th:href="${viewAllUrl}">전체보기</a>
+</div>
+
+<!-- ── 색상 피커 (운영 항목 추가 폼 / 타임테이블 수정 모달 공통) ── -->
+<div th:fragment="colorPicker(targetId, noneActive)" class="color-picker-row">
+    <button type="button" class="color-swatch swatch-none" th:classappend="${noneActive} ? 'active' : ''"
+            data-color="" th:attr="data-target=${targetId}" title="없음">없음</button>
+    <button type="button" class="color-swatch" style="background:#EF4444"
+            data-color="#EF4444" th:attr="data-target=${targetId}" title="빨강"></button>
+    <button type="button" class="color-swatch" style="background:#F97316"
+            data-color="#F97316" th:attr="data-target=${targetId}" title="주황"></button>
+    <button type="button" class="color-swatch" style="background:#F59E0B"
+            data-color="#F59E0B" th:attr="data-target=${targetId}" title="노랑"></button>
+    <button type="button" class="color-swatch" style="background:#22C55E"
+            data-color="#22C55E" th:attr="data-target=${targetId}" title="초록"></button>
+    <button type="button" class="color-swatch" style="background:#3B82F6"
+            data-color="#3B82F6" th:attr="data-target=${targetId}" title="파랑"></button>
+    <button type="button" class="color-swatch" style="background:#8B5CF6"
+            data-color="#8B5CF6" th:attr="data-target=${targetId}" title="보라"></button>
+    <button type="button" class="color-swatch" style="background:#EC4899"
+            data-color="#EC4899" th:attr="data-target=${targetId}" title="핑크"></button>
+    <button type="button" class="color-swatch" style="background:#6B7280"
+            data-color="#6B7280" th:attr="data-target=${targetId}" title="회색"></button>
+    <label class="color-custom-label" title="직접 선택">
+        <span>직접</span>
+        <input type="color" class="color-custom-input" th:attr="data-target=${targetId}" value="#000000"/>
+    </label>
+</div>
+
+<!-- ── 신고 관리: type/page/status/keyword 필터 hidden 필드 (post/comment/photo 공통) ── -->
+<th:block th:fragment="reportHiddenFields(type, page, status, keyword)">
+    <input type="hidden" name="type" th:value="${type}"/>
+    <input type="hidden" name="page" th:value="${page}"/>
+    <input type="hidden" name="status" th:value="${status}"/>
+    <input type="hidden" name="keyword" th:value="${keyword}"/>
+</th:block>
+
+<!-- ── 신고 관리: 일괄 처리용 숨김 폼 ── -->
+<form th:fragment="reportBulkForm(type, page, status, keyword)"
+      id="bulk-form" th:action="@{/admin/reports/bulk-dismiss}" method="post" class="d-none">
+    <th:block th:insert="~{admin/fragments :: reportHiddenFields(${type}, ${page}, ${status}, ${keyword})}"></th:block>
+</form>
+
+<!-- ── 신고 관리: 일괄 처리 툴바 ── -->
+<div th:fragment="reportBulkToolbar(deleteLabel, deleteNoun)" class="bulk-toolbar" id="bulk-toolbar">
+    <span class="bulk-count" id="select-count">0건 선택됨</span>
+    <button type="button" class="btn btn-secondary btn-sm bulk-action-btn"
+            data-endpoint="/admin/reports/bulk-dismiss"
+            data-confirm-tpl="선택한 {n}건을 모두 기각할까요?">일괄 기각</button>
+    <button type="button" class="btn btn-danger btn-sm bulk-action-btn"
+            data-endpoint="/admin/reports/bulk-delete"
+            th:attr="data-confirm-tpl=|선택한 {n}건의 ${deleteNoun}을 삭제할까요? 이 작업은 되돌릴 수 없습니다.|"
+            th:text="${deleteLabel}"></button>
+</div>
+
+<!-- ── 신고 관리: 누적 신고 건수 배지 ── -->
+<span th:fragment="reportCountBadge(counts, authorId)" th:with="cnt=${counts.get(authorId)}"
+      th:if="${cnt != null}"
+      th:classappend="${cnt >= 5} ? 'report-count-high' : 'report-count-low'"
+      class="report-count-badge"
+      th:text="'누적 신고 ' + ${cnt} + '건'"></span>
+
+<!-- ── 신고 관리: 신고 사유 배지 ── -->
+<span th:fragment="reportReasonBadge(reason)" class="reason-badge"
+      th:classappend="'reason-' + ${reason}" th:text="${reason.displayName}"></span>
+
+<!-- ── 신고 관리: 처리 상태 배지 ── -->
+<span th:fragment="reportStatusBadge(status)" class="status-badge"
+      th:classappend="'status-' + ${status}" th:text="${status.displayName}"></span>
+
+<!-- ── 신고 관리: 삭제/기각 처리 버튼 셀 ── -->
+<td th:fragment="reportActionsCell(type, reportId, pending, page, status, keyword, deleteLabel, deleteConfirm)">
+    <div th:if="${pending}" class="cell-actions">
+        <form th:action="@{/admin/reports/{id}/delete(id=${reportId})}" method="post">
+            <th:block th:insert="~{admin/fragments :: reportHiddenFields(${type}, ${page}, ${status}, ${keyword})}"></th:block>
+            <button type="submit" class="btn btn-danger btn-sm" th:attr="data-confirm=${deleteConfirm}" th:text="${deleteLabel}"></button>
+        </form>
+        <form th:action="@{/admin/reports/{id}/dismiss(id=${reportId})}" method="post">
+            <th:block th:insert="~{admin/fragments :: reportHiddenFields(${type}, ${page}, ${status}, ${keyword})}"></th:block>
+            <button type="submit" class="btn btn-secondary btn-sm" data-confirm="이 신고를 기각할까요?">기각</button>
+        </form>
+    </div>
+    <span th:unless="${pending}" class="report-resolved">처리 완료</span>
+</td>
+
 </body>
 </html>

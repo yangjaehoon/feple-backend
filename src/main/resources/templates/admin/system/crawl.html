@@ -124,33 +124,16 @@
                             <label class="form-label-md">지역</label>
                             <select id="scrapeRegion" class="scrape-region">
                                 <option value="">선택 안 함</option>
-                                <option value="SEOUL">서울</option>
-                                <option value="BUSAN">부산</option>
-                                <option value="INCHEON">인천</option>
-                                <option value="DAEGU">대구</option>
-                                <option value="DAEJEON">대전</option>
-                                <option value="GWANGJU">광주</option>
-                                <option value="ULSAN">울산</option>
-                                <option value="SEJONG">세종</option>
-                                <option value="GYEONGGI">경기도</option>
-                                <option value="GANGWON">강원도</option>
-                                <option value="CHUNGBUK">충청북도</option>
-                                <option value="CHUNGNAM">충청남도</option>
-                                <option value="GYEONGBUK">경상북도</option>
-                                <option value="GYEONGNAM">경상남도</option>
-                                <option value="JEONBUK">전라북도</option>
-                                <option value="JEONNAM">전라남도</option>
-                                <option value="JEJU">제주도</option>
-                                <option value="ETC">기타</option>
+                                <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r.displayName}"></option>
                             </select>
                         </div>
                         <div>
                             <label class="form-label-md">장르</label>
                             <div class="genre-list">
-                                <label class="genre-tag"><input type="checkbox" name="scrapeGenres" value="HIP_HOP"/> Hip-hop</label>
-                                <label class="genre-tag"><input type="checkbox" name="scrapeGenres" value="INDIE"/> Indie</label>
-                                <label class="genre-tag"><input type="checkbox" name="scrapeGenres" value="BAND"/> Band</label>
-                                <label class="genre-tag"><input type="checkbox" name="scrapeGenres" value="ETC"/> 기타</label>
+                                <label th:each="g : ${allGenres}" class="genre-tag">
+                                    <input type="checkbox" name="scrapeGenres" th:value="${g}"/>
+                                    <span th:text="${g.displayName}"></span>
+                                </label>
                             </div>
                         </div>
                     </div>

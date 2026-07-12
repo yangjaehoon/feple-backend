@@ -82,7 +82,7 @@ public class PostAdminController {
                                   @ModelAttribute PostListParams params,
                                   RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
         } else {
             AdminActionUtils.tryAction(
                     () -> {

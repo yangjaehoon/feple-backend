@@ -19,6 +19,10 @@ import java.util.Set;
 @Transactional
 public class AdminAccountService {
 
+    private static final int USERNAME_MAX_LENGTH = 50;
+    private static final int PASSWORD_MIN_LENGTH = 8;
+    private static final int PASSWORD_MAX_LENGTH = 100;
+
     private final AdminAccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageService;
@@ -100,18 +104,18 @@ public class AdminAccountService {
     private void validateNewAccount(String username, String password) {
         if (username == null || username.isBlank())
             throw new IllegalArgumentException("아이디를 입력해주세요.");
-        if (username.length() > 50)
-            throw new IllegalArgumentException("아이디는 50자 이하여야 합니다.");
+        if (username.length() > USERNAME_MAX_LENGTH)
+            throw new IllegalArgumentException("아이디는 " + USERNAME_MAX_LENGTH + "자 이하여야 합니다.");
         validatePasswordComplexity(password);
         if (accountRepository.existsByUsername(username))
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
     }
 
     static void validatePasswordComplexity(String password) {
-        if (password == null || password.length() < 8)
-            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
-        if (password.length() > 100)
-            throw new IllegalArgumentException("비밀번호는 100자 이하여야 합니다.");
+        if (password == null || password.length() < PASSWORD_MIN_LENGTH)
+            throw new IllegalArgumentException("비밀번호는 " + PASSWORD_MIN_LENGTH + "자 이상이어야 합니다.");
+        if (password.length() > PASSWORD_MAX_LENGTH)
+            throw new IllegalArgumentException("비밀번호는 " + PASSWORD_MAX_LENGTH + "자 이하여야 합니다.");
         boolean hasLetter  = password.chars().anyMatch(Character::isLetter);
         boolean hasDigit   = password.chars().anyMatch(Character::isDigit);
         boolean hasSpecial = password.chars().anyMatch(c -> !Character.isLetterOrDigit(c));

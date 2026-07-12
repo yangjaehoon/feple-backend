@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.certification;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
@@ -122,7 +123,7 @@ public class CertificationAdminController {
                               Authentication auth,
                               RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
             return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
         }
         AdminActionUtils.tryAction(
@@ -145,7 +146,7 @@ public class CertificationAdminController {
                              Authentication auth,
                              RedirectAttributes ra) {
         if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", "선택된 항목이 없습니다.");
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
             return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
         }
         AdminActionUtils.tryAction(
