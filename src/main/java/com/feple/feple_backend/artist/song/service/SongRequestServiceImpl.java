@@ -132,7 +132,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
             if (videoOpt.isPresent()) {
                 YoutubeVideoDto video = videoOpt.get();
                 Artist artist = request.getArtist();
-                if (!songRepository.existsByYoutubeVideoIdAndArtistId(video.getVideoId(), artist.getId())) {
+                if (!songRepository.existsByYoutubeVideoIdAndArtistId(video.getVideoId(), request.getArtistId())) {
                     Song song = Song.builder()
                             .title(video.getTitle())
                             .youtubeVideoId(video.getVideoId())
