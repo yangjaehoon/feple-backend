@@ -141,41 +141,49 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         boolean songSort   = isSongCountSort(sort);
         boolean hasKeyword = hasSearchKeyword(keyword);
 
-        if (hasKeyword || songSort) {
-            // 키워드 검색·곡수 정렬은 인메모리 처리 후 PageImpl로 슬라이싱
-            Map<Long, Integer> songCountMap = buildSongCountMap();
-            List<Artist> artists = hasKeyword
-                    ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(keyword.trim()))
-                    : artistRepository.findAll();
-            if (genre != null) {
-                artists = artists.stream().filter(a -> a.getGenres().contains(genre)).toList();
-            }
-            List<ArtistResponseDto> dtos = artists.stream()
-                    .map(a -> ArtistResponseDto.from(a,
-                            fileStorageService.buildUrl(a.getProfileImageKey()),
-                            songCountMap.getOrDefault(a.getId(), 0)))
-                    .collect(Collectors.toCollection(ArrayList::new));
-            if ("songs".equals(sort)) {
-                dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount).reversed());
-            } else if ("songs_asc".equals(sort)) {
-                dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount));
-            }
-            int start = page * ADMIN_PAGE_SIZE;
-            int end   = Math.min(start + ADMIN_PAGE_SIZE, dtos.size());
-            return new PageImpl<>(start >= dtos.size() ? List.of() : dtos.subList(start, end),
-                    PageRequest.of(page, ADMIN_PAGE_SIZE), dtos.size());
-        }
+        return (hasKeyword || songSort)
+                ? getAdminArtistListInMemory(sort, keyword, genre, page)
+                : getAdminArtistListFromDb(sort, genre, page);
+    }
 
-        // 일반 케이스: DB 레벨 페이지네이션
+    // 키워드 검색·곡수 정렬은 인메모리 처리 후 PageImpl로 슬라이싱
+    private Page<ArtistResponseDto> getAdminArtistListInMemory(String sort, String keyword, MusicGenre genre, int page) {
+        Map<Long, Integer> songCountMap = buildSongCountMap();
+        List<Artist> artists = hasSearchKeyword(keyword)
+                ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(keyword.trim()))
+                : artistRepository.findAll();
+        if (genre != null) {
+            artists = artists.stream().filter(a -> a.getGenres().contains(genre)).toList();
+        }
+        List<ArtistResponseDto> dtos = artists.stream()
+                .map(a -> toAdminDto(a, songCountMap))
+                .collect(Collectors.toCollection(ArrayList::new));
+        if ("songs".equals(sort)) {
+            dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount).reversed());
+        } else if ("songs_asc".equals(sort)) {
+            dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount));
+        }
+        int start = page * ADMIN_PAGE_SIZE;
+        int end   = Math.min(start + ADMIN_PAGE_SIZE, dtos.size());
+        return new PageImpl<>(start >= dtos.size() ? List.of() : dtos.subList(start, end),
+                PageRequest.of(page, ADMIN_PAGE_SIZE), dtos.size());
+    }
+
+    // 일반 케이스: DB 레벨 페이지네이션
+    private Page<ArtistResponseDto> getAdminArtistListFromDb(String sort, MusicGenre genre, int page) {
         PageRequest pageable = PageRequest.of(page, ADMIN_PAGE_SIZE, adminSort(sort));
         Page<Artist> artistPage = (genre != null)
                 ? artistRepository.findByGenreName(genre.name(), pageable)
                 : artistRepository.findAll(pageable);
         List<Long> artistIds = artistPage.getContent().stream().map(Artist::getId).toList();
         Map<Long, Integer> songCountMap = buildSongCountMapForIds(artistIds);
-        return artistPage.map(a -> ArtistResponseDto.from(a,
-                fileStorageService.buildUrl(a.getProfileImageKey()),
-                songCountMap.getOrDefault(a.getId(), 0)));
+        return artistPage.map(a -> toAdminDto(a, songCountMap));
+    }
+
+    private ArtistResponseDto toAdminDto(Artist artist, Map<Long, Integer> songCountMap) {
+        return ArtistResponseDto.from(artist,
+                fileStorageService.buildUrl(artist.getProfileImageKey()),
+                songCountMap.getOrDefault(artist.getId(), 0));
     }
 
     private Map<Long, Integer> buildSongCountMap() {
