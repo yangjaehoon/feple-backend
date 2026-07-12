@@ -32,13 +32,8 @@ jobs:
         run: |
           mkdir -p src/main/resources
           printf '%s' "$APPLICATION_LOCAL_YAML" > src/main/resources/application-local.yaml
-          # Strip spring.flyway.enabled=false so Flyway runs migrations on the production startup
-          python3 -c "
-import re, pathlib
-p = pathlib.Path('src/main/resources/application-local.yaml')
-content = re.sub(r'\n  flyway:\n    enabled: false[^\n]*', '', p.read_text())
-p.write_text(content)
-"
+          # Strip spring.flyway.enabled=false so Flyway runs migrations on production startup
+          sed -i '/^  flyway:$/{N; /\n    enabled: false/d}' src/main/resources/application-local.yaml
 
       - name: Test with Gradle
         run: ./gradlew cleanTest test
