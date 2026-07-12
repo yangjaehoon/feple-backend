@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ══════════════════════════════════
+     탭 2 — OCR 파싱
+     ══════════════════════════════════ -->
+<div th:fragment="ocrTab" id="tab-ocr" class="tab-panel">
+
+    <!-- Gemini 사용량 -->
+    <div class="quota-bar" id="quotaBar">
+        <span class="quota-label">Gemini 무료 API</span>
+        <div class="quota-track">
+            <div class="quota-fill" id="quotaFill" style="width:0%"></div>
+        </div>
+        <span class="quota-text" id="quotaText">로딩 중...</span>
+        <span class="quota-reset">태평양 자정 리셋</span>
+    </div>
+
+    <!-- 1. 설정 -->
+    <div class="crawl-card">
+        <div class="crawl-card-title">1. 적용 대상 설정</div>
+
+        <div class="select-row">
+            <label>페스티벌</label>
+            <div class="fest-combobox" id="selFestival"></div>
+            <label title="날짜가 비어있는 행에만 보충합니다. 이미지에서 감지된 날짜는 유지됩니다.">날짜 미설정 행 보충</label>
+            <input type="date" id="selDate" disabled title="선택 시 모든 행의 날짜가 변경됩니다"/>
+        </div>
+        <p id="ocrFestivalError" class="select-field-error"></p>
+        <div class="ocr-hint">
+            &#8226; 날짜 미설정 행 보충은 날짜가 비어있는 행에만 적용됩니다. 이미지에서 감지된 날짜는 유지됩니다.
+        </div>
+
+        <!-- 업로드 영역 -->
+        <input type="file" id="ocrFileInput" accept="image/*" style="display:none">
+        <div class="ocr-upload-zone" id="ocrDropZone">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-title">타임테이블 이미지를 드래그하거나 클릭하여 업로드</div>
+            <div class="upload-sub">JPG, PNG, WEBP 지원 · 최대 10MB</div>
+            <div class="mt-14">
+                <button id="ocrFileSelectBtn" class="btn btn-secondary btn-sm">파일 선택</button>
+            </div>
+        </div>
+
+        <div class="parse-start-row">
+            <span id="ocrSelectedFileName" class="hint"></span>
+            <span id="ocrStartError" class="parse-inline-error"></span>
+            <button id="btnStartOcr" class="btn btn-primary">파싱 시작</button>
+        </div>
+
+        <!-- 진행 표시 -->
+        <div class="progress-bar-wrap" id="ocrProgress">
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="ocrProgressFill" style="width:0%"></div>
+            </div>
+            <div class="progress-label" id="ocrProgressLabel">AI 분석 중...</div>
+        </div>
+    </div>
+
+    <!-- 2. 결과 편집 -->
+    <div class="crawl-card">
+        <div class="crawl-card-title crawl-card-title-sb">
+            <span>2. 파싱 결과 검토 &amp; 편집</span>
+            <div class="action-row">
+                <button class="btn btn-secondary btn-sm" id="btnAddRow">+ 행 추가</button>
+                <button class="btn btn-primary" id="btnApplyOcr" disabled>타임테이블에 적용</button>
+            </div>
+        </div>
+
+        <div class="note-box d-none" id="ocrTruncatedBox">
+            ⚠️ AI 응답이 도중에 잘려 일부 항목이 누락됐을 수 있습니다. 아래 목록을 실제 포스터와 대조해 확인하세요.
+        </div>
+
+        <div class="note-box d-none" id="ocrWarnBox">
+            ⚠️ 확신도가 낮은 항목(🔴)은 수동으로 검토 후 적용하세요.
+        </div>
+
+        <div class="empty-state" id="ocrEmptyState">
+            <div class="empty-icon">🤖</div>
+            <div>이미지를 업로드하면 AI가 타임테이블을 자동으로 파싱합니다.</div>
+        </div>
+
+        <div class="ocr-preview-wrap" id="ocrPreviewWrap">
+            <div class="ocr-image-preview">
+                <img id="ocrPreviewImg" src="" alt="타임테이블 이미지">
+            </div>
+            <div class="ocr-result-area">
+                <table class="parse-table">
+                    <thead>
+                    <tr>
+                        <th class="col-w28">#</th>
+                        <th>아티스트명</th>
+                        <th>스테이지</th>
+                        <th class="col-w110">날짜</th>
+                        <th class="col-w80">시작</th>
+                        <th class="col-w80">종료</th>
+                        <th class="col-w56">확신도</th>
+                        <th style="min-width:130px">오류 사유</th>
+                        <th class="col-w28"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="ocrParseBody"></tbody>
+                </table>
+                <div class="ocr-legend">
+                    🟢 90+ &nbsp; 🟡 70~89 &nbsp; 🔴 ~69 — 낮은 항목은 직접 수정하세요.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 3. 처리 이력 -->
+    <div class="crawl-card">
+        <div class="crawl-card-title">3. OCR 처리 이력</div>
+        <table class="compact-table" id="ocrHistoryTable">
+            <thead>
+            <tr>
+                <th>페스티벌</th>
+                <th>날짜</th>
+                <th>저장 수</th>
+                <th>실패 수</th>
+                <th>처리 일시</th>
+            </tr>
+            </thead>
+            <tbody id="ocrHistoryBody">
+            <tr><td colspan="5" class="td-empty-center">처리된 항목이 없습니다.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div><!-- /tab-ocr -->
+
+</body>
+</html>

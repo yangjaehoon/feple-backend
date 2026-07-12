@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ── 셋리스트 관리 ── -->
+<div th:fragment="setlistCard" id="setlist" class="card">
+    <div class="card-header">
+        <div class="card-title">
+            🎵 셋리스트 관리
+            <span class="card-count" th:text="${#lists.size(participatingArtists)}"></span>
+        </div>
+    </div>
+    <div class="card-body">
+        <p class="card-hint">
+            아티스트별로 이 페스티벌에서 부른 곡을 등록하세요. 순서는 라인업 순서를 따릅니다.
+        </p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th class="col-w40">순서</th>
+                    <th>아티스트</th>
+                    <th>등록된 곡 수</th>
+                    <th>편집</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="af : ${participatingArtists}">
+                    <td class="td-center td-sub td-muted"
+                        th:text="${af.lineupOrder ?: '-'}"></td>
+                    <td class="td-bold" th:text="${af.artistName}"></td>
+                    <td>
+                        <th:block th:with="cnt=${setlistCounts.get(af.artistFestivalId) ?: 0}">
+                            <span th:if="${cnt > 0}"
+                                  class="setlist-count"
+                                  th:text="${cnt} + '곡'"></span>
+                            <span th:if="${cnt == 0}"
+                                  class="setlist-none">미등록</span>
+                        </th:block>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/artists/{aId}/setlist/{afId}(aId=${af.artistId}, afId=${af.artistFestivalId}, festivalId=${festival.id})}"
+                           class="btn btn-warning btn-sm">편집</a>
+                    </td>
+                </tr>
+                <tr th:if="${participatingArtists.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(4, '참여 아티스트가 없습니다. 먼저 아티스트를 추가해주세요.')}"></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

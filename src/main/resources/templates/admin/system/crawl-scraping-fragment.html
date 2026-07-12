@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ══════════════════════════════════
+     탭 1 — 웹 스크래핑 (뼈대)
+     ══════════════════════════════════ -->
+<div th:fragment="scrapingTab" id="tab-scraping" class="tab-panel active">
+    <div class="info-box">
+        ℹ️ 스크래핑한 데이터는 <strong>대기 중</strong> 상태로 저장되며, 관리자가 승인한 항목만 앱에 반영됩니다.
+    </div>
+    <div class="crawl-card">
+        <div class="crawl-card-title">1. 사이트 선택 &amp; URL 입력 <span class="badge-wip">구현 예정</span></div>
+        <div class="source-grid">
+            <label class="source-card selected">
+                <input type="radio" name="crawlSource" value="interpark" checked>
+                <div class="source-logo source-logo-interpark">🎫</div>인터파크
+            </label>
+            <label class="source-card">
+                <input type="radio" name="crawlSource" value="yes24">
+                <div class="source-logo source-logo-yes24">🎟️</div>예스24
+            </label>
+            <label class="source-card">
+                <input type="radio" name="crawlSource" value="melon">
+                <div class="source-logo source-logo-melon">🍈</div>멜론티켓
+            </label>
+            <label class="source-card">
+                <input type="radio" name="crawlSource" value="direct">
+                <div class="source-logo source-logo-direct">🔗</div>직접 입력
+            </label>
+        </div>
+        <div class="url-row">
+            <input type="text" id="crawlUrl" placeholder="페스티벌 상세 페이지 URL 붙여넣기"/>
+            <button class="btn btn-primary" id="btnStartCrawl" disabled>스크래핑 시작</button>
+        </div>
+        <div class="hint mb-16">* 해당 사이트의 이용약관 범위 내에서 공개 정보만 수집합니다.</div>
+    </div>
+    <div class="crawl-card">
+        <div class="crawl-card-title">2. 수집 결과</div>
+
+        <!-- 초기 빈 상태 -->
+        <div class="empty-state" id="scrapeEmptyState">
+            <div class="empty-icon">🕸️</div>
+            <div>아직 수집된 데이터가 없습니다.</div>
+            <div class="hint mt-4">URL을 입력하고 스크래핑을 시작하세요.</div>
+        </div>
+
+        <!-- 로딩 -->
+        <div id="scrapeLoading" class="empty-state d-none">
+            <div class="spinner-lg"></div>
+            <div class="scrape-loading-txt">페이지 분석 중...</div>
+        </div>
+
+        <!-- 결과 편집 폼 -->
+        <div id="scrapeResultForm" class="d-none">
+            <div class="info-box mb-14">
+                <strong id="scrapeSourceLabel">인터파크</strong>에서 스크래핑된 결과입니다. 내용을 확인하고 수정한 뒤 등록하세요.
+            </div>
+            <div id="scrapeWarnMsg" class="note-box mb-14 d-none"></div>
+
+            <!-- 포스터 + 필드 2단 -->
+            <div class="scrape-layout">
+                <div class="scrape-poster-col">
+                    <div id="scrapePosterWrap" class="poster-wrap">
+                        <img id="scrapePosterImg" src="" alt="포스터"
+                             class="poster-img-full d-none"
+                             onerror="this.style.display='none'; document.getElementById('scrapePosterEmpty').style.display='flex'"/>
+                        <div id="scrapePosterEmpty" class="poster-empty">
+                            <div class="poster-empty-icon">🖼️</div>
+                            <div>이미지 없음</div>
+                        </div>
+                    </div>
+                    <p class="poster-hint">포스터는 등록 후 수정 화면에서 업로드하세요.</p>
+                </div>
+                <div class="scrape-fields">
+                    <div>
+                        <label class="form-label-md">제목 <span class="required-star">*</span></label>
+                        <input type="text" id="scrapeTitle" class="scrape-input" placeholder="페스티벌 제목"/>
+                    </div>
+                    <div>
+                        <label class="form-label-md">영문 제목 <span class="label-optional">(선택)</span></label>
+                        <input type="text" id="scrapeTitleEn" class="scrape-input" placeholder="Festival Title in English"/>
+                    </div>
+                    <div class="date-row">
+                        <div class="date-col">
+                            <label class="form-label-md">시작일 <span class="required-star">*</span></label>
+                            <input type="date" id="scrapeStartDate" class="scrape-input"/>
+                        </div>
+                        <div class="date-col">
+                            <label class="form-label-md">종료일 <span class="required-star">*</span></label>
+                            <input type="date" id="scrapeEndDate" class="scrape-input"/>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label-md">장소 <span class="required-star">*</span></label>
+                        <input type="text" id="scrapeLocation" class="scrape-input" placeholder="행사 장소"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 설명 -->
+            <div class="mb-12">
+                <label class="form-label-md">설명 <span class="required-star">*</span></label>
+                <textarea id="scrapeDesc" class="scrape-textarea" placeholder="페스티벌 설명"></textarea>
+            </div>
+
+            <!-- 지역 + 장르 -->
+            <div class="scrape-meta-row">
+                <div>
+                    <label class="form-label-md">지역</label>
+                    <select id="scrapeRegion" class="scrape-region">
+                        <option value="">선택 안 함</option>
+                        <option th:each="r : ${allRegions}" th:value="${r}" th:text="${r.displayName}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-md">장르</label>
+                    <div class="genre-list">
+                        <label th:each="g : ${allGenres}" class="genre-tag">
+                            <input type="checkbox" name="scrapeGenres" th:value="${g}"/>
+                            <span th:text="${g.displayName}"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 액션 -->
+            <div class="action-row">
+                <button class="btn btn-primary" id="btnRegisterFestival">페스티벌 등록하기</button>
+                <button class="btn btn-secondary" id="btnScrapeReset">초기화</button>
+            </div>
+            <div class="apply-result" id="scrapeApplyResult"></div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

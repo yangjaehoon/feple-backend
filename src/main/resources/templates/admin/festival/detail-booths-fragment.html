@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ── 부스 관리 ── -->
+<div th:fragment="boothCard" id="booths" class="card">
+    <div class="card-header">
+        <div class="card-title">
+            🏪 부스 관리
+            <span class="card-count" th:text="${#lists.size(booths)}"></span>
+        </div>
+    </div>
+    <div class="card-body">
+        <p class="card-hint">지도를 클릭하면 해당 위치에 부스를 등록할 수 있습니다.</p>
+
+        <!-- 부스 추가 폼 -->
+        <form id="booth-add-form"
+              th:action="@{/admin/festivals/{id}/booths(id=${festival.id})}" method="post"
+              enctype="multipart/form-data"
+              class="form-grid-5col">
+            <input type="hidden" id="boothLat" name="latitude"/>
+            <input type="hidden" id="boothLng" name="longitude"/>
+            <div>
+                <label class="form-label-sm">부스명</label>
+                <input type="text" name="name" placeholder="예: 맥주존 A" required
+                       class="compact-input"/>
+            </div>
+            <div>
+                <label class="form-label-sm">종류</label>
+                <select name="boothType" required
+                        class="compact-input">
+                    <option value="" disabled selected>선택</option>
+                    <option th:each="bt : ${allBoothTypes}" th:value="${bt}" th:text="${bt.displayName}"></option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label-sm">설명 (선택)</label>
+                <input type="text" name="description" placeholder="간단한 설명"
+                       class="compact-input"/>
+            </div>
+            <div>
+                <label class="form-label-sm">이미지 (선택)</label>
+                <input type="file" id="boothImageFile" name="boothImageFile" accept="image/*"
+                       class="file-input-sm"/>
+                <span id="boothImageError" class="input-error"></span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
+        </form>
+
+        <!-- 지도 -->
+        <div id="boothMapWrap" class="map-wrap">
+            <div id="boothMap" class="map-canvas"></div>
+        </div>
+        <p id="boothPosLabel" class="card-hint">지도를 클릭하여 부스 위치를 선택하세요.</p>
+
+        <!-- 부스 목록 -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>종류</th>
+                    <th>부스명</th>
+                    <th>설명</th>
+                    <th>위치</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="booth : ${booths}">
+                    <td>
+                        <span class="badge badge-type"
+                              th:classappend="${booth.boothType != null ? 'badge-' + booth.boothType.cssName : ''}"
+                              th:text="${booth.boothTypeName ?: '-'}"></span>
+                    </td>
+                    <td class="td-bold" th:text="${booth.name}"></td>
+                    <td class="td-sub td-muted" th:text="${booth.description ?: '-'}"></td>
+                    <td class="hint" th:text="${#numbers.formatDecimal(booth.latitude,1,5)} + ', ' + ${#numbers.formatDecimal(booth.longitude,1,5)}"></td>
+                    <td>
+                        <form th:action="@{/admin/festivals/{fId}/booths/{bId}/delete(fId=${festival.id},bId=${booth.id})}" method="post">
+                            <button type="submit" class="btn btn-ghost-danger btn-sm" data-confirm="부스를 삭제하시겠습니까?">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${booths.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(5, '등록된 부스가 없습니다.')}"></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
