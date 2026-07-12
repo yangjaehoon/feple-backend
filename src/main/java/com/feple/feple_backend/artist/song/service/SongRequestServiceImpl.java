@@ -124,31 +124,37 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         SongRequest request = EntityLoader.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
 
         request.approve();
+        boolean songSaved = trySaveSongFromYoutube(request, youtubeUrl);
+        publishApprovedEvent(request);
+        return songSaved;
+    }
 
-        boolean songSaved = false;
-        if (youtubeUrl != null && !youtubeUrl.isBlank()) {
-            request.updateYoutubeUrl(youtubeUrl);
-            Optional<YoutubeVideoDto> videoOpt = youtubeSearchService.fetchVideoByUrl(youtubeUrl);
-            if (videoOpt.isPresent()) {
-                YoutubeVideoDto video = videoOpt.get();
-                Artist artist = request.getArtist();
-                if (!songRepository.existsByYoutubeVideoIdAndArtistId(video.getVideoId(), request.getArtistId())) {
-                    Song song = Song.builder()
-                            .title(video.getTitle())
-                            .youtubeVideoId(video.getVideoId())
-                            .thumbnailUrl(video.getThumbnailUrl())
-                            .artist(artist)
-                            .build();
-                    songRepository.save(song);
-                    songSaved = true;
-                }
-            }
+    private boolean trySaveSongFromYoutube(SongRequest request, String youtubeUrl) {
+        if (youtubeUrl == null || youtubeUrl.isBlank()) return false;
+
+        request.updateYoutubeUrl(youtubeUrl);
+        Optional<YoutubeVideoDto> videoOpt = youtubeSearchService.fetchVideoByUrl(youtubeUrl);
+        if (videoOpt.isEmpty()) return false;
+
+        YoutubeVideoDto video = videoOpt.get();
+        if (songRepository.existsByYoutubeVideoIdAndArtistId(video.getVideoId(), request.getArtistId())) {
+            return false;
         }
 
+        Song song = Song.builder()
+                .title(video.getTitle())
+                .youtubeVideoId(video.getVideoId())
+                .thumbnailUrl(video.getThumbnailUrl())
+                .artist(request.getArtist())
+                .build();
+        songRepository.save(song);
+        return true;
+    }
+
+    private void publishApprovedEvent(SongRequest request) {
         eventPublisher.publishEvent(new SongRequestApprovedEvent(
                 request.getUserId(), request.getArtistId(), request.getSongTitle(),
                 request.getArtistName(), request.getArtistNameEn()));
-        return songSaved;
     }
 
     private SongRequestStatus parseStatus(String status) {
