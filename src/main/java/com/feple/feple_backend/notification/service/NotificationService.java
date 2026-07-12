@@ -172,12 +172,10 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onCommentCreated(CommentCreatedEvent event) {
         if (event.postAuthorId() != null && !userBlockService.isBlocked(event.postAuthorId(), event.commenterId())) {
-            notifyNewComment(event.postAuthorId(), event.commenterNickname(),
-                    event.postTitle(), event.postId());
+            notifyNewComment(event.postAuthorId(), event);
         }
         if (event.parentCommentAuthorId() != null && !userBlockService.isBlocked(event.parentCommentAuthorId(), event.commenterId())) {
-            notifyNewReply(event.parentCommentAuthorId(), event.commenterNickname(),
-                    event.postTitle(), event.postId());
+            notifyNewReply(event.parentCommentAuthorId(), event);
         }
     }
 
@@ -212,33 +210,35 @@ public class NotificationService {
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
-    private void notifyNewComment(Long postAuthorId, String commenterNickname,
-                                  String postTitle, Long postId) {
+    private void notifyNewComment(Long postAuthorId, CommentCreatedEvent event) {
         // 자기 자신의 댓글이면 알림 없음
         User author = userRepository.findById(postAuthorId).orElse(null);
         if (author == null) return;
 
+        String commenterNickname = event.commenterNickname();
+        String postTitle = event.postTitle();
         String title = NotificationMessages.newCommentTitle(commenterNickname);
         String body = NotificationMessages.newCommentBody(postTitle);
         String titleEn = NotificationMessages.newCommentTitleEn(commenterNickname);
         String bodyEn = NotificationMessages.newCommentBodyEn(postTitle);
 
-        Post post = postRepository.findById(postId).orElse(null);
+        Post post = postRepository.findById(event.postId()).orElse(null);
         NotificationMessage message = new NotificationMessage(
                 NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, null);
         saveAndPushSingle(Notification.of(author, message.toContent(), post), postAuthorId, message);
     }
 
     /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
-    private void notifyNewReply(Long parentCommentAuthorId, String replierNickname,
-                                String postTitle, Long postId) {
+    private void notifyNewReply(Long parentCommentAuthorId, CommentCreatedEvent event) {
         User author = userRepository.findById(parentCommentAuthorId).orElse(null);
         if (author == null) return;
+        String replierNickname = event.commenterNickname();
+        String postTitle = event.postTitle();
         String title = NotificationMessages.newReplyTitle(replierNickname);
         String body = NotificationMessages.newReplyBody(postTitle);
         String titleEn = NotificationMessages.newReplyTitleEn(replierNickname);
         String bodyEn = NotificationMessages.newReplyBodyEn(postTitle);
-        Post post = postRepository.findById(postId).orElse(null);
+        Post post = postRepository.findById(event.postId()).orElse(null);
         NotificationMessage message = new NotificationMessage(
                 NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, null);
         saveAndPushSingle(Notification.of(author, message.toContent(), post), parentCommentAuthorId, message);
