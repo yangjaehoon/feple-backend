@@ -36,14 +36,12 @@ public class SongRequestAdminController {
     private final AdminLogService adminLogService;
 
     @GetMapping
-    public String list(@RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
-                       @RequestParam(defaultValue = "0") int page,
-                       @RequestParam(defaultValue = "") String keyword,
-                       Model model) {
-        Page<SongRequestResponseDto> requests = songRequestAdminService.getRequestsPage(page, AdminConstants.LIST_PAGE_SIZE, status, keyword);
+    public String list(@ModelAttribute SongListParams params, Model model) {
+        Page<SongRequestResponseDto> requests = songRequestAdminService.getRequestsPage(
+                params.page(), AdminConstants.LIST_PAGE_SIZE, params.status(), params.keyword());
         model.addAttribute("requests", requests);
-        model.addAttribute("status", status);
-        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", params.status());
+        model.addAttribute("keyword", params.keyword());
         model.addAttribute("pendingCount", songRequestAdminService.getPendingCount());
         return "admin/song-request/list";
     }
@@ -51,9 +49,7 @@ public class SongRequestAdminController {
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id,
                           @RequestParam(required = false) String youtubeUrl,
-                          @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
-                          @RequestParam(defaultValue = "0") int page,
-                          @RequestParam(defaultValue = "") String keyword,
+                          @ModelAttribute SongListParams params,
                           RedirectAttributes ra) {
         AtomicReference<String> successMsg = new AtomicReference<>();
         AdminActionUtils.tryAction(
@@ -67,15 +63,13 @@ public class SongRequestAdminController {
                 "승인 처리 중 오류가 발생했습니다.",
                 ra);
         if (successMsg.get() != null) ra.addFlashAttribute("successMessage", successMsg.get());
-        return AdminActionUtils.listRedirect("/admin/song-requests", status, page, keyword);
+        return AdminActionUtils.listRedirect("/admin/song-requests", params.status(), params.page(), params.keyword());
     }
 
     @PostMapping("/{id}/reject")
     public String reject(@PathVariable Long id,
                          @RequestParam(required = false) String reason,
-                         @RequestParam(defaultValue = AdminConstants.STATUS_PENDING) String status,
-                         @RequestParam(defaultValue = "0") int page,
-                         @RequestParam(defaultValue = "") String keyword,
+                         @ModelAttribute SongListParams params,
                          RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
@@ -86,7 +80,7 @@ public class SongRequestAdminController {
                 e -> log.error("노래 요청 거절 실패 id={}", id, e),
                 "거절 처리 중 오류가 발생했습니다.",
                 ra);
-        return AdminActionUtils.listRedirect("/admin/song-requests", status, page, keyword);
+        return AdminActionUtils.listRedirect("/admin/song-requests", params.status(), params.page(), params.keyword());
     }
 
 }

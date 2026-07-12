@@ -146,11 +146,7 @@ public class FestivalAdminController {
             return "redirect:/admin/festivals";
         }
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            model.addAttribute("festivalId", id);
-            model.addAttribute("currentPosterUrl", currentPosterUrl);
-            populateFestivalFormModel(model);
-            return "admin/festival/edit";
+            return renderEditFormWithError(bindingResult, id, currentPosterUrl, model);
         }
         try {
             festivalService.updateFestival(id, dto);
@@ -158,17 +154,21 @@ public class FestivalAdminController {
             ra.addFlashAttribute("successMessage", "페스티벌이 수정되었습니다.");
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            model.addAttribute("festivalId", id);
-            model.addAttribute("currentPosterUrl", currentPosterUrl);
-            populateFestivalFormModel(model);
-            return "admin/festival/edit";
+            return renderEditFormWithError(bindingResult, id, currentPosterUrl, model);
         } catch (Exception e) {
             log.error("페스티벌 수정 실패. id={}", id, e);
             ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
             return "redirect:/admin/festivals/" + id;
         }
         return "redirect:/admin/festivals/" + id;
+    }
+
+    private String renderEditFormWithError(BindingResult bindingResult, Long id, String currentPosterUrl, Model model) {
+        model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+        model.addAttribute("festivalId", id);
+        model.addAttribute("currentPosterUrl", currentPosterUrl);
+        populateFestivalFormModel(model);
+        return "admin/festival/edit";
     }
 
     @PostMapping("/{id}/delete")
