@@ -7,6 +7,7 @@ import com.feple.feple_backend.certification.service.FestivalCertificationServic
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.post.dto.CursorPage;
+import com.feple.feple_backend.post.dto.CursorPageRequest;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -266,7 +267,7 @@ class PostServiceImplTest {
         given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
-        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, null, 2, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, null));
 
         assertThat(result.content()).hasSize(2);
         assertThat(result.hasNext()).isTrue();
@@ -280,7 +281,7 @@ class PostServiceImplTest {
         given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
-        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, null, 2, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, null));
 
         assertThat(result.hasNext()).isFalse();
         assertThat(result.nextCursor()).isNull();
@@ -303,7 +304,7 @@ class PostServiceImplTest {
         given(postRepository.findByArtistOrderByIdDesc(eq(artist), any(Pageable.class)))
                 .willReturn(List.of(post));
 
-        CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, null, 20, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, new CursorPageRequest(null, 20, null));
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.content().get(0).getBoardDisplayName()).isEqualTo("아이유 게시판");
@@ -319,7 +320,7 @@ class PostServiceImplTest {
         given(postRepository.findByArtistAndIdLessThanOrderByIdDesc(eq(artist), eq(5L), any(Pageable.class)))
                 .willReturn(posts);
 
-        CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, 5L, 2, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByArtistIdPaged(3L, new CursorPageRequest(5L, 2, null));
 
         assertThat(result.content()).hasSize(2);
         assertThat(result.hasNext()).isTrue();
@@ -345,7 +346,7 @@ class PostServiceImplTest {
         given(postRepository.findGeneralFestivalPostsOrderByIdDesc(eq(festival), any(Pageable.class)))
                 .willReturn(List.of(post));
 
-        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, new CursorPageRequest(null, 20, null));
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.content().get(0).isCertified()).isTrue();
@@ -367,7 +368,7 @@ class PostServiceImplTest {
         given(postRepository.findGeneralFestivalPostsOrderByIdDesc(eq(festival), any(Pageable.class)))
                 .willReturn(List.of(post));
 
-        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, null, 20, null);
+        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, new CursorPageRequest(null, 20, null));
 
         assertThat(result.content().get(0).isCertified()).isFalse();
     }

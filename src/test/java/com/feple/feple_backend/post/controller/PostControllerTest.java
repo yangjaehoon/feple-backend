@@ -81,7 +81,7 @@ class PostControllerTest {
     @Test
     void 자유_게시글_목록_조회() throws Exception {
         CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
-        given(postService.getPostsByBoardTypeLatest(any(), isNull(), anyInt(), isNull())).willReturn(page);
+        given(postService.getPostsByBoardTypeLatest(any(), any())).willReturn(page);
 
         mockMvc.perform(get("/posts/free"))
                 .andExpect(status().isOk());
