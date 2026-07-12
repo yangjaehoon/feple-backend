@@ -75,8 +75,7 @@ public class AdminPushService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (userId=" + targetUserId + ")"));
         notificationRepository.save(
                 Notification.of(user, NotificationType.ADMIN_BROADCAST, title, body, null, null, (Festival) null));
-        log.info("[AdminPush] 테스트 발송 — userId={}, 토큰 {}개, 제목: {}", targetUserId, tokens.size(), title);
-        fcmPushService.sendBroadcast(tokens, title, body);
+        logAndSend(tokens, title, body, "[AdminPush] 테스트 발송 — userId={}, 토큰 {}개, 제목: {}", targetUserId, tokens.size(), title);
     }
 
     @Transactional
@@ -90,8 +89,8 @@ public class AdminPushService {
             throw new IllegalArgumentException("발송 대상 기기가 없습니다. (팔로워 " + userIds.size() + "명 모두 알림 비활성)");
         }
         saveTargetedNotifications(userIds, title, body);
-        log.info("[AdminPush] 아티스트 팔로워 발송 — artistId={}, 팔로워 {}명, 토큰 {}개, 제목: {}", artistId, userIds.size(), tokens.size(), title);
-        fcmPushService.sendBroadcast(tokens, title, body);
+        logAndSend(tokens, title, body, "[AdminPush] 아티스트 팔로워 발송 — artistId={}, 팔로워 {}명, 토큰 {}개, 제목: {}",
+                artistId, userIds.size(), tokens.size(), title);
     }
 
     @Transactional
@@ -105,8 +104,8 @@ public class AdminPushService {
             throw new IllegalArgumentException("발송 대상 기기가 없습니다. (인증자 " + userIds.size() + "명 모두 알림 비활성)");
         }
         saveTargetedNotifications(List.copyOf(userIds), title, body);
-        log.info("[AdminPush] 페스티벌 인증자 발송 — festivalId={}, 인증자 {}명, 토큰 {}개, 제목: {}", festivalId, userIds.size(), tokens.size(), title);
-        fcmPushService.sendBroadcast(tokens, title, body);
+        logAndSend(tokens, title, body, "[AdminPush] 페스티벌 인증자 발송 — festivalId={}, 인증자 {}명, 토큰 {}개, 제목: {}",
+                festivalId, userIds.size(), tokens.size(), title);
     }
 
     private void saveTargetedNotifications(List<Long> userIds, String title, String body) {
@@ -128,7 +127,11 @@ public class AdminPushService {
         // 특정 대상 발송(sendToArtistFollowers, sendToFestivalCertified)은 실제 Notification을 저장해
         // 개인 알림 목록에도 표시되게 한다.
         broadcastNotificationRepository.save(BroadcastNotification.of(title, body));
-        log.info("[AdminPush] 전체 푸시 발송 시작 — 토큰 {}개, 제목: {}", tokens.size(), title);
+        logAndSend(tokens, title, body, "[AdminPush] 전체 푸시 발송 시작 — 토큰 {}개, 제목: {}", tokens.size(), title);
+    }
+
+    private void logAndSend(List<String> tokens, String title, String body, String logMessage, Object... logArgs) {
+        log.info(logMessage, logArgs);
         fcmPushService.sendBroadcast(tokens, title, body);
     }
 }
