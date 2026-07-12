@@ -1,5 +1,6 @@
 package com.feple.feple_backend.certification.service;
 
+import com.feple.feple_backend.certification.dto.CertificationRatingRequestDto;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
@@ -45,7 +46,7 @@ class FestivalReviewServiceImplTest {
         given(cert.isApproved()).willReturn(true);
         given(certificationRepository.findById(CERT_ID)).willReturn(Optional.of(cert));
 
-        reviewService.submitRating(USER_ID, CERT_ID, 5, "좋았어요");
+        reviewService.submitRating(USER_ID, CERT_ID, new CertificationRatingRequestDto(5, "좋았어요"));
 
         then(cert).should().rate(5, "좋았어요");
     }
@@ -56,7 +57,7 @@ class FestivalReviewServiceImplTest {
         given(cert.getUserId()).willReturn(2L);
         given(certificationRepository.findById(CERT_ID)).willReturn(Optional.of(cert));
 
-        assertThatThrownBy(() -> reviewService.submitRating(USER_ID, CERT_ID, 5, "리뷰"))
+        assertThatThrownBy(() -> reviewService.submitRating(USER_ID, CERT_ID, new CertificationRatingRequestDto(5, "리뷰")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("본인의 인증에만");
     }
@@ -68,7 +69,7 @@ class FestivalReviewServiceImplTest {
         given(cert.isApproved()).willReturn(false);
         given(certificationRepository.findById(CERT_ID)).willReturn(Optional.of(cert));
 
-        assertThatThrownBy(() -> reviewService.submitRating(USER_ID, CERT_ID, 5, "리뷰"))
+        assertThatThrownBy(() -> reviewService.submitRating(USER_ID, CERT_ID, new CertificationRatingRequestDto(5, "리뷰")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("승인된 인증에만");
     }

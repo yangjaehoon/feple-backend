@@ -85,7 +85,7 @@ public class FestivalCertificationController {
             @Valid @RequestBody CertificationRatingRequestDto req,
             @AuthenticationPrincipal Long userId
     ) {
-        reviewService.submitRating(userId, id, req.rating(), req.review());
+        reviewService.submitRating(userId, id, req);
     }
 
     @GetMapping("/festival/{festivalId}/rating")

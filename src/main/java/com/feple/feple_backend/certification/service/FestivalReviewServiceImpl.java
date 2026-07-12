@@ -1,5 +1,6 @@
 package com.feple.feple_backend.certification.service;
 
+import com.feple.feple_backend.certification.dto.CertificationRatingRequestDto;
 import com.feple.feple_backend.certification.dto.FestivalReviewDto;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.entity.CertificationReviewLike;
@@ -28,7 +29,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
 
     @Override
     @Transactional
-    public void submitRating(Long userId, Long certId, int rating, String review) {
+    public void submitRating(Long userId, Long certId, CertificationRatingRequestDto req) {
         FestivalCertification cert = EntityLoader.getOrThrow(certificationRepository::findById, certId, "인증");
         if (!cert.getUserId().equals(userId)) {
             throw new IllegalArgumentException("본인의 인증에만 평점을 남길 수 있습니다.");
@@ -36,7 +37,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
         if (!cert.isApproved()) {
             throw new IllegalArgumentException("승인된 인증에만 평점을 남길 수 있습니다.");
         }
-        cert.rate(rating, review);
+        cert.rate(req.rating(), req.review());
     }
 
     @Override

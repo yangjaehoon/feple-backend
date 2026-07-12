@@ -1,9 +1,11 @@
 package com.feple.feple_backend.certification.service;
 
+import com.feple.feple_backend.certification.dto.CertificationRatingRequestDto;
+
 import java.util.Map;
 
 public interface FestivalReviewService {
-    void submitRating(Long userId, Long certId, int rating, String review);
+    void submitRating(Long userId, Long certId, CertificationRatingRequestDto req);
     double getAverageRating(Long festivalId);
     int getRatingCount(Long festivalId);
     Map<Integer, Long> getRatingDistribution(Long festivalId);
