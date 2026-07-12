@@ -1,6 +1,7 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.user.entity.DevicePlatform;
+import com.feple.feple_backend.user.entity.DeviceTokenRegistration;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
@@ -21,15 +22,17 @@ public class DeviceTokenService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void register(Long userId, String token, String platform, String language) {
+    public void register(Long userId, DeviceTokenRegistration registration) {
+        String token = registration.token();
         // 같은 기기에서 계정 전환 시 동일 토큰이 다른 계정에 남아 있으면 제거
         tokenRepository.deleteByTokenAndOtherUsers(token, userId);
 
         tokenRepository.findByUserIdAndToken(userId, token).ifPresentOrElse(
-            existing -> existing.updateLanguage(language),
+            existing -> existing.updateLanguage(registration.language()),
             () -> {
                 User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-                tokenRepository.save(UserDeviceToken.of(user, token, DevicePlatform.from(platform), language));
+                tokenRepository.save(UserDeviceToken.of(user, token,
+                        DevicePlatform.from(registration.platform()), registration.language()));
             }
         );
     }

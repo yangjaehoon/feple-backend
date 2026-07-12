@@ -12,6 +12,7 @@ import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.user.dto.UpdateBioDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
+import com.feple.feple_backend.user.entity.DeviceTokenRegistration;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.DeviceTokenService;
@@ -204,7 +205,7 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
         String platform = req.platform() != null ? req.platform() : "android";
         String language = req.language() != null ? req.language() : "ko";
-        deviceTokenService.register(userId, req.token(), platform, language);
+        deviceTokenService.register(userId, new DeviceTokenRegistration(req.token(), platform, language));
         return ResponseEntity.noContent().build();
     }
 
