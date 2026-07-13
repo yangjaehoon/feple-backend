@@ -3,7 +3,7 @@ package com.feple.feple_backend.post.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostReportRepository;
@@ -24,7 +24,7 @@ public class PostCascadeDeleteServiceImpl implements PostCascadeDeleteService {
     private final PostLikeRepository postLikeRepository;
     private final PostScrapRepository postScrapRepository;
     private final PostReportRepository postReportRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationQueryService notificationQueryService;
     private final CommentService commentService;
 
     @Override
@@ -58,7 +58,7 @@ public class PostCascadeDeleteServiceImpl implements PostCascadeDeleteService {
         postLikeRepository.deleteByPostIds(postIds);
         postScrapRepository.deleteByPostIds(postIds);
         postReportRepository.deleteByPostIds(postIds);
-        notificationRepository.deleteByPostIdIn(postIds);
+        notificationQueryService.removeAllByPostIds(postIds);
         postRepository.deleteAllByIdInBatch(postIds);
     }
 }

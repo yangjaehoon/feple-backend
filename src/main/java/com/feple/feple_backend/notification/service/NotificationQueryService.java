@@ -115,6 +115,11 @@ public class NotificationQueryService {
         notificationRepository.deleteByUserId(userId);
     }
 
+    @Transactional
+    public void removeAllByPostIds(List<Long> postIds) {
+        notificationRepository.deleteByPostIdIn(postIds);
+    }
+
     private String resolveImageUrl(Notification n) {
         String key = n.getImageKey();
         return key != null ? s3PresignService.presignGetUrl(key) : null;

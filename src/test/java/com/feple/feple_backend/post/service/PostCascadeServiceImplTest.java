@@ -4,7 +4,7 @@ import com.feple.feple_backend.post.repository.PostRepository;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostReportRepository;
@@ -32,7 +32,7 @@ class PostCascadeServiceImplTest {
     @Mock PostLikeRepository postLikeRepository;
     @Mock PostScrapRepository postScrapRepository;
     @Mock PostReportRepository postReportRepository;
-    @Mock NotificationRepository notificationRepository;
+    @Mock NotificationQueryService notificationQueryService;
     @Mock CommentService commentService;
 
     @InjectMocks PostCascadeDeleteServiceImpl postCascadeService;
@@ -69,7 +69,7 @@ class PostCascadeServiceImplTest {
         verify(postLikeRepository).deleteByPostIds(List.of(20L));
         verify(postScrapRepository).deleteByPostIds(List.of(20L));
         verify(postReportRepository).deleteByPostIds(List.of(20L));
-        verify(notificationRepository).deleteByPostIdIn(List.of(20L));
+        verify(notificationQueryService).removeAllByPostIds(List.of(20L));
         verify(postRepository).deleteAllByIdInBatch(List.of(20L));
     }
 
