@@ -46,4 +46,10 @@ public class FestivalLikeService {
         festivalLikeRepository.decrementFestivalLikeCountByUserId(userId);
         festivalLikeRepository.deleteByUserId(userId);
     }
+
+    /** 페스티벌 삭제 시 좋아요 데이터 일괄 제거 — festival 자체가 삭제되므로 카운터 감소 불필요 */
+    @Transactional
+    public void removeAllByFestival(Long festivalId) {
+        festivalLikeRepository.deleteByFestivalId(festivalId);
+    }
 }

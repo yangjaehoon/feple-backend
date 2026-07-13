@@ -1,11 +1,10 @@
 package com.feple.feple_backend.festival.service;
 
 import com.feple.feple_backend.admin.checklist.FestivalChecklistRepository;
-import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
-import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
-import com.feple.feple_backend.booth.repository.BoothRepository;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.booth.service.BoothService;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
@@ -16,18 +15,16 @@ import com.feple.feple_backend.festival.entity.FestivalStatus;
 import com.feple.feple_backend.festival.entity.FestivalUpdateFields;
 import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
-import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
-import com.feple.feple_backend.stage.repository.StageRepository;
-import com.feple.feple_backend.timetable.repository.TimetableRepository;
+import com.feple.feple_backend.stage.service.StageService;
+import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictFestivalCaches;
 import org.springframework.cache.annotation.CacheEvict;
@@ -52,18 +49,18 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     private static final String ERR_END_BEFORE_START = "종료일은 시작일보다 이전일 수 없습니다.";
 
     private final FestivalRepository festivalRepository;
-    private final ArtistFestivalRepository artistFestivalRepository;
-    private final ArtistFestivalSongRepository artistFestivalSongRepository;
-    private final NotificationRepository notificationRepository;
+    private final ArtistFestivalService artistFestivalService;
+    private final NotificationQueryService notificationQueryService;
     private final FestivalLikeRepository festivalLikeRepository;
-    private final FestivalAttendanceRepository festivalAttendanceRepository;
+    private final FestivalLikeService festivalLikeService;
+    private final FestivalAttendanceService festivalAttendanceService;
     private final FileStorageService fileStorageService;
-    private final StageRepository stageRepository;
-    private final BoothRepository boothRepository;
-    private final TimetableRepository timetableRepository;
-    private final FestivalCertificationRepository certificationRepository;
+    private final StageService stageService;
+    private final BoothService boothService;
+    private final TimetableService timetableService;
+    private final FestivalCertificationService certificationService;
     private final PostCascadeDeleteService postCascadeService;
-    private final FestivalWeatherRepository weatherRepository;
+    private final WeatherService weatherService;
     private final FestivalChecklistRepository festivalChecklistRepository;
 
     private FestivalResponseDto toDto(Festival festival) {
@@ -193,19 +190,18 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         String posterKey = festival.getPosterKey();
 
-        timetableRepository.deleteByFestivalId(festivalId);
-        boothRepository.deleteByFestivalId(festivalId);
-        stageRepository.deleteByFestivalId(festivalId);
-        certificationRepository.deleteByFestivalId(festivalId);
-        festivalLikeRepository.deleteByFestivalId(festivalId);
-        festivalAttendanceRepository.deleteByFestivalId(festivalId);
+        timetableService.removeAllByFestival(festivalId);
+        boothService.removeAllByFestival(festivalId);
+        stageService.removeAllByFestival(festivalId);
+        certificationService.removeAllByFestival(festivalId);
+        festivalLikeService.removeAllByFestival(festivalId);
+        festivalAttendanceService.removeAllByFestival(festivalId);
 
         postCascadeService.deletePostsByFestival(festival);
 
-        artistFestivalSongRepository.deleteByFestivalId(festivalId);
-        artistFestivalRepository.deleteByFestivalId(festivalId);
-        notificationRepository.deleteByFestivalId(festivalId);
-        weatherRepository.deleteByFestivalId(festivalId);
+        artistFestivalService.removeAllByFestival(festivalId);
+        notificationQueryService.removeAllByFestivalId(festivalId);
+        weatherService.removeAllByFestival(festivalId);
         festivalChecklistRepository.deleteByFestivalId(festivalId);
         festivalRepository.deleteById(festivalId);
 

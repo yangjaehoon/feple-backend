@@ -2,6 +2,7 @@ package com.feple.feple_backend.artistfestival.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.repository.ArtistFestivalSongRepository;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 public class ArtistFestivalService {
 
     private final ArtistFestivalRepository artistFestivalRepository;
+    private final ArtistFestivalSongRepository artistFestivalSongRepository;
     private final FestivalRepository festivalRepository;
     private final ArtistRepository artistRepository;
     private final FileStorageService fileStorageService;
@@ -218,6 +220,12 @@ public class ArtistFestivalService {
         artistFestivalRepository.delete(artistFestival);
     }
 
+    /** 페스티벌 삭제 시 아티스트 참여 정보 일괄 제거 — 셋리스트 곡(자식 엔티티)을 먼저 정리(FK 순서) */
+    @Transactional
+    public void removeAllByFestival(Long festivalId) {
+        artistFestivalSongRepository.deleteByFestivalId(festivalId);
+        artistFestivalRepository.deleteByFestivalId(festivalId);
+    }
 
     private ArtistFestivalResponseDto toResponse(ArtistFestival af, List<String> dates) {
         return toResponse(af, dates, null);

@@ -138,4 +138,10 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     public void removeAllByUser(Long userId) {
         certificationRepository.deleteByUserId(userId);
     }
+
+    @Override
+    @Transactional
+    public void removeAllByFestival(Long festivalId) {
+        certificationRepository.deleteByFestivalId(festivalId);
+    }
 }

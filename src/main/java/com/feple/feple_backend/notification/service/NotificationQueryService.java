@@ -120,6 +120,11 @@ public class NotificationQueryService {
         notificationRepository.deleteByPostIdIn(postIds);
     }
 
+    @Transactional
+    public void removeAllByFestivalId(Long festivalId) {
+        notificationRepository.deleteByFestivalId(festivalId);
+    }
+
     private String resolveImageUrl(Notification n) {
         String key = n.getImageKey();
         return key != null ? s3PresignService.presignGetUrl(key) : null;

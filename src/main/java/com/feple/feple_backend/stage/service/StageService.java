@@ -72,6 +72,11 @@ public class StageService {
                 .ifPresent(next -> next.swapDisplayOrder(current));
     }
 
+    /** 페스티벌 삭제 시 스테이지 일괄 제거 — 타임테이블은 이미 정리된 이후에 호출된다 */
+    public void removeAllByFestival(Long festivalId) {
+        stageRepository.deleteByFestivalId(festivalId);
+    }
+
     private Stage getStageInFestival(Long festivalId, Long stageId) {
         Stage stage = EntityLoader.getOrThrow(stageRepository::findById, stageId, "스테이지");
         if (!festivalId.equals(stage.getFestivalId())) {

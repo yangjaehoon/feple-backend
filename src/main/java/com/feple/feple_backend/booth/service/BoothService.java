@@ -60,4 +60,9 @@ public class BoothService {
     public String uploadBoothImage(MultipartFile file) throws IOException {
         return fileStorageService.storeBoothImage(file);
     }
+
+    @Transactional
+    public void removeAllByFestival(Long festivalId) {
+        boothRepository.deleteByFestivalId(festivalId);
+    }
 }

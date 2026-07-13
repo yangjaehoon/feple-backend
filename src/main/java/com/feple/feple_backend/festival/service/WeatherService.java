@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -108,6 +109,11 @@ public class WeatherService {
             log.error("기상청 API 호출 실패: festivalId={}", festivalId, e);
         }
         return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
+    }
+
+    @Transactional
+    public void removeAllByFestival(Long festivalId) {
+        weatherRepository.deleteByFestivalId(festivalId);
     }
 
     private void saveOrUpdate(Festival festival, WeatherDto dto) {

@@ -144,4 +144,10 @@ public class TimetableService {
         }
         timetableRepository.delete(entry);
     }
+
+    @Transactional
+    @CacheEvict(value = "timetable", key = "#festivalId")
+    public void removeAllByFestival(Long festivalId) {
+        timetableRepository.deleteByFestivalId(festivalId);
+    }
 }
