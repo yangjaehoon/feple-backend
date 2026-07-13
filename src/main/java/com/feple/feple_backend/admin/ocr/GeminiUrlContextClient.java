@@ -35,7 +35,7 @@ public class GeminiUrlContextClient {
 
         if (isUrlBlocked(response)) {
             log.warn("Gemini URL context blocked for: {}", url);
-            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
+            return failureResult(url, source,
                 "이 사이트는 외부 접근이 차단되어 있습니다. 페이지 스크린샷을 'OCR 파싱' 탭에 업로드하면 정보를 자동 추출할 수 있습니다.");
         }
 
@@ -74,16 +74,14 @@ public class GeminiUrlContextClient {
 
     private ScrapedFestivalDto parseGeminiFestivalJson(String raw, String url, String source) {
         if (raw == null || raw.isBlank()) {
-            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
-                "자동 추출에 실패했습니다. 직접 입력해주세요.");
+            return failureResult(url, source, "자동 추출에 실패했습니다. 직접 입력해주세요.");
         }
 
         int start = raw.indexOf('{');
         int end   = raw.lastIndexOf('}');
         if (start == -1 || end <= start) {
             log.warn("Gemini did not return JSON. raw={}", raw);
-            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
-                "자동 추출에 실패했습니다. 직접 입력해주세요.");
+            return failureResult(url, source, "자동 추출에 실패했습니다. 직접 입력해주세요.");
         }
         String json = raw.substring(start, end + 1);
 
@@ -102,13 +100,16 @@ public class GeminiUrlContextClient {
             );
         } catch (Exception e) {
             log.warn("Failed to parse Gemini festival JSON: {}", json, e);
-            return new ScrapedFestivalDto("", "", "", "", "", "", url, source,
-                "자동 추출에 실패했습니다. 직접 입력해주세요.");
+            return failureResult(url, source, "자동 추출에 실패했습니다. 직접 입력해주세요.");
         }
     }
 
     private String textOf(JsonNode node, String field) {
         JsonNode fieldNode = node.get(field);
         return (fieldNode == null || fieldNode.isNull()) ? "" : fieldNode.asText("").trim();
+    }
+
+    private static ScrapedFestivalDto failureResult(String url, String source, String warning) {
+        return new ScrapedFestivalDto("", "", "", "", "", "", url, source, warning);
     }
 }
