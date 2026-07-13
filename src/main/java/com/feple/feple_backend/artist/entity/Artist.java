@@ -59,14 +59,6 @@ public class Artist {
         return (aliases == null || aliases.isEmpty()) ? null : String.join(", ", aliases);
     }
 
-    public void incrementFollowerCount() {
-        this.followerCount++;
-    }
-
-    public void decrementFollowerCount() {
-        if (this.followerCount > 0) this.followerCount--;
-    }
-
     public void updateWeeklyScore(int score) {
         this.weeklyScore = score;
         this.rankUpdatedAt = LocalDateTime.now();
