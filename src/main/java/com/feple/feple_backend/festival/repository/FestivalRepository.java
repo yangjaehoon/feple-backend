@@ -46,9 +46,9 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     // FULLTEXT ngram 매치 — LIKE '%keyword%'는 B-tree 인덱스를 못 타 풀스캔이었음.
     // REPLACE로 큰따옴표를 제거해 boolean 모드 phrase 구문이 깨지지 않게 방어한다.
-    @Query(value = "SELECT * FROM festival WHERE MATCH(title) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE)",
+    @Query(value = "SELECT * FROM festival WHERE MATCH(title) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE) LIMIT :limit",
            nativeQuery = true)
-    List<Festival> findByTitleKeyword(@Param("keyword") String keyword);
+    List<Festival> findByTitleKeyword(@Param("keyword") String keyword, @Param("limit") int limit);
 
     @Query("SELECT f FROM Festival f WHERE LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' ORDER BY f.startDate DESC")
     org.springframework.data.domain.Page<Festival> findByTitleKeywordPaged(

@@ -128,21 +128,21 @@ class FullTextSearchIntegrationTest {
 
     @Test
     void 아티스트_이름_풀텍스트_검색() {
-        List<Artist> result = artistRepository.searchArtistsByNameFullText("아이유");
+        List<Artist> result = artistRepository.searchArtistsByNameFullText("아이유", 10);
 
         assertThat(result).extracting(Artist::getId).contains(artist.getId());
     }
 
     @Test
     void 아티스트_영문명_풀텍스트_검색() {
-        List<Artist> result = artistRepository.searchArtistsByNameFullText("Aiyu");
+        List<Artist> result = artistRepository.searchArtistsByNameFullText("Aiyu", 10);
 
         assertThat(result).extracting(Artist::getId).contains(artist.getId());
     }
 
     @Test
     void 페스티벌_제목_풀텍스트_검색() {
-        List<Festival> result = festivalRepository.findByTitleKeyword("여름밤페스티벌");
+        List<Festival> result = festivalRepository.findByTitleKeyword("여름밤페스티벌", 10);
 
         assertThat(result).extracting(Festival::getId).contains(festival.getId());
     }

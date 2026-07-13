@@ -122,7 +122,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         String trimmed = keyword.trim();
         List<Artist> artists = FullTextSearchValidator.isTooShortForFullText(trimmed)
                 ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(trimmed))
-                : artistRepository.searchArtistsByNameFullText(trimmed);
+                : artistRepository.searchArtistsByNameFullText(trimmed, PageSize.SEARCH);
         return artists.stream()
                 .map(this::toDto)
                 .toList();

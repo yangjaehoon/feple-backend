@@ -230,10 +230,9 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     public List<FestivalResponseDto> searchFestivals(String keyword) {
         String trimmed = keyword.trim();
         List<Festival> festivals = FullTextSearchValidator.isTooShortForFullText(trimmed)
-                ? festivalRepository.findByTitleKeywordPaged(JpqlLikeEscaper.escape(trimmed), PageRequest.of(0, 10)).getContent()
-                : festivalRepository.findByTitleKeyword(trimmed);
+                ? festivalRepository.findByTitleKeywordPaged(JpqlLikeEscaper.escape(trimmed), PageRequest.of(0, PageSize.SEARCH)).getContent()
+                : festivalRepository.findByTitleKeyword(trimmed, PageSize.SEARCH);
         return festivals.stream()
-                .limit(10)
                 .map(this::toDto)
                 .toList();
     }
