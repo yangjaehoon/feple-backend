@@ -5,4 +5,5 @@ import com.feple.feple_backend.artist.suggestion.dto.SubmitArtistSuggestionDto;
 
 public interface ArtistSuggestionService {
     ArtistSuggestionResponseDto submit(Long userId, SubmitArtistSuggestionDto dto);
+    void removeAllByUser(Long userId);
 }

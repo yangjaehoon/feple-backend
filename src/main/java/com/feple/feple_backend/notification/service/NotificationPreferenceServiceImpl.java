@@ -65,4 +65,10 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
         }
         return map;
     }
+
+    @Override
+    @Transactional
+    public void removeAllByUser(Long userId) {
+        preferenceRepository.deleteByUserId(userId);
+    }
 }

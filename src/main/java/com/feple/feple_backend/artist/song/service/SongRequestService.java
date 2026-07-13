@@ -12,4 +12,6 @@ public interface SongRequestService {
     List<SongRequestResponseDto> getMyRequests(Long artistId, Long userId);
 
     List<SongRequestResponseDto> getMyAllRequests(Long userId);
+
+    void removeAllByUser(Long userId);
 }

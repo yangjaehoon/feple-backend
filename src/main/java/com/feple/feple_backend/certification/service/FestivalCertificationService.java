@@ -17,4 +17,5 @@ public interface FestivalCertificationService {
     S3PresignedUrlResult generateUploadUrl(Long userId, String extension, String contentType);
     Set<Long> findApprovedUserIdsByFestivalId(Long festivalId);
     boolean existsApprovedCertification(Long festivalId, Long userId);
+    void removeAllByUser(Long userId);
 }

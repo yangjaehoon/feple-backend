@@ -1,18 +1,18 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
-import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
-import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
+import com.feple.feple_backend.artist.song.service.SongRequestService;
+import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
-import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.service.NotificationPreferenceService;
+import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
@@ -40,12 +40,12 @@ class UserCascadeDeleteServiceTest {
     @Mock CommentService commentService;
     @Mock ArtistGalleryPhotoService artistGalleryPhotoService;
 
-    @Mock NotificationRepository notificationRepository;
-    @Mock NotificationPreferenceRepository notificationPreferenceRepository;
-    @Mock FestivalCertificationRepository certificationRepository;
+    @Mock NotificationQueryService notificationQueryService;
+    @Mock NotificationPreferenceService notificationPreferenceService;
+    @Mock FestivalCertificationService certificationService;
     @Mock FestivalReviewService reviewService;
-    @Mock SongRequestRepository songRequestRepository;
-    @Mock ArtistSuggestionRepository artistSuggestionRepository;
+    @Mock SongRequestService songRequestService;
+    @Mock ArtistSuggestionService artistSuggestionService;
     @Mock UserBlockService userBlockService;
     @Mock FileStorageService fileStorageService;
 
@@ -66,8 +66,8 @@ class UserCascadeDeleteServiceTest {
 
         verify(festivalLikeService).removeAllByUser(1L);
         verify(artistFollowService).removeAllByUser(1L);
-        verify(notificationRepository).deleteByUserId(1L);
-        verify(notificationPreferenceRepository).deleteByUserId(1L);
+        verify(notificationQueryService).deleteAll(1L);
+        verify(notificationPreferenceService).removeAllByUser(1L);
     }
 
     @Test
@@ -78,9 +78,9 @@ class UserCascadeDeleteServiceTest {
 
         verify(userDeviceTokenRepository).deleteByUserId(1L);
         verify(reviewService).removeReviewLikesByUser(1L);
-        verify(certificationRepository).deleteByUserId(1L);
-        verify(songRequestRepository).deleteByUserId(1L);
-        verify(artistSuggestionRepository).deleteByUserId(1L);
+        verify(certificationService).removeAllByUser(1L);
+        verify(songRequestService).removeAllByUser(1L);
+        verify(artistSuggestionService).removeAllByUser(1L);
     }
 
     @Test

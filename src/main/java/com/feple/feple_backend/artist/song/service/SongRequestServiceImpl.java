@@ -176,4 +176,10 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 request.getUserId(), request.getArtistId(), request.getSongTitle(), request.getArtistName(), reason));
     }
 
+    @Override
+    @Transactional
+    public void removeAllByUser(Long userId) {
+        songRequestRepository.deleteByUserId(userId);
+    }
+
 }

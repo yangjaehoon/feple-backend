@@ -132,4 +132,10 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     public boolean existsApprovedCertification(Long festivalId, Long userId) {
         return certificationRepository.existsApprovedCertification(festivalId, userId);
     }
+
+    @Override
+    @Transactional
+    public void removeAllByUser(Long userId) {
+        certificationRepository.deleteByUserId(userId);
+    }
 }

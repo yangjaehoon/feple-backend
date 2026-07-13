@@ -116,4 +116,10 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
                 suggestion.getUserId(), null, suggestion.getArtistName(), processNote));
     }
 
+    @Override
+    @Transactional
+    public void removeAllByUser(Long userId) {
+        suggestionRepository.deleteByUserId(userId);
+    }
+
 }

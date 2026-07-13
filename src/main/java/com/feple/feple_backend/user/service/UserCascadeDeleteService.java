@@ -1,18 +1,18 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
+import com.feple.feple_backend.artist.song.service.SongRequestService;
+import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
-import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
-import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.service.NotificationPreferenceService;
+import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
@@ -37,12 +37,12 @@ public class UserCascadeDeleteService {
     private final CommentService commentService;
     private final ArtistGalleryPhotoService artistGalleryPhotoService;
 
-    private final NotificationRepository notificationRepository;
-    private final NotificationPreferenceRepository notificationPreferenceRepository;
-    private final FestivalCertificationRepository certificationRepository;
+    private final NotificationQueryService notificationQueryService;
+    private final NotificationPreferenceService notificationPreferenceService;
+    private final FestivalCertificationService certificationService;
     private final FestivalReviewService reviewService;
-    private final SongRequestRepository songRequestRepository;
-    private final ArtistSuggestionRepository artistSuggestionRepository;
+    private final SongRequestService songRequestService;
+    private final ArtistSuggestionService artistSuggestionService;
 
     private final UserBlockService userBlockService;
     private final FileStorageService fileStorageService;
@@ -63,12 +63,12 @@ public class UserCascadeDeleteService {
         commentService.removeLikesByUser(id);
         artistGalleryPhotoService.removeByUser(id);
 
-        notificationRepository.deleteByUserId(id);
-        notificationPreferenceRepository.deleteByUserId(id);
+        notificationQueryService.deleteAll(id);
+        notificationPreferenceService.removeAllByUser(id);
         reviewService.removeReviewLikesByUser(id);
-        certificationRepository.deleteByUserId(id);
-        songRequestRepository.deleteByUserId(id);
-        artistSuggestionRepository.deleteByUserId(id);
+        certificationService.removeAllByUser(id);
+        songRequestService.removeAllByUser(id);
+        artistSuggestionService.removeAllByUser(id);
         userBlockService.removeAllByUser(id);
 
         // 게시글·댓글은 익명 처리 후 유지 (작성자 닉네임은 "(탈퇴한 사용자)"로 표시됨)

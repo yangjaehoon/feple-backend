@@ -12,4 +12,5 @@ public interface NotificationPreferenceService {
     void updatePreferences(Long userId, UpdateNotificationPreferenceDto dto);
     NotificationPreference getOrCreate(Long userId);
     Map<Long, NotificationPreference> getOrCreateBatch(List<Long> userIds);
+    void removeAllByUser(Long userId);
 }
