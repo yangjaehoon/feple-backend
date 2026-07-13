@@ -1201,8 +1201,10 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .admin-modal-subtitle { font-size: 13px; color: var(--text-2); margin-top: 4px; }
 .admin-modal-section  { margin-bottom: 14px; }
 .admin-modal-label    { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+.admin-modal-hint     { font-size: 12px; color: var(--muted); margin-top: 4px; }
 .reason-chip-row      { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .admin-modal-textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; resize: vertical; box-sizing: border-box; font-family: inherit; }
+.admin-modal-textarea[type="number"] { height: auto; padding: 8px; }
 .admin-modal-actions  { display: flex; gap: 10px; justify-content: flex-end; }
 
 /* ── 인증 관리 ── */

@@ -31,7 +31,7 @@
                         <td class="td-sub" th:text="${s.userNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(s.createdAt, 'yy-MM-dd HH:mm')}"></td>
-                        <td style="display:flex;gap:6px;align-items:center;">
+                        <td class="cell-actions">
                             <button type="button" class="btn btn-success btn-sm open-approve-btn"
                                     th:data-id="${s.id}"
                                     th:data-artist="${s.artistName}">승인</button>
@@ -57,10 +57,10 @@
             <div id="approve-artist-name" class="admin-modal-subtitle"></div>
         </div>
         <div class="admin-modal-section">
-            <div class="admin-modal-label">등록된 아티스트 ID <span style="color:red">*</span></div>
-            <input type="number" id="approve-artist-id" class="admin-modal-textarea" style="height:auto;padding:8px;"
+            <div class="admin-modal-label">등록된 아티스트 ID <span class="required-star">*</span></div>
+            <input type="number" id="approve-artist-id" class="admin-modal-textarea"
                    placeholder="아티스트 ID를 입력하세요" min="1"/>
-            <div style="font-size:12px;color:#888;margin-top:4px;">아티스트 관리 페이지에서 등록 후 ID를 확인하세요.</div>
+            <div class="admin-modal-hint">아티스트 관리 페이지에서 등록 후 ID를 확인하세요.</div>
         </div>
         <form id="approve-form" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>

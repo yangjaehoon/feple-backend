@@ -2,21 +2,6 @@
 window.AdminUtils.initTabs(['list', 'checklist']);
 
 /* ── 체크박스 AJAX 저장 ── */
-var toastTimer;
-function showToast(isError, msg) {
-    var t = document.getElementById('saveToast');
-    if (isError) {
-        t.textContent = msg || '저장 실패';
-        t.classList.add('error');
-    } else {
-        t.textContent = '저장됨';
-        t.classList.remove('error');
-    }
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() { t.classList.remove('show'); }, 1500);
-}
-
 document.querySelectorAll('.cl-check').forEach(function(cb) {
     cb.addEventListener('change', function() {
         var festivalId = cb.dataset.festivalId;
@@ -36,11 +21,11 @@ document.querySelectorAll('.cl-check').forEach(function(cb) {
         .then(function(data) {
             cb.checked = data.checked;
             updateProgress(cb.closest('tr'));
-            showToast(false);
+            window.AdminUtils.showToast('저장됨', 'success');
         })
         .catch(function() {
             cb.checked = !checked;
-            showToast(true, '저장 실패. 다시 시도해주세요.');
+            window.AdminUtils.showToast('저장 실패. 다시 시도해주세요.', 'error');
         });
     });
 });
@@ -69,20 +54,21 @@ function saveMemo(festivalId, memo) {
         headers: headers,
         body: body
     }).then(function(res) {
-        if (res.ok) showToast(false);
-        else showToast(true, '메모 저장에 실패했습니다.');
+        if (res.ok) window.AdminUtils.showToast('저장됨', 'success');
+        else window.AdminUtils.showToast('메모 저장에 실패했습니다.', 'error');
     }).catch(function() {
-        showToast(true, '메모 저장에 실패했습니다.');
+        window.AdminUtils.showToast('메모 저장에 실패했습니다.', 'error');
     });
 }
 
 function updateProgress(row) {
     var checks = row.querySelectorAll('.cl-check');
+    var total  = checks.length;
     var done   = Array.from(checks).filter(function(c) { return c.checked; }).length;
     var badge  = row.querySelector('.status-done, .status-pend');
     if (!badge) return;
-    badge.textContent = done + '/5';
-    if (done === 5) {
+    badge.textContent = done + '/' + total;
+    if (done === total) {
         badge.className = 'status-done';
         row.classList.add('all-done');
     } else {

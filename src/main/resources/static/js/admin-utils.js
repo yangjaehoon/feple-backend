@@ -32,6 +32,24 @@
             h[headerEl.content] = tokenEl.content;
             return h;
         },
+        /**
+         * Response 파싱 + 실패 시 서버 error 메시지(or defaultErrorMsg)로 reject.
+         * 응답 자체에 대한 후처리(진행률 표시 등)가 fetch 직후 필요한 경우 이 함수를 직접 사용.
+         */
+        parseJsonOrThrow: function (r, defaultErrorMsg) {
+            if (r.ok) return r.json();
+            return r.json().catch(function () { return {}; }).then(function (e) {
+                throw new Error(e.error || defaultErrorMsg || '요청에 실패했습니다.');
+            });
+        },
+        /**
+         * fetch 호출 + JSON 파싱 + 실패 시 서버 error 메시지(or defaultErrorMsg)로 reject.
+         * 성공 시 파싱된 JSON을 resolve.
+         */
+        requestJson: function (url, options, defaultErrorMsg) {
+            var self = this;
+            return fetch(url, options).then(function (r) { return self.parseJsonOrThrow(r, defaultErrorMsg); });
+        },
         escapeHtml: function (str) {
             if (!str) return '';
             return String(str)
