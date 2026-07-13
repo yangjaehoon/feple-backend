@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.moderation;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
@@ -75,7 +76,7 @@ public class BadWordAdminController {
                 },
                 "삭제되었습니다.",
                 e -> log.error("금칙어 삭제 실패: id={}", id, e),
-                "삭제 중 오류가 발생했습니다.",
+                AdminConstants.MSG_DELETE_ERROR,
                 ra);
         return "redirect:/admin/bad-words";
     }
@@ -103,7 +104,7 @@ public class BadWordAdminController {
                 },
                 "삭제되었습니다.",
                 e -> log.error("닉네임 제한 단어 삭제 실패: id={}", id, e),
-                "삭제 중 오류가 발생했습니다.",
+                AdminConstants.MSG_DELETE_ERROR,
                 ra);
         return "redirect:/admin/bad-words#nickname-restrictions";
     }

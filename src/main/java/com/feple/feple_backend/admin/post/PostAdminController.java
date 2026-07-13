@@ -108,7 +108,7 @@ public class PostAdminController {
                 },
                 "게시글이 삭제되었습니다.",
                 e -> log.error("게시글 삭제 실패 id={}", id, e),
-                "삭제 중 오류가 발생했습니다.",
+                AdminConstants.MSG_DELETE_ERROR,
                 ra);
         return "redirect:/admin/posts?" + params.toRedirectParams();
     }
