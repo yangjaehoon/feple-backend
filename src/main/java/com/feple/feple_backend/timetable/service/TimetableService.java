@@ -24,7 +24,9 @@ import com.feple.feple_backend.global.EntityLoader;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -117,10 +119,11 @@ public class TimetableService {
             entry.replaceMembers(List.of());
             return;
         }
+        Map<Long, Artist> artistsById = artistRepository.findAllById(memberArtistIds).stream()
+                .collect(Collectors.toMap(Artist::getId, artist -> artist));
         List<TimetableEntryMember> members = memberArtistIds.stream()
-                .map(artistRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(artistsById::get)
+                .filter(Objects::nonNull)
                 .map(artist -> TimetableEntryMember.builder()
                         .entry(entry)
                         .artist(artist)
