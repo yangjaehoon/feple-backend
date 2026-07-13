@@ -27,8 +27,7 @@ public class LineupChangeRequestService {
     private final ArtistFestivalRepository artistFestivalRepository;
 
     @Transactional
-    public void submit(Long userId, Long festivalId, Long artistFestivalId,
-                       String artistName, String message) {
+    public void submit(Long userId, Long festivalId, Long artistFestivalId, String message) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         ArtistFestival artistFestival = EntityLoader.getOrThrow(
@@ -36,7 +35,8 @@ public class LineupChangeRequestService {
         if (!festivalId.equals(artistFestival.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 참여 정보가 아닙니다.");
         }
-        repository.save(LineupChangeRequest.of(user, festivalId, artistFestivalId, artistName, festival.getTitle(), message));
+        repository.save(LineupChangeRequest.of(
+                user, festivalId, artistFestivalId, artistFestival.getArtistName(), festival.getTitle(), message));
     }
 
     @Transactional(readOnly = true)

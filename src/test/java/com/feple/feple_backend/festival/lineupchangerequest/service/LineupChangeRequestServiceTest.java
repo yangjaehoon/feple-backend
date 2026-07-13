@@ -42,8 +42,9 @@ class LineupChangeRequestServiceTest {
         given(festival.getTitle()).willReturn("펜타포트");
         given(artistFestivalRepository.findById(100L)).willReturn(Optional.of(artistFestival));
         given(artistFestival.getFestivalId()).willReturn(10L);
+        given(artistFestival.getArtistName()).willReturn("아이유");
 
-        assertThatCode(() -> service.submit(1L, 10L, 100L, "아이유", "라인업 변경 요청"))
+        assertThatCode(() -> service.submit(1L, 10L, 100L, "라인업 변경 요청"))
                 .doesNotThrowAnyException();
 
         then(repository).should().save(any());
@@ -57,7 +58,7 @@ class LineupChangeRequestServiceTest {
         given(festivalRepository.findById(10L)).willReturn(Optional.of(festival));
         given(artistFestivalRepository.findById(999L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.submit(1L, 10L, 999L, "아이유", "메시지"))
+        assertThatThrownBy(() -> service.submit(1L, 10L, 999L, "메시지"))
                 .isInstanceOf(java.util.NoSuchElementException.class);
 
         then(repository).shouldHaveNoInteractions();
@@ -73,7 +74,7 @@ class LineupChangeRequestServiceTest {
         given(artistFestivalRepository.findById(100L)).willReturn(Optional.of(artistFestival));
         given(artistFestival.getFestivalId()).willReturn(999L);
 
-        assertThatThrownBy(() -> service.submit(1L, 10L, 100L, "아이유", "메시지"))
+        assertThatThrownBy(() -> service.submit(1L, 10L, 100L, "메시지"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("해당 페스티벌의 참여 정보가 아닙니다.");
 

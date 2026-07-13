@@ -95,7 +95,6 @@ public class FestivalController {
 
     record SetlistChangeRequestBody(
         @NotNull Long artistFestivalId,
-        @NotBlank @Size(max = 100) String artistName,
         @NotBlank @Size(max = 500) String message
     ) {}
 
@@ -104,7 +103,7 @@ public class FestivalController {
             @PathVariable Long id,
             @Valid @RequestBody SetlistChangeRequestBody body,
             @AuthenticationPrincipal Long userId) {
-        lineupChangeRequestService.submit(userId, id, body.artistFestivalId(), body.artistName(), body.message());
+        lineupChangeRequestService.submit(userId, id, body.artistFestivalId(), body.message());
         return ResponseEntity.noContent().build();
     }
 }
