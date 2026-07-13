@@ -4,10 +4,8 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.badword.service.BadWordService;
 import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.nickname.service.NicknameRestrictionService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,14 +29,10 @@ public class BadWordAdminController {
     private final PostAdminService postAdminService;
     private final CommentService commentService;
     private final AdminLogService adminLogService;
-    private final NicknameRestrictionService nicknameRestrictionService;
-    private final ArtistAdminService artistService;
 
     @GetMapping
     public String list(Model model) {
         model.addAttribute("badWords", badWordService.findAll());
-        model.addAttribute("nicknameRestrictions", nicknameRestrictionService.findAll());
-        model.addAttribute("allArtists", artistService.getAllArtistsSortedByName());
         return "admin/moderation/bad-words";
     }
 
@@ -79,33 +73,5 @@ public class BadWordAdminController {
                 AdminConstants.MSG_DELETE_ERROR,
                 ra);
         return "redirect:/admin/bad-words";
-    }
-
-    @PostMapping("/nickname-restrictions/add")
-    public String addNicknameRestriction(@RequestParam String word, RedirectAttributes ra) {
-        AdminActionUtils.tryAction(
-                () -> {
-                    nicknameRestrictionService.add(word);
-                    adminLogService.log(AdminAction.NICKNAME_RESTRICTION_ADD, "NICKNAME_RESTRICTION", null, word);
-                },
-                "닉네임 제한 단어가 추가되었습니다.",
-                e -> log.error("닉네임 제한 단어 추가 실패: word={}", word, e),
-                "닉네임 제한 단어 추가 중 오류가 발생했습니다.",
-                ra);
-        return "redirect:/admin/bad-words#nickname-restrictions";
-    }
-
-    @PostMapping("/nickname-restrictions/{id}/delete")
-    public String deleteNicknameRestriction(@PathVariable Long id, RedirectAttributes ra) {
-        AdminActionUtils.tryAction(
-                () -> {
-                    nicknameRestrictionService.delete(id);
-                    adminLogService.log(AdminAction.NICKNAME_RESTRICTION_DELETE, "NICKNAME_RESTRICTION", id, null);
-                },
-                "삭제되었습니다.",
-                e -> log.error("닉네임 제한 단어 삭제 실패: id={}", id, e),
-                AdminConstants.MSG_DELETE_ERROR,
-                ra);
-        return "redirect:/admin/bad-words#nickname-restrictions";
     }
 }

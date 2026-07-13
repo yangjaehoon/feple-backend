@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('닉네임 제한 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('nickname-restrictions')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('닉네임 제한 관리', '닉네임 제한')}"></div>
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 닉네임 제한 -->
+        <div class="card card-mb">
+            <div class="card-header">
+                <div class="card-title">닉네임 제한 단어 추가</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/nickname-restrictions/add}" method="post" class="bw-add-form">
+                    <input type="text" name="word" placeholder="제한할 닉네임 단어 입력..."
+                           required maxlength="50"
+                           class="bw-add-input"/>
+                    <button type="submit" class="btn btn-primary">추가</button>
+                </form>
+                <p class="hint mt-8">
+                    닉네임 설정 시에만 적용됩니다. 게시글·댓글에는 영향을 주지 않습니다.
+                </p>
+            </div>
+
+            <!-- 관리자 추가 제한 목록 -->
+            <div class="card-section-label">관리자 지정 제한</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>제한 단어</th>
+                        <th class="col-w160">등록일시</th>
+                        <th class="col-w80">삭제</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="nr : ${nicknameRestrictions}">
+                        <td><span class="bw-word" th:text="${nr.word}"></span></td>
+                        <td class="td-muted td-sm"
+                            th:text="${#temporals.format(nr.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <form th:action="@{/admin/nickname-restrictions/{id}/delete(id=${nr.id})}"
+                                  method="post">
+                                <button type="submit" class="btn btn-ghost-danger btn-sm"
+                                        data-confirm="닉네임 제한 단어를 삭제하시겠습니까?">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(nicknameRestrictions)}" th:replace="~{admin/fragments :: emptyRow(3, '추가된 닉네임 제한 단어가 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 아티스트 이름 자동 제한 -->
+            <div class="card-section-label">
+                아티스트 이름 (자동 적용)
+                <span class="card-title-note"
+                      th:text="${#lists.size(allArtists)} + '명'"></span>
+            </div>
+            <div class="artist-name-restriction-wrap">
+                <th:block th:each="a : ${allArtists}">
+                    <span th:if="${a.name != null and !a.name.isEmpty()}"
+                          class="nick-restrict-tag"
+                          th:text="${a.name}"></span>
+                    <span th:if="${a.nameEn != null and !a.nameEn.isEmpty()}"
+                          class="nick-restrict-tag nick-restrict-tag-en"
+                          th:text="${a.nameEn}"></span>
+                </th:block>
+                <span th:if="${#lists.isEmpty(allArtists)}" class="td-muted">등록된 아티스트가 없습니다.</span>
+            </div>
+            <p class="hint card-section-hint">
+                아티스트 이름은 닉네임에 포함될 수 없습니다. 아티스트 등록·수정·삭제 시 자동으로 반영됩니다.
+            </p>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

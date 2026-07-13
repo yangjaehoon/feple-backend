@@ -117,6 +117,11 @@
            th:classappend="${active == 'bad-words'} ? ' active'">
             <span class="sb-icon">🚫</span> 금칙어
         </a>
+        <a sec:authorize="hasAuthority('PERM_BAD_WORDS')"
+           th:href="@{/admin/nickname-restrictions}" class="sb-link"
+           th:classappend="${active == 'nickname-restrictions'} ? ' active'">
+            <span class="sb-icon">🔤</span> 닉네임 제한
+        </a>
 
         <div class="sb-section-label">시스템</div>
         <a sec:authorize="hasRole('SUPER_ADMIN')"

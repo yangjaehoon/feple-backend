@@ -1,10 +1,8 @@
 package com.feple.feple_backend.admin.moderation;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.badword.service.BadWordService;
 import com.feple.feple_backend.comment.service.CommentService;
-import com.feple.feple_backend.nickname.service.NicknameRestrictionService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +27,6 @@ class BadWordAdminControllerTest {
     @Mock PostAdminService postAdminService;
     @Mock CommentService commentService;
     @Mock AdminLogService adminLogService;
-    @Mock NicknameRestrictionService nicknameRestrictionService;
-    @Mock ArtistAdminService artistService;
 
     @InjectMocks BadWordAdminController controller;
 
@@ -46,13 +42,11 @@ class BadWordAdminControllerTest {
     @Test
     void 목록_조회_뷰와_모델_속성_확인() throws Exception {
         given(badWordService.findAll()).willReturn(List.of());
-        given(nicknameRestrictionService.findAll()).willReturn(List.of());
-        given(artistService.getAllArtistsSortedByName()).willReturn(List.of());
 
         mockMvc.perform(get("/admin/bad-words"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/moderation/bad-words"))
-                .andExpect(model().attributeExists("badWords", "nicknameRestrictions", "allArtists"));
+                .andExpect(model().attributeExists("badWords"));
     }
 
     // ── POST /admin/bad-words/add ─────────────────────────────────────────────
@@ -102,27 +96,5 @@ class BadWordAdminControllerTest {
                 .andExpect(flash().attribute("successMessage", "삭제되었습니다."));
 
         then(badWordService).should().delete(1L);
-    }
-
-    // ── POST /admin/bad-words/nickname-restrictions/add ───────────────────────
-
-    @Test
-    void 닉네임_제한_추가_성공() throws Exception {
-        mockMvc.perform(post("/admin/bad-words/nickname-restrictions/add").param("word", "금지어"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attribute("successMessage", "닉네임 제한 단어가 추가되었습니다."));
-
-        then(nicknameRestrictionService).should().add("금지어");
-    }
-
-    // ── POST /admin/bad-words/nickname-restrictions/{id}/delete ──────────────
-
-    @Test
-    void 닉네임_제한_삭제_성공() throws Exception {
-        mockMvc.perform(post("/admin/bad-words/nickname-restrictions/5/delete"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attribute("successMessage", "삭제되었습니다."));
-
-        then(nicknameRestrictionService).should().delete(5L);
     }
 }
