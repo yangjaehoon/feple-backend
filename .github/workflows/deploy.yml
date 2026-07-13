@@ -81,7 +81,7 @@ jobs:
             sudo mkdir -p /etc/systemd/system/feple.service.d
             sudo tee /etc/systemd/system/feple.service.d/jvm.conf > /dev/null << 'EOF'
             [Service]
-            Environment="JAVA_TOOL_OPTIONS=-Xms64m -Xmx360m -XX:MaxMetaspaceSize=96m -XX:CompressedClassSpaceSize=48m -XX:ReservedCodeCacheSize=32m -Xss256k -XX:MaxGCPauseMillis=200 -XX:+UseG1GC"
+            Environment="JAVA_TOOL_OPTIONS=-Xms128m -Xmx300m -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=48m -Xss256k -XX:MaxGCPauseMillis=200 -XX:+UseG1GC"
             EOF
             sudo systemctl daemon-reload
             sudo systemctl start feple.service
