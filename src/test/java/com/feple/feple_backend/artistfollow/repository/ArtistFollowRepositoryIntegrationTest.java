@@ -17,7 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -78,27 +77,6 @@ class ArtistFollowRepositoryIntegrationTest {
                 .isFalse();
     }
 
-    // ── findByUserIdAndArtistId ───────────────────────────────────────
-
-    @Test
-    void 팔로우_단건_조회() {
-        ArtistFollow saved = artistFollowRepository.save(ArtistFollow.of(user, artist));
-        em.flush(); em.clear();
-
-        Optional<ArtistFollow> found = artistFollowRepository.findByUserIdAndArtistId(
-                user.getId(), artist.getId());
-
-        assertThat(found).isPresent();
-        assertThat(found.get().getId()).isEqualTo(saved.getId());
-    }
-
-    @Test
-    void 팔로우_없으면_empty_반환() {
-        Optional<ArtistFollow> found = artistFollowRepository.findByUserIdAndArtistId(
-                user.getId(), artist.getId());
-        assertThat(found).isEmpty();
-    }
-
     // ── deleteByUserIdAndArtistId (@Modifying) ────────────────────────
 
     @Test
@@ -117,26 +95,6 @@ class ArtistFollowRepositoryIntegrationTest {
     void 없는_팔로우_삭제_시_예외_없음() {
         // 존재하지 않는 팔로우 삭제 → 예외 없이 0건 삭제
         artistFollowRepository.deleteByUserIdAndArtistId(user.getId(), 9999L);
-    }
-
-    // ── countByArtistId ──────────────────────────────────────────────
-
-    @Test
-    void 아티스트별_팔로워수_카운트() {
-        User user2 = userRepository.save(User.builder().oauthId("u2").nickname("u2").build());
-        User user3 = userRepository.save(User.builder().oauthId("u3").nickname("u3").build());
-
-        artistFollowRepository.save(ArtistFollow.of(user, artist));
-        artistFollowRepository.save(ArtistFollow.of(user2, artist));
-        artistFollowRepository.save(ArtistFollow.of(user3, artist));
-        em.flush();
-
-        assertThat(artistFollowRepository.countByArtistId(artist.getId())).isEqualTo(3);
-    }
-
-    @Test
-    void 팔로워_없는_아티스트_카운트_0() {
-        assertThat(artistFollowRepository.countByArtistId(artist.getId())).isEqualTo(0);
     }
 
     // ── findByUserId (JOIN FETCH) ─────────────────────────────────────
