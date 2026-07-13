@@ -29,7 +29,8 @@
 <script th:inline="javascript">
 var _geoData = {lat: /*[[${festival.latitude}]]*/ 0, lng: /*[[${festival.longitude}]]*/ 0, booths: /*[[${booths}]]*/ []};
 </script>
-<script th:src="@{/js/admin-festival-detail.js}"></script>
+<script th:src="@{/js/admin-festival-detail-booths.js}"></script>
+<script th:src="@{/js/admin-festival-detail-timetable.js}"></script>
 <script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap&loading=async'}" async defer></script>
 </body>
 </html>
