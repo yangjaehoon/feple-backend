@@ -62,14 +62,6 @@ public class ArtistGalleryPhoto extends BaseTimeEntity {
         if (description != null) this.description = description;
     }
 
-    public void incrementLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        if (this.likeCount > 0) this.likeCount--;
-    }
-
     public Long getUploaderId() { return uploader.getId(); }
     public String getUploaderNickname() { return uploader.getNickname(); }
     public String getArtistName() { return artist.getName(); }

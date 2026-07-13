@@ -95,20 +95,4 @@ public class Festival {
         if (newKey != null) this.posterKey = newKey;
     }
 
-    public void incrementLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        this.likeCount = Math.max(0, this.likeCount - 1);
-    }
-
-    public void incrementAttendingCount() {
-        this.attendingCount++;
-    }
-
-    public void decrementAttendingCount() {
-        this.attendingCount = Math.max(0, this.attendingCount - 1);
-    }
-
 }

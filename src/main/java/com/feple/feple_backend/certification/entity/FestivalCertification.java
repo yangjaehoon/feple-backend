@@ -101,6 +101,4 @@ public class FestivalCertification extends BaseTimeEntity {
         this.ratedAt = LocalDateTime.now();
     }
 
-    public void incrementLikeCount() { this.likeCount++; }
-    public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
 }

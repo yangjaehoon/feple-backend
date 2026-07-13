@@ -93,62 +93,6 @@ class PostRepositoryIntegrationTest {
                 .doesNotContain(p3.getId());
     }
 
-    // ── likeCount 엔티티 메서드 ─────────────────────────────────────
-
-    @Test
-    void 좋아요_증가_엔티티_메서드() {
-        Post post = postRepository.save(freePost(3));
-        em.flush();
-
-        post.incrementLikeCount();
-        em.flush(); em.clear();
-
-        Post updated = postRepository.findById(post.getId()).orElseThrow();
-        assertThat(updated.getLikeCount()).isEqualTo(4);
-    }
-
-    @Test
-    void 좋아요_감소_엔티티_메서드() {
-        Post post = postRepository.save(freePost(3));
-        em.flush();
-
-        post.decrementLikeCount();
-        em.flush(); em.clear();
-
-        Post updated = postRepository.findById(post.getId()).orElseThrow();
-        assertThat(updated.getLikeCount()).isEqualTo(2);
-    }
-
-    @Test
-    void 좋아요_0일때_감소_무시() {
-        Post post = postRepository.save(freePost(0));
-        em.flush();
-
-        post.decrementLikeCount(); // Math.max(0, ...) 보호
-        em.flush(); em.clear();
-
-        Post updated = postRepository.findById(post.getId()).orElseThrow();
-        assertThat(updated.getLikeCount()).isEqualTo(0);
-    }
-
-    // ── scrapCount 엔티티 메서드 ─────────────────────────────────────
-
-    @Test
-    void 스크랩_증가_감소_엔티티_메서드() {
-        Post post = postRepository.save(freePost(0));
-        em.flush();
-
-        post.incrementScrapCount();
-        em.flush(); em.clear();
-        Post after = postRepository.findById(post.getId()).orElseThrow();
-        assertThat(after.getScrapCount()).isEqualTo(1);
-
-        after.decrementScrapCount();
-        em.flush(); em.clear();
-        Post afterDec = postRepository.findById(post.getId()).orElseThrow();
-        assertThat(afterDec.getScrapCount()).isEqualTo(0);
-    }
-
     // ── 소프트 삭제 (native query) ────────────────────────────────────
 
     @Test

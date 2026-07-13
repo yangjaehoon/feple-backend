@@ -79,9 +79,6 @@ public class Comment {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void incrementLikeCount() { this.likeCount++; }
-    public void decrementLikeCount() { if (this.likeCount > 0) this.likeCount--; }
-
     public Long getParentId() { return parent != null ? parent.getId() : null; }
     public Long getPostId() { return post.getId(); }
     public String getPostTitle() { return post.getTitle(); }

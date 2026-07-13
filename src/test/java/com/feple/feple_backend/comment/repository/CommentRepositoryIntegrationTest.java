@@ -97,62 +97,6 @@ class CommentRepositoryIntegrationTest {
         assertThat(count).isEqualTo(2);
     }
 
-    // ── likeCount 엔티티 메서드 ─────────────────────────────────────
-
-    @Test
-    void 댓글_좋아요_증가_엔티티_메서드() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
-        em.flush();
-
-        comment.incrementLikeCount();
-        em.flush(); em.clear();
-
-        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
-        assertThat(count).isEqualTo(1);
-    }
-
-    @Test
-    void 댓글_좋아요_감소_엔티티_메서드() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
-        em.flush();
-        comment.incrementLikeCount();
-        comment.incrementLikeCount();
-        em.flush(); em.clear();
-
-        Comment reloaded = commentRepository.findById(comment.getId()).orElseThrow();
-        reloaded.decrementLikeCount();
-        em.flush(); em.clear();
-
-        int count = commentRepository.findById(reloaded.getId()).orElseThrow().getLikeCount();
-        assertThat(count).isEqualTo(1);
-    }
-
-    @Test
-    void 댓글_좋아요_0_이하_감소_불가() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
-        em.flush(); // likeCount = 0
-
-        comment.decrementLikeCount(); // if (likeCount > 0) 보호
-        em.flush(); em.clear();
-
-        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
-        assertThat(count).isEqualTo(0);
-    }
-
-    @Test
-    void 댓글_좋아요_연속_0_이하_감소_불가() {
-        Comment comment = commentRepository.save(new Comment("내용", post, user, false));
-        em.flush();
-
-        comment.decrementLikeCount();
-        comment.decrementLikeCount();
-        comment.decrementLikeCount();
-        em.flush(); em.clear();
-
-        int count = commentRepository.findById(comment.getId()).orElseThrow().getLikeCount();
-        assertThat(count).isEqualTo(0);
-    }
-
     // ── 금칙어 스캔 ──────────────────────────────────────────────────
 
     @Test
