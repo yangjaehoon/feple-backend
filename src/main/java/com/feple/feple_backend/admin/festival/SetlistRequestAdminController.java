@@ -4,8 +4,8 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.festival.lineupchangerequest.entity.LineupChangeRequestStatus;
-import com.feple.feple_backend.festival.lineupchangerequest.service.LineupChangeRequestService;
+import com.feple.feple_backend.festival.setlistchangerequest.entity.SetlistChangeRequestStatus;
+import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -22,12 +22,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class SetlistRequestAdminController {
 
-    private final LineupChangeRequestService service;
+    private final SetlistChangeRequestService service;
     private final AdminLogService adminLogService;
 
     @GetMapping
     public String list(@ModelAttribute SetlistRequestListParams params, Model model) {
-        LineupChangeRequestStatus statusEnum = parseStatus(params.status());
+        SetlistChangeRequestStatus statusEnum = parseStatus(params.status());
         var requests = service.list(statusEnum, params.keyword(), PageRequest.of(params.page(), AdminConstants.LIST_PAGE_SIZE));
         model.addAttribute("requests", requests);
         model.addAttribute("status", params.status());
@@ -56,11 +56,11 @@ public class SetlistRequestAdminController {
         return AdminActionUtils.listRedirect("/admin/setlist-requests", params.status(), safePage, params.keyword());
     }
 
-    private LineupChangeRequestStatus parseStatus(String status) {
+    private SetlistChangeRequestStatus parseStatus(String status) {
         try {
-            return LineupChangeRequestStatus.valueOf(status);
+            return SetlistChangeRequestStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            return LineupChangeRequestStatus.PENDING;
+            return SetlistChangeRequestStatus.PENDING;
         }
     }
 }

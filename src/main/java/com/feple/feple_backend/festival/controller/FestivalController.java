@@ -13,7 +13,7 @@ import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
-import com.feple.feple_backend.festival.lineupchangerequest.service.LineupChangeRequestService;
+import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -37,7 +37,7 @@ public class FestivalController {
     private final FestivalAttendanceService festivalAttendanceService;
     private final WeatherService weatherService;
     private final SongService songService;
-    private final LineupChangeRequestService lineupChangeRequestService;
+    private final SetlistChangeRequestService setlistChangeRequestService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -103,7 +103,7 @@ public class FestivalController {
             @PathVariable Long id,
             @Valid @RequestBody SetlistChangeRequestBody body,
             @AuthenticationPrincipal Long userId) {
-        lineupChangeRequestService.submit(userId, id, body.artistFestivalId(), body.message());
+        setlistChangeRequestService.submit(userId, id, body.artistFestivalId(), body.message());
         return ResponseEntity.noContent().build();
     }
 }

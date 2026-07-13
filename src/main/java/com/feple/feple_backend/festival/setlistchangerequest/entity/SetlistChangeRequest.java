@@ -1,4 +1,4 @@
-package com.feple.feple_backend.festival.lineupchangerequest.entity;
+package com.feple.feple_backend.festival.setlistchangerequest.entity;
 
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "lineup_change_requests")
-public class LineupChangeRequest {
+@Table(name = "lineup_change_requests") // DB 테이블명은 변경하지 않음 (운영 공유 DB, 마이그레이션 범위 밖)
+public class SetlistChangeRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +37,7 @@ public class LineupChangeRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private LineupChangeRequestStatus status = LineupChangeRequestStatus.PENDING;
+    private SetlistChangeRequestStatus status = SetlistChangeRequestStatus.PENDING;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -45,9 +45,9 @@ public class LineupChangeRequest {
 
     public Long getUserId() { return user.getId(); }
 
-    public static LineupChangeRequest of(User user, Long festivalId, Long artistFestivalId,
+    public static SetlistChangeRequest of(User user, Long festivalId, Long artistFestivalId,
                                          String artistName, String festivalTitle, String message) {
-        LineupChangeRequest req = new LineupChangeRequest();
+        SetlistChangeRequest req = new SetlistChangeRequest();
         req.user = user;
         req.festivalId = festivalId;
         req.artistFestivalId = artistFestivalId;
@@ -58,6 +58,6 @@ public class LineupChangeRequest {
     }
 
     public void resolve() {
-        this.status = LineupChangeRequestStatus.PROCESSED;
+        this.status = SetlistChangeRequestStatus.PROCESSED;
     }
 }

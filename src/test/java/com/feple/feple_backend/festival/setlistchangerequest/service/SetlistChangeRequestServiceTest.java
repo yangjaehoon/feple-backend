@@ -1,9 +1,9 @@
-package com.feple.feple_backend.festival.lineupchangerequest.service;
+package com.feple.feple_backend.festival.setlistchangerequest.service;
 
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.festival.lineupchangerequest.repository.LineupChangeRequestRepository;
+import com.feple.feple_backend.festival.setlistchangerequest.repository.SetlistChangeRequestRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -23,14 +23,14 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class LineupChangeRequestServiceTest {
+class SetlistChangeRequestServiceTest {
 
-    @Mock LineupChangeRequestRepository repository;
+    @Mock SetlistChangeRequestRepository repository;
     @Mock UserRepository userRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;
 
-    @InjectMocks LineupChangeRequestService service;
+    @InjectMocks SetlistChangeRequestService service;
 
     @Test
     void submit_성공() {
@@ -44,7 +44,7 @@ class LineupChangeRequestServiceTest {
         given(artistFestival.getFestivalId()).willReturn(10L);
         given(artistFestival.getArtistName()).willReturn("아이유");
 
-        assertThatCode(() -> service.submit(1L, 10L, 100L, "라인업 변경 요청"))
+        assertThatCode(() -> service.submit(1L, 10L, 100L, "셋리스트 변경 요청"))
                 .doesNotThrowAnyException();
 
         then(repository).should().save(any());
