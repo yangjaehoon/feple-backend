@@ -115,7 +115,7 @@ public class ReportAdminController {
                 },
                 null,
                 e -> log.error("신고 일괄 삭제 실패 type={} ids={}", filter.type(), ids, e),
-                "일괄 삭제 처리 중 오류가 발생했습니다.",
+                AdminConstants.MSG_BULK_DELETE_ERROR,
                 ra);
         if (!ra.getFlashAttributes().containsKey("errorMessage")) {
             String msg = done[0] == ids.size()

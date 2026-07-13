@@ -22,4 +22,5 @@ public final class AdminConstants {
     public static final String STATUS_ALL          = "ALL";
 
     public static final String MSG_EMPTY_SELECTION = "선택된 항목이 없습니다.";
+    public static final String MSG_BULK_DELETE_ERROR = "일괄 삭제 처리 중 오류가 발생했습니다.";
 }

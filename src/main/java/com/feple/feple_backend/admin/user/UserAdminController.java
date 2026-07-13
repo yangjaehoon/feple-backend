@@ -90,7 +90,7 @@ public class UserAdminController {
                     },
                     ids.size() + "명 회원이 삭제되었습니다.",
                     e -> log.error("회원 일괄 삭제 실패 ids={}", ids, e),
-                    "일괄 삭제 처리 중 오류가 발생했습니다.",
+                    AdminConstants.MSG_BULK_DELETE_ERROR,
                     ra);
         }
         return "redirect:/admin/users";
