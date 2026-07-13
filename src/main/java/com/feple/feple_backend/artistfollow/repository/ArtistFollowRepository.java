@@ -47,11 +47,12 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
     @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.user WHERE af.artist.id = :artistId")
     List<ArtistFollow> findByArtistId(@Param("artistId") Long artistId);
 
-    @Query("SELECT DISTINCT af.user.id FROM ArtistFollow af WHERE af.artist.id IN :artistIds")
-    List<Long> findUserIdsByArtistIdIn(@Param("artistIds") List<Long> artistIds);
-
     /** 벌크 랭킹용: [artistId, followCount] */
     @Query("SELECT af.artist.id, COUNT(af) FROM ArtistFollow af " +
            "WHERE af.createdAt >= :since GROUP BY af.artist.id")
     List<Object[]> countByArtistSince(@Param("since") LocalDateTime since);
+
+    /** 아티스트별 팔로워 일괄 조회용: [artistId, userId] — 페스티벌별 그룹핑은 호출부에서 수행 */
+    @Query("SELECT af.artist.id, af.user.id FROM ArtistFollow af WHERE af.artist.id IN :artistIds")
+    List<Object[]> findArtistIdAndUserIdByArtistIdIn(@Param("artistIds") List<Long> artistIds);
 }

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -40,17 +42,33 @@ public class FestivalReminderScheduler {
         if (festivals.isEmpty()) return;
         log.info("[ReminderScheduler] D-{} 대상 페스티벌 {}개", dDay, festivals.size());
 
-        for (Festival festival : festivals) {
-            List<Long> artistIds = artistFestivalRepository
-                    .findByFestivalIdOrderByLineupOrderAsc(festival.getId())
-                    .stream()
-                    .map(ArtistFestival::getArtistId)
-                    .toList();
+        List<Long> festivalIds = festivals.stream().map(Festival::getId).toList();
+        Map<Long, List<Long>> artistIdsByFestivalId = artistFestivalRepository
+                .findByFestivalIdInWithArtist(festivalIds)
+                .stream()
+                .collect(Collectors.groupingBy(ArtistFestival::getFestivalId,
+                        Collectors.mapping(ArtistFestival::getArtistId, Collectors.toList())));
 
+        List<Long> allArtistIds = artistIdsByFestivalId.values().stream()
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
+        if (allArtistIds.isEmpty()) return;
+
+        Map<Long, List<Long>> userIdsByArtistId = artistFollowRepository
+                .findArtistIdAndUserIdByArtistIdIn(allArtistIds)
+                .stream()
+                .collect(Collectors.groupingBy(row -> (Long) row[0],
+                        Collectors.mapping(row -> (Long) row[1], Collectors.toList())));
+
+        for (Festival festival : festivals) {
+            List<Long> artistIds = artistIdsByFestivalId.getOrDefault(festival.getId(), List.of());
             if (artistIds.isEmpty()) continue;
 
-            List<Long> userIds = artistFollowRepository.findUserIdsByArtistIdIn(artistIds);
-
+            List<Long> userIds = artistIds.stream()
+                    .flatMap(artistId -> userIdsByArtistId.getOrDefault(artistId, List.of()).stream())
+                    .distinct()
+                    .toList();
             if (userIds.isEmpty()) continue;
 
             notificationService.sendFestivalReminders(

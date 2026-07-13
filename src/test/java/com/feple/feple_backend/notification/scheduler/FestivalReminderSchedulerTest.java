@@ -46,7 +46,7 @@ class FestivalReminderSchedulerTest {
         Festival festival = Festival.builder().id(1L).title("펜타포트").build();
         given(festivalRepository.findByStartDate(dDay7)).willReturn(List.of(festival));
         given(festivalRepository.findByStartDate(dDay1)).willReturn(List.of());
-        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(1L)).willReturn(List.of());
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(1L))).willReturn(List.of());
 
         scheduler.sendReminders();
 
@@ -62,9 +62,10 @@ class FestivalReminderSchedulerTest {
         given(festivalRepository.findByStartDate(dDay1)).willReturn(List.of());
 
         ArtistFestival af = mock(ArtistFestival.class);
+        given(af.getFestivalId()).willReturn(1L);
         given(af.getArtistId()).willReturn(10L);
-        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(1L)).willReturn(List.of(af));
-        given(artistFollowRepository.findUserIdsByArtistIdIn(List.of(10L))).willReturn(List.of());
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(1L))).willReturn(List.of(af));
+        given(artistFollowRepository.findArtistIdAndUserIdByArtistIdIn(List.of(10L))).willReturn(List.of());
 
         scheduler.sendReminders();
 
@@ -80,9 +81,11 @@ class FestivalReminderSchedulerTest {
         given(festivalRepository.findByStartDate(dDay1)).willReturn(List.of(festival));
 
         ArtistFestival af = mock(ArtistFestival.class);
+        given(af.getFestivalId()).willReturn(1L);
         given(af.getArtistId()).willReturn(10L);
-        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(1L)).willReturn(List.of(af));
-        given(artistFollowRepository.findUserIdsByArtistIdIn(List.of(10L))).willReturn(List.of(100L, 200L));
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(1L))).willReturn(List.of(af));
+        given(artistFollowRepository.findArtistIdAndUserIdByArtistIdIn(List.of(10L)))
+                .willReturn(List.of(new Object[]{10L, 100L}, new Object[]{10L, 200L}));
 
         scheduler.sendReminders();
 
