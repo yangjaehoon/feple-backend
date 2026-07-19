@@ -1,12 +1,14 @@
 package com.feple.feple_backend.admin.post;
 
+import com.feple.feple_backend.admin.AdminParamDefaults;
+
 record PostListParams(Integer page, String filter, String keyword, Long artistId, Long festivalId) {
 
     PostListParams {
-        // page/filter 파라미터 없이 접근 시 null → primitive 변환 실패(400)·"filter=null" 방지
-        page = page == null ? 0 : page;
-        filter = filter == null ? "" : filter;
-        keyword = keyword == null ? "" : keyword;
+        // filter 파라미터 없이 접근 시 "filter=null" 방지
+        page = AdminParamDefaults.orZero(page);
+        filter = AdminParamDefaults.orEmpty(filter);
+        keyword = AdminParamDefaults.orEmpty(keyword);
     }
 
     String toExtraParams() {

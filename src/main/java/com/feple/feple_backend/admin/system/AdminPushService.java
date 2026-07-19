@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -82,13 +81,7 @@ public class AdminPushService {
     @Transactional
     public void sendToArtistFollowers(Long artistId, String title, String body) {
         List<Long> userIds = artistFollowService.getFollowerUserIds(artistId);
-        if (userIds.isEmpty()) {
-            throw new IllegalArgumentException("해당 아티스트의 팔로워가 없습니다.");
-        }
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(userIds);
-        if (tokens.isEmpty()) {
-            throw new IllegalArgumentException("발송 대상 기기가 없습니다. (팔로워 " + userIds.size() + "명 모두 알림 비활성)");
-        }
+        List<String> tokens = resolveTargetTokens(userIds, "해당 아티스트의 팔로워가 없습니다.", "팔로워");
         saveTargetedNotifications(userIds, title, body);
         logAndSend(tokens, title, body, "[AdminPush] 아티스트 팔로워 발송 — artistId={}, 팔로워 {}명, 토큰 {}개, 제목: {}",
                 artistId, userIds.size(), tokens.size(), title);
@@ -96,17 +89,26 @@ public class AdminPushService {
 
     @Transactional
     public void sendToFestivalCertified(Long festivalId, String title, String body) {
-        Set<Long> userIds = festivalCertificationAdminService.getApprovedUserIds(festivalId);
-        if (userIds.isEmpty()) {
-            throw new IllegalArgumentException("해당 페스티벌의 인증된 참여자가 없습니다.");
-        }
-        List<String> tokens = deviceTokenRepository.findTokensByUserIds(List.copyOf(userIds));
-        if (tokens.isEmpty()) {
-            throw new IllegalArgumentException("발송 대상 기기가 없습니다. (인증자 " + userIds.size() + "명 모두 알림 비활성)");
-        }
-        saveTargetedNotifications(List.copyOf(userIds), title, body);
+        List<Long> userIds = List.copyOf(festivalCertificationAdminService.getApprovedUserIds(festivalId));
+        List<String> tokens = resolveTargetTokens(userIds, "해당 페스티벌의 인증된 참여자가 없습니다.", "인증자");
+        saveTargetedNotifications(userIds, title, body);
         logAndSend(tokens, title, body, "[AdminPush] 페스티벌 인증자 발송 — festivalId={}, 인증자 {}명, 토큰 {}개, 제목: {}",
                 festivalId, userIds.size(), tokens.size(), title);
+    }
+
+    /**
+     * 대상 userId 목록 → 발송 대상 없음 검증 → 디바이스 토큰 조회 → 토큰 없음 검증까지 수행한다.
+     * sendToArtistFollowers/sendToFestivalCertified에 공통된 검증 절차를 하나로 묶은 것.
+     */
+    private List<String> resolveTargetTokens(List<Long> userIds, String noTargetMessage, String targetLabel) {
+        if (userIds.isEmpty()) {
+            throw new IllegalArgumentException(noTargetMessage);
+        }
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(userIds);
+        if (tokens.isEmpty()) {
+            throw new IllegalArgumentException("발송 대상 기기가 없습니다. (" + targetLabel + " " + userIds.size() + "명 모두 알림 비활성)");
+        }
+        return tokens;
     }
 
     private void saveTargetedNotifications(List<Long> userIds, String title, String body) {

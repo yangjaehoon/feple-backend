@@ -48,6 +48,12 @@ public class GeminiOcrClient {
     @Value("${app.gemini.api-key:}")
     private String apiKey;
 
+    @Value("${app.gemini.ocr-max-output-tokens:16384}")
+    private int maxOutputTokens;
+
+    @Value("${app.gemini.ocr-timeout-seconds:90}")
+    private int timeoutSeconds;
+
     private final ObjectMapper objectMapper;
     private final GeminiUsageTracker usageTracker;
     private final GeminiApiClient geminiApiClient;
@@ -103,15 +109,15 @@ public class GeminiOcrClient {
                 // maxOutputTokens을 넉넉히 잡아 대형 포스터에서의 절단 빈도를 낮춘다.
                 // 그래도 잘리는 경우는 isTruncated()로 감지해 호출부에 명시적으로 알린다.
                 "generationConfig", Map.of(
-                        "maxOutputTokens", 16384,
+                        "maxOutputTokens", maxOutputTokens,
                         "responseMimeType", "application/json")
         );
     }
 
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
         usageTracker.increment();
-        // 대형 포스터 이미지 처리 시간을 고려해 넉넉히 설정
-        return geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, apiKey, request, Duration.ofSeconds(90));
+        // 대형 포스터 이미지 처리 시간을 고려해 넉넉히 설정 (app.gemini.ocr-timeout-seconds로 조정 가능)
+        return geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, apiKey, request, Duration.ofSeconds(timeoutSeconds));
     }
 
     private List<LineupRawResult> parseLineupJsonArray(String content) {

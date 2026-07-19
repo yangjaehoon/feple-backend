@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.dto.NameEnUpdate;
 import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -191,16 +193,31 @@ public class ArtistAdminController {
     public String batchUpdateNameEn(@RequestParam("artistIds") List<Long> artistIds,
                                     @RequestParam("nameEns") List<String> nameEns,
                                     RedirectAttributes ra) {
+        // artistIds/nameEns는 화면의 행 순서에 의존하는 병렬 리스트이므로
+        // 개수가 어긋나면 잘못된 행끼리 짝지어져 데이터가 손상될 수 있어 먼저 검증한다.
+        if (artistIds.size() != nameEns.size()) {
+            ra.addFlashAttribute("errorMessage", "행 개수가 일치하지 않습니다. 새로고침 후 다시 시도해 주세요.");
+            return "redirect:/admin/artists";
+        }
+        List<NameEnUpdate> updates = toNameEnUpdates(artistIds, nameEns);
         AdminActionUtils.tryAction(
                 () -> {
-                    artistAdminService.batchUpdateNameEn(artistIds, nameEns);
-                    adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", null, "영어 이름 일괄 수정 " + artistIds.size() + "건");
+                    artistAdminService.batchUpdateNameEn(updates);
+                    adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", null, "영어 이름 일괄 수정 " + updates.size() + "건");
                 },
                 "영어 이름이 저장되었습니다.",
                 e -> log.error("아티스트 영어 이름 일괄 저장 실패", e),
                 "저장 중 오류가 발생했습니다.",
                 ra);
         return "redirect:/admin/artists";
+    }
+
+    private static List<NameEnUpdate> toNameEnUpdates(List<Long> artistIds, List<String> nameEns) {
+        List<NameEnUpdate> updates = new ArrayList<>(artistIds.size());
+        for (int i = 0; i < artistIds.size(); i++) {
+            updates.add(new NameEnUpdate(artistIds.get(i), nameEns.get(i)));
+        }
+        return updates;
     }
 
     @PostMapping("/{id}/delete")

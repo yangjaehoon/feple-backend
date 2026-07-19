@@ -98,13 +98,26 @@ class AdminPermissionInterceptorTest {
         assertThat(result).isTrue();
     }
 
+    // PREFIX_MAP에 등록을 잊은 신규 경로가 모든 ADMIN에게 뚫리는 걸 막기 위한 fail-closed 회귀 방지 테스트
     @Test
-    void 매핑되지_않은_경로는_그냥_통과() throws Exception {
+    void 매핑되지_않은_경로는_접근_거부() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                 "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        boolean result = interceptor.preHandle(request("/admin/dashboard"), response, new Object());
+        boolean result = interceptor.preHandle(request("/admin/unregistered-feature"), response, new Object());
+
+        assertThat(result).isFalse();
+        assertThat(response.getRedirectedUrl()).isEqualTo("/admin/access-denied");
+    }
+
+    @Test
+    void 대시보드_루트는_별도_권한_없이_통과() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean result = interceptor.preHandle(request("/admin"), response, new Object());
 
         assertThat(result).isTrue();
     }

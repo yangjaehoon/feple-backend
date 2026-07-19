@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.dto.NameEnUpdate;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistUpdateFields;
 import com.feple.feple_backend.global.MusicGenre;
@@ -263,13 +264,14 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Transactional
     @EvictArtistCaches
-    public void batchUpdateNameEn(List<Long> ids, List<String> nameEns) {
+    public void batchUpdateNameEn(List<NameEnUpdate> updates) {
+        List<Long> ids = updates.stream().map(NameEnUpdate::artistId).toList();
         Map<Long, Artist> artistMap = artistRepository.findAllById(ids).stream()
                 .collect(Collectors.toMap(Artist::getId, a -> a));
-        for (int i = 0; i < ids.size(); i++) {
-            Artist artist = artistMap.get(ids.get(i));
+        for (NameEnUpdate update : updates) {
+            Artist artist = artistMap.get(update.artistId());
             if (artist != null) {
-                String nameEn = (i < nameEns.size()) ? nameEns.get(i).trim() : "";
+                String nameEn = update.nameEn() == null ? "" : update.nameEn().trim();
                 artist.updateNameEn(nameEn.isEmpty() ? null : nameEn);
             }
         }

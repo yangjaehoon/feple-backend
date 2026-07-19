@@ -143,6 +143,18 @@ class FestivalArtistAdminControllerTest {
                 .andExpect(flash().attributeExists("errorMessage"));
     }
 
+    @Test
+    void 라인업_일괄수정_행개수_불일치시_요청_거부() throws Exception {
+        mockMvc.perform(post("/admin/festivals/1/artists/batch-edit")
+                        .param("afIds", "2", "3")
+                        .param("performanceDates", "2026-06-01")
+                        .param("stageNames", "MAIN", "SIDE"))
+                .andExpect(redirectedUrl("/admin/festivals/1#artists"))
+                .andExpect(flash().attribute("errorMessage", "행 개수가 일치하지 않습니다. 새로고침 후 다시 시도해 주세요."));
+
+        then(artistFestivalService).shouldHaveNoInteractions();
+    }
+
     // ── POST /admin/festivals/{festivalId}/artists/{artistFestivalId}/delete ───
 
     @Test

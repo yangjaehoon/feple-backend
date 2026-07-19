@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.artist;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
+import com.feple.feple_backend.artist.dto.NameEnUpdate;
 import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -172,6 +173,18 @@ class ArtistAdminControllerTest {
                 .andExpect(redirectedUrl("/admin/artists"))
                 .andExpect(flash().attribute("successMessage", "영어 이름이 저장되었습니다."));
 
-        then(artistAdminService).should().batchUpdateNameEn(List.of(1L, 2L), List.of("Artist A", "Artist B"));
+        then(artistAdminService).should().batchUpdateNameEn(
+                List.of(new NameEnUpdate(1L, "Artist A"), new NameEnUpdate(2L, "Artist B")));
+    }
+
+    @Test
+    void 영어_이름_일괄_수정_행개수_불일치시_요청_거부() throws Exception {
+        mockMvc.perform(post("/admin/artists/batch-name-en")
+                        .param("artistIds", "1", "2")
+                        .param("nameEns", "Artist A"))
+                .andExpect(redirectedUrl("/admin/artists"))
+                .andExpect(flash().attribute("errorMessage", "행 개수가 일치하지 않습니다. 새로고침 후 다시 시도해 주세요."));
+
+        then(artistAdminService).shouldHaveNoInteractions();
     }
 }

@@ -20,6 +20,12 @@ public class GeminiUrlContextClient {
     @Value("${app.gemini.api-key:}")
     private String geminiApiKey;
 
+    @Value("${app.gemini.url-context-timeout-seconds:60}")
+    private int timeoutSeconds;
+
+    @Value("${app.gemini.url-context-max-output-tokens:512}")
+    private int maxOutputTokens;
+
     private final ObjectMapper objectMapper;
     private final GeminiApiClient geminiApiClient;
     private final GeminiUsageTracker usageTracker;
@@ -31,7 +37,7 @@ public class GeminiUrlContextClient {
     public ScrapedFestivalDto scrape(String url, String source) {
         Map<String, Object> request = buildUrlContextRequest(url);
         usageTracker.increment();
-        Map<?, ?> response = geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiApiKey, request, Duration.ofSeconds(60));
+        Map<?, ?> response = geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiApiKey, request, Duration.ofSeconds(timeoutSeconds));
 
         if (isUrlBlocked(response)) {
             log.warn("Gemini URL context blocked for: {}", url);
@@ -58,7 +64,7 @@ public class GeminiUrlContextClient {
             "contents", List.of(Map.of(
                 "parts", List.of(Map.of("text", prompt))
             )),
-            "generationConfig", Map.of("maxOutputTokens", 512, "temperature", 0)
+            "generationConfig", Map.of("maxOutputTokens", maxOutputTokens, "temperature", 0)
         );
     }
 

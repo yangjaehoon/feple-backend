@@ -12,6 +12,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 // Spring Security의 authorizeHttpRequests/@PreAuthorize 대신 HandlerInterceptor를 사용하는 이유:
 // 권한(AdminPermission)이 정적 역할이 아닌 AdminAccount 엔티티에 DB로 저장된 per-account 설정이므로
@@ -24,6 +25,11 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
     // 예) /admin/artist-suggestions는 /admin/artists보다 길어 올바른 ARTISTS 권한으로 매칭됨.
     // value가 null인 경로는 SUPER_ADMIN 전용을 의미한다.
     private static final Map<String, AdminPermission> PREFIX_MAP = new HashMap<>();
+
+    // 어떤 PREFIX_MAP 항목과도 매칭되지 않지만 별도 권한 없이 모든 ADMIN에게 열려 있어야 하는 경로.
+    // 대시보드 루트만 해당 — 그 외 새 admin 경로를 추가할 때는 반드시 PREFIX_MAP에 등록해야 하며,
+    // 등록을 잊으면 preHandle이 기본적으로 접근을 차단한다(fail-closed).
+    private static final Set<String> OPEN_TO_ANY_ADMIN = Set.of("/admin", "/admin/");
 
     static {
         PREFIX_MAP.put("/admin/export/users",        AdminPermission.USERS);
@@ -58,6 +64,10 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         }
 
         String uri = request.getRequestURI();
+        if (OPEN_TO_ANY_ADMIN.contains(uri)) {
+            return true;
+        }
+
         String matchedPrefix = null;
         for (String prefix : PREFIX_MAP.keySet()) {
             if (uri.startsWith(prefix) && (matchedPrefix == null || prefix.length() > matchedPrefix.length())) {
@@ -65,12 +75,16 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
             }
         }
 
-        if (matchedPrefix != null) {
-            AdminPermission required = PREFIX_MAP.get(matchedPrefix);
-            String requiredAuthority = required == null ? "ROLE_SUPER_ADMIN" : "PERM_" + required.name();
-            if (!auth.getAuthorities().contains(new SimpleGrantedAuthority(requiredAuthority))) {
-                return denyAccess(response);
-            }
+        // PREFIX_MAP에 등록되지 않은 경로는 신규 admin 기능 추가 시 등록을 잊은 것일 수 있으므로
+        // 안전하게 차단한다(fail-closed). 모든 ADMIN에게 열어야 하는 경로는 OPEN_TO_ANY_ADMIN에 추가할 것.
+        if (matchedPrefix == null) {
+            return denyAccess(response);
+        }
+
+        AdminPermission required = PREFIX_MAP.get(matchedPrefix);
+        String requiredAuthority = required == null ? "ROLE_SUPER_ADMIN" : "PERM_" + required.name();
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority(requiredAuthority))) {
+            return denyAccess(response);
         }
 
         return true;

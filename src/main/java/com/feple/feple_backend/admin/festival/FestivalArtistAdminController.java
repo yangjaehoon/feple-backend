@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -133,18 +134,23 @@ public class FestivalArtistAdminController {
                                     @RequestParam("performanceDates") List<String> performanceDates,
                                     @RequestParam("stageNames") List<String> stageNames,
                                     RedirectAttributes ra) {
+        // afIds/performanceDates/stageNames는 화면의 행 순서에 의존하는 병렬 리스트이므로
+        // 개수가 어긋나면 잘못된 행끼리 짝지어져 데이터가 손상될 수 있어 먼저 검증한다.
+        if (afIds.size() != performanceDates.size() || afIds.size() != stageNames.size()) {
+            ra.addFlashAttribute("errorMessage", "행 개수가 일치하지 않습니다. 새로고침 후 다시 시도해 주세요.");
+            return AdminFestivalRedirects.artists(festivalId);
+        }
+        List<LineupBatchItem> items = toLineupBatchItems(afIds, performanceDates, stageNames);
         int errorCount = 0;
-        for (int i = 0; i < afIds.size(); i++) {
+        for (LineupBatchItem item : items) {
             try {
-                artistFestivalService.updateArtistFestival(
-                        festivalId, afIds.get(i),
-                        new LineupUpdate(safeGet(stageNames, i), parseDate(safeGet(performanceDates, i))));
+                artistFestivalService.updateArtistFestival(festivalId, item.afId(), item.update());
             } catch (Exception e) {
-                log.warn("batchUpdateLineup 실패: festivalId={}, afId={}", festivalId, afIds.get(i), e);
+                log.warn("batchUpdateLineup 실패: festivalId={}, afId={}", festivalId, item.afId(), e);
                 errorCount++;
             }
         }
-        int successCount = afIds.size() - errorCount;
+        int successCount = items.size() - errorCount;
         if (errorCount > 0 && successCount > 0) {
             ra.addFlashAttribute("errorMessage",
                     successCount + "건 수정 완료, " + errorCount + "건 실패. 항목을 확인해 주세요.");
@@ -159,8 +165,12 @@ public class FestivalArtistAdminController {
         return AdminFestivalRedirects.artists(festivalId);
     }
 
-    private static String safeGet(List<String> list, int i) {
-        return i < list.size() ? list.get(i) : null;
+    private static List<LineupBatchItem> toLineupBatchItems(List<Long> afIds, List<String> performanceDates, List<String> stageNames) {
+        List<LineupBatchItem> items = new ArrayList<>(afIds.size());
+        for (int i = 0; i < afIds.size(); i++) {
+            items.add(new LineupBatchItem(afIds.get(i), new LineupUpdate(stageNames.get(i), parseDate(performanceDates.get(i)))));
+        }
+        return items;
     }
 
     private static LocalDate parseDate(String dateStr) {

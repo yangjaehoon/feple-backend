@@ -1,13 +1,14 @@
 package com.feple.feple_backend.admin.artist;
 
+import com.feple.feple_backend.admin.AdminParamDefaults;
 import org.springframework.web.util.UriComponentsBuilder;
 
 record ArtistListParams(Integer page, String keyword, String sort) {
 
     ArtistListParams {
-        page = page == null ? 0 : page;
-        keyword = keyword == null ? "" : keyword;
-        sort = sort == null ? "" : sort;
+        page = AdminParamDefaults.orZero(page);
+        keyword = AdminParamDefaults.orEmpty(keyword);
+        sort = AdminParamDefaults.orEmpty(sort);
     }
 
     String toRedirectUrl() {
