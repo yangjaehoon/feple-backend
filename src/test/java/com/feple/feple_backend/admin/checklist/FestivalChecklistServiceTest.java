@@ -51,8 +51,9 @@ class FestivalChecklistServiceTest {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
         given(checklistRepository.findByFestivalId(1L)).willReturn(Optional.of(checklist));
 
-        service.toggle(1L, "lineup1");
+        boolean newValue = service.toggle(1L, "lineup1");
 
+        assertThat(newValue).isTrue();
         assertThat(checklist.isChecked("lineup1")).isTrue();
         verify(checklistRepository, never()).save(any());
     }
@@ -63,8 +64,9 @@ class FestivalChecklistServiceTest {
         given(checklistRepository.findByFestivalId(1L)).willReturn(Optional.empty());
         given(checklistRepository.save(any())).willReturn(newChecklist);
 
-        service.toggle(1L, "boothMap");
+        boolean newValue = service.toggle(1L, "boothMap");
 
+        assertThat(newValue).isTrue();
         assertThat(newChecklist.isChecked("boothMap")).isTrue();
         verify(checklistRepository).save(any());
     }
@@ -128,5 +130,14 @@ class FestivalChecklistServiceTest {
 
         assertThat(newChecklist.getMemo()).isEqualTo("신규 메모");
         verify(checklistRepository).save(any());
+    }
+
+    // ── removeByFestivalId ───────────────────────────────────────────────────
+
+    @Test
+    void removeByFestivalId_리포지토리_삭제_위임() {
+        service.removeByFestivalId(1L);
+
+        verify(checklistRepository).deleteByFestivalId(1L);
     }
 }

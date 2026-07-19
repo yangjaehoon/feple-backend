@@ -1,6 +1,6 @@
 package com.feple.feple_backend.festival.service;
 
-import com.feple.feple_backend.admin.checklist.FestivalChecklistRepository;
+import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.booth.service.BoothService;
@@ -61,7 +61,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     private final FestivalCertificationService certificationService;
     private final PostCascadeDeleteService postCascadeService;
     private final WeatherService weatherService;
-    private final FestivalChecklistRepository festivalChecklistRepository;
+    private final FestivalChecklistService festivalChecklistService;
 
     private FestivalResponseDto toDto(Festival festival) {
         return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
@@ -202,7 +202,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         artistFestivalService.removeAllByFestival(festivalId);
         notificationQueryService.removeAllByFestivalId(festivalId);
         weatherService.removeAllByFestival(festivalId);
-        festivalChecklistRepository.deleteByFestivalId(festivalId);
+        festivalChecklistService.removeByFestivalId(festivalId);
         festivalRepository.deleteById(festivalId);
 
         fileStorageService.deleteFileAfterCommit(posterKey);

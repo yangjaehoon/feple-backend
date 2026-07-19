@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,12 +26,9 @@ public class FestivalPageScraper {
         "티켓링크", "하나티켓", "알티켓"
     );
 
-    private final Map<String, SiteScraperStrategy> strategies;
     private final CloseableHttpClient httpClient;
 
-    public FestivalPageScraper(List<SiteScraperStrategy> strategyList, CloseableHttpClient safeScraperHttpClient) {
-        this.strategies = strategyList.stream()
-                .collect(Collectors.toMap(SiteScraperStrategy::source, strategy -> strategy));
+    public FestivalPageScraper(CloseableHttpClient safeScraperHttpClient) {
         this.httpClient = safeScraperHttpClient;
     }
 
@@ -75,8 +70,8 @@ public class FestivalPageScraper {
             && r.location().isBlank();
     }
 
-    private SiteScraperStrategy strategy(String source) {
-        return strategies.getOrDefault(source, DefaultSiteScraperStrategy.INSTANCE);
+    private SiteScraperConfig strategy(String source) {
+        return SiteScraperConfigs.forSource(source);
     }
 
     private String extractTitle(Document doc, String source) {

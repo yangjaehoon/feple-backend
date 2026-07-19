@@ -25,8 +25,7 @@ public class FestivalChecklistAdminController {
     public ResponseEntity<Map<String, Object>> toggleChecklist(@PathVariable Long id,
                                                                @RequestParam String field) {
         try {
-            festivalChecklistService.toggle(id, field);
-            boolean newValue = festivalChecklistService.isChecked(id, field);
+            boolean newValue = festivalChecklistService.toggle(id, field);
             adminLogService.log(AdminAction.FESTIVAL_CHECKLIST_TOGGLE, "FESTIVAL", id, field + "=" + newValue);
             return ResponseEntity.ok(Map.of("checked", newValue));
         } catch (IllegalArgumentException e) {

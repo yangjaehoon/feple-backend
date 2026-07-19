@@ -74,9 +74,9 @@ public class AdminAccountService {
             throw new IllegalArgumentException("자신의 계정은 삭제할 수 없습니다.");
         }
 
-        if (account.getRole() == AdminRole.SUPER_ADMIN
-                && accountRepository.countByRole(AdminRole.SUPER_ADMIN) <= 1) {
-            throw new IllegalArgumentException("마지막 최고 관리자 계정은 삭제할 수 없습니다.");
+        if (account.getRole() == AdminRole.SUPER_ADMIN) {
+            ensureNotLastSuperAdmin(accountRepository.countByRole(AdminRole.SUPER_ADMIN),
+                    "마지막 최고 관리자 계정은 삭제할 수 없습니다.");
         }
 
         accountRepository.delete(account);
@@ -91,10 +91,9 @@ public class AdminAccountService {
             throw new IllegalArgumentException("자신의 계정을 비활성화할 수 없습니다.");
         }
 
-        if (account.isEnabled()
-                && account.getRole() == AdminRole.SUPER_ADMIN
-                && accountRepository.countByRoleAndEnabled(AdminRole.SUPER_ADMIN, true) <= 1) {
-            throw new IllegalArgumentException("마지막 활성 최고 관리자 계정은 비활성화할 수 없습니다.");
+        if (account.isEnabled() && account.getRole() == AdminRole.SUPER_ADMIN) {
+            ensureNotLastSuperAdmin(accountRepository.countByRoleAndEnabled(AdminRole.SUPER_ADMIN, true),
+                    "마지막 활성 최고 관리자 계정은 비활성화할 수 없습니다.");
         }
 
         account.toggle();
@@ -135,10 +134,16 @@ public class AdminAccountService {
     }
 
     private void validateRoleChange(AdminAccount account, AdminRole newRole) {
-        if (account.getRole() == AdminRole.SUPER_ADMIN
-                && newRole == AdminRole.MANAGER
-                && accountRepository.countByRole(AdminRole.SUPER_ADMIN) <= 1) {
-            throw new IllegalArgumentException("마지막 최고 관리자의 역할을 변경할 수 없습니다.");
+        if (account.getRole() == AdminRole.SUPER_ADMIN && newRole == AdminRole.MANAGER) {
+            ensureNotLastSuperAdmin(accountRepository.countByRole(AdminRole.SUPER_ADMIN),
+                    "마지막 최고 관리자의 역할을 변경할 수 없습니다.");
+        }
+    }
+
+    /** 남은 SUPER_ADMIN 수(remainingSuperAdminCount)가 1명 이하면 보호 규칙 위반으로 거부한다. */
+    private static void ensureNotLastSuperAdmin(long remainingSuperAdminCount, String errorMessage) {
+        if (remainingSuperAdminCount <= 1) {
+            throw new IllegalArgumentException(errorMessage);
         }
     }
 

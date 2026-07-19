@@ -25,10 +25,11 @@ public class FestivalChecklistService {
 
     @Transactional
     @CacheEvict(value = "festivalChecklistMap", allEntries = true)
-    public void toggle(Long festivalId, String field) {
+    public boolean toggle(Long festivalId, String field) {
         FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
                 .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
         checklist.toggle(field);
+        return checklist.isChecked(field);
     }
 
     @Transactional(readOnly = true)
@@ -44,5 +45,12 @@ public class FestivalChecklistService {
         FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
                 .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
         checklist.updateMemo(memo);
+    }
+
+    /** 페스티벌 삭제 시 연관 체크리스트를 정리한다. Repository를 직접 호출하면 이 캐시가 무효화되지 않으므로 반드시 이 메서드를 거칠 것. */
+    @Transactional
+    @CacheEvict(value = "festivalChecklistMap", allEntries = true)
+    public void removeByFestivalId(Long festivalId) {
+        checklistRepository.deleteByFestivalId(festivalId);
     }
 }
