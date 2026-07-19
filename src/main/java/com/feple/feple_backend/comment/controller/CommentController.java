@@ -6,7 +6,6 @@ import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
-import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -69,9 +68,9 @@ public class CommentController {
     @PostMapping("/{commentId}/report")
     public ResponseEntity<Void> report(
             @PathVariable Long commentId,
-            @Valid @RequestBody ReportRequest body,
+            @Valid @RequestBody ReportSubmitRequest body,
             @AuthenticationPrincipal Long userId) {
-        commentReportService.submitReport(commentId, userId, new ReportSubmitRequest(body.getReason(), body.getDetail()));
+        commentReportService.submitReport(commentId, userId, body);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -81,13 +80,5 @@ public class CommentController {
         @NotBlank
         @Size(max = 1000, message = "댓글은 1000자 이내로 입력해주세요.")
         private String content;
-    }
-
-    @Data
-    public static class ReportRequest {
-        @NotNull
-        private ReportReason reason;
-        @Size(max = 500, message = "신고 사유는 500자 이하로 입력해주세요.")
-        private String detail;
     }
 }

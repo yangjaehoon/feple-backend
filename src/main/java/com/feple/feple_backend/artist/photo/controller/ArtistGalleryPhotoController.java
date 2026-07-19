@@ -7,10 +7,8 @@ import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
-import com.feple.feple_backend.post.entity.ReportReason;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -98,16 +96,11 @@ public class ArtistGalleryPhotoController {
     public ResponseEntity<Void> report(
             @PathVariable Long artistId,
             @PathVariable Long photoId,
-            @Valid @RequestBody ReportRequest body,
+            @Valid @RequestBody ReportSubmitRequest body,
             @AuthenticationPrincipal Long userId) {
-        artistPhotoReportService.submitReport(photoId, userId, new ReportSubmitRequest(body.reason(), body.detail()));
+        artistPhotoReportService.submitReport(photoId, userId, body);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
-    public record ReportRequest(
-        @NotNull ReportReason reason,
-        String detail
-    ) {}
 
     @PostMapping("/{photoId}/like")
     public ResponseEntity<Boolean> toggleLike(

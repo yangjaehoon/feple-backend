@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.file.ImageUploadPolicy;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
@@ -26,7 +27,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Tag(name = "게시글", description = "자유·동행·아티스트·페스티벌 게시글 CRUD, 좋아요, 스크랩")
@@ -227,14 +227,6 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-    // extension → 허용 content-type 매핑으로 확장자·MIME 불일치 업로드 차단
-    private static final Map<String, String> ALLOWED_IMAGE_TYPES = Map.of(
-            "jpg",  "image/jpeg",
-            "jpeg", "image/jpeg",
-            "png",  "image/png",
-            "webp", "image/webp"
-    );
-
     record PostImagePresignRequest(
             @NotBlank String contentType,
             @NotBlank String extension) {}
@@ -243,7 +235,7 @@ public class PostController {
     public ResponseEntity<?> getPostImageUploadUrl(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody PostImagePresignRequest req) {
-        if (!req.contentType().equals(ALLOWED_IMAGE_TYPES.get(req.extension()))) {
+        if (!ImageUploadPolicy.isAllowed(req.extension(), req.contentType())) {
             return ResponseEntity.badRequest().body(
                 ErrorResponse.of(HttpStatus.BAD_REQUEST, "파일 형식과 Content-Type이 일치하지 않습니다.", ErrorCode.ILLEGAL_ARGUMENT));
         }
