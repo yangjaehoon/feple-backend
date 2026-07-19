@@ -38,7 +38,7 @@ public interface ArtistGalleryPhotoLikeRepository extends JpaRepository<ArtistGa
 
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query(value = "UPDATE artist_gallery_photo SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT photo_id FROM artist_gallery_photo_like WHERE user_id = :userId)", nativeQuery = true)
+    @Query(value = "UPDATE artist_photos SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT artist_photo_id FROM artist_photo_likes WHERE user_id = :userId)", nativeQuery = true)
     void decrementLikeCountByUserId(@Param("userId") Long userId);
 
     @Modifying
