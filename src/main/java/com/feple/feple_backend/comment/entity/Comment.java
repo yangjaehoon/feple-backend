@@ -55,15 +55,6 @@ public class Comment {
     @Column(nullable = false)
     private boolean anonymous = false;
 
-    public Comment(String content, Post post, User user, boolean anonymous) {
-        this.content = content;
-        this.post = post;
-        this.user = user;
-        this.anonymous = anonymous;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
     public Comment(String content, Post post, User user, Comment parent, boolean anonymous) {
         this.content = content;
         this.post = post;

@@ -62,10 +62,6 @@ public class FestivalResponseDto {
         return startDate.format(full) + " ~ " + endDate.format(DateTimeFormatter.ofPattern("MM.dd"));
     }
 
-    public static FestivalResponseDto from(Festival festival) {
-        return from(festival, festival.getPosterKey());
-    }
-
     public static FestivalResponseDto from(Festival festival, String posterUrl) {
         return FestivalResponseDto.builder()
                 .id(festival.getId())

@@ -33,10 +33,6 @@ public class FestivalDetailResponseDto {
     private List<ArtistResponseDto> artists;
     private int attendingCount;
 
-    public static FestivalDetailResponseDto from(Festival festival) {
-        return from(festival, festival.getPosterKey());
-    }
-
     public static FestivalDetailResponseDto from(Festival festival, String posterUrl) {
         return FestivalDetailResponseDto.builder()
                 .id(festival.getId())
