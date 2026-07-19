@@ -1,14 +1,9 @@
 package com.feple.feple_backend.auth.ratelimit;
 
 import com.feple.feple_backend.global.exception.TooManyRequestsException;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 사용자 ID(인증된 경우) 또는 IP 주소(미인증) 기준으로 변경 요청을 제한한다.
@@ -17,22 +12,11 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class WriteOperationRateLimiter {
 
-    private final Cache<String, Bucket> cache = Caffeine.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .maximumSize(50_000)
-            .build();
-
-    private Bucket getOrCreateBucket(String ip) {
-        return cache.get(ip, k -> Bucket.builder()
-                .addLimit(Bandwidth.builder()
-                        .capacity(30)
-                        .refillGreedy(30, Duration.ofMinutes(1))
-                        .build())
-                .build());
-    }
+    private final RateLimiterSupport limiter =
+            new RateLimiterSupport(Duration.ofMinutes(5), 50_000, 30, Duration.ofMinutes(1));
 
     public void check(String ip) {
-        if (!getOrCreateBucket(ip).tryConsume(1)) {
+        if (!limiter.tryConsume(ip)) {
             throw new TooManyRequestsException("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
         }
     }

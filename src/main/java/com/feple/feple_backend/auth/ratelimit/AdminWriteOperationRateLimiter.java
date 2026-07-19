@@ -1,13 +1,8 @@
 package com.feple.feple_backend.auth.ratelimit;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 관리자 계정 기준 POST 요청 제한.
@@ -16,21 +11,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class AdminWriteOperationRateLimiter {
 
-    private final Cache<String, Bucket> cache = Caffeine.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .maximumSize(1_000)
-            .build();
-
-    private Bucket getOrCreateBucket(String username) {
-        return cache.get(username, k -> Bucket.builder()
-                .addLimit(Bandwidth.builder()
-                        .capacity(120)
-                        .refillGreedy(120, Duration.ofMinutes(1))
-                        .build())
-                .build());
-    }
+    private final RateLimiterSupport limiter =
+            new RateLimiterSupport(Duration.ofMinutes(5), 1_000, 120, Duration.ofMinutes(1));
 
     public boolean tryConsume(String username) {
-        return getOrCreateBucket(username).tryConsume(1);
+        return limiter.tryConsume(username);
     }
 }
