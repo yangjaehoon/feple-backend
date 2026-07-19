@@ -81,9 +81,7 @@ public class TimetableService {
     @CacheEvict(value = "timetable", key = "#festivalId")
     public void updateEntry(Long festivalId, Long entryId, TimetableEntryRequestDto req) {
         TimetableEntry entry = EntityLoader.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
-        if (!festivalId.equals(entry.getFestivalId())) {
-            throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
-        }
+        EntityLoader.requireBelongsToFestival(festivalId, entry.getFestivalId(), "항목이");
         validateTimeRange(req);
         String stageName = req.getStageName() == null ? "" : req.getStageName().trim();
         Stage stage = stageName.isEmpty() ? null
@@ -142,9 +140,7 @@ public class TimetableService {
     @CacheEvict(value = "timetable", key = "#festivalId")
     public void deleteEntry(Long festivalId, Long entryId) {
         TimetableEntry entry = EntityLoader.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
-        if (!festivalId.equals(entry.getFestivalId())) {
-            throw new IllegalArgumentException("해당 페스티벌의 항목이 아닙니다.");
-        }
+        EntityLoader.requireBelongsToFestival(festivalId, entry.getFestivalId(), "항목이");
         timetableRepository.delete(entry);
     }
 

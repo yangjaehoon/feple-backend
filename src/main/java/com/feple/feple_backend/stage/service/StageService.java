@@ -79,9 +79,7 @@ public class StageService {
 
     private Stage getStageInFestival(Long festivalId, Long stageId) {
         Stage stage = EntityLoader.getOrThrow(stageRepository::findById, stageId, "스테이지");
-        if (!festivalId.equals(stage.getFestivalId())) {
-            throw new IllegalArgumentException("해당 페스티벌의 스테이지가 아닙니다.");
-        }
+        EntityLoader.requireBelongsToFestival(festivalId, stage.getFestivalId(), "스테이지가");
         return stage;
     }
 }

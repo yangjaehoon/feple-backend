@@ -26,7 +26,7 @@ public class WeatherCollectionScheduler {
     @SchedulerLock(name = "weatherCollectionScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     public void collect() {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
-        LocalDate until = today.plusDays(3);
+        LocalDate until = today.plusDays(WeatherService.FORECAST_LOOKAHEAD_DAYS);
 
         List<Festival> targets = festivalRepository.findOngoingOrStartingBefore(today, until);
         if (targets.isEmpty()) {

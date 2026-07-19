@@ -51,6 +51,8 @@ public class WeatherService {
 
     // 기상청 초단기예보 발표시각(3시간 간격, 고정값) — 임의 조정 불가
     private static final int[] BASE_HOURS = {2, 5, 8, 11, 14, 17, 20, 23};
+    public static final int FORECAST_PAST_DAYS = 2;
+    public static final int FORECAST_LOOKAHEAD_DAYS = 3;
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final String KMA_SUCCESS_CODE = "00";
     private static final String NOON_FORECAST_TIME = "1200";
@@ -223,9 +225,9 @@ public class WeatherService {
     }
 
     private String[] resolveBaseDatetime(LocalDate targetDate, LocalDate today) {
-        // 기상청 API 조회 가능 범위: 과거 2일 ~ 미래 3일
-        if (targetDate.isBefore(today.minusDays(2))) return null;
-        if (targetDate.isAfter(today.plusDays(3))) return null;
+        // 기상청 API 조회 가능 범위: 과거 FORECAST_PAST_DAYS일 ~ 미래 FORECAST_LOOKAHEAD_DAYS일
+        if (targetDate.isBefore(today.minusDays(FORECAST_PAST_DAYS))) return null;
+        if (targetDate.isAfter(today.plusDays(FORECAST_LOOKAHEAD_DAYS))) return null;
 
         if (targetDate.isBefore(today)) {
             return new String[]{targetDate.format(DATE_FMT), EARLY_MORNING_BASE_TIME};

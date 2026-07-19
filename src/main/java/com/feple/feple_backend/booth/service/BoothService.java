@@ -51,9 +51,7 @@ public class BoothService {
     @Transactional
     public void deleteBooth(Long festivalId, Long boothId) {
         Booth booth = EntityLoader.getOrThrow(boothRepository::findById, boothId, "부스");
-        if (!festivalId.equals(booth.getFestivalId())) {
-            throw new IllegalArgumentException("해당 페스티벌의 부스가 아닙니다.");
-        }
+        EntityLoader.requireBelongsToFestival(festivalId, booth.getFestivalId(), "부스가");
         boothRepository.delete(booth);
     }
 
