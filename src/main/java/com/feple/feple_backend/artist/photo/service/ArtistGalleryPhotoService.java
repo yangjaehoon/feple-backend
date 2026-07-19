@@ -60,10 +60,7 @@ public class ArtistGalleryPhotoService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ArtistGalleryPhotoResponseDto register(Long artistId, RegisterPhotoRequestDto req, Long userId) {
         String objectKey = req.objectKey();
-        String prefix = S3PathConstants.artistPhotoPrefix(artistId);
-        if (objectKey == null || !objectKey.startsWith(prefix)) {
-            throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
-        }
+        S3PathConstants.requireWithinPrefix(objectKey, S3PathConstants.artistPhotoPrefix(artistId));
 
         // presign 단계에서 content-type을 서명에 포함시키지만, 실제 업로드 여부와
         // S3에 저장된 content-type이 허용된 이미지 타입인지 추가로 검증한다.

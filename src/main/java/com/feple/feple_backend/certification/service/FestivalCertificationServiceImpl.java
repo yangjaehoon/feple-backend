@@ -35,10 +35,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     @Override
     @Transactional
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
-        String prefix = S3PathConstants.certificationPrefix(userId);
-        if (photoKey == null || !photoKey.startsWith(prefix)) {
-            throw new IllegalArgumentException("잘못된 오브젝트 키입니다.");
-        }
+        S3PathConstants.requireWithinPrefix(photoKey, S3PathConstants.certificationPrefix(userId));
 
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
