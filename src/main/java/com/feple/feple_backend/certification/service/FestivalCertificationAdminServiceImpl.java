@@ -66,30 +66,14 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @EvictAdminPendingCaches
     @Transactional
     public void approve(Long certId, String reviewerName) {
-        FestivalCertification cert = getById(certId);
-        cert.approve(reviewerName);
-        pointService.addCertApprovedPoint(cert.getUserId(), certId);
-        // 트랜잭션 커밋 후에만 알림 발송 (커밋 실패 시 승인되지 않은 알림이 나가는 것을 방지)
-        eventPublisher.publishEvent(new CertificationApprovedEvent(
-                cert.getUserId(),
-                cert.getFestivalTitle(),
-                cert.getFestivalTitleEn(),
-                cert.getFestivalId()));
+        approveOne(getById(certId), reviewerName);
     }
 
     @Override
     @EvictAdminPendingCaches
     @Transactional
     public void reject(Long certId, String rejectionMessage, String reviewerName) {
-        FestivalCertification cert = getById(certId);
-        cert.reject(rejectionMessage, reviewerName);
-        // 트랜잭션 커밋 후에만 알림 발송 (커밋 실패 시 거절되지 않은 알림이 나가는 것을 방지)
-        eventPublisher.publishEvent(new CertificationRejectedEvent(
-                cert.getUserId(),
-                cert.getFestivalTitle(),
-                cert.getFestivalTitleEn(),
-                cert.getFestivalId(),
-                rejectionMessage));
+        rejectOne(getById(certId), rejectionMessage, reviewerName);
     }
 
     @Override
@@ -98,15 +82,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     public void bulkApprove(List<Long> ids, String reviewerName) {
         certificationRepository.findWithUserAndFestivalByIdIn(ids).stream()
                 .filter(FestivalCertification::isPending)
-                .forEach(cert -> {
-                    cert.approve(reviewerName);
-                    pointService.addCertApprovedPoint(cert.getUserId(), cert.getId());
-                    eventPublisher.publishEvent(new CertificationApprovedEvent(
-                            cert.getUserId(),
-                            cert.getFestivalTitle(),
-                            cert.getFestivalTitleEn(),
-                            cert.getFestivalId()));
-                });
+                .forEach(cert -> approveOne(cert, reviewerName));
     }
 
     @Override
@@ -115,15 +91,29 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     public void bulkReject(List<Long> ids, String rejectionMessage, String reviewerName) {
         certificationRepository.findWithUserAndFestivalByIdIn(ids).stream()
                 .filter(FestivalCertification::isPending)
-                .forEach(cert -> {
-                    cert.reject(rejectionMessage, reviewerName);
-                    eventPublisher.publishEvent(new CertificationRejectedEvent(
-                            cert.getUserId(),
-                            cert.getFestivalTitle(),
-                            cert.getFestivalTitleEn(),
-                            cert.getFestivalId(),
-                            rejectionMessage));
-                });
+                .forEach(cert -> rejectOne(cert, rejectionMessage, reviewerName));
+    }
+
+    // 트랜잭션 커밋 후에만 알림 발송 (커밋 실패 시 승인되지 않은 알림이 나가는 것을 방지)
+    private void approveOne(FestivalCertification cert, String reviewerName) {
+        cert.approve(reviewerName);
+        pointService.addCertApprovedPoint(cert.getUserId(), cert.getId());
+        eventPublisher.publishEvent(new CertificationApprovedEvent(
+                cert.getUserId(),
+                cert.getFestivalTitle(),
+                cert.getFestivalTitleEn(),
+                cert.getFestivalId()));
+    }
+
+    // 트랜잭션 커밋 후에만 알림 발송 (커밋 실패 시 거절되지 않은 알림이 나가는 것을 방지)
+    private void rejectOne(FestivalCertification cert, String rejectionMessage, String reviewerName) {
+        cert.reject(rejectionMessage, reviewerName);
+        eventPublisher.publishEvent(new CertificationRejectedEvent(
+                cert.getUserId(),
+                cert.getFestivalTitle(),
+                cert.getFestivalTitleEn(),
+                cert.getFestivalId(),
+                rejectionMessage));
     }
 
     @Override

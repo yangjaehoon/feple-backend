@@ -86,6 +86,7 @@ class FestivalCertificationAdminServiceImplTest {
     @Test
     void 인증_승인시_포인트_지급_및_알림_발송() {
         FestivalCertification cert = mock(FestivalCertification.class);
+        given(cert.getId()).willReturn(10L);
         given(cert.getUserId()).willReturn(1L);
         given(cert.getFestivalTitle()).willReturn("페스티벌");
         given(certificationRepository.findWithUserAndFestivalById(10L)).willReturn(Optional.of(cert));
