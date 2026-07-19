@@ -119,7 +119,7 @@ public class UserController {
             @PathVariable Long id,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(myPageService.getPublicPostsPaged(id, cursor, Math.min(size, 50)));
+        return ResponseEntity.ok(myPageService.getPublicPostsPaged(id, cursor, Math.min(size, PageSize.MAX_PAGE_SIZE)));
     }
 
     @GetMapping("/{id}/comments")
