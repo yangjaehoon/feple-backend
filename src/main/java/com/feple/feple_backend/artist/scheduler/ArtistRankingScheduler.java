@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,15 +53,8 @@ public class ArtistRankingScheduler {
             postScores.put(artistId, postCount + likeSum);
         }
 
-        Map<Long, Long> commentScores = new HashMap<>();
-        for (Object[] row : commentRepository.countByArtistSince(since)) {
-            commentScores.put((Long) row[0], (Long) row[1]);
-        }
-
-        Map<Long, Long> followScores = new HashMap<>();
-        for (Object[] row : artistFollowRepository.countByArtistSince(since)) {
-            followScores.put((Long) row[0], (Long) row[1]);
-        }
+        Map<Long, Long> commentScores = QueryResultMapper.toLongMap(commentRepository.countByArtistSince(since));
+        Map<Long, Long> followScores = QueryResultMapper.toLongMap(artistFollowRepository.countByArtistSince(since));
 
         List<Artist> artists = artistRepository.findAll();
         for (Artist artist : artists) {
