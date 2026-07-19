@@ -1,9 +1,9 @@
 package com.feple.feple_backend.auth.service;
 
+import com.feple.feple_backend.auth.firebase.FirebaseTokenVerifier;
 import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -20,6 +20,7 @@ public class FirebaseAuthService implements OAuthLoginService {
 
     private final NicknameGenerator nicknameGenerator;
     private final OAuthUserRegistrationService registrationService;
+    private final FirebaseTokenVerifier firebaseTokenVerifier;
 
     @Override
     public Mono<User> authenticate(String idToken) {
@@ -30,7 +31,7 @@ public class FirebaseAuthService implements OAuthLoginService {
 
     private User authenticateSync(String idToken) {
         try {
-            FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(idToken);
+            FirebaseToken decoded = firebaseTokenVerifier.verify(idToken);
             Boolean emailVerified = (Boolean) decoded.getClaims().get("email_verified");
             if (emailVerified == null || !emailVerified) {
                 throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
