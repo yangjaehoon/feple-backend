@@ -54,21 +54,24 @@ public class YoutubeSearchService {
             log.debug("[YT] Topic channel found: {}", topicChannelId);
             List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
             log.debug("[YT] Channel videos count: {}", channelVideos.size());
-            if (query != null && !query.isBlank()) {
-                String lower = query.toLowerCase();
-                List<YoutubeVideoDto> filtered = channelVideos.stream()
-                        .filter(v -> v.getTitle().toLowerCase().contains(lower))
-                        .toList();
-                log.debug("[YT] Filtered by '{}': {} results", lower, filtered.size());
-                return filtered.isEmpty() ? channelVideos : filtered;
-            }
-            return channelVideos;
+            return filterByQuery(channelVideos, query);
         }
 
         // 2) Topic 채널 없음 → 곡명만으로 검색 (아티스트명 붙이면 API 품질 저하)
         String keywordQuery = (query != null && !query.isBlank()) ? query : artistName;
         log.debug("[YT] No Topic channel — keyword fallback: '{}'", keywordQuery);
         return searchByKeyword(artistName, keywordQuery);
+    }
+
+    // query가 없으면 채널 영상 전체 반환, 있으면 제목에 포함되는 것만 — 필터링 결과가 없으면 전체로 폴백
+    private List<YoutubeVideoDto> filterByQuery(List<YoutubeVideoDto> videos, String query) {
+        if (query == null || query.isBlank()) return videos;
+        String lower = query.toLowerCase();
+        List<YoutubeVideoDto> filtered = videos.stream()
+                .filter(v -> v.getTitle().toLowerCase().contains(lower))
+                .toList();
+        log.debug("[YT] Filtered by '{}': {} results", lower, filtered.size());
+        return filtered.isEmpty() ? videos : filtered;
     }
 
     private String findTopicChannelId(String artistName) {
