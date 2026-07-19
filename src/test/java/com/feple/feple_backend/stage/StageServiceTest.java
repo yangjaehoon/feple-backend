@@ -8,6 +8,9 @@ import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -31,16 +34,11 @@ class StageServiceTest {
 
     @InjectMocks StageService stageService;
 
-    @Test
-    void createStage_이름_null_예외() {
-        assertThatThrownBy(() -> stageService.createStage(1L, null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("스테이지 이름을 입력해주세요.");
-    }
-
-    @Test
-    void createStage_이름_blank_예외() {
-        assertThatThrownBy(() -> stageService.createStage(1L, "  "))
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"  "})
+    void createStage_이름_null이거나_blank면_예외(String invalidName) {
+        assertThatThrownBy(() -> stageService.createStage(1L, invalidName))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("스테이지 이름을 입력해주세요.");
     }

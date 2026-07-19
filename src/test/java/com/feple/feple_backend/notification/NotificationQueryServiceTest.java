@@ -37,21 +37,27 @@ class NotificationQueryServiceTest {
 
     @InjectMocks NotificationQueryService notificationQueryService;
 
+    private Notification mockNotification(Long id, String title, String body,
+                                           String titleEn, String bodyEn, LocalDateTime createdAt) {
+        Notification n = mock(Notification.class);
+        given(n.getId()).willReturn(id);
+        given(n.getType()).willReturn(NotificationType.NEW_FESTIVAL);
+        given(n.getTitle()).willReturn(title);
+        given(n.getBody()).willReturn(body);
+        given(n.getTitleEn()).willReturn(titleEn);
+        given(n.getBodyEn()).willReturn(bodyEn);
+        given(n.getReferenceId()).willReturn(null);
+        given(n.isRead()).willReturn(false);
+        given(n.getCreatedAt()).willReturn(createdAt);
+        return n;
+    }
+
     @Test
     void getMyNotifications_개인_방송_병합_최신순_정렬() {
         LocalDateTime newer = LocalDateTime.of(2026, 1, 1, 12, 0);
         LocalDateTime older = LocalDateTime.of(2026, 1, 1, 11, 0);
 
-        Notification n = mock(Notification.class);
-        given(n.getId()).willReturn(1L);
-        given(n.getType()).willReturn(NotificationType.NEW_FESTIVAL);
-        given(n.getTitle()).willReturn("제목");
-        given(n.getBody()).willReturn("내용");
-        given(n.getTitleEn()).willReturn("Title");
-        given(n.getBodyEn()).willReturn("Body");
-        given(n.getReferenceId()).willReturn(null);
-        given(n.isRead()).willReturn(false);
-        given(n.getCreatedAt()).willReturn(newer);
+        Notification n = mockNotification(1L, "제목", "내용", "Title", "Body", newer);
 
         BroadcastNotification b = mock(BroadcastNotification.class);
         given(b.getId()).willReturn(10L);
@@ -77,27 +83,8 @@ class NotificationQueryServiceTest {
         LocalDateTime t1 = LocalDateTime.of(2026, 1, 1, 12, 0);
         LocalDateTime t2 = LocalDateTime.of(2026, 1, 1, 11, 0);
 
-        Notification n1 = mock(Notification.class);
-        given(n1.getId()).willReturn(1L);
-        given(n1.getType()).willReturn(NotificationType.NEW_FESTIVAL);
-        given(n1.getTitle()).willReturn("제목1");
-        given(n1.getBody()).willReturn("내용1");
-        given(n1.getTitleEn()).willReturn(null);
-        given(n1.getBodyEn()).willReturn(null);
-        given(n1.getReferenceId()).willReturn(null);
-        given(n1.isRead()).willReturn(false);
-        given(n1.getCreatedAt()).willReturn(t1);
-
-        Notification n2 = mock(Notification.class);
-        given(n2.getId()).willReturn(2L);
-        given(n2.getType()).willReturn(NotificationType.NEW_FESTIVAL);
-        given(n2.getTitle()).willReturn("제목2");
-        given(n2.getBody()).willReturn("내용2");
-        given(n2.getTitleEn()).willReturn(null);
-        given(n2.getBodyEn()).willReturn(null);
-        given(n2.getReferenceId()).willReturn(null);
-        given(n2.isRead()).willReturn(false);
-        given(n2.getCreatedAt()).willReturn(t2);
+        Notification n1 = mockNotification(1L, "제목1", "내용1", null, null, t1);
+        Notification n2 = mockNotification(2L, "제목2", "내용2", null, null, t2);
 
         given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
                 .willReturn(List.of(n1, n2));

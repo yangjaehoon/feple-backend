@@ -96,6 +96,12 @@ class FestivalCertificationServiceImplTest {
 
         then(certificationRepository).should().saveAndFlush(any(FestivalCertification.class));
         then(s3PresignService).should().presignGetUrl(VALID_PHOTO_KEY);
+        assertThat(result.festivalId()).isEqualTo(FESTIVAL_ID);
+        assertThat(result.festivalTitle()).isEqualTo("페스티벌명");
+        assertThat(result.festivalTitleEn()).isEqualTo("");
+        assertThat(result.festivalPosterUrl()).isNull();
+        assertThat(result.photoUrl()).isEqualTo("https://s3.example.com/photo.jpg");
+        assertThat(result.status()).isEqualTo(CertificationStatus.PENDING);
     }
 
     // ── getMyCertifications / getApprovedFestivalIds ────────────────────
