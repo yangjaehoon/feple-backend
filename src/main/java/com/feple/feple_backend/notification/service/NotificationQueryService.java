@@ -2,6 +2,7 @@ package com.feple.feple_backend.notification.service;
 
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.notification.dto.NotificationDto;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationType;
@@ -91,9 +92,7 @@ public class NotificationQueryService {
     @Transactional
     public void markRead(Long notificationId, Long userId) {
         Notification notification = EntityLoader.getOrThrow(notificationRepository::findById, notificationId, "알림");
-        if (!notification.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("본인의 알림만 읽음 처리할 수 있습니다.");
-        }
+        OwnershipValidator.checkOwner(notification.getUserId(), userId, "알림", "읽음 처리");
         notification.markRead();
     }
 

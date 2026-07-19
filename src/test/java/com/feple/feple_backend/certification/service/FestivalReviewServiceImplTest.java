@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -58,8 +59,8 @@ class FestivalReviewServiceImplTest {
         given(certificationRepository.findById(CERT_ID)).willReturn(Optional.of(cert));
 
         assertThatThrownBy(() -> reviewService.submitRating(USER_ID, CERT_ID, new CertificationRatingRequestDto(5, "리뷰")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("본인의 인증에만");
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("본인의 인증만");
     }
 
     @Test

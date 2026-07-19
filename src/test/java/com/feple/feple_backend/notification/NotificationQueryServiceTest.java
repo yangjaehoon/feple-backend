@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -138,7 +139,7 @@ class NotificationQueryServiceTest {
         given(notificationRepository.findById(10L)).willReturn(Optional.of(n));
 
         assertThatThrownBy(() -> notificationQueryService.markRead(10L, 1L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("본인의 알림만 읽음 처리");
     }
 

@@ -8,6 +8,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
+import com.feple.feple_backend.global.OwnershipValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,9 +32,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
     @Transactional
     public void submitRating(Long userId, Long certId, CertificationRatingRequestDto req) {
         FestivalCertification cert = EntityLoader.getOrThrow(certificationRepository::findById, certId, "인증");
-        if (!cert.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("본인의 인증에만 평점을 남길 수 있습니다.");
-        }
+        OwnershipValidator.checkOwner(cert.getUserId(), userId, "인증", "평점 등록");
         if (!cert.isApproved()) {
             throw new IllegalArgumentException("승인된 인증에만 평점을 남길 수 있습니다.");
         }
