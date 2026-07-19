@@ -79,4 +79,10 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
         artistFollowRepository.decrementFollowerCountByUserId(userId);
         artistFollowRepository.deleteByUserId(userId);
     }
+
+    @Override
+    @Transactional
+    public void removeAllByArtist(Long artistId) {
+        artistFollowRepository.deleteByArtistId(artistId);
+    }
 }

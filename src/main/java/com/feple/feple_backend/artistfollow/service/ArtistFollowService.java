@@ -20,4 +20,7 @@ public interface ArtistFollowService {
 
     /** 회원 탈퇴 시 해당 유저의 팔로우 데이터 일괄 제거 */
     void removeAllByUser(Long userId);
+
+    /** 아티스트 삭제 시 해당 아티스트의 팔로우 데이터 일괄 제거 */
+    void removeAllByArtist(Long artistId);
 }

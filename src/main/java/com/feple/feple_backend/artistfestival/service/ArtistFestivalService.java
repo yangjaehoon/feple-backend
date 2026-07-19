@@ -227,6 +227,17 @@ public class ArtistFestivalService {
         artistFestivalRepository.deleteByFestivalId(festivalId);
     }
 
+    /** 아티스트 삭제 시 참여 정보 일괄 제거 — 셋리스트 곡(자식 엔티티)을 먼저 정리(FK 순서) */
+    @Transactional
+    public void removeAllByArtist(Long artistId) {
+        List<Long> artistFestivalIds = artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId)
+                .stream().map(ArtistFestival::getId).toList();
+        if (!artistFestivalIds.isEmpty()) {
+            artistFestivalSongRepository.deleteByArtistFestivalIdIn(artistFestivalIds);
+        }
+        artistFestivalRepository.deleteByArtistId(artistId);
+    }
+
     private ArtistFestivalResponseDto toResponse(ArtistFestival af, List<String> dates) {
         return toResponse(af, dates, null);
     }
