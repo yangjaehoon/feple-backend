@@ -34,20 +34,21 @@ public class FestivalDetailResponseDto {
     private int attendingCount;
 
     public static FestivalDetailResponseDto from(Festival festival, String posterUrl) {
+        FestivalCoreFields.Values core = FestivalCoreFields.of(festival, posterUrl);
         return FestivalDetailResponseDto.builder()
-                .id(festival.getId())
-                .title(festival.getTitle())
-                .titleEn(festival.getTitleEn())
-                .description(festival.getDescription())
-                .location(festival.getLocation())
-                .startDate(festival.getStartDate())
-                .endDate(festival.getEndDate())
-                .posterUrl(posterUrl)
-                .latitude(festival.getLatitude())
-                .longitude(festival.getLongitude())
-                .genres(festival.getGenres() == null ? List.of() : List.copyOf(festival.getGenres()))
-                .ageRestriction(festival.getAgeRestriction())
-                .attendingCount(festival.getAttendingCount())
+                .id(core.id())
+                .title(core.title())
+                .titleEn(core.titleEn())
+                .description(core.description())
+                .location(core.location())
+                .startDate(core.startDate())
+                .endDate(core.endDate())
+                .posterUrl(core.posterUrl())
+                .latitude(core.latitude())
+                .longitude(core.longitude())
+                .genres(core.genres())
+                .ageRestriction(core.ageRestriction())
+                .attendingCount(core.attendingCount())
                 .build();
     }
 

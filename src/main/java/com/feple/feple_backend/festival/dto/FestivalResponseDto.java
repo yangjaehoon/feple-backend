@@ -63,22 +63,23 @@ public class FestivalResponseDto {
     }
 
     public static FestivalResponseDto from(Festival festival, String posterUrl) {
+        FestivalCoreFields.Values core = FestivalCoreFields.of(festival, posterUrl);
         return FestivalResponseDto.builder()
-                .id(festival.getId())
-                .title(festival.getTitle())
-                .titleEn(festival.getTitleEn())
-                .description(festival.getDescription())
-                .location(festival.getLocation())
-                .startDate(festival.getStartDate())
-                .endDate(festival.getEndDate())
-                .posterUrl(posterUrl)
+                .id(core.id())
+                .title(core.title())
+                .titleEn(core.titleEn())
+                .description(core.description())
+                .location(core.location())
+                .startDate(core.startDate())
+                .endDate(core.endDate())
+                .posterUrl(core.posterUrl())
                 .likeCount(festival.getLikeCount())
-                .attendingCount(festival.getAttendingCount())
-                .genres(festival.getGenres() == null ? List.of() : List.copyOf(festival.getGenres()))
+                .attendingCount(core.attendingCount())
+                .genres(core.genres())
                 .region(festival.getRegion())
-                .ageRestriction(festival.getAgeRestriction())
-                .latitude(festival.getLatitude())
-                .longitude(festival.getLongitude())
+                .ageRestriction(core.ageRestriction())
+                .latitude(core.latitude())
+                .longitude(core.longitude())
                 .build();
     }
 }
