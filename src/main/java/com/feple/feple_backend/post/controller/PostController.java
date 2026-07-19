@@ -71,7 +71,7 @@ public class PostController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "latest") String sort,
             @AuthenticationPrincipal Long userId) {
-        CursorPageRequest pageRequest = new CursorPageRequest(cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId);
+        CursorPageRequest pageRequest = pageRequest(cursor, size, userId);
         if ("popular".equals(sort)) {
             return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.FREE, pageRequest));
         }
@@ -91,7 +91,7 @@ public class PostController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "latest") String sort,
             @AuthenticationPrincipal Long userId) {
-        CursorPageRequest pageRequest = new CursorPageRequest(cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId);
+        CursorPageRequest pageRequest = pageRequest(cursor, size, userId);
         if ("popular".equals(sort)) {
             return ResponseEntity.ok(postService.getPostsByBoardTypePopular(BoardType.MATE, pageRequest));
         }
@@ -153,8 +153,7 @@ public class PostController {
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.getPostsByArtistIdPaged(artistId,
-                new CursorPageRequest(cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId)));
+        return ResponseEntity.ok(postService.getPostsByArtistIdPaged(artistId, pageRequest(cursor, size, userId)));
     }
 
     @PostMapping("/artist/{artistId}")
@@ -170,8 +169,7 @@ public class PostController {
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.getPostsByFestivalIdPaged(festivalId,
-                new CursorPageRequest(cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId)));
+        return ResponseEntity.ok(postService.getPostsByFestivalIdPaged(festivalId, pageRequest(cursor, size, userId)));
     }
 
     @PostMapping("/festival/{festivalId}")
@@ -194,7 +192,7 @@ public class PostController {
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_COMPANION,
-                new CursorPageRequest(cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId)));
+                pageRequest(cursor, size, userId)));
     }
 
     @PostMapping("/festival/{festivalId}/companion")
@@ -211,7 +209,7 @@ public class PostController {
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(postService.getPostsByFestivalIdAndBoardTypePaged(festivalId, BoardType.FESTIVAL_TICKET,
-                new CursorPageRequest(cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId)));
+                pageRequest(cursor, size, userId)));
     }
 
     @PostMapping("/festival/{festivalId}/ticket")
@@ -219,6 +217,10 @@ public class PostController {
                                                           @Valid @RequestBody PostRequestDto dto,
                                                           @AuthenticationPrincipal Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createFestivalTypedPost(festivalId, dto, userId, BoardType.FESTIVAL_TICKET));
+    }
+
+    private CursorPageRequest pageRequest(Long cursor, int size, Long userId) {
+        return new CursorPageRequest(cursor, Math.min(size, PageSize.MAX_PAGE_SIZE), userId);
     }
 
     @PostMapping("/{postId}/view")
