@@ -88,7 +88,8 @@ public class ReportAdminController {
     public String bulkDismiss(@RequestParam(required = false) List<Long> ids,
                               @ModelAttribute ReportFilter filter,
                               RedirectAttributes ra) {
-        if (ids == null || ids.isEmpty()) return emptySelectionRedirect(filter, ra);
+        String emptySelection = AdminActionUtils.requireNonEmptySelection(ids, redirectReports(filter), ra);
+        if (emptySelection != null) return emptySelection;
         AdminActionUtils.tryAction(
                 () -> {
                     resolveHandler(filter.type()).bulkDismiss(ids);
@@ -105,24 +106,21 @@ public class ReportAdminController {
     public String bulkDelete(@RequestParam(required = false) List<Long> ids,
                              @ModelAttribute ReportFilter filter,
                              RedirectAttributes ra) {
-        if (ids == null || ids.isEmpty()) return emptySelectionRedirect(filter, ra);
-        int[] done = {0};
-        AdminActionUtils.tryAction(
+        String emptySelection = AdminActionUtils.requireNonEmptySelection(ids, redirectReports(filter), ra);
+        if (emptySelection != null) return emptySelection;
+        AdminActionUtils.tryActionWithResult(
                 () -> {
-                    done[0] = resolveHandler(filter.type()).bulkDeleteContent(ids);
+                    int done = resolveHandler(filter.type()).bulkDeleteContent(ids);
                     adminLogService.log(AdminAction.REPORT_BULK_DELETE, "REPORT", null,
-                            filter.type() + " " + done[0] + "/" + ids.size() + "건");
+                            filter.type() + " " + done + "/" + ids.size() + "건");
+                    return done;
                 },
-                null,
+                done -> done == ids.size()
+                        ? ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다."
+                        : done + "/" + ids.size() + "건 처리 완료 (일부 실패)",
                 e -> log.error("신고 일괄 삭제 실패 type={} ids={}", filter.type(), ids, e),
                 AdminConstants.MSG_BULK_DELETE_ERROR,
                 ra);
-        if (!ra.getFlashAttributes().containsKey("errorMessage")) {
-            String msg = done[0] == ids.size()
-                    ? ids.size() + "건의 콘텐츠를 삭제하고 신고를 처리했습니다."
-                    : done[0] + "/" + ids.size() + "건 처리 완료 (일부 실패)";
-            ra.addFlashAttribute("successMessage", msg);
-        }
         return redirectReports(filter);
     }
 
@@ -133,11 +131,6 @@ public class ReportAdminController {
     @SuppressWarnings("unchecked")
     private static <T> Map<Long, Long> buildCounts(ReportAdminService<T> handler, Page<?> reports) {
         return handler.buildAuthorReportCounts((Page<T>) reports);
-    }
-
-    private String emptySelectionRedirect(ReportFilter filter, RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
-        return redirectReports(filter);
     }
 
     private String redirectReports(ReportFilter filter) {

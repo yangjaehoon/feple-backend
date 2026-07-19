@@ -4,7 +4,6 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.song.SongApproveMessage;
-import java.util.concurrent.atomic.AtomicReference;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -108,18 +107,16 @@ public class ArtistSongAdminController {
                                      @PathVariable Long requestId,
                                      @RequestParam(required = false) String youtubeUrl,
                                      RedirectAttributes ra) {
-        AtomicReference<String> successMsg = new AtomicReference<>();
-        AdminActionUtils.tryAction(
+        AdminActionUtils.tryActionWithResult(
                 () -> {
                     boolean songSaved = songRequestAdminService.approveAndMaybeSaveSong(requestId, youtubeUrl);
                     adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", requestId, null);
-                    successMsg.set(SongApproveMessage.build(songSaved, youtubeUrl));
+                    return songSaved;
                 },
-                null,
+                songSaved -> SongApproveMessage.build(songSaved, youtubeUrl),
                 e -> log.error("노래 요청 승인 실패 requestId={}", requestId, e),
                 "노래 요청 승인에 실패했습니다. 다시 시도해주세요.",
                 ra);
-        if (successMsg.get() != null) ra.addFlashAttribute("successMessage", successMsg.get());
         return songsRedirect(artistId);
     }
 

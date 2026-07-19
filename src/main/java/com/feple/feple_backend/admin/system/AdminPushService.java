@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -133,8 +135,21 @@ public class AdminPushService {
         logAndSend(tokens, title, body, "[AdminPush] 전체 푸시 발송 시작 — 토큰 {}개, 제목: {}", tokens.size(), title);
     }
 
+    /**
+     * FCM 발송(네트워크 I/O)을 DB 트랜잭션 커밋 후로 미룬다 — FileStorageService.deleteFileAfterCommit과 동일한 이유:
+     * FCM 응답이 지연되면 트랜잭션 안에서 DB 커넥션을 계속 점유하게 되어 커넥션 풀 고갈로 이어질 수 있다.
+     */
     private void logAndSend(List<String> tokens, String title, String body, String logMessage, Object... logArgs) {
         log.info(logMessage, logArgs);
-        fcmPushService.sendBroadcast(tokens, title, body);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    fcmPushService.sendBroadcast(tokens, title, body);
+                }
+            });
+        } else {
+            fcmPushService.sendBroadcast(tokens, title, body);
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.feple.feple_backend.admin.song;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
-import java.util.concurrent.atomic.AtomicReference;
 import com.feple.feple_backend.admin.song.SongApproveMessage;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -51,18 +50,16 @@ public class SongRequestAdminController {
                           @RequestParam(required = false) String youtubeUrl,
                           @ModelAttribute SongListParams params,
                           RedirectAttributes ra) {
-        AtomicReference<String> successMsg = new AtomicReference<>();
-        AdminActionUtils.tryAction(
+        AdminActionUtils.tryActionWithResult(
                 () -> {
                     boolean songSaved = songRequestAdminService.approveAndMaybeSaveSong(id, youtubeUrl);
                     adminLogService.log(AdminAction.SONG_REQUEST_APPROVE, "SONG_REQUEST", id, null);
-                    successMsg.set(SongApproveMessage.build(songSaved, youtubeUrl));
+                    return songSaved;
                 },
-                null,
+                songSaved -> SongApproveMessage.build(songSaved, youtubeUrl),
                 e -> log.error("노래 요청 승인 실패 id={}", id, e),
                 "승인 처리 중 오류가 발생했습니다.",
                 ra);
-        if (successMsg.get() != null) ra.addFlashAttribute("successMessage", successMsg.get());
         return AdminActionUtils.listRedirect("/admin/song-requests", params.status(), params.page(), params.keyword());
     }
 

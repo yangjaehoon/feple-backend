@@ -71,29 +71,43 @@ public class FestivalAdminController {
         applyPosterFile(posterFile, dto, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            populateFestivalFormModel(model);
-            return "admin/festival/create";
+            return renderCreateFormWithError(bindingResult, model);
         }
 
         try {
-            Long festivalId = festivalService.createFestival(dto);
-            adminLogService.log(AdminAction.FESTIVAL_CREATE, "FESTIVAL", festivalId, dto.getTitle());
-            try {
-                artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
-            } catch (Exception linkEx) {
-                log.error("아티스트 연결 실패 festivalId={}", festivalId, linkEx);
-                ra.addFlashAttribute("warningMessage", "페스티벌은 등록되었으나 일부 아티스트 연결에 실패했습니다. 상세 탭에서 수동으로 추가해주세요.");
-                return "redirect:/admin/festivals/" + festivalId;
-            }
-            ra.addFlashAttribute("successMessage", "'" + dto.getTitle() + "' 페스티벌이 등록되었습니다.");
-            return "redirect:/admin/festivals/" + festivalId;
+            return createFestivalAndLinkArtists(dto, artistIds, ra);
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            populateFestivalFormModel(model);
-            return "admin/festival/create";
+            return renderCreateFormWithError(bindingResult, model);
         }
+    }
+
+    private String createFestivalAndLinkArtists(FestivalRequestDto dto, List<Long> artistIds, RedirectAttributes ra) {
+        Long festivalId = festivalService.createFestival(dto);
+        adminLogService.log(AdminAction.FESTIVAL_CREATE, "FESTIVAL", festivalId, dto.getTitle());
+        if (!linkArtists(festivalId, artistIds, ra)) {
+            return "redirect:/admin/festivals/" + festivalId;
+        }
+        ra.addFlashAttribute("successMessage", "'" + dto.getTitle() + "' 페스티벌이 등록되었습니다.");
+        return "redirect:/admin/festivals/" + festivalId;
+    }
+
+    /** 아티스트 연결 성공 여부를 반환한다. 실패해도 페스티벌 자체는 이미 생성된 상태이므로 경고만 남기고 계속 진행한다. */
+    private boolean linkArtists(Long festivalId, List<Long> artistIds, RedirectAttributes ra) {
+        try {
+            artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
+            return true;
+        } catch (Exception linkEx) {
+            log.error("아티스트 연결 실패 festivalId={}", festivalId, linkEx);
+            ra.addFlashAttribute("warningMessage", "페스티벌은 등록되었으나 일부 아티스트 연결에 실패했습니다. 상세 탭에서 수동으로 추가해주세요.");
+            return false;
+        }
+    }
+
+    private String renderCreateFormWithError(BindingResult bindingResult, Model model) {
+        model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+        populateFestivalFormModel(model);
+        return "admin/festival/create";
     }
 
     @GetMapping

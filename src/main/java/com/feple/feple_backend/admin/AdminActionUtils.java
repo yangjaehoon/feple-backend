@@ -4,8 +4,10 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public final class AdminActionUtils {
 
@@ -17,6 +19,11 @@ public final class AdminActionUtils {
     @FunctionalInterface
     public interface AdminTask {
         void run() throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface AdminTaskWithResult<T> {
+        T run() throws Exception;
     }
 
     /**
@@ -42,6 +49,42 @@ public final class AdminActionUtils {
             onError.accept(e);
             ra.addFlashAttribute("errorMessage", failMsg);
         }
+    }
+
+    /**
+     * tryAction과 동일한 표준 POST try-catch 패턴이되, action이 반환한 결과값으로
+     * successMsg를 동적으로 계산해야 하는 경우(예: 처리 건수·저장 여부에 따라 메시지가 달라짐) 사용한다.
+     * action이 예외 없이 완료됐을 때만 successMsgFn이 호출되므로, 실패 시 successMessage는 설정되지 않는다.
+     * successMsgFn의 반환값이 null이면 successMessage flash attribute를 생략한다.
+     */
+    public static <T> void tryActionWithResult(AdminTaskWithResult<T> action,
+                                               Function<T, String> successMsgFn,
+                                               Consumer<Exception> onError,
+                                               String failMsg,
+                                               RedirectAttributes ra) {
+        try {
+            T result = action.run();
+            String successMsg = successMsgFn.apply(result);
+            if (successMsg != null) ra.addFlashAttribute("successMessage", successMsg);
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (OptimisticLockingFailureException e) {
+            ra.addFlashAttribute("errorMessage", OPTIMISTIC_LOCK_MESSAGE);
+        } catch (Exception e) {
+            onError.accept(e);
+            ra.addFlashAttribute("errorMessage", failMsg);
+        }
+    }
+
+    /**
+     * 일괄 작업(bulk action) 컨트롤러 메서드 시작부의 표준 가드 클로즈:
+     * 선택된 id가 없으면 errorMessage flash attribute를 설정하고 redirectUrl로 이동한다.
+     * 선택된 id가 있으면 null을 반환하므로, 호출부는 `if (result != null) return result;` 형태로 사용한다.
+     */
+    public static String requireNonEmptySelection(List<Long> ids, String redirectUrl, RedirectAttributes ra) {
+        if (ids != null && !ids.isEmpty()) return null;
+        ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
+        return redirectUrl;
     }
 
     /**

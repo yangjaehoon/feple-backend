@@ -81,20 +81,19 @@ public class PostAdminController {
     public String bulkDeletePosts(@RequestParam(required = false) List<Long> ids,
                                   @ModelAttribute PostListParams params,
                                   RedirectAttributes ra) {
-        if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
-        } else {
-            AdminActionUtils.tryAction(
-                    () -> {
-                        postAdminService.bulkDeletePosts(ids);
-                        adminLogService.log(AdminAction.POST_BULK_DELETE, "POST", null, "총 " + ids.size() + "개");
-                    },
-                    ids.size() + "개 게시글이 삭제되었습니다.",
-                    e -> log.error("게시글 일괄 삭제 실패 ids={}", ids, e),
-                    AdminConstants.MSG_BULK_DELETE_ERROR,
-                    ra);
-        }
-        return "redirect:/admin/posts?" + params.toRedirectParams();
+        String redirectUrl = "redirect:/admin/posts?" + params.toRedirectParams();
+        String emptySelection = AdminActionUtils.requireNonEmptySelection(ids, redirectUrl, ra);
+        if (emptySelection != null) return emptySelection;
+        AdminActionUtils.tryAction(
+                () -> {
+                    postAdminService.bulkDeletePosts(ids);
+                    adminLogService.log(AdminAction.POST_BULK_DELETE, "POST", null, "총 " + ids.size() + "개");
+                },
+                ids.size() + "개 게시글이 삭제되었습니다.",
+                e -> log.error("게시글 일괄 삭제 실패 ids={}", ids, e),
+                AdminConstants.MSG_BULK_DELETE_ERROR,
+                ra);
+        return redirectUrl;
     }
 
     @PostMapping("/{id}/delete")

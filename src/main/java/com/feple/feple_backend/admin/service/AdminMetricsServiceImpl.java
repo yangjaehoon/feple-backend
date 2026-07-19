@@ -60,8 +60,11 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
                 .stream().map(UserSummaryDto::from).toList();
     }
 
+    // adminDashboardStats는 CacheConfig에서 5분 TTL로 설정되어 있어 날짜가 바뀌어도 최대 5분 내 자연 갱신된다.
+    // 캐시 키에 LocalDate.now()를 SpEL로 직접 박아넣으면 시스템 시계에 대한 하드 의존이 생겨
+    // 키 계산 로직을 단위 테스트로 격리 검증하기 어려워지므로, 다른 항목들과 동일하게 고정 키를 사용한다.
     @Override
-    @Cacheable(value = "adminDashboardStats", key = "'dailyStats_' + T(java.time.LocalDate).now().toString()")
+    @Cacheable(value = "adminDashboardStats", key = "'dailyStats'")
     public List<DailyStatDto> getDailyStats() {
         LocalDate today = LocalDate.now();
         return buildDailyStats(today.minusDays(AdminConstants.STATS_RECENT_DAYS - 1), today);

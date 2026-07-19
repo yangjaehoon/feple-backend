@@ -80,19 +80,17 @@ public class UserAdminController {
     @PostMapping("/bulk-delete")
     public String bulkDeleteUsers(@RequestParam(required = false) List<Long> ids,
             RedirectAttributes ra) {
-        if (ids == null || ids.isEmpty()) {
-            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
-        } else {
-            AdminActionUtils.tryAction(
-                    () -> {
-                        userService.bulkDeleteUsers(ids);
-                        adminLogService.log(AdminAction.USER_BULK_DELETE, "USER", null, "총 " + ids.size() + "명");
-                    },
-                    ids.size() + "명 회원이 삭제되었습니다.",
-                    e -> log.error("회원 일괄 삭제 실패 ids={}", ids, e),
-                    AdminConstants.MSG_BULK_DELETE_ERROR,
-                    ra);
-        }
+        String emptySelection = AdminActionUtils.requireNonEmptySelection(ids, "redirect:/admin/users", ra);
+        if (emptySelection != null) return emptySelection;
+        AdminActionUtils.tryAction(
+                () -> {
+                    userService.bulkDeleteUsers(ids);
+                    adminLogService.log(AdminAction.USER_BULK_DELETE, "USER", null, "총 " + ids.size() + "명");
+                },
+                ids.size() + "명 회원이 삭제되었습니다.",
+                e -> log.error("회원 일괄 삭제 실패 ids={}", ids, e),
+                AdminConstants.MSG_BULK_DELETE_ERROR,
+                ra);
         return "redirect:/admin/users";
     }
 
