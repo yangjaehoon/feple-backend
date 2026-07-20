@@ -15,11 +15,14 @@ import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -34,6 +37,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -47,6 +51,8 @@ class ArtistGalleryPhotoServiceTest {
     @Mock ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
     @Mock ArtistRepository artistRepository;
     @Mock UserRepository userRepository;
+    UserBlockService userBlockService = mock(UserBlockService.class);
+    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(userBlockService);
 
     @InjectMocks ArtistGalleryPhotoService service;
 
@@ -161,6 +167,25 @@ class ArtistGalleryPhotoServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).isLiked()).isTrue();
         assertThat(result.get(1).isLiked()).isFalse();
+    }
+
+    @Test
+    void 목록_조회시_차단한_업로더의_사진_제외() {
+        Artist artist = artist(1L);
+        User blockedUploader = user(10L);
+        User otherUploader = user(20L);
+        ArtistGalleryPhoto blockedPhoto = photo(1L, artist, blockedUploader);
+        ArtistGalleryPhoto visiblePhoto = photo(2L, artist, otherUploader);
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(1L))
+                .willReturn(List.of(blockedPhoto, visiblePhoto));
+        given(userBlockService.getBlockedIds(99L)).willReturn(List.of(10L));
+        given(artistGalleryPhotoLikeRepository.findLikedPhotoIds(99L, List.of(2L))).willReturn(Set.of());
+        given(s3PresignService.presignGetUrl(any())).willReturn("https://url");
+
+        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, 99L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).photoId()).isEqualTo(2L);
     }
 
     @Test

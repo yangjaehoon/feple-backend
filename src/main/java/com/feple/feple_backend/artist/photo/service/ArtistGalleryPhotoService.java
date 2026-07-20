@@ -18,6 +18,7 @@ import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class ArtistGalleryPhotoService {
     private final ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
     private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
+    private final BlockedContentFilter blockedContentFilter;
 
     public S3PresignedUrlResult generateUploadUrl(Long artistId, String extension, String contentType) {
         String objectKey = S3PathConstants.artistPhotoPrefix(artistId) + UUID.randomUUID() + "." + extension;
@@ -70,11 +72,15 @@ public class ArtistGalleryPhotoService {
     @Transactional(readOnly = true)
     public List<ArtistGalleryPhotoResponseDto> list(Long artistId, Long currentUserId) {
         List<ArtistGalleryPhoto> photos = artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(artistId);
-        Set<Long> likedPhotoIds = (currentUserId != null && !photos.isEmpty())
+        // 익명 업로드라도 실제 uploaderId 기준으로 차단을 적용해야 하므로 DTO 변환 전(uploaderUserId가
+        // null로 마스킹되기 전) 엔티티 단계에서 필터링한다
+        List<ArtistGalleryPhoto> visiblePhotos =
+                blockedContentFilter.excludeBlocked(photos, currentUserId, ArtistGalleryPhoto::getUploaderId);
+        Set<Long> likedPhotoIds = (currentUserId != null && !visiblePhotos.isEmpty())
                 ? artistGalleryPhotoLikeRepository.findLikedPhotoIds(
-                        currentUserId, photos.stream().map(ArtistGalleryPhoto::getId).toList())
+                        currentUserId, visiblePhotos.stream().map(ArtistGalleryPhoto::getId).toList())
                 : Set.of();
-        return photos.stream()
+        return visiblePhotos.stream()
                 .map(photo -> ArtistGalleryPhotoResponseDto.from(
                         photo,
                         s3PresignService.presignGetUrl(photo.getS3Key()),

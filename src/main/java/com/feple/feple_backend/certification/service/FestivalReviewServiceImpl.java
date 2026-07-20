@@ -9,6 +9,7 @@ import com.feple.feple_backend.certification.repository.CertificationReviewLikeR
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.OwnershipValidator;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +28,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
 
     private final FestivalCertificationRepository certificationRepository;
     private final CertificationReviewLikeRepository reviewLikeRepository;
+    private final BlockedContentFilter blockedContentFilter;
 
     @Override
     @Transactional
@@ -72,12 +74,16 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
         Page<FestivalCertification> certPage =
                 certificationRepository.findReviewsByFestivalId(festivalId, PageRequest.of(page, 10));
 
-        List<Long> certIds = certPage.getContent().stream().map(FestivalCertification::getId).toList();
+        // 익명 여부와 무관하게 실제 작성자(userId) 기준으로 차단을 적용
+        List<FestivalCertification> visibleCerts =
+                blockedContentFilter.excludeBlocked(certPage.getContent(), userId, FestivalCertification::getUserId);
+
+        List<Long> certIds = visibleCerts.stream().map(FestivalCertification::getId).toList();
         Set<Long> likedCertIds = (userId != null && !certIds.isEmpty())
                 ? reviewLikeRepository.findLikedCertIdsByUserIdIn(userId, new HashSet<>(certIds))
                 : Set.of();
 
-        List<FestivalReviewDto> reviews = certPage.getContent().stream()
+        List<FestivalReviewDto> reviews = visibleCerts.stream()
                 .map(cert -> FestivalReviewDto.from(cert, likedCertIds.contains(cert.getId())))
                 .toList();
 

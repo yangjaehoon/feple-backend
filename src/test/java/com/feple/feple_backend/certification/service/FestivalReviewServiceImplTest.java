@@ -4,10 +4,13 @@ import com.feple.feple_backend.certification.dto.CertificationRatingRequestDto;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
+import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.data.domain.Page;
@@ -31,6 +34,7 @@ class FestivalReviewServiceImplTest {
 
     @Mock FestivalCertificationRepository certificationRepository;
     @Mock CertificationReviewLikeRepository reviewLikeRepository;
+    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
     @InjectMocks FestivalReviewServiceImpl reviewService;
 
