@@ -161,8 +161,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     List<Post> findByBoardTypeAndIdLessThanOrderByIdDesc(BoardType boardType, Long id, Pageable pageable);
 
+    // id를 최종 타이브레이커로 둬 likeCount가 동률이거나 페이지 조회 사이에 변경돼도
+    // 페이지 경계에서 게시글이 중복/누락되지 않도록 한다
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    Page<Post> findByBoardTypeOrderByLikeCountDescCreatedAtDesc(BoardType boardType, Pageable pageable);
+    Page<Post> findByBoardTypeOrderByLikeCountDescCreatedAtDescIdDesc(BoardType boardType, Pageable pageable);
 
     // ── 검색 (사용자 통합 검색 전용 — FULLTEXT ngram, 대량 데이터에서도 인덱스 사용) ──
     // LIKE '%kw%'는 B-tree 인덱스를 못 타 풀스캔이었음 — FULLTEXT 매치로 id만 먼저

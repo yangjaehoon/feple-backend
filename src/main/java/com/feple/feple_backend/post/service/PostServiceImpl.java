@@ -84,7 +84,7 @@ public class PostServiceImpl implements PostService {
         // likeCount는 동적으로 변하므로 offset 기반 유지, cursor는 페이지 번호를 opaque Long으로 전달
         Long cursor = pageRequest.cursor();
         int page = CursorPage.toPage(cursor);
-        Page<Post> result = postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDesc(
+        Page<Post> result = postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDescIdDesc(
                 boardType, PageRequest.of(page, pageRequest.size()));
         List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
                 result.map(PostResponseDto::from).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
