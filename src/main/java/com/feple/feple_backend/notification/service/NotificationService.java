@@ -36,6 +36,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository.TokenLanguageProjection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -92,13 +93,13 @@ public class NotificationService {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
         Festival festival = festivalRepository.findById(event.festivalId()).orElse(null);
-        String title = NotificationMessages.CERT_APPROVED_TITLE;
-        String body = NotificationMessages.certApprovedBody(event.festivalTitle());
-        String titleEn = NotificationMessages.CERT_APPROVED_TITLE_EN;
-        String bodyEn = NotificationMessages.certApprovedBodyEn(event.festivalTitleEn());
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.CERT_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
-        saveAndPushSingle(Notification.of(user, message.toContent(), festival), event.userId(), message);
+        notifySingle(event.userId(), NotificationType.CERT_APPROVED,
+                NotificationMessages.CERT_APPROVED_TITLE,
+                NotificationMessages.certApprovedBody(event.festivalTitle()),
+                NotificationMessages.CERT_APPROVED_TITLE_EN,
+                NotificationMessages.certApprovedBodyEn(event.festivalTitleEn()),
+                String.valueOf(event.festivalId()),
+                content -> Notification.of(user, content, festival));
     }
 
     /** 인증 거절 알림 — 커밋 후에만 발송 */
@@ -108,13 +109,13 @@ public class NotificationService {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
         Festival festival = festivalRepository.findById(event.festivalId()).orElse(null);
-        String title = NotificationMessages.CERT_REJECTED_TITLE;
-        String body = NotificationMessages.certRejectedBody(event.festivalTitle(), event.reason());
-        String titleEn = NotificationMessages.CERT_REJECTED_TITLE_EN;
-        String bodyEn = NotificationMessages.certRejectedBodyEn(event.festivalTitleEn(), event.reason());
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.CERT_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
-        saveAndPushSingle(Notification.of(user, message.toContent(), festival), event.userId(), message);
+        notifySingle(event.userId(), NotificationType.CERT_REJECTED,
+                NotificationMessages.CERT_REJECTED_TITLE,
+                NotificationMessages.certRejectedBody(event.festivalTitle(), event.reason()),
+                NotificationMessages.CERT_REJECTED_TITLE_EN,
+                NotificationMessages.certRejectedBodyEn(event.festivalTitleEn(), event.reason()),
+                String.valueOf(event.festivalId()),
+                content -> Notification.of(user, content, festival));
     }
 
     @Async
@@ -123,13 +124,13 @@ public class NotificationService {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
         Artist artist = artistRepository.findById(event.artistId()).orElse(null);
-        String title = NotificationMessages.SONG_REQUEST_APPROVED_TITLE;
-        String body = NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName());
-        String titleEn = NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN;
-        String bodyEn = NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistNameEn());
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.SONG_REQUEST_APPROVED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
-        saveAndPushSingle(Notification.of(user, message.toContent(), artist), event.userId(), message);
+        notifySingle(event.userId(), NotificationType.SONG_REQUEST_APPROVED,
+                NotificationMessages.SONG_REQUEST_APPROVED_TITLE,
+                NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName()),
+                NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN,
+                NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistNameEn()),
+                String.valueOf(event.artistId()),
+                content -> Notification.of(user, content, artist));
     }
 
     @Async
@@ -138,13 +139,13 @@ public class NotificationService {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
         Artist artist = artistRepository.findById(event.artistId()).orElse(null);
-        String title = NotificationMessages.SONG_REQUEST_REJECTED_TITLE;
-        String body = NotificationMessages.songRequestRejectedBody(event.songTitle(), event.reason());
-        String titleEn = NotificationMessages.SONG_REQUEST_REJECTED_TITLE_EN;
-        String bodyEn = NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason());
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.SONG_REQUEST_REJECTED, title, body, titleEn, bodyEn, String.valueOf(event.artistId()));
-        saveAndPushSingle(Notification.of(user, message.toContent(), artist), event.userId(), message);
+        notifySingle(event.userId(), NotificationType.SONG_REQUEST_REJECTED,
+                NotificationMessages.SONG_REQUEST_REJECTED_TITLE,
+                NotificationMessages.songRequestRejectedBody(event.songTitle(), event.reason()),
+                NotificationMessages.SONG_REQUEST_REJECTED_TITLE_EN,
+                NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason()),
+                String.valueOf(event.artistId()),
+                content -> Notification.of(user, content, artist));
     }
 
     @Async
@@ -152,20 +153,17 @@ public class NotificationService {
     public void onArtistSuggestionProcessed(ArtistSuggestionProcessedEvent event) {
         User user = userRepository.findById(event.userId()).orElse(null);
         if (user == null) return;
-        String title = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE;
-        String body = NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note());
-        String titleEn = NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN;
         String resourceId = event.artistId() != null ? String.valueOf(event.artistId()) : null;
         Artist artist = event.artistId() != null ? artistRepository.findById(event.artistId()).orElse(null) : null;
         String artistNameEn = (artist != null && artist.getNameEn() != null && !artist.getNameEn().isBlank())
                 ? artist.getNameEn() : event.artistName();
-        String bodyEn = NotificationMessages.artistSuggestionProcessedBodyEn(artistNameEn, event.note());
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.ARTIST_SUGGESTION_PROCESSED, title, body, titleEn, bodyEn, resourceId);
-        Notification notification = artist != null
-                ? Notification.of(user, message.toContent(), artist)
-                : Notification.of(user, message.toContent(), (Festival) null);
-        saveAndPushSingle(notification, event.userId(), message);
+        notifySingle(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED,
+                NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE,
+                NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note()),
+                NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN,
+                NotificationMessages.artistSuggestionProcessedBodyEn(artistNameEn, event.note()),
+                resourceId,
+                content -> artist != null ? Notification.of(user, content, artist) : Notification.of(user, content, (Festival) null));
     }
 
     @Async
@@ -185,14 +183,14 @@ public class NotificationService {
         if (userBlockService.isBlocked(event.postAuthorId(), event.likerId())) return;
         User author = userRepository.findById(event.postAuthorId()).orElse(null);
         if (author == null) return;
-        String title = NotificationMessages.postLikedTitle(event.likerNickname());
-        String body = NotificationMessages.postLikedBody(event.postTitle());
-        String titleEn = NotificationMessages.postLikedTitleEn(event.likerNickname());
-        String bodyEn = NotificationMessages.postLikedBodyEn(event.postTitle());
         Post post = postRepository.findById(event.postId()).orElse(null);
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.POST_LIKED, title, body, titleEn, bodyEn, String.valueOf(event.postId()));
-        saveAndPushSingle(Notification.of(author, message.toContent(), post), event.postAuthorId(), message);
+        notifySingle(event.postAuthorId(), NotificationType.POST_LIKED,
+                NotificationMessages.postLikedTitle(event.likerNickname()),
+                NotificationMessages.postLikedBody(event.postTitle()),
+                NotificationMessages.postLikedTitleEn(event.likerNickname()),
+                NotificationMessages.postLikedBodyEn(event.postTitle()),
+                String.valueOf(event.postId()),
+                content -> Notification.of(author, content, post));
     }
 
     @Async
@@ -200,13 +198,13 @@ public class NotificationService {
     public void onPostDeletedByAdmin(PostDeletedByAdminEvent event) {
         User author = userRepository.findById(event.postAuthorId()).orElse(null);
         if (author == null) return;
-        String title = NotificationMessages.POST_DELETED_BY_ADMIN_TITLE;
-        String body = NotificationMessages.postDeletedByAdminBody(event.postTitle());
-        String titleEn = NotificationMessages.POST_DELETED_BY_ADMIN_TITLE_EN;
-        String bodyEn = NotificationMessages.postDeletedByAdminBodyEn(event.postTitle());
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.POST_DELETED_BY_ADMIN, title, body, titleEn, bodyEn, null);
-        saveAndPushSingle(Notification.of(author, message.toContent(), (Festival) null), event.postAuthorId(), message);
+        notifySingle(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN,
+                NotificationMessages.POST_DELETED_BY_ADMIN_TITLE,
+                NotificationMessages.postDeletedByAdminBody(event.postTitle()),
+                NotificationMessages.POST_DELETED_BY_ADMIN_TITLE_EN,
+                NotificationMessages.postDeletedByAdminBodyEn(event.postTitle()),
+                null,
+                content -> Notification.of(author, content, (Festival) null));
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
@@ -217,15 +215,14 @@ public class NotificationService {
 
         String commenterNickname = event.commenterNickname();
         String postTitle = event.postTitle();
-        String title = NotificationMessages.newCommentTitle(commenterNickname);
-        String body = NotificationMessages.newCommentBody(postTitle);
-        String titleEn = NotificationMessages.newCommentTitleEn(commenterNickname);
-        String bodyEn = NotificationMessages.newCommentBodyEn(postTitle);
-
         Post post = postRepository.findById(event.postId()).orElse(null);
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.NEW_COMMENT, title, body, titleEn, bodyEn, null);
-        saveAndPushSingle(Notification.of(author, message.toContent(), post), postAuthorId, message);
+        notifySingle(postAuthorId, NotificationType.NEW_COMMENT,
+                NotificationMessages.newCommentTitle(commenterNickname),
+                NotificationMessages.newCommentBody(postTitle),
+                NotificationMessages.newCommentTitleEn(commenterNickname),
+                NotificationMessages.newCommentBodyEn(postTitle),
+                null,
+                content -> Notification.of(author, content, post));
     }
 
     /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
@@ -234,14 +231,21 @@ public class NotificationService {
         if (author == null) return;
         String replierNickname = event.commenterNickname();
         String postTitle = event.postTitle();
-        String title = NotificationMessages.newReplyTitle(replierNickname);
-        String body = NotificationMessages.newReplyBody(postTitle);
-        String titleEn = NotificationMessages.newReplyTitleEn(replierNickname);
-        String bodyEn = NotificationMessages.newReplyBodyEn(postTitle);
         Post post = postRepository.findById(event.postId()).orElse(null);
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.NEW_REPLY, title, body, titleEn, bodyEn, null);
-        saveAndPushSingle(Notification.of(author, message.toContent(), post), parentCommentAuthorId, message);
+        notifySingle(parentCommentAuthorId, NotificationType.NEW_REPLY,
+                NotificationMessages.newReplyTitle(replierNickname),
+                NotificationMessages.newReplyBody(postTitle),
+                NotificationMessages.newReplyTitleEn(replierNickname),
+                NotificationMessages.newReplyBodyEn(postTitle),
+                null,
+                content -> Notification.of(author, content, post));
+    }
+
+    private void notifySingle(Long userId, NotificationType type,
+                               String title, String body, String titleEn, String bodyEn, String resourceId,
+                               Function<NotificationContent, Notification> notificationFactory) {
+        NotificationMessage message = new NotificationMessage(type, title, body, titleEn, bodyEn, resourceId);
+        saveAndPushSingle(notificationFactory.apply(message.toContent()), userId, message);
     }
 
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
