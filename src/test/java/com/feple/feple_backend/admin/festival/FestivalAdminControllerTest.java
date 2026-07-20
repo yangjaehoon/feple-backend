@@ -161,4 +161,23 @@ class FestivalAdminControllerTest {
         mockMvc.perform(post("/admin/festivals/1/delete"))
                 .andExpect(flash().attribute("errorMessage", "삭제 중 오류가 발생했습니다."));
     }
+
+    // ── POST /admin/festivals/new ─────────────────────────────────────────────
+
+    @Test
+    void 페스티벌_생성_중_예기치못한_예외_생성폼_에러로_렌더링() throws Exception {
+        given(artistService.getAllArtistsSortedByName()).willReturn(List.of());
+        willThrow(new RuntimeException("DB 오류")).given(festivalService).createFestival(any());
+
+        mockMvc.perform(post("/admin/festivals/new")
+                        .param("title", "테스트 페스티벌")
+                        .param("description", "설명")
+                        .param("location", "서울")
+                        .param("startDate", "2026-08-01")
+                        .param("endDate", "2026-08-02")
+                        .param("region", "SEOUL"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/festival/create"))
+                .andExpect(model().attributeExists("errors"));
+    }
 }

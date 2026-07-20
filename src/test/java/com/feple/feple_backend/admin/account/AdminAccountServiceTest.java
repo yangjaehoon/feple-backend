@@ -47,6 +47,18 @@ class AdminAccountServiceTest {
                 .build();
     }
 
+    private static AdminAccount buildAccountWithProfileImage(Long id, String username, String profileImageUrl) {
+        return AdminAccount.builder()
+                .id(id)
+                .username(username)
+                .password("encoded")
+                .displayName("표시이름")
+                .role(AdminRole.MANAGER)
+                .enabled(true)
+                .profileImageUrl(profileImageUrl)
+                .build();
+    }
+
     private void stubFindById(Long id, AdminAccount account) {
         given(accountRepository.findById(id)).willReturn(Optional.of(account));
     }
@@ -318,5 +330,28 @@ class AdminAccountServiceTest {
         service.update(1L, req);
 
         assertThat(account.getProfileImageUrl()).isNull();
+    }
+
+    @Test
+    void 프로필_이미지_삭제_요청시_기존_파일_스토리지에서_제거() throws IOException {
+        AdminAccount account = buildAccountWithProfileImage(1L, "admin1", "https://cdn.example.com/admin-profiles/old.jpg");
+        stubFindById(1L, account);
+
+        AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
+                "새이름", AdminRole.MANAGER, Set.of(), null, null, true);
+
+        service.update(1L, req);
+
+        verify(fileStorageService).deleteFileAfterCommit("https://cdn.example.com/admin-profiles/old.jpg");
+    }
+
+    @Test
+    void 계정_삭제시_프로필_이미지도_스토리지에서_제거() {
+        AdminAccount account = buildAccountWithProfileImage(1L, "manager1", "https://cdn.example.com/admin-profiles/old.jpg");
+        stubFindById(1L, account);
+
+        service.delete(1L, "admin");
+
+        verify(fileStorageService).deleteFileAfterCommit("https://cdn.example.com/admin-profiles/old.jpg");
     }
 }

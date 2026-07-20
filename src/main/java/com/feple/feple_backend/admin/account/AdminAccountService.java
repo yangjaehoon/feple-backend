@@ -80,6 +80,7 @@ public class AdminAccountService {
         }
 
         accountRepository.delete(account);
+        fileStorageService.deleteFileAfterCommit(account.getProfileImageUrl());
         return account;
     }
 
@@ -149,14 +150,18 @@ public class AdminAccountService {
 
     private void applyProfileImageUpdate(AdminAccount account, AdminAccountUpdateRequestDto req) {
         if (req.deleteProfileImage()) {
+            String oldImageUrl = account.getProfileImageUrl();
             account.updateProfileImage(null);
+            fileStorageService.deleteFileAfterCommit(oldImageUrl);
         } else if (req.profileImage() != null && !req.profileImage().isEmpty()) {
+            String oldImageUrl = account.getProfileImageUrl();
             try {
                 account.updateProfileImage(
                         fileStorageService.storeAdminProfile(req.profileImage(), account.getUsername()));
             } catch (IOException e) {
                 throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
             }
+            fileStorageService.deleteFileAfterCommit(oldImageUrl);
         }
     }
 

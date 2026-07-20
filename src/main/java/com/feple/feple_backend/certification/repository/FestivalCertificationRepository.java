@@ -29,6 +29,11 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @EntityGraph(attributePaths = {"user", "festival"})
     Page<FestivalCertification> findByStatus(CertificationStatus status, Pageable pageable);
 
+    // JpaRepository.findAll(Pageable)는 fetch join이 없어 status=ALL 목록 조회 시 N+1이 발생한다 — 대신 이 메서드를 사용할 것
+    @EntityGraph(attributePaths = {"user", "festival"})
+    @Query("SELECT fc FROM FestivalCertification fc")
+    Page<FestivalCertification> findAllWithUserAndFestival(Pageable pageable);
+
     @EntityGraph(attributePaths = {"user", "festival"})
     Page<FestivalCertification> findByStatusOrderByCreatedAtDesc(CertificationStatus status, Pageable pageable);
 

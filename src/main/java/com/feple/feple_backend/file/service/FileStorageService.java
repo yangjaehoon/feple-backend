@@ -103,16 +103,32 @@ public class FileStorageService {
                 : name.trim().replaceAll("[^a-zA-Z0-9가-힣_-]", "_");
     }
 
-    /** S3 오브젝트 삭제 */
+    /**
+     * S3 오브젝트 삭제. storeAdminProfile처럼 key 대신 buildUrl()이 적용된 완전한 URL을 저장해둔
+     * 경우를 대비해, key가 URL 형태(http로 시작)면 CDN/S3 버킷 prefix를 제거해 실제 key를 추출한다.
+     * 알 수 없는 외부 URL(prefix가 안 맞음)은 안전하게 삭제를 건너뛴다.
+     */
     public void deleteFile(String key) {
-        if (key == null || key.isBlank() || key.startsWith("http")) return;
+        if (key == null || key.isBlank()) return;
+        String objectKey = key.startsWith("http") ? stripToObjectKey(key) : key;
+        if (objectKey == null) return;
         try {
-            s3Template.deleteObject(bucket, key);
+            s3Template.deleteObject(bucket, objectKey);
         } catch (Exception e) {
             // S3 DeleteObject는 idempotent해서 key가 이미 없어도 예외 없이 성공한다.
             // 즉 여기 잡히는 예외는 권한 오류·네트워크 문제 등 진짜 삭제 실패이므로 반드시 로그를 남긴다.
-            log.warn("[FileStorage] S3 파일 삭제 실패 key={}", key, e);
+            log.warn("[FileStorage] S3 파일 삭제 실패 key={}", objectKey, e);
         }
+    }
+
+    private String stripToObjectKey(String url) {
+        String defaultS3Prefix = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/";
+        if (cdnBaseUrl != null && !cdnBaseUrl.isBlank()) {
+            String base = cdnBaseUrl.endsWith("/") ? cdnBaseUrl : cdnBaseUrl + "/";
+            if (url.startsWith(base)) return url.substring(base.length());
+        }
+        if (url.startsWith(defaultS3Prefix)) return url.substring(defaultS3Prefix.length());
+        return null;
     }
 
     /**

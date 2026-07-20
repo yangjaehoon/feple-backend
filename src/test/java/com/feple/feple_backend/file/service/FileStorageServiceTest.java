@@ -156,10 +156,30 @@ class FileStorageServiceTest {
     }
 
     @Test
-    void 파일삭제_http_URL이면_S3_호출_안함() {
+    void 파일삭제_알수없는_외부_URL이면_S3_호출_안함() {
+        setBucketAndCdn("my-bucket", "");
+
         service.deleteFile("https://example.com/a.jpg");
 
         then(s3Template).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 파일삭제_S3_직접_URL이면_key_추출후_삭제() {
+        setBucketAndCdn("my-bucket", "");
+
+        service.deleteFile("https://my-bucket.s3.ap-northeast-2.amazonaws.com/admin-profiles/a.jpg");
+
+        then(s3Template).should().deleteObject("my-bucket", "admin-profiles/a.jpg");
+    }
+
+    @Test
+    void 파일삭제_CDN_URL이면_key_추출후_삭제() {
+        setBucketAndCdn("my-bucket", "https://cdn.example.com/");
+
+        service.deleteFile("https://cdn.example.com/admin-profiles/a.jpg");
+
+        then(s3Template).should().deleteObject("my-bucket", "admin-profiles/a.jpg");
     }
 
     @Test

@@ -11,11 +11,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -31,13 +31,21 @@ class ArtistLineupOcrServiceTest {
 
     // ── matchArtist (parseArtistLineup 내부) ─────────────────────────────────
 
+    // 인메모리 매칭이 이름 하나에서 조기 성립하면 nameEn/aliases stub이 안 쓰일 수 있어 lenient 처리
+    private static Artist mockArtist(Long id, String name, String nameEn) {
+        Artist artist = mock(Artist.class);
+        lenient().when(artist.getId()).thenReturn(id);
+        lenient().when(artist.getName()).thenReturn(name);
+        lenient().when(artist.getNameEn()).thenReturn(nameEn);
+        lenient().when(artist.getAliases()).thenReturn(List.of());
+        return artist;
+    }
+
     @Test
     void parseArtistLineup_정확히_일치하는_아티스트_있으면_ID_반환() throws Exception {
-        Artist artist = mock(Artist.class);
-        given(artist.getId()).willReturn(10L);
-        given(artist.getName()).willReturn("아이유");
+        Artist artist = mockArtist(10L, "아이유", null);
         given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("아이유", 95)), false));
-        given(artistRepository.findExactByNameIgnoreCase("아이유")).willReturn(Optional.of(artist));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(artist));
 
         List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
@@ -48,12 +56,10 @@ class ArtistLineupOcrServiceTest {
 
     @Test
     void parseArtistLineup_정확_매칭_없고_부분_매칭이_1개면_해당_아티스트_반환() throws Exception {
-        Artist artist = mock(Artist.class);
-        given(artist.getId()).willReturn(20L);
-        given(artist.getName()).willReturn("아이유");
+        // nameEn이 "IU"와 완전히 같지 않고 포함만 하므로 exact가 아닌 partial로만 매칭된다
+        Artist artist = mockArtist(20L, "아이유", "IU (아이유)");
         given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("IU", 80)), false));
-        given(artistRepository.findExactByNameIgnoreCase("IU")).willReturn(Optional.empty());
-        given(artistRepository.findByNameOrNameEnContainingIgnoreCase("IU")).willReturn(List.of(artist));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(artist));
 
         List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
@@ -62,11 +68,10 @@ class ArtistLineupOcrServiceTest {
 
     @Test
     void parseArtistLineup_부분_매칭이_복수면_artistId_null_반환() throws Exception {
-        Artist a1 = mock(Artist.class);
-        Artist a2 = mock(Artist.class);
+        Artist a1 = mockArtist(1L, "아이유", "IU (아이유)");
+        Artist a2 = mockArtist(2L, "IU Fan Club", null);
         given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("IU", 70)), false));
-        given(artistRepository.findExactByNameIgnoreCase("IU")).willReturn(Optional.empty());
-        given(artistRepository.findByNameOrNameEnContainingIgnoreCase("IU")).willReturn(List.of(a1, a2));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(a1, a2));
 
         List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
@@ -77,8 +82,7 @@ class ArtistLineupOcrServiceTest {
     @Test
     void parseArtistLineup_매칭_없으면_artistId_null_반환() throws Exception {
         given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("존재안함", 50)), false));
-        given(artistRepository.findExactByNameIgnoreCase("존재안함")).willReturn(Optional.empty());
-        given(artistRepository.findByNameOrNameEnContainingIgnoreCase("존재안함")).willReturn(List.of());
+        given(artistRepository.findAllWithAliases()).willReturn(List.of());
 
         List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
@@ -88,11 +92,9 @@ class ArtistLineupOcrServiceTest {
 
     @Test
     void parseArtistLineup_confidence가_null이면_0으로_처리() throws Exception {
-        Artist artist = mock(Artist.class);
-        given(artist.getId()).willReturn(1L);
-        given(artist.getName()).willReturn("아이유");
+        Artist artist = mockArtist(1L, "아이유", null);
         given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("아이유", null)), false));
-        given(artistRepository.findExactByNameIgnoreCase("아이유")).willReturn(Optional.of(artist));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(artist));
 
         List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
 
@@ -103,8 +105,7 @@ class ArtistLineupOcrServiceTest {
     void parseArtistLineup_geminiOcrClient가_truncated_true면_그대로_전파() throws Exception {
         given(geminiOcrClient.parseLineup(any()))
                 .willReturn(new OcrParseResult<>(List.of(new LineupRawResult("아이유", 95)), true));
-        given(artistRepository.findExactByNameIgnoreCase("아이유")).willReturn(Optional.empty());
-        given(artistRepository.findByNameOrNameEnContainingIgnoreCase("아이유")).willReturn(List.of());
+        given(artistRepository.findAllWithAliases()).willReturn(List.of());
 
         OcrParseResult<ArtistLineupOcrResult> result = ocrService.parseArtistLineup(null);
 

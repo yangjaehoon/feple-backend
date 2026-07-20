@@ -79,6 +79,10 @@ public class FestivalAdminController {
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
             return renderCreateFormWithError(bindingResult, model);
+        } catch (Exception e) {
+            log.error("페스티벌 생성 실패. title={}", dto.getTitle(), e);
+            bindingResult.reject("error.create", "생성 중 오류가 발생했습니다.");
+            return renderCreateFormWithError(bindingResult, model);
         }
     }
 

@@ -44,7 +44,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     public Page<FestivalCertification> getByStatus(CertificationStatus status, int page) {
         Pageable pageable = PageableFactory.orderByLatestFirst(page, AdminConstants.LIST_PAGE_SIZE);
         if (status == null) {
-            return certificationRepository.findAll(pageable);
+            return certificationRepository.findAllWithUserAndFestival(pageable);
         }
         return certificationRepository.findByStatus(status, pageable);
     }

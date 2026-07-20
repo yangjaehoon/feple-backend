@@ -41,13 +41,13 @@ class FestivalCertificationAdminServiceImplTest {
     // ── getByStatus ──────────────────────────────────────────────────
 
     @Test
-    void getByStatus_null이면_findAll_호출() {
-        given(certificationRepository.findAll(any(Pageable.class)))
+    void getByStatus_null이면_findAllWithUserAndFestival_호출() {
+        given(certificationRepository.findAllWithUserAndFestival(any(Pageable.class)))
                 .willReturn(Page.empty());
 
         adminService.getByStatus(null, 0);
 
-        then(certificationRepository).should().findAll(any(Pageable.class));
+        then(certificationRepository).should().findAllWithUserAndFestival(any(Pageable.class));
         then(certificationRepository).should(never()).findByStatus(any(), any());
     }
 
@@ -59,7 +59,7 @@ class FestivalCertificationAdminServiceImplTest {
         adminService.getByStatus(CertificationStatus.PENDING, 0);
 
         then(certificationRepository).should().findByStatus(eq(CertificationStatus.PENDING), any(Pageable.class));
-        then(certificationRepository).should(never()).findAll(any(Pageable.class));
+        then(certificationRepository).should(never()).findAllWithUserAndFestival(any(Pageable.class));
     }
 
     // ── searchByKeyword / getById ────────────────────────────────────

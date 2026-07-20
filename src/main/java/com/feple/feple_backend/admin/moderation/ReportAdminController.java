@@ -39,8 +39,11 @@ public class ReportAdminController {
     public String list(@ModelAttribute ReportFilter filter, Model model) {
         ReportAdminService<?> handler = resolveHandler(filter.type());
         Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(filter.page(), AdminConstants.LIST_PAGE_SIZE, filter.status(), filter.keyword()));
+        // 타입별 pendingCount를 한 번씩만 조회해 재사용 — 현재 타입 카운트를 handler.getPendingCount()로 또 조회하지 않는다.
+        Map<String, Long> pendingCounts = handlers.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getPendingCount()));
         model.addAttribute("reports", reports);
-        model.addAttribute("pendingCount", handler.getPendingCount());
+        model.addAttribute("pendingCount", pendingCounts.get(handler.getReportType()));
         model.addAttribute("totalCount", handler.getTotalCount());
         model.addAttribute("status",  filter.status());
         model.addAttribute("type",    filter.type());
@@ -48,7 +51,7 @@ public class ReportAdminController {
         model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : buildCounts(handler, reports));
         model.addAttribute("photoUrls", handler instanceof PhotoPresignedUrlProvider provider
                 ? provider.buildPhotoPresignedUrls(reports) : Map.of());
-        handlers.forEach((t, h) -> model.addAttribute(t + "PendingCount", h.getPendingCount()));
+        pendingCounts.forEach((t, count) -> model.addAttribute(t + "PendingCount", count));
         return "admin/moderation/reports";
     }
 

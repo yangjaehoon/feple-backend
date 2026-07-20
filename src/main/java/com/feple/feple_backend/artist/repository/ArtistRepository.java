@@ -51,6 +51,11 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
            "OR LOWER(alias) = LOWER(:name)")
     java.util.Optional<Artist> findExactByNameIgnoreCase(@Param("name") String name);
 
+    // 라인업 OCR 자동매칭 배치 조회용 — 이름 하나마다 개별 쿼리하는 N+1을 피하기 위해
+    // 전체 아티스트+alias를 한 번에 가져와 메모리에서 매칭한다 (ArtistLineupOcrService).
+    @Query("SELECT DISTINCT a FROM Artist a LEFT JOIN FETCH a.aliases")
+    java.util.List<Artist> findAllWithAliases();
+
     java.util.List<Artist> findTop10ByOrderByFollowerCountDesc();
 
     @Query("SELECT a.name FROM Artist a WHERE a.name IS NOT NULL AND a.name <> ''")
