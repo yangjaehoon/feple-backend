@@ -154,6 +154,37 @@ class RefreshTokenServiceTest {
                 .hasMessageContaining("유효하지 않은");
     }
 
+    // ── rotate ───────────────────────────────────────────────────────
+
+    @Test
+    void 로테이트시_기존토큰_소비하고_새토큰_발급저장() {
+        User user = user(1L);
+        String rawOld = "old-token";
+        RefreshToken token = validToken(user, rawOld);
+        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(rawOld)))
+                .willReturn(Optional.of(token));
+        given(refreshTokenRepository.deleteByTokenHash(refreshTokenService.hash(rawOld))).willReturn(1);
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+        RefreshTokenService.RotationResult result =
+                refreshTokenService.rotate(rawOld, userId -> "new-token-for-" + userId);
+
+        assertThat(result.userId()).isEqualTo(1L);
+        assertThat(result.newRefreshToken()).isEqualTo("new-token-for-1");
+        verify(refreshTokenRepository).deleteByTokenHash(refreshTokenService.hash(rawOld));
+        verify(refreshTokenRepository).save(any(RefreshToken.class));
+    }
+
+    @Test
+    void 로테이트시_기존토큰_유효하지않으면_새토큰_발급안됨() {
+        given(refreshTokenRepository.findByTokenHash(any())).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> refreshTokenService.rotate("unknown-token", userId -> "new-token"))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(refreshTokenRepository, never()).save(any(RefreshToken.class));
+    }
+
     // ── revoke ───────────────────────────────────────────────────────
 
     @Test

@@ -71,14 +71,12 @@ public class AuthController {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
-        Long userId = refreshTokenService.validateAndConsume(req.getRefreshToken());
+        RefreshTokenService.RotationResult rotation = refreshTokenService.rotate(
+                req.getRefreshToken(), jwtProvider::createRefreshToken);
 
-        String newAccessToken = jwtProvider.createAccessToken(userId);
-        String newRefreshToken = jwtProvider.createRefreshToken(userId);
-        refreshTokenService.save(userId, newRefreshToken);
-
-        UserResponseDto userDto = userService.getUser(userId);
-        return ResponseEntity.ok(new AuthResponseDto(userDto, newAccessToken, newRefreshToken));
+        String newAccessToken = jwtProvider.createAccessToken(rotation.userId());
+        UserResponseDto userDto = userService.getUser(rotation.userId());
+        return ResponseEntity.ok(new AuthResponseDto(userDto, newAccessToken, rotation.newRefreshToken()));
     }
 
     @PostMapping("/logout")

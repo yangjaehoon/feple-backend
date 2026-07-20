@@ -19,7 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import reactor.core.publisher.Mono;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -61,9 +63,9 @@ class AuthControllerTest {
     @Test
     void 리프레시_성공() throws Exception {
         given(jwtProvider.isRefreshToken("valid-token")).willReturn(true);
-        given(refreshTokenService.validateAndConsume("valid-token")).willReturn(1L);
+        given(refreshTokenService.rotate(eq("valid-token"), any()))
+                .willReturn(new RefreshTokenService.RotationResult(1L, "new-refresh-token"));
         given(jwtProvider.createAccessToken(1L)).willReturn("new-access-token");
-        given(jwtProvider.createRefreshToken(1L)).willReturn("new-refresh-token");
         UserResponseDto userDto = mock(UserResponseDto.class);
         given(userService.getUser(1L)).willReturn(userDto);
 
