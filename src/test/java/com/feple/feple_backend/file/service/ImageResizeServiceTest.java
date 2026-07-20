@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.CRC32;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -139,5 +140,66 @@ class ImageResizeServiceTest {
         assertThatThrownBy(() -> service.resizeToJpeg(new ByteArrayInputStream(fakePng), 100))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("이미지 크기가 너무 큽니다");
+    }
+
+    // ── EXIF Orientation ────────────────────────────────────────────────
+
+    @Test
+    void resizeToJpeg_EXIF_Orientation6이면_90도_회전_반영되어_가로세로_전환() throws IOException {
+        // 가로가 더 긴 200x100 이미지를 orientation=6(90도 회전 필요)으로 표시
+        byte[] jpegWithExif = jpegWithOrientation(200, 100, 6);
+
+        byte[] result = service.resizeToJpeg(new ByteArrayInputStream(jpegWithExif), 1000);
+
+        BufferedImage decoded = ImageIO.read(new ByteArrayInputStream(result));
+        assertThat(decoded.getWidth()).isEqualTo(100);
+        assertThat(decoded.getHeight()).isEqualTo(200);
+    }
+
+    @Test
+    void resizeToJpeg_EXIF_Orientation_없으면_원본_방향_유지() throws IOException {
+        BufferedImage image = new BufferedImage(200, 100, BufferedImage.TYPE_INT_RGB);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+
+        byte[] result = service.resizeToJpeg(new ByteArrayInputStream(baos.toByteArray()), 1000);
+
+        BufferedImage decoded = ImageIO.read(new ByteArrayInputStream(result));
+        assertThat(decoded.getWidth()).isEqualTo(200);
+        assertThat(decoded.getHeight()).isEqualTo(100);
+    }
+
+    /** SOI 직후에 EXIF Orientation 태그 하나만 담은 최소 APP1 세그먼트를 삽입한 JPEG를 만든다. */
+    private byte[] jpegWithOrientation(int width, int height, int orientation) throws IOException {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", baos);
+        byte[] jpeg = baos.toByteArray();
+
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        result.write(jpeg, 0, 2); // SOI (FFD8)
+        result.write(buildExifOrientationSegment(orientation));
+        result.write(jpeg, 2, jpeg.length - 2);
+        return result.toByteArray();
+    }
+
+    private byte[] buildExifOrientationSegment(int orientation) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        out.write(0xFF); out.write(0xE1); // APP1 marker
+        int length = 2 + 6 + 26; // length필드(2) + "Exif\0\0"(6) + TIFF헤더(8) + IFD0(18)
+        out.write((length >>> 8) & 0xFF); out.write(length & 0xFF);
+        out.write("Exif\0\0".getBytes(StandardCharsets.US_ASCII));
+        // TIFF 헤더 (little-endian)
+        out.write('I'); out.write('I');
+        out.write(0x2A); out.write(0x00);
+        out.write(0x08); out.write(0x00); out.write(0x00); out.write(0x00); // IFD0 offset=8
+        // IFD0: entry 1개 (tag=Orientation)
+        out.write(0x01); out.write(0x00); // entry count=1
+        out.write(0x12); out.write(0x01); // tag 0x0112 (Orientation)
+        out.write(0x03); out.write(0x00); // type=3 (SHORT)
+        out.write(0x01); out.write(0x00); out.write(0x00); out.write(0x00); // count=1
+        out.write(orientation & 0xFF); out.write(0x00); out.write(0x00); out.write(0x00); // value
+        out.write(0x00); out.write(0x00); out.write(0x00); out.write(0x00); // next IFD offset=0
+        return out.toByteArray();
     }
 }

@@ -1,5 +1,10 @@
 package com.feple.feple_backend.file.service;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -7,6 +12,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,8 +60,77 @@ public class ImageResizeService {
         if (src == null)
             throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
 
+        // ImageIO는 EXIF Orientation을 반영하지 않고 센서 방향 그대로 픽셀을 디코딩한다.
+        // 세로로 촬영한 사진(특히 iPhone)이 가로로 저장되고 태그로만 회전 방향을 표시하는 경우가
+        // 흔해, 회전을 픽셀에 직접 적용하지 않으면 리사이즈 후 메타데이터가 사라지며 영구히
+        // 옆으로 눕는다. 리사이즈 전에 방향을 먼저 바로잡는다.
+        src = applyExifOrientation(src, readExifOrientation(bytes));
+
         int[] dims = computeTargetSize(src.getWidth(), src.getHeight(), targetPx);
         return encodeToJpeg(src, dims[0], dims[1]);
+    }
+
+    private int readExifOrientation(byte[] bytes) {
+        try {
+            Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
+            ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+                return directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+            }
+        } catch (ImageProcessingException | IOException | MetadataException | RuntimeException e) {
+            // EXIF가 없거나(PNG/GIF 등) 손상된 경우 방향 보정 없이 원본 그대로 처리
+        }
+        return 1;
+    }
+
+    /** EXIF Orientation 값(1~8)에 따라 회전/반전을 픽셀에 실제로 적용한다. */
+    private BufferedImage applyExifOrientation(BufferedImage image, int orientation) {
+        if (orientation <= 1 || orientation > 8) return image;
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+        AffineTransform t = new AffineTransform();
+
+        switch (orientation) {
+            case 2 -> {
+                t.scale(-1.0, 1.0);
+                t.translate(-width, 0);
+            }
+            case 3 -> t.rotate(Math.PI, width / 2.0, height / 2.0);
+            case 4 -> {
+                t.scale(1.0, -1.0);
+                t.translate(0, -height);
+            }
+            case 5 -> {
+                t.rotate(Math.PI / 2);
+                t.scale(1.0, -1.0);
+            }
+            case 6 -> {
+                t.translate(height, 0);
+                t.rotate(Math.PI / 2);
+            }
+            case 7 -> {
+                t.translate(height, width);
+                t.rotate(Math.PI / 2);
+                t.scale(-1.0, 1.0);
+            }
+            case 8 -> {
+                t.translate(0, width);
+                t.rotate(-Math.PI / 2);
+            }
+            default -> { return image; }
+        }
+
+        boolean swapDimensions = orientation >= 5;
+        int newWidth = swapDimensions ? height : width;
+        int newHeight = swapDimensions ? width : height;
+
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, image.getType());
+        Graphics2D graphics = rotated.createGraphics();
+        graphics.setTransform(t);
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
+        return rotated;
     }
 
     /** 헤더만 읽어 픽셀 크기 검증 — 전체 디코딩 전에 ImageBomb 차단 */
