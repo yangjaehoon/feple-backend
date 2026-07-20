@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.feple.feple_backend.global.EntityLoader;
 
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TimetableService {
+
+    // 이 시간대에 걸친 start→end는 자정을 넘기는 심야 공연으로 간주해 허용한다
+    // (예: 23:30 시작 → 00:30 종료). TimetableEntry는 종료일 필드가 없어 festivalDate 하루 안에서
+    // wall-clock 시간만으로 심야 여부를 판단한다.
+    private static final LocalTime OVERNIGHT_START_THRESHOLD = LocalTime.of(18, 0);
+    private static final LocalTime OVERNIGHT_END_THRESHOLD = LocalTime.of(6, 0);
 
     private final TimetableRepository timetableRepository;
     private final FestivalRepository festivalRepository;
@@ -99,9 +106,16 @@ public class TimetableService {
     }
 
     private void validateTimeRange(TimetableEntryRequestDto req) {
-        if (!req.getStartTime().isBefore(req.getEndTime())) {
+        LocalTime start = req.getStartTime();
+        LocalTime end = req.getEndTime();
+        if (isOvernight(start, end)) return;
+        if (!start.isBefore(end)) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
         }
+    }
+
+    private boolean isOvernight(LocalTime start, LocalTime end) {
+        return !start.isBefore(OVERNIGHT_START_THRESHOLD) && !end.isAfter(OVERNIGHT_END_THRESHOLD);
     }
 
     private void broadcastLineupUpdate(Long festivalId, TimetableEntry entry) {

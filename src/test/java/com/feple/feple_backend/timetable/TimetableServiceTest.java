@@ -58,6 +58,35 @@ class TimetableServiceTest {
     }
 
     @Test
+    void createEntry_자정_넘기는_심야_공연_허용() {
+        Festival festival = mock(Festival.class);
+        given(festivalRepository.findById(1L)).willReturn(Optional.of(festival));
+
+        TimetableEntry savedEntry = TimetableEntry.builder()
+                .festival(festival)
+                .stageName("MAIN")
+                .artistName("아티스트")
+                .festivalDate(LocalDate.of(2026, 7, 1))
+                .startTime(LocalTime.of(23, 30))
+                .endTime(LocalTime.of(0, 30))
+                .build();
+        given(timetableRepository.save(any(TimetableEntry.class))).willReturn(savedEntry);
+        given(stageService.findByFestivalIdAndName(eq(1L), eq("MAIN")))
+                .willReturn(Optional.empty());
+
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
+        req.setStageName("MAIN");
+        req.setArtistName("아티스트");
+        req.setFestivalDate(LocalDate.of(2026, 7, 1));
+        req.setStartTime(LocalTime.of(23, 30));
+        req.setEndTime(LocalTime.of(0, 30));
+
+        timetableService.createEntry(1L, req);
+
+        then(timetableRepository).should().save(any(TimetableEntry.class));
+    }
+
+    @Test
     void createEntry_빈_stageName_null_stage_처리() {
         Festival festival = mock(Festival.class);
         given(festivalRepository.findById(1L)).willReturn(Optional.of(festival));
