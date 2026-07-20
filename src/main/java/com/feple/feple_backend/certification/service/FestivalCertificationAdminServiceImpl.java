@@ -66,14 +66,26 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @EvictAdminPendingCaches
     @Transactional
     public void approve(Long certId, String reviewerName) {
-        approveOne(getById(certId), reviewerName);
+        FestivalCertification cert = getById(certId);
+        requirePending(cert);
+        approveOne(cert, reviewerName);
     }
 
     @Override
     @EvictAdminPendingCaches
     @Transactional
     public void reject(Long certId, String rejectionMessage, String reviewerName) {
-        rejectOne(getById(certId), rejectionMessage, reviewerName);
+        FestivalCertification cert = getById(certId);
+        requirePending(cert);
+        rejectOne(cert, rejectionMessage, reviewerName);
+    }
+
+    // 이중 클릭·요청 재시도로 동일 인증이 두 번 승인/반려되며 포인트가 중복 지급되는 것을 방지
+    // (bulkApprove/bulkReject는 filter(isPending)로 이미 동일하게 보호됨)
+    private void requirePending(FestivalCertification cert) {
+        if (!cert.isPending()) {
+            throw new IllegalArgumentException("이미 처리된 인증 신청입니다.");
+        }
     }
 
     @Override

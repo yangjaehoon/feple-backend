@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -89,6 +90,7 @@ class FestivalCertificationAdminServiceImplTest {
         given(cert.getId()).willReturn(10L);
         given(cert.getUserId()).willReturn(1L);
         given(cert.getFestivalTitle()).willReturn("페스티벌");
+        given(cert.isPending()).willReturn(true);
         given(certificationRepository.findWithUserAndFestivalById(10L)).willReturn(Optional.of(cert));
 
         adminService.approve(10L, "admin");
@@ -99,15 +101,45 @@ class FestivalCertificationAdminServiceImplTest {
     }
 
     @Test
+    void 이미_처리된_인증_재승인시_예외_포인트_미지급() {
+        FestivalCertification cert = mock(FestivalCertification.class);
+        given(cert.isPending()).willReturn(false);
+        given(certificationRepository.findWithUserAndFestivalById(10L)).willReturn(Optional.of(cert));
+
+        assertThatThrownBy(() -> adminService.approve(10L, "admin"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 처리된 인증 신청입니다.");
+
+        then(cert).should(never()).approve(any());
+        then(pointService).should(never()).addCertApprovedPoint(any(), any());
+        then(eventPublisher).should(never()).publishEvent(any(CertificationApprovedEvent.class));
+    }
+
+    @Test
     void 인증_거절시_알림_발송() {
         FestivalCertification cert = mock(FestivalCertification.class);
         given(cert.getUserId()).willReturn(1L);
+        given(cert.isPending()).willReturn(true);
         given(certificationRepository.findWithUserAndFestivalById(10L)).willReturn(Optional.of(cert));
 
         adminService.reject(10L, "사진 불명확", "admin");
 
         then(cert).should().reject("사진 불명확", "admin");
         then(eventPublisher).should().publishEvent(any(CertificationRejectedEvent.class));
+    }
+
+    @Test
+    void 이미_처리된_인증_재거절시_예외() {
+        FestivalCertification cert = mock(FestivalCertification.class);
+        given(cert.isPending()).willReturn(false);
+        given(certificationRepository.findWithUserAndFestivalById(10L)).willReturn(Optional.of(cert));
+
+        assertThatThrownBy(() -> adminService.reject(10L, "사유", "admin"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 처리된 인증 신청입니다.");
+
+        then(cert).should(never()).reject(any(), any());
+        then(eventPublisher).should(never()).publishEvent(any(CertificationRejectedEvent.class));
     }
 
     // ── getPendingCount / findNextPendingId / buildPhotoUrl ─────────────
