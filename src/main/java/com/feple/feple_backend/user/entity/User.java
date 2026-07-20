@@ -37,6 +37,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
 
+    @Column(length = 500)
     private String profileImageUrl;
 
     @Column(nullable = true)

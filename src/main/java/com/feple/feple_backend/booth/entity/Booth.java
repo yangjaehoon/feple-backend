@@ -37,6 +37,7 @@ public class Booth {
 
     private String description;
 
+    @Column(length = 500)
     private String imageKey;
 
     public Long getFestivalId() {

@@ -41,6 +41,7 @@ public class Festival {
     private String location;
     private LocalDate startDate;
     private LocalDate endDate;
+    @Column(length = 500)
     private String posterKey;
 
     @Builder.Default

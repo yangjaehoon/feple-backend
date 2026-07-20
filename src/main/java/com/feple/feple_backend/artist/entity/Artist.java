@@ -44,6 +44,7 @@ public class Artist {
     @Builder.Default
     private List<MusicGenre> genres = new ArrayList<>();
 
+    @Column(length = 500)
     private String profileImageKey;
 
     @Column(nullable = false)
