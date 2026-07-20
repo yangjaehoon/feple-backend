@@ -23,7 +23,7 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc FROM FestivalCertification fc JOIN FETCH fc.festival WHERE fc.user.id = :userId")
     List<FestivalCertification> findByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT fc FROM FestivalCertification fc WHERE fc.user.id = :userId AND fc.status = :status")
+    @Query("SELECT fc FROM FestivalCertification fc JOIN FETCH fc.festival WHERE fc.user.id = :userId AND fc.status = :status")
     List<FestivalCertification> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") CertificationStatus status);
 
     @EntityGraph(attributePaths = {"user", "festival"})
