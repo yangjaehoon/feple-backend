@@ -134,6 +134,32 @@ class SongRequestServiceTest {
     }
 
     @Test
+    void 이미_승인된_요청_재승인시_예외() {
+        Artist artist = artist(1L);
+        SongRequest request = SongRequest.builder()
+                .id(1L).artist(artist).userId(10L)
+                .songTitle("Lilac").status(SongRequestStatus.APPROVED).build();
+        given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
+
+        assertThatThrownBy(() -> songRequestService.approveAndMaybeSaveSong(1L, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 처리된 노래 요청입니다.");
+    }
+
+    @Test
+    void 이미_거절된_요청_재거절시_예외() {
+        Artist artist = artist(1L);
+        SongRequest request = SongRequest.builder()
+                .id(1L).artist(artist).userId(10L)
+                .songTitle("Lilac").status(SongRequestStatus.REJECTED).build();
+        given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
+
+        assertThatThrownBy(() -> songRequestService.reject(1L, "사유"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 처리된 노래 요청입니다.");
+    }
+
+    @Test
     void 존재하지_않는_요청_승인시_예외() {
         given(songRequestRepository.findById(99L)).willReturn(Optional.empty());
 

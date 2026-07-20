@@ -45,6 +45,7 @@ public class SongRequest extends BaseTimeEntity {
     public Long getArtistId() { return artist.getId(); }
     public String getArtistName() { return artist.getName(); }
     public String getArtistNameEn() { return artist.getNameEn() != null ? artist.getNameEn() : ""; }
+    public boolean isPending() { return status == SongRequestStatus.PENDING; }
 
     public void approve() {
         this.status = SongRequestStatus.APPROVED;

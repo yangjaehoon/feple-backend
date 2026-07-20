@@ -122,6 +122,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Transactional
     public boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl) {
         SongRequest request = EntityLoader.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
+        requirePending(request);
 
         request.approve();
         boolean songSaved = trySaveSongFromYoutube(request, youtubeUrl);
@@ -171,6 +172,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Transactional
     public void reject(Long requestId, String reason) {
         SongRequest request = EntityLoader.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
+        requirePending(request);
         request.reject();
         eventPublisher.publishEvent(new SongRequestRejectedEvent(
                 request.getUserId(), request.getArtistId(), request.getSongTitle(), request.getArtistName(), reason));
@@ -182,4 +184,10 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         songRequestRepository.deleteByUserId(userId);
     }
 
+    // 이중 클릭·요청 재시도로 동일 요청이 두 번 승인/반려되며 알림이 중복 발송되는 것을 방지
+    private void requirePending(SongRequest request) {
+        if (!request.isPending()) {
+            throw new IllegalArgumentException("이미 처리된 노래 요청입니다.");
+        }
+    }
 }
