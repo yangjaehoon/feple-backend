@@ -101,6 +101,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @Transactional
     public void approve(Long suggestionId, Long artistId) {
         ArtistSuggestion suggestion = EntityLoader.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
+        requirePending(suggestion);
         suggestion.approve(artistId);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), artistId, suggestion.getArtistName(), null));
@@ -111,6 +112,7 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
     @Transactional
     public void dismiss(Long suggestionId, String processNote) {
         ArtistSuggestion suggestion = EntityLoader.getOrThrow(suggestionRepository::findById, suggestionId, "아티스트 신청");
+        requirePending(suggestion);
         suggestion.dismiss(processNote);
         eventPublisher.publishEvent(new ArtistSuggestionProcessedEvent(
                 suggestion.getUserId(), null, suggestion.getArtistName(), processNote));
@@ -122,4 +124,10 @@ public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, Art
         suggestionRepository.deleteByUserId(userId);
     }
 
+    // 이중 클릭·요청 재시도로 동일 신청이 두 번 승인/반려되며 알림이 중복 발송되는 것을 방지
+    private void requirePending(ArtistSuggestion suggestion) {
+        if (!suggestion.isPending()) {
+            throw new IllegalArgumentException("이미 처리된 아티스트 신청입니다.");
+        }
+    }
 }

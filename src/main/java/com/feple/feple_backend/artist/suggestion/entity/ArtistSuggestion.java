@@ -41,6 +41,8 @@ public class ArtistSuggestion extends BaseTimeEntity {
         if (this.status == null) this.status = ArtistSuggestionStatus.PENDING;
     }
 
+    public boolean isPending() { return status == ArtistSuggestionStatus.PENDING; }
+
     public void approve(Long artistId) {
         this.status = ArtistSuggestionStatus.APPROVED;
         this.approvedArtistId = artistId;

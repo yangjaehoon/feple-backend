@@ -107,6 +107,30 @@ class ArtistSuggestionServiceTest {
                 .isInstanceOf(java.util.NoSuchElementException.class);
     }
 
+    @Test
+    void 이미_처리된_신청_재기각시_예외() {
+        ArtistSuggestion suggestion = ArtistSuggestion.builder()
+                .id(1L).userId(1L).artistName("아이유")
+                .status(ArtistSuggestionStatus.DISMISSED).build();
+        given(suggestionRepository.findById(1L)).willReturn(Optional.of(suggestion));
+
+        assertThatThrownBy(() -> suggestionService.dismiss(1L, "사유"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 처리된 아티스트 신청입니다.");
+    }
+
+    @Test
+    void 이미_처리된_신청_재승인시_예외() {
+        ArtistSuggestion suggestion = ArtistSuggestion.builder()
+                .id(1L).userId(1L).artistName("아이유")
+                .status(ArtistSuggestionStatus.APPROVED).build();
+        given(suggestionRepository.findById(1L)).willReturn(Optional.of(suggestion));
+
+        assertThatThrownBy(() -> suggestionService.approve(1L, 100L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 처리된 아티스트 신청입니다.");
+    }
+
     // ── getPendingCount ──────────────────────────────────────────────────
 
     @Test
