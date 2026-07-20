@@ -225,7 +225,9 @@ public class CommentServiceImpl implements CommentService {
                     commentLikeRepository.save(new CommentLike(comment, user));
                     commentRepository.incrementLikeCount(commentId);
                 });
-        int newLikeCount = liked ? comment.getLikeCount() + 1 : Math.max(0, comment.getLikeCount() - 1);
+        // 원자적 UPDATE 이후 값을 다시 읽어야 정확하다 — 토글 직전 로드해둔 comment.getLikeCount()로
+        // 계산하면 동시에 처리된 다른 사용자의 좋아요가 반영되지 않아 응답 값이 실제 DB 값과 어긋날 수 있다.
+        int newLikeCount = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글").getLikeCount();
         return new CommentLikeResult(liked, newLikeCount);
     }
 
