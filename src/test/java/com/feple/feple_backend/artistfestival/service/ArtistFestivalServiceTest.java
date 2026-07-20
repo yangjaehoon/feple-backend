@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -167,7 +168,10 @@ class ArtistFestivalServiceTest {
 
     @Test
     void 아티스트_추가_시작전_페스티벌이면_이벤트_발행() {
-        Festival festival = festival(100L, LocalDate.now().plusDays(1));
+        // 프로덕션 코드(ArtistFestivalService)가 Asia/Seoul 기준으로 "오늘"을 계산하므로
+        // 테스트도 동일 zone으로 맞춰야 CI 러너(UTC)에서 자정~오전9시(KST) 사이 실행 시
+        // 날짜 경계에서 어긋나지 않는다
+        Festival festival = festival(100L, LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(1));
         Artist artist = artist(1L, "아이유");
         given(festivalRepository.findById(100L)).willReturn(Optional.of(festival));
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
@@ -184,7 +188,7 @@ class ArtistFestivalServiceTest {
 
     @Test
     void 아티스트_추가_이미_시작한_페스티벌이면_이벤트_미발행() {
-        Festival festival = festival(100L, LocalDate.now().minusDays(1));
+        Festival festival = festival(100L, LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(1));
         Artist artist = artist(1L, "아이유");
         given(festivalRepository.findById(100L)).willReturn(Optional.of(festival));
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
