@@ -11,10 +11,10 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReposit
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,21 +22,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -45,18 +42,13 @@ class ArtistGalleryPhotoServiceTest {
 
     @Mock ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
     @Mock S3PresignService s3PresignService;
-    @Mock S3Client s3Client;
+    @Mock S3ObjectVerificationService s3ObjectVerificationService;
     @Mock FileStorageService fileStorageService;
     @Mock ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
     @Mock ArtistRepository artistRepository;
     @Mock UserRepository userRepository;
 
     @InjectMocks ArtistGalleryPhotoService service;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(service, "bucket", "test-bucket");
-    }
 
     private Artist artist(Long id) {
         return Artist.builder().id(id).name("아티스트" + id).build();
@@ -71,20 +63,6 @@ class ArtistGalleryPhotoServiceTest {
                 "artist-photos/" + artist.getId() + "/key.jpg", "image/jpeg", "title", "desc", false);
         ReflectionTestUtils.setField(photo, "id", id);
         return photo;
-    }
-
-    private HeadObjectResponse headObjectWith(String contentType) {
-        return HeadObjectResponse.builder().contentType(contentType).build();
-    }
-
-    @SuppressWarnings("unchecked")
-    private void stubHeadObject(HeadObjectResponse response) {
-        given(s3Client.headObject(any(Consumer.class))).willReturn(response);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void stubHeadObjectThrows(RuntimeException e) {
-        given(s3Client.headObject(any(Consumer.class))).willThrow(e);
     }
 
     // ── generateUploadUrl ────────────────────────────────────────────────
@@ -109,7 +87,6 @@ class ArtistGalleryPhotoServiceTest {
         User uploader = user(10L);
         String objectKey = "artist-photos/1/key.jpg";
         RegisterPhotoRequestDto req = new RegisterPhotoRequestDto(objectKey, "image/jpeg", "title", "desc", false);
-        stubHeadObject(headObjectWith("image/jpeg"));
         given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
         given(userRepository.findById(10L)).willReturn(Optional.of(uploader));
         ArtistGalleryPhoto saved = photo(100L, artist, uploader);
@@ -145,7 +122,8 @@ class ArtistGalleryPhotoServiceTest {
     void 등록_S3에_파일_없으면_예외() {
         RegisterPhotoRequestDto req = new RegisterPhotoRequestDto(
                 "artist-photos/1/key.jpg", "image/jpeg", "title", "desc", false);
-        stubHeadObjectThrows(NoSuchKeyException.builder().build());
+        willThrow(new IllegalArgumentException("업로드된 파일을 찾을 수 없습니다."))
+                .given(s3ObjectVerificationService).verifyImageObject(any());
 
         assertThatThrownBy(() -> service.register(1L, req, 10L))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -156,7 +134,8 @@ class ArtistGalleryPhotoServiceTest {
     void 등록_허용되지_않는_컨텐츠타입이면_예외() {
         RegisterPhotoRequestDto req = new RegisterPhotoRequestDto(
                 "artist-photos/1/key.txt", "text/plain", "title", "desc", false);
-        stubHeadObject(headObjectWith("text/plain"));
+        willThrow(new IllegalArgumentException("허용되지 않는 파일 형식입니다. 이미지 파일만 등록할 수 있습니다."))
+                .given(s3ObjectVerificationService).verifyImageObject(any());
 
         assertThatThrownBy(() -> service.register(1L, req, 10L))
                 .isInstanceOf(IllegalArgumentException.class)

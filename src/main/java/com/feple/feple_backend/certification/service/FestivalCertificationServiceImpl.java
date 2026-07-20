@@ -8,6 +8,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -31,11 +32,15 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
     private final S3PresignService s3PresignService;
+    private final S3ObjectVerificationService s3ObjectVerificationService;
 
     @Override
     @Transactional
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
         S3PathConstants.requireWithinPrefix(photoKey, S3PathConstants.certificationPrefix(userId));
+        // presign만 받고 실제 업로드하지 않은 채로 제출하면 영구히 깨진 이미지 레코드가 생성되므로
+        // ArtistGalleryPhotoService.register()와 동일하게 S3 오브젝트 존재 여부를 검증한다
+        s3ObjectVerificationService.verifyImageObject(photoKey);
 
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");

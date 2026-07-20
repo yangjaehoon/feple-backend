@@ -13,19 +13,16 @@ import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import java.util.List;
 import java.util.Set;
@@ -35,20 +32,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ArtistGalleryPhotoService {
 
-    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/gif", "image/webp"
-    );
-
     private final ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
     private final S3PresignService s3PresignService;
-    private final S3Client s3Client;
+    private final S3ObjectVerificationService s3ObjectVerificationService;
     private final FileStorageService fileStorageService;
     private final ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
     private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
-
-    @Value("${app.s3.bucket}")
-    private String bucket;
 
     public S3PresignedUrlResult generateUploadUrl(Long artistId, String extension, String contentType) {
         String objectKey = S3PathConstants.artistPhotoPrefix(artistId) + UUID.randomUUID() + "." + extension;
@@ -64,7 +54,7 @@ public class ArtistGalleryPhotoService {
 
         // presign 단계에서 content-type을 서명에 포함시키지만, 실제 업로드 여부와
         // S3에 저장된 content-type이 허용된 이미지 타입인지 추가로 검증한다.
-        verifyS3ImageObject(objectKey);
+        s3ObjectVerificationService.verifyImageObject(objectKey);
 
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         User uploader = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
@@ -121,20 +111,6 @@ public class ArtistGalleryPhotoService {
         boolean isLiked = currentUserId != null &&
                 artistGalleryPhotoLikeRepository.existsByPhoto_IdAndUser_Id(photoId, currentUserId);
         return ArtistGalleryPhotoResponseDto.from(photo, url, isLiked, currentUserId);
-    }
-
-    private void verifyS3ImageObject(String objectKey) {
-        HeadObjectResponse head;
-        try {
-            head = s3Client.headObject(r -> r.bucket(bucket).key(objectKey));
-        } catch (NoSuchKeyException e) {
-            throw new IllegalArgumentException("업로드된 파일을 찾을 수 없습니다.");
-        }
-        String ct = head.contentType();
-        String baseType = (ct == null) ? "" : ct.split(";")[0].trim();
-        if (!ALLOWED_CONTENT_TYPES.contains(baseType)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. 이미지 파일만 등록할 수 있습니다.");
-        }
     }
 
     /** 회원 탈퇴 시 해당 유저의 갤러리 사진 좋아요 일괄 제거 */

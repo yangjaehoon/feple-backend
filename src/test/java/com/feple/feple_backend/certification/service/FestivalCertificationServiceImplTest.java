@@ -7,6 +7,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
@@ -36,6 +37,7 @@ class FestivalCertificationServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock S3PresignService s3PresignService;
+    @Mock S3ObjectVerificationService s3ObjectVerificationService;
 
     @InjectMocks FestivalCertificationServiceImpl certificationService;
 
