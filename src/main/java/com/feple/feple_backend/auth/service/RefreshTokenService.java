@@ -6,6 +6,7 @@ import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +83,7 @@ public class RefreshTokenService {
 
     /** 매일 새벽 3시에 만료된 토큰 정리 */
     @Scheduled(cron = "0 0 3 * * *")
+    @SchedulerLock(name = "refreshTokenCleanupScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     @Transactional
     public void cleanExpiredTokens() {
         refreshTokenRepository.deleteExpiredTokens(LocalDateTime.now());

@@ -87,7 +87,10 @@ public class FileStorageService {
     }
 
     private String uploadResizedJpeg(MultipartFile file, String key, int maxPx) throws IOException {
-        byte[] resized = imageResizeService.resizeToJpeg(file.getInputStream(), maxPx);
+        byte[] resized;
+        try (InputStream in = file.getInputStream()) {
+            resized = imageResizeService.resizeToJpeg(in, maxPx);
+        }
         try (InputStream is = new ByteArrayInputStream(resized)) {
             s3Template.upload(bucket, key, is);
             return key;
