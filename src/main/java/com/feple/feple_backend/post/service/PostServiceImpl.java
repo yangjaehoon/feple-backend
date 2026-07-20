@@ -201,9 +201,12 @@ public class PostServiceImpl implements PostService {
         PageRequest limit = PageRequest.of(0, fetchSize);
         List<Post> posts = (pageRequest.cursor() == null) ? fetchFirst.apply(limit) : fetchAfterCursor.apply(limit);
         boolean hasNext = posts.size() == fetchSize;
+        List<Post> pageItems = posts.stream().limit(size).toList();
         List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
-                posts.stream().limit(size).map(mapper).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
-        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
+                pageItems.stream().map(mapper).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
+        // nextCursor는 필터링 전 raw 목록(pageItems) 기준으로 계산한다 — 차단된 작성자의 글이
+        // 이번 배치를 전부 채워 content가 비어도(hasNext=true) 다음 배치를 계속 조회할 수 있어야 한다.
+        Long nextCursor = hasNext && !pageItems.isEmpty() ? pageItems.get(pageItems.size() - 1).getId() : null;
         return new CursorPage<>(content, nextCursor, hasNext);
     }
 

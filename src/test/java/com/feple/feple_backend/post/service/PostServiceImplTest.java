@@ -58,7 +58,8 @@ class PostServiceImplTest {
     @Mock BadWordValidator badWordFilter;
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock PopularPostCache popularPostCache;
-    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
+    UserBlockService userBlockService = mock(UserBlockService.class);
+    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(userBlockService);
 
     @InjectMocks PostServiceImpl postService;
 
@@ -285,6 +286,23 @@ class PostServiceImplTest {
 
         assertThat(result.hasNext()).isFalse();
         assertThat(result.nextCursor()).isNull();
+    }
+
+    @Test
+    void 커서_페이징_배치가_전부_차단유저글이면_content는_비어도_nextCursor는_유지() {
+        User blockedAuthor = user(9L);
+        // size=2, fetchSize=3 — 3건 모두 차단된 작성자의 글
+        List<Post> posts = List.of(freePost(3L, blockedAuthor), freePost(2L, blockedAuthor), freePost(1L, blockedAuthor));
+        given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+                .willReturn(posts);
+        given(userBlockService.getBlockedIds(100L)).willReturn(List.of(9L));
+
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, 100L));
+
+        assertThat(result.content()).isEmpty();
+        assertThat(result.hasNext()).isTrue();
+        // content가 비어도 nextCursor는 raw 목록(필터링 전) 기준으로 계산되어야 다음 배치를 계속 조회할 수 있다
+        assertThat(result.nextCursor()).isEqualTo(2L);
     }
 
     // ── getPostsByArtistIdPaged ────────────────────────────────────────
