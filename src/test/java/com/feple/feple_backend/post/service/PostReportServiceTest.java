@@ -132,6 +132,19 @@ class PostReportServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
+    @Test
+    void 이미_처리된_신고_재기각시_예외() {
+        User author = user(2L);
+        PostReport report = PostReport.builder()
+                .id(1L).post(freePost(10L, author)).reporter(user(1L))
+                .reason(ReportReason.SPAM).status(ReportStatus.REJECTED).build();
+        given(reportRepository.findById(1L)).willReturn(Optional.of(report));
+
+        assertThatThrownBy(() -> postReportService.dismissReport(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 처리된 신고입니다.");
+    }
+
     // ── bulkDismiss ──────────────────────────────────────────────────
 
     @Test
