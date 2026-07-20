@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -92,7 +93,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getAllFestivals(FestivalFilterCriteria criteria) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
         List<MusicGenre> genres = criteria.genres();

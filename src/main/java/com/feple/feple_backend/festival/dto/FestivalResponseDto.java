@@ -10,10 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
-import static java.time.LocalDate.now;
 
 @Getter
 @NoArgsConstructor
@@ -38,17 +37,21 @@ public class FestivalResponseDto {
     private Double longitude;
 
     public boolean isEnded() {
-        return endDate != null && endDate.isBefore(now());
+        return endDate != null && endDate.isBefore(today());
     }
 
     public boolean isOngoing() {
-        LocalDate today = now();
+        LocalDate today = today();
         return (endDate == null || !endDate.isBefore(today))
                 && startDate != null && !startDate.isAfter(today);
     }
 
     public boolean isUpcoming() {
-        return startDate != null && startDate.isAfter(now());
+        return startDate != null && startDate.isAfter(today());
+    }
+
+    private static LocalDate today() {
+        return LocalDate.now(ZoneId.of("Asia/Seoul"));
     }
 
     public String getStartDateIso() { return startDate != null ? startDate.toString() : null; }

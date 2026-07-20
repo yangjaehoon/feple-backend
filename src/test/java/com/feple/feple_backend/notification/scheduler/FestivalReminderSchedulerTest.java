@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -41,8 +42,8 @@ class FestivalReminderSchedulerTest {
 
     @Test
     void 참여_아티스트_없으면_알림_미발송() {
-        LocalDate dDay7 = LocalDate.now().plusDays(7);
-        LocalDate dDay1 = LocalDate.now().plusDays(1);
+        LocalDate dDay7 = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(7);
+        LocalDate dDay1 = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(1);
         Festival festival = Festival.builder().id(1L).title("펜타포트").build();
         given(festivalRepository.findByStartDate(dDay7)).willReturn(List.of(festival));
         given(festivalRepository.findByStartDate(dDay1)).willReturn(List.of());
@@ -55,8 +56,8 @@ class FestivalReminderSchedulerTest {
 
     @Test
     void 팔로워_없으면_알림_미발송() {
-        LocalDate dDay7 = LocalDate.now().plusDays(7);
-        LocalDate dDay1 = LocalDate.now().plusDays(1);
+        LocalDate dDay7 = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(7);
+        LocalDate dDay1 = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(1);
         Festival festival = Festival.builder().id(1L).title("펜타포트").build();
         given(festivalRepository.findByStartDate(dDay7)).willReturn(List.of(festival));
         given(festivalRepository.findByStartDate(dDay1)).willReturn(List.of());
@@ -74,8 +75,8 @@ class FestivalReminderSchedulerTest {
 
     @Test
     void 정상_케이스면_D7_D1_각각_알림_발송() {
-        LocalDate dDay7 = LocalDate.now().plusDays(7);
-        LocalDate dDay1 = LocalDate.now().plusDays(1);
+        LocalDate dDay7 = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(7);
+        LocalDate dDay1 = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(1);
         Festival festival = Festival.builder().id(1L).title("펜타포트").titleEn("Pentaport").build();
         given(festivalRepository.findByStartDate(dDay7)).willReturn(List.of(festival));
         given(festivalRepository.findByStartDate(dDay1)).willReturn(List.of(festival));

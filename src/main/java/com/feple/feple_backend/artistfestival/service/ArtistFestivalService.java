@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.feple.feple_backend.global.EntityLoader;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -109,7 +110,7 @@ public class ArtistFestivalService {
         ArtistFestival saved = artistFestivalRepository.save(artistFestival);
 
         // 트랜잭션 커밋 후에만 알림 발송 — 아직 시작 전인 페스티벌에만 발송
-        if (festival.getStartDate() != null && festival.getStartDate().isAfter(java.time.LocalDate.now())) {
+        if (festival.getStartDate() != null && festival.getStartDate().isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
             eventPublisher.publishEvent(new ArtistAddedToFestivalEvent(
                     artist.getId(), artist.getName(), artist.getNameEn(),
                     festival.getId(), festival.getTitle(), festival.getTitleEn()));
