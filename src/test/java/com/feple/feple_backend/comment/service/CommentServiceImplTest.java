@@ -20,6 +20,7 @@ import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -146,7 +147,7 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void 댓글_생성시_게시글_작성자_본인이면_이벤트_미발행() {
+    void 댓글_생성시_게시글_작성자_본인이면_알림대상없이_포인트용_이벤트_발행() {
         User author = user(1L);
         Post post = freePost(10L, author);
 
@@ -163,7 +164,12 @@ class CommentServiceImplTest {
 
         commentService.createComment(dto, 1L);
 
-        verify(eventPublisher, never()).publishEvent(any());
+        // 알림 대상은 없지만(postAuthorId/parentCommentAuthorId null), 포인트 지급을 위해 이벤트는 발행됨
+        ArgumentCaptor<CommentCreatedEvent> captor = ArgumentCaptor.forClass(CommentCreatedEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().postAuthorId()).isNull();
+        assertThat(captor.getValue().parentCommentAuthorId()).isNull();
+        assertThat(captor.getValue().commenterId()).isEqualTo(1L);
     }
 
     @Test
