@@ -11,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -40,6 +43,27 @@ public class GlobalExceptionHandler {
         String field = (first != null) ? first.getField() : null;
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.withField(HttpStatus.BAD_REQUEST, message, ErrorCode.VALIDATION_FAILED, field));
+    }
+
+    // @RequestParam/@PathVariable에 붙은 @Min/@Max/@Size/@NotBlank 등 제약 위반 시 발생
+    // (핸들러를 등록하지 않으면 catch-all Exception 핸들러로 떨어져 500이 반환됨)
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(HandlerMethodValidationException ex) {
+        log.debug("Parameter validation failed: {}", ex.getMessage());
+        return body(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다.", ErrorCode.VALIDATION_FAILED);
+    }
+
+    // 파라미터 타입 불일치 (예: Long 파라미터에 숫자가 아닌 값 전달)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.debug("Parameter type mismatch: {}", ex.getMessage());
+        return body(HttpStatus.BAD_REQUEST, "요청 파라미터 형식이 올바르지 않습니다.", ErrorCode.INVALID_REQUEST);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException ex) {
+        log.debug("Missing required parameter: {}", ex.getMessage());
+        return body(HttpStatus.BAD_REQUEST, "필수 파라미터가 누락되었습니다.", ErrorCode.INVALID_REQUEST);
     }
 
     // BadWordException extends IllegalArgumentException — Spring이 계층 깊이로 구체적인 핸들러를 먼저 선택
