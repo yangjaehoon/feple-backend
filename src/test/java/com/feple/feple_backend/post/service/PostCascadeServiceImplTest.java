@@ -4,6 +4,7 @@ import com.feple.feple_backend.post.repository.PostRepository;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
@@ -34,6 +35,7 @@ class PostCascadeServiceImplTest {
     @Mock PostReportRepository postReportRepository;
     @Mock NotificationQueryService notificationQueryService;
     @Mock CommentService commentService;
+    @Mock FileStorageService fileStorageService;
 
     @InjectMocks PostCascadeDeleteServiceImpl postCascadeService;
 
@@ -57,7 +59,7 @@ class PostCascadeServiceImplTest {
         Artist artist = Artist.builder().id(3L).name("아이유").build();
         Post post = Post.builder()
                 .id(20L).title("t").content("c").user(author).artist(artist)
-                .likeCount(0).scrapCount(0)
+                .likeCount(0).scrapCount(0).imageUrl("posts/a.jpg")
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build();
         given(postRepository.findByArtist(artist)).willReturn(List.of(post));
@@ -70,6 +72,7 @@ class PostCascadeServiceImplTest {
         verify(postScrapRepository).deleteByPostIds(List.of(20L));
         verify(postReportRepository).deleteByPostIds(List.of(20L));
         verify(notificationQueryService).removeAllByPostIds(List.of(20L));
+        verify(fileStorageService).deleteFileAfterCommit("posts/a.jpg");
         verify(postRepository).deleteAllByIdInBatch(List.of(20L));
     }
 
