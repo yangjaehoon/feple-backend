@@ -2,6 +2,7 @@ package com.feple.feple_backend.timetable.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +16,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class TimetableEntryRequestDto {
+    @Size(max = 255, message = "무대명은 255자 이내로 입력해주세요.")
     private String stageName;
+    @Size(max = 255, message = "아티스트명은 255자 이내로 입력해주세요.")
     private String artistName;
     private List<Long> memberArtistIds;
 
@@ -31,5 +34,6 @@ public class TimetableEntryRequestDto {
     @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
     private LocalTime endTime;
 
+    @Size(max = 20, message = "색상 값은 20자 이내로 입력해주세요.")
     private String color;
 }

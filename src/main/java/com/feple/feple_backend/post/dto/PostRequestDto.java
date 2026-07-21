@@ -19,7 +19,7 @@ public class PostRequestDto {
 
     private boolean anonymous;
 
-    @jakarta.validation.constraints.Size(max = 512, message = "이미지 URL이 너무 깁니다.")
+    @jakarta.validation.constraints.Size(max = 255, message = "이미지 URL이 너무 깁니다.")
     private String imageUrl;
 
 }
