@@ -3,6 +3,7 @@ package com.feple.feple_backend.post.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
@@ -26,6 +27,7 @@ public class PostCascadeDeleteServiceImpl implements PostCascadeDeleteService {
     private final PostReportRepository postReportRepository;
     private final NotificationQueryService notificationQueryService;
     private final CommentService commentService;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -59,6 +61,12 @@ public class PostCascadeDeleteServiceImpl implements PostCascadeDeleteService {
         postScrapRepository.deleteByPostIds(postIds);
         postReportRepository.deleteByPostIds(postIds);
         notificationQueryService.removeAllByPostIds(postIds);
+        // deleteAllByIdInBatch는 @SQLDelete(soft delete)를 우회하는 하드 삭제라, row와 함께
+        // image_url 참조도 영구히 사라진다 — 삭제 전에 S3 이미지를 커밋 후 정리해야 고아 객체가 안 남는다.
+        posts.stream()
+                .map(Post::getImageUrl)
+                .filter(url -> url != null && !url.isBlank())
+                .forEach(fileStorageService::deleteFileAfterCommit);
         postRepository.deleteAllByIdInBatch(postIds);
     }
 }
