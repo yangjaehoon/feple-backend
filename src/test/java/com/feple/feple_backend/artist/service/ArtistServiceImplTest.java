@@ -87,6 +87,18 @@ class ArtistServiceImplTest {
         assertThat(captor.getValue().getAliases()).containsExactly("엔진스", "nj");
     }
 
+    @Test
+    void 아티스트_생성시_단일_별칭이_컬럼_길이_초과면_예외() {
+        String tooLongAlias = "a".repeat(201);
+        ArtistRequestDto dto = ArtistRequestDto.builder()
+                .name("뉴진스").aliases(tooLongAlias)
+                .genres(List.of(MusicGenre.IDOL)).build();
+
+        assertThatThrownBy(() -> service.createArtist(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("200");
+    }
+
     // ── getAllArtistsSortedByName / getFollowedArtists / getAllArtists ────
 
     @Test

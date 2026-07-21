@@ -329,11 +329,19 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         return artistRepository.count();
     }
 
+    // artist_aliases.alias 컬럼 길이(VARCHAR(200))와 일치 — 콤마 없는 단일 별명이 DTO 전체 길이
+    // 제한(500자)은 통과하고도 컬럼 길이를 넘어 저장 시 truncation 오류가 나는 것을 막는다
+    private static final int ALIAS_MAX_LENGTH = 200;
+
     private List<String> parseAliases(String raw) {
         if (raw == null || raw.isBlank()) return List.of();
-        return Arrays.stream(raw.split(","))
+        List<String> aliases = Arrays.stream(raw.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
+        aliases.stream().filter(alias -> alias.length() > ALIAS_MAX_LENGTH).findFirst().ifPresent(alias -> {
+            throw new IllegalArgumentException("별명은 각 항목당 " + ALIAS_MAX_LENGTH + "자 이하여야 합니다.");
+        });
+        return aliases;
     }
 }
