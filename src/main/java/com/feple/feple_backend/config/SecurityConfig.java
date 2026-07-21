@@ -109,7 +109,7 @@ public class SecurityConfig {
     // ── 2. API용 FilterChain (JWT Stateless) ──
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtProvider, userRepository, objectMapper);
+        return new JwtAuthenticationFilter(jwtProvider, userRepository);
     }
 
     // Spring Boot가 Filter Bean을 서블릿 체인에 자동 등록하지 않도록 비활성화
@@ -149,8 +149,20 @@ public class SecurityConfig {
             .formLogin(fl -> fl.disable())
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((req, res, e) -> {
-                    ErrorResponse body = ErrorResponse.of(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", ErrorCode.UNAUTHORIZED);
-                    res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    // JwtAuthenticationFilter가 만료/변조/정지 등 구체적인 실패 사유를 request attribute로
+                    // 남겨뒀다면(보호된 엔드포인트라 인증이 필요해진 경우) 그 사유를 그대로 응답한다.
+                    // 토큰 자체가 없었던 경우(비로그인)는 일반적인 로그인 필요 메시지를 사용한다.
+                    Object failureAttr = req.getAttribute(JwtAuthenticationFilter.JWT_FAILURE_ATTRIBUTE);
+                    HttpStatus status = HttpStatus.UNAUTHORIZED;
+                    String message = "로그인이 필요합니다.";
+                    ErrorCode code = ErrorCode.UNAUTHORIZED;
+                    if (failureAttr instanceof JwtAuthenticationFilter.JwtFailure failure) {
+                        status = failure.status();
+                        message = failure.message();
+                        code = failure.code();
+                    }
+                    ErrorResponse body = ErrorResponse.of(status, message, code);
+                    res.setStatus(status.value());
                     res.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
                     res.getWriter().write(objectMapper.writeValueAsString(body));
                 }))
