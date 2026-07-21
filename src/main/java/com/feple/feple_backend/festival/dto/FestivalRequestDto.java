@@ -25,6 +25,7 @@ public class FestivalRequestDto {
     @Size(max = 200, message = "페스티벌 제목은 200자 이하로 입력해주세요.")
     private String title;
 
+    @Size(max = 255, message = "페스티벌 영문 제목은 255자 이하로 입력해주세요.")
     private String titleEn;
 
     @NotBlank(message = "페스티벌 설명은 필수입니다.")

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -14,6 +15,7 @@ import lombok.*;
 @Builder
 public class BoothRequestDto {
     @NotBlank(message = "부스 이름은 필수입니다.")
+    @Size(max = 255, message = "부스 이름은 255자 이하로 입력해주세요.")
     private String name;
     @NotNull(message = "부스 유형은 필수입니다.")
     private BoothType boothType;
@@ -23,6 +25,7 @@ public class BoothRequestDto {
     @DecimalMin(value = "-180.0")
     @DecimalMax(value = "180.0")
     private Double longitude;
+    @Size(max = 255, message = "부스 설명은 255자 이하로 입력해주세요.")
     private String description;
     private String imageKey;
 }
