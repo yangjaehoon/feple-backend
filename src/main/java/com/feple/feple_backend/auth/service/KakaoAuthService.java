@@ -38,15 +38,15 @@ public class KakaoAuthService implements OAuthLoginService {
                 .filter(n -> !n.isBlank())
                 .orElse("KakaoUser");
         String fallback = "Kakao" + oauthId.substring(0, Math.min(oauthId.length(), 4));
-        String nickname = nicknameGenerator.uniquify(nicknameGenerator.sanitize(rawNickname, fallback));
 
         String kakaoImageUrl = Optional.ofNullable(account.getProfile())
                 .map(KakaoUserResponseDto.Profile::getProfile_image_url)
                 .filter(url -> !url.isBlank())
                 .orElse(null);
 
-        return registrationService.registerOrFind(AuthProvider.KAKAO, oauthId, () ->
-                User.builder()
+        return registrationService.registerOrFind(AuthProvider.KAKAO, oauthId,
+                () -> nicknameGenerator.uniquify(nicknameGenerator.sanitize(rawNickname, fallback)),
+                nickname -> User.builder()
                         .oauthId(oauthId)
                         .email(email)
                         .nickname(nickname)

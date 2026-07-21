@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,11 +50,15 @@ class KakaoAuthServiceTest {
         return dto;
     }
 
+    /** nicknameSupplier/userBuilder를 캡처해 실제로 호출해보고, 그 결과로 만들어진 User를 반환한다. */
     @SuppressWarnings("unchecked")
     private User captureBuiltUser() {
-        ArgumentCaptor<Supplier<User>> captor = ArgumentCaptor.forClass(Supplier.class);
-        verify(registrationService).registerOrFind(eq(AuthProvider.KAKAO), any(), captor.capture());
-        return captor.getValue().get();
+        ArgumentCaptor<Supplier<String>> nicknameCaptor = ArgumentCaptor.forClass(Supplier.class);
+        ArgumentCaptor<Function<String, User>> builderCaptor = ArgumentCaptor.forClass(Function.class);
+        verify(registrationService).registerOrFind(
+                eq(AuthProvider.KAKAO), any(), nicknameCaptor.capture(), builderCaptor.capture());
+        String nickname = nicknameCaptor.getValue().get();
+        return builderCaptor.getValue().apply(nickname);
     }
 
     @Test
@@ -63,7 +68,7 @@ class KakaoAuthServiceTest {
         given(nicknameGenerator.sanitize("홍길동", "Kakao123")).willReturn("홍길동");
         given(nicknameGenerator.uniquify("홍길동")).willReturn("홍길동1");
         User expected = User.builder().id(1L).nickname("홍길동1").build();
-        given(registrationService.registerOrFind(eq(AuthProvider.KAKAO), eq("123"), any()))
+        given(registrationService.registerOrFind(eq(AuthProvider.KAKAO), eq("123"), any(), any()))
                 .willReturn(expected);
 
         User result = kakaoAuthService.authenticate("token").block();
@@ -104,10 +109,11 @@ class KakaoAuthServiceTest {
         given(kakaoApiClient.getMe("token")).willReturn(Mono.just(response));
         given(nicknameGenerator.sanitize("KakaoUser", "Kakao456")).willReturn("KakaoUser");
         given(nicknameGenerator.uniquify("KakaoUser")).willReturn("KakaoUser");
-        given(registrationService.registerOrFind(any(), any(), any()))
+        given(registrationService.registerOrFind(any(), any(), any(), any()))
                 .willReturn(User.builder().id(2L).build());
 
         kakaoAuthService.authenticate("token").block();
+        captureBuiltUser(); // nicknameSupplier를 실제로 호출해 지연 평가된 sanitize/uniquify를 트리거
 
         verify(nicknameGenerator).sanitize("KakaoUser", "Kakao456");
     }
@@ -118,7 +124,7 @@ class KakaoAuthServiceTest {
         given(kakaoApiClient.getMe("token")).willReturn(Mono.just(response));
         given(nicknameGenerator.sanitize(any(), any())).willReturn("닉네임");
         given(nicknameGenerator.uniquify(any())).willReturn("닉네임");
-        given(registrationService.registerOrFind(any(), any(), any()))
+        given(registrationService.registerOrFind(any(), any(), any(), any()))
                 .willReturn(User.builder().id(3L).build());
 
         kakaoAuthService.authenticate("token").block();

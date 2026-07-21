@@ -9,10 +9,12 @@ import com.google.firebase.auth.FirebaseToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -47,10 +49,8 @@ class FirebaseAuthServiceTest {
         given(firebaseToken.getUid()).willReturn("uid-123");
         given(firebaseToken.getEmail()).willReturn("a@b.com");
         given(firebaseToken.getName()).willReturn("홍길동");
-        given(nicknameGenerator.sanitize("홍길동", "Useruid-123")).willReturn("홍길동");
-        given(nicknameGenerator.uniquify("홍길동")).willReturn("홍길동");
         User expected = user();
-        given(registrationService.registerOrFind(eq(AuthProvider.FIREBASE), eq("uid-123"), any()))
+        given(registrationService.registerOrFind(eq(AuthProvider.FIREBASE), eq("uid-123"), any(), any()))
                 .willReturn(expected);
 
         User result = firebaseAuthService.authenticate("id-token").block();
@@ -87,6 +87,7 @@ class FirebaseAuthServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void displayName_없으면_fallback_닉네임_사용() throws FirebaseAuthException {
         given(firebaseTokenVerifier.verify("id-token")).willReturn(firebaseToken);
         given(firebaseToken.getClaims()).willReturn(Map.of("email_verified", true));
@@ -95,10 +96,14 @@ class FirebaseAuthServiceTest {
         given(firebaseToken.getName()).willReturn(null);
         given(nicknameGenerator.sanitize("Useruid-4567", "Useruid-4567")).willReturn("Useruid-4567");
         given(nicknameGenerator.uniquify("Useruid-4567")).willReturn("Useruid-4567");
-        given(registrationService.registerOrFind(any(), any(), any())).willReturn(user());
+        given(registrationService.registerOrFind(any(), any(), any(), any())).willReturn(user());
 
         firebaseAuthService.authenticate("id-token").block();
 
+        // 닉네임 생성은 registrationService에 넘긴 Supplier 안으로 지연 평가되므로, 캡처해서 직접 호출해 검증한다
+        ArgumentCaptor<Supplier<String>> nicknameSupplierCaptor = ArgumentCaptor.forClass(Supplier.class);
+        verify(registrationService).registerOrFind(any(), any(), nicknameSupplierCaptor.capture(), any());
+        assertThat(nicknameSupplierCaptor.getValue().get()).isEqualTo("Useruid-4567");
         verify(nicknameGenerator).sanitize("Useruid-4567", "Useruid-4567");
     }
 }
