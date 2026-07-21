@@ -75,6 +75,14 @@ class BadWordFilterTest {
     }
 
     @Test
+    void 특수문자로_글자_사이를_끊어도_검출() {
+        loadWords("욕설");
+
+        assertThatThrownBy(() -> filter.validate("이건 욕.설-이야!"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void 여러_텍스트_중_하나라도_금칙어_포함시_예외() {
         loadWords("욕설");
 
