@@ -6,9 +6,9 @@ import com.feple.feple_backend.admin.service.AdminPendingItemsService;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.post.service.PostAdminService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,7 +27,15 @@ class AdminDashboardAssemblerTest {
     @Mock AdminDashboardMetrics adminMetricsService;
     @Mock AdminPendingItemsService adminPendingItemsService;
 
-    @InjectMocks AdminDashboardAssembler assembler;
+    AdminDashboardAssembler assembler;
+
+    // dashboardExecutor는 호출 스레드에서 즉시 실행되는 동기 Executor로 대체해 테스트를 결정적으로 만든다.
+    @BeforeEach
+    void setUp() {
+        assembler = new AdminDashboardAssembler(
+                festivalService, artistService, postAdminService,
+                adminMetricsService, adminPendingItemsService, Runnable::run);
+    }
 
     @Test
     void assemble_모든_서비스에서_데이터를_수집해_DTO로_반환() {
