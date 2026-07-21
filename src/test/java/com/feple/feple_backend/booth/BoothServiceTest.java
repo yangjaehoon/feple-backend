@@ -92,10 +92,27 @@ class BoothServiceTest {
     void deleteBooth_성공() {
         Booth booth = mock(Booth.class);
         given(booth.getFestivalId()).willReturn(1L);
+        given(booth.getImageKey()).willReturn("booths/img.jpg");
         given(boothRepository.findById(10L)).willReturn(Optional.of(booth));
 
         boothService.deleteBooth(1L, 10L);
 
         then(boothRepository).should().delete(booth);
+        then(fileStorageService).should().deleteFileAfterCommit("booths/img.jpg");
+    }
+
+    @Test
+    void 페스티벌_전체삭제시_부스_이미지도_S3에서_정리() {
+        Booth booth1 = mock(Booth.class);
+        given(booth1.getImageKey()).willReturn("booths/a.jpg");
+        Booth booth2 = mock(Booth.class);
+        given(booth2.getImageKey()).willReturn("booths/b.jpg");
+        given(boothRepository.findByFestivalId(1L)).willReturn(java.util.List.of(booth1, booth2));
+
+        boothService.removeAllByFestival(1L);
+
+        then(fileStorageService).should().deleteFileAfterCommit("booths/a.jpg");
+        then(fileStorageService).should().deleteFileAfterCommit("booths/b.jpg");
+        then(boothRepository).should().deleteByFestivalId(1L);
     }
 }

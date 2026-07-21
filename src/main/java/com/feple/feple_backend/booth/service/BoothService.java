@@ -53,6 +53,7 @@ public class BoothService {
         Booth booth = EntityLoader.getOrThrow(boothRepository::findById, boothId, "부스");
         EntityLoader.requireBelongsToFestival(festivalId, booth.getFestivalId(), "부스가");
         boothRepository.delete(booth);
+        fileStorageService.deleteFileAfterCommit(booth.getImageKey());
     }
 
     public String uploadBoothImage(MultipartFile file) throws IOException {
@@ -61,6 +62,9 @@ public class BoothService {
 
     @Transactional
     public void removeAllByFestival(Long festivalId) {
+        // 벌크 DELETE 쿼리라 삭제될 row의 imageKey를 미리 읽어둬야 S3 정리가 가능하다
+        boothRepository.findByFestivalId(festivalId)
+                .forEach(booth -> fileStorageService.deleteFileAfterCommit(booth.getImageKey()));
         boothRepository.deleteByFestivalId(festivalId);
     }
 }
