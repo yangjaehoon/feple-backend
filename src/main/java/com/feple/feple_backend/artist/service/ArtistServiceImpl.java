@@ -264,6 +264,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Transactional
     @EvictArtistCaches
+    @CacheEvict(value = "artistDetail", allEntries = true)
     public void batchUpdateNameEn(List<NameEnUpdate> updates) {
         List<Long> ids = updates.stream().map(NameEnUpdate::artistId).toList();
         Map<Long, Artist> artistMap = artistRepository.findAllById(ids).stream()
