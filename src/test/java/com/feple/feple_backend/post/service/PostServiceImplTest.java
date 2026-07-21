@@ -14,6 +14,7 @@ import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
@@ -58,6 +59,7 @@ class PostServiceImplTest {
     @Mock BadWordValidator badWordFilter;
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock PopularPostCache popularPostCache;
+    @Mock S3ObjectVerificationService s3ObjectVerificationService;
     UserBlockService userBlockService = mock(UserBlockService.class);
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(userBlockService);
 
@@ -104,6 +106,34 @@ class PostServiceImplTest {
         assertThatThrownBy(() -> postService.createPost(dto, 99L))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessageContaining("99");
+    }
+
+    @Test
+    void 본인_프리픽스_밖의_이미지URL이면_게시글_생성_예외() {
+        User author = user(1L);
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
+                .boardType(BoardType.FREE).imageUrl("posts/2/other-user.jpg").build();
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+
+        assertThatThrownBy(() -> postService.createPost(dto, 1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("잘못된 오브젝트 키입니다.");
+        verify(postRepository, never()).save(any());
+    }
+
+    @Test
+    void 본인_프리픽스_이미지URL이면_S3_존재검증후_게시글_생성() {
+        User author = user(1L);
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
+                .boardType(BoardType.FREE).imageUrl("posts/1/photo.jpg").build();
+        Post saved = freePost(10L, author);
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(postRepository.save(any(Post.class))).willReturn(saved);
+
+        Long id = postService.createPost(dto, 1L);
+
+        assertThat(id).isEqualTo(10L);
+        verify(s3ObjectVerificationService).verifyImageObject("posts/1/photo.jpg");
     }
 
     // ── getPost ──────────────────────────────────────────────────────
@@ -213,6 +243,19 @@ class PostServiceImplTest {
 
         assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 1L))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 게시글_수정시_타인_프리픽스_이미지URL이면_예외() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
+                .boardType(BoardType.FREE).imageUrl("posts/2/other-user.jpg").build();
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+
+        assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("잘못된 오브젝트 키입니다.");
     }
 
     // ── incrementViewCount ───────────────────────────────────────────

@@ -6,6 +6,8 @@ import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.file.S3PathConstants;
+import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.OwnershipValidator;
@@ -47,6 +49,7 @@ public class PostServiceImpl implements PostService {
     private final ApplicationEventPublisher eventPublisher;
     private final PopularPostCache popularPostCache;
     private final BlockedContentFilter blockedContentFilter;
+    private final S3ObjectVerificationService s3ObjectVerificationService;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
 
@@ -97,6 +100,7 @@ public class PostServiceImpl implements PostService {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글", "수정");
         validatePostContent(dto);
+        validateImageUrl(dto.getImageUrl(), requestUserId);
         post.update(dto.getTitle(), dto.getContent(), dto.getImageUrl());
     }
 
@@ -212,6 +216,7 @@ public class PostServiceImpl implements PostService {
 
     private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
         validatePostContent(dto);
+        validateImageUrl(dto.getImageUrl(), user.getId());
         return Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
@@ -231,5 +236,13 @@ public class PostServiceImpl implements PostService {
     private void validatePostContent(PostRequestDto dto) {
         badWordFilter.validateField("title", dto.getTitle());
         badWordFilter.validateField("content", dto.getContent());
+    }
+
+    // 클라이언트가 presign 없이 임의 문자열(타인의 S3 키·외부 URL)을 imageUrl로 제출하는 것을 막는다.
+    // /posts/image-upload-url이 발급한 "posts/{userId}/..." 접두사 범위 내 실제 업로드된 객체만 허용.
+    private void validateImageUrl(String imageUrl, Long userId) {
+        if (imageUrl == null || imageUrl.isBlank()) return;
+        S3PathConstants.requireWithinPrefix(imageUrl, S3PathConstants.postImagePrefix(userId));
+        s3ObjectVerificationService.verifyImageObject(imageUrl);
     }
 }
