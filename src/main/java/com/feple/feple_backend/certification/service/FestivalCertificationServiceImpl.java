@@ -8,6 +8,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityLoader;
@@ -33,6 +34,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     private final FestivalRepository festivalRepository;
     private final S3PresignService s3PresignService;
     private final S3ObjectVerificationService s3ObjectVerificationService;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -138,12 +140,17 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     @Override
     @Transactional
     public void removeAllByUser(Long userId) {
+        // 벌크 DELETE 쿼리라 삭제될 row의 photoKey를 미리 읽어둬야 S3 정리가 가능하다
+        certificationRepository.findByUserId(userId)
+                .forEach(cert -> fileStorageService.deleteFileAfterCommit(cert.getPhotoKey()));
         certificationRepository.deleteByUserId(userId);
     }
 
     @Override
     @Transactional
     public void removeAllByFestival(Long festivalId) {
+        certificationRepository.findByFestivalId(festivalId)
+                .forEach(cert -> fileStorageService.deleteFileAfterCommit(cert.getPhotoKey()));
         certificationRepository.deleteByFestivalId(festivalId);
     }
 }

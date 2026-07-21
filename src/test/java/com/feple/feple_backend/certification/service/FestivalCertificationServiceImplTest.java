@@ -7,6 +7,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -38,6 +39,7 @@ class FestivalCertificationServiceImplTest {
     @Mock FestivalRepository festivalRepository;
     @Mock S3PresignService s3PresignService;
     @Mock S3ObjectVerificationService s3ObjectVerificationService;
+    @Mock FileStorageService fileStorageService;
 
     @InjectMocks FestivalCertificationServiceImpl certificationService;
 
@@ -210,5 +212,31 @@ class FestivalCertificationServiceImplTest {
         given(certificationRepository.existsApprovedCertification(FESTIVAL_ID, USER_ID)).willReturn(true);
 
         assertThat(certificationService.existsApprovedCertification(FESTIVAL_ID, USER_ID)).isTrue();
+    }
+
+    // ── removeAllByUser / removeAllByFestival ────────────────────────────
+
+    @Test
+    void 사용자_탈퇴시_인증사진도_S3에서_정리() {
+        FestivalCertification cert = mock(FestivalCertification.class);
+        given(cert.getPhotoKey()).willReturn(VALID_PHOTO_KEY);
+        given(certificationRepository.findByUserId(USER_ID)).willReturn(List.of(cert));
+
+        certificationService.removeAllByUser(USER_ID);
+
+        then(fileStorageService).should().deleteFileAfterCommit(VALID_PHOTO_KEY);
+        then(certificationRepository).should().deleteByUserId(USER_ID);
+    }
+
+    @Test
+    void 페스티벌_삭제시_인증사진도_S3에서_정리() {
+        FestivalCertification cert = mock(FestivalCertification.class);
+        given(cert.getPhotoKey()).willReturn(VALID_PHOTO_KEY);
+        given(certificationRepository.findByFestivalId(FESTIVAL_ID)).willReturn(List.of(cert));
+
+        certificationService.removeAllByFestival(FESTIVAL_ID);
+
+        then(fileStorageService).should().deleteFileAfterCommit(VALID_PHOTO_KEY);
+        then(certificationRepository).should().deleteByFestivalId(FESTIVAL_ID);
     }
 }

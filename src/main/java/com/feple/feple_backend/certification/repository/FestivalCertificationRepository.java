@@ -92,6 +92,9 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc FROM FestivalCertification fc JOIN FETCH fc.user WHERE fc.festival.id = :festivalId AND fc.status = 'APPROVED' AND fc.rating IS NOT NULL ORDER BY fc.ratedAt DESC NULLS LAST, fc.createdAt DESC")
     Page<FestivalCertification> findReviewsByFestivalId(@Param("festivalId") Long festivalId, Pageable pageable);
 
+    @Query("SELECT fc FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")
+    List<FestivalCertification> findByFestivalId(@Param("festivalId") Long festivalId);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")
