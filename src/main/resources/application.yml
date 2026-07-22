@@ -51,6 +51,10 @@ server:
   servlet:
     session:
       timeout: 2h
+  tomcat:
+    threads:
+      max: 50
+      min-spare: 10
       cookie:
         http-only: true
         secure: true
