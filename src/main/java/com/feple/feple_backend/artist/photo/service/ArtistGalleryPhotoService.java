@@ -7,6 +7,7 @@ import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
@@ -37,6 +38,7 @@ public class ArtistGalleryPhotoService {
     private final S3ObjectVerificationService s3ObjectVerificationService;
     private final FileStorageService fileStorageService;
     private final ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
+    private final ArtistGalleryPhotoReportRepository artistGalleryPhotoReportRepository;
     private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
     private final BlockedContentFilter blockedContentFilter;
@@ -95,6 +97,9 @@ public class ArtistGalleryPhotoService {
             throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
         }
         String s3Key = photo.getS3Key();
+        // FK 의존 순서: 신고 → 좋아요 → 사진 (artist_photo_report.photo_id는 ON DELETE 규칙이
+        // 없어 미리 정리하지 않으면 사진 삭제 시 제약 위반으로 실패한다)
+        artistGalleryPhotoReportRepository.deleteAllByPhotoId(photoId);
         artistGalleryPhotoLikeRepository.deleteByPhotoId(photoId);
         artistGalleryPhotoRepository.delete(photo);
         fileStorageService.deleteFileAfterCommit(s3Key);

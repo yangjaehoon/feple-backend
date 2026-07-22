@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
@@ -25,6 +26,7 @@ class ArtistCascadeDeleteServiceTest {
     @Mock ArtistRepository artistRepository;
     @Mock ArtistGalleryPhotoRepository galleryPhotoRepository;
     @Mock ArtistGalleryPhotoLikeRepository galleryPhotoLikeRepository;
+    @Mock ArtistGalleryPhotoReportRepository galleryPhotoReportRepository;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock ArtistFollowService artistFollowService;
     @Mock SongRepository songRepository;
@@ -48,6 +50,7 @@ class ArtistCascadeDeleteServiceTest {
 
         artistCascadeDeleteService.delete(artist);
 
+        verify(galleryPhotoReportRepository).deleteAllByPhotoArtistId(1L);
         verify(galleryPhotoLikeRepository).deleteByArtistId(1L);
         verify(galleryPhotoRepository).deleteByArtistId(1L);
     }

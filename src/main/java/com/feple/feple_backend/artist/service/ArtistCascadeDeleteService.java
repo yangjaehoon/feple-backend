@@ -3,6 +3,7 @@ package com.feple.feple_backend.artist.service;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
@@ -25,6 +26,7 @@ public class ArtistCascadeDeleteService {
     private final ArtistRepository artistRepository;
     private final ArtistGalleryPhotoRepository galleryPhotoRepository;
     private final ArtistGalleryPhotoLikeRepository galleryPhotoLikeRepository;
+    private final ArtistGalleryPhotoReportRepository galleryPhotoReportRepository;
     private final ArtistFestivalService artistFestivalService;
     private final ArtistFollowService artistFollowService;
     private final SongRepository songRepository;
@@ -37,9 +39,10 @@ public class ArtistCascadeDeleteService {
     public void delete(Artist artist) {
         String profileImageKey = artist.getProfileImageKey();
 
-        // 갤러리 사진 좋아요 → 갤러리 사진 (artist_photos FK 정리)
+        // 갤러리 사진 신고 → 좋아요 → 갤러리 사진 (artist_photos FK 정리)
         List<String> galleryPhotoKeys = galleryPhotoRepository.findByArtist_IdOrderByIdDesc(artist.getId())
                 .stream().map(ArtistGalleryPhoto::getS3Key).toList();
+        galleryPhotoReportRepository.deleteAllByPhotoArtistId(artist.getId());
         galleryPhotoLikeRepository.deleteByArtistId(artist.getId());
         galleryPhotoRepository.deleteByArtistId(artist.getId());
 

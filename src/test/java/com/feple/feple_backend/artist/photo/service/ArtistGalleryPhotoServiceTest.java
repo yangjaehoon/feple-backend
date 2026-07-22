@@ -7,6 +7,7 @@ import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoLike;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
@@ -49,6 +50,7 @@ class ArtistGalleryPhotoServiceTest {
     @Mock S3ObjectVerificationService s3ObjectVerificationService;
     @Mock FileStorageService fileStorageService;
     @Mock ArtistGalleryPhotoLikeRepository artistGalleryPhotoLikeRepository;
+    @Mock ArtistGalleryPhotoReportRepository artistGalleryPhotoReportRepository;
     @Mock ArtistRepository artistRepository;
     @Mock UserRepository userRepository;
     UserBlockService userBlockService = mock(UserBlockService.class);
@@ -213,6 +215,7 @@ class ArtistGalleryPhotoServiceTest {
 
         service.delete(5L, 10L);
 
+        verify(artistGalleryPhotoReportRepository).deleteAllByPhotoId(5L);
         verify(artistGalleryPhotoLikeRepository).deleteByPhotoId(5L);
         verify(artistGalleryPhotoRepository).delete(p);
         verify(fileStorageService).deleteFileAfterCommit(p.getS3Key());
