@@ -28,4 +28,9 @@ public interface CertificationReviewLikeRepository extends JpaRepository<Certifi
     @Transactional
     @Query("DELETE FROM CertificationReviewLike rl WHERE rl.certificationId IN (SELECT fc.id FROM FestivalCertification fc WHERE fc.user.id = :userId)")
     void deleteByCertificationUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM CertificationReviewLike rl WHERE rl.certificationId IN (SELECT fc.id FROM FestivalCertification fc WHERE fc.festival.id = :festivalId)")
+    void deleteByCertificationFestivalId(@Param("festivalId") Long festivalId);
 }

@@ -3,6 +3,7 @@ package com.feple.feple_backend.certification.service;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
+import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -35,6 +36,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     private final S3PresignService s3PresignService;
     private final S3ObjectVerificationService s3ObjectVerificationService;
     private final FileStorageService fileStorageService;
+    private final CertificationReviewLikeRepository reviewLikeRepository;
 
     @Override
     @Transactional
@@ -151,6 +153,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     public void removeAllByFestival(Long festivalId) {
         certificationRepository.findByFestivalId(festivalId)
                 .forEach(cert -> fileStorageService.deleteFileAfterCommit(cert.getPhotoKey()));
+        reviewLikeRepository.deleteByCertificationFestivalId(festivalId);
         certificationRepository.deleteByFestivalId(festivalId);
     }
 }

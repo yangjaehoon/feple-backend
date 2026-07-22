@@ -3,6 +3,7 @@ package com.feple.feple_backend.certification.service;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
+import com.feple.feple_backend.certification.repository.CertificationReviewLikeRepository;
 import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
@@ -40,6 +41,7 @@ class FestivalCertificationServiceImplTest {
     @Mock S3PresignService s3PresignService;
     @Mock S3ObjectVerificationService s3ObjectVerificationService;
     @Mock FileStorageService fileStorageService;
+    @Mock CertificationReviewLikeRepository reviewLikeRepository;
 
     @InjectMocks FestivalCertificationServiceImpl certificationService;
 
@@ -237,6 +239,7 @@ class FestivalCertificationServiceImplTest {
         certificationService.removeAllByFestival(FESTIVAL_ID);
 
         then(fileStorageService).should().deleteFileAfterCommit(VALID_PHOTO_KEY);
+        then(reviewLikeRepository).should().deleteByCertificationFestivalId(FESTIVAL_ID);
         then(certificationRepository).should().deleteByFestivalId(FESTIVAL_ID);
     }
 }
