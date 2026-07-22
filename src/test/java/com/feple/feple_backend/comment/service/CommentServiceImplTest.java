@@ -198,6 +198,30 @@ class CommentServiceImplTest {
     }
 
     @Test
+    void 다른_게시글의_댓글을_부모로_지정하면_예외() {
+        User postAuthor = user(1L);
+        User otherAuthor = user(3L);
+        User commenter = user(2L);
+        Post post = freePost(10L, postAuthor);
+        Post otherPost = freePost(20L, otherAuthor);
+        Comment parentOnOtherPost = comment(50L, otherPost, otherAuthor);
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("대댓글내용");
+        given(dto.getParentId()).willReturn(50L);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
+        given(commentRepository.findById(50L)).willReturn(Optional.of(parentOnOtherPost));
+
+        assertThatThrownBy(() -> commentService.createComment(dto, 2L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("해당 게시글에 속하지 않습니다");
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
     void 존재하지_않는_게시글에_댓글_생성시_예외() {
         CreateCommentDto dto = mock(CreateCommentDto.class);
         given(dto.getPostId()).willReturn(99L);

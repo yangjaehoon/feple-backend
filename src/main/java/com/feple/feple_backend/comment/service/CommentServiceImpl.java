@@ -65,6 +65,9 @@ public class CommentServiceImpl implements CommentService {
         Comment parent = null;
         if (dto.getParentId() != null) {
             parent = EntityLoader.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
+            if (!parent.getPostId().equals(post.getId())) {
+                throw new IllegalArgumentException("부모 댓글이 해당 게시글에 속하지 않습니다.");
+            }
         }
         Comment saved = saveComment(dto, post, user, parent);
 
