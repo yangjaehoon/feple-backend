@@ -37,10 +37,14 @@ public class Artist {
     @Builder.Default
     private List<String> aliases = new ArrayList<>();
 
+    // 페스티벌 라인업처럼 여러 Artist를 순회하며 genres에 접근하는 화면에서 N+1을 막기 위해
+    // 배치로 묶어 조회한다 (findByFestivalIdOrderByLineupOrderAsc가 artist는 JOIN FETCH하지만
+    // genres는 List 타입 @ElementCollection이라 같은 쿼리에 함께 fetch join하면 중복 행이 생긴다)
     @ElementCollection(targetClass = MusicGenre.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "artist_genres", joinColumns = @JoinColumn(name = "artist_id"))
     @Column(name = "genres", length = 20)
     @Enumerated(EnumType.STRING)
+    @org.hibernate.annotations.BatchSize(size = 100)
     @Builder.Default
     private List<MusicGenre> genres = new ArrayList<>();
 
