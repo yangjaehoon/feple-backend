@@ -48,19 +48,26 @@ public class YoutubeSearchService {
             return Collections.emptyList();
         }
 
-        // 1) 아티스트명으로 YouTube Music Topic 채널 탐색
-        String topicChannelId = findTopicChannelId(artistName);
-        if (topicChannelId != null) {
-            log.debug("[YT] Topic channel found: {}", topicChannelId);
-            List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
-            log.debug("[YT] Channel videos count: {}", channelVideos.size());
-            return filterByQuery(channelVideos, query);
-        }
+        try {
+            // 1) 아티스트명으로 YouTube Music Topic 채널 탐색
+            String topicChannelId = findTopicChannelId(artistName);
+            if (topicChannelId != null) {
+                log.debug("[YT] Topic channel found: {}", topicChannelId);
+                List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
+                log.debug("[YT] Channel videos count: {}", channelVideos.size());
+                return filterByQuery(channelVideos, query);
+            }
 
-        // 2) Topic 채널 없음 → 곡명만으로 검색 (아티스트명 붙이면 API 품질 저하)
-        String keywordQuery = (query != null && !query.isBlank()) ? query : artistName;
-        log.debug("[YT] No Topic channel — keyword fallback: '{}'", keywordQuery);
-        return searchByKeyword(artistName, keywordQuery);
+            // 2) Topic 채널 없음 → 곡명만으로 검색 (아티스트명 붙이면 API 품질 저하)
+            String keywordQuery = (query != null && !query.isBlank()) ? query : artistName;
+            log.debug("[YT] No Topic channel — keyword fallback: '{}'", keywordQuery);
+            return searchByKeyword(artistName, keywordQuery);
+        } catch (Exception e) {
+            // 요청 URI에 API 키가 쿼리파라미터로 포함돼 있어 e.getMessage()/스택트레이스 그대로 로깅하면
+            // 키가 로그에 노출된다 — 예외 종류만 남긴다
+            log.warn("[YT] search 실패 - artistName='{}', query='{}', 원인={}", artistName, query, e.getClass().getSimpleName());
+            return Collections.emptyList();
+        }
     }
 
     // query가 없으면 채널 영상 전체 반환, 있으면 제목에 포함되는 것만 — 필터링 결과가 없으면 전체로 폴백
@@ -198,7 +205,8 @@ public class YoutubeSearchService {
                     .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
                     .build());
         } catch (Exception e) {
-            log.warn("[YT] fetchVideo failed for '{}': {}", videoUrlOrId, e.getMessage());
+            // API 키가 담긴 요청 URI가 예외 메시지에 포함될 수 있어 e.getMessage()는 로깅하지 않는다
+            log.warn("[YT] fetchVideo 실패 - videoUrlOrId='{}', 원인={}", videoUrlOrId, e.getClass().getSimpleName());
             return Optional.empty();
         }
     }

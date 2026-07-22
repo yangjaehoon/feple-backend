@@ -120,6 +120,17 @@ class YoutubeSearchServiceTest {
         assertThat(result).extracting(YoutubeVideoDto::getVideoId).containsExactly("v1");
     }
 
+    @Test
+    void search_요청_실패시_예외삼키고_빈목록_반환() {
+        ClientHttpRequestInterceptor interceptor = (request, body, execution) -> {
+            throw new IOException("network error");
+        };
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(interceptor));
+        ReflectionTestUtils.setField(service, "apiKey", "key");
+
+        assertThat(service.search("아티스트", "곡명")).isEmpty();
+    }
+
     // ── fetchVideoByUrl ──────────────────────────────────────────────────
 
     @Test
