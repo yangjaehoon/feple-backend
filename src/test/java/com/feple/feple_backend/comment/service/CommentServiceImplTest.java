@@ -320,7 +320,7 @@ class CommentServiceImplTest {
 
         assertThat(result.liked()).isTrue();
         assertThat(result.likeCount()).isEqualTo(1);
-        verify(commentLikeRepository).save(any());
+        verify(commentLikeRepository).saveAndFlush(any());
         verify(commentRepository).incrementLikeCount(100L);
     }
 

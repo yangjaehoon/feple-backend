@@ -77,7 +77,7 @@ class PostLikeServiceTest {
 
         assertThat(result).isFalse();
         verify(postRepository).decrementLikeCount(10L);
-        verify(postLikeRepository, never()).save(any(PostLike.class));
+        verify(postLikeRepository, never()).saveAndFlush(any(PostLike.class));
     }
 
     @Test
@@ -91,8 +91,24 @@ class PostLikeServiceTest {
         boolean result = postLikeService.toggleLike(10L, 1L);
 
         assertThat(result).isTrue();
-        verify(postLikeRepository).save(any(PostLike.class));
+        verify(postLikeRepository).saveAndFlush(any(PostLike.class));
         verify(postRepository).incrementLikeCount(10L);
+    }
+
+    @Test
+    void 동시요청_경합으로_unique_제약_위반이어도_예외없이_true_반환() {
+        User user = user(1L);
+        Post post = freePost(10L, user);
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(postLikeRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
+        given(postLikeRepository.saveAndFlush(any(PostLike.class)))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("unique violation"));
+
+        boolean result = postLikeService.toggleLike(10L, 1L);
+
+        assertThat(result).isTrue();
+        verify(postRepository, never()).incrementLikeCount(10L);
     }
 
     @Test

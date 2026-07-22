@@ -108,7 +108,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
                 () -> reviewLikeRepository.deleteByUserIdAndCertificationId(userId, certId),
                 () -> certificationRepository.decrementLikeCount(certId),
                 () -> {
-                    reviewLikeRepository.save(CertificationReviewLike.of(userId, certId));
+                    reviewLikeRepository.saveAndFlush(CertificationReviewLike.of(userId, certId));
                     certificationRepository.incrementLikeCount(certId);
                 });
     }

@@ -38,7 +38,7 @@ public class PostLikeService {
                 () -> postLikeRepository.deleteByUserIdAndPostId(userId, postId),
                 () -> postRepository.decrementLikeCount(postId),
                 () -> {
-                    postLikeRepository.save(new PostLike(user, post));
+                    postLikeRepository.saveAndFlush(new PostLike(user, post));
                     postRepository.incrementLikeCount(postId);
                     if (!post.getUserId().equals(userId)) {
                         eventPublisher.publishEvent(new PostLikedEvent(post.getUserId(), user.getNickname(), post.getTitle(), postId, userId));

@@ -222,7 +222,7 @@ public class CommentServiceImpl implements CommentService {
                 () -> commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId),
                 () -> commentRepository.decrementLikeCount(commentId),
                 () -> {
-                    commentLikeRepository.save(new CommentLike(comment, user));
+                    commentLikeRepository.saveAndFlush(new CommentLike(comment, user));
                     commentRepository.incrementLikeCount(commentId);
                 });
         // 원자적 UPDATE 이후 값을 다시 읽어야 정확하다 — 토글 직전 로드해둔 comment.getLikeCount()로

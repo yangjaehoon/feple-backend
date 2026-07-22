@@ -35,7 +35,7 @@ public class FestivalLikeService {
                 () -> festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId),
                 () -> festivalRepository.decrementLikeCount(festivalId),
                 () -> {
-                    festivalLikeRepository.save(FestivalLike.of(user, festival));
+                    festivalLikeRepository.saveAndFlush(FestivalLike.of(user, festival));
                     festivalRepository.incrementLikeCount(festivalId);
                 });
     }

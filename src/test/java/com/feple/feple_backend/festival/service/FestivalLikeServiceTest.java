@@ -71,7 +71,7 @@ class FestivalLikeServiceTest {
 
         assertThat(result).isFalse();
         verify(festivalRepository).decrementLikeCount(5L);
-        verify(festivalLikeRepository, never()).save(any(FestivalLike.class));
+        verify(festivalLikeRepository, never()).saveAndFlush(any(FestivalLike.class));
     }
 
     @Test
@@ -85,7 +85,7 @@ class FestivalLikeServiceTest {
         boolean result = festivalLikeService.toggleLike(5L, 1L);
 
         assertThat(result).isTrue();
-        verify(festivalLikeRepository).save(any(FestivalLike.class));
+        verify(festivalLikeRepository).saveAndFlush(any(FestivalLike.class));
         verify(festivalRepository).incrementLikeCount(5L);
     }
 

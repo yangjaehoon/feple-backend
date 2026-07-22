@@ -20,7 +20,6 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,12 +134,8 @@ public class ArtistGalleryPhotoService {
                 () -> artistGalleryPhotoLikeRepository.deleteByPhotoIdAndUserId(photoId, userId),
                 () -> artistGalleryPhotoRepository.decrementLikeCount(photoId),
                 () -> {
-                    try {
-                        artistGalleryPhotoLikeRepository.saveAndFlush(new ArtistGalleryPhotoLike(photo, user));
-                        artistGalleryPhotoRepository.incrementLikeCount(photoId);
-                    } catch (DataIntegrityViolationException ignored) {
-                        // unique(artist_photo_id, user_id): 동시 요청으로 이미 저장됨 — 카운트 증가 생략
-                    }
+                    artistGalleryPhotoLikeRepository.saveAndFlush(new ArtistGalleryPhotoLike(photo, user));
+                    artistGalleryPhotoRepository.incrementLikeCount(photoId);
                 });
     }
 }
