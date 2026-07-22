@@ -78,7 +78,7 @@ class PostScrapServiceTest {
         assertThat(result).isFalse();
         verify(postRepository).decrementScrapCount(10L);
         verify(postScrapRepository).deleteByUserIdAndPostId(1L, 10L);
-        verify(postScrapRepository, never()).save(any(PostScrap.class));
+        verify(postScrapRepository, never()).saveAndFlush(any(PostScrap.class));
     }
 
     @Test
@@ -92,8 +92,24 @@ class PostScrapServiceTest {
         boolean result = postScrapService.toggleScrap(10L, 1L);
 
         assertThat(result).isTrue();
-        verify(postScrapRepository).save(any(PostScrap.class));
+        verify(postScrapRepository).saveAndFlush(any(PostScrap.class));
         verify(postRepository).incrementScrapCount(10L);
+    }
+
+    @Test
+    void 동시요청_경합으로_unique_제약_위반이어도_예외없이_true_반환() {
+        User user = user(1L);
+        Post post = freePost(10L, user);
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(postScrapRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
+        given(postScrapRepository.saveAndFlush(any(PostScrap.class)))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("unique violation"));
+
+        boolean result = postScrapService.toggleScrap(10L, 1L);
+
+        assertThat(result).isTrue();
+        verify(postRepository, never()).incrementScrapCount(10L);
     }
 
     @Test

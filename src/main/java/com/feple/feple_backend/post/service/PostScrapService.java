@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.Post;
@@ -37,14 +38,13 @@ public class PostScrapService {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        int deleted = postScrapRepository.deleteByUserIdAndPostId(userId, postId);
-        if (deleted > 0) {
-            postRepository.decrementScrapCount(postId);
-            return false;
-        }
-        postScrapRepository.save(new PostScrap(user, post));
-        postRepository.incrementScrapCount(postId);
-        return true;
+        return LikeToggler.toggle(
+                () -> postScrapRepository.deleteByUserIdAndPostId(userId, postId),
+                () -> postRepository.decrementScrapCount(postId),
+                () -> {
+                    postScrapRepository.saveAndFlush(new PostScrap(user, post));
+                    postRepository.incrementScrapCount(postId);
+                });
     }
 
     public long countMyScraps(Long userId) {

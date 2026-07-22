@@ -5,6 +5,7 @@ import com.feple.feple_backend.festival.entity.FestivalAttendance;
 import com.feple.feple_backend.festival.repository.FestivalAttendanceRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +30,13 @@ public class FestivalAttendanceService {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        int deleted = attendanceRepository.deleteByUserIdAndFestivalId(userId, festivalId);
-        if (deleted > 0) {
-            festivalRepository.decrementAttendingCount(festivalId);
-            return false;
-        }
-        attendanceRepository.save(FestivalAttendance.of(user, festival));
-        festivalRepository.incrementAttendingCount(festivalId);
-        return true;
+        return LikeToggler.toggle(
+                () -> attendanceRepository.deleteByUserIdAndFestivalId(userId, festivalId),
+                () -> festivalRepository.decrementAttendingCount(festivalId),
+                () -> {
+                    attendanceRepository.saveAndFlush(FestivalAttendance.of(user, festival));
+                    festivalRepository.incrementAttendingCount(festivalId);
+                });
     }
 
     /** 회원 탈퇴 시 해당 유저의 페스티벌 참석 데이터 일괄 제거 */
