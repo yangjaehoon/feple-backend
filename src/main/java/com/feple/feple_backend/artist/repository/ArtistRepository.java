@@ -27,17 +27,7 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
            nativeQuery = true)
     Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
 
-    // FULLTEXT 검색: artist.name/name_en + artist_aliases.alias 각각 인덱스 사용
-    @Query(value = "SELECT DISTINCT a.* FROM artist a " +
-                   "LEFT JOIN artist_aliases aa ON aa.artist_id = a.id " +
-                   "WHERE MATCH(a.name, a.name_en) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE) " +
-                   "   OR MATCH(aa.alias) AGAINST (CONCAT('\"', REPLACE(:keyword, '\"', ''), '\"') IN BOOLEAN MODE) " +
-                   "ORDER BY a.name ASC " +
-                   "LIMIT :limit",
-           nativeQuery = true)
-    java.util.List<Artist> searchArtistsByNameFullText(@Param("keyword") String keyword, @Param("limit") int limit);
-
-    // LIKE fallback (관리자 목록 검색·OCR 자동매칭 — 정확한 부분일치 필요)
+    // 아티스트 이름/영문명/별명 검색 (일반 검색 + 관리자 목록 검색 + OCR 자동매칭)
     @Query("SELECT DISTINCT a FROM Artist a LEFT JOIN a.aliases alias " +
            "WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
            "OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +

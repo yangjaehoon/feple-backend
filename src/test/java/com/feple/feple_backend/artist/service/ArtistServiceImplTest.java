@@ -32,7 +32,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -125,25 +124,13 @@ class ArtistServiceImplTest {
     // ── searchArtists ────────────────────────────────────────────────────
 
     @Test
-    void 검색어가_3자_미만이면_LIKE_폴백_사용() {
+    void 검색은_항상_LIKE_기반_검색_사용() {
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase("iu"))
                 .willReturn(List.of(artist(1L, "아이유")));
 
         List<ArtistResponseDto> result = service.searchArtists("iu");
 
         assertThat(result).hasSize(1);
-        verify(artistRepository, never()).searchArtistsByNameFullText(any(), anyInt());
-    }
-
-    @Test
-    void 검색어가_3자_이상이면_풀텍스트_검색_사용() {
-        given(artistRepository.searchArtistsByNameFullText(eq("뉴진스"), anyInt()))
-                .willReturn(List.of(artist(1L, "뉴진스")));
-
-        List<ArtistResponseDto> result = service.searchArtists("뉴진스");
-
-        assertThat(result).hasSize(1);
-        verify(artistRepository, never()).findByNameOrNameEnContainingIgnoreCase(any());
     }
 
     // ── getAdminArtistList ───────────────────────────────────────────────

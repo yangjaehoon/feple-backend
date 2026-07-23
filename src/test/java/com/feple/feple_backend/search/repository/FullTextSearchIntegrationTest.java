@@ -1,7 +1,5 @@
 package com.feple.feple_backend.search.repository;
 
-import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
@@ -36,13 +34,15 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// PostRepository.searchTitleIds / ArtistRepository.searchArtistsByNameFullText /
-// FestivalRepository.findByTitleKeyword는 MySQL 전용 MATCH...AGAINST(FULLTEXT ngram,
-// V33 마이그레이션) native query라 H2로는 실행조차 안 된다. 지금까지 이 3개 쿼리는
-// 리포지토리를 Mockito로 mock하거나 아예 테스트 대상에서 빠져 있어 실제 실행 여부가
-// 한 번도 검증된 적이 없었음. InnoDB FULLTEXT 인덱스는 커밋된 행만 검색에 반영되므로
-// (같은 트랜잭션 내 미커밋 INSERT는 안 보일 수 있음) 여기서는 @Transactional 롤백 대신
-// 실제 커밋 후 @AfterEach에서 직접 정리한다.
+// PostRepository.searchTitleIds / FestivalRepository.findByTitleKeyword는 MySQL 전용
+// MATCH...AGAINST(FULLTEXT ngram, V33 마이그레이션) native query라 H2로는 실행조차 안 된다.
+// 지금까지 이 쿼리들은 리포지토리를 Mockito로 mock하거나 아예 테스트 대상에서 빠져 있어
+// 실제 실행 여부가 한 번도 검증된 적이 없었음. InnoDB FULLTEXT 인덱스는 커밋된 행만
+// 검색에 반영되므로(같은 트랜잭션 내 미커밋 INSERT는 안 보일 수 있음) 여기서는
+// @Transactional 롤백 대신 실제 커밋 후 @AfterEach에서 직접 정리한다.
+// 아티스트 검색은 innodb_ft_min_token_size/ngram_token_size 설정 불일치로 영문 부분
+// 문자열을 비결정적으로 못 찾는 회귀가 있어 LIKE 기반으로 되돌렸다 — 더 이상 FULLTEXT를
+// 쓰지 않으므로 이 테스트 대상에서 제외.
 @SpringBootTest
 @ActiveProfiles("test")
 @Testcontainers
@@ -60,7 +60,6 @@ class FullTextSearchIntegrationTest {
     }
 
     @Autowired PostRepository postRepository;
-    @Autowired ArtistRepository artistRepository;
     @Autowired FestivalRepository festivalRepository;
     @Autowired UserRepository userRepository;
     @PersistenceContext EntityManager em;
@@ -71,7 +70,6 @@ class FullTextSearchIntegrationTest {
 
     private User user;
     private Post post;
-    private Artist artist;
     private Festival festival;
 
     @BeforeEach
@@ -87,13 +85,6 @@ class FullTextSearchIntegrationTest {
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build());
 
-        // "IU"처럼 3자 미만 영문 단어는 innodb_ft_min_token_size(기본값 3)에 걸려
-        // FULLTEXT 인덱스 자체에서 제외되므로(별도 확인된 제품 이슈), 여기서는 쿼리
-        // 메커니즘 자체 검증을 위해 3자 이상인 이름을 사용한다.
-        artist = artistRepository.save(Artist.builder()
-                .name("아이유" + unique).nameEn("Aiyu " + unique)
-                .build());
-
         festival = festivalRepository.save(Festival.builder()
                 .title("여름밤페스티벌" + unique)
                 .build());
@@ -107,7 +98,6 @@ class FullTextSearchIntegrationTest {
             new TransactionTemplate(txManager).executeWithoutResult(status ->
                     em.createNativeQuery("DELETE FROM post WHERE id = ?1").setParameter(1, post.getId()).executeUpdate());
         }
-        if (artist != null) artistRepository.deleteById(artist.getId());
         if (festival != null) festivalRepository.deleteById(festival.getId());
         if (user != null) userRepository.deleteById(user.getId());
     }
@@ -124,20 +114,6 @@ class FullTextSearchIntegrationTest {
         var result = postRepository.searchTitleIdsByBoardType("FREE", "여름밤페스티벌", PageRequest.of(0, 10));
 
         assertThat(result.getContent()).contains(post.getId());
-    }
-
-    @Test
-    void 아티스트_이름_풀텍스트_검색() {
-        List<Artist> result = artistRepository.searchArtistsByNameFullText("아이유", 10);
-
-        assertThat(result).extracting(Artist::getId).contains(artist.getId());
-    }
-
-    @Test
-    void 아티스트_영문명_풀텍스트_검색() {
-        List<Artist> result = artistRepository.searchArtistsByNameFullText("Aiyu", 10);
-
-        assertThat(result).extracting(Artist::getId).contains(artist.getId());
     }
 
     @Test

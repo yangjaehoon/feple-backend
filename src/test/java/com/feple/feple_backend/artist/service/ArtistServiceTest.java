@@ -9,7 +9,6 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.global.PageSize;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -192,7 +191,6 @@ class ArtistServiceTest {
 
     @Test
     void 키워드_검색_결과_반환() {
-        // "아이"는 2자 — innodb_ft_min_token_size(3) 미만이라 LIKE 폴백 경로를 탄다.
         Artist artist = Artist.builder().id(1L).name("아이유").nameEn("IU").profileImageKey("iu.jpg").build();
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase("아이"))
                 .willReturn(List.of(artist));
@@ -206,7 +204,6 @@ class ArtistServiceTest {
 
     @Test
     void 영어_이름으로_검색_결과_반환() {
-        // "IU"는 2자 — innodb_ft_min_token_size(3) 미만이라 LIKE 폴백 경로를 탄다.
         Artist artist = Artist.builder().id(1L).name("아이유").nameEn("IU").profileImageKey("iu.jpg").build();
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase("IU"))
                 .willReturn(List.of(artist));
@@ -219,21 +216,8 @@ class ArtistServiceTest {
     }
 
     @Test
-    void 세글자_이상_키워드는_풀텍스트_검색_경로_사용() {
-        Artist artist = Artist.builder().id(1L).name("아이유").nameEn("IU").profileImageKey("iu.jpg").build();
-        given(artistRepository.searchArtistsByNameFullText("아이유", PageSize.SEARCH))
-                .willReturn(List.of(artist));
-        given(fileStorageService.buildUrl("iu.jpg")).willReturn("https://cdn/iu.jpg");
-
-        List<ArtistResponseDto> result = artistService.searchArtists("아이유");
-
-        assertThat(result).hasSize(1);
-        verify(artistRepository, never()).findByNameOrNameEnContainingIgnoreCase(any());
-    }
-
-    @Test
     void 키워드_검색_결과_없으면_빈_리스트() {
-        given(artistRepository.searchArtistsByNameFullText("없는가수", PageSize.SEARCH))
+        given(artistRepository.findByNameOrNameEnContainingIgnoreCase("없는가수"))
                 .willReturn(List.of());
 
         List<ArtistResponseDto> result = artistService.searchArtists("없는가수");

@@ -16,7 +16,6 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.EntityLoader;
-import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.PageSize;
 import lombok.RequiredArgsConstructor;
 import com.feple.feple_backend.global.cache.EvictArtistCaches;
@@ -117,13 +116,14 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 .toList();
     }
 
+    // 아티스트 테이블이 수백 행 규모라 LIKE 풀스캔으로도 충분히 빠름 — FULLTEXT(ngram)로
+    // 전환했다가 innodb_ft_min_token_size(3)/ngram_token_size(2) 설정 불일치로 실제
+    // 존재하는 영문 부분 문자열도 비결정적으로 못 찾는 회귀가 발생해 되돌림.
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
         String trimmed = keyword.trim();
-        List<Artist> artists = FullTextSearchValidator.isTooShortForFullText(trimmed)
-                ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(trimmed))
-                : artistRepository.searchArtistsByNameFullText(trimmed, PageSize.SEARCH);
+        List<Artist> artists = artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(trimmed));
         return artists.stream()
                 .map(this::toDto)
                 .toList();
