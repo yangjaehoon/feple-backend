@@ -20,6 +20,12 @@ public class ArtistResponseDto {
     private int followerCount;
     private int songCount;
 
+    public String getAliasesDisplay() {
+        return (aliases != null && !aliases.isEmpty())
+                ? String.join(", ", aliases)
+                : null;
+    }
+
     public static ArtistResponseDto from(Artist artist) {
         return from(artist, artist.getProfileImageKey(), 0);
     }
