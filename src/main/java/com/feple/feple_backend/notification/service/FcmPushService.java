@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,12 +21,18 @@ public class FcmPushService implements PushNotificationClient {
 
     private static final int BATCH_SIZE = 500; // FCM multicast 최대 500개
 
+    // 트랜잭션 커밋 직후(afterCommit) 콜백에서 호출되는 경우가 있어 @Async로 새 스레드에서 실행한다.
+    // afterCommit 콜백은 원본 트랜잭션의 리소스가 아직 완전히 언바인드되지 않은 상태라,
+    // 그 스레드에서 곧바로 deleteStaleTokens()의 새 @Transactional을 열면 Hibernate가
+    // 남아있는 트랜잭션 동기화 상태를 오인해 "Executing an update/delete query" 오류를 낸다.
     @Override
+    @Async
     public void sendBroadcast(List<String> tokens, String title, String body) {
         sendMulticastInternal(tokens, title, body, null, NotificationType.ADMIN_BROADCAST.name());
     }
 
     @Override
+    @Async
     public void sendMulticast(List<String> tokens, PushMessage message) {
         sendMulticastInternal(tokens, message.title(), message.body(), message.resourceId(), message.type().name());
     }
