@@ -40,7 +40,7 @@
                         <div class="form-group">
                             <label>카테고리 <span class="required-star">*</span></label>
                             <div class="genre-check-group">
-                                <label th:each="g : ${T(com.feple.feple_backend.artist.entity.ArtistGenre).values()}"
+                                <label th:each="g : ${allGenres}"
                                        class="genre-check-label">
                                     <input type="checkbox" th:field="*{genres}" th:value="${g}"/>
                                     <span th:text="${g.displayName}"></span>

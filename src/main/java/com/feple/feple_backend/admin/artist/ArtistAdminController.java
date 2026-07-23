@@ -47,6 +47,7 @@ public class ArtistAdminController {
             dto.setName(name.trim());
         }
         model.addAttribute("artist", dto);
+        addGenreOptions(model);
         return "admin/artist/create";
     }
 
@@ -62,6 +63,7 @@ public class ArtistAdminController {
         }
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+            addGenreOptions(model);
             return "admin/artist/create";
         }
 
@@ -73,6 +75,7 @@ public class ArtistAdminController {
         } catch (Exception e) {
             log.error("아티스트 등록 실패 name={}", dto.getName(), e);
             model.addAttribute("errors", List.of("등록 중 오류가 발생했습니다. 다시 시도해주세요."));
+            addGenreOptions(model);
             return "admin/artist/create";
         }
         return "redirect:/admin/artists";
@@ -90,7 +93,7 @@ public class ArtistAdminController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("genre", genre);
-        model.addAttribute("allGenres", MusicGenre.values());
+        addGenreOptions(model);
         model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
         model.addAttribute("processedSuggestions", artistSuggestionAdminService.getProcessedSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
         model.addAttribute("processedSuggestionsTotal", artistSuggestionAdminService.getProcessedCount());
@@ -150,6 +153,7 @@ public class ArtistAdminController {
             model.addAttribute("page", params.page());
             model.addAttribute("keyword", params.keyword());
             model.addAttribute("sort", params.sort());
+            addGenreOptions(model);
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/artists";
@@ -171,6 +175,7 @@ public class ArtistAdminController {
             model.addAttribute("keyword", params.keyword());
             model.addAttribute("sort", params.sort());
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+            addGenreOptions(model);
             return "admin/artist/edit";
         }
         try {
@@ -210,6 +215,10 @@ public class ArtistAdminController {
                 "저장 중 오류가 발생했습니다.",
                 ra);
         return "redirect:/admin/artists";
+    }
+
+    private static void addGenreOptions(Model model) {
+        model.addAttribute("allGenres", MusicGenre.values());
     }
 
     private static List<NameEnUpdate> toNameEnUpdates(List<Long> artistIds, List<String> nameEns) {

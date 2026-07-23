@@ -262,7 +262,7 @@
                         <tr th:each="p, stat : ${contentTrend.topPostsByLike()}">
                             <td><span th:classappend="${stat.index < 3} ? ' top3'" class="rank-num" th:text="${stat.count}"></span></td>
                             <td><a th:href="@{/admin/posts/{id}(id=${p.id})}" th:text="${p.title}" class="rank-link"></a></td>
-                            <td class="hint" th:text="${p.displayBoardName}"></td>
+                            <td class="hint" th:text="${p.boardDisplayName}"></td>
                             <td class="r val-danger" th:text="${p.likeCount}"></td>
                             <td class="r val-primary-dk" th:text="${p.scrapCount}"></td>
                             <td class="r td-muted" th:text="${p.commentCount}"></td>
