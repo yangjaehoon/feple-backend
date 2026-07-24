@@ -40,22 +40,6 @@ class ArtistFollowServiceTest {
                 .followerCount(followerCount).build();
     }
 
-    // ── isFollowed ───────────────────────────────────────────────────
-
-    @Test
-    void 팔로우_중이면_true_반환() {
-        given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(true);
-
-        assertThat(artistFollowService.isFollowed(1L, 10L)).isTrue();
-    }
-
-    @Test
-    void 팔로우_안_했으면_false_반환() {
-        given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
-
-        assertThat(artistFollowService.isFollowed(1L, 10L)).isFalse();
-    }
-
     // ── followStatus ─────────────────────────────────────────────────
 
     @Test

@@ -33,8 +33,6 @@ public class FestivalWeather {
     private String ptyCode;
     private LocalDateTime savedAt;
 
-    public Long getFestivalId() { return festival.getId(); }
-
     public static FestivalWeather of(Festival festival, WeatherDto dto) {
         FestivalWeather weather = new FestivalWeather();
         weather.festival = festival;

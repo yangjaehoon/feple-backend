@@ -386,7 +386,6 @@ class PostServiceImplTest {
         assertThat(result.content()).hasSize(2);
         assertThat(result.hasNext()).isTrue();
         assertThat(result.nextCursor()).isEqualTo(2L);
-        verify(postRepository, never()).findByArtistOrderByCreatedAtDesc(any(Artist.class), any(Pageable.class));
     }
 
     // ── getPostsByFestivalIdPaged ──────────────────────────────────────

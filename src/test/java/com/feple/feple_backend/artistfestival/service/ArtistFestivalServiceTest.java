@@ -382,21 +382,6 @@ class ArtistFestivalServiceTest {
         assertThat(service.getAppearancesByArtistId(1L)).isEqualTo(list);
     }
 
-    @Test
-    void 참여정보_ID로_조회_성공() {
-        ArtistFestival af = artistFestival(artist(1L, "아이유"), festival(100L, null));
-        given(artistFestivalRepository.findByIdWithFestival(10L)).willReturn(Optional.of(af));
-
-        assertThat(service.getArtistFestivalById(10L)).isEqualTo(af);
-    }
-
-    @Test
-    void 참여정보_ID로_조회_실패시_예외() {
-        given(artistFestivalRepository.findByIdWithFestival(10L)).willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.getArtistFestivalById(10L))
-                .isInstanceOf(NoSuchElementException.class);
-    }
 
     @Test
     void 아티스트_소속_여부_확인() {

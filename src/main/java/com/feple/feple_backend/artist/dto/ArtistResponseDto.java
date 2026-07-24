@@ -26,10 +26,6 @@ public class ArtistResponseDto {
                 : null;
     }
 
-    public static ArtistResponseDto from(Artist artist) {
-        return from(artist, artist.getProfileImageKey(), 0);
-    }
-
     public static ArtistResponseDto from(Artist artist, String imageUrl) {
         return from(artist, imageUrl, 0);
     }

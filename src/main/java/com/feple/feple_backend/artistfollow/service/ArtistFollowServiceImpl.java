@@ -27,11 +27,6 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     private final UserRepository userRepository;
 
     @Override
-    public boolean isFollowed(Long userId, Long artistId) {
-        return artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
-    }
-
-    @Override
     public List<Long> getFollowerUserIds(Long artistId) {
         return artistFollowRepository.findByArtistId(artistId)
                 .stream().map(ArtistFollow::getUserId).toList();

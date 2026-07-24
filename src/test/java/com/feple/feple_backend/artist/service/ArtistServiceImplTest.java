@@ -3,7 +3,6 @@ package com.feple.feple_backend.artist.service;
 import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
-import com.feple.feple_backend.artist.dto.NameEnUpdate;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
@@ -281,36 +280,6 @@ class ArtistServiceImplTest {
         service.updateArtistPhoto(1L, "new");
 
         verify(fileStorageService, never()).deleteFileAfterCommit(any());
-    }
-
-    // ── batchUpdateNameEn ────────────────────────────────────────────────
-
-    @Test
-    void 영문명_일괄수정_공백이면_null로_설정() {
-        Artist a = artist(1L, "가수A");
-        given(artistRepository.findAllById(List.of(1L))).willReturn(List.of(a));
-
-        service.batchUpdateNameEn(List.of(new NameEnUpdate(1L, "  ")));
-
-        assertThat(a.getNameEn()).isNull();
-    }
-
-    @Test
-    void 영문명_일괄수정_존재하지_않는_ID는_무시() {
-        given(artistRepository.findAllById(List.of(99L))).willReturn(List.of());
-
-        service.batchUpdateNameEn(List.of(new NameEnUpdate(99L, "New")));
-        // 예외 없이 조용히 무시됨
-    }
-
-    @Test
-    void 영문명_일괄수정_정상값이면_trim되어_반영() {
-        Artist a = artist(1L, "가수A");
-        given(artistRepository.findAllById(List.of(1L))).willReturn(List.of(a));
-
-        service.batchUpdateNameEn(List.of(new NameEnUpdate(1L, "  NewName  ")));
-
-        assertThat(a.getNameEn()).isEqualTo("NewName");
     }
 
     // ── deleteArtist ─────────────────────────────────────────────────────

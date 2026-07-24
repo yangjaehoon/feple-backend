@@ -21,9 +21,6 @@ public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long
 
     // festival JOIN FETCH — getLikedFestivals()에서 like.getFestival() 접근 시 N+1 방지
     @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
-    List<FestivalLike> findByUserId(@Param("userId") Long userId);
-
-    @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
     List<FestivalLike> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Modifying(clearAutomatically = true)

@@ -79,14 +79,6 @@ public class Post {
     @JoinColumn(name = "festival_id", nullable = true)
     private Festival festival;
 
-    private Post(String title, String content, User user) {
-        this.title = title;
-        this.content = content;
-        this.user = user;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
     public void update(String title, String content, String imageUrl) {
         this.title = title;
         this.content = content;

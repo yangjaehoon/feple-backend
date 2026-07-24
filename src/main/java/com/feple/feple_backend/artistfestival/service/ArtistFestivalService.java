@@ -195,10 +195,6 @@ public class ArtistFestivalService {
         return artistFestivalRepository.findByArtistIdOrderByFestivalStartDateDesc(artistId);
     }
 
-    public ArtistFestival getArtistFestivalById(Long id) {
-        return EntityLoader.getOrThrow(artistFestivalRepository::findByIdWithFestival, id, "아티스트 페스티벌");
-    }
-
     public boolean existsByIdAndArtistId(Long artistFestivalId, Long artistId) {
         return artistFestivalRepository.existsByIdAndArtistId(artistFestivalId, artistId);
     }

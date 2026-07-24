@@ -82,10 +82,6 @@ public class TimetableEntry {
         return stage != null ? stage.getName() : null;
     }
 
-    public boolean isAnnouncement() {
-        return ANNOUNCEMENT_SENTINEL.equals(stageName);
-    }
-
     public Long getFestivalId() {
         return festival != null ? festival.getId() : null;
     }

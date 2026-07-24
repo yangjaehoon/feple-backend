@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface ArtistFollowService {
 
-    boolean isFollowed(Long userId, Long artistId);
-
     /** 해당 아티스트를 팔로우 중인 유저 ID 목록 */
     List<Long> getFollowerUserIds(Long artistId);
 
