@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('아티스트 신청')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artist-suggestions')}"></div>
+<div class="main-content">
+
+    <div th:replace="~{admin/fragments :: pageHeader('아티스트 신청', '아티스트 신청')}"></div>
+
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48">#</th>
+                        <th>아티스트 이름</th>
+                        <th>추가 정보</th>
+                        <th class="col-w110">신청자</th>
+                        <th class="col-w130">신청일</th>
+                        <th class="col-w90">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${suggestions.content}">
+                        <td class="td-id" th:text="${s.id}"></td>
+                        <td class="cell-primary" th:text="${s.artistName}"></td>
+                        <td class="cell-secondary" th:text="${s.note != null ? s.note : '—'}"></td>
+                        <td class="td-sub" th:text="${s.userNickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(s.createdAt, 'yy-MM-dd HH:mm')}"></td>
+                        <td class="cell-actions">
+                            <button type="button" class="btn btn-success btn-sm open-approve-btn"
+                                    th:data-id="${s.id}"
+                                    th:data-artist="${s.artistName}">승인</button>
+                            <button type="button" class="btn btn-secondary btn-sm open-dismiss-btn"
+                                    th:data-id="${s.id}"
+                                    th:data-artist="${s.artistName}">거절</button>
+                        </td>
+                    </tr>
+                    <tr th:if="${suggestions.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(6, '대기 중인 아티스트 신청이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${suggestions}, '/admin/artist-suggestions', null)}"></div>
+        </div>
+    </div>
+</div>
+
+<div id="approve-modal" class="modal-overlay">
+    <div class="admin-modal-box">
+        <div class="admin-modal-header">
+            <div class="admin-modal-title">아티스트 신청 승인</div>
+            <div id="approve-artist-name" class="admin-modal-subtitle"></div>
+        </div>
+        <div class="admin-modal-section">
+            <div class="admin-modal-label">등록된 아티스트 ID <span class="required-star">*</span></div>
+            <input type="number" id="approve-artist-id" class="admin-modal-textarea"
+                   placeholder="아티스트 ID를 입력하세요" min="1"/>
+            <div class="admin-modal-hint">아티스트 관리 페이지에서 등록 후 ID를 확인하세요.</div>
+        </div>
+        <form id="approve-form" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="artistId" id="approve-artist-id-hidden"/>
+            <div class="admin-modal-actions">
+                <button type="button" id="approve-close-btn" class="btn btn-secondary">취소</button>
+                <button type="submit" class="btn btn-success">승인 완료</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="dismiss-modal" class="modal-overlay">
+    <div class="admin-modal-box">
+        <div class="admin-modal-header">
+            <div class="admin-modal-title">신청 처리</div>
+            <div id="dismiss-artist-name" class="admin-modal-subtitle"></div>
+        </div>
+        <div class="admin-modal-section">
+            <div class="admin-modal-label">처리 사유 (선택)</div>
+            <div class="reason-chip-row">
+                <button type="button" class="reason-chip" data-reason="요청하신 아티스트를 등록했어요!">등록 완료</button>
+                <button type="button" class="reason-chip" data-reason="이미 등록된 아티스트예요.">이미 등록됨</button>
+                <button type="button" class="reason-chip" data-reason="정보가 부족해서 등록이 어려워요.">정보 부족</button>
+                <button type="button" class="reason-chip" data-reason="활동 이력이 없어서 등록이 어려워요.">비활동 아티스트</button>
+                <button type="button" class="reason-chip" data-reason="">직접 입력</button>
+            </div>
+            <textarea id="dismiss-note" rows="3" class="admin-modal-textarea"
+                      placeholder="사용자에게 전달할 메시지를 입력하세요. (미입력 시 기본 메시지로 발송됩니다)"></textarea>
+        </div>
+        <form id="dismiss-form" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="processNote" id="dismiss-process-note"/>
+            <div class="admin-modal-actions">
+                <button type="button" id="dismiss-close-btn" class="btn btn-secondary">취소</button>
+                <button type="submit" class="btn btn-primary">처리 완료</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.ArtistSuggestionUrls = { base: /*[[@{/admin/artist-suggestions}]]*/ '' };
+/*]]>*/
+</script>
+<script>
+(function () {
+    const base = window.ArtistSuggestionUrls.base;
+
+    // 승인 모달
+    const approveModal = document.getElementById('approve-modal');
+    const approveForm  = document.getElementById('approve-form');
+    const approveInput = document.getElementById('approve-artist-id');
+    const approveHidden = document.getElementById('approve-artist-id-hidden');
+    const approveName  = document.getElementById('approve-artist-name');
+
+    document.querySelectorAll('.open-approve-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            approveForm.action = base + '/' + btn.dataset.id + '/approve';
+            approveName.textContent = btn.dataset.artist;
+            approveInput.value = '';
+            approveHidden.value = '';
+            approveModal.style.display = 'flex';
+        });
+    });
+    document.getElementById('approve-close-btn').addEventListener('click', () => {
+        approveModal.style.display = 'none';
+    });
+    approveForm.addEventListener('submit', e => {
+        const val = approveInput.value.trim();
+        if (!val || isNaN(val) || Number(val) < 1) {
+            e.preventDefault();
+            alert('아티스트 ID를 올바르게 입력해주세요.');
+            return;
+        }
+        approveHidden.value = val;
+    });
+
+    // 거절 모달 (기존 dismiss)
+    const dismissModal = document.getElementById('dismiss-modal');
+    const dismissForm  = document.getElementById('dismiss-form');
+    const dismissNote  = document.getElementById('dismiss-note');
+    const dismissHidden = document.getElementById('dismiss-process-note');
+    const dismissName  = document.getElementById('dismiss-artist-name');
+
+    document.querySelectorAll('.open-dismiss-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            dismissForm.action = base + '/' + btn.dataset.id + '/dismiss';
+            dismissName.textContent = btn.dataset.artist;
+            dismissNote.value = '';
+            dismissModal.style.display = 'flex';
+        });
+    });
+    document.getElementById('dismiss-close-btn').addEventListener('click', () => {
+        dismissModal.style.display = 'none';
+    });
+    dismissForm.addEventListener('submit', () => {
+        dismissHidden.value = dismissNote.value.trim();
+    });
+
+    document.querySelectorAll('.reason-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            dismissNote.value = chip.dataset.reason;
+        });
+    });
+})();
+</script>
+</body>
+</html>

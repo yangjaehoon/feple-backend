@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('곡 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">곡 관리</h1>
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">대시보드</a>
+                <span class="bc-sep">›</span>
+                <a th:href="@{/admin/artists}">아티스트</a>
+                <span class="bc-sep">›</span>
+                <span th:text="${artist.name}"></span>
+                <span class="bc-sep">›</span>
+                <span>곡 관리</span>
+            </div>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-primary" th:href="@{/admin/artists/{id}/setlist(id=${artist.id})}">셋리스트 관리</a>
+            <a class="btn btn-secondary" th:href="@{/admin/artists}">← 목록으로</a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 노래 요청 목록 -->
+        <div class="card card-mb">
+            <div class="card-header">
+                <div class="card-title">
+                    노래 요청 목록
+                    <span class="card-title-note" th:text="'— ' + ${pendingRequests.size()} + '건'"></span>
+                </div>
+            </div>
+
+            <div th:if="${pendingRequests.isEmpty()}" class="card-empty">
+                대기 중인 요청이 없습니다.
+            </div>
+
+            <div th:unless="${pendingRequests.isEmpty()}" class="item-list">
+                <div th:each="request : ${pendingRequests}" class="song-item-row">
+                    <div class="item-body">
+                        <div class="item-title" th:text="${request.songTitle}"></div>
+                        <div class="item-meta">
+                            유저 ID: <span th:text="${request.userId}"></span>
+                            (<span th:text="${request.userNickname}"></span>)
+                            &nbsp;·&nbsp;
+                            <span th:text="${#temporals.format(request.createdAt, 'MM-dd HH:mm')}"></span>
+                        </div>
+                        <div th:if="${request.youtubeUrl != null and !request.youtubeUrl.isBlank()}"
+                             class="item-yt-url">
+                            <a th:href="${request.youtubeUrl}" target="_blank">YouTube &nearr;</a>
+                        </div>
+                    </div>
+                    <form th:action="@{/admin/artists/{aId}/songs/song-requests/{rId}/approve(aId=${artist.id}, rId=${request.id})}"
+                          method="post" class="request-form">
+                        <input type="text" name="youtubeUrl"
+                               th:value="${request.youtubeUrl != null ? request.youtubeUrl : ''}"
+                               placeholder="YouTube URL (선택)"
+                               class="request-url-input"/>
+                        <button type="submit" class="btn btn-primary btn-sm">승인</button>
+                    </form>
+                    <form th:action="@{/admin/artists/{aId}/songs/song-requests/{rId}/reject(aId=${artist.id}, rId=${request.id})}"
+                          method="post" class="request-form">
+                        <input type="text" name="reason"
+                               placeholder="거절 사유 (선택)"
+                               class="request-reason-input"/>
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                data-confirm="노래 요청을 거절하시겠습니까?">거절</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- YouTube URL 직접 입력 -->
+        <div class="card card-mb">
+            <div class="card-header">
+                <div class="card-title">YouTube URL 직접 입력</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="get"
+                      class="yt-url-form">
+                    <input type="text" name="videoUrl" th:value="${videoUrl}"
+                           placeholder="YouTube URL 또는 영상 ID (예: https://youtu.be/xxxxx 또는 dQw4w9WgXcQ)"
+                           class="yt-url-input"/>
+                    <button type="submit" class="btn btn-secondary">불러오기</button>
+                </form>
+                <div class="yt-hint">
+                    YouTube에서 직접 영상을 찾아 URL을 붙여넣으세요. youtu.be 단축 URL, 전체 URL, 영상 ID 모두 지원합니다.
+                </div>
+
+                <div th:if="${previewVideo != null}" class="yt-preview">
+                    <img th:if="${previewVideo.thumbnailUrl != null}"
+                         th:src="${previewVideo.thumbnailUrl}"
+                         class="yt-preview-thumb" alt="thumbnail"/>
+                    <div class="item-body">
+                        <div class="item-title" th:text="${previewVideo.title}"></div>
+                        <div class="item-meta" th:text="${previewVideo.channelTitle}"></div>
+                    </div>
+                    <form th:action="@{/admin/artists/{id}/songs(id=${artist.id})}" method="post"
+                          class="flex-shrink-0">
+                        <input type="hidden" name="youtubeVideoId" th:value="${previewVideo.videoId}"/>
+                        <input type="hidden" name="title" th:value="${previewVideo.title}"/>
+                        <input type="hidden" name="thumbnailUrl" th:value="${previewVideo.thumbnailUrl}"/>
+                        <button type="submit" class="btn btn-primary btn-sm">+ 추가</button>
+                    </form>
+                </div>
+
+                <div th:if="${videoUrl != null and !videoUrl.isBlank() and previewVideo == null}"
+                     class="yt-error">
+                    영상을 불러오지 못했습니다. URL을 확인해주세요.
+                </div>
+            </div>
+        </div>
+
+        <!-- 등록된 곡 목록 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    등록된 곡
+                    <span class="card-title-note" th:text="'— ' + ${songs.size()} + '곡'"></span>
+                </div>
+            </div>
+
+            <div th:if="${songs.isEmpty()}" class="card-empty">
+                등록된 곡이 없습니다. 위에서 YouTube URL을 입력하여 추가해주세요.
+            </div>
+
+            <div th:unless="${songs.isEmpty()}" class="item-list">
+                <div th:each="song, stat : ${songs}" class="song-item-row">
+                    <span class="song-index" th:text="${stat.index + 1}"></span>
+                    <img th:if="${song.thumbnailUrl != null}"
+                         th:src="${song.thumbnailUrl}"
+                         class="song-thumb" alt="thumbnail"/>
+                    <div class="item-body">
+                        <div class="song-title-text" th:text="${song.title}"></div>
+                        <a th:href="${song.youtubeUrl}" target="_blank" class="song-yt-link">YouTube Music에서 보기</a>
+                    </div>
+                    <form th:action="@{/admin/artists/{aId}/songs/{sId}/delete(aId=${artist.id}, sId=${song.id})}"
+                          method="post" class="flex-shrink-0"
+                          data-confirm="곡을 삭제하시겠습니까?">
+                        <button type="submit" class="btn btn-ghost-danger btn-sm">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

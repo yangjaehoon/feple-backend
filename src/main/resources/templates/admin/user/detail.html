@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('회원 상세')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('users')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader2(${user.nickname}, '회원', @{/admin/users}, '상세')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div th:replace="~{admin/user/detail-profile-fragment :: profileCard}"></div>
+        <div th:replace="~{admin/user/detail-activity-fragment :: activityCards}"></div>
+        <div th:replace="~{admin/user/detail-social-fragment :: socialCards}"></div>
+        <div th:replace="~{admin/user/detail-moderation-fragment :: moderationCards}"></div>
+
+        <div class="back-row">
+            <a th:href="${returnUrl}" class="btn btn-secondary">← 목록으로</a>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

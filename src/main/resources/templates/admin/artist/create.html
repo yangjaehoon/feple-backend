@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('아티스트 등록')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader2('아티스트 등록', '아티스트', @{/admin/artists}, '등록')}"></div>
+    <div class="content-area">
+        <div th:replace="~{admin/fragments :: formErrors}"></div>
+
+        <div class="card card-form">
+            <div class="card-header">
+                <div class="card-title">새 아티스트</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/artists/new}"
+                      th:object="${artist}"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>이름</label>
+                            <input type="text" th:field="*{name}" placeholder="아티스트 이름" required/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>영어 이름</label>
+                            <input type="text" th:field="*{nameEn}" placeholder="English Name (선택)"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>별명 <span class="label-optional">(선택)</span> <span class="hint">쉼표(,)로 구분하여 여러 개 입력 가능 (예: 쌈디, SD)</span></label>
+                            <input type="text" th:field="*{aliases}" placeholder="예: 쌈디, SD"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>카테고리 <span class="required-star">*</span></label>
+                            <div class="genre-check-group">
+                                <label th:each="g : ${allGenres}"
+                                       class="genre-check-label">
+                                    <input type="checkbox" th:field="*{genres}" th:value="${g}"/>
+                                    <span th:text="${g.displayName}"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>프로필 이미지 <span class="required-star">*</span></label>
+                            <div class="img-upload-row">
+                                <div id="img-preview" class="artist-preview-circle">
+                                    <img id="preview-img" class="d-none" alt="미리보기"/>
+                                    <span id="preview-ph" class="ph">🎤</span>
+                                </div>
+                                <div>
+                                    <input type="file" name="profileImageFile" id="profile-img-input"
+                                           accept=".jpg,.jpeg,.png,.webp" required/>
+                                    <span id="img-size-error" class="field-error">파일 크기가 5MB를 초과합니다.</span>
+                                    <div class="upload-hint">jpg, jpeg, png, webp · 최대 5MB</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">등록하기</button>
+                        <a th:href="@{/admin/artists}" class="btn btn-secondary">취소</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/admin-artist-form.js}"></script>
+<script>AdminUtils.initDirtyGuard();</script>
+</body>
+</html>

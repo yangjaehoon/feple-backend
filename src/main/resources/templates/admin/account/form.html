@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('관리자 계정')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('accounts')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader2(${account != null} ? '관리자 계정 수정' : '새 관리자 추가', '관리자 계정', @{/admin/accounts}, ${account != null} ? '수정' : '추가')}"></div>
+    <div class="content-area">
+        <div class="card card-padded-lg">
+
+            <!-- 생성 폼 / 수정 폼 -->
+            <form th:action="${account != null} ? @{/admin/accounts/{id}/update(id=${account.id})} : @{/admin/accounts}"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <!-- 프로필 사진 -->
+                <div class="form-section">
+                    <div class="form-section-title">프로필 사진</div>
+                    <div class="img-upload-row">
+                        <div id="photo-preview" class="profile-preview-circle">
+                            <img th:if="${account != null and account.profileImageUrl != null}"
+                                 th:src="${account.profileImageUrl}"
+                                 id="photo-img"
+                                 class="profile-preview-img" alt="프로필"/>
+                            <img th:unless="${account != null and account.profileImageUrl != null}"
+                                 th:src="@{/img/feple_logo.png}"
+                                 id="photo-placeholder"
+                                 class="profile-preview-placeholder" alt="feple"/>
+                        </div>
+                        <div class="pt-4">
+                            <input type="file" name="profileImage" id="profile-image-input"
+                                   accept=".jpg,.jpeg,.png" class="d-none"/>
+                            <input type="hidden" name="deleteProfileImage" id="delete-profile-image-flag" value="false"/>
+                            <div class="cell-actions flex-wrap">
+                                <button type="button" id="upload-photo-btn" class="btn btn-secondary btn-sm">
+                                    사진 업로드
+                                </button>
+                                <button th:if="${account != null and account.profileImageUrl != null}"
+                                        type="button" id="delete-photo-btn"
+                                        class="btn btn-ghost-danger btn-sm"
+                                        data-confirm="프로필 사진을 삭제할까요?">
+                                    사진 삭제
+                                </button>
+                            </div>
+                            <div class="field-hint mt-8">jpg, jpeg, png · 최대 5MB · 원형으로 표시됩니다</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 기본 정보 -->
+                <div class="form-section">
+                    <div class="form-section-title">기본 정보</div>
+                    <div class="form-row">
+                        <div class="field-group">
+                            <label class="field-label">아이디<span class="required-star">*</span></label>
+                            <input class="form-input"
+                                   type="text" name="username"
+                                   th:value="${account != null} ? ${account.username} : ''"
+                                   th:disabled="${account != null}"
+                                   placeholder="로그인 아이디"
+                                   maxlength="50"
+                                   th:attr="required=${account == null ? 'required' : null}"/>
+                            <div class="field-hint" th:if="${account != null}">아이디는 변경할 수 없습니다.</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">
+                                이름 (표시명)
+                            </label>
+                            <input class="form-input"
+                                   type="text" name="displayName"
+                                   th:value="${account != null} ? ${account.displayName} : ''"
+                                   placeholder="관리자 화면에 표시될 이름"
+                                   maxlength="50"/>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="field-group">
+                            <label class="field-label">
+                                비밀번호
+                                <span class="required-star" th:if="${account == null}">*</span>
+                            </label>
+                            <div class="pw-wrap">
+                                <input class="form-input"
+                                       type="password" name="password" id="password-input"
+                                       th:attr="placeholder=${account != null} ? '새 비밀번호 (변경 시에만 입력)' : '비밀번호',required=${account == null ? 'required' : null}"
+                                       autocomplete="new-password"/>
+                                <button type="button" id="pw-toggle-btn" class="pw-toggle">표시</button>
+                            </div>
+                            <div class="field-hint" th:if="${account != null}">비워두면 기존 비밀번호가 유지됩니다.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 역할 -->
+                <div class="form-section">
+                    <div class="form-section-title">역할</div>
+                    <div class="radio-group" id="role-group">
+                        <label th:each="r : ${allRoles}" class="radio-card">
+                            <input type="radio" name="role" th:value="${r.name()}"
+                                   th:checked="${account != null} ? ${account.role == r} : ${r.name() == 'MANAGER'}"/>
+                            <div>
+                                <div class="radio-card-label" th:text="${r.displayName}"></div>
+                                <div class="radio-card-desc"
+                                     th:text="${r.name() == 'SUPER_ADMIN'} ? '모든 페이지 접근 + 관리자 계정 관리' : '선택한 페이지만 접근 가능'"></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 권한 (MANAGER일 때만 표시) -->
+                <div class="form-section" id="perm-section">
+                    <div class="form-section-title">페이지 접근 권한</div>
+                    <div class="perm-grid">
+                        <label th:each="p : ${allPermissions}" class="perm-check">
+                            <input type="checkbox" name="permissions" th:value="${p.name()}"
+                                   th:checked="${account != null and account.permissions.contains(p)}"/>
+                            <span th:text="${p.displayName}"></span>
+                        </label>
+                    </div>
+                    <div class="mt-10">
+                        <button type="button" id="perm-select-all-btn" class="btn btn-secondary btn-sm">전체 선택</button>
+                        <button type="button" id="perm-deselect-all-btn" class="btn btn-secondary btn-sm ml-4">전체 해제</button>
+                    </div>
+                </div>
+
+                <!-- 버튼 -->
+                <div class="form-actions justify-end">
+                    <a th:href="@{/admin/accounts}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${account != null} ? '수정 저장' : '계정 생성'">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/admin-account-form.js}"></script>
+
+</body>
+</html>

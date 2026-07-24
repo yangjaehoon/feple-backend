@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ── 최근 게시글 + 최근 댓글 + 인증 이력 ── -->
+<th:block th:fragment="activityCards">
+
+    <!-- 최근 게시글 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                📝 최근 게시글
+                <span class="card-count" th:text="${stats.postCount}"></span>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>제목</th>
+                    <th>게시판</th>
+                    <th>좋아요</th>
+                    <th>작성일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="post : ${recentPosts}">
+                    <td class="td-id" th:text="${post.id}"></td>
+                    <td>
+                        <a th:href="@{/admin/posts/{id}(id=${post.id})}"
+                           th:text="${post.title}"
+                           class="detail-title-link"></a>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
+                              th:text="${post.boardDisplayName}"></span>
+                    </td>
+                    <td class="td-muted" th:text="${post.likeCount}"></td>
+                    <td class="td-date"
+                        th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentPosts)}" th:replace="~{admin/fragments :: emptyRow(5, '게시글이 없습니다.')}"></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 최근 댓글 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                💬 최근 댓글
+                <span class="card-count" th:text="${stats.commentCount}"></span>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>내용</th>
+                    <th>게시글</th>
+                    <th>게시판</th>
+                    <th class="col-w100">작성일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="comment : ${recentComments}">
+                    <td class="td-id" th:text="${comment.commentId}"></td>
+                    <td class="detail-content-cell"
+                        th:text="${comment.content}"></td>
+                    <td>
+                        <a th:href="@{/admin/posts/{id}(id=${comment.postId})}"
+                           th:text="${comment.postTitle}"
+                           class="detail-post-link"></a>
+                    </td>
+                    <td>
+                        <span class="badge badge-genre"
+                              th:text="${comment.boardDisplayName}"></span>
+                    </td>
+                    <td class="td-date"
+                        th:text="${comment.createdAt != null ? #temporals.format(comment.createdAt, 'MM-dd HH:mm') : '-'}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(recentComments)}" th:replace="~{admin/fragments :: emptyRow(5, '댓글이 없습니다.')}"></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 페스티벌 인증 이력 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                인증 이력
+                <span class="card-count" th:text="${#lists.size(certifications)}"></span>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th class="col-w48">ID</th>
+                    <th>페스티벌</th>
+                    <th class="col-w80">상태</th>
+                    <th class="col-w80">별점</th>
+                    <th class="col-w120">신청일</th>
+                    <th class="col-w120">처리일</th>
+                    <th class="col-w80">상세</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="cert : ${certifications}">
+                    <td class="td-id" th:text="${cert.id}"></td>
+                    <td>
+                        <a th:href="@{/admin/festivals/{id}(id=${cert.festivalId})}"
+                           th:text="${cert.festivalTitle}"
+                           class="detail-title-link"></a>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${cert.pending} ? 'badge-warning' : (${cert.approved} ? 'badge-success' : 'badge-danger')"
+                              th:text="${cert.status.displayName}"></span>
+                    </td>
+                    <td class="td-muted">
+                        <span th:if="${cert.rating != null}" th:text="${cert.rating} + '점'"></span>
+                        <span th:if="${cert.rating == null}">-</span>
+                    </td>
+                    <td class="td-date" th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></td>
+                    <td class="td-date">
+                        <span th:if="${cert.reviewedAt != null}"
+                              th:text="${#temporals.format(cert.reviewedAt, 'MM-dd HH:mm')}"></span>
+                        <span th:if="${cert.reviewedAt == null}">-</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/certifications/{id}(id=${cert.id})}"
+                           class="btn btn-secondary btn-sm">보기</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(certifications)}" th:replace="~{admin/fragments :: emptyRow(7, '인증 이력이 없습니다.')}"></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</th:block>
+
+</body>
+</html>

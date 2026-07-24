@@ -1,0 +1,109 @@
+package com.feple.feple_backend.auth.service;
+
+import com.feple.feple_backend.auth.firebase.FirebaseTokenVerifier;
+import com.feple.feple_backend.user.NicknameGenerator;
+import com.feple.feple_backend.user.entity.AuthProvider;
+import com.feple.feple_backend.user.entity.User;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+
+@ExtendWith(MockitoExtension.class)
+class FirebaseAuthServiceTest {
+
+    @Mock NicknameGenerator nicknameGenerator;
+    @Mock OAuthUserRegistrationService registrationService;
+    @Mock FirebaseTokenVerifier firebaseTokenVerifier;
+    @Mock FirebaseToken firebaseToken;
+
+    private FirebaseAuthService firebaseAuthService;
+
+    @BeforeEach
+    void setUp() {
+        firebaseAuthService = new FirebaseAuthService(nicknameGenerator, registrationService, firebaseTokenVerifier);
+    }
+
+    private User user() {
+        return User.builder().id(1L).nickname("nick").oauthId("uid").provider(AuthProvider.FIREBASE).build();
+    }
+
+    @Test
+    void 이메일_인증된_토큰이면_유저_등록후_반환() throws FirebaseAuthException {
+        given(firebaseTokenVerifier.verify("id-token")).willReturn(firebaseToken);
+        given(firebaseToken.getClaims()).willReturn(Map.of("email_verified", true));
+        given(firebaseToken.getUid()).willReturn("uid-123");
+        given(firebaseToken.getEmail()).willReturn("a@b.com");
+        given(firebaseToken.getName()).willReturn("홍길동");
+        User expected = user();
+        given(registrationService.registerOrFind(eq(AuthProvider.FIREBASE), eq("uid-123"), any(), any()))
+                .willReturn(expected);
+
+        User result = firebaseAuthService.authenticate("id-token").block();
+
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void 이메일_미인증_토큰이면_예외() throws FirebaseAuthException {
+        given(firebaseTokenVerifier.verify("id-token")).willReturn(firebaseToken);
+        given(firebaseToken.getClaims()).willReturn(Map.of("email_verified", false));
+
+        assertThatThrownBy(() -> firebaseAuthService.authenticate("id-token").block())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이메일 인증");
+    }
+
+    @Test
+    void emailVerified_클레임_없으면_예외() throws FirebaseAuthException {
+        given(firebaseTokenVerifier.verify("id-token")).willReturn(firebaseToken);
+        given(firebaseToken.getClaims()).willReturn(Map.of());
+
+        assertThatThrownBy(() -> firebaseAuthService.authenticate("id-token").block())
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 토큰_검증_실패시_일반화된_예외_메시지() throws FirebaseAuthException {
+        given(firebaseTokenVerifier.verify("bad-token")).willThrow(new RuntimeException("invalid token"));
+
+        assertThatThrownBy(() -> firebaseAuthService.authenticate("bad-token").block())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("다시 로그인");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void displayName_없으면_fallback_닉네임_사용() throws FirebaseAuthException {
+        given(firebaseTokenVerifier.verify("id-token")).willReturn(firebaseToken);
+        given(firebaseToken.getClaims()).willReturn(Map.of("email_verified", true));
+        given(firebaseToken.getUid()).willReturn("uid-45678900");
+        given(firebaseToken.getEmail()).willReturn("a@b.com");
+        given(firebaseToken.getName()).willReturn(null);
+        given(nicknameGenerator.sanitize("Useruid-4567", "Useruid-4567")).willReturn("Useruid-4567");
+        given(nicknameGenerator.uniquify("Useruid-4567")).willReturn("Useruid-4567");
+        given(registrationService.registerOrFind(any(), any(), any(), any())).willReturn(user());
+
+        firebaseAuthService.authenticate("id-token").block();
+
+        // 닉네임 생성은 registrationService에 넘긴 Supplier 안으로 지연 평가되므로, 캡처해서 직접 호출해 검증한다
+        ArgumentCaptor<Supplier<String>> nicknameSupplierCaptor = ArgumentCaptor.forClass(Supplier.class);
+        verify(registrationService).registerOrFind(any(), any(), nicknameSupplierCaptor.capture(), any());
+        assertThat(nicknameSupplierCaptor.getValue().get()).isEqualTo("Useruid-4567");
+        verify(nicknameGenerator).sanitize("Useruid-4567", "Useruid-4567");
+    }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ── 회원 프로필 카드 ── -->
+<div th:fragment="profileCard" class="card">
+    <div class="card-header">
+        <div class="card-title">👤 회원 정보</div>
+        <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
+            <input type="hidden" name="filter"  th:value="${listFilter.filter}"/>
+            <input type="hidden" name="sort"    th:value="${listFilter.sort}"/>
+            <input type="hidden" name="page"    th:value="${listFilter.page}"/>
+            <input type="hidden" name="keyword" th:value="${listFilter.keyword}"/>
+            <button type="submit"
+                    class="btn btn-danger"
+                    data-confirm="이 회원을 탈퇴 처리할까요? 게시글과 댓글은 익명(탈퇴한 사용자)으로 유지됩니다.">탈퇴</button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="user-profile-row">
+            <img th:if="${user.profileImageUrl != null}"
+                 th:src="${user.profileImageUrl}"
+                 class="user-avatar-lg" alt="profile"/>
+            <div th:if="${user.profileImageUrl == null}" class="user-avatar-ph-lg">👤</div>
+            <div>
+                <div class="user-name-row">
+                    <div class="user-name" th:text="${user.nickname}"></div>
+                    <span th:if="${user.admin}"  class="badge badge-danger">🛡️ 관리자</span>
+                    <span th:if="${user.artist}" class="badge badge-primary">🎤 아티스트</span>
+                    <span th:if="${user.banned}" class="badge badge-ban">정지</span>
+                </div>
+                <div class="user-meta-lg" th:text="${user.email}"></div>
+                <div class="user-meta">ID: <span th:text="${user.id}"></span></div>
+                <div class="user-meta" th:if="${user.createdAt != null}">
+                    가입일: <span th:text="${#temporals.format(user.createdAt, 'yyyy년 MM월 dd일 HH:mm')}"></span>
+                </div>
+                <div class="user-meta" th:if="${user.provider != null}">
+                    로그인: <span th:text="${user.provider}"></span>
+                </div>
+                <div class="user-meta" th:if="${user.bio != null and !#strings.isEmpty(user.bio)}">
+                    소개: <span th:text="${user.bio}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="stat-row">
+            <div class="stat-item">
+                <div class="stat-num stat-num-primary" th:text="${stats.postCount}">0</div>
+                <div class="stat-label">게시글</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num stat-num-primary" th:text="${stats.commentCount}">0</div>
+                <div class="stat-label">댓글</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num stat-num-primary" th:text="${stats.likedPostCount}">0</div>
+                <div class="stat-label">게시글 좋아요</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num stat-num-primary" th:text="${stats.scrapCount}">0</div>
+                <div class="stat-label">스크랩</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num stat-num-primary" th:text="${#lists.size(likedFestivals)}">0</div>
+                <div class="stat-label">페스티벌 좋아요</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num stat-num-primary" th:text="${#lists.size(followedArtists)}">0</div>
+                <div class="stat-label">팔로우 아티스트</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num stat-num-primary" th:text="${stats.certificationCount}">0</div>
+                <div class="stat-label">인증</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num"
+                     th:classappend="${stats.reportCount > 0} ? 'stat-num-danger' : 'stat-num-muted'"
+                     th:text="${stats.reportCount}">0</div>
+                <div class="stat-label">누적 신고</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

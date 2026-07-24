@@ -1,0 +1,95 @@
+package com.feple.feple_backend.admin.system;
+
+import com.feple.feple_backend.admin.ocr.GeminiUsageTracker;
+import com.feple.feple_backend.artistfestival.dto.ArtistNameOption;
+import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
+import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.stage.entity.Stage;
+import com.feple.feple_backend.stage.service.StageService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 크롤 대시보드("/admin/crawl") 진입 페이지 + 페이지 안 여러 위젯(스크래핑/OCR/
+ * 라인업 OCR)이 공통으로 쓰는 조회 전용 데이터(페스티벌·스테이지·아티스트
+ * 드롭다운, Gemini 사용량)를 제공한다. 실제 스크래핑/OCR 액션은
+ * {@link WebScrapeAdminController}/{@link TimetableOcrAdminController}/
+ * {@link ArtistLineupOcrAdminController}로 분리되어 있다.
+ */
+@Slf4j
+@PreAuthorize("hasRole('ADMIN')")
+@Controller
+@RequiredArgsConstructor
+@RequestMapping("/admin/crawl")
+public class CrawlAdminController {
+
+    private final GeminiUsageTracker geminiUsageTracker;
+    private final FestivalService festivalService;
+    private final StageService stageService;
+    private final ArtistFestivalService artistFestivalService;
+
+    @GetMapping
+    public String crawlDashboard(Model model) {
+        model.addAttribute("allRegions", Region.values());
+        model.addAttribute("allGenres", MusicGenre.values());
+        return "admin/system/crawl";
+    }
+
+    // ── Gemini 사용량 ────────────────────────────────────
+
+    @GetMapping("/quota")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getQuota() {
+        int used = geminiUsageTracker.getTodayCount();
+        int limit = geminiUsageTracker.getDailyLimit();
+        Map<String, Object> result = new HashMap<>();
+        result.put("used", used);
+        result.put("limit", limit);
+        result.put("remaining", Math.max(0, limit - used));
+        return ResponseEntity.ok(result);
+    }
+
+    // ── 드롭다운 데이터 ──────────────────────────────────
+
+    @GetMapping("/festivals")
+    @ResponseBody
+    public ResponseEntity<List<CrawlFestivalOption>> getFestivals() {
+        List<FestivalResponseDto> festivals = festivalService.getAllFestivals(FestivalFilterCriteria.forAdmin());
+        List<CrawlFestivalOption> result = festivals.stream()
+                .map(f -> new CrawlFestivalOption(f.getId(), f.getTitle(), f.getStartDateIso(), f.getEndDateIso()))
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/festivals/{festivalId}/stages")
+    @ResponseBody
+    public ResponseEntity<List<String>> getStages(@PathVariable Long festivalId) {
+        return ResponseEntity.ok(stageService.getStages(festivalId).stream()
+                .map(Stage::getName).toList());
+    }
+
+    @GetMapping("/festivals/{festivalId}/artists")
+    @ResponseBody
+    public ResponseEntity<List<ArtistNameOption>> getArtists(@PathVariable Long festivalId) {
+        return ResponseEntity.ok(
+                artistFestivalService.getArtistFestivalsWithEnName(festivalId).stream()
+                        .sorted((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(a.name(), b.name()))
+                        .toList());
+    }
+}

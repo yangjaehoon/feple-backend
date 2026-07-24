@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('아티스트 사진 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div th:replace="~{admin/fragments :: pageHeader2Inner('아티스트 사진 관리', '아티스트', @{/admin/artists}, '사진 관리')}"></div>
+        <div class="page-actions">
+            <a class="btn btn-secondary" th:href="@{/admin/artists}">← 목록으로</a>
+        </div>
+    </div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 사진 있는 아티스트 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🖼 사진 등록된 아티스트</div>
+                <span class="card-count"
+                      th:text="${#lists.size(artists.?[profileImageUrl != null])}"></span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(artists.?[profileImageUrl != null])}" class="card-empty">
+                사진이 등록된 아티스트가 없습니다.
+            </div>
+
+            <div class="photo-grid" th:unless="${#lists.isEmpty(artists.?[profileImageUrl != null])}">
+                <div th:each="artist : ${artists}"
+                     th:if="${artist.profileImageUrl != null}"
+                     class="photo-card">
+                    <img class="photo-thumb"
+                         th:src="${artist.profileImageUrl}"
+                         th:alt="${artist.name}"/>
+                    <div class="photo-info">
+                        <div class="photo-name" th:text="${artist.name}"></div>
+                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
+                    </div>
+                    <form class="photo-upload"
+                          th:action="@{/admin/artists/{id}/photo(id=${artist.id})}"
+                          method="post"
+                          enctype="multipart/form-data">
+                        <input type="file" name="profileImageFile" accept="image/*"/>
+                        <button type="submit" class="btn btn-primary btn-sm">사진 교체</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 사진 없는 아티스트 -->
+        <div class="card" th:unless="${#lists.isEmpty(artists.?[profileImageUrl == null])}">
+            <div class="card-header">
+                <div class="card-title card-title-danger">사진 미등록 아티스트</div>
+                <span class="card-count"
+                      th:text="${#lists.size(artists.?[profileImageUrl == null])}"></span>
+            </div>
+
+            <div class="photo-grid">
+                <div th:each="artist : ${artists}"
+                     th:if="${artist.profileImageUrl == null}"
+                     class="photo-card no-photo">
+                    <div class="photo-placeholder">🎤</div>
+                    <div class="photo-info">
+                        <div class="photo-name" th:text="${artist.name}"></div>
+                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
+                    </div>
+                    <form class="photo-upload"
+                          th:action="@{/admin/artists/{id}/photo(id=${artist.id})}"
+                          method="post"
+                          enctype="multipart/form-data">
+                        <input type="file" name="profileImageFile" accept="image/*"/>
+                        <button type="submit" class="btn btn-primary btn-sm">사진 등록</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

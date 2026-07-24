@@ -1,4 +1,5 @@
 HELP.md
+.claude/
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -35,3 +36,11 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### macOS ###
+.DS_Store
+
+src/main/resources/application-local.yaml
+src/main/resources/application.properties
+
+/uploads/

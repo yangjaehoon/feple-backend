@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head(${festival.title})}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader2(${festival.title}, '페스티벌', @{/admin/festivals}, ${festival.title})}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 섹션 빠른 이동 -->
+        <nav class="detail-section-nav" aria-label="페이지 내 섹션">
+            <a href="#info"      class="detail-nav-link">기본 정보</a>
+            <a href="#artists"   class="detail-nav-link">참여 아티스트</a>
+            <a href="#timetable" class="detail-nav-link">타임테이블</a>
+            <a href="#booths"    class="detail-nav-link">부스</a>
+            <a href="#setlist"   class="detail-nav-link">셋리스트</a>
+        </nav>
+
+        <div th:replace="~{admin/festival/detail-info-fragment :: infoCard}"></div>
+        <div th:replace="~{admin/festival/detail-artists-fragment :: artistsCard}"></div>
+        <div th:replace="~{admin/festival/detail-timetable-fragment :: timetableCard}"></div>
+        <div th:replace="~{admin/festival/detail-booths-fragment :: boothCard}"></div>
+        <div th:replace="~{admin/festival/detail-setlist-fragment :: setlistCard}"></div>
+
+    </div>
+</div>
+<script th:inline="javascript">
+var _geoData = {lat: /*[[${festival.latitude}]]*/ 0, lng: /*[[${festival.longitude}]]*/ 0, booths: /*[[${booths}]]*/ []};
+</script>
+<script th:src="@{/js/admin-festival-detail-booths.js}"></script>
+<script th:src="@{/js/admin-festival-detail-timetable.js}"></script>
+<script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsKey} + '&libraries=marker&callback=initBoothMap&loading=async'}" async defer></script>
+</body>
+</html>

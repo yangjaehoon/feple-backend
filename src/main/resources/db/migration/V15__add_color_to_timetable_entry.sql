@@ -1,0 +1,1 @@
+ALTER TABLE timetable_entry ADD COLUMN color VARCHAR(20) NULL;

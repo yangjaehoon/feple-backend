@@ -1,0 +1,155 @@
+package com.feple.feple_backend.admin.system;
+
+import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.system.BroadcastNotificationView;
+import com.feple.feple_backend.admin.system.PushFormData;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
+import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
+import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
+import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.notification.entity.BroadcastNotification;
+import com.feple.feple_backend.notification.entity.Notification;
+import com.feple.feple_backend.notification.entity.NotificationContent;
+import com.feple.feple_backend.notification.entity.NotificationType;
+import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
+import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.service.PushNotificationClient;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.UserDeviceToken;
+import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
+import com.feple.feple_backend.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AdminPushService {
+
+    private final UserDeviceTokenRepository deviceTokenRepository;
+    private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+    private final PushNotificationClient fcmPushService;
+    private final BroadcastNotificationRepository broadcastNotificationRepository;
+    private final ArtistFollowService artistFollowService;
+    private final FestivalCertificationAdminService festivalCertificationAdminService;
+    private final ArtistAdminService artistService;
+    private final FestivalService festivalService;
+
+    @Transactional(readOnly = true)
+    public PushFormData getFormData() {
+        return new PushFormData(
+                getRegisteredDeviceCount(),
+                getBroadcastHistory(),
+                artistService.getAllArtistsSortedByName(),
+                festivalService.getAllFestivals(FestivalFilterCriteria.forAdmin())
+        );
+    }
+
+    private long getRegisteredDeviceCount() {
+        return deviceTokenRepository.countDistinctUsers();
+    }
+
+    private List<BroadcastNotificationView> getBroadcastHistory() {
+        return broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, AdminConstants.BROADCAST_HISTORY_LIMIT))
+                .stream().map(BroadcastNotificationView::from).toList();
+    }
+
+    @Transactional
+    public void sendTest(Long targetUserId, String title, String body) {
+        List<String> tokens = deviceTokenRepository.findByUserId(targetUserId)
+                .stream()
+                .map(UserDeviceToken::getToken)
+                .toList();
+        if (tokens.isEmpty()) {
+            throw new IllegalArgumentException("해당 사용자에게 등록된 디바이스 토큰이 없습니다. (userId=" + targetUserId + ")");
+        }
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (userId=" + targetUserId + ")"));
+        notificationRepository.save(
+                Notification.of(user, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null));
+        logAndSend(tokens, title, body, "[AdminPush] 테스트 발송 — userId={}, 토큰 {}개, 제목: {}", targetUserId, tokens.size(), title);
+    }
+
+    @Transactional
+    public void sendToArtistFollowers(Long artistId, String title, String body) {
+        List<Long> userIds = artistFollowService.getFollowerUserIds(artistId);
+        List<String> tokens = resolveTargetTokens(userIds, "해당 아티스트의 팔로워가 없습니다.", "팔로워");
+        saveTargetedNotifications(userIds, title, body);
+        logAndSend(tokens, title, body, "[AdminPush] 아티스트 팔로워 발송 — artistId={}, 팔로워 {}명, 토큰 {}개, 제목: {}",
+                artistId, userIds.size(), tokens.size(), title);
+    }
+
+    @Transactional
+    public void sendToFestivalCertified(Long festivalId, String title, String body) {
+        List<Long> userIds = List.copyOf(festivalCertificationAdminService.getApprovedUserIds(festivalId));
+        List<String> tokens = resolveTargetTokens(userIds, "해당 페스티벌의 인증된 참여자가 없습니다.", "인증자");
+        saveTargetedNotifications(userIds, title, body);
+        logAndSend(tokens, title, body, "[AdminPush] 페스티벌 인증자 발송 — festivalId={}, 인증자 {}명, 토큰 {}개, 제목: {}",
+                festivalId, userIds.size(), tokens.size(), title);
+    }
+
+    /**
+     * 대상 userId 목록 → 발송 대상 없음 검증 → 디바이스 토큰 조회 → 토큰 없음 검증까지 수행한다.
+     * sendToArtistFollowers/sendToFestivalCertified에 공통된 검증 절차를 하나로 묶은 것.
+     */
+    private List<String> resolveTargetTokens(List<Long> userIds, String noTargetMessage, String targetLabel) {
+        if (userIds.isEmpty()) {
+            throw new IllegalArgumentException(noTargetMessage);
+        }
+        List<String> tokens = deviceTokenRepository.findTokensByUserIds(userIds);
+        if (tokens.isEmpty()) {
+            throw new IllegalArgumentException("발송 대상 기기가 없습니다. (" + targetLabel + " " + userIds.size() + "명 모두 알림 비활성)");
+        }
+        return tokens;
+    }
+
+    private void saveTargetedNotifications(List<Long> userIds, String title, String body) {
+        List<User> users = userRepository.findAllById(userIds);
+        notificationRepository.saveAll(users.stream()
+                .map(u -> Notification.of(u, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null))
+                .toList());
+    }
+
+    @Transactional
+    public void sendToAll(String title, String body) {
+        List<String> tokens = deviceTokenRepository.findAllTokens();
+        if (tokens.isEmpty()) {
+            throw new IllegalArgumentException("등록된 디바이스 토큰이 없습니다.");
+        }
+        // 전체 발송은 BroadcastNotification 단일 레코드만 저장한다.
+        // 개별 Notification을 유저 수만큼 INSERT하면 대규모 DB 부하가 생기고,
+        // 앱은 BroadcastNotification 타임라인을 별도로 조회해 알림 목록에 노출한다.
+        // 특정 대상 발송(sendToArtistFollowers, sendToFestivalCertified)은 실제 Notification을 저장해
+        // 개인 알림 목록에도 표시되게 한다.
+        broadcastNotificationRepository.save(BroadcastNotification.of(title, body));
+        logAndSend(tokens, title, body, "[AdminPush] 전체 푸시 발송 시작 — 토큰 {}개, 제목: {}", tokens.size(), title);
+    }
+
+    /**
+     * FCM 발송(네트워크 I/O)을 DB 트랜잭션 커밋 후로 미룬다 — FileStorageService.deleteFileAfterCommit과 동일한 이유:
+     * FCM 응답이 지연되면 트랜잭션 안에서 DB 커넥션을 계속 점유하게 되어 커넥션 풀 고갈로 이어질 수 있다.
+     */
+    private void logAndSend(List<String> tokens, String title, String body, String logMessage, Object... logArgs) {
+        log.info(logMessage, logArgs);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    fcmPushService.sendBroadcast(tokens, title, body);
+                }
+            });
+        } else {
+            fcmPushService.sendBroadcast(tokens, title, body);
+        }
+    }
+}

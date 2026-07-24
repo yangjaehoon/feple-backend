@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('크롤링 대시보드')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('crawl')}"></div>
+<div class="main-content">
+
+    <div class="page-header">
+        <div th:replace="~{admin/fragments :: pageHeaderInner('크롤링 대시보드', '크롤링 대시보드')}"></div>
+        <div class="header-tab-group">
+            <button class="header-tab-btn active" data-tab="scraping">🕸️ 웹 스크래핑</button>
+            <button class="header-tab-btn" data-tab="ocr">🖼️ 타임테이블 OCR</button>
+            <button class="header-tab-btn" data-tab="lineup">👥 라인업 OCR</button>
+        </div>
+    </div>
+
+    <div class="content-area">
+
+        <div th:replace="~{admin/system/crawl-scraping-fragment :: scrapingTab}"></div>
+        <div th:replace="~{admin/system/crawl-ocr-fragment :: ocrTab}"></div>
+        <div th:replace="~{admin/system/crawl-lineup-fragment :: lineupTab}"></div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.CrawlUrls = {
+    scrape:                  /*[[@{/admin/crawl/scrape}]]*/ '',
+    scrapeApply:             /*[[@{/admin/crawl/scrape/apply}]]*/ '',
+    festivals:               /*[[@{/admin/crawl/festivals}]]*/ '',
+    ocr:                     /*[[@{/admin/crawl/ocr}]]*/ '',
+    ocrApply:                /*[[@{/admin/crawl/ocr/apply}]]*/ '',
+    lineupOcr:               /*[[@{/admin/crawl/ocr/lineup}]]*/ '',
+    lineupOcrApply:          /*[[@{/admin/crawl/ocr/lineup/apply}]]*/ '',
+    lineupSuggestions:       /*[[@{/admin/crawl/ocr/lineup/suggestions}]]*/ '',
+    quota:                   /*[[@{/admin/crawl/quota}]]*/ '',
+    festivalDetailBase:      /*[[@{/admin/festivals}]]*/ '',
+    artistCreateBase:        /*[[@{/admin/artists/new}]]*/ ''
+};
+/*]]>*/
+</script>
+<script th:src="@{/js/admin-crawl-common.js}"></script>
+<script th:src="@{/js/admin-crawl-scrape.js}"></script>
+<script th:src="@{/js/admin-crawl-timetable-ocr.js}"></script>
+<script th:src="@{/js/admin-crawl-lineup-ocr.js}"></script>
+</body>
+</html>

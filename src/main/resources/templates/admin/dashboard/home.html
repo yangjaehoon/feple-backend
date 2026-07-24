@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('대시보드')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('home')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div th:replace="~{admin/fragments :: pageHeaderInner('대시보드', '대시보드')}"></div>
+        <div class="page-actions">
+            <a class="btn btn-primary" th:href="@{/admin/festivals/new}">+ 페스티벌</a>
+            <a class="btn btn-secondary" th:href="@{/admin/artists/new}">+ 아티스트</a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="db-grid">
+
+            <!-- ═══════════════════════════════════════════
+                 열 1 (넓음): 대기 중 인증/신고 + 최근 가입 회원
+                 ═══════════════════════════════════════════ -->
+            <div class="db-col">
+
+                <!-- 대기 중 인증 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('🪪', '대기 중 인증', ${dashboard.pending.certCount}, 'count-badge-yellow', @{/admin/certifications(status='PENDING')})}"></div>
+                    <div class="activity-list">
+                        <a th:each="cert : ${dashboard.pending.certs}" class="act-item act-item-link"
+                           th:href="@{/admin/certifications/{id}(id=${cert.id})}">
+                            <div class="act-dot yellow"></div>
+                            <div class="act-body">
+                                <div class="act-type" th:text="${cert.festivalTitle}"></div>
+                                <div class="act-title" th:text="${cert.userNickname}"></div>
+                            </div>
+                            <div class="act-meta"
+                                 th:text="${#temporals.format(cert.createdAt, 'MM-dd HH:mm')}"></div>
+                        </a>
+                        <div th:if="${#lists.isEmpty(dashboard.pending.certs)}" class="empty-state">
+                            대기 중인 인증 신청이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 대기 중 신고 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('🚨', '대기 중 신고', ${dashboard.pending.reportCount}, 'count-badge-red', @{/admin/reports})}"></div>
+                    <div class="activity-list">
+                        <div th:each="report : ${dashboard.pending.reports}" class="act-item">
+                            <div class="act-dot red"></div>
+                            <div class="act-body">
+                                <div class="act-type" th:text="${report.reason.displayName}"></div>
+                                <a class="act-title"
+                                   th:href="@{/admin/posts/{id}(id=${report.postId})}"
+                                   th:text="${report.postTitle}"></a>
+                            </div>
+                            <div class="act-meta"
+                                 th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(dashboard.pending.reports)}" class="empty-state">
+                            대기 중인 신고가 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 대기 중 노래 요청 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('🎵', '대기 중 노래 요청', ${dashboard.pending.songRequestCount}, 'count-badge-blue', @{/admin/song-requests(status='PENDING')})}"></div>
+                    <div class="activity-list">
+                        <div th:each="req : ${dashboard.pending.songRequests}" class="act-item">
+                            <div class="act-dot"></div>
+                            <div class="act-body">
+                                <div class="act-type" th:text="${req.artistName}"></div>
+                                <a class="act-title"
+                                   th:href="@{/admin/song-requests(status='PENDING')}"
+                                   th:text="${req.songTitle}"></a>
+                            </div>
+                            <div class="act-meta"
+                                 th:text="${req.createdAt != null ? #temporals.format(req.createdAt, 'MM-dd HH:mm') : ''}"></div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(dashboard.pending.songRequests)}" class="empty-state">
+                            대기 중인 노래 요청이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 대기 중 아티스트 신청 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('🙋', '대기 중 아티스트 신청', ${dashboard.pending.artistSuggestionCount}, 'count-badge-yellow', @{/admin/artist-suggestions})}"></div>
+                    <div class="activity-list">
+                        <div th:each="s : ${dashboard.pending.artistSuggestions}" class="act-item">
+                            <div class="act-dot yellow"></div>
+                            <div class="act-body">
+                                <div class="act-title" th:text="${s.artistName}"></div>
+                                <div class="act-type" th:text="${s.userNickname}"></div>
+                            </div>
+                            <div class="act-meta"
+                                 th:text="${#temporals.format(s.createdAt, 'MM-dd HH:mm')}"></div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(dashboard.pending.artistSuggestions)}" class="empty-state">
+                            대기 중인 아티스트 신청이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 최근 가입 회원 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('👥', '최근 가입 회원', null, null, @{/admin/users})}"></div>
+                    <div class="member-list">
+                        <div th:each="user : ${dashboard.content.recentUsers}" class="member-item">
+                            <img th:if="${user.profileImageUrl != null}"
+                                 th:src="${user.profileImageUrl}"
+                                 class="member-av" alt=""/>
+                            <div th:if="${user.profileImageUrl == null}"
+                                 class="member-av">👤</div>
+                            <div class="act-body">
+                                <div class="member-name" th:text="${user.nickname ?: '(닉네임 없음)'}"></div>
+                                <div class="member-email" th:text="${user.email ?: '-'}"></div>
+                            </div>
+                            <span class="member-date">신규</span>
+                        </div>
+                        <div th:if="${#lists.isEmpty(dashboard.content.recentUsers)}" class="empty-state">
+                            가입한 회원이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════
+                 열 2 (중간): 현황 요약 + 일별 지표 + 활동 피드
+                 ═══════════════════════════════════════════ -->
+            <div class="db-col">
+
+                <!-- 현황 요약 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('📊', '현황 요약', null, null, null)}"></div>
+                    <div class="stats-summary">
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">🎵</span>페스티벌</span>
+                            <span class="sum-val" th:text="${dashboard.stats.totalFestivals}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">🎤</span>아티스트</span>
+                            <span class="sum-val" th:text="${dashboard.stats.totalArtists}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">📝</span>총 게시글</span>
+                            <span class="sum-val" th:text="${dashboard.stats.totalPosts}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">👤</span>총 회원</span>
+                            <span class="sum-val" th:text="${dashboard.stats.totalUsers}">0</span>
+                        </div>
+                        <div class="sum-item">
+                            <span class="sum-label"><span class="sum-icon">🔥</span>최근 7일 게시글</span>
+                            <span class="sum-val" th:text="${dashboard.stats.recentPostCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 일별 지표 테이블 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('📅', '일별 지표 (7일)', null, null, null)}"></div>
+                    <div class="table-wrap">
+                        <table class="compact-table">
+                            <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th class="r">가입</th>
+                                <th class="r">게시글</th>
+                                <th class="r">댓글</th>
+                                <th class="r">신고</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="s : ${dashboard.content.dailyStats}">
+                                <td th:text="${s.date()}"></td>
+                                <td class="r val-green" th:text="${s.signups() > 0 ? '+' + s.signups() : '-'}"></td>
+                                <td class="r val-blue"  th:text="${s.posts() > 0 ? s.posts() : '-'}"></td>
+                                <td class="r"           th:text="${s.comments() > 0 ? s.comments() : '-'}"></td>
+                                <td class="r val-muted" th:text="${s.reports() > 0 ? s.reports() : '-'}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- HOT 게시글 활동 피드 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('🔥', 'HOT 게시글 (7일)', null, null, @{/admin/posts})}"></div>
+                    <div class="activity-list">
+                        <div th:each="post, stat : ${dashboard.content.hotPosts}" class="act-item">
+                            <div th:classappend="${stat.index % 3 == 0} ? 'red' : (${stat.index % 3 == 1} ? 'green' : 'yellow')"
+                                 class="act-dot"></div>
+                            <div class="act-body">
+                                <div class="act-type">HOT 게시글 #<span th:text="${stat.count}"></span></div>
+                                <a class="act-title"
+                                   th:href="@{/admin/posts/{id}(id=${post.id})}"
+                                   th:text="${post.title}"></a>
+                            </div>
+                            <div class="act-meta">
+                                ❤ <span th:text="${post.likeCount}"></span>
+                                &nbsp;💬 <span th:text="${post.commentCount}"></span>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(dashboard.content.hotPosts)}" class="empty-state">
+                            최근 7일 게시글이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ═══════════════════════════════════════════
+                 열 3 (좁음): 관리자 프로필 + 서비스 현황 + 메모
+                 ═══════════════════════════════════════════ -->
+            <div class="db-col">
+
+                <!-- 관리자 프로필 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('👩‍💼', '관리자', null, null, null)}"></div>
+                    <div class="profile-body">
+                        <img th:src="${currentAdmin != null and currentAdmin.profileImageUrl != null} ? ${currentAdmin.profileImageUrl} : @{/img/feple_logo.png}"
+                             th:class="${currentAdmin != null and currentAdmin.profileImageUrl != null} ? 'admin-profile-img' : 'profile-av-xl'"
+                             alt="프로필"/>
+                        <div class="profile-name"
+                             th:text="${currentAdmin?.displayName ?: (currentAdmin?.username ?: 'Admin')}"></div>
+                        <div class="profile-email"
+                             th:text="${currentAdmin != null} ? ${currentAdmin.username} : ''"></div>
+                        <span class="profile-tag"
+                              th:text="${currentAdmin != null} ? ('⭐ ' + ${currentAdmin.role.displayName}) : '⭐ 관리자'"></span>
+                        <div class="profile-actions">
+                            <a class="btn btn-secondary btn-sm" th:href="@{/admin/users}">회원 관리</a>
+                            <a class="btn btn-primary btn-sm" th:href="@{/admin/festivals/new}">+ 페스티벌</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 최근 감사 로그 -->
+                <div class="db-card">
+                    <div th:replace="~{admin/fragments :: dashboardCardHeader('📋', '최근 관리자 활동', null, null, @{/admin/logs})}"></div>
+                    <div class="activity-list">
+                        <div th:each="entry : ${recentLogs}" class="act-item">
+                            <div th:with="a=${entry.action.name()}"
+                                 th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT')} ? 'act-dot red'
+                                         : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'} ? 'act-dot green'
+                                         : 'act-dot yellow')"></div>
+                            <div class="act-body">
+                                <div class="act-type" th:text="${actionLabels.getOrDefault(entry.action.name(), #strings.replace(entry.action.name(), '_', ' '))}"></div>
+                                <div class="act-title" th:text="${entry.detail != null ? entry.detail : (entry.targetType != null ? entry.targetType + (entry.targetId != null ? ' #' + entry.targetId : '') : '—')}"></div>
+                            </div>
+                            <div class="act-meta"
+                                 th:text="${#temporals.format(entry.createdAt, 'MM-dd HH:mm')}"></div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(recentLogs)}" class="empty-state">
+                            기록된 활동이 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 메모 위젯 -->
+                <div class="db-card">
+                    <div class="db-card-header">
+                        <span class="db-card-title">📝 메모</span>
+                        <button id="memo-clear-btn" class="btn btn-secondary btn-sm"
+                                data-confirm="메모를 모두 삭제할까요?">전체 삭제</button>
+                    </div>
+                    <div class="memo-body">
+                        <textarea class="memo-textarea" id="memo-input"
+                                  placeholder="메모를 입력하세요..." maxlength="500"></textarea>
+                        <div class="memo-btns">
+                            <button id="memo-add-btn" class="btn btn-primary btn-sm">저장</button>
+                            <span class="memo-storage-hint">이 브라우저에만 저장됩니다.</span>
+                        </div>
+                        <div class="memo-saved" id="memo-saved"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- /db-grid -->
+    </div><!-- /content-area -->
+</div><!-- /main-content -->
+
+<script th:src="@{/js/admin-home.js}"></script>
+
+</body>
+</html>

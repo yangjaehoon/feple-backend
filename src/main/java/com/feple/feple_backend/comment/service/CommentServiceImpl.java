@@ -1,0 +1,243 @@
+package com.feple.feple_backend.comment.service;
+
+
+import com.feple.feple_backend.badword.BadWordValidator;
+import com.feple.feple_backend.certification.service.FestivalCertificationService;
+import com.feple.feple_backend.comment.dto.CommentLikeResult;
+import com.feple.feple_backend.comment.dto.CommentResponseDto;
+import com.feple.feple_backend.comment.dto.CreateCommentDto;
+import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
+import com.feple.feple_backend.comment.entity.Comment;
+import com.feple.feple_backend.comment.entity.CommentLike;
+import com.feple.feple_backend.comment.event.CommentCreatedEvent;
+import com.feple.feple_backend.comment.repository.CommentLikeRepository;
+import com.feple.feple_backend.comment.repository.CommentReportRepository;
+import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.LikeToggler;
+import com.feple.feple_backend.global.PageSize;
+import com.feple.feple_backend.global.OwnershipValidator;
+import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.userblock.service.BlockedContentFilter;
+import com.feple.feple_backend.userblock.service.UserBlockService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class CommentServiceImpl implements CommentService {
+    private final CommentRepository commentRepository;
+    private final CommentLikeRepository commentLikeRepository;
+    private final CommentReportRepository commentReportRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final FestivalCertificationService certificationService;
+    private final BadWordValidator badWordValidator;
+    private final UserBlockService userBlockService;
+    private final BlockedContentFilter blockedContentFilter;
+
+    @Override
+    @Transactional
+    public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
+        badWordValidator.validateField("content", dto.getContent());
+        Post post = EntityLoader.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
+
+        if (userBlockService.isBlocked(post.getUserId(), userId)) {
+            throw new AccessDeniedException("차단된 사용자의 게시글에는 댓글을 작성할 수 없습니다.");
+        }
+
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
+
+        Comment parent = null;
+        if (dto.getParentId() != null) {
+            parent = EntityLoader.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
+            if (!parent.getPostId().equals(post.getId())) {
+                throw new IllegalArgumentException("부모 댓글이 해당 게시글에 속하지 않습니다.");
+            }
+        }
+        Comment saved = saveComment(dto, post, user, parent);
+
+        publishCommentCreatedEvent(dto, post, user, parent, userId);
+
+        boolean certified = post.getFestivalId() != null &&
+                certificationService.existsApprovedCertification(post.getFestivalId(), userId);
+
+        return CommentResponseDto.from(saved, certified, false);
+    }
+
+    private Comment saveComment(CreateCommentDto dto, Post post, User user, Comment parent) {
+        Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
+        Comment saved = commentRepository.save(comment);
+        postRepository.incrementCommentCount(post.getId());
+        return saved;
+    }
+
+    private void publishCommentCreatedEvent(CreateCommentDto dto, Post post, User user, Comment parent, Long userId) {
+        Long postAuthorId = post.getUserId();
+        String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
+        Long parentCommentAuthorId = resolveParentCommentAuthorId(parent, userId, postAuthorId);
+        // 게시글 작성자 본인이 자기 글에 댓글을 달면 게시글 알림은 생략 (원댓글 알림은 그대로 유지)
+        Long notifyPostAuthorId = postAuthorId.equals(userId) ? null : postAuthorId;
+
+        eventPublisher.publishEvent(
+                new CommentCreatedEvent(notifyPostAuthorId, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId, userId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId) {
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, PageSize.COMMENTS)).getContent();
+        List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+
+        Set<Long> certifiedUserIds = getCertifiedUserIds(post);
+        Set<Long> likedCommentIds = getLikedCommentIds(userId, commentIds);
+
+        List<CommentResponseDto> result = comments.stream()
+                .map(c -> CommentResponseDto.from(
+                        c,
+                        certifiedUserIds.contains(c.getUserId()),
+                        likedCommentIds.contains(c.getId())))
+                .toList();
+        return blockedContentFilter.excludeBlocked(result, userId, CommentResponseDto::getUserId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit) {
+        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, limit))
+                .getContent().stream()
+                .map(c -> CommentResponseDto.from(c, false, false))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MyCommentResponseDto> getMyComments(Long userId) {
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
+        return commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
+                .stream().map(MyCommentResponseDto::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MyCommentResponseDto> getRecentCommentsByUser(Long userId, int limit) {
+        return commentRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, limit))
+                .stream().map(MyCommentResponseDto::from).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countMyComments(Long userId) {
+        return commentRepository.countByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long commentId){
+        // soft delete: 신고 기록(CommentReport) 보존, 행이 남아 FK 무결성 유지
+        deleteAndDecrement(EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글"));
+    }
+
+    @Override
+    @Transactional
+    public void deleteOwnComment(Long commentId, Long requestUserId) {
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
+        deleteAndDecrement(comment);
+    }
+
+    private Long resolveParentCommentAuthorId(Comment parent, Long userId, Long postAuthorId) {
+        if (parent == null) return null;
+        Long parentAuthorId = parent.getUserId();
+        if (parentAuthorId.equals(userId) || parentAuthorId.equals(postAuthorId)) return null;
+        return parentAuthorId;
+    }
+
+    private void deleteAndDecrement(Comment comment) {
+        commentRepository.deleteById(comment.getId());
+        postRepository.decrementCommentCount(comment.getPostId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countCommentsContaining(String word) {
+        return commentRepository.countByContentContaining(word.toLowerCase());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, Long> getCommentCountsByUserIds(java.util.List<Long> userIds) {
+        if (userIds.isEmpty()) return java.util.Map.of();
+        return QueryResultMapper.toLongMap(commentRepository.countGroupByUserId(userIds));
+    }
+
+    @Override
+    @Transactional
+    public void updateOwnComment(Long commentId, Long requestUserId, String content) {
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글", "수정");
+        badWordValidator.validateField("content", content);
+        comment.update(content);
+    }
+
+    private Set<Long> getCertifiedUserIds(Post post) {
+        if (post.getFestivalId() == null) return Set.of();
+        return certificationService.findApprovedUserIdsByFestivalId(post.getFestivalId());
+    }
+
+    @Override
+    @Transactional
+    public void deleteByPostIds(List<Long> postIds) {
+        if (postIds.isEmpty()) return;
+        // FK 순서: CommentLike → CommentReport → Comment
+        commentLikeRepository.deleteByPostIds(postIds);
+        commentReportRepository.deleteByPostIds(postIds);
+        commentRepository.deleteByPostIds(postIds);
+    }
+
+    private Set<Long> getLikedCommentIds(Long userId, List<Long> commentIds) {
+        if (userId == null || commentIds.isEmpty()) return Set.of();
+        return new HashSet<>(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(userId, commentIds));
+    }
+
+    @Override
+    @Transactional
+    public CommentLikeResult toggleLike(Long commentId, Long userId) {
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
+
+        boolean liked = LikeToggler.toggle(
+                () -> commentLikeRepository.deleteByUserIdAndCommentId(userId, commentId),
+                () -> commentRepository.decrementLikeCount(commentId),
+                () -> {
+                    commentLikeRepository.saveAndFlush(new CommentLike(comment, user));
+                    commentRepository.incrementLikeCount(commentId);
+                });
+        // 원자적 UPDATE 이후 값을 다시 읽어야 정확하다 — 토글 직전 로드해둔 comment.getLikeCount()로
+        // 계산하면 동시에 처리된 다른 사용자의 좋아요가 반영되지 않아 응답 값이 실제 DB 값과 어긋날 수 있다.
+        int newLikeCount = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글").getLikeCount();
+        return new CommentLikeResult(liked, newLikeCount);
+    }
+
+    @Override
+    @Transactional
+    public void removeLikesByUser(Long userId) {
+        commentLikeRepository.decrementCommentLikeCountByUserId(userId);
+        commentLikeRepository.deleteByUserId(userId);
+    }
+}

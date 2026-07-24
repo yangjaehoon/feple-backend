@@ -1,0 +1,22 @@
+package com.feple.feple_backend.global.exception;
+
+public enum ErrorCode {
+    VALIDATION_FAILED,
+    ILLEGAL_ARGUMENT,
+    BAD_WORD,
+    INVALID_REQUEST,
+    UNAUTHORIZED,
+    ACCESS_DENIED,
+    RESOURCE_NOT_FOUND,
+    CONFLICT,
+    METHOD_NOT_ALLOWED,
+    FILE_TOO_LARGE,
+    RATE_LIMITED,
+    SERVICE_UNAVAILABLE,
+    IO_ERROR,
+    ILLEGAL_STATE,
+    SERVER_ERROR,
+    TOKEN_EXPIRED,
+    TOKEN_INVALID,
+    USER_BANNED
+}

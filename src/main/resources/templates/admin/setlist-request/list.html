@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('셋리스트 수정 요청')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('setlist-requests')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('셋리스트 수정 요청', '셋리스트 수정 요청')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <!-- 검색 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/setlist-requests}" method="get">
+                    <input type="hidden" name="status" th:value="${status}"/>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '아티스트 또는 페스티벌 검색...', @{/admin/setlist-requests(status=${status}, page=0)})}"></th:block>
+                </form>
+            </div>
+
+            <!-- 상태 필터 탭 -->
+            <div class="type-tab-wrap">
+                <a th:href="@{/admin/setlist-requests(status='PENDING', page=0, keyword=${keyword})}"
+                   th:classappend="${status == 'PENDING'} ? ' active' : ''"
+                   class="type-tab">
+                    대기중
+                    <span th:if="${pendingCount > 0}" class="card-count" th:text="${pendingCount}"></span>
+                </a>
+                <a th:href="@{/admin/setlist-requests(status='RESOLVED', page=0, keyword=${keyword})}"
+                   th:classappend="${status == 'RESOLVED'} ? ' active' : ''"
+                   class="type-tab">처리완료</a>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48">ID</th>
+                        <th class="col-w110">요청자</th>
+                        <th class="col-w130">아티스트</th>
+                        <th>페스티벌</th>
+                        <th>요청 내용</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w100">요청일</th>
+                        <th class="col-w80">액션</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="req : ${requests.content}">
+                        <td class="td-id" th:text="${req.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${req.userId})}"
+                               class="td-link-normal"
+                               th:text="${req.user.nickname}"></a>
+                        </td>
+                        <td class="cell-primary" th:text="${req.artistName}"></td>
+                        <td class="cell-primary" th:text="${req.festivalTitle}"></td>
+                        <td>
+                            <div class="cell-primary request-message"
+                                 th:text="${req.message}"></div>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${req.status.name() == 'PENDING'} ? 'badge-warning' : 'badge-success'"
+                                  th:text="${req.status.name() == 'PENDING'} ? '대기중' : '처리완료'"></span>
+                        </td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(req.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <form th:if="${req.status.name() == 'PENDING'}"
+                                  th:action="@{/admin/setlist-requests/{id}/resolve(id=${req.id})}"
+                                  method="post" class="inline-form"
+                                  data-confirm="처리 완료로 표시할까요?">
+                                <input type="hidden" name="status"  th:value="${status}"/>
+                                <input type="hidden" name="page"    th:value="${requests.number}"/>
+                                <input type="hidden" name="keyword" th:value="${keyword}"/>
+                                <button type="submit" class="btn btn-primary btn-sm">처리완료</button>
+                            </form>
+                            <span th:unless="${req.status.name() == 'PENDING'}"
+                                  class="cell-secondary">-</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${requests.totalElements == 0}"
+                        th:replace="~{admin/fragments :: emptyRow(8, '셋리스트 수정 요청이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${requests}, '/admin/setlist-requests',
+                'status=' + ${status} + (${keyword != null and !#strings.isEmpty(keyword)} ? '&keyword=' + ${keyword} : ''))}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

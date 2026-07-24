@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('아티스트 목록')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div th:replace="~{admin/fragments :: pageHeaderInner('아티스트 목록', '아티스트')}"></div>
+        <div class="page-actions">
+            <a class="btn btn-secondary" th:href="@{/admin/artists/photos}">🖼 사진 관리</a>
+            <a class="btn btn-primary" th:href="@{/admin/artists/new}">+ 아티스트 등록</a>
+        </div>
+    </div>
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 아티스트 신청 섹션 -->
+        <div th:if="${not #lists.isEmpty(suggestions)}" class="card card-mb">
+            <div class="card-header">
+                <div class="card-title">
+                    아티스트 신청 대기
+                    <span class="count-badge count-badge-yellow"
+                          th:text="${#lists.size(suggestions)}"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>아티스트 이름</th>
+                        <th>추가 정보</th>
+                        <th class="col-w120">신청자</th>
+                        <th class="col-w140">신청일</th>
+                        <th class="col-w100">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="suggestion : ${suggestions}">
+                        <td class="cell-primary" th:text="${suggestion.artistName}"></td>
+                        <td class="td-note" th:text="${suggestion.note != null ? suggestion.note : '-'}"></td>
+                        <td class="td-sub" th:text="${suggestion.userNickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(suggestion.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-sm open-dismiss-btn"
+                                    th:data-id="${suggestion.id}"
+                                    th:data-artist="${suggestion.artistName}">처리하기</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 처리 완료 내역 -->
+        <div th:if="${not #lists.isEmpty(processedSuggestions)}" class="card card-mb">
+            <details>
+                <summary>
+                    <div class="card-title">
+                        처리 완료 내역
+                        <span class="count-badge count-badge-neutral"
+                              th:text="${processedSuggestionsTotal}"></span>
+                    </div>
+                    <span class="summary-meta">
+                        <span class="summary-text"></span>
+                        <span class="summary-arrow">▼</span>
+                    </span>
+                </summary>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>아티스트 이름</th>
+                            <th>신청 메모</th>
+                            <th class="col-w120">신청자</th>
+                            <th class="col-w140">신청일</th>
+                            <th class="col-w300">처리 메시지</th>
+                            <th class="col-w140">처리일</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="suggestion : ${processedSuggestions}">
+                            <td class="cell-primary" th:text="${suggestion.artistName}"></td>
+                            <td class="td-note" th:text="${suggestion.note != null ? suggestion.note : '-'}"></td>
+                            <td class="td-sub" th:text="${suggestion.userNickname}"></td>
+                            <td class="cell-secondary"
+                                th:text="${#temporals.format(suggestion.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td class="td-note" th:text="${suggestion.processNote != null ? suggestion.processNote : '-'}"></td>
+                            <td class="cell-secondary"
+                                th:text="${suggestion.processedAt != null ? #temporals.format(suggestion.processedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    전체 아티스트
+                    <span th:if="${genre != null}"
+                          class="genre-active-label"
+                          th:text="'— ' + ${genre.displayName}"></span>
+                </div>
+            </div>
+
+            <!-- 장르 필터 -->
+            <div class="type-tab-wrap">
+                <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort})}"
+                   class="type-tab"
+                   th:classappend="${genre == null} ? ' active'">
+                    전체
+                </a>
+                <a th:each="g : ${allGenres}"
+                   th:href="@{/admin/artists(keyword=${keyword}, sort=${sort}, genre=${g.name()})}"
+                   th:text="${g.displayName}"
+                   class="type-tab"
+                   th:classappend="${genre == g} ? ' active'">
+                </a>
+            </div>
+
+            <!-- 검색 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/artists}" method="get">
+                    <input type="hidden" name="sort" th:value="${sort}"/>
+                    <input type="hidden" name="genre" th:if="${genre != null}" th:value="${genre.name()}"/>
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '아티스트 이름 검색...', @{/admin/artists(sort=${sort}, genre=${genre != null ? genre.name() : null})})}"></th:block>
+                </form>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>
+                            아티스트
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'name' ? 'name_desc' : 'name'}, genre=${genre != null ? genre.name() : null})}"
+                               th:text="${sort == 'name'} ? '↑' : (${sort == 'name_desc'} ? '↓' : '↕')"
+                               class="sort-btn"
+                               th:classappend="${sort == 'name' or sort == 'name_desc'} ? ' active'"></a>
+                        </th>
+                        <th class="col-w200">영어 이름</th>
+                        <th class="col-w80">
+                            팔로워
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'followers' ? 'followers_asc' : 'followers'}, genre=${genre != null ? genre.name() : null})}"
+                               th:text="${sort == 'followers'} ? '↓' : (${sort == 'followers_asc'} ? '↑' : '↕')"
+                               class="sort-btn"
+                               th:classappend="${sort == 'followers' or sort == 'followers_asc'} ? ' active'"></a>
+                        </th>
+                        <th class="col-w70">
+                            곡 수
+                            <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'songs' ? 'songs_asc' : 'songs'}, genre=${genre != null ? genre.name() : null})}"
+                               th:text="${sort == 'songs'} ? '↓' : (${sort == 'songs_asc'} ? '↑' : '↕')"
+                               class="sort-btn"
+                               th:classappend="${sort == 'songs' or sort == 'songs_asc'} ? ' active'"></a>
+                        </th>
+                        <th class="col-w160">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="artist : ${artists}">
+                        <td>
+                            <div class="avatar-cell">
+                                <img th:if="${artist.profileImageUrl != null}"
+                                     th:src="${artist.profileImageUrl}"
+                                     class="avatar" alt="profile"/>
+                                <div th:if="${artist.profileImageUrl == null}"
+                                     class="avatar-placeholder">🎤</div>
+                                <div>
+                                    <div class="cell-primary" th:text="${artist.name}"></div>
+                                    <div class="cell-secondary">
+                                        <span class="badge badge-genre" th:text="${artist.genre}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="td-sub"
+                            th:text="${artist.nameEn != null and !artist.nameEn.isEmpty()} ? ${artist.nameEn} : '-'"></td>
+                        <td class="td-center" th:text="${artist.followerCount}"></td>
+                        <td class="td-center" th:text="${artist.songCount}"></td>
+                        <td>
+                            <div class="cell-actions">
+                                <a th:href="@{/admin/artists/{id}/songs(id=${artist.id})}"
+                                   class="btn btn-secondary btn-sm">곡 관리</a>
+                                <a th:href="@{/admin/artists/{id}/edit(id=${artist.id}, page=${artistsPage.number}, keyword=${keyword}, sort=${sort})}"
+                                   class="btn btn-warning btn-sm">수정</a>
+                                <form th:action="@{/admin/artists/{id}/delete(id=${artist.id})}" method="post">
+                                    <button type="submit"
+                                            class="btn btn-ghost-danger btn-sm"
+                                            data-confirm="아티스트를 삭제하시겠습니까?">삭제</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(artists)}" class="empty-row">
+                        <td colspan="5">
+                            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">검색 결과가 없습니다.</span>
+                            <th:block th:unless="${keyword != null and !#strings.isEmpty(keyword)}">
+                                등록된 아티스트가 없습니다.
+                                <a th:href="@{/admin/artists/new}" class="btn btn-primary btn-sm empty-cta">+ 아티스트 등록</a>
+                            </th:block>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div th:insert="~{admin/fragments :: pagination(${artistsPage}, '/admin/artists',
+                (${keyword != null and !#strings.isEmpty(keyword)} ? 'keyword=' + ${keyword} + '&' : '') +
+                (${sort != null and !#strings.isEmpty(sort)} ? 'sort=' + ${sort} + '&' : '') +
+                (${genre != null} ? 'genre=' + ${genre.name()} : ''))}"></div>
+        </div>
+    </div>
+</div>
+<!-- 처리완료 모달 -->
+<div id="dismiss-modal" class="modal-overlay">
+    <div class="admin-modal-box">
+        <div class="admin-modal-header">
+            <div class="admin-modal-title">신청 처리</div>
+            <div id="dismiss-artist-name" class="admin-modal-subtitle"></div>
+        </div>
+        <div class="admin-modal-section">
+            <div class="admin-modal-label">처리 사유 (선택)</div>
+            <div class="reason-chip-row">
+                <button type="button" class="reason-chip" data-reason="요청하신 아티스트를 등록했어요!">등록 완료</button>
+                <button type="button" class="reason-chip" data-reason="이미 등록된 아티스트예요.">이미 등록됨</button>
+                <button type="button" class="reason-chip" data-reason="정보가 부족해서 등록이 어려워요.">정보 부족</button>
+                <button type="button" class="reason-chip" data-reason="활동 이력이 없어서 등록이 어려워요.">비활동 아티스트</button>
+                <button type="button" class="reason-chip" data-reason="">직접 입력</button>
+            </div>
+            <textarea id="dismiss-note" rows="3" class="admin-modal-textarea"
+                      placeholder="사용자에게 전달할 메시지를 입력하세요. (미입력 시 기본 메시지로 발송됩니다)"></textarea>
+        </div>
+        <form id="dismiss-form" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="processNote" id="dismiss-process-note"/>
+            <div class="admin-modal-actions">
+                <button type="button" id="dismiss-close-btn" class="btn btn-secondary">취소</button>
+                <button type="submit" class="btn btn-primary">처리 완료</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.ArtistSuggestionUrls = { dismissBase: /*[[@{/admin/artists/suggestions}]]*/ '' };
+/*]]>*/
+</script>
+<script th:src="@{/js/admin-dismiss-modal.js}"></script>
+</body>
+</html>

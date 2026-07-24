@@ -1,0 +1,54 @@
+package com.feple.feple_backend.timetable.dto;
+
+import com.feple.feple_backend.timetable.entity.TimetableEntry;
+import com.feple.feple_backend.timetable.entity.TimetableEntryMember;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Getter
+@Builder
+public class TimetableEntryResponseDto {
+    private Long id;
+    private String stageName;
+    private int stageOrder;
+    private String artistName;
+    private String artistNameEn;
+    private String festivalDate;
+    private String startTime;
+    private String endTime;
+    private String color;
+    private List<String> memberArtistNames;
+    private List<String> memberArtistNameEnList;
+    private List<Long> memberArtistIds;
+
+    private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
+
+    public static TimetableEntryResponseDto from(TimetableEntry e) {
+        int order = e.getStageDisplayOrder();
+        List<TimetableEntryMember> members = e.getMembers();
+        return TimetableEntryResponseDto.builder()
+                .id(e.getId())
+                .stageName(e.getStageName())
+                .stageOrder(order)
+                .artistName(e.getArtistName())
+                .artistNameEn(e.getArtistNameEn())
+                .festivalDate(e.getFestivalDate().toString())
+                .startTime(e.getStartTime().format(HH_MM))
+                .endTime(e.getEndTime().format(HH_MM))
+                .color(e.getColor())
+                .memberArtistNames(members.stream().map(TimetableEntryMember::getArtistName).toList())
+                .memberArtistNameEnList(members.stream().map(TimetableEntryMember::getArtistNameEn).toList())
+                .memberArtistIds(members.stream().map(TimetableEntryMember::getArtistId).filter(Objects::nonNull).toList())
+                .build();
+    }
+
+    public String getMemberArtistIdsStr() {
+        if (memberArtistIds == null || memberArtistIds.isEmpty()) return "";
+        return memberArtistIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+    }
+}

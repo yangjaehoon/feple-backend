@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ── 참여 아티스트 ── -->
+<div th:fragment="artistsCard" id="artists" class="card">
+    <div class="card-header">
+        <div class="card-title">
+            참여 아티스트
+            <span class="card-count" th:text="${#lists.size(participatingArtists)}"></span>
+        </div>
+        <div class="page-actions">
+            <button type="submit" form="batch-edit-form" class="btn btn-warning btn-sm"
+                    th:if="${!participatingArtists.isEmpty()}">💾 저장</button>
+            <a class="btn btn-primary btn-sm"
+               th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}">+ 추가</a>
+        </div>
+    </div>
+
+    <!-- 아티스트별 삭제 form — 중첩 form 방지를 위해 batch-edit-form 밖에 배치 -->
+    <th:block th:each="af : ${participatingArtistsByName}">
+        <form th:id="'delete-af-' + ${af.artistFestivalId}"
+              th:action="@{/admin/festivals/{fId}/artists/{afId}/delete(fId=${festival.id}, afId=${af.artistFestivalId})}"
+              method="post" hidden></form>
+    </th:block>
+
+    <form id="batch-edit-form"
+          th:action="@{/admin/festivals/{id}/artists/batch-edit(id=${festival.id})}"
+          method="post">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>참여 날짜</th>
+                    <th>아티스트</th>
+                    <th>장르</th>
+                    <th>공연 시간</th>
+                    <th>스테이지</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="af : ${participatingArtistsByName}">
+                    <td>
+                        <input type="hidden" name="afIds" th:value="${af.artistFestivalId}"/>
+                        <input type="date" name="performanceDates"
+                               th:value="${af.performanceDate != null ? af.performanceDate : (festival.startDate == festival.endDate ? festival.startDate : null)}"
+                               th:min="${festival.startDate}"
+                               th:max="${festival.endDate}"
+                               class="compact-input-date"/>
+                    </td>
+                    <td class="td-bold" th:text="${af.artistName}"></td>
+                    <td><span class="badge badge-genre" th:text="${af.artistGenre}"></span></td>
+                    <td>
+                        <!-- 타임테이블에 등록된 슬롯 표시 -->
+                        <th:block th:if="${!timetableByArtist.get(af.artistName).isEmpty()}">
+                            <div th:each="slot : ${timetableByArtist.get(af.artistName)}"
+                                 class="slot-row">
+                                <span class="slot-muted" th:text="${slot.festivalDate}"></span>
+                                <span class="slot-bold"
+                                      th:text="${slot.startTime} + ' ~ ' + ${slot.endTime}"></span>
+                            </div>
+                        </th:block>
+                        <!-- 타임테이블 미입력 -->
+                        <span th:if="${timetableByArtist.get(af.artistName).isEmpty()}"
+                              class="badge badge-danger">미입력</span>
+                    </td>
+                    <td>
+                        <th:block th:if="${!stages.isEmpty()}">
+                            <select name="stageNames" class="stage-select">
+                                <option value="">— 미지정 —</option>
+                                <option th:each="s : ${stages}"
+                                        th:value="${s.name}"
+                                        th:text="${s.name}"
+                                        th:selected="${s.name == af.stageName}"></option>
+                            </select>
+                        </th:block>
+                        <th:block th:if="${stages.isEmpty()}">
+                            <span class="hint">스테이지 없음</span>
+                            <input type="hidden" name="stageNames" th:value="${af.stageName}"/>
+                        </th:block>
+                    </td>
+                    <td>
+                        <button type="submit"
+                                th:attr="form='delete-af-' + ${af.artistFestivalId}"
+                                class="btn btn-ghost-danger btn-sm"
+                                data-confirm="참여 아티스트를 삭제하시겠습니까?">삭제</button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(participatingArtists)}" th:replace="~{admin/fragments :: emptyRow(6, '참여 아티스트가 없습니다.')}"></tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

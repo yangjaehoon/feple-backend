@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('인증 상세')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('certifications')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader2('인증 상세', '인증 관리', ${returnUrl}, '#' + ${cert.id})}"></div>
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+        <div class="card card-padded">
+            <div class="cert-detail-wrap">
+                <!-- 인증 사진 -->
+                <div class="cert-photo-col">
+                    <img th:src="${photoUrl}" alt="인증 사진" class="cert-photo"/>
+                </div>
+
+                <!-- 정보 -->
+                <div class="cert-info-col">
+                    <table class="cert-info-table">
+                        <tr class="cert-border-row">
+                            <td class="cert-label">신청자</td>
+                            <td class="cert-value">
+                                <a th:href="@{/admin/users/{id}(id=${cert.userId})}"
+                                   th:text="${cert.userNickname}" class="td-link"></a>
+                                <span class="cell-secondary" th:text="'(' + ${cert.userEmail} + ')'"></span>
+                            </td>
+                        </tr>
+                        <tr class="cert-border-row">
+                            <td class="cert-label">페스티벌</td>
+                            <td class="cert-value">
+                                <a th:href="@{/admin/festivals/{id}(id=${cert.festivalId})}"
+                                   th:text="${cert.festivalTitle}" class="td-link"></a>
+                            </td>
+                        </tr>
+                        <tr class="cert-border-row">
+                            <td class="cert-label">상태</td>
+                            <td class="cert-value">
+                                <span class="badge"
+                                      th:classappend="${cert.pending} ? 'badge-warning' : (${cert.approved} ? 'badge-success' : 'badge-danger')"
+                                      th:text="${cert.status.displayName}"></span>
+                            </td>
+                        </tr>
+                        <tr class="cert-border-row">
+                            <td class="cert-label">신청일</td>
+                            <td class="cert-value" th:text="${#temporals.format(cert.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        </tr>
+                        <tr th:if="${cert.reviewedAt != null}" class="cert-border-row">
+                            <td class="cert-label">심사일</td>
+                            <td class="cert-value" th:text="${#temporals.format(cert.reviewedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        </tr>
+                        <tr th:if="${cert.rejectionMessage != null and !#strings.isEmpty(cert.rejectionMessage)}">
+                            <td class="cert-label">거절 사유</td>
+                            <td class="cert-value-danger" th:text="${cert.rejectionMessage}"></td>
+                        </tr>
+                        <tr th:if="${cert.approved and cert.rating != null}" class="cert-border-row">
+                            <td class="cert-label">별점</td>
+                            <td class="cert-value">
+                                <span th:each="i : ${#numbers.sequence(1,5)}"
+                                      th:text="${i <= cert.rating} ? '★' : '☆'"
+                                      th:class="${i <= cert.rating} ? 'star-active' : 'star-empty'"
+                                      th:attr="aria-hidden='true'"></span>
+                                <span class="sr-only" th:text="${cert.rating} + '점'"></span>
+                                <span class="cell-secondary" th:text="'(' + ${cert.rating} + '/5)'"></span>
+                            </td>
+                        </tr>
+                        <tr th:if="${cert.approved and cert.userReview != null and !#strings.isEmpty(cert.userReview)}">
+                            <td class="cert-label">한줄 후기</td>
+                            <td class="cert-value" th:text="${cert.userReview}"></td>
+                        </tr>
+                    </table>
+
+                    <!-- 액션 버튼 -->
+                    <div th:if="${cert.pending}" class="cert-actions">
+                        <form th:action="@{/admin/certifications/{id}/approve(id=${cert.id})}" method="post">
+                            <input type="hidden" name="status"     th:value="${returnStatus}"/>
+                            <input type="hidden" name="page"       th:value="${returnPage}"/>
+                            <input type="hidden" name="keyword"    th:value="${returnKeyword}"/>
+                            <input type="hidden" name="nextCertId" th:value="${nextCertId}"/>
+                            <button type="submit" class="btn btn-primary"
+                                    data-confirm="이 인증을 승인할까요?">
+                                승인
+                            </button>
+                        </form>
+
+                        <form th:action="@{/admin/certifications/{id}/reject(id=${cert.id})}" method="post"
+                              class="cert-reject-form">
+                            <input type="hidden" name="status"     th:value="${returnStatus}"/>
+                            <input type="hidden" name="page"       th:value="${returnPage}"/>
+                            <input type="hidden" name="keyword"    th:value="${returnKeyword}"/>
+                            <input type="hidden" name="nextCertId" th:value="${nextCertId}"/>
+                            <div>
+                                <label class="cert-label-sm">거절 사유</label>
+                                <div class="reason-chip-row">
+                                    <button type="button" class="reason-chip"
+                                            onclick="setCertReason(this, '사진이 불분명해요.')">사진이 불분명해요.</button>
+                                    <button type="button" class="reason-chip"
+                                            onclick="setCertReason(this, '해당 페스티벌 인증이 아닌 것 같아요.')">해당 페스티벌 인증이 아닌 것 같아요.</button>
+                                    <button type="button" class="reason-chip"
+                                            onclick="setCertReason(this, '이미 인증된 내역이 있어요.')">이미 인증된 내역이 있어요.</button>
+                                    <button type="button" class="reason-chip"
+                                            onclick="clearCertReason(this)">직접 입력</button>
+                                </div>
+                                <textarea name="rejectionMessage" id="certRejectMsg"
+                                          placeholder="거절 사유를 입력하세요"
+                                          class="cert-reject-input" maxlength="500"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-danger"
+                                    data-confirm="이 인증을 거절할까요?">
+                                거절
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cert-back-link">
+            <a th:href="${returnUrl}" class="btn btn-secondary">← 목록으로</a>
+            <a th:if="${cert.pending and nextCertId != null}"
+               th:href="@{/admin/certifications/{id}(id=${nextCertId}, status='PENDING', page=0)}"
+               class="btn btn-primary">다음 항목으로 →</a>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/admin-cert-detail.js}"></script>
+</body>
+</html>

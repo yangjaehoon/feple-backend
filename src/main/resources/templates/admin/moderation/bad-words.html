@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('금칙어 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('bad-words')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('금칙어 관리', '금칙어')}"></div>
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <!-- 금칙어 추가 -->
+        <div class="card card-mb">
+            <div class="card-header">
+                <div class="card-title">금칙어 추가</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/bad-words/add}" method="post" class="bw-add-form">
+                    <input type="text" name="word" placeholder="금칙어 입력..."
+                           required maxlength="50"
+                           class="bw-add-input"/>
+                    <button type="submit" class="btn btn-primary">추가</button>
+                </form>
+                <p class="hint mt-8">
+                    소문자로 저장되며, 게시글·댓글 작성 시 해당 단어가 포함되면 등록이 차단됩니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- 금칙어 목록 -->
+        <div class="card card-mb">
+            <div class="card-header">
+                <div class="card-title">
+                    등록된 금칙어
+                    <span class="card-title-note"
+                          th:text="'총 ' + ${#lists.size(badWords)} + '개'"></span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>금칙어</th>
+                        <th class="col-w160">등록일시</th>
+                        <th class="col-w100">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="bw : ${badWords}">
+                        <td>
+                            <span class="bw-word"
+                                  th:text="${bw.word}"></span>
+                        </td>
+                        <td class="td-muted td-sm"
+                            th:text="${#temporals.format(bw.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <div class="cell-actions">
+                                <button type="button" class="btn btn-secondary btn-sm scan-word-btn"
+                                        th:data-word="${bw.word}">스캔</button>
+                                <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
+                                    <button type="submit" class="btn btn-ghost-danger btn-sm"
+                                            data-confirm="금칙어를 삭제하시겠습니까?">삭제</button>
+                                </form>
+                            </div>
+                            <div class="scan-result bw-scan-result"></div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(badWords)}" th:replace="~{admin/fragments :: emptyRow(3, '등록된 금칙어가 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script th:inline="javascript">
+/*<![CDATA[*/
+window.BadWordsUrls = { scan: /*[[@{/admin/bad-words/scan}]]*/ '' };
+/*]]>*/
+</script>
+<script th:src="@{/js/admin-bad-words.js}"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+package com.feple.feple_backend.admin.log;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public enum AdminAction {
+    FESTIVAL_CREATE("페스티벌 등록"),
+    FESTIVAL_UPDATE("페스티벌 수정"),
+    FESTIVAL_DELETE("페스티벌 삭제"),
+    FESTIVAL_ARTIST_ADD("페스티벌 아티스트 추가"),
+    FESTIVAL_ARTIST_REMOVE("페스티벌 아티스트 제거"),
+    FESTIVAL_ARTIST_UPDATE("페스티벌 라인업 수정"),
+    FESTIVAL_BOOTH_ADD("부스 추가"),
+    FESTIVAL_BOOTH_DELETE("부스 삭제"),
+    FESTIVAL_STAGE_ADD("스테이지 추가"),
+    FESTIVAL_STAGE_DELETE("스테이지 삭제"),
+    FESTIVAL_TIMETABLE_ADD("타임테이블 추가"),
+    FESTIVAL_TIMETABLE_UPDATE("타임테이블 수정"),
+    FESTIVAL_TIMETABLE_DELETE("타임테이블 삭제"),
+    FESTIVAL_CHECKLIST_TOGGLE("페스티벌 체크리스트 변경"),
+    FESTIVAL_CHECKLIST_MEMO("페스티벌 체크리스트 메모 저장"),
+    FESTIVAL_SCRAPE_CREATE("스크래핑 페스티벌 등록"),
+    TIMETABLE_OCR_APPLY("타임테이블 OCR 적용"),
+    LINEUP_OCR_APPLY("라인업 OCR 적용"),
+    UNMATCHED_SUGGESTION_DELETE("미매칭 제안 삭제"),
+
+    ARTIST_CREATE("아티스트 등록"),
+    ARTIST_UPDATE("아티스트 수정"),
+    ARTIST_DELETE("아티스트 삭제"),
+    ARTIST_SUGGESTION_APPROVE("아티스트 신청 승인"),
+    ARTIST_SUGGESTION_DISMISS("아티스트 신청 기각"),
+    ARTIST_SONG_CREATE("아티스트 곡 등록"),
+    ARTIST_SONG_DELETE("아티스트 곡 삭제"),
+    ARTIST_SETLIST_SAVE("아티스트 셋리스트 저장"),
+
+    USER_BAN("회원 정지"),
+    USER_UNBAN("정지 해제"),
+    USER_DELETE("회원 탈퇴"),
+    USER_BULK_DELETE("회원 일괄 삭제"),
+    USER_ROLE_CHANGE("역할 변경"),
+
+    POST_DELETE("게시글 삭제"),
+    POST_BULK_DELETE("게시글 일괄 삭제"),
+    POST_RESTORE("게시글 복구"),
+
+    COMMENT_DELETE("댓글 삭제"),
+
+    REPORT_DISMISS("신고 기각"),
+    REPORT_DELETE("신고 콘텐츠 삭제"),
+    REPORT_BULK_DISMISS("일괄 신고 기각"),
+    REPORT_BULK_DELETE("일괄 콘텐츠 삭제"),
+
+    BAD_WORD_ADD("금칙어 추가"),
+    BAD_WORD_DELETE("금칙어 삭제"),
+
+    NICKNAME_RESTRICTION_ADD("닉네임 제한 추가"),
+    NICKNAME_RESTRICTION_DELETE("닉네임 제한 삭제"),
+
+    CERTIFICATION_APPROVE("인증 승인"),
+    CERTIFICATION_REJECT("인증 거절"),
+    CERTIFICATION_BULK_APPROVE("인증 일괄 승인"),
+    CERTIFICATION_BULK_REJECT("인증 일괄 거절"),
+
+    SONG_REQUEST_APPROVE("노래 요청 승인"),
+    SONG_REQUEST_REJECT("노래 요청 거절"),
+
+    SETLIST_REQUEST_RESOLVE("셋리스트 수정 요청 처리"),
+
+    PUSH_BROADCAST("전체 푸시 발송"),
+    PUSH_ARTIST_FOLLOWERS("아티스트 팔로워 발송"),
+    PUSH_FESTIVAL_CERTIFIED("페스티벌 인증자 발송"),
+    PUSH_TEST("테스트 발송"),
+
+    EXPORT_USERS("회원 내보내기"),
+    EXPORT_REPORTS("신고 내보내기"),
+
+    ADMIN_ACCOUNT_CREATE("관리자 계정 생성"),
+    ADMIN_ACCOUNT_UPDATE("관리자 계정 수정"),
+    ADMIN_ACCOUNT_DELETE("관리자 계정 삭제"),
+    ADMIN_ACCOUNT_TOGGLE("계정 활성화 상태 변경");
+
+    private final String label;
+
+    AdminAction(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public static Map<String, String> actionLabelMap() {
+        return Arrays.stream(values())
+                .collect(Collectors.toMap(Enum::name, AdminAction::getLabel));
+    }
+}
