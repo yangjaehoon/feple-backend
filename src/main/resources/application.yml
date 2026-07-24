@@ -107,9 +107,6 @@ management:
     tags:
       application: feple-backend
 
-file:
-  upload-dir: uploads/posters
-
 kma:
   service-key: ${KMA_SERVICE_KEY:}
   base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
