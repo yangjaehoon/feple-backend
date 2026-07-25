@@ -3,6 +3,7 @@ package com.feple.feple_backend.user.service;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
+import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
@@ -46,6 +47,7 @@ class UserCascadeDeleteServiceTest {
     @Mock FestivalReviewService reviewService;
     @Mock SongRequestService songRequestService;
     @Mock ArtistSuggestionService artistSuggestionService;
+    @Mock FestivalSuggestionService festivalSuggestionService;
     @Mock UserBlockService userBlockService;
     @Mock FileStorageService fileStorageService;
 
