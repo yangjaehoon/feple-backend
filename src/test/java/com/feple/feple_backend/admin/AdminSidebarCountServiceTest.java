@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
+import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ class AdminSidebarCountServiceTest {
     @Mock FestivalCertificationAdminService certificationService;
     @Mock SongRequestAdminService songRequestAdminService;
     @Mock ArtistSuggestionAdminService artistSuggestionAdminService;
+    @Mock FestivalSuggestionAdminService festivalSuggestionAdminService;
     @Mock SetlistChangeRequestService setlistChangeRequestService;
 
     AdminSidebarCountService sidebarCountService;
@@ -35,6 +37,7 @@ class AdminSidebarCountServiceTest {
                 certificationService,
                 songRequestAdminService,
                 artistSuggestionAdminService,
+                festivalSuggestionAdminService,
                 setlistChangeRequestService
         );
     }
@@ -46,6 +49,7 @@ class AdminSidebarCountServiceTest {
         given(certificationService.getPendingCount()).willReturn(5L);
         given(songRequestAdminService.getPendingCount()).willReturn(1L);
         given(artistSuggestionAdminService.getPendingCount()).willReturn(4L);
+        given(festivalSuggestionAdminService.getPendingCount()).willReturn(6L);
         given(setlistChangeRequestService.getPendingCount()).willReturn(7L);
 
         AdminSidebarCountService.Counts counts = sidebarCountService.getCounts();
@@ -54,6 +58,7 @@ class AdminSidebarCountServiceTest {
         assertThat(counts.certCount()).isEqualTo(5L);
         assertThat(counts.songRequestCount()).isEqualTo(1L);
         assertThat(counts.suggestionCount()).isEqualTo(4L);
+        assertThat(counts.festivalSuggestionCount()).isEqualTo(6L);
         assertThat(counts.setlistRequestCount()).isEqualTo(7L);
     }
 
@@ -64,12 +69,14 @@ class AdminSidebarCountServiceTest {
                 certificationService,
                 songRequestAdminService,
                 artistSuggestionAdminService,
+                festivalSuggestionAdminService,
                 setlistChangeRequestService
         );
         given(postReportService.getPendingCount()).willReturn(10L);
         given(certificationService.getPendingCount()).willReturn(0L);
         given(songRequestAdminService.getPendingCount()).willReturn(0L);
         given(artistSuggestionAdminService.getPendingCount()).willReturn(0L);
+        given(festivalSuggestionAdminService.getPendingCount()).willReturn(0L);
         given(setlistChangeRequestService.getPendingCount()).willReturn(0L);
 
         AdminSidebarCountService.Counts counts = sidebarCountService.getCounts();
@@ -84,6 +91,7 @@ class AdminSidebarCountServiceTest {
         given(certificationService.getPendingCount()).willReturn(0L);
         given(songRequestAdminService.getPendingCount()).willReturn(0L);
         given(artistSuggestionAdminService.getPendingCount()).willReturn(0L);
+        given(festivalSuggestionAdminService.getPendingCount()).willReturn(0L);
         given(setlistChangeRequestService.getPendingCount()).willReturn(0L);
 
         AdminSidebarCountService.Counts counts = sidebarCountService.getCounts();
@@ -92,6 +100,7 @@ class AdminSidebarCountServiceTest {
         assertThat(counts.certCount()).isZero();
         assertThat(counts.songRequestCount()).isZero();
         assertThat(counts.suggestionCount()).isZero();
+        assertThat(counts.festivalSuggestionCount()).isZero();
         assertThat(counts.setlistRequestCount()).isZero();
     }
 }

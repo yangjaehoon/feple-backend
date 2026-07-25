@@ -31,6 +31,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         // 전부 이 인터셉터로 커버해 신규 엔드포인트 추가 시 rate limit 누락을 방지한다.
         registry.addInterceptor(mutationRateLimitInterceptor)
                 .addPathPatterns("/posts/**", "/comments/**", "/artists/**", "/artist-suggestions/**",
-                        "/certifications/**", "/festivals/**", "/notifications/**", "/users/**", "/search/**");
+                        "/certifications/**", "/festivals/**", "/festival-suggestions/**",
+                        "/notifications/**", "/users/**", "/search/**");
     }
 }

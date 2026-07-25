@@ -40,7 +40,7 @@ public class NotificationQueryService {
     private static final Set<NotificationType> FESTIVAL_TYPES = EnumSet.of(
             NotificationType.NEW_FESTIVAL, NotificationType.FESTIVAL_REMINDER,
             NotificationType.SONG_REQUEST_APPROVED, NotificationType.SONG_REQUEST_REJECTED,
-            NotificationType.ARTIST_SUGGESTION_PROCESSED);
+            NotificationType.ARTIST_SUGGESTION_PROCESSED, NotificationType.FESTIVAL_SUGGESTION_PROCESSED);
 
     private final NotificationRepository notificationRepository;
     private final BroadcastNotificationRepository broadcastNotificationRepository;

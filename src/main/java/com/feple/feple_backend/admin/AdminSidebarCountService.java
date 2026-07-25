@@ -5,6 +5,7 @@ import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
+import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,11 @@ public class AdminSidebarCountService {
     private final FestivalCertificationAdminService certificationService;
     private final SongRequestAdminService songRequestAdminService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final FestivalSuggestionAdminService festivalSuggestionAdminService;
     private final SetlistChangeRequestService setlistChangeRequestService;
 
-    public record Counts(long reportCount, long certCount, long songRequestCount, long suggestionCount, long setlistRequestCount) {}
+    public record Counts(long reportCount, long certCount, long songRequestCount, long suggestionCount,
+                          long festivalSuggestionCount, long setlistRequestCount) {}
 
     @Cacheable("adminSidebarCounts")
     public Counts getCounts() {
@@ -30,6 +33,7 @@ public class AdminSidebarCountService {
                 certificationService.getPendingCount(),
                 songRequestAdminService.getPendingCount(),
                 artistSuggestionAdminService.getPendingCount(),
+                festivalSuggestionAdminService.getPendingCount(),
                 setlistChangeRequestService.getPendingCount()
         );
     }

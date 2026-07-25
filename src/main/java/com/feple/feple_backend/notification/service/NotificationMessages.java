@@ -12,6 +12,13 @@ public final class NotificationMessages {
         "활동 이력이 없어서 등록이 어려워요.", "The artist doesn't have enough activity history for registration."
     );
 
+    private static final java.util.Map<String, String> FESTIVAL_REASON_EN_MAP = java.util.Map.of(
+        "요청하신 페스티벌을 등록했어요!", "Your requested festival has been registered!",
+        "이미 등록된 페스티벌이에요.", "The festival is already in our database.",
+        "정보가 부족해서 등록이 어려워요.", "We couldn't register the festival due to insufficient information.",
+        "아직 개최가 확정되지 않았어요.", "The festival hasn't been confirmed to take place yet."
+    );
+
     private static final java.util.Map<String, String> CERT_REASON_EN_MAP = java.util.Map.of(
         "사진이 불분명해요.", "The submitted photo is unclear.",
         "해당 페스티벌 인증이 아닌 것 같아요.", "This doesn't appear to be a valid festival certification.",
@@ -158,6 +165,24 @@ public final class NotificationMessages {
         String base = "Your request for '" + artistName + "'";
         if (note != null && !note.isBlank()) {
             String translated = ARTIST_REASON_EN_MAP.getOrDefault(note.trim(), note);
+            return base + ": " + translated;
+        }
+        return base + " has been reviewed.";
+    }
+
+    public static final String FESTIVAL_SUGGESTION_PROCESSED_TITLE = "페스티벌 신청 결과";
+
+    public static String festivalSuggestionProcessedBody(String festivalName, String note) {
+        String base = "'" + festivalName + "' 신청";
+        return (note != null && !note.isBlank()) ? base + ": " + note : base + "을 검토했어요.";
+    }
+
+    public static final String FESTIVAL_SUGGESTION_PROCESSED_TITLE_EN = "Festival request reviewed";
+
+    public static String festivalSuggestionProcessedBodyEn(String festivalName, String note) {
+        String base = "Your request for '" + festivalName + "'";
+        if (note != null && !note.isBlank()) {
+            String translated = FESTIVAL_REASON_EN_MAP.getOrDefault(note.trim(), note);
             return base + ": " + translated;
         }
         return base + " has been reviewed.";

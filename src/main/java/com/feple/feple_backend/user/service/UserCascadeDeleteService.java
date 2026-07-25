@@ -3,6 +3,7 @@ package com.feple.feple_backend.user.service;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
+import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
@@ -43,6 +44,7 @@ public class UserCascadeDeleteService {
     private final FestivalReviewService reviewService;
     private final SongRequestService songRequestService;
     private final ArtistSuggestionService artistSuggestionService;
+    private final FestivalSuggestionService festivalSuggestionService;
 
     private final UserBlockService userBlockService;
     private final FileStorageService fileStorageService;
@@ -69,6 +71,7 @@ public class UserCascadeDeleteService {
         certificationService.removeAllByUser(id);
         songRequestService.removeAllByUser(id);
         artistSuggestionService.removeAllByUser(id);
+        festivalSuggestionService.removeAllByUser(id);
         userBlockService.removeAllByUser(id);
 
         // 게시글·댓글은 익명 처리 후 유지 (작성자 닉네임은 "(탈퇴한 사용자)"로 표시됨)

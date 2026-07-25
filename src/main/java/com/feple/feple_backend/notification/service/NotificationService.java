@@ -21,6 +21,7 @@ import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
+import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
 import com.feple.feple_backend.artistfestival.event.ArtistAddedToFestivalEvent;
 import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
 import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
@@ -164,6 +165,24 @@ public class NotificationService {
                 NotificationMessages.artistSuggestionProcessedBodyEn(artistNameEn, event.note()),
                 resourceId,
                 content -> artist != null ? Notification.of(user, content, artist) : Notification.of(user, content, (Festival) null));
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onFestivalSuggestionProcessed(FestivalSuggestionProcessedEvent event) {
+        User user = userRepository.findById(event.userId()).orElse(null);
+        if (user == null) return;
+        String resourceId = event.festivalId() != null ? String.valueOf(event.festivalId()) : null;
+        Festival festival = event.festivalId() != null ? festivalRepository.findById(event.festivalId()).orElse(null) : null;
+        String festivalNameEn = (festival != null && festival.getTitleEn() != null && !festival.getTitleEn().isBlank())
+                ? festival.getTitleEn() : event.festivalName();
+        notifySingle(event.userId(), NotificationType.FESTIVAL_SUGGESTION_PROCESSED,
+                NotificationMessages.FESTIVAL_SUGGESTION_PROCESSED_TITLE,
+                NotificationMessages.festivalSuggestionProcessedBody(event.festivalName(), event.note()),
+                NotificationMessages.FESTIVAL_SUGGESTION_PROCESSED_TITLE_EN,
+                NotificationMessages.festivalSuggestionProcessedBodyEn(festivalNameEn, event.note()),
+                resourceId,
+                content -> festival != null ? Notification.of(user, content, festival) : Notification.of(user, content, (Artist) null));
     }
 
     @Async

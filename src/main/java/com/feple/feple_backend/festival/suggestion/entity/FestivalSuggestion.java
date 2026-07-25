@@ -1,0 +1,57 @@
+package com.feple.feple_backend.festival.suggestion.entity;
+
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class FestivalSuggestion extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
+    private String festivalName;
+
+    private String note;
+
+    @Column(length = 500)
+    private String processNote;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FestivalSuggestionStatus status;
+
+    private LocalDateTime processedAt;
+
+    private Long approvedFestivalId;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.status == null) this.status = FestivalSuggestionStatus.PENDING;
+    }
+
+    public boolean isPending() { return status == FestivalSuggestionStatus.PENDING; }
+
+    public void approve(Long festivalId) {
+        this.status = FestivalSuggestionStatus.APPROVED;
+        this.approvedFestivalId = festivalId;
+        this.processedAt = LocalDateTime.now();
+    }
+
+    public void dismiss(String processNote) {
+        this.status = FestivalSuggestionStatus.DISMISSED;
+        this.processNote = processNote;
+        this.processedAt = LocalDateTime.now();
+    }
+}

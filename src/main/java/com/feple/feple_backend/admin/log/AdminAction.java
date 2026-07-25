@@ -21,6 +21,8 @@ public enum AdminAction {
     FESTIVAL_CHECKLIST_TOGGLE("페스티벌 체크리스트 변경"),
     FESTIVAL_CHECKLIST_MEMO("페스티벌 체크리스트 메모 저장"),
     FESTIVAL_SCRAPE_CREATE("스크래핑 페스티벌 등록"),
+    FESTIVAL_SUGGESTION_APPROVE("페스티벌 신청 승인"),
+    FESTIVAL_SUGGESTION_DISMISS("페스티벌 신청 기각"),
     TIMETABLE_OCR_APPLY("타임테이블 OCR 적용"),
     LINEUP_OCR_APPLY("라인업 OCR 적용"),
     UNMATCHED_SUGGESTION_DELETE("미매칭 제안 삭제"),
