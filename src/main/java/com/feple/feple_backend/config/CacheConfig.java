@@ -20,8 +20,6 @@ public class CacheConfig {
     private record CacheSpec(String name, Duration ttl, long maxSize) {}
 
     private static final List<CacheSpec> CACHE_SPECS = List.of(
-            new CacheSpec("weather", Duration.ofHours(1), 50),
-
             // 인기 게시글: 7일치 DB 풀스캔 방지 — 10분 TTL (좋아요 반영 지연 허용)
             new CacheSpec("popularPosts", Duration.ofMinutes(10), 1),
 
