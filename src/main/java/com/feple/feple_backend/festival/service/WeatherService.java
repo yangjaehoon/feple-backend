@@ -141,6 +141,9 @@ public class WeatherService {
                 .build().toUri();
 
         JsonNode body = restTemplate.getForObject(uri, JsonNode.class);
+        if (body == null) {
+            throw new IllegalStateException("기상청 API 응답이 비어 있습니다.");
+        }
 
         String resultCode = body.path("response").path("header").path("resultCode").asText();
         if (!KMA_SUCCESS_CODE.equals(resultCode)) {
@@ -192,6 +195,7 @@ public class WeatherService {
                     int next = Integer.parseInt(value);
                     if (next > Integer.parseInt(ptyCode)) ptyCode = value;
                 }
+                default -> { /* 관심 없는 나머지 예보 카테고리(REH, VEC, WSD 등)는 무시 */ }
             }
         }
         return new WeatherAccumulator(minTemp, maxTemp, maxRainProb, skyCode, ptyCode, hasTmn, hasTmx);

@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtProvider {
+public final class JwtProvider {
 
     private final JwtProperties props;
     private final SecretKey key;

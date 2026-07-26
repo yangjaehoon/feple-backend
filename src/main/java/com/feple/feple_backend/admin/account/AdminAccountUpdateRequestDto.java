@@ -14,6 +14,6 @@ public record AdminAccountUpdateRequestDto(
     public AdminAccountUpdateRequestDto {
         displayName = displayName == null ? "" : displayName;
         permissions = permissions == null ? Set.of() : permissions;
-        deleteProfileImage = deleteProfileImage == null ? false : deleteProfileImage;
+        deleteProfileImage = deleteProfileImage == null ? Boolean.FALSE : deleteProfileImage;
     }
 }
