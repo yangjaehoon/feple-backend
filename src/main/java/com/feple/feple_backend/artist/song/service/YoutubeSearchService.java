@@ -44,7 +44,8 @@ public class YoutubeSearchService {
     public List<YoutubeVideoDto> search(String artistName, String query) {
         log.debug("[YT] search called — artistName='{}', query='{}'", artistName, query);
         if (apiKey == null || apiKey.isBlank()) {
-            log.warn("[YT] API key is blank — returning empty");
+            // 빈 결과가 "검색 결과 없음"과 구분이 안 되므로 error로 남겨 눈에 띄게 함
+            log.error("[YT] API key is blank — returning empty");
             return Collections.emptyList();
         }
 
@@ -182,7 +183,10 @@ public class YoutubeSearchService {
     }
 
     public Optional<YoutubeVideoDto> fetchVideoByUrl(String videoUrlOrId) {
-        if (apiKey == null || apiKey.isBlank()) return Optional.empty();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.error("[YT] API key is blank — returning empty");
+            return Optional.empty();
+        }
         String videoId = extractVideoId(videoUrlOrId);
         if (videoId == null) {
             log.warn("[YT] fetchVideo: could not extract video ID from '{}'", videoUrlOrId);

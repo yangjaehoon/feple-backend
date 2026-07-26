@@ -81,7 +81,12 @@ public class WeatherService {
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
         if (end != null && end.isBefore(today)) return false;
 
-        if (serviceKey == null || serviceKey.isBlank()) return false;
+        if (serviceKey == null || serviceKey.isBlank()) {
+            // collectWeather는 boolean만 반환해 호출부(스케줄러/컨트롤러) 어디서도 예외가
+            // 안 뜸 — 로그가 유일한 신호이므로 반드시 남김
+            log.warn("[Weather] KMA_SERVICE_KEY가 설정되지 않아 날씨 수집을 건너뜁니다. festivalId={}", festival.getId());
+            return false;
+        }
 
         LocalDate targetDate = resolveTargetDate(festival, today);
         if (targetDate == null) return false;

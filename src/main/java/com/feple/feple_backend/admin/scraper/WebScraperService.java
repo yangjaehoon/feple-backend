@@ -20,12 +20,18 @@ public class WebScraperService {
     public ScrapedFestivalDto scrape(String url, String source) throws IOException {
         ScrapedFestivalDto jsoupResult = festivalPageScraper.scrape(url, source);
 
-        if (festivalPageScraper.isSpaOrEmpty(jsoupResult) && geminiUrlContextClient.isConfigured()) {
-            log.info("SPA detected, falling back to Gemini URL context for: {}", url);
-            try {
-                return geminiUrlContextClient.scrape(url, source);
-            } catch (Exception e) {
-                log.warn("Gemini URL context failed for {}: {}", url, e.getMessage());
+        if (festivalPageScraper.isSpaOrEmpty(jsoupResult)) {
+            if (!geminiUrlContextClient.isConfigured()) {
+                // GEMINI_API_KEY 미설정 시 SPA 페이지는 빈 결과로 조용히 리턴돼 정상
+                // 스크래핑 결과와 구분이 안 됨 — 로그로 남겨 눈에 띄게 함
+                log.warn("SPA detected but Gemini is not configured, returning sparse result for: {}", url);
+            } else {
+                log.info("SPA detected, falling back to Gemini URL context for: {}", url);
+                try {
+                    return geminiUrlContextClient.scrape(url, source);
+                } catch (Exception e) {
+                    log.warn("Gemini URL context failed for {}: {}", url, e.getMessage());
+                }
             }
         }
 
