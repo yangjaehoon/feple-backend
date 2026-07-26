@@ -40,6 +40,7 @@ public class CertificationAdminController {
         model.addAttribute("keyword", filter.keyword());
         model.addAttribute("page", filter.page());
         model.addAttribute("pendingCount", certificationService.getPendingCount());
+        model.addAttribute("totalCount", certificationService.getTotalCount());
         return "admin/certification/list";
     }
 

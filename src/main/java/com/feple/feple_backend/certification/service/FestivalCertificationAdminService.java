@@ -21,6 +21,7 @@ public interface FestivalCertificationAdminService {
     /** 대시보드 미리보기용 — 대기중 인증을 최신순 최대 limit건 */
     List<FestivalCertification> getPendingPreview(int limit);
     long getPendingCount();
+    long getTotalCount();
     Optional<Long> findNextPendingId(Long currentId);
     String buildPhotoUrl(String photoKey);
 }

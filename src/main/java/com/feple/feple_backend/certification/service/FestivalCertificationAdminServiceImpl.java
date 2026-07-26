@@ -148,6 +148,12 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long getTotalCount() {
+        return certificationRepository.count();
+    }
+
+    @Override
     public String buildPhotoUrl(String photoKey) {
         return s3PresignService.presignGetUrl(photoKey);
     }

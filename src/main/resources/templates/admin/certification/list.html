@@ -46,7 +46,7 @@
                    th:classappend="${status == '' or status == null} ? ' active' : ''"
                    class="type-tab">
                     전체
-                    <span class="card-count" th:text="${certifications.totalElements}"></span>
+                    <span class="card-count" th:text="${totalCount}"></span>
                 </a>
                 <a th:href="@{/admin/certifications(status='PENDING', page=0)}"
                    th:classappend="${status == 'PENDING'} ? ' active' : ''"
