@@ -18,6 +18,7 @@ import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.MyPageService;
+import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import java.util.List;
@@ -37,6 +38,7 @@ class UserDetailAggregationServiceTest {
     @Mock PostAdminService postAdminService;
     @Mock UserBlockService userBlockService;
     @Mock FestivalCertificationAdminService certificationAdminService;
+    @Mock PointService pointService;
 
     @InjectMocks UserDetailAggregationService service;
 
@@ -55,6 +57,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
         given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
         given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
+        given(pointService.getRecentPointLogs(userId, 10)).willReturn(List.of());
 
         UserDetailDto model = service.getDetail(userId);
 
@@ -73,6 +76,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
         given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
         given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
+        given(pointService.getRecentPointLogs(userId, 10)).willReturn(List.of());
 
         service.getDetail(userId);
 
@@ -95,6 +99,7 @@ class UserDetailAggregationServiceTest {
         given(myPageService.getFollowedArtists(userId)).willReturn(artists);
         given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
         given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
+        given(pointService.getRecentPointLogs(userId, 10)).willReturn(List.of());
 
         UserDetailDto model = service.getDetail(userId);
 

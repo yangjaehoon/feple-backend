@@ -4,13 +4,16 @@ import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
+import com.feple.feple_backend.user.dto.PointLogResponseDto;
 import com.feple.feple_backend.user.entity.PointEntry;
 import com.feple.feple_backend.user.entity.PointReason;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserPointLog;
 import com.feple.feple_backend.user.repository.UserPointLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -43,6 +46,15 @@ public class PointService {
     @Transactional
     public void addCertApprovedPoint(Long userId, Long certId) {
         addPoint(userId, new PointEntry(POINT_CERT_APPROVED, PointReason.CERT_APPROVED, certId));
+    }
+
+    /** 관리자 회원 상세 페이지의 "최근 포인트 내역" 카드 전용 */
+    @Transactional(readOnly = true)
+    public List<PointLogResponseDto> getRecentPointLogs(Long userId, int limit) {
+        return pointLogRepository.findByUserId(userId, PageRequest.of(0, limit))
+                .getContent().stream()
+                .map(PointLogResponseDto::from)
+                .toList();
     }
 
     // @Async로 별도 스레드에서 실행돼 원 트랜잭션 컨텍스트가 없음 — REQUIRES_NEW로 새 트랜잭션 시작

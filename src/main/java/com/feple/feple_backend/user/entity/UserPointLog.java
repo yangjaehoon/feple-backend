@@ -2,9 +2,11 @@ package com.feple.feple_backend.user.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
+@Getter
 @Table(name = "user_point_log", indexes = {
     @Index(name = "idx_user_point_log_user_id", columnList = "user_id")
 })

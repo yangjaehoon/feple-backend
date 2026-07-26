@@ -4,6 +4,7 @@ import com.feple.feple_backend.certification.service.FestivalCertificationAdminS
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.user.service.MyPageService;
+import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import java.util.List;
@@ -24,6 +25,7 @@ public class UserDetailAggregationService {
     private final PostAdminService postAdminService;
     private final UserBlockService userBlockService;
     private final FestivalCertificationAdminService certificationAdminService;
+    private final PointService pointService;
 
     public UserListCountsDto getListCounts(List<Long> userIds) {
         return new UserListCountsDto(
@@ -42,7 +44,8 @@ public class UserDetailAggregationService {
                 myPageService.getLikedFestivals(userId),
                 myPageService.getFollowedArtists(userId),
                 userBlockService.getBlockedUsers(userId),
-                certificationAdminService.getByUserId(userId)
+                certificationAdminService.getByUserId(userId),
+                pointService.getRecentPointLogs(userId, RECENT_LIMIT)
         );
     }
 }
