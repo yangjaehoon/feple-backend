@@ -21,9 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -117,13 +115,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto toUserDto(User user) {
         return UserResponseMapper.toUserDto(user, fileStorageService);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Map<Long, String> getNicknamesByIds(List<Long> userIds) {
-        return userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(User::getId, User::getNickname));
     }
 
     @Override

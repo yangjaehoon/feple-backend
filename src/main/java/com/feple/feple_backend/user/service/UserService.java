@@ -4,7 +4,6 @@ import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Map;
 
 public interface UserService {
@@ -16,5 +15,4 @@ public interface UserService {
     void deleteUser(Long id);
     Long currentUserId();
     UserResponseDto toUserDto(User user);
-    Map<Long, String> getNicknamesByIds(List<Long> userIds);
 }
