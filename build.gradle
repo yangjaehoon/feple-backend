@@ -61,7 +61,7 @@ dependencies {
 	implementation 'com.github.ben-manes.caffeine:caffeine'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
-	implementation platform("software.amazon.awssdk:bom:2.25.1")
+	implementation platform("software.amazon.awssdk:bom:2.49.3")
 	implementation 'com.google.firebase:firebase-admin:9.3.0'
 
 	implementation 'net.javacrumbs.shedlock:shedlock-spring:5.16.0'
