@@ -223,6 +223,10 @@ public class FestivalAdminController {
         model.addAttribute("allRegions", Region.values());
         model.addAttribute("allGenres", MusicGenre.values());
         model.addAttribute("allAgeRestrictions", AgeRestriction.values());
+        if (kakaoMapsKey == null || kakaoMapsKey.isBlank()) {
+            // 브라우저 콘솔에만 에러가 남고 서버 로그엔 흔적이 없어 놓치기 쉬움
+            log.warn("[Maps] KAKAO_MAPS_KEY가 설정되지 않아 관리자 페이지 지도가 표시되지 않습니다.");
+        }
         model.addAttribute("kakaoMapsKey", kakaoMapsKey);
     }
 

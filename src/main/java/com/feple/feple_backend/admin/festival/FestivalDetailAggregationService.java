@@ -13,6 +13,7 @@ import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -42,6 +44,10 @@ public class FestivalDetailAggregationService {
     private String googleMapsKey;
 
     public FestivalDetailDto getDetail(Long festivalId) {
+        if (googleMapsKey == null || googleMapsKey.isBlank()) {
+            // 브라우저 콘솔에만 에러가 남고 서버 로그엔 흔적이 없어 놓치기 쉬움
+            log.warn("[Maps] GOOGLE_MAPS_KEY가 설정되지 않아 관리자 페이지 지도가 표시되지 않습니다.");
+        }
         FestivalResponseDto festival = festivalService.getFestival(festivalId);
         List<TimetableEntryResponseDto> entries = timetableService.getEntries(festivalId);
 
