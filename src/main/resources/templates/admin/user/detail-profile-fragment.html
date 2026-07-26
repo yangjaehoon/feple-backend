@@ -28,6 +28,7 @@
                     <span th:if="${user.admin}"  class="badge badge-danger">🛡️ 관리자</span>
                     <span th:if="${user.artist}" class="badge badge-primary">🎤 아티스트</span>
                     <span th:if="${user.banned}" class="badge badge-ban">정지</span>
+                    <span class="badge badge-warning" th:text="'🪙 ' + ${user.point} + 'P'"></span>
                 </div>
                 <div class="user-meta-lg" th:text="${user.email}"></div>
                 <div class="user-meta">ID: <span th:text="${user.id}"></span></div>

@@ -29,6 +29,7 @@ final class UserResponseMapper {
                 .profileImageUrl(resolveProfileImageUrl(user.getProfileImageUrl(), fileStorageService))
                 .role(user.getRole())
                 .provider(user.getProvider())
+                .point(user.getPoint())
                 .createdAt(user.getCreatedAt())
                 .bannedUntil(user.getBannedUntil())
                 .banReason(user.getBanReason())

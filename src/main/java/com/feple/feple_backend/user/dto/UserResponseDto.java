@@ -34,6 +34,8 @@ public class UserResponseDto {
     private LocalDateTime deletedAt;
     /** 관리자 페이지에서만 사용. */
     private AuthProvider provider;
+    /** 관리자 페이지에서만 사용. */
+    private Integer point;
 
     public String getRoleDisplayName() { return role != null ? role.getDisplayName() : ""; }
     public boolean isAdmin() { return role == UserRole.ADMIN; }
