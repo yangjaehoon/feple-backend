@@ -41,7 +41,9 @@ public class FcmPushService implements PushNotificationClient {
                                String resourceId, String type) {
         if (tokens.isEmpty()) return;
         if (FirebaseApp.getApps().isEmpty()) {
-            log.warn("[FCM] Firebase 미초기화 상태 — 푸시 생략");
+            // @Async라 호출부로 예외가 전파되지 않아 이 로그가 유일한 신호 — warn이 아닌
+            // error로 남겨야 알림 채널(로그 모니터링)에서 놓치지 않음
+            log.error("[FCM] Firebase 미초기화 상태 — 푸시 생략 (app.firebase.credentials 미설정 가능성)");
             return;
         }
 
@@ -62,7 +64,7 @@ public class FcmPushService implements PushNotificationClient {
                     log.info("[FCM] 만료 토큰 {}개 삭제", staleTokens.size());
                 }
             } catch (FirebaseMessagingException e) {
-                log.error("[FCM] 발송 오류: {}", e.getMessage());
+                log.error("[FCM] 발송 오류", e);
             }
         }
     }
