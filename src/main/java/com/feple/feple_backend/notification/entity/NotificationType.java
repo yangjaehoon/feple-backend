@@ -18,7 +18,8 @@ public enum NotificationType {
     SONG_REQUEST_REJECTED(PreferenceCategory.SONG_REQUEST),
     ARTIST_SUGGESTION_PROCESSED(PreferenceCategory.SONG_REQUEST),
     FESTIVAL_SUGGESTION_PROCESSED(PreferenceCategory.FESTIVAL),
-    ADMIN_BROADCAST(PreferenceCategory.ALWAYS_ENABLED);
+    ADMIN_BROADCAST(PreferenceCategory.ALWAYS_ENABLED),
+    ADMIN_POINT_GRANTED(PreferenceCategory.ALWAYS_ENABLED);
 
     private final PreferenceCategory category;
 }

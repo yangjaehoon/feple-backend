@@ -6,6 +6,7 @@ import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
+import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,6 +33,7 @@ public class UserAdminController {
     private final UserAdminService userService;
     private final UserDetailAggregationService userDetailAggregationService;
     private final AdminLogService adminLogService;
+    private final PointService pointService;
 
     @GetMapping
     public String listUsers(@ModelAttribute UserListFilter listFilter, Model model) {
@@ -150,6 +152,23 @@ public class UserAdminController {
                 "정지가 해제되었습니다.",
                 e -> log.error("회원 정지 해제 중 오류. userId={}", id, e),
                 "정지 해제 중 오류가 발생했습니다.",
+                ra);
+        return "redirect:/admin/users/" + id;
+    }
+
+    @PostMapping("/{id}/points/grant")
+    public String grantPoints(@PathVariable Long id,
+                              @RequestParam int amount,
+                              @RequestParam String reason,
+                              RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    pointService.grantByAdmin(id, amount, reason);
+                    adminLogService.log(AdminAction.USER_POINT_GRANT, "USER", id, amount + "P / " + reason);
+                },
+                amount + "P가 지급되었습니다.",
+                e -> log.error("포인트 지급 실패 userId={}", id, e),
+                "포인트 지급에 실패했습니다.",
                 ra);
         return "redirect:/admin/users/" + id;
     }

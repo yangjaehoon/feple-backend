@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
+import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ class UserAdminControllerTest {
     @Mock UserAdminService userService;
     @Mock UserDetailAggregationService userDetailAggregationService;
     @Mock AdminLogService adminLogService;
+    @Mock PointService pointService;
 
     @InjectMocks UserAdminController controller;
 
@@ -246,5 +248,32 @@ class UserAdminControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/users/1"))
                 .andExpect(flash().attribute("errorMessage", "정지 해제 중 오류가 발생했습니다."));
+    }
+
+    // ── POST /admin/users/{id}/points/grant ─────────────────────────────────
+
+    @Test
+    void 포인트_지급_성공() throws Exception {
+        mockMvc.perform(post("/admin/users/1/points/grant")
+                        .param("amount", "100")
+                        .param("reason", "이벤트 당첨 보상"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/users/1"))
+                .andExpect(flash().attribute("successMessage", "100P가 지급되었습니다."));
+
+        then(pointService).should().grantByAdmin(1L, 100, "이벤트 당첨 보상");
+    }
+
+    @Test
+    void 포인트_지급_실패_errorMessage_설정() throws Exception {
+        willThrow(new IllegalArgumentException("지급 사유를 입력해주세요."))
+                .given(pointService).grantByAdmin(1L, 100, "");
+
+        mockMvc.perform(post("/admin/users/1/points/grant")
+                        .param("amount", "100")
+                        .param("reason", ""))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/users/1"))
+                .andExpect(flash().attribute("errorMessage", "지급 사유를 입력해주세요."));
     }
 }

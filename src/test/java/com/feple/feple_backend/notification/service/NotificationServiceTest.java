@@ -30,6 +30,7 @@ import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.event.AdminPointGrantedEvent;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository.TokenLanguageProjection;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -153,6 +154,27 @@ class NotificationServiceTest {
         given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
 
         service.onCertificationRejected(new CertificationRejectedEvent(1L, "펜타포트", "Pentaport", 10L, "사진 불명확"));
+
+        then(notificationRepository).should().save(any());
+    }
+
+    // ── onAdminPointGranted ────────────────────────────────────────────
+
+    @Test
+    void 관리자_포인트_지급_유저_없으면_무시() {
+        given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+        service.onAdminPointGranted(new AdminPointGrantedEvent(1L, 100, "이벤트 보상"));
+
+        then(notificationRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 관리자_포인트_지급_성공() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+
+        service.onAdminPointGranted(new AdminPointGrantedEvent(1L, 100, "이벤트 보상"));
 
         then(notificationRepository).should().save(any());
     }

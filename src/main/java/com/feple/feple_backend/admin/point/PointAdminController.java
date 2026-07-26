@@ -1,0 +1,32 @@
+package com.feple.feple_backend.admin.point;
+
+import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.user.dto.PointLogResponseDto;
+import com.feple.feple_backend.user.service.PointService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@PreAuthorize("hasRole('ADMIN')")
+@Controller
+@RequestMapping("/admin/points")
+@RequiredArgsConstructor
+public class PointAdminController {
+
+    private final PointService pointService;
+
+    @GetMapping
+    public String list(@RequestParam(defaultValue = "0") int page,
+                       @RequestParam(required = false) String keyword,
+                       Model model) {
+        Page<PointLogResponseDto> logs = pointService.getAllPointLogs(page, AdminConstants.LIST_PAGE_SIZE, keyword);
+        model.addAttribute("logs", logs);
+        model.addAttribute("keyword", keyword);
+        return "admin/point/list";
+    }
+}

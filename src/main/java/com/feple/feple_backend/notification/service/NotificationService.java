@@ -24,6 +24,7 @@ import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.event.AdminPointGrantedEvent;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository.TokenLanguageProjection;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -223,6 +224,21 @@ public class NotificationService {
                 NotificationMessages.postDeletedByAdminBodyEn(event.postTitle()),
                 null,
                 content -> Notification.of(author, content, (Festival) null));
+    }
+
+    /** 관리자 수동 포인트 지급 알림 — 커밋 후에만 발송 */
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onAdminPointGranted(AdminPointGrantedEvent event) {
+        User user = userRepository.findById(event.userId()).orElse(null);
+        if (user == null) return;
+        notifySingle(event.userId(), NotificationType.ADMIN_POINT_GRANTED,
+                NotificationMessages.adminPointGrantedTitle(event.amount()),
+                NotificationMessages.adminPointGrantedBody(event.reason()),
+                NotificationMessages.adminPointGrantedTitleEn(event.amount()),
+                NotificationMessages.adminPointGrantedBodyEn(event.amount()),
+                null,
+                content -> Notification.of(user, content, (Festival) null));
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */

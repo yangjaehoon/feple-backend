@@ -1,0 +1,1 @@
+ALTER TABLE user_point_log ADD COLUMN note VARCHAR(255) NULL AFTER ref_id;

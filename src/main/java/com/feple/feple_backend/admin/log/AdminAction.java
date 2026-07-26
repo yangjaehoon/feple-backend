@@ -41,6 +41,7 @@ public enum AdminAction {
     USER_DELETE("회원 탈퇴"),
     USER_BULK_DELETE("회원 일괄 삭제"),
     USER_ROLE_CHANGE("역할 변경"),
+    USER_POINT_GRANT("포인트 지급"),
 
     POST_DELETE("게시글 삭제"),
     POST_BULK_DELETE("게시글 일괄 삭제"),

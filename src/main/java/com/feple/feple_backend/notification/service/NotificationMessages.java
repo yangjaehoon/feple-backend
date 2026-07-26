@@ -243,4 +243,22 @@ public final class NotificationMessages {
                 ? "Your post '" + postTitle + "' was removed for violating our community guidelines."
                 : "Your post was removed for violating our community guidelines.";
     }
+
+    public static String adminPointGrantedTitle(int amount) {
+        return (amount >= 0 ? "+" : "") + amount + "P가 지급됐어요!";
+    }
+
+    public static String adminPointGrantedBody(String reason) {
+        return reason;
+    }
+
+    public static String adminPointGrantedTitleEn(int amount) {
+        return (amount >= 0 ? "+" : "") + amount + "P has been granted!";
+    }
+
+    public static String adminPointGrantedBodyEn(int amount) {
+        return amount >= 0
+                ? amount + "P has been added to your account by an admin."
+                : Math.abs(amount) + "P has been deducted from your account by an admin.";
+    }
 }

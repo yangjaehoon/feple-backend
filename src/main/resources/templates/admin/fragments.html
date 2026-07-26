@@ -119,6 +119,11 @@
            th:classappend="${active == 'users'} ? ' active'">
             <span class="sb-icon">👤</span> 회원 관리
         </a>
+        <a sec:authorize="hasAuthority('PERM_USERS')"
+           th:href="@{/admin/points}" class="sb-link"
+           th:classappend="${active == 'points'} ? ' active'">
+            <span class="sb-icon">🪙</span> 포인트 내역
+        </a>
         <a sec:authorize="hasAuthority('PERM_BAD_WORDS')"
            th:href="@{/admin/bad-words}" class="sb-link"
            th:classappend="${active == 'bad-words'} ? ' active'">

@@ -2,7 +2,9 @@ package com.feple.feple_backend.user.service;
 
 import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -15,16 +17,21 @@ import com.feple.feple_backend.post.event.PostLikedEvent;
 import com.feple.feple_backend.user.dto.PointLogResponseDto;
 import com.feple.feple_backend.user.entity.PointEntry;
 import com.feple.feple_backend.user.entity.PointReason;
+import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserPointLog;
+import com.feple.feple_backend.user.event.AdminPointGrantedEvent;
 import com.feple.feple_backend.user.repository.UserPointLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
@@ -33,6 +40,7 @@ class PointServiceTest {
 
     @Mock UserRepository userRepository;
     @Mock UserPointLogRepository pointLogRepository;
+    @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks PointService pointService;
 
@@ -113,5 +121,65 @@ class PointServiceTest {
         assertThat(result.get(1).linksToPost()).isFalse();
         assertThat(result.get(2).linksToPost()).isFalse();
         assertThat(result.get(2).linksToCertification()).isFalse();
+    }
+
+    @Test
+    void 관리자_포인트_지급_성공시_원자적_UPDATE와_알림_이벤트_발행() {
+        User target = user(1L);
+        given(userRepository.findById(1L)).willReturn(Optional.of(target));
+
+        pointService.grantByAdmin(1L, 100, "이벤트 당첨 보상");
+
+        verify(userRepository).addPointAtomically(1L, 100);
+        ArgumentCaptor<UserPointLog> captor = ArgumentCaptor.forClass(UserPointLog.class);
+        verify(pointLogRepository).save(captor.capture());
+        assertThat(captor.getValue().getReason()).isEqualTo(PointReason.ADMIN_GRANTED);
+        assertThat(captor.getValue().getNote()).isEqualTo("이벤트 당첨 보상");
+        verify(eventPublisher).publishEvent(new AdminPointGrantedEvent(1L, 100, "이벤트 당첨 보상"));
+    }
+
+    @Test
+    void 관리자_포인트_지급_금액0이면_예외() {
+        assertThatThrownBy(() -> pointService.grantByAdmin(1L, 0, "사유"))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(userRepository, never()).findById(any());
+    }
+
+    @Test
+    void 관리자_포인트_지급_사유_공백이면_예외() {
+        assertThatThrownBy(() -> pointService.grantByAdmin(1L, 100, "  "))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 관리자_포인트_지급_존재하지_않는_유저면_예외() {
+        given(userRepository.findById(999L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> pointService.grantByAdmin(999L, 100, "사유"))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(userRepository, never()).addPointAtomically(any(), any(Integer.class));
+    }
+
+    @Test
+    void 전체_포인트_내역_조회시_키워드_없으면_전체_조회() {
+        UserPointLog log = UserPointLog.of(user(1L), new PointEntry(5, PointReason.POST_CREATED, 10L));
+        given(pointLogRepository.findAllWithUser(any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(log)));
+
+        List<PointLogResponseDto> result = pointService.getAllPointLogs(0, 20, null).getContent();
+
+        assertThat(result).hasSize(1);
+        verify(pointLogRepository, never()).searchByUserKeyword(anyString(), any(Pageable.class));
+    }
+
+    @Test
+    void 전체_포인트_내역_조회시_키워드_있으면_검색() {
+        given(pointLogRepository.searchByUserKeyword(eq("user1"), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of()));
+
+        pointService.getAllPointLogs(0, 20, "user1");
+
+        verify(pointLogRepository).searchByUserKeyword(eq("user1"), any(Pageable.class));
+        verify(pointLogRepository, never()).findAllWithUser(any(Pageable.class));
     }
 }

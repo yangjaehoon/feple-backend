@@ -29,6 +29,9 @@ public class UserPointLog {
 
     private Long refId;
 
+    @Column(length = 255)
+    private String note;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -42,5 +45,23 @@ public class UserPointLog {
         log.reason = entry.reason();
         log.refId = entry.refId();
         return log;
+    }
+
+    /** 관리자가 사유를 직접 입력해 수동 지급하는 경우 전용 — 자동 적립(of)과 달리 note에 사유 원문을 남긴다. */
+    public static UserPointLog ofAdminGrant(User user, int delta, String note) {
+        UserPointLog log = new UserPointLog();
+        log.user = user;
+        log.delta = delta;
+        log.reason = PointReason.ADMIN_GRANTED;
+        log.note = note;
+        return log;
+    }
+
+    public Long getUserId() {
+        return user.getId();
+    }
+
+    public String getUserNickname() {
+        return user.getNickname();
     }
 }

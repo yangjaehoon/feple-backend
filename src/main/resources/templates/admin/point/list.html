@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('포인트 내역')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('points')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('포인트 내역', '포인트 내역')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <!-- 검색 바 -->
+            <div class="search-bar">
+                <form th:action="@{/admin/points}" method="get">
+                    <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '닉네임 또는 이메일 검색...', @{/admin/points})}"></th:block>
+                </form>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48">ID</th>
+                        <th>회원</th>
+                        <th class="col-w80">변동</th>
+                        <th>사유</th>
+                        <th class="col-w120">참조</th>
+                        <th class="col-w120">일시</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${logs.content}">
+                        <td class="td-id" th:text="${log.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${log.userId})}"
+                               th:text="${log.userNickname}"
+                               class="td-link"></a>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${log.delta >= 0} ? 'badge-success' : 'badge-danger'"
+                                  th:text="${(log.delta >= 0 ? '+' : '') + log.delta}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${log.reason.displayName}"></span>
+                            <div th:if="${log.note != null}" class="cell-secondary" th:text="${log.note}"></div>
+                        </td>
+                        <td>
+                            <a th:if="${log.linksToPost}"
+                               th:href="@{/admin/posts/{id}(id=${log.refId})}"
+                               class="btn btn-secondary btn-sm">게시글 보기</a>
+                            <a th:if="${log.linksToCertification}"
+                               th:href="@{/admin/certifications/{id}(id=${log.refId})}"
+                               class="btn btn-secondary btn-sm">인증 보기</a>
+                            <span th:if="${!log.linksToPost and !log.linksToCertification}">-</span>
+                        </td>
+                        <td class="cell-secondary" th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
+                    </tr>
+                    <tr th:if="${logs.totalElements == 0}" th:replace="~{admin/fragments :: emptyRowSearch(6, ${keyword}, '포인트 내역이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${logs}, '/admin/points',
+                (${keyword != null and !#strings.isEmpty(keyword)} ? 'keyword=' + ${keyword} : ''))}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

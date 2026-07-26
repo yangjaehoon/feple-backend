@@ -6,9 +6,12 @@ import java.time.LocalDateTime;
 
 public record PointLogResponseDto(
         Long id,
+        Long userId,
+        String userNickname,
         int delta,
         PointReason reason,
         Long refId,
+        String note,
         boolean linksToPost,
         boolean linksToCertification,
         LocalDateTime createdAt
@@ -20,7 +23,7 @@ public record PointLogResponseDto(
                 || reason == PointReason.POST_LIKED_RECEIVED;
         boolean linksToCertification = reason == PointReason.CERT_APPROVED;
         return new PointLogResponseDto(
-                log.getId(), log.getDelta(), reason, log.getRefId(),
+                log.getId(), log.getUserId(), log.getUserNickname(), log.getDelta(), reason, log.getRefId(), log.getNote(),
                 linksToPost, linksToCertification, log.getCreatedAt());
     }
 }
