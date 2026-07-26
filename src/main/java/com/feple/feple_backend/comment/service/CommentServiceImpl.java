@@ -11,7 +11,6 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentLike;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
-import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.EntityLoader;
@@ -20,6 +19,7 @@ import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
@@ -41,8 +41,9 @@ import java.util.Set;
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
-    private final CommentReportRepository commentReportRepository;
+    private final CommentDeleter commentDeleter;
     private final PostRepository postRepository;
+    private final PostService postService;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final FestivalCertificationService certificationService;
@@ -82,7 +83,7 @@ public class CommentServiceImpl implements CommentService {
     private Comment saveComment(CreateCommentDto dto, Post post, User user, Comment parent) {
         Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
         Comment saved = commentRepository.save(comment);
-        postRepository.incrementCommentCount(post.getId());
+        postService.incrementCommentCount(post.getId());
         return saved;
     }
 
@@ -170,7 +171,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void deleteAndDecrement(Comment comment) {
         commentRepository.deleteById(comment.getId());
-        postRepository.decrementCommentCount(comment.getPostId());
+        postService.decrementCommentCount(comment.getPostId());
     }
 
     @Override
@@ -203,11 +204,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteByPostIds(List<Long> postIds) {
-        if (postIds.isEmpty()) return;
-        // FK 순서: CommentLike → CommentReport → Comment
-        commentLikeRepository.deleteByPostIds(postIds);
-        commentReportRepository.deleteByPostIds(postIds);
-        commentRepository.deleteByPostIds(postIds);
+        commentDeleter.deleteByPostIds(postIds);
     }
 
     private Set<Long> getLikedCommentIds(Long userId, List<Long> commentIds) {

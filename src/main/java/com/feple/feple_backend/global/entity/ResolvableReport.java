@@ -1,4 +1,4 @@
-package com.feple.feple_backend.post.entity;
+package com.feple.feple_backend.global.entity;
 
 public interface ResolvableReport {
     boolean isPending();

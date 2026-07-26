@@ -8,7 +8,7 @@ import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminSe
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.post.entity.PostReport;
-import com.feple.feple_backend.post.entity.ReportStatus;
+import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.post.service.PostReportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

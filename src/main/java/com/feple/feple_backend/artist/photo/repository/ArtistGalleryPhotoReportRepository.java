@@ -2,7 +2,7 @@ package com.feple.feple_backend.artist.photo.repository;
 
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.global.repository.BaseReportRepository;
-import com.feple.feple_backend.post.entity.ReportStatus;
+import com.feple.feple_backend.global.entity.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

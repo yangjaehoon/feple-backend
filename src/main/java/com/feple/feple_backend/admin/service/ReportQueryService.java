@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.global.JpqlLikeEscaper;
-import com.feple.feple_backend.post.entity.ReportStatus;
+import com.feple.feple_backend.global.entity.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 

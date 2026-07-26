@@ -24,4 +24,6 @@ public interface PostService {
     Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType);
     List<PostResponseDto> getPopularFestivalPosts(Long festivalId, Long viewerId);
     void incrementViewCount(Long postId);
+    void incrementCommentCount(Long postId);
+    void decrementCommentCount(Long postId);
 }

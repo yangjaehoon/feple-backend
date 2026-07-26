@@ -1,7 +1,7 @@
 package com.feple.feple_backend.global;
 
-import com.feple.feple_backend.post.entity.ResolvableReport;
-import com.feple.feple_backend.post.entity.ReportStatus;
+import com.feple.feple_backend.global.entity.ResolvableReport;
+import com.feple.feple_backend.global.entity.ReportStatus;
 import org.springframework.data.repository.ListCrudRepository;
 
 import java.util.List;

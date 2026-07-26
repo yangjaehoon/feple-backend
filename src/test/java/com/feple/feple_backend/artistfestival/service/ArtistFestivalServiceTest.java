@@ -13,10 +13,9 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.stage.entity.Stage;
-import com.feple.feple_backend.stage.repository.StageRepository;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
+import com.feple.feple_backend.timetable.service.TimetableSyncService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -48,7 +47,7 @@ class ArtistFestivalServiceTest {
     @Mock ArtistRepository artistRepository;
     @Mock FileStorageService fileStorageService;
     @Mock TimetableRepository timetableRepository;
-    @Mock StageRepository stageRepository;
+    @Mock TimetableSyncService timetableSyncService;
     @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks ArtistFestivalService service;
@@ -260,77 +259,33 @@ class ArtistFestivalServiceTest {
                 .hasMessageContaining("잘못된 페스티벌입니다.");
     }
 
+    // 스테이지/날짜 값에 따른 분기(변경 없음/기존값 있음/없음)는 TimetableSyncServiceTest에서 검증한다.
+    // 여기서는 ArtistFestivalService가 TimetableSyncService에 올바른 인자로 위임하는지만 확인한다.
     @Test
-    void 참여정보_수정_스테이지_변경시_타임테이블도_동기화() {
+    void 참여정보_수정_스테이지_변경시_타임테이블_동기화_위임() {
         Festival festival = festival(100L, null);
         Artist artist = artist(1L, "아이유");
         ArtistFestival af = ArtistFestival.builder().artist(artist).festival(festival).stageName("서브스테이지").build();
         given(artistFestivalRepository.findById(10L)).willReturn(Optional.of(af));
 
-        Stage newStage = mock(Stage.class);
-        given(newStage.getName()).willReturn("메인스테이지");
-        given(stageRepository.findByFestivalIdAndName(100L, "메인스테이지")).willReturn(Optional.of(newStage));
-
-        TimetableEntry entry = TimetableEntry.builder()
-                .artistName("아이유").festivalDate(LocalDate.of(2026, 8, 1)).build();
-        given(timetableRepository.findByFestivalIdAndArtistName(100L, "아이유")).willReturn(List.of(entry));
-
         service.updateArtistFestival(100L, 10L, new LineupUpdate("메인스테이지", null));
 
         assertThat(af.getStageName()).isEqualTo("메인스테이지");
-        assertThat(entry.getStageName()).isEqualTo("메인스테이지");
+        then(timetableSyncService).should().syncStage(100L, "아이유", "메인스테이지", "서브스테이지");
     }
 
     @Test
-    void 참여정보_수정_스테이지_없으면_타임테이블_동기화_안함() {
-        Festival festival = festival(100L, null);
-        Artist artist = artist(1L, "아이유");
-        ArtistFestival af = ArtistFestival.builder().artist(artist).festival(festival).build();
-        given(artistFestivalRepository.findById(10L)).willReturn(Optional.of(af));
-
-        service.updateArtistFestival(100L, 10L, new LineupUpdate("", null));
-
-        assertThat(af.getStageName()).isNull();
-        then(timetableRepository).shouldHaveNoInteractions();
-    }
-
-    @Test
-    void 참여정보_수정_날짜_변경시_기존날짜_있으면_해당날짜_항목만_동기화() {
+    void 참여정보_수정_날짜_변경시_타임테이블_동기화_위임() {
         Festival festival = festival(100L, null);
         Artist artist = artist(1L, "아이유");
         ArtistFestival af = ArtistFestival.builder().artist(artist).festival(festival)
                 .performanceDate(LocalDate.of(2026, 8, 1)).build();
         given(artistFestivalRepository.findById(10L)).willReturn(Optional.of(af));
 
-        TimetableEntry sameDate = TimetableEntry.builder()
-                .artistName("아이유").festivalDate(LocalDate.of(2026, 8, 1)).build();
-        TimetableEntry otherDate = TimetableEntry.builder()
-                .artistName("아이유").festivalDate(LocalDate.of(2026, 8, 2)).build();
-        given(timetableRepository.findByFestivalIdAndArtistName(100L, "아이유"))
-                .willReturn(List.of(sameDate, otherDate));
-
         service.updateArtistFestival(100L, 10L, new LineupUpdate(null, LocalDate.of(2026, 8, 3)));
 
-        assertThat(sameDate.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 3));
-        assertThat(otherDate.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 2));
-    }
-
-    @Test
-    void 참여정보_수정_날짜_변경시_기존날짜_없으면_전체_동기화() {
-        Festival festival = festival(100L, null);
-        Artist artist = artist(1L, "아이유");
-        ArtistFestival af = ArtistFestival.builder().artist(artist).festival(festival).build();
-        given(artistFestivalRepository.findById(10L)).willReturn(Optional.of(af));
-
-        TimetableEntry entry1 = TimetableEntry.builder().artistName("아이유").festivalDate(LocalDate.of(2026, 8, 1)).build();
-        TimetableEntry entry2 = TimetableEntry.builder().artistName("아이유").festivalDate(LocalDate.of(2026, 8, 2)).build();
-        given(timetableRepository.findByFestivalIdAndArtistName(100L, "아이유"))
-                .willReturn(List.of(entry1, entry2));
-
-        service.updateArtistFestival(100L, 10L, new LineupUpdate(null, LocalDate.of(2026, 8, 3)));
-
-        assertThat(entry1.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 3));
-        assertThat(entry2.getFestivalDate()).isEqualTo(LocalDate.of(2026, 8, 3));
+        assertThat(af.getPerformanceDate()).isEqualTo(LocalDate.of(2026, 8, 3));
+        then(timetableSyncService).should().syncDate(100L, "아이유", LocalDate.of(2026, 8, 3), LocalDate.of(2026, 8, 1));
     }
 
     // ── syncFromTimetableEntry ────────────────────────────────────────────

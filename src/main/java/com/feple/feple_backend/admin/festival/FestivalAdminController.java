@@ -77,7 +77,7 @@ public class FestivalAdminController {
         try {
             return createFestivalAndLinkArtists(dto, artistIds, ra);
         } catch (IllegalArgumentException e) {
-            bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
+            rejectEndDateError(bindingResult, e);
             return renderCreateFormWithError(bindingResult, model);
         } catch (Exception e) {
             log.error("페스티벌 생성 실패. title={}", dto.getTitle(), e);
@@ -106,6 +106,11 @@ public class FestivalAdminController {
             ra.addFlashAttribute("warningMessage", "페스티벌은 등록되었으나 일부 아티스트 연결에 실패했습니다. 상세 탭에서 수동으로 추가해주세요.");
             return false;
         }
+    }
+
+    /** 종료일 관련 IllegalArgumentException(생성/수정 공통)을 endDate 필드 에러로 노출한다. */
+    private void rejectEndDateError(BindingResult bindingResult, IllegalArgumentException e) {
+        bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
     }
 
     private String renderCreateFormWithError(BindingResult bindingResult, Model model) {
@@ -171,7 +176,7 @@ public class FestivalAdminController {
             adminLogService.log(AdminAction.FESTIVAL_UPDATE, "FESTIVAL", id, dto.getTitle());
             ra.addFlashAttribute("successMessage", "페스티벌이 수정되었습니다.");
         } catch (IllegalArgumentException e) {
-            bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
+            rejectEndDateError(bindingResult, e);
             return renderEditFormWithError(bindingResult, id, currentPosterUrl, model);
         } catch (Exception e) {
             log.error("페스티벌 수정 실패. id={}", id, e);

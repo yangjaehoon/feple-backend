@@ -267,6 +267,22 @@ public class NotificationService {
         saveAndPushSingle(notificationFactory.apply(message.toContent()), userId, message);
     }
 
+    /** 관리자 테스트 발송용 개별 알림 저장 (AdminPushService에서 호출) */
+    public void saveAdminBroadcastNotification(Long userId, String title, String body) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (userId=" + userId + ")"));
+        notificationRepository.save(Notification.of(
+                user, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null));
+    }
+
+    /** 관리자 타겟 발송(아티스트 팔로워/페스티벌 인증자)용 개별 알림 일괄 저장 (AdminPushService에서 호출) */
+    public void saveAdminBroadcastNotifications(List<Long> userIds, String title, String body) {
+        List<User> users = userRepository.findAllById(userIds);
+        notificationRepository.saveAll(users.stream()
+                .map(u -> Notification.of(u, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null))
+                .toList());
+    }
+
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
     public void sendFestivalReminders(Long festivalId, String festivalTitle, String festivalTitleEn,
                                        List<Long> userIds, int dDay) {

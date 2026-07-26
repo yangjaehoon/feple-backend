@@ -13,7 +13,7 @@ import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
-import com.feple.feple_backend.post.entity.ReportStatus;
+import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

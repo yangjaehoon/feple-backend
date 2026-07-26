@@ -194,6 +194,16 @@ public class PostServiceImpl implements PostService {
         postRepository.incrementViewCount(postId);
     }
 
+    @Override
+    public void incrementCommentCount(Long postId) {
+        postRepository.incrementCommentCount(postId);
+    }
+
+    @Override
+    public void decrementCommentCount(Long postId) {
+        postRepository.decrementCommentCount(postId);
+    }
+
     // fetchFirst/fetchAfterCursor는 cursor==null 여부에 따라 호출부에서 다른 리포지토리 메서드를 넘긴다.
     // hasNext는 차단 필터링 전 fetch 개수(size+1) 기준으로 판단한다.
     private CursorPage<PostResponseDto> buildCursorPage(CursorPageRequest pageRequest,

@@ -9,11 +9,11 @@ import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
-import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
@@ -51,9 +51,10 @@ import static org.mockito.Mockito.*;
 class CommentServiceImplTest {
 
     @Mock CommentRepository commentRepository;
-    @Mock CommentReportRepository commentReportRepository;
+    @Mock CommentDeleter commentDeleter;
     @Mock CommentLikeRepository commentLikeRepository;
     @Mock PostRepository postRepository;
+    @Mock PostService postService;
     @Mock UserRepository userRepository;
     @Mock ApplicationEventPublisher eventPublisher;
     @Mock FestivalCertificationService certificationService;
@@ -303,7 +304,7 @@ class CommentServiceImplTest {
         commentService.deleteOwnComment(100L, 1L);
 
         verify(commentRepository).deleteById(100L);
-        verify(postRepository).decrementCommentCount(10L);
+        verify(postService).decrementCommentCount(10L);
     }
 
     @Test

@@ -5,7 +5,7 @@ import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.entity.ReportReason;
-import com.feple.feple_backend.post.entity.ReportStatus;
+import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;

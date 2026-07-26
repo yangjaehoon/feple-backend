@@ -1,7 +1,6 @@
 package com.feple.feple_backend.global;
 
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,25 +15,23 @@ public class UserNicknameLookup {
 
     public static final String UNKNOWN = "알 수 없음";
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     public String lookup(Long userId) {
-        return userRepository.findById(userId)
-                .map(User::getNickname)
-                .filter(n -> n != null && !n.isBlank())
-                .orElse(UNKNOWN);
+        return resolveOrUnknown(userService.getNicknamesByIds(List.of(userId)).get(userId));
     }
 
     public Map<Long, String> buildMap(List<Long> userIds) {
-        return userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(
-                        User::getId,
-                        u -> (u.getNickname() != null && !u.getNickname().isBlank()) ? u.getNickname() : UNKNOWN
-                ));
+        return userService.getNicknamesByIds(userIds).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> resolveOrUnknown(e.getValue())));
     }
 
     public <T> Map<Long, String> buildMap(List<T> items, Function<T, Long> userIdExtractor) {
         List<Long> userIds = items.stream().map(userIdExtractor).distinct().toList();
         return buildMap(userIds);
+    }
+
+    private String resolveOrUnknown(String nickname) {
+        return (nickname != null && !nickname.isBlank()) ? nickname : UNKNOWN;
     }
 }
