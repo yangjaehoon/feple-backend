@@ -4,6 +4,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'jacoco'
 	id 'com.diffplug.spotless' version '8.8.0'
+	id 'com.github.spotbugs' version '6.5.9'
 }
 
 group = 'com.feple'
@@ -88,6 +89,35 @@ spotless {
 		removeUnusedImports()
 		trimTrailingWhitespace()
 		endWithNewline()
+	}
+}
+
+// 기존 코드베이스를 아직 트리아지하지 않아서 ignoreFailures로 시작한다 — 리포트만 쌓고,
+// 발견된 항목들을 검토해 정리한 뒤 점진적으로 강제(false)로 전환할 예정
+spotbugs {
+	ignoreFailures = true
+	showStackTraces = false
+	excludeFilter = file('config/spotbugs/exclude.xml')
+}
+
+// spring-boot의 dependency-management BOM이 모든 configuration(spotbugs 툴체인 포함)에
+// commons-lang3 버전을 강제로 낮춰버려(3.20.0 -> 3.17.0) NoClassDefFoundError로 분석 자체가
+// 실패한다. resolutionStrategy.force/constraints 둘 다 BOM을 못 이겨서 dependencies에
+// strictly로 직접 선언해야 한다 — 단, 그러면 플러그인이 자동 주입하던 spotbugs 엔진 자체
+// (defaultDependencies)가 빠지므로 엔진 좌표도 같이 명시해야 함
+dependencies {
+	spotbugs "com.github.spotbugs:spotbugs:4.10.3"
+	spotbugs('org.apache.commons:commons-lang3') {
+		version { strictly '3.20.0' }
+	}
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+	reports {
+		html {
+			required = true
+			outputLocation = file("$buildDir/reports/spotbugs/${name}.html")
+		}
 	}
 }
 

@@ -41,6 +41,17 @@ jobs:
       - name: Test with Gradle
         run: ./gradlew cleanTest test
 
+      - name: Run SpotBugs
+        run: ./gradlew spotbugsMain spotbugsTest
+
+      - name: Upload SpotBugs report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spotbugs-report
+          path: build/reports/spotbugs/
+          retention-days: 14
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
