@@ -1,9 +1,8 @@
 package com.feple.feple_backend.admin.scraper;
 
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
-import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.festival.entity.Region;
-
+import com.feple.feple_backend.global.MusicGenre;
 import java.time.LocalDate;
 
 public final class ScrapedFestivalMapper {

@@ -3,14 +3,13 @@ package com.feple.feple_backend.admin.ocr;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.admin.scraper.ScrapedFestivalDto;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service

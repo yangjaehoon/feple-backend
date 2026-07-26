@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.4.4'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'jacoco'
+	id 'com.diffplug.spotless' version '8.8.0'
 }
 
 group = 'com.feple'
@@ -76,6 +77,18 @@ dependencies {
 
 jacoco {
 	toolVersion = "0.8.12"
+}
+
+// import 정렬/미사용 import 제거만 자동화한다 — google-java-format 등 전체 리포맷터는
+// 기존 497개 파일의 들여쓰기·줄바꿈까지 전부 건드려 리뷰 불가능한 diff를 만들기 때문에 도입하지 않음
+spotless {
+	java {
+		target 'src/main/java/**/*.java', 'src/test/java/**/*.java'
+		importOrder()
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
 }
 
 jacocoTestReport {

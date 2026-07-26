@@ -1,26 +1,25 @@
 package com.feple.feple_backend.auth.service;
 
-import com.feple.feple_backend.auth.entity.RefreshToken;
-import com.feple.feple_backend.auth.jwt.JwtProperties;
-import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.entity.UserRole;
-import com.feple.feple_backend.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import com.feple.feple_backend.auth.entity.RefreshToken;
+import com.feple.feple_backend.auth.jwt.JwtProperties;
+import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.UserRole;
+import com.feple.feple_backend.user.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {

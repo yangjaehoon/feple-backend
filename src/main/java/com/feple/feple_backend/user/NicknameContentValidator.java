@@ -3,11 +3,10 @@ package com.feple.feple_backend.user;
 import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.nickname.NicknameRestrictionValidator;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 /**
  * 닉네임 콘텐츠 검증(금칙어/아티스트명/제한어) 순서를 한 곳에서 관리한다.

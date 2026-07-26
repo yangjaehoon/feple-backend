@@ -1,30 +1,29 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.ReportRejectionService;
+import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
+import com.feple.feple_backend.global.entity.ReportStatus;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostReport;
-import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
-import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.global.QueryResultMapper;
-import com.feple.feple_backend.global.EntityLoader;
-import com.feple.feple_backend.global.ReportRejectionService;
-import com.feple.feple_backend.global.exception.ConflictException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collection;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor

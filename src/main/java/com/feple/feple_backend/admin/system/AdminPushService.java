@@ -1,8 +1,6 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.system.BroadcastNotificationView;
-import com.feple.feple_backend.admin.system.PushFormData;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
@@ -14,6 +12,7 @@ import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.notification.service.PushNotificationClient;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -21,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.util.List;
 
 @Slf4j
 @Service

@@ -4,13 +4,12 @@ import com.feple.feple_backend.artist.song.dto.SongFestivalDto;
 import com.feple.feple_backend.artist.song.dto.SongResponseDto;
 import com.feple.feple_backend.artist.song.service.SongService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Tag(name = "노래", description = "아티스트 노래 목록 및 세트리스트")
 @RestController

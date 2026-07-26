@@ -2,13 +2,12 @@ package com.feple.feple_backend.timetable.dto;
 
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.entity.TimetableEntryMember;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder

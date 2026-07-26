@@ -26,6 +26,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Check code formatting (Spotless)
+        run: ./gradlew spotlessCheck
+
       - name: Create application-local.yaml
         env:
           APPLICATION_LOCAL_YAML: ${{ secrets.APPLICATION_LOCAL_YAML }}

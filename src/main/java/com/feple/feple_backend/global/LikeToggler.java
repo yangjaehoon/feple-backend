@@ -1,8 +1,7 @@
 package com.feple.feple_backend.global;
 
-import org.springframework.dao.DataIntegrityViolationException;
-
 import java.util.function.IntSupplier;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * "삭제 시도 → 있었으면 취소(감소), 없었으면 저장(증가)" 좋아요 토글 결정 구조를 한 곳에서 관리한다.

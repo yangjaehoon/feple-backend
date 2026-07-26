@@ -2,9 +2,8 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface UserAdminService {
     UserResponseDto getAdminUser(Long id);

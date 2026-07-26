@@ -6,22 +6,19 @@ import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
-import com.feple.feple_backend.global.UserNicknameLookup;
-import com.feple.feple_backend.global.exception.ConflictException;
-import lombok.RequiredArgsConstructor;
-import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-
 import com.feple.feple_backend.global.EntityLoader;
-
+import com.feple.feple_backend.global.UserNicknameLookup;
+import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
+import com.feple.feple_backend.global.exception.ConflictException;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

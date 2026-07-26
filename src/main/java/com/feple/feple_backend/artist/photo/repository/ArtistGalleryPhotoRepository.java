@@ -1,12 +1,11 @@
 package com.feple.feple_backend.artist.photo.repository;
 
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGalleryPhoto, Long> {

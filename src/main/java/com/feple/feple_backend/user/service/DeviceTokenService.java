@@ -1,18 +1,16 @@
 package com.feple.feple_backend.user.service;
 
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.user.entity.DevicePlatform;
 import com.feple.feple_backend.user.entity.DeviceTokenRegistration;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.feple.feple_backend.global.EntityLoader;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

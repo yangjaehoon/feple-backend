@@ -2,14 +2,13 @@ package com.feple.feple_backend.admin.user;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.user.UserDetailAggregationService;
-import com.feple.feple_backend.admin.user.UserDetailDto;
-import com.feple.feple_backend.admin.user.UserListCountsDto;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.service.UserAdminService;
+import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,10 +18,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")

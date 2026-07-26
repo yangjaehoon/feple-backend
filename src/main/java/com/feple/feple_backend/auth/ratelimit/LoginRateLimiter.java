@@ -1,9 +1,8 @@
 package com.feple.feple_backend.auth.ratelimit;
 
 import com.feple.feple_backend.global.exception.TooManyRequestsException;
-import org.springframework.stereotype.Component;
-
 import java.time.Duration;
+import org.springframework.stereotype.Component;
 
 /**
  * IP 주소 기준으로 인증 시도를 제한한다.

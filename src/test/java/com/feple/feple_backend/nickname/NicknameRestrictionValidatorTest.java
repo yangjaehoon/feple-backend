@@ -1,20 +1,19 @@
 package com.feple.feple_backend.nickname;
 
-import com.feple.feple_backend.nickname.event.NicknameRestrictionChangedEvent;
-import com.feple.feple_backend.nickname.repository.NicknameRestrictionRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import com.feple.feple_backend.nickname.event.NicknameRestrictionChangedEvent;
+import com.feple.feple_backend.nickname.repository.NicknameRestrictionRepository;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class NicknameRestrictionValidatorTest {

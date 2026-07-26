@@ -2,9 +2,9 @@ package com.feple.feple_backend.comment.entity;
 
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
 
 @Entity
 @Getter

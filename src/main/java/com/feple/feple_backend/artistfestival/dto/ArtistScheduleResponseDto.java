@@ -1,11 +1,10 @@
 package com.feple.feple_backend.artistfestival.dto;
 
 import com.feple.feple_backend.festival.entity.EventType;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.LocalDate;
 import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder

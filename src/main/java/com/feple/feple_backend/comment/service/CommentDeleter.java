@@ -3,10 +3,9 @@ package com.feple.feple_backend.comment.service;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * 댓글 하드 삭제 시 FK 제약을 지키는 자식 레코드 삭제 순서(CommentLike → CommentReport → Comment)를

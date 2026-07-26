@@ -2,11 +2,10 @@ package com.feple.feple_backend.artist;
 
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.util.HashSet;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

@@ -7,6 +7,9 @@ import com.feple.feple_backend.admin.scraper.ScrapedFestivalMapper;
 import com.feple.feple_backend.admin.scraper.ScraperApplyRequestDto;
 import com.feple.feple_backend.admin.scraper.WebScraperService;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.Map;
 
 /** 크롤 대시보드의 웹 스크래핑(URL로 페스티벌 정보 자동 추출) 기능 전담 컨트롤러. */
 @Slf4j

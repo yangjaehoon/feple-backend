@@ -1,9 +1,8 @@
 package com.feple.feple_backend.user.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "user_point_log", indexes = {

@@ -3,13 +3,12 @@ package com.feple.feple_backend.nickname.service;
 import com.feple.feple_backend.nickname.entity.NicknameRestriction;
 import com.feple.feple_backend.nickname.event.NicknameRestrictionChangedEvent;
 import com.feple.feple_backend.nickname.repository.NicknameRestrictionRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

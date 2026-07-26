@@ -2,11 +2,10 @@ package com.feple.feple_backend.artist.entity;
 
 import com.feple.feple_backend.global.MusicGenre;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 @Entity
 @Getter

@@ -1,26 +1,5 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.post.repository.PostRepository;
-
-import com.feple.feple_backend.post.dto.PostAdminFilterDto;
-import com.feple.feple_backend.post.dto.PostResponseDto;
-import com.feple.feple_backend.post.entity.BoardType;
-import com.feple.feple_backend.post.entity.Post;
-import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
-import com.feple.feple_backend.user.entity.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import static com.feple.feple_backend.support.TestEntityFactory.freePost;
 import static com.feple.feple_backend.support.TestEntityFactory.user;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +9,25 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import com.feple.feple_backend.post.dto.PostAdminFilterDto;
+import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.entity.BoardType;
+import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
+import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.user.entity.User;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class PostAdminServiceImplTest {

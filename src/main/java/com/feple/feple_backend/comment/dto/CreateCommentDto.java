@@ -19,5 +19,3 @@ public class CreateCommentDto {
     private Long parentId; // 대댓글인 경우 부모 댓글 ID
     private boolean anonymous = false;
 }
-
-

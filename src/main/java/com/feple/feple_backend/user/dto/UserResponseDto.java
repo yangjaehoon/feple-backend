@@ -3,10 +3,9 @@ package com.feple.feple_backend.user.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.UserRole;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder

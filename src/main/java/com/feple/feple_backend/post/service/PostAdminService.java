@@ -2,9 +2,8 @@ package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface PostAdminService {
     Page<PostResponseDto> getPostsForAdmin(PostAdminFilterDto params);

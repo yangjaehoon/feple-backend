@@ -1,8 +1,7 @@
 package com.feple.feple_backend.admin.service;
 
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
+import org.slf4j.LoggerFactory;
 
 public interface ReportCommandService {
     void dismissReport(Long reportId);

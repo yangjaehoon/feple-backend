@@ -1,6 +1,10 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.post.repository.PostRepository;
+import static com.feple.feple_backend.support.TestEntityFactory.user;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.service.CommentService;
@@ -9,22 +13,16 @@ import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostReportRepository;
+import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static com.feple.feple_backend.support.TestEntityFactory.user;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PostCascadeServiceImplTest {

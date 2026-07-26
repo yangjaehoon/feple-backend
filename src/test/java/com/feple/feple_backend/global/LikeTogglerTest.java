@@ -1,9 +1,9 @@
 package com.feple.feple_backend.global;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class LikeTogglerTest {
 

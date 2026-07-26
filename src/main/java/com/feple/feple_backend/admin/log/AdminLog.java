@@ -1,10 +1,10 @@
 package com.feple.feple_backend.admin.log;
 
+import static jakarta.persistence.EnumType.STRING;
+
 import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import static jakarta.persistence.EnumType.STRING;
 
 @Entity
 @Table(name = "admin_logs", indexes = {

@@ -2,11 +2,10 @@ package com.feple.feple_backend.certification.service;
 
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.domain.Page;
 
 public interface FestivalCertificationAdminService {
     /** 해당 페스티벌에 인증(APPROVED)된 유저 ID 목록 */

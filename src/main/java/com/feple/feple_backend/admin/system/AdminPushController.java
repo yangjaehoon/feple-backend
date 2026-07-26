@@ -1,12 +1,13 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
-import com.feple.feple_backend.admin.system.AdminPushService;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.user.service.UserAdminService;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,9 +17,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @Slf4j
 @PreAuthorize("hasRole('SUPER_ADMIN')")

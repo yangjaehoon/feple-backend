@@ -2,26 +2,25 @@ package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor

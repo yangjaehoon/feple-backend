@@ -2,10 +2,9 @@ package com.feple.feple_backend.artist.dto;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.global.MusicGenre;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
 
 @Getter
 @Builder
@@ -48,4 +47,3 @@ public class ArtistResponseDto {
                 .build();
     }
 }
-

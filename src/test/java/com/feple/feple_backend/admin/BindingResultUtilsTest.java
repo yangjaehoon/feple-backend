@@ -1,13 +1,12 @@
 package com.feple.feple_backend.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class BindingResultUtilsTest {
 

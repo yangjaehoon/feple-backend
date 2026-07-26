@@ -1,13 +1,11 @@
 package com.feple.feple_backend.support;
 
-import org.springframework.mock.web.MockHttpServletRequest;
+import java.util.List;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
-
-import java.util.List;
 
 /**
  * MockMvc 단위 테스트에서 @AuthenticationPrincipal Long userId 파라미터를 처리하기 위한

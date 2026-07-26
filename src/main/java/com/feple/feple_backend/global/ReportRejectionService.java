@@ -1,10 +1,9 @@
 package com.feple.feple_backend.global;
 
-import com.feple.feple_backend.global.entity.ResolvableReport;
 import com.feple.feple_backend.global.entity.ReportStatus;
-import org.springframework.data.repository.ListCrudRepository;
-
+import com.feple.feple_backend.global.entity.ResolvableReport;
 import java.util.List;
+import org.springframework.data.repository.ListCrudRepository;
 
 public class ReportRejectionService {
 

@@ -1,12 +1,11 @@
 package com.feple.feple_backend.global.cache;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 
 // TTL 설정: CacheConfig — adminPendingCounts=2분, adminSidebarCounts=30초, adminReportTypeCounts=30초
 // 사용처: PostReportAdminServiceImpl, CommentReportAdminServiceImpl, AdminPendingItemsServiceImpl

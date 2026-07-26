@@ -1,19 +1,18 @@
 package com.feple.feple_backend.file.service;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.CRC32;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import javax.imageio.ImageIO;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 
 class ImageResizeServiceTest {
 

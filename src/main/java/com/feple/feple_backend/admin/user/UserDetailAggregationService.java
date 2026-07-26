@@ -6,11 +6,10 @@ import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import com.feple.feple_backend.userblock.service.UserBlockService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

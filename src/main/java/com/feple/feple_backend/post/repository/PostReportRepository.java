@@ -1,17 +1,16 @@
 package com.feple.feple_backend.post.repository;
 
+import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.repository.BaseReportRepository;
 import com.feple.feple_backend.post.entity.PostReport;
-import com.feple.feple_backend.global.entity.ReportStatus;
+import java.util.Collection;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.Collection;
-import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface PostReportRepository extends BaseReportRepository<PostReport> {

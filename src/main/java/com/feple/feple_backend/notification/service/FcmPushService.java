@@ -4,13 +4,12 @@ import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service

@@ -1,10 +1,9 @@
 package com.feple.feple_backend.artist.song.dto;
 
 import com.feple.feple_backend.artist.song.entity.Song;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
 
 @Getter
 @Builder

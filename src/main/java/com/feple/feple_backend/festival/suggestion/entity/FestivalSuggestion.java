@@ -2,9 +2,8 @@ package com.feple.feple_backend.festival.suggestion.entity;
 
 import com.feple.feple_backend.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Getter

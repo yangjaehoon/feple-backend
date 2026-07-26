@@ -1,10 +1,9 @@
 package com.feple.feple_backend.artist.suggestion.dto;
 
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder

@@ -3,11 +3,10 @@ package com.feple.feple_backend.artist.service;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.global.MusicGenre;
-import org.springframework.data.domain.Page;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ArtistAdminService {
     Long createArtist(ArtistRequestDto dto);

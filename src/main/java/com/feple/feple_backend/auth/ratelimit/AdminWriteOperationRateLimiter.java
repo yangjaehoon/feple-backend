@@ -1,8 +1,7 @@
 package com.feple.feple_backend.auth.ratelimit;
 
-import org.springframework.stereotype.Component;
-
 import java.time.Duration;
+import org.springframework.stereotype.Component;
 
 /**
  * 관리자 계정 기준 POST 요청 제한.

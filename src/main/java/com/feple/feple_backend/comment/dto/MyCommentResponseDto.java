@@ -2,10 +2,9 @@ package com.feple.feple_backend.comment.dto;
 
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.post.entity.Post;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor

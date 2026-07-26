@@ -1,26 +1,25 @@
 package com.feple.feple_backend.festival.setlistchangerequest.service;
 
-import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
-import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.festival.entity.Festival;
-import com.feple.feple_backend.festival.setlistchangerequest.repository.SetlistChangeRequestRepository;
-import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.repository.UserRepository;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+
+import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
+import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.festival.setlistchangerequest.repository.SetlistChangeRequestRepository;
+import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.repository.UserRepository;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class SetlistChangeRequestServiceTest {

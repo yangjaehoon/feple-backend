@@ -1,14 +1,13 @@
 package com.feple.feple_backend.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class AdminActionUtilsTest {
 

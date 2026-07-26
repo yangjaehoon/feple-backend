@@ -1,5 +1,7 @@
 package com.feple.feple_backend.artist.service;
 
+import static org.mockito.Mockito.verify;
+
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
@@ -17,8 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ArtistCascadeDeleteServiceTest {

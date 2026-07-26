@@ -1,6 +1,14 @@
 package com.feple.feple_backend.artist.song.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -8,15 +16,6 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class YoutubeSearchServiceTest {
 

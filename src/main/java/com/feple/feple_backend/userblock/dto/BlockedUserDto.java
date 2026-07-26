@@ -1,9 +1,8 @@
 package com.feple.feple_backend.userblock.dto;
 
 import com.feple.feple_backend.userblock.entity.UserBlock;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
+import lombok.Getter;
 
 @Getter
 public class BlockedUserDto {

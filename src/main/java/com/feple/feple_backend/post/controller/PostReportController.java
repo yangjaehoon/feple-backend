@@ -2,8 +2,8 @@ package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.service.PostReportService;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

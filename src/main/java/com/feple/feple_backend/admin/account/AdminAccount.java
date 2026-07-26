@@ -1,14 +1,13 @@
 package com.feple.feple_backend.admin.account;
 
-import com.feple.feple_backend.global.entity.BaseTimeEntity;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import static jakarta.persistence.EnumType.STRING;
 import static lombok.AccessLevel.PROTECTED;
+
+import com.feple.feple_backend.global.entity.BaseTimeEntity;
+import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
+import lombok.*;
 
 @Entity
 @Table(name = "admin_accounts")

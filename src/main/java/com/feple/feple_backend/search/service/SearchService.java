@@ -7,11 +7,10 @@ import com.feple.feple_backend.search.dto.SearchResultDto;
 import com.feple.feple_backend.search.dto.SuggestionDto;
 import com.feple.feple_backend.search.entity.SearchLog;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

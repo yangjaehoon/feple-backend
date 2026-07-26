@@ -1,5 +1,10 @@
 package com.feple.feple_backend.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import com.feple.feple_backend.admin.user.UserDetailAggregationService;
 import com.feple.feple_backend.admin.user.UserDetailDto;
 import com.feple.feple_backend.admin.user.UserListCountsDto;
@@ -15,19 +20,13 @@ import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import com.feple.feple_backend.userblock.service.UserBlockService;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class UserDetailAggregationServiceTest {

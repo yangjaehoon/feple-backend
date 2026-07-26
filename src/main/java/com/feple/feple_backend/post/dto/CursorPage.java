@@ -1,8 +1,7 @@
 package com.feple.feple_backend.post.dto;
 
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public record CursorPage<T>(
         List<T> content,

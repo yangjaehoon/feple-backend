@@ -2,17 +2,16 @@ package com.feple.feple_backend.admin.account;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 // Spring Security의 authorizeHttpRequests/@PreAuthorize 대신 HandlerInterceptor를 사용하는 이유:
 // 권한(AdminPermission)이 정적 역할이 아닌 AdminAccount 엔티티에 DB로 저장된 per-account 설정이므로

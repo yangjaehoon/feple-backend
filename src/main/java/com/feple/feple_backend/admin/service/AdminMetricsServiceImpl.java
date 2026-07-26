@@ -1,11 +1,11 @@
 package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.AdminConstants;
-import org.springframework.cache.annotation.Cacheable;
 import com.feple.feple_backend.admin.dashboard.ContentTrendDto;
 import com.feple.feple_backend.admin.dashboard.DailyStatDto;
 import com.feple.feple_backend.admin.system.TopKeywordDto;
 import com.feple.feple_backend.admin.user.UserActivityStatsDto;
+import com.feple.feple_backend.admin.user.UserSummaryDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
@@ -15,13 +15,7 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
-import com.feple.feple_backend.admin.user.UserSummaryDto;
 import com.feple.feple_backend.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

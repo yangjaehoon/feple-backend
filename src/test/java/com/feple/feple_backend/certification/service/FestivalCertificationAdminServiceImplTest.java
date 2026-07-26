@@ -1,24 +1,5 @@
 package com.feple.feple_backend.certification.service;
 
-import com.feple.feple_backend.certification.entity.CertificationStatus;
-import com.feple.feple_backend.certification.entity.FestivalCertification;
-import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
-import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
-import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
-import com.feple.feple_backend.file.service.S3PresignService;
-import com.feple.feple_backend.user.service.PointService;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +8,24 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+
+import com.feple.feple_backend.certification.entity.CertificationStatus;
+import com.feple.feple_backend.certification.entity.FestivalCertification;
+import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
+import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
+import com.feple.feple_backend.certification.repository.FestivalCertificationRepository;
+import com.feple.feple_backend.file.service.S3PresignService;
+import com.feple.feple_backend.user.service.PointService;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class FestivalCertificationAdminServiceImplTest {

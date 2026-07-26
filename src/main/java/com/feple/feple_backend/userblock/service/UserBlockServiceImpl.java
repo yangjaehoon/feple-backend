@@ -7,11 +7,10 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.dto.BlockedUserDto;
 import com.feple.feple_backend.userblock.entity.UserBlock;
 import com.feple.feple_backend.userblock.repository.UserBlockRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

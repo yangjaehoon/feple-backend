@@ -4,14 +4,13 @@ import com.feple.feple_backend.notification.dto.NotificationPreferenceDto;
 import com.feple.feple_backend.notification.dto.UpdateNotificationPreferenceDto;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor

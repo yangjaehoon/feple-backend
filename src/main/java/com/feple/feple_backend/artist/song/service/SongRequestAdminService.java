@@ -2,9 +2,8 @@ package com.feple.feple_backend.artist.song.service;
 
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface SongRequestAdminService {
 

@@ -1,9 +1,9 @@
 package com.feple.feple_backend.artist.photo.entity;
 
 import com.feple.feple_backend.global.entity.BaseTimeEntity;
-import com.feple.feple_backend.post.entity.ReportReason;
-import com.feple.feple_backend.global.entity.ResolvableReport;
 import com.feple.feple_backend.global.entity.ReportStatus;
+import com.feple.feple_backend.global.entity.ResolvableReport;
+import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;

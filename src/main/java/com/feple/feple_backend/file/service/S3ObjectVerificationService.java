@@ -1,13 +1,12 @@
 package com.feple.feple_backend.file.service;
 
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-
-import java.util.Set;
 
 /** presigned URL로 클라이언트가 실제 업로드했는지, 허용된 이미지 타입인지 S3에서 직접 검증 */
 @Service

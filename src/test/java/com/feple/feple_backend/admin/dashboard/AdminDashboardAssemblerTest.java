@@ -1,22 +1,21 @@
 package com.feple.feple_backend.admin.dashboard;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.AdminDashboardMetrics;
 import com.feple.feple_backend.admin.service.AdminPendingItemsService;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.post.service.PostAdminService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 
 @ExtendWith(MockitoExtension.class)
 class AdminDashboardAssemblerTest {

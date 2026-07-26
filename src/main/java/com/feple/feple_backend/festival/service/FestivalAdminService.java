@@ -2,12 +2,11 @@ package com.feple.feple_backend.festival.service;
 
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import org.springframework.data.domain.Page;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface FestivalAdminService {
     Long createFestival(FestivalRequestDto dto);

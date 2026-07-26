@@ -1,10 +1,9 @@
 package com.feple.feple_backend.user;
 
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 /**
  * OAuth 신규 가입 시 닉네임 생성 공통 로직.

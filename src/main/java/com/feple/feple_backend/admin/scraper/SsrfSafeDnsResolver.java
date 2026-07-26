@@ -1,10 +1,9 @@
 package com.feple.feple_backend.admin.scraper;
 
-import org.apache.hc.client5.http.DnsResolver;
-import org.apache.hc.client5.http.SystemDefaultDnsResolver;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.apache.hc.client5.http.DnsResolver;
+import org.apache.hc.client5.http.SystemDefaultDnsResolver;
 
 /**
  * 실제 소켓 연결에 사용되는 IP를 검증한 뒤 그대로 연결에 사용한다 — 검증과 연결

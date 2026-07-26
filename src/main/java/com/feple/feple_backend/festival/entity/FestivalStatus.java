@@ -1,12 +1,12 @@
 package com.feple.feple_backend.festival.entity;
 
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.reverseOrder;
+
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
-
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.reverseOrder;
 
 /**
  * 페스티벌 상태 — 각 상태가 필터 조건과 정렬 기준을 직접 소유 (State Pattern)

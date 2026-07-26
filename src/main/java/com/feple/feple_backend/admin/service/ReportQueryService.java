@@ -2,13 +2,12 @@ package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.entity.ReportStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 public interface ReportQueryService<T> {
     String getReportType();

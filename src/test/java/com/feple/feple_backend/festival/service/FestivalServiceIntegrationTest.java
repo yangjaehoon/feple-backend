@@ -1,28 +1,27 @@
 package com.feple.feple_backend.festival.service;
 
-import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
-import com.feple.feple_backend.festival.dto.FestivalRequestDto;
-import com.feple.feple_backend.festival.dto.FestivalResponseDto;
-import com.feple.feple_backend.global.MusicGenre;
-import com.feple.feple_backend.festival.entity.Region;
-import com.feple.feple_backend.festival.repository.FestivalRepository;
-import com.feple.feple_backend.file.service.FileStorageService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+
+import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
+import com.feple.feple_backend.festival.dto.FestivalRequestDto;
+import com.feple.feple_backend.festival.dto.FestivalResponseDto;
+import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.MusicGenre;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.NoSuchElementException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")

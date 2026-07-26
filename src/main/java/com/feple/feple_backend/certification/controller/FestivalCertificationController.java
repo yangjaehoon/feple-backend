@@ -2,23 +2,21 @@ package com.feple.feple_backend.certification.controller;
 
 import com.feple.feple_backend.certification.dto.CertificationRatingRequestDto;
 import com.feple.feple_backend.certification.dto.CertificationRequestDto;
-import com.feple.feple_backend.file.ImageUploadPolicy;
-import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
+import com.feple.feple_backend.file.ImageUploadPolicy;
+import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @Tag(name = "페스티벌 인증", description = "페스티벌 참여 인증 제출·조회")
 @RestController

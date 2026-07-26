@@ -1,5 +1,8 @@
 package com.feple.feple_backend.auth.kakao;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.feple.feple_backend.auth.dto.KakaoUserResponseDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -10,9 +13,6 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class KakaoApiClientTest {
 
