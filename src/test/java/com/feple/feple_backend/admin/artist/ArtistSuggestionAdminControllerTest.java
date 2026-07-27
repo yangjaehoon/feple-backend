@@ -46,6 +46,27 @@ class ArtistSuggestionAdminControllerTest {
                 .andExpect(model().attributeExists("suggestions"));
     }
 
+    // ── POST /admin/artist-suggestions/{id}/approve ───────────────────────────
+
+    @Test
+    void 승인_성공() throws Exception {
+        mockMvc.perform(post("/admin/artist-suggestions/1/approve")
+                        .param("artistId", "100"))
+                .andExpect(redirectedUrl("/admin/artist-suggestions"))
+                .andExpect(flash().attribute("successMessage", "아티스트 신청이 승인되었습니다."));
+
+        then(artistSuggestionAdminService).should().approve(1L, 100L);
+    }
+
+    @Test
+    void 승인_실패_errorMessage_설정() throws Exception {
+        willThrow(new RuntimeException("오류")).given(artistSuggestionAdminService).approve(anyLong(), anyLong());
+
+        mockMvc.perform(post("/admin/artist-suggestions/1/approve")
+                        .param("artistId", "100"))
+                .andExpect(flash().attribute("errorMessage", "승인 중 오류가 발생했습니다."));
+    }
+
     // ── POST /admin/artist-suggestions/{id}/dismiss ───────────────────────────
 
     @Test

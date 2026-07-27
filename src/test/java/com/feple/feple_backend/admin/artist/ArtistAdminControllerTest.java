@@ -159,4 +159,94 @@ class ArtistAdminControllerTest {
 
         then(artistSuggestionAdminService).should().dismiss(1L, "중복 아티스트");
     }
+
+    // ── POST /admin/artists/new ────────────────────────────────────────────────
+
+    @Test
+    void 아티스트_등록_성공() throws Exception {
+        given(artistAdminService.createArtist(any())).willReturn(1L);
+
+        mockMvc.perform(multipart("/admin/artists/new")
+                        .file("profileImageFile", new byte[]{1, 2, 3})
+                        .param("name", "새아티스트")
+                        .param("genres", "INDIE"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/artists"))
+                .andExpect(flash().attribute("successMessage", "'새아티스트' 아티스트가 등록되었습니다."));
+
+        then(artistAdminService).should().createArtist(any());
+    }
+
+    @Test
+    void 아티스트_등록_프로필이미지_없으면_검증오류() throws Exception {
+        mockMvc.perform(multipart("/admin/artists/new")
+                        .param("name", "새아티스트")
+                        .param("genres", "INDIE"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/artist/create"))
+                .andExpect(model().attributeExists("errors"));
+
+        then(artistAdminService).should(never()).createArtist(any());
+    }
+
+    @Test
+    void 아티스트_등록_실패시_오류메시지() throws Exception {
+        given(artistAdminService.uploadProfile(any(), any())).willThrow(new RuntimeException("업로드 실패"));
+
+        mockMvc.perform(multipart("/admin/artists/new")
+                        .file("profileImageFile", new byte[]{1, 2, 3})
+                        .param("name", "새아티스트")
+                        .param("genres", "INDIE"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/artist/create"))
+                .andExpect(model().attributeExists("errors"));
+    }
+
+    // ── GET /admin/artists/photos ─────────────────────────────────────────────
+
+    @Test
+    void 사진관리_뷰와_모델() throws Exception {
+        given(artistService.getAllArtists()).willReturn(List.of());
+
+        mockMvc.perform(get("/admin/artists/photos"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/artist/photos"))
+                .andExpect(model().attributeExists("artists"));
+    }
+
+    // ── POST /admin/artists/{id}/photo ─────────────────────────────────────────
+
+    @Test
+    void 사진_업로드_파일없으면_에러메시지() throws Exception {
+        mockMvc.perform(multipart("/admin/artists/1/photo")
+                        .file("profileImageFile", new byte[0]))
+                .andExpect(redirectedUrl("/admin/artists/photos"))
+                .andExpect(flash().attribute("errorMessage", "이미지를 선택해주세요."));
+    }
+
+    @Test
+    void 사진_업로드_성공() throws Exception {
+        com.feple.feple_backend.artist.dto.ArtistResponseDto artist =
+                mock(com.feple.feple_backend.artist.dto.ArtistResponseDto.class);
+        given(artist.getName()).willReturn("아티스트명");
+        given(artistService.getArtistById(1L)).willReturn(artist);
+        given(artistAdminService.uploadProfile(any(), any())).willReturn("key.jpg");
+
+        mockMvc.perform(multipart("/admin/artists/1/photo")
+                        .file("profileImageFile", new byte[]{1, 2, 3}))
+                .andExpect(redirectedUrl("/admin/artists/photos"))
+                .andExpect(flash().attribute("successMessage", "사진이 업데이트되었습니다."));
+
+        then(artistAdminService).should().updateArtistPhoto(1L, "key.jpg");
+    }
+
+    @Test
+    void 사진_업로드_실패시_에러메시지() throws Exception {
+        given(artistService.getArtistById(1L)).willThrow(new RuntimeException("조회 실패"));
+
+        mockMvc.perform(multipart("/admin/artists/1/photo")
+                        .file("profileImageFile", new byte[]{1, 2, 3}))
+                .andExpect(redirectedUrl("/admin/artists/photos"))
+                .andExpect(flash().attribute("errorMessage", "사진 업로드에 실패했습니다. 다시 시도해주세요."));
+    }
 }
