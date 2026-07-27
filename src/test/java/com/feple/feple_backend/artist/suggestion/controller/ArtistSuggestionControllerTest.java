@@ -48,4 +48,13 @@ class ArtistSuggestionControllerTest {
                         .content("{\"artistName\":\"테스트 아티스트\",\"note\":\"제안 메모\"}"))
                 .andExpect(status().isCreated());
     }
+
+    @Test
+    void 아티스트명_없으면_400() throws Exception {
+        mockMvc.perform(post("/artist-suggestions")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"note\":\"제안 메모\"}"))
+                .andExpect(status().isBadRequest());
+    }
 }

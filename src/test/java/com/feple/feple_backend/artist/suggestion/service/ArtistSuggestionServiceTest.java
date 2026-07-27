@@ -11,16 +11,23 @@ import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto
 import com.feple.feple_backend.artist.suggestion.dto.SubmitArtistSuggestionDto;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
+import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ArtistSuggestionServiceTest {
@@ -137,5 +144,106 @@ class ArtistSuggestionServiceTest {
         given(suggestionRepository.countByStatus(ArtistSuggestionStatus.PENDING)).willReturn(5L);
 
         assertThat(suggestionService.getPendingCount()).isEqualTo(5L);
+    }
+
+    @Test
+    void getProcessedCount_레포지토리에_위임됨() {
+        given(suggestionRepository.countByStatus(ArtistSuggestionStatus.DISMISSED)).willReturn(3L);
+
+        assertThat(suggestionService.getProcessedCount()).isEqualTo(3L);
+    }
+
+    // ── 관리자 조회 ──────────────────────────────────────────────────────
+
+    @Test
+    void 대기중_신청_페이지_조회시_닉네임_매핑() {
+        ArtistSuggestion s = savedSuggestion(1L, 1L, "아이유");
+        Page<ArtistSuggestion> page = new PageImpl<>(List.of(s));
+        given(suggestionRepository.findByStatusOrderByCreatedAtDesc(
+                        ArtistSuggestionStatus.PENDING, PageRequest.of(0, 10)))
+                .willReturn(page);
+        given(nicknameResolver.buildMap(any(List.class), any())).willReturn(Map.of(1L, "user1"));
+
+        Page<ArtistSuggestionResponseDto> result = suggestionService.getSuggestionsPage(0, 10);
+
+        assertThat(result.getContent()).extracting(ArtistSuggestionResponseDto::getUserNickname)
+                .containsExactly("user1");
+    }
+
+    @Test
+    void 처리완료_신청_미리보기는_DISMISSED_상태만_조회() {
+        ArtistSuggestion s = savedSuggestion(1L, 1L, "아이유");
+        Page<ArtistSuggestion> page = new PageImpl<>(List.of(s));
+        given(suggestionRepository.findByStatusOrderByCreatedAtDesc(
+                        ArtistSuggestionStatus.DISMISSED, PageRequest.of(0, 5)))
+                .willReturn(page);
+        given(nicknameResolver.buildMap(any(List.class), any())).willReturn(Map.of());
+
+        List<ArtistSuggestionResponseDto> result = suggestionService.getProcessedSuggestionsPreview(5);
+
+        assertThat(result.get(0).getUserNickname()).isEqualTo(UserNicknameLookup.UNKNOWN);
+    }
+
+    @Test
+    void 대기중_신청_미리보기는_PENDING_상태만_조회() {
+        ArtistSuggestion s = savedSuggestion(1L, 1L, "아이유");
+        Page<ArtistSuggestion> page = new PageImpl<>(List.of(s));
+        given(suggestionRepository.findByStatusOrderByCreatedAtDesc(
+                        ArtistSuggestionStatus.PENDING, PageRequest.of(0, 5)))
+                .willReturn(page);
+        given(nicknameResolver.buildMap(any(List.class), any())).willReturn(Map.of(1L, "user1"));
+
+        List<ArtistSuggestionResponseDto> result = suggestionService.getPendingSuggestionsPreview(5);
+
+        assertThat(result).hasSize(1);
+    }
+
+    // ── approve ──────────────────────────────────────────────────────────
+
+    @Test
+    void 승인시_상태변경후_이벤트_발행() {
+        ArtistSuggestion suggestion = savedSuggestion(1L, 10L, "아이유");
+        given(suggestionRepository.findById(1L)).willReturn(Optional.of(suggestion));
+
+        suggestionService.approve(1L, 100L);
+
+        assertThat(suggestion.isPending()).isFalse();
+        ArgumentCaptor<ArtistSuggestionProcessedEvent> captor = ArgumentCaptor.forClass(ArtistSuggestionProcessedEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().userId()).isEqualTo(10L);
+        assertThat(captor.getValue().artistId()).isEqualTo(100L);
+        assertThat(captor.getValue().artistName()).isEqualTo("아이유");
+    }
+
+    @Test
+    void 승인시_존재하지_않는_신청이면_예외() {
+        given(suggestionRepository.findById(1L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> suggestionService.approve(1L, 100L))
+                .isInstanceOf(java.util.NoSuchElementException.class);
+    }
+
+    // ── dismiss 이벤트 발행 ──────────────────────────────────────────────
+
+    @Test
+    void 반려시_이벤트_발행() {
+        ArtistSuggestion suggestion = savedSuggestion(1L, 10L, "아이유");
+        given(suggestionRepository.findById(1L)).willReturn(Optional.of(suggestion));
+
+        suggestionService.dismiss(1L, "중복 신청");
+
+        ArgumentCaptor<ArtistSuggestionProcessedEvent> captor = ArgumentCaptor.forClass(ArtistSuggestionProcessedEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().note()).isEqualTo("중복 신청");
+        assertThat(captor.getValue().artistId()).isNull();
+    }
+
+    // ── removeAllByUser ──────────────────────────────────────────────────
+
+    @Test
+    void 회원탈퇴시_전체_신청_삭제() {
+        suggestionService.removeAllByUser(1L);
+
+        verify(suggestionRepository).deleteByUserId(1L);
     }
 }
