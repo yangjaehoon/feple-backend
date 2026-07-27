@@ -33,10 +33,14 @@ class GeminiUrlContextClientTest {
     @BeforeEach
     void setUp() {
         client = new GeminiUrlContextClient(new ObjectMapper(), geminiApiClient, usageTracker);
+    }
+
+    private void stubCall() {
         willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
     }
 
     private void stubNotBlocked() {
+        stubCall();
         given(geminiApiClient.getNestedValue(any(), any(), any(), any(), any(), any(), any())).willReturn(null);
     }
 
@@ -69,6 +73,7 @@ class GeminiUrlContextClientTest {
 
     @Test
     void URL이_차단되면_경고_메시지와_함께_빈_결과를_반환하고_텍스트_추출은_생략한다() {
+        stubCall();
         given(geminiApiClient.getNestedValue(any(), any(), any(), any(), any(), any(), any()))
                 .willReturn("URL_RETRIEVAL_STATUS_ERROR");
 

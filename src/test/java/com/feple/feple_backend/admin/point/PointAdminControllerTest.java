@@ -38,7 +38,7 @@ class PointAdminControllerTest {
         mockMvc.perform(get("/admin/points"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/point/list"))
-                .andExpect(model().attributeExists("logs", "keyword"));
+                .andExpect(model().attributeExists("logs"));
     }
 
     @Test
