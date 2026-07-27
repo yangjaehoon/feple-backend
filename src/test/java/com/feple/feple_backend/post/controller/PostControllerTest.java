@@ -133,4 +133,181 @@ class PostControllerTest {
                         .content("{\"contentType\":\"image/jpeg\",\"extension\":\"jpg\"}"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void 이미지_업로드_URL_확장자_타입_불일치면_400() throws Exception {
+        mockMvc.perform(post("/posts/image-upload-url")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"contentType\":\"image/gif\",\"extension\":\"jpg\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 좋아요_여부_조회() throws Exception {
+        given(postLikeService.isLikedByUser(1L, 1L)).willReturn(true);
+
+        mockMvc.perform(get("/posts/1/liked")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 자유_게시글_인기순_조회() throws Exception {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postService.getPostsByBoardTypePopular(any(), any())).willReturn(page);
+
+        mockMvc.perform(get("/posts/free").param("sort", "popular"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 동행_게시글_작성_성공() throws Exception {
+        given(postService.createPost(any(), eq(1L))).willReturn(42L);
+
+        mockMvc.perform(post("/posts/mate")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"제목\",\"content\":\"내용\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void 동행_게시글_목록_조회() throws Exception {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postService.getPostsByBoardTypeLatest(any(), any())).willReturn(page);
+
+        mockMvc.perform(get("/posts/mate"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 게시글_수정_성공() throws Exception {
+        mockMvc.perform(put("/posts/1")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"수정 제목\",\"content\":\"수정 내용\"}"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void 스크랩_여부_조회() throws Exception {
+        given(postScrapService.isScrapedByUser(1L, 1L)).willReturn(true);
+
+        mockMvc.perform(get("/posts/1/scraped")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 스크랩_토글() throws Exception {
+        given(postScrapService.toggleScrap(1L, 1L)).willReturn(true);
+
+        mockMvc.perform(post("/posts/1/scrap")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 내_스크랩_목록_조회() throws Exception {
+        given(postScrapService.getMyScraps(1L)).willReturn(List.of());
+
+        mockMvc.perform(get("/posts/scrapped")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 아티스트_게시글_목록_조회() throws Exception {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postService.getPostsByArtistIdPaged(eq(1L), any())).willReturn(page);
+
+        mockMvc.perform(get("/posts/artist/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 아티스트_게시글_작성() throws Exception {
+        given(postService.createArtistPost(eq(1L), any(), eq(1L))).willReturn(42L);
+
+        mockMvc.perform(post("/posts/artist/1")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"제목\",\"content\":\"내용\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void 페스티벌_게시글_목록_조회() throws Exception {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postService.getPostsByFestivalIdPaged(eq(1L), any())).willReturn(page);
+
+        mockMvc.perform(get("/posts/festival/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 페스티벌_게시글_작성() throws Exception {
+        given(postService.createFestivalPost(eq(1L), any(), eq(1L))).willReturn(42L);
+
+        mockMvc.perform(post("/posts/festival/1")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"제목\",\"content\":\"내용\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void 페스티벌_인기_게시글_조회() throws Exception {
+        given(postService.getPopularFestivalPosts(eq(1L), any())).willReturn(List.of());
+
+        mockMvc.perform(get("/posts/festival/1/popular"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 페스티벌_동행_게시글_목록_조회() throws Exception {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postService.getPostsByFestivalIdAndBoardTypePaged(eq(1L), any(), any())).willReturn(page);
+
+        mockMvc.perform(get("/posts/festival/1/companion"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 페스티벌_동행_게시글_작성() throws Exception {
+        given(postService.createFestivalTypedPost(eq(1L), any(), eq(1L), any())).willReturn(42L);
+
+        mockMvc.perform(post("/posts/festival/1/companion")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"제목\",\"content\":\"내용\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void 페스티벌_티켓_게시글_목록_조회() throws Exception {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postService.getPostsByFestivalIdAndBoardTypePaged(eq(1L), any(), any())).willReturn(page);
+
+        mockMvc.perform(get("/posts/festival/1/ticket"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 페스티벌_티켓_게시글_작성() throws Exception {
+        given(postService.createFestivalTypedPost(eq(1L), any(), eq(1L), any())).willReturn(42L);
+
+        mockMvc.perform(post("/posts/festival/1/ticket")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"제목\",\"content\":\"내용\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void 조회수_증가() throws Exception {
+        mockMvc.perform(post("/posts/1/view"))
+                .andExpect(status().isNoContent());
+    }
 }
