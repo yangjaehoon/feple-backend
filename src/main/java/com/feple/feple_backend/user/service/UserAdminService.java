@@ -11,6 +11,7 @@ public interface UserAdminService {
     Page<UserResponseDto> getUsersPage(int page, int size, String keyword);
     Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword);
     Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword);
+    long getTotalCount();
     void bulkDeleteUsers(List<Long> ids);
     String adminDeleteUser(Long id);
     void updateUserRole(Long userId, UserRole role);

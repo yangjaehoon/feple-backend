@@ -71,6 +71,12 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long getTotalCount() {
+        return userRepository.countByDeletedAtIsNull();
+    }
+
+    @Override
     @Transactional
     public void bulkDeleteUsers(List<Long> ids) {
         userRepository.findAllById(ids).forEach(cascadeDeleteService::delete);

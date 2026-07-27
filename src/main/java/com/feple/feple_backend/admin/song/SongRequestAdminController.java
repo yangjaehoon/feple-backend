@@ -41,6 +41,7 @@ public class SongRequestAdminController {
         model.addAttribute("status", params.status());
         model.addAttribute("keyword", params.keyword());
         model.addAttribute("pendingCount", songRequestAdminService.getPendingCount());
+        model.addAttribute("totalCount", songRequestAdminService.getTotalCount());
         return "admin/song-request/list";
     }
 

@@ -40,6 +40,7 @@ public class UserAdminController {
         Page<UserResponseDto> users = fetchUsersPage(listFilter);
         List<Long> userIds = users.getContent().stream().map(UserResponseDto::getId).toList();
 
+        model.addAttribute("totalCount", userService.getTotalCount());
         addListModel(model, users, userDetailAggregationService.getListCounts(userIds), listFilter);
         return "admin/user/list";
     }

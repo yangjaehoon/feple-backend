@@ -19,7 +19,7 @@
                    th:classappend="${filter == '' or filter == null} ? ' active' : ''"
                    class="type-tab">
                     전체
-                    <span class="card-count" th:text="${users.totalElements}"></span>
+                    <span class="card-count" th:text="${totalCount}"></span>
                 </a>
                 <a th:href="@{/admin/users(page=0,filter='banned',keyword=${keyword})}"
                    th:classappend="${filter == 'banned'} ? ' active' : ''"

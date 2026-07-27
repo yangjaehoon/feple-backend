@@ -16,6 +16,8 @@ public interface SongRequestAdminService {
 
     long getPendingCount();
 
+    long getTotalCount();
+
     boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl);
 
     void reject(Long requestId, String reason);

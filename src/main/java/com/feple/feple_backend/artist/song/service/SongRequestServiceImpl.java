@@ -101,6 +101,12 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
 
     @Override
     @Transactional(readOnly = true)
+    public long getTotalCount() {
+        return songRequestRepository.count();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getPendingRequests(Long artistId) {
         List<SongRequest> requests = songRequestRepository
                 .findByArtistIdAndStatusOrderByCreatedAtDesc(artistId, SongRequestStatus.PENDING);
