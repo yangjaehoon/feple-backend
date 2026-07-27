@@ -23,11 +23,12 @@ class CsvExporterTest {
     }
 
     @Test
-    void cell_수식으로_해석될수있는_접두문자는_탭으로_차단() {
-        assertThat(CsvExporter.cell("=SUM(A1)")).isEqualTo("\t=SUM(A1)");
-        assertThat(CsvExporter.cell("+1234")).isEqualTo("\t+1234");
-        assertThat(CsvExporter.cell("-1234")).isEqualTo("\t-1234");
-        assertThat(CsvExporter.cell("@mention")).isEqualTo("\t@mention");
+    void cell_수식으로_해석될수있는_접두문자는_탭으로_차단후_따옴표로_감싼다() {
+        // 탭 접두 후 탭 문자 자체가 이스케이프 대상이라 다시 따옴표로 감싸진다
+        assertThat(CsvExporter.cell("=SUM(A1)")).isEqualTo("\"\t=SUM(A1)\"");
+        assertThat(CsvExporter.cell("+1234")).isEqualTo("\"\t+1234\"");
+        assertThat(CsvExporter.cell("-1234")).isEqualTo("\"\t-1234\"");
+        assertThat(CsvExporter.cell("@mention")).isEqualTo("\"\t@mention\"");
     }
 
     @Test
