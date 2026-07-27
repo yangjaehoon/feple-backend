@@ -1,5 +1,11 @@
 package com.feple.feple_backend.festival.suggestion.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+
 import com.feple.feple_backend.festival.suggestion.dto.FestivalSuggestionResponseDto;
 import com.feple.feple_backend.festival.suggestion.dto.SubmitFestivalSuggestionDto;
 import com.feple.feple_backend.festival.suggestion.entity.FestivalSuggestion;
@@ -8,6 +14,10 @@ import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProce
 import com.feple.feple_backend.festival.suggestion.repository.FestivalSuggestionRepository;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,17 +28,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class FestivalSuggestionServiceImplTest {
