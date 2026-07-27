@@ -1,5 +1,6 @@
 package com.feple.feple_backend.timetable;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -10,6 +11,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
+import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -23,6 +25,7 @@ import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -231,5 +234,79 @@ class TimetableServiceTest {
         timetableService.deleteEntry(1L, 5L);
 
         then(timetableRepository).should().delete(entry);
+    }
+
+    // ── getEntries ───────────────────────────────────────────────────────
+
+    @Test
+    void getEntries_날짜와_시작시간순으로_정렬된다() {
+        Festival festival = mock(Festival.class);
+        TimetableEntry late = TimetableEntry.builder()
+                .festival(festival).stageName("MAIN").artistName("늦은공연")
+                .festivalDate(LocalDate.of(2026, 7, 1))
+                .startTime(LocalTime.of(15, 0)).endTime(LocalTime.of(16, 0)).build();
+        TimetableEntry early = TimetableEntry.builder()
+                .festival(festival).stageName("MAIN").artistName("이른공연")
+                .festivalDate(LocalDate.of(2026, 7, 1))
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(10, 0)).build();
+        TimetableEntry nextDay = TimetableEntry.builder()
+                .festival(festival).stageName("MAIN").artistName("다음날공연")
+                .festivalDate(LocalDate.of(2026, 7, 2))
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(10, 0)).build();
+        given(timetableRepository.findByFestivalIdWithStage(1L)).willReturn(List.of(late, nextDay, early));
+
+        List<TimetableEntryResponseDto> result = timetableService.getEntries(1L);
+
+        assertThat(result).extracting(TimetableEntryResponseDto::getArtistName)
+                .containsExactly("이른공연", "늦은공연", "다음날공연");
+    }
+
+    // ── 멤버 아티스트 동기화 ─────────────────────────────────────────────
+
+    @Test
+    void createEntry_멤버아티스트_동기화() {
+        Festival festival = mock(Festival.class);
+        given(festivalRepository.findById(1L)).willReturn(Optional.of(festival));
+        Artist member = Artist.builder().id(5L).name("멤버아티스트").build();
+        given(artistRepository.findAllById(List.of(5L))).willReturn(List.of(member));
+
+        TimetableEntry savedEntry = TimetableEntry.builder()
+                .festival(festival)
+                .stageName("MAIN")
+                .artistName("팀명")
+                .festivalDate(LocalDate.of(2026, 7, 1))
+                .startTime(LocalTime.of(14, 0))
+                .endTime(LocalTime.of(16, 0))
+                .build();
+        given(timetableRepository.save(any(TimetableEntry.class))).willReturn(savedEntry);
+        given(stageService.findByFestivalIdAndName(eq(1L), eq("MAIN"))).willReturn(Optional.empty());
+
+        TimetableEntryRequestDto req = new TimetableEntryRequestDto();
+        req.setStageName("MAIN");
+        req.setArtistName("팀명");
+        req.setFestivalDate(LocalDate.of(2026, 7, 1));
+        req.setStartTime(LocalTime.of(14, 0));
+        req.setEndTime(LocalTime.of(16, 0));
+        req.setMemberArtistIds(List.of(5L));
+
+        TimetableEntryResponseDto response = timetableService.createEntry(1L, req);
+
+        assertThat(response.getMemberArtistNames()).containsExactly("멤버아티스트");
+    }
+
+    // ── nullifyArtistId / removeAllByFestival ───────────────────────────
+
+    @Test
+    void nullifyArtistId_레포지토리에_위임() {
+        timetableService.nullifyArtistId(7L);
+
+        then(timetableRepository).should().nullifyArtistId(7L);
+    }
+
+    @Test
+    void removeAllByFestival_레포지토리에_위임() {
+        timetableService.removeAllByFestival(1L);
+
+        then(timetableRepository).should().deleteByFestivalId(1L);
     }
 }
