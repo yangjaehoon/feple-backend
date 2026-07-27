@@ -77,7 +77,8 @@ class AdminPushServiceTest {
 
     @Test
     void sendTest_정상_발송() {
-        given(deviceTokenRepository.findByUserId(1L)).willReturn(List.of(tokenOf("token-a")));
+        UserDeviceToken token = tokenOf("token-a");
+        given(deviceTokenRepository.findByUserId(1L)).willReturn(List.of(token));
 
         service.sendTest(1L, "제목", "내용");
 
