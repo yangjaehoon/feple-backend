@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
 import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
+import com.feple.feple_backend.admin.system.SongRequestSummaryDto;
+import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
@@ -82,6 +84,26 @@ class AdminPendingItemsServiceImplTest {
 
         assertThat(count).isEqualTo(5L);
         verify(postReportService).getPendingCount();
+    }
+
+    @Test
+    void 대기중_신청곡_목록_limit만큼_반환() {
+        SongRequest request = mock(SongRequest.class);
+        given(songRequestAdminService.getPendingPreview(5)).willReturn(List.of(request));
+
+        List<SongRequestSummaryDto> result = adminPendingItemsService.getPendingSongRequests(5);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void 대기중_신청곡_건수_조회() {
+        given(songRequestAdminService.getPendingCount()).willReturn(4L);
+
+        long count = adminPendingItemsService.getPendingSongRequestCount();
+
+        assertThat(count).isEqualTo(4L);
+        verify(songRequestAdminService).getPendingCount();
     }
 
     @Test
