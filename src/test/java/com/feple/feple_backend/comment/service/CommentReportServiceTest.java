@@ -176,4 +176,81 @@ class CommentReportServiceTest {
 
         assertThat(commentReportService.getPendingCount()).isEqualTo(5L);
     }
+
+    @Test
+    void getTotalCount_레포지토리에_위임됨() {
+        given(reportRepository.count()).willReturn(9L);
+
+        assertThat(commentReportService.getTotalCount()).isEqualTo(9L);
+    }
+
+    @Test
+    void getReportType은_comment() {
+        assertThat(commentReportService.getReportType()).isEqualTo("comment");
+    }
+
+    @Test
+    void findPendingReports는_레포지토리에_위임() {
+        org.springframework.data.domain.PageRequest pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        org.springframework.data.domain.Page<CommentReport> page = new org.springframework.data.domain.PageImpl<>(List.of());
+        given(reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable)).willReturn(page);
+
+        assertThat(commentReportService.findPendingReports(pageable)).isSameAs(page);
+    }
+
+    @Test
+    void findAllReports는_레포지토리에_위임() {
+        org.springframework.data.domain.PageRequest pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        org.springframework.data.domain.Page<CommentReport> page = new org.springframework.data.domain.PageImpl<>(List.of());
+        given(reportRepository.findAllByOrderByCreatedAtDesc(pageable)).willReturn(page);
+
+        assertThat(commentReportService.findAllReports(pageable)).isSameAs(page);
+    }
+
+    @Test
+    void searchReportsByKeyword는_레포지토리에_위임() {
+        org.springframework.data.domain.PageRequest pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        org.springframework.data.domain.Page<CommentReport> page = new org.springframework.data.domain.PageImpl<>(List.of());
+        given(reportRepository.searchByKeyword("키워드", ReportStatus.PENDING, pageable)).willReturn(page);
+
+        assertThat(commentReportService.searchReportsByKeyword("키워드", ReportStatus.PENDING, pageable)).isSameAs(page);
+    }
+
+    @Test
+    void extractAuthorId는_댓글작성자_ID_반환() {
+        Comment comment = mockComment();
+        given(comment.getUserId()).willReturn(7L);
+        CommentReport report = pendingReport(1L, comment, user(1L));
+
+        assertThat(commentReportService.extractAuthorId(report)).isEqualTo(7L);
+    }
+
+    @Test
+    void getAuthorReportCounts_유저ID_비어있으면_빈맵() {
+        assertThat(commentReportService.getAuthorReportCounts(List.of())).isEmpty();
+        verify(reportRepository, never()).countByCommentAuthorIds(any());
+    }
+
+    @Test
+    void getAuthorReportCounts_유저별_신고건수_맵_반환() {
+        given(reportRepository.countByCommentAuthorIds(List.of(7L)))
+                .willReturn(List.<Object[]>of(new Object[]{7L, 2L}));
+
+        assertThat(commentReportService.getAuthorReportCounts(List.of(7L))).containsEntry(7L, 2L);
+    }
+
+    @Test
+    void getAllCommentReportsForExport_레포지토리에_위임() {
+        given(reportRepository.findAllForExport(any())).willReturn(List.of());
+
+        assertThat(commentReportService.getAllCommentReportsForExport()).isEmpty();
+    }
+
+    @Test
+    void getReportCountForUser_단건_카운트_반환() {
+        given(reportRepository.countByCommentAuthorIds(List.of(7L)))
+                .willReturn(List.<Object[]>of(new Object[]{7L, 4L}));
+
+        assertThat(commentReportService.getReportCountForUser(7L)).isEqualTo(4L);
+    }
 }
