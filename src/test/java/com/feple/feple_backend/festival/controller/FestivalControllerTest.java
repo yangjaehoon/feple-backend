@@ -14,6 +14,7 @@ import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
+import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
 import com.feple.feple_backend.support.AuthTestHelper;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,7 @@ class FestivalControllerTest {
     @Mock WeatherService weatherService;
     @Mock SongService songService;
     @Mock SongAdminService songAdminService;
+    @Mock SetlistChangeRequestService setlistChangeRequestService;
 
     @InjectMocks FestivalController controller;
 
@@ -113,5 +115,50 @@ class FestivalControllerTest {
 
         mockMvc.perform(get("/festivals/1/setlist"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void 좋아요_상태_로그인시_서비스_위임() throws Exception {
+        given(festivalLikeService.isLiked(1L, 1L)).willReturn(true);
+
+        mockMvc.perform(get("/festivals/1/liked")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+    }
+
+    @Test
+    void 참석_상태_미인증이면_false_반환() throws Exception {
+        mockMvc.perform(get("/festivals/1/attending"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("false"));
+    }
+
+    @Test
+    void 참석_상태_로그인시_서비스_위임() throws Exception {
+        given(festivalAttendanceService.isAttending(1L, 1L)).willReturn(true);
+
+        mockMvc.perform(get("/festivals/1/attending")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+    }
+
+    @Test
+    void 셋리스트_변경_요청_제출_성공() throws Exception {
+        mockMvc.perform(post("/festivals/1/setlist-requests")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"artistFestivalId\":100,\"message\":\"곡 순서를 바꿔주세요\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void 셋리스트_변경_요청_메시지_없으면_400() throws Exception {
+        mockMvc.perform(post("/festivals/1/setlist-requests")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"artistFestivalId\":100}"))
+                .andExpect(status().isBadRequest());
     }
 }
