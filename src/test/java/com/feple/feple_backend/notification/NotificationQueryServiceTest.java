@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.notification.dto.NotificationDto;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.entity.Notification;
@@ -33,14 +34,20 @@ class NotificationQueryServiceTest {
 
     @Mock NotificationRepository notificationRepository;
     @Mock BroadcastNotificationRepository broadcastNotificationRepository;
+    @Mock S3PresignService s3PresignService;
 
     @InjectMocks NotificationQueryService notificationQueryService;
 
     private Notification mockNotification(Long id, String title, String body,
                                            String titleEn, String bodyEn, LocalDateTime createdAt) {
+        return mockNotification(id, NotificationType.NEW_FESTIVAL, title, body, titleEn, bodyEn, createdAt);
+    }
+
+    private Notification mockNotification(Long id, NotificationType type, String title, String body,
+                                           String titleEn, String bodyEn, LocalDateTime createdAt) {
         Notification n = mock(Notification.class);
         given(n.getId()).willReturn(id);
-        given(n.getType()).willReturn(NotificationType.NEW_FESTIVAL);
+        given(n.getType()).willReturn(type);
         given(n.getTitle()).willReturn(title);
         given(n.getBody()).willReturn(body);
         given(n.getTitleEn()).willReturn(titleEn);
@@ -134,5 +141,100 @@ class NotificationQueryServiceTest {
         notificationQueryService.markAllRead(1L);
 
         then(notificationRepository).should().markAllReadByUserId(1L);
+    }
+
+    // ── getMyNotifications: typeGroup 필터 ────────────────────────────
+
+    @Test
+    void getMyNotifications_cert_타입그룹이면_인증관련_알림만_포함되고_공지는_제외() {
+        LocalDateTime t1 = LocalDateTime.of(2026, 1, 1, 12, 0);
+        Notification certNotification = mockNotification(1L, NotificationType.CERT_APPROVED, "인증승인", "내용", null, null, t1);
+        Notification commentNotification = mockNotification(2L, NotificationType.NEW_COMMENT, "댓글", "내용", null, null, t1);
+
+        given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
+                .willReturn(List.of(certNotification, commentNotification));
+
+        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, PageRequest.of(0, 10), "cert");
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).type()).isEqualTo(NotificationType.CERT_APPROVED);
+        then(broadcastNotificationRepository).should(org.mockito.Mockito.never()).findAllByOrderByCreatedAtDesc(any());
+    }
+
+    @Test
+    void getMyNotifications_알수없는_타입그룹이면_필터없이_전체_조회() {
+        LocalDateTime t1 = LocalDateTime.of(2026, 1, 1, 12, 0);
+        Notification n = mockNotification(1L, NotificationType.NEW_COMMENT, "댓글", "내용", null, null, t1);
+
+        given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
+                .willReturn(List.of(n));
+        given(broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(any(PageRequest.class)))
+                .willReturn(List.of());
+
+        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, PageRequest.of(0, 10), "unknown");
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    // ── resolveImageUrl ───────────────────────────────────────────────
+
+    @Test
+    void getMyNotifications_이미지키_있으면_presign_URL로_변환() {
+        LocalDateTime t1 = LocalDateTime.of(2026, 1, 1, 12, 0);
+        Notification n = mockNotification(1L, "제목", "내용", null, null, t1);
+        given(n.getImageKey()).willReturn("festivals/poster.jpg");
+
+        given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
+                .willReturn(List.of(n));
+        given(broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(any(PageRequest.class)))
+                .willReturn(List.of());
+        given(s3PresignService.presignGetUrl("festivals/poster.jpg")).willReturn("https://cdn.example.com/festivals/poster.jpg");
+
+        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, PageRequest.of(0, 10), null);
+
+        assertThat(result.getContent().get(0).imageUrl()).isEqualTo("https://cdn.example.com/festivals/poster.jpg");
+    }
+
+    // ── deleteById ────────────────────────────────────────────────────
+
+    @Test
+    void deleteById_성공() {
+        given(notificationRepository.deleteByIdAndUserId(10L, 1L)).willReturn(1);
+
+        notificationQueryService.deleteById(10L, 1L);
+
+        then(notificationRepository).should().deleteByIdAndUserId(10L, 1L);
+    }
+
+    @Test
+    void deleteById_대상없으면_예외() {
+        given(notificationRepository.deleteByIdAndUserId(99L, 1L)).willReturn(0);
+
+        assertThatThrownBy(() -> notificationQueryService.deleteById(99L, 1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("해당 알림을 찾을 수 없습니다.");
+    }
+
+    // ── deleteAll / removeAllByPostIds / removeAllByFestivalId ────────
+
+    @Test
+    void deleteAll_호출() {
+        notificationQueryService.deleteAll(1L);
+
+        then(notificationRepository).should().deleteByUserId(1L);
+    }
+
+    @Test
+    void removeAllByPostIds_호출() {
+        notificationQueryService.removeAllByPostIds(List.of(1L, 2L));
+
+        then(notificationRepository).should().deleteByPostIdIn(List.of(1L, 2L));
+    }
+
+    @Test
+    void removeAllByFestivalId_호출() {
+        notificationQueryService.removeAllByFestivalId(5L);
+
+        then(notificationRepository).should().deleteByFestivalId(5L);
     }
 }

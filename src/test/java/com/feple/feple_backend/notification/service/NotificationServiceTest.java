@@ -23,6 +23,7 @@ import com.feple.feple_backend.certification.event.CertificationRejectedEvent;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
@@ -244,6 +245,39 @@ class NotificationServiceTest {
         then(artistRepository).should(never()).findById(any());
     }
 
+    // ── onFestivalSuggestionProcessed ─────────────────────────────────────
+
+    @Test
+    void 페스티벌제안_처리_유저_없으면_무시() {
+        given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+        service.onFestivalSuggestionProcessed(new FestivalSuggestionProcessedEvent(1L, 10L, "새페스티벌", "등록완료"));
+
+        then(notificationRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 페스티벌제안_처리_페스티벌_있으면_페스티벌연결_알림() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(festivalRepository.findById(10L)).willReturn(Optional.of(Festival.builder().id(10L).title("새페스티벌").titleEn("NewFestival").build()));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+
+        service.onFestivalSuggestionProcessed(new FestivalSuggestionProcessedEvent(1L, 10L, "새페스티벌", "등록완료"));
+
+        then(notificationRepository).should().save(any());
+    }
+
+    @Test
+    void 페스티벌제안_처리_페스티벌_없으면_artist_null로_알림() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+
+        service.onFestivalSuggestionProcessed(new FestivalSuggestionProcessedEvent(1L, null, "미등록페스티벌", "반려"));
+
+        then(notificationRepository).should().save(any());
+        then(festivalRepository).should(never()).findById(any());
+    }
+
     // ── onCommentCreated ──────────────────────────────────────────────────
 
     @Test
@@ -264,7 +298,55 @@ class NotificationServiceTest {
         then(notificationRepository).shouldHaveNoInteractions();
     }
 
+    @Test
+    void 댓글생성_게시글작성자가_댓글러를_차단했으면_알림_없음() {
+        given(userBlockService.isBlocked(100L, 999L)).willReturn(true);
+
+        service.onCommentCreated(new CommentCreatedEvent(100L, "댓글러", "제목", 1L, null, 999L));
+
+        then(notificationRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 댓글생성_원댓글작성자가_댓글러를_차단했으면_대댓글알림_없음() {
+        given(userBlockService.isBlocked(200L, 999L)).willReturn(true);
+
+        service.onCommentCreated(new CommentCreatedEvent(null, "댓글러", "제목", 1L, 200L, 999L));
+
+        then(notificationRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 댓글생성_게시글작성자_조회안되면_무시() {
+        given(userBlockService.isBlocked(100L, 999L)).willReturn(false);
+        given(userRepository.findById(100L)).willReturn(Optional.empty());
+
+        service.onCommentCreated(new CommentCreatedEvent(100L, "댓글러", "제목", 1L, null, 999L));
+
+        then(notificationRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 댓글생성_원댓글작성자_조회안되면_무시() {
+        given(userBlockService.isBlocked(200L, 999L)).willReturn(false);
+        given(userRepository.findById(200L)).willReturn(Optional.empty());
+
+        service.onCommentCreated(new CommentCreatedEvent(null, "댓글러", "제목", 1L, 200L, 999L));
+
+        then(notificationRepository).shouldHaveNoInteractions();
+    }
+
     // ── onPostLiked ───────────────────────────────────────────────────────
+
+    @Test
+    void 게시글좋아요_작성자가_좋아요누른사람을_차단했으면_무시() {
+        given(userBlockService.isBlocked(1L, 99L)).willReturn(true);
+
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
+
+        then(notificationRepository).shouldHaveNoInteractions();
+        then(userRepository).should(never()).findById(any());
+    }
 
     @Test
     void 게시글좋아요_작성자_없으면_무시() {
@@ -346,5 +428,35 @@ class NotificationServiceTest {
 
         then(fcmPushService).should().sendMulticast(eq(List.of("ko-tok")), argThat(m -> m.type() == NotificationType.POST_LIKED));
         then(fcmPushService).should().sendMulticast(eq(List.of("en-tok")), argThat(m -> m.type() == NotificationType.POST_LIKED));
+    }
+
+    // ── saveAdminBroadcastNotification / saveAdminBroadcastNotifications ───
+
+    @Test
+    void 관리자_개별_테스트발송_저장() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+
+        service.saveAdminBroadcastNotification(1L, "제목", "내용");
+
+        then(notificationRepository).should().save(any());
+    }
+
+    @Test
+    void 관리자_개별_테스트발송_유저없으면_예외() {
+        given(userRepository.findById(99L)).willReturn(Optional.empty());
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                        () -> service.saveAdminBroadcastNotification(99L, "제목", "내용"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("99");
+    }
+
+    @Test
+    void 관리자_타겟발송_일괄_저장() {
+        given(userRepository.findAllById(List.of(1L, 2L))).willReturn(List.of(user(1L), user(2L)));
+
+        service.saveAdminBroadcastNotifications(List.of(1L, 2L), "제목", "내용");
+
+        then(notificationRepository).should().saveAll(anyList());
     }
 }
