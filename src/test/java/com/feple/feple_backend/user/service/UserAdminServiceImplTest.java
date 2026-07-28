@@ -105,6 +105,15 @@ class UserAdminServiceImplTest {
         assertThat(result.getContent()).hasSize(1);
     }
 
+    // ── getTotalCount ──────────────────────────────────────────────────
+
+    @Test
+    void 활성_사용자_총_수_조회() {
+        given(userRepository.countByDeletedAtIsNull()).willReturn(42L);
+
+        assertThat(userAdminService.getTotalCount()).isEqualTo(42L);
+    }
+
     // ── deleteUser / bulkDeleteUsers ──────────────────────────────────
 
     @Test
@@ -167,6 +176,17 @@ class UserAdminServiceImplTest {
     }
 
     @Test
+    void 인증안된_상태에서_정지시_관리자명_없이_처리() {
+        User user = user(1L, "유저");
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+        userAdminService.banUser(1L, 7, "부적절한 게시물");
+
+        assertThat(user.isBanned()).isTrue();
+        assertThat(user.getBannedBy()).isNull();
+    }
+
+    @Test
     void 사용자_정지_해제_성공() {
         User user = user(1L, "유저");
         user.ban(7, "사유", "admin");
@@ -187,5 +207,19 @@ class UserAdminServiceImplTest {
         List<UserResponseDto> result = userAdminService.getAllUsersForExport();
 
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void 전체_사용자_내보내기_여러_배치_순회() {
+        User u1 = user(1L, "유저1");
+        User u2 = user(2L, "유저2");
+        Page<User> firstBatch = new PageImpl<>(List.of(u1), Pageable.ofSize(1), 2);
+        Page<User> secondBatch = new PageImpl<>(List.of(u2), Pageable.ofSize(1).withPage(1), 2);
+        given(userRepository.findAllByDeletedAtIsNull(any(Pageable.class)))
+                .willReturn(firstBatch, secondBatch);
+
+        List<UserResponseDto> result = userAdminService.getAllUsersForExport();
+
+        assertThat(result).hasSize(2);
     }
 }

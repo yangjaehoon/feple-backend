@@ -2,7 +2,11 @@ package com.feple.feple_backend.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.badword.BadWordValidator;
@@ -14,6 +18,8 @@ import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -24,8 +30,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -230,6 +238,82 @@ class UserServiceImplTest {
     void 유효하지않은_닉네임으로_변경시_예외() {
         assertThatThrownBy(() -> userService.updateNickname(1L, "a"))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 쿨다운_기간내_닉네임_변경시_예외() {
+        User user = User.builder().id(1L).oauthId("o1").nickname("기존닉네임")
+                .role(UserRole.USER).nicknameChangedAt(LocalDateTime.now()).build();
+        given(userRepository.existsByNicknameAndIdNot("새닉네임", 1L)).willReturn(false);
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> userService.updateNickname(1L, "새닉네임"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("90일에 한 번만 변경할 수 있습니다.");
+    }
+
+    @Test
+    void 닉네임_변경시_동시성_유니크제약_위반이면_ConflictException() {
+        User user = user(1L, "기존닉네임");
+        given(userRepository.existsByNicknameAndIdNot("새닉네임", 1L)).willReturn(false);
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        willThrow(new DataIntegrityViolationException("unique constraint")).given(userRepository).flush();
+
+        assertThatThrownBy(() -> userService.updateNickname(1L, "새닉네임"))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("이미 사용 중인");
+    }
+
+    // ── updateBio ─────────────────────────────────────────────────────
+
+    @Test
+    void bio_수정_성공() {
+        User user = user(1L, "닉네임");
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+        userService.updateBio(1L, "새 소개글");
+
+        assertThat(user.getBio()).isEqualTo("새 소개글");
+        verify(badWordValidator).validateField("bio", "새 소개글");
+    }
+
+    @Test
+    void bio_null이면_금칙어_검증_스킵() {
+        User user = user(1L, "닉네임");
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
+        userService.updateBio(1L, null);
+
+        assertThat(user.getBio()).isNull();
+        verify(badWordValidator, never()).validateField(any(), any());
+    }
+
+    // ── updateProfileImage ───────────────────────────────────────────
+
+    @Test
+    void 프로필이미지_수정_성공() throws Exception {
+        User user = user(1L, "닉네임");
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        MultipartFile file = mock(MultipartFile.class);
+        given(fileStorageService.storeUserProfile(file, "닉네임")).willReturn("uploads/user-1.jpg");
+
+        userService.updateProfileImage(1L, file);
+
+        assertThat(user.getProfileImageUrl()).isEqualTo("uploads/user-1.jpg");
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void 프로필이미지_업로드_실패시_예외() throws Exception {
+        User user = user(1L, "닉네임");
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        MultipartFile file = mock(MultipartFile.class);
+        given(fileStorageService.storeUserProfile(file, "닉네임")).willThrow(new IOException("업로드 실패"));
+
+        assertThatThrownBy(() -> userService.updateProfileImage(1L, file))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("프로필 이미지 저장에 실패했습니다.");
+        verify(userRepository, never()).save(any());
     }
 
     // ── deleteUser ───────────────────────────────────────────────────
