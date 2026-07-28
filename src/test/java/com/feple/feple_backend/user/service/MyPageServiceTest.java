@@ -15,12 +15,14 @@ import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostReportService;
 import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.post.service.UserPostHistoryService;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -59,6 +61,59 @@ class MyPageServiceTest {
     void userId_null이면_NullPointerException_발생() {
         assertThatThrownBy(() -> myPageService.getMyPosts(null))
                 .isInstanceOf(NullPointerException.class);
+    }
+
+    // ── getMyPostsPaged / getPublicPostsPaged / getLikedPosts ───────────
+
+    @Test
+    void 내_게시글_커서페이지_조회시_postActivityService에_위임() {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postActivityService.getMyPostsPaged(1L, null, 20)).willReturn(page);
+
+        CursorPage<PostResponseDto> result = myPageService.getMyPostsPaged(1L, null, 20);
+
+        assertThat(result).isEqualTo(page);
+    }
+
+    @Test
+    void 공개_게시글_커서페이지_조회시_postActivityService에_위임() {
+        CursorPage<PostResponseDto> page = new CursorPage<>(List.of(), null, false);
+        given(postActivityService.getPublicPostsPaged(1L, null, 20)).willReturn(page);
+
+        CursorPage<PostResponseDto> result = myPageService.getPublicPostsPaged(1L, null, 20);
+
+        assertThat(result).isEqualTo(page);
+    }
+
+    @Test
+    void 좋아요한_게시글_조회시_postActivityService에_위임() {
+        List<PostResponseDto> posts = List.of(mock(PostResponseDto.class));
+        given(postActivityService.getLikedPosts(1L)).willReturn(posts);
+
+        List<PostResponseDto> result = myPageService.getLikedPosts(1L);
+
+        assertThat(result).isEqualTo(posts);
+    }
+
+    // ── getReportCounts ──────────────────────────────────────────────
+
+    @Test
+    void getReportCounts_유저ID_비어있으면_빈맵() {
+        Map<Long, Long> result = myPageService.getReportCounts(List.of());
+
+        assertThat(result).isEmpty();
+        verify(postReportService, org.mockito.Mockito.never()).getAuthorReportCounts(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void getReportCounts_세_도메인_신고건수_합산() {
+        given(postReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of(1L, 2L));
+        given(commentReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of(1L, 3L));
+        given(photoReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of(1L, 1L));
+
+        Map<Long, Long> result = myPageService.getReportCounts(List.of(1L));
+
+        assertThat(result).containsEntry(1L, 6L);
     }
 
     // ── getMyComments ─────────────────────────────────────────────────
