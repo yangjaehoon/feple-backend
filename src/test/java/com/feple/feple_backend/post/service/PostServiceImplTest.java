@@ -25,6 +25,7 @@ import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.event.PostCreatedEvent;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -477,7 +478,7 @@ class PostServiceImplTest {
         Long id = postService.createArtistPost(3L, dto, 1L);
 
         assertThat(id).isEqualTo(20L);
-        verify(eventPublisher).publishEvent(any());
+        verify(eventPublisher).publishEvent(any(PostCreatedEvent.class));
     }
 
     @Test
@@ -506,7 +507,7 @@ class PostServiceImplTest {
         Long id = postService.createFestivalPost(5L, dto, 1L);
 
         assertThat(id).isEqualTo(30L);
-        verify(eventPublisher).publishEvent(any());
+        verify(eventPublisher).publishEvent(any(PostCreatedEvent.class));
     }
 
     @Test
@@ -579,7 +580,7 @@ class PostServiceImplTest {
         Long id = postService.createFestivalTypedPost(5L, dto, 1L, BoardType.MATE);
 
         assertThat(id).isEqualTo(40L);
-        verify(eventPublisher).publishEvent(any());
+        verify(eventPublisher).publishEvent(any(PostCreatedEvent.class));
     }
 
     // ── getPopularFestivalPosts ────────────────────────────────────────
