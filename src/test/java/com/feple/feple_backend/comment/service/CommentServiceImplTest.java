@@ -16,6 +16,7 @@ import com.feple.feple_backend.certification.service.FestivalCertificationServic
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
 import com.feple.feple_backend.comment.dto.CommentResponseDto;
 import com.feple.feple_backend.comment.dto.CreateCommentDto;
+import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
@@ -31,6 +32,7 @@ import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -232,6 +234,33 @@ class CommentServiceImplTest {
                 .hasMessageContaining("99");
     }
 
+    @Test
+    void 대댓글_작성자가_게시글작성자_대댓글작성자_모두_아니면_알림대상에_포함() {
+        User postAuthor = user(1L);
+        User parentAuthor = user(3L);
+        User commenter = user(2L);
+        Post post = freePost(10L, postAuthor);
+        Comment parent = comment(50L, post, parentAuthor);
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("대댓글내용");
+        given(dto.getParentId()).willReturn(50L);
+
+        Comment saved = comment(100L, post, commenter);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
+        given(commentRepository.findById(50L)).willReturn(Optional.of(parent));
+        given(commentRepository.save(any(Comment.class))).willReturn(saved);
+
+        commentService.createComment(dto, 2L);
+
+        ArgumentCaptor<CommentCreatedEvent> captor = ArgumentCaptor.forClass(CommentCreatedEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().parentCommentAuthorId()).isEqualTo(3L);
+    }
+
     // ── getCommentsByPost ────────────────────────────────────────────
 
     @Test
@@ -374,5 +403,192 @@ class CommentServiceImplTest {
         assertThat(result.likeCount()).isEqualTo(0);
         verify(commentLikeRepository).deleteByUserIdAndCommentId(2L, 100L);
         verify(commentRepository).decrementLikeCount(100L);
+    }
+
+    // ── getAdminCommentsByPost ───────────────────────────────────────
+
+    @Test
+    void 관리자용_댓글_목록_조회() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment c = comment(100L, post, author);
+
+        given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(c)));
+
+        List<CommentResponseDto> result = commentService.getAdminCommentsByPost(10L, 50);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isCertified()).isFalse();
+    }
+
+    // ── getMyComments ─────────────────────────────────────────────────
+
+    @Test
+    void 내_댓글_목록_조회() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment c = comment(100L, post, author);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(commentRepository.findByUserOrderByCreatedAtDesc(eq(author), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(c)));
+
+        List<MyCommentResponseDto> result = commentService.getMyComments(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getCommentId()).isEqualTo(100L);
+    }
+
+    @Test
+    void 존재하지_않는_사용자의_내_댓글_조회시_예외() {
+        given(userRepository.findById(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> commentService.getMyComments(99L))
+                .isInstanceOf(NoSuchElementException.class);
+    }
+
+    // ── getRecentCommentsByUser ──────────────────────────────────────
+
+    @Test
+    void 최근_댓글_목록_조회() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment c = comment(100L, post, author);
+
+        given(commentRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(c)));
+
+        List<MyCommentResponseDto> result = commentService.getRecentCommentsByUser(1L, 5);
+
+        assertThat(result).hasSize(1);
+    }
+
+    // ── countMyComments ───────────────────────────────────────────────
+
+    @Test
+    void 내_댓글_수_조회() {
+        given(commentRepository.countByUserId(1L)).willReturn(7L);
+
+        long count = commentService.countMyComments(1L);
+
+        assertThat(count).isEqualTo(7L);
+    }
+
+    // ── deleteComment (관리자) ────────────────────────────────────────
+
+    @Test
+    void 관리자_댓글_삭제() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment c = comment(100L, post, author);
+
+        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+
+        commentService.deleteComment(100L);
+
+        verify(commentRepository).deleteById(100L);
+        verify(postService).decrementCommentCount(10L);
+    }
+
+    @Test
+    void 존재하지_않는_댓글_관리자_삭제시_예외() {
+        given(commentRepository.findById(999L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> commentService.deleteComment(999L))
+                .isInstanceOf(NoSuchElementException.class);
+    }
+
+    // ── countCommentsContaining ──────────────────────────────────────
+
+    @Test
+    void 특정_단어_포함_댓글수_조회() {
+        given(commentRepository.countByContentContaining("바보")).willReturn(3L);
+
+        long count = commentService.countCommentsContaining("바보");
+
+        assertThat(count).isEqualTo(3L);
+        verify(commentRepository).countByContentContaining("바보");
+    }
+
+    // ── getCommentCountsByUserIds ────────────────────────────────────
+
+    @Test
+    void 유저ID_비어있으면_빈맵_반환() {
+        Map<Long, Long> result = commentService.getCommentCountsByUserIds(List.of());
+
+        assertThat(result).isEmpty();
+        verify(commentRepository, never()).countGroupByUserId(any());
+    }
+
+    @Test
+    void 유저별_댓글수_집계() {
+        given(commentRepository.countGroupByUserId(List.of(1L)))
+                .willReturn(List.<Object[]>of(new Object[]{1L, 4L}));
+
+        Map<Long, Long> result = commentService.getCommentCountsByUserIds(List.of(1L));
+
+        assertThat(result).containsEntry(1L, 4L);
+    }
+
+    // ── updateOwnComment ──────────────────────────────────────────────
+
+    @Test
+    void 본인_댓글_수정_성공() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment c = comment(100L, post, author);
+
+        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+
+        commentService.updateOwnComment(100L, 1L, "수정된 내용");
+
+        assertThat(c.getContent()).isEqualTo("수정된 내용");
+        verify(badWordValidator).validateField("content", "수정된 내용");
+    }
+
+    @Test
+    void 타인이_댓글_수정시_접근_거부_예외() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment c = comment(100L, post, author);
+
+        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+
+        assertThatThrownBy(() -> commentService.updateOwnComment(100L, 2L, "수정 시도"))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void 금칙어_포함_댓글_수정시_예외() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment c = comment(100L, post, author);
+
+        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        willThrow(new BadWordException("content"))
+                .given(badWordValidator).validateField(eq("content"), anyString());
+
+        assertThatThrownBy(() -> commentService.updateOwnComment(100L, 1L, "욕설포함"))
+                .isInstanceOf(BadWordException.class);
+    }
+
+    // ── deleteByPostIds ───────────────────────────────────────────────
+
+    @Test
+    void 게시글ID목록으로_댓글_일괄삭제시_commentDeleter에_위임() {
+        commentService.deleteByPostIds(List.of(10L, 20L));
+
+        verify(commentDeleter).deleteByPostIds(List.of(10L, 20L));
+    }
+
+    // ── removeLikesByUser ─────────────────────────────────────────────
+
+    @Test
+    void 사용자_좋아요_전체_삭제시_카운트감소_및_삭제() {
+        commentService.removeLikesByUser(1L);
+
+        verify(commentLikeRepository).decrementCommentLikeCountByUserId(1L);
+        verify(commentLikeRepository).deleteByUserId(1L);
     }
 }
