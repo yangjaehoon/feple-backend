@@ -42,6 +42,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -428,5 +430,203 @@ class PostServiceImplTest {
         CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdPaged(5L, new CursorPageRequest(null, 20, null));
 
         assertThat(result.content().get(0).isCertified()).isFalse();
+    }
+
+    // ── getPostsByBoardTypePopular ───────────────────────────────────────
+
+    @Test
+    void 게시판타입_인기순_페이징_다음페이지_있음() {
+        User author = user(1L);
+        List<Post> posts = List.of(freePost(1L, author), freePost(2L, author));
+        given(postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDescIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+                .willReturn(new PageImpl<>(posts, PageRequest.of(0, 2), 5));
+
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePopular(BoardType.FREE, new CursorPageRequest(null, 2, null));
+
+        assertThat(result.content()).hasSize(2);
+        assertThat(result.hasNext()).isTrue();
+        assertThat(result.nextCursor()).isEqualTo(1L);
+    }
+
+    @Test
+    void 게시판타입_인기순_페이징_다음페이지_없음() {
+        User author = user(1L);
+        List<Post> posts = List.of(freePost(1L, author));
+        given(postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDescIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+                .willReturn(new PageImpl<>(posts, PageRequest.of(0, 2), 1));
+
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypePopular(BoardType.FREE, new CursorPageRequest(null, 2, null));
+
+        assertThat(result.hasNext()).isFalse();
+        assertThat(result.nextCursor()).isNull();
+    }
+
+    // ── createArtistPost ──────────────────────────────────────────────
+
+    @Test
+    void 아티스트_게시글_생성_성공() {
+        User author = user(1L);
+        Artist artist = Artist.builder().id(3L).name("아이유").build();
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
+        Post saved = freePost(20L, author);
+
+        given(artistRepository.findById(3L)).willReturn(Optional.of(artist));
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(postRepository.save(any(Post.class))).willReturn(saved);
+
+        Long id = postService.createArtistPost(3L, dto, 1L);
+
+        assertThat(id).isEqualTo(20L);
+        verify(eventPublisher).publishEvent(any());
+    }
+
+    @Test
+    void 존재하지_않는_아티스트로_게시글_생성시_예외() {
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
+        given(artistRepository.findById(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.createArtistPost(99L, dto, 1L))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(postRepository, never()).save(any());
+    }
+
+    // ── createFestivalPost ───────────────────────────────────────────
+
+    @Test
+    void 페스티벌_게시글_생성_성공() {
+        User author = user(1L);
+        Festival festival = Festival.builder().id(5L).title("락 페스티벌").build();
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
+        Post saved = freePost(30L, author);
+
+        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(postRepository.save(any(Post.class))).willReturn(saved);
+
+        Long id = postService.createFestivalPost(5L, dto, 1L);
+
+        assertThat(id).isEqualTo(30L);
+        verify(eventPublisher).publishEvent(any());
+    }
+
+    @Test
+    void 존재하지_않는_페스티벌로_게시글_생성시_예외() {
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
+        given(festivalRepository.findById(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.createFestivalPost(99L, dto, 1L))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(postRepository, never()).save(any());
+    }
+
+    // ── getPostsByFestivalIdAndBoardTypePaged ─────────────────────────
+
+    @Test
+    void 페스티벌_게시판타입별_게시글_목록_조회() {
+        User author = user(1L);
+        Festival festival = Festival.builder().id(5L).title("락 페스티벌").build();
+        Post post = Post.builder()
+                .id(10L).title("동행 모집").content("내용")
+                .user(author).festival(festival).boardType(BoardType.MATE)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+
+        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
+        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(postRepository.findByFestivalAndBoardTypeOrderByIdDesc(eq(festival), eq(BoardType.MATE), any(Pageable.class)))
+                .willReturn(List.of(post));
+
+        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdAndBoardTypePaged(
+                5L, BoardType.MATE, new CursorPageRequest(null, 20, null));
+
+        assertThat(result.content()).hasSize(1);
+        assertThat(result.content().get(0).isCertified()).isTrue();
+    }
+
+    @Test
+    void 페스티벌_게시판타입별_커서로_다음페이지_조회() {
+        User author = user(1L);
+        Festival festival = Festival.builder().id(5L).title("락 페스티벌").build();
+        List<Post> posts = List.of(freePost(3L, author), freePost(2L, author), freePost(1L, author));
+
+        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
+        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of());
+        given(postRepository.findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(
+                        eq(festival), eq(BoardType.FREE), eq(5L), any(Pageable.class)))
+                .willReturn(posts);
+
+        CursorPage<PostResponseDto> result = postService.getPostsByFestivalIdAndBoardTypePaged(
+                5L, BoardType.FREE, new CursorPageRequest(5L, 2, null));
+
+        assertThat(result.content()).hasSize(2);
+        assertThat(result.hasNext()).isTrue();
+    }
+
+    // ── createFestivalTypedPost ───────────────────────────────────────
+
+    @Test
+    void 페스티벌_타입지정_게시글_생성_성공() {
+        User author = user(1L);
+        Festival festival = Festival.builder().id(5L).title("락 페스티벌").build();
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
+        Post saved = freePost(40L, author);
+
+        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(postRepository.save(any(Post.class))).willReturn(saved);
+
+        Long id = postService.createFestivalTypedPost(5L, dto, 1L, BoardType.MATE);
+
+        assertThat(id).isEqualTo(40L);
+        verify(eventPublisher).publishEvent(any());
+    }
+
+    // ── getPopularFestivalPosts ────────────────────────────────────────
+
+    @Test
+    void 페스티벌_인기_게시글_조회() {
+        User author = user(1L);
+        Festival festival = Festival.builder().id(5L).title("락 페스티벌").build();
+        Post post = Post.builder()
+                .id(10L).title("후기").content("내용")
+                .user(author).festival(festival)
+                .likeCount(10).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+
+        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
+        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(postRepository.findByFestivalOrderByLikeCountDesc(eq(festival), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(post)));
+
+        List<PostResponseDto> result = postService.getPopularFestivalPosts(5L, null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isCertified()).isTrue();
+    }
+
+    @Test
+    void 존재하지_않는_페스티벌_인기_게시글_조회시_예외() {
+        given(festivalRepository.findById(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.getPopularFestivalPosts(99L, null))
+                .isInstanceOf(NoSuchElementException.class);
+    }
+
+    // ── incrementCommentCount / decrementCommentCount ─────────────────
+
+    @Test
+    void 댓글수_증가시_repository에_위임() {
+        postService.incrementCommentCount(10L);
+
+        verify(postRepository).incrementCommentCount(10L);
+    }
+
+    @Test
+    void 댓글수_감소시_repository에_위임() {
+        postService.decrementCommentCount(10L);
+
+        verify(postRepository).decrementCommentCount(10L);
     }
 }

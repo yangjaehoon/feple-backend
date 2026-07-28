@@ -175,4 +175,57 @@ class PostAdminServiceImplTest {
 
         verify(postRepository).findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(anyString(), any(Pageable.class));
     }
+
+    @Test
+    void 관리자_게시판타입과_키워드_함께_지정시_해당_조합으로_조회() {
+        PostAdminFilterDto params = new PostAdminFilterDto(0, 10, "FREE", "공지", null, null);
+        given(postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
+                        eq(BoardType.FREE), anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of()));
+
+        postAdminService.getPostsForAdmin(params);
+
+        verify(postRepository).findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
+                eq(BoardType.FREE), anyString(), any(Pageable.class));
+    }
+
+    // ── getTotalPostCount / countRecentPosts / getAdminHotPosts ────────
+
+    @Test
+    void 전체_게시글_수_조회() {
+        given(postRepository.count()).willReturn(100L);
+
+        assertThat(postAdminService.getTotalPostCount()).isEqualTo(100L);
+    }
+
+    @Test
+    void 최근_게시글_수_조회() {
+        given(postRepository.countByCreatedAtAfter(any())).willReturn(7L);
+
+        assertThat(postAdminService.countRecentPosts(7)).isEqualTo(7L);
+    }
+
+    @Test
+    void 관리자_인기_게시글_목록_조회() {
+        User author = user(1L);
+        given(postRepository.findPopularPosts(any(), any(Pageable.class)))
+                .willReturn(List.of(freePost(1L, author)));
+
+        List<PostResponseDto> result = postAdminService.getAdminHotPosts(4);
+
+        assertThat(result).hasSize(1);
+    }
+
+    // ── getRecentPostsByUser ─────────────────────────────────────────
+
+    @Test
+    void 사용자_최근_게시글_목록_조회() {
+        User author = user(1L);
+        given(postRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+
+        List<PostResponseDto> result = postAdminService.getRecentPostsByUser(1L, 5);
+
+        assertThat(result).hasSize(1);
+    }
 }

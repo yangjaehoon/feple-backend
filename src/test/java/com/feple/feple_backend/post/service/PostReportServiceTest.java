@@ -20,6 +20,7 @@ import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class PostReportServiceTest {
@@ -179,5 +183,124 @@ class PostReportServiceTest {
         given(reportRepository.countByStatus(ReportStatus.PENDING)).willReturn(3L);
 
         assertThat(postReportService.getPendingCount()).isEqualTo(3L);
+    }
+
+    // ── getTotalCount / getReportType ────────────────────────────────
+
+    @Test
+    void getTotalCount_레포지토리에_위임됨() {
+        given(reportRepository.count()).willReturn(10L);
+
+        assertThat(postReportService.getTotalCount()).isEqualTo(10L);
+    }
+
+    @Test
+    void getReportType은_post() {
+        assertThat(postReportService.getReportType()).isEqualTo("post");
+    }
+
+    // ── findPendingReports / findAllReports / searchReportsByKeyword ──
+
+    @Test
+    void 대기중_신고_목록_조회() {
+        User author = user(2L);
+        PostReport report = pendingReport(1L, freePost(10L, author), user(1L));
+        PageRequest pageable = PageRequest.of(0, 20);
+        given(reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING, pageable))
+                .willReturn(new PageImpl<>(List.of(report)));
+
+        Page<PostReport> result = postReportService.findPendingReports(pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void 전체_신고_목록_조회() {
+        User author = user(2L);
+        PostReport report = pendingReport(1L, freePost(10L, author), user(1L));
+        PageRequest pageable = PageRequest.of(0, 20);
+        given(reportRepository.findAllByOrderByCreatedAtDesc(pageable))
+                .willReturn(new PageImpl<>(List.of(report)));
+
+        Page<PostReport> result = postReportService.findAllReports(pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    @Test
+    void 키워드로_신고_검색() {
+        User author = user(2L);
+        PostReport report = pendingReport(1L, freePost(10L, author), user(1L));
+        PageRequest pageable = PageRequest.of(0, 20);
+        given(reportRepository.searchByKeyword("스팸", ReportStatus.PENDING, pageable))
+                .willReturn(new PageImpl<>(List.of(report)));
+
+        Page<PostReport> result = postReportService.searchReportsByKeyword("스팸", ReportStatus.PENDING, pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+    }
+
+    // ── extractAuthorId ───────────────────────────────────────────────
+
+    @Test
+    void extractAuthorId는_게시글_작성자ID_반환() {
+        User author = user(2L);
+        PostReport report = pendingReport(1L, freePost(10L, author), user(1L));
+
+        assertThat(postReportService.extractAuthorId(report)).isEqualTo(2L);
+    }
+
+    // ── getAuthorReportCounts ─────────────────────────────────────────
+
+    @Test
+    void getAuthorReportCounts_유저ID_비어있으면_빈맵() {
+        Map<Long, Long> result = postReportService.getAuthorReportCounts(List.of());
+
+        assertThat(result).isEmpty();
+        verify(reportRepository, never()).countByPostAuthorIds(any());
+    }
+
+    @Test
+    void getAuthorReportCounts_작성자별_신고건수_집계() {
+        given(reportRepository.countByPostAuthorIds(List.of(2L)))
+                .willReturn(List.<Object[]>of(new Object[]{2L, 3L}));
+
+        Map<Long, Long> result = postReportService.getAuthorReportCounts(List.of(2L));
+
+        assertThat(result).containsEntry(2L, 3L);
+    }
+
+    // ── getAllPostReportsForExport ────────────────────────────────────
+
+    @Test
+    void 전체_신고_내보내기용_목록_조회() {
+        User author = user(2L);
+        PostReport report = pendingReport(1L, freePost(10L, author), user(1L));
+        given(reportRepository.findAllForExport(any())).willReturn(List.of(report));
+
+        List<PostReport> result = postReportService.getAllPostReportsForExport();
+
+        assertThat(result).hasSize(1);
+    }
+
+    // ── getReportCountForUser ─────────────────────────────────────────
+
+    @Test
+    void 특정_사용자의_신고건수_조회() {
+        given(reportRepository.countByPostAuthorIds(List.of(2L)))
+                .willReturn(List.<Object[]>of(new Object[]{2L, 5L}));
+
+        long count = postReportService.getReportCountForUser(2L);
+
+        assertThat(count).isEqualTo(5L);
+    }
+
+    @Test
+    void 신고내역_없는_사용자의_신고건수는_0() {
+        given(reportRepository.countByPostAuthorIds(List.of(2L))).willReturn(List.of());
+
+        long count = postReportService.getReportCountForUser(2L);
+
+        assertThat(count).isZero();
     }
 }
