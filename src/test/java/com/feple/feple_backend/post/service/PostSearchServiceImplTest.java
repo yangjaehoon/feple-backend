@@ -67,4 +67,39 @@ class PostSearchServiceImplTest {
 
         assertThat(result).hasSize(1);
     }
+
+    @Test
+    void 두글자_이하_키워드_게시판타입_지정시_LIKE_폴백() {
+        User author = user(1L);
+        given(postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
+                        eq(BoardType.FREE), anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+
+        List<PostResponseDto> result = postSearchService.searchPosts("제목", "FREE", null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void MATE_타입_검색() {
+        User author = user(1L);
+        given(postRepository.searchPostsByBoardTypeAndTitleFullText(
+                        eq(BoardType.MATE), anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+
+        List<PostResponseDto> result = postSearchService.searchPosts("동행검색", "MATE", null);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void 알수없는_boardType이면_전체_검색() {
+        User author = user(1L);
+        given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+
+        List<PostResponseDto> result = postSearchService.searchPosts("제목검색", "UNKNOWN", null);
+
+        assertThat(result).hasSize(1);
+    }
 }

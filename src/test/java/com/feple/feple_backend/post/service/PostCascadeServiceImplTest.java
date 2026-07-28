@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.entity.Post;
@@ -84,5 +85,42 @@ class PostCascadeServiceImplTest {
         verify(postRepository).nullifyArtistIdForSoftDeleted(3L);
         verify(commentService, never()).deleteByPostIds(any());
         verify(postRepository, never()).deleteAllByIdInBatch(any());
+    }
+
+    // ── deletePostsByFestival ────────────────────────────────────────
+
+    @Test
+    void 페스티벌_게시글_일괄_삭제시_연관데이터_모두_삭제() {
+        User author = user(1L);
+        Festival festival = Festival.builder().id(5L).title("록페스티벌").build();
+        Post post = Post.builder()
+                .id(30L).title("t").content("c").user(author).festival(festival)
+                .likeCount(0).scrapCount(0).imageUrl("posts/b.jpg")
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.findByFestival(festival)).willReturn(List.of(post));
+
+        postCascadeService.deletePostsByFestival(festival);
+
+        verify(postRepository).nullifyFestivalIdForSoftDeleted(5L);
+        verify(commentService).deleteByPostIds(List.of(30L));
+        verify(fileStorageService).deleteFileAfterCommit("posts/b.jpg");
+        verify(postRepository).deleteAllByIdInBatch(List.of(30L));
+    }
+
+    @Test
+    void 이미지없는_게시글은_S3_삭제_스킵() {
+        User author = user(1L);
+        Artist artist = Artist.builder().id(3L).name("아이유").build();
+        Post post = Post.builder()
+                .id(20L).title("t").content("c").user(author).artist(artist)
+                .likeCount(0).scrapCount(0).imageUrl(null)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.findByArtist(artist)).willReturn(List.of(post));
+
+        postCascadeService.deletePostsByArtist(artist);
+
+        verify(fileStorageService, never()).deleteFileAfterCommit(any());
     }
 }
