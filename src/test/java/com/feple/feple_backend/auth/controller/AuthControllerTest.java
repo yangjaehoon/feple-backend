@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -81,6 +82,40 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"some-token\"}"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void 카카오_로그인_Bearer_접두어_제거후_인증() throws Exception {
+        User user = mock(User.class);
+        given(user.getId()).willReturn(1L);
+        given(kakaoAuthService.authenticate("raw-kakao-token")).willReturn(Mono.just(user));
+        given(jwtProvider.createAccessToken(1L)).willReturn("access-token");
+        given(jwtProvider.createRefreshToken(1L)).willReturn("refresh-token");
+        UserResponseDto userDto = mock(UserResponseDto.class);
+        given(userService.toUserDto(user)).willReturn(userDto);
+
+        mockMvc.perform(post("/auth/kakao")
+                        .header("Authorization", "Bearer raw-kakao-token"))
+                .andExpect(status().isOk());
+
+        verify(kakaoAuthService).authenticate("raw-kakao-token");
+    }
+
+    @Test
+    void 카카오_로그인_Bearer_접두어_없으면_그대로_사용() throws Exception {
+        User user = mock(User.class);
+        given(user.getId()).willReturn(1L);
+        given(kakaoAuthService.authenticate("raw-kakao-token")).willReturn(Mono.just(user));
+        given(jwtProvider.createAccessToken(1L)).willReturn("access-token");
+        given(jwtProvider.createRefreshToken(1L)).willReturn("refresh-token");
+        UserResponseDto userDto = mock(UserResponseDto.class);
+        given(userService.toUserDto(user)).willReturn(userDto);
+
+        mockMvc.perform(post("/auth/kakao")
+                        .header("Authorization", "raw-kakao-token"))
+                .andExpect(status().isOk());
+
+        verify(kakaoAuthService).authenticate("raw-kakao-token");
     }
 
     @Test
