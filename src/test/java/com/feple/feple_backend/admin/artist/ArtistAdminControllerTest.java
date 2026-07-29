@@ -82,6 +82,14 @@ class ArtistAdminControllerTest {
                 .andExpect(model().attributeExists("artist"));
     }
 
+    @Test
+    void 신규_아티스트_폼_조회시_name_파라미터_있으면_트림후_반영() throws Exception {
+        mockMvc.perform(get("/admin/artists/new").param("name", "  아이유  "))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("artist",
+                        org.hamcrest.Matchers.hasProperty("name", org.hamcrest.Matchers.equalTo("아이유"))));
+    }
+
     // ── GET /admin/artists/{id}/edit ──────────────────────────────────────────
 
     @Test
@@ -127,6 +135,42 @@ class ArtistAdminControllerTest {
                         .param("name", "수정된아티스트")
                         .param("genres", "INDIE"))
                 .andExpect(flash().attribute("errorMessage", "없는 아티스트"));
+    }
+
+    @Test
+    void 아티스트_수정_검증오류시_edit_뷰_재표시() throws Exception {
+        mockMvc.perform(multipart("/admin/artists/1/edit")
+                        .file("profileImageFile", new byte[0])
+                        .param("name", "")
+                        .param("page", "0"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/artist/edit"))
+                .andExpect(model().attributeExists("errors", "artistId"));
+
+        then(artistAdminService).should(never()).updateArtist(anyLong(), any());
+    }
+
+    @Test
+    void 아티스트_수정시_새_프로필이미지_있으면_업로드후_반영() throws Exception {
+        given(artistAdminService.uploadProfile(any(), any())).willReturn("new-key.jpg");
+
+        mockMvc.perform(multipart("/admin/artists/1/edit")
+                        .file("profileImageFile", new byte[]{1, 2, 3})
+                        .param("name", "수정된아티스트"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attribute("successMessage", "아티스트 정보가 수정되었습니다."));
+
+        then(artistAdminService).should().uploadProfile(any(), eq("수정된아티스트"));
+    }
+
+    @Test
+    void 아티스트_수정_일반_예외시_고정_에러메시지() throws Exception {
+        willThrow(new RuntimeException("DB 오류")).given(artistAdminService).updateArtist(anyLong(), any());
+
+        mockMvc.perform(multipart("/admin/artists/1/edit")
+                        .file("profileImageFile", new byte[0])
+                        .param("name", "수정된아티스트"))
+                .andExpect(flash().attribute("errorMessage", "수정 중 오류가 발생했습니다."));
     }
 
     // ── POST /admin/artists/{id}/delete ──────────────────────────────────────

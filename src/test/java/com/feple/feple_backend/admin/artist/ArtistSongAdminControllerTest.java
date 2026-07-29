@@ -9,10 +9,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
+import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
 import com.feple.feple_backend.artist.song.service.SongAdminService;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +54,31 @@ class ArtistSongAdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/artist/songs"))
                 .andExpect(model().attributeExists("artist", "songs", "pendingRequests"));
+    }
+
+    @Test
+    void 곡_목록_조회시_videoUrl_있으면_미리보기_영상_모델에_추가() throws Exception {
+        given(artistService.getArtistById(1L)).willReturn(mock(ArtistResponseDto.class));
+        given(songService.getSongsByArtistId(1L)).willReturn(List.of());
+        given(songRequestAdminService.getPendingRequests(1L)).willReturn(List.of());
+        YoutubeVideoDto video = YoutubeVideoDto.builder().videoId("abc").title("영상").build();
+        given(songAdminService.fetchVideoByUrl("https://youtu.be/abc")).willReturn(Optional.of(video));
+
+        mockMvc.perform(get("/admin/artists/1/songs").param("videoUrl", "https://youtu.be/abc"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("previewVideo"));
+    }
+
+    @Test
+    void 곡_목록_조회시_videoUrl_있지만_영상_조회안되면_미리보기_없음() throws Exception {
+        given(artistService.getArtistById(1L)).willReturn(mock(ArtistResponseDto.class));
+        given(songService.getSongsByArtistId(1L)).willReturn(List.of());
+        given(songRequestAdminService.getPendingRequests(1L)).willReturn(List.of());
+        given(songAdminService.fetchVideoByUrl("https://youtu.be/abc")).willReturn(Optional.empty());
+
+        mockMvc.perform(get("/admin/artists/1/songs").param("videoUrl", "https://youtu.be/abc"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeDoesNotExist("previewVideo"));
     }
 
     @Test
