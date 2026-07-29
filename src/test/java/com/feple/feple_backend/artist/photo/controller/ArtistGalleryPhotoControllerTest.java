@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.photo.controller;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -8,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.feple.feple_backend.artist.photo.dto.ArtistGalleryPhotoResponseDto;
 import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
+import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
@@ -56,6 +58,25 @@ class ArtistGalleryPhotoControllerTest {
     }
 
     @Test
+    void presign_허용되지_않는_확장자_예외() throws Exception {
+        mockMvc.perform(post("/artists/1/photos/presign")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"contentType\":\"application/pdf\",\"extension\":\"pdf\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void presign_확장자_null이면_빈문자열로_처리후_예외() {
+        ArtistGalleryPhotoController.PresignRequest req =
+                new ArtistGalleryPhotoController.PresignRequest("image/jpeg", null);
+
+        assertThatThrownBy(() -> controller.presign(1L, req, 1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("허용되지 않는 파일 형식입니다.");
+    }
+
+    @Test
     void 사진_등록_성공() throws Exception {
         ArtistGalleryPhotoResponseDto dto = mock(ArtistGalleryPhotoResponseDto.class);
         given(artistGalleryPhotoService.register(eq(1L), any(RegisterPhotoRequestDto.class), eq(1L)))
@@ -75,6 +96,21 @@ class ArtistGalleryPhotoControllerTest {
         mockMvc.perform(get("/artists/1/photos")
                         .with(AuthTestHelper.userAuth(1L)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void 사진_수정_성공() throws Exception {
+        ArtistGalleryPhotoResponseDto dto = mock(ArtistGalleryPhotoResponseDto.class);
+        given(artistGalleryPhotoService.getPhoto(5L, 1L)).willReturn(dto);
+
+        mockMvc.perform(patch("/artists/1/photos/5")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"수정된 제목\"}"))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(artistGalleryPhotoService)
+                .update(eq(5L), eq(1L), any(UpdatePhotoRequestDto.class));
     }
 
     @Test
