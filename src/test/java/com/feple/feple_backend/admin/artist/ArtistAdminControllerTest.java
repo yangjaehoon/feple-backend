@@ -156,7 +156,8 @@ class ArtistAdminControllerTest {
 
         mockMvc.perform(multipart("/admin/artists/1/edit")
                         .file("profileImageFile", new byte[]{1, 2, 3})
-                        .param("name", "수정된아티스트"))
+                        .param("name", "수정된아티스트")
+                        .param("genres", "INDIE"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(flash().attribute("successMessage", "아티스트 정보가 수정되었습니다."));
 
@@ -169,7 +170,8 @@ class ArtistAdminControllerTest {
 
         mockMvc.perform(multipart("/admin/artists/1/edit")
                         .file("profileImageFile", new byte[0])
-                        .param("name", "수정된아티스트"))
+                        .param("name", "수정된아티스트")
+                        .param("genres", "INDIE"))
                 .andExpect(flash().attribute("errorMessage", "수정 중 오류가 발생했습니다."));
     }
 
