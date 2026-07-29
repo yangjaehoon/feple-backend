@@ -6,11 +6,14 @@ import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +65,28 @@ class CertificationAdminControllerTest {
         then(certificationService).should(never()).getByStatus(any(), anyInt());
     }
 
+    @Test
+    void 유효한_status_파라미터로_필터링() throws Exception {
+        given(certificationService.getByStatus(CertificationStatus.PENDING, 0)).willReturn(new PageImpl<>(List.of()));
+        given(certificationService.getPendingCount()).willReturn(0L);
+
+        mockMvc.perform(get("/admin/certifications").param("status", "PENDING"))
+                .andExpect(status().isOk());
+
+        then(certificationService).should().getByStatus(CertificationStatus.PENDING, 0);
+    }
+
+    @Test
+    void 잘못된_status_파라미터는_null로_처리() throws Exception {
+        given(certificationService.getByStatus(null, 0)).willReturn(new PageImpl<>(List.of()));
+        given(certificationService.getPendingCount()).willReturn(0L);
+
+        mockMvc.perform(get("/admin/certifications").param("status", "INVALID"))
+                .andExpect(status().isOk());
+
+        then(certificationService).should().getByStatus(null, 0);
+    }
+
     // ── GET /admin/certifications/{id} ────────────────────────────────────────
 
     @Test
@@ -87,6 +112,39 @@ class CertificationAdminControllerTest {
                 .andExpect(flash().attribute("errorMessage", "없는 인증"));
     }
 
+    @Test
+    void 상세_조회_일반_예외_고정_에러메시지() throws Exception {
+        given(certificationService.getById(1L)).willThrow(new RuntimeException("DB 오류"));
+
+        mockMvc.perform(get("/admin/certifications/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/certifications"))
+                .andExpect(flash().attribute("errorMessage", "인증 정보를 불러오는 중 오류가 발생했습니다."));
+    }
+
+    @Test
+    void 상세_조회시_다음_대기건_있으면_nextCertId_포함() throws Exception {
+        FestivalCertification cert = mock(FestivalCertification.class);
+        given(cert.getPhotoKey()).willReturn(null);
+        given(certificationService.getById(1L)).willReturn(cert);
+        given(certificationService.findNextPendingId(1L)).willReturn(Optional.of(5L));
+
+        mockMvc.perform(get("/admin/certifications/1"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("nextCertId", 5L));
+    }
+
+    @Test
+    void 상세_조회시_키워드_있으면_returnUrl에_포함() throws Exception {
+        FestivalCertification cert = mock(FestivalCertification.class);
+        given(cert.getPhotoKey()).willReturn(null);
+        given(certificationService.getById(1L)).willReturn(cert);
+
+        mockMvc.perform(get("/admin/certifications/1").param("keyword", "홍길동"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("returnUrl", org.hamcrest.Matchers.containsString("keyword=")));
+    }
+
     // ── POST /admin/certifications/{id}/approve ───────────────────────────────
 
     @Test
@@ -98,6 +156,16 @@ class CertificationAdminControllerTest {
                 .andExpect(flash().attribute("successMessage", "인증이 승인되었습니다."));
 
         then(certificationService).should().approve(1L, "admin");
+    }
+
+    @Test
+    void 승인시_nextCertId_있으면_다음_인증건으로_리다이렉트() throws Exception {
+        mockMvc.perform(post("/admin/certifications/1/approve")
+                        .param("page", "0")
+                        .param("nextCertId", "5")
+                        .principal(new UsernamePasswordAuthenticationToken("admin", null)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("/admin/certifications/5?*"));
     }
 
     @Test
@@ -122,6 +190,26 @@ class CertificationAdminControllerTest {
                 .andExpect(flash().attribute("successMessage", "인증이 거절되었습니다."));
 
         then(certificationService).should().reject(1L, "사진 불명확", "admin");
+    }
+
+    @Test
+    void 거절시_사유_공백이면_로그_상세정보_null() throws Exception {
+        mockMvc.perform(post("/admin/certifications/1/reject")
+                        .param("page", "0")
+                        .principal(new UsernamePasswordAuthenticationToken("admin", null)))
+                .andExpect(status().is3xxRedirection());
+
+        then(adminLogService).should().log(AdminAction.CERTIFICATION_REJECT, "CERTIFICATION", 1L, null);
+    }
+
+    @Test
+    void 거절시_nextCertId_있으면_다음_인증건으로_리다이렉트() throws Exception {
+        mockMvc.perform(post("/admin/certifications/1/reject")
+                        .param("page", "0")
+                        .param("nextCertId", "5")
+                        .principal(new UsernamePasswordAuthenticationToken("admin", null)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("/admin/certifications/5?*"));
     }
 
     @Test
