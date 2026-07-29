@@ -12,6 +12,7 @@ import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.support.AuthTestHelper;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
+import com.feple.feple_backend.user.entity.DeviceTokenRegistration;
 import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserService;
@@ -117,10 +118,41 @@ class UserControllerTest {
     }
 
     @Test
+    void 디바이스_토큰_등록시_platform_language_없으면_기본값_사용() throws Exception {
+        mockMvc.perform(post("/users/device-token")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"abc123\"}"))
+                .andExpect(status().isNoContent());
+
+        org.mockito.Mockito.verify(deviceTokenService)
+                .register(1L, new DeviceTokenRegistration("abc123", "android", "ko"));
+    }
+
+    @Test
+    void 디바이스_토큰_등록시_platform_language_있으면_그대로_사용() throws Exception {
+        mockMvc.perform(post("/users/device-token")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"abc123\",\"platform\":\"ios\",\"language\":\"en\"}"))
+                .andExpect(status().isNoContent());
+
+        org.mockito.Mockito.verify(deviceTokenService)
+                .register(1L, new DeviceTokenRegistration("abc123", "ios", "en"));
+    }
+
+    @Test
     void 사용자_삭제_성공() throws Exception {
         mockMvc.perform(delete("/users/1")
                         .with(AuthTestHelper.userAuth(1L)))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void 사용자_삭제_본인_아니면_403() throws Exception {
+        mockMvcWithGlobalHandler.perform(delete("/users/1")
+                        .with(AuthTestHelper.userAuth(2L)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -183,6 +215,13 @@ class UserControllerTest {
     }
 
     @Test
+    void 좋아요한_페스티벌_조회_본인_아니면_403() throws Exception {
+        mockMvcWithGlobalHandler.perform(get("/users/1/liked-festivals")
+                        .with(AuthTestHelper.userAuth(2L)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void 사용자_통계_조회() throws Exception {
         given(myPageService.getUserStats(1L)).willReturn(new UserStatsDto(0, 0, 0, 0, 0, 0));
 
@@ -234,6 +273,13 @@ class UserControllerTest {
     }
 
     @Test
+    void 좋아요한_게시글_조회_본인_아니면_403() throws Exception {
+        mockMvcWithGlobalHandler.perform(get("/users/1/liked-posts")
+                        .with(AuthTestHelper.userAuth(2L)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void 소개글_수정() throws Exception {
         UserResponseDto dto = mock(UserResponseDto.class);
         given(userService.getUser(1L)).willReturn(dto);
@@ -261,6 +307,13 @@ class UserControllerTest {
         mockMvc.perform(get("/users/1/song-requests")
                         .with(AuthTestHelper.userAuth(1L)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void 신청곡_목록_조회_본인_아니면_403() throws Exception {
+        mockMvcWithGlobalHandler.perform(get("/users/1/song-requests")
+                        .with(AuthTestHelper.userAuth(2L)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
