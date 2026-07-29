@@ -64,6 +64,17 @@ class CommentControllerTest {
     }
 
     @Test
+    void 댓글_목록_인증된_사용자로_조회() throws Exception {
+        given(commentService.getCommentsByPost(1L, 1L)).willReturn(List.of());
+
+        mockMvc.perform(get("/comments/post/1")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(commentService).getCommentsByPost(1L, 1L);
+    }
+
+    @Test
     void 댓글_삭제_성공() throws Exception {
         mockMvc.perform(delete("/comments/1")
                         .with(AuthTestHelper.userAuth(1L)))
@@ -87,6 +98,15 @@ class CommentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"content\":\"수정된 내용\"}"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void 댓글_수정_내용_공백이면_400() throws Exception {
+        mockMvc.perform(put("/comments/1")
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"content\":\"\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
