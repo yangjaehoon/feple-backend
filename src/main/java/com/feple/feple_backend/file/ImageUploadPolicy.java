@@ -13,6 +13,9 @@ public final class ImageUploadPolicy {
             "webp", "image/webp"
     );
 
+    /** presigned PUT URL은 Content-Length를 제한할 수 없어 업로드 후 HeadObject로 사후 검증 */
+    public static final long MAX_PRESIGNED_UPLOAD_BYTES = 10 * 1024 * 1024;
+
     public static boolean isAllowed(String extension, String contentType) {
         return contentType.equals(ALLOWED_IMAGE_TYPES.get(extension));
     }

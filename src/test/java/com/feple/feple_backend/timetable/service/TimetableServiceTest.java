@@ -67,13 +67,36 @@ class TimetableServiceTest {
     @Test
     void 타임테이블_조회시_날짜_스테이지순서_시작시간순_정렬() {
         Festival f = festival(1L);
-        TimetableEntry e1 = entry(1L, f, "아티스트B", "메인");
-        TimetableEntry e2 = entry(2L, f, "아티스트A", "메인");
-        given(timetableRepository.findByFestivalIdWithStage(1L)).willReturn(List.of(e1, e2));
+        TimetableEntry late = TimetableEntry.builder()
+                .festival(f).stageName("메인").artistName("늦은공연")
+                .festivalDate(LocalDate.of(2026, 8, 1))
+                .startTime(LocalTime.of(15, 0)).endTime(LocalTime.of(16, 0)).build();
+        TimetableEntry early = TimetableEntry.builder()
+                .festival(f).stageName("메인").artistName("이른공연")
+                .festivalDate(LocalDate.of(2026, 8, 1))
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(10, 0)).build();
+        TimetableEntry nextDay = TimetableEntry.builder()
+                .festival(f).stageName("메인").artistName("다음날공연")
+                .festivalDate(LocalDate.of(2026, 8, 2))
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(10, 0)).build();
+        given(timetableRepository.findByFestivalIdWithStage(1L)).willReturn(List.of(late, nextDay, early));
 
         List<TimetableEntryResponseDto> result = timetableService.getEntries(1L);
 
-        assertThat(result).hasSize(2);
+        assertThat(result).extracting(TimetableEntryResponseDto::getArtistName)
+                .containsExactly("이른공연", "늦은공연", "다음날공연");
+    }
+
+    @Test
+    void 스테이지명_공백이면_null_스테이지로_처리() {
+        Festival f = festival(1L);
+        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
+        given(timetableRepository.save(any(TimetableEntry.class))).willAnswer(inv -> inv.getArgument(0));
+        TimetableEntryRequestDto dto = requestDto("아이유", "  ", LocalTime.of(19, 0), LocalTime.of(20, 0));
+
+        timetableService.createEntry(1L, dto);
+
+        verify(stageService, never()).findByFestivalIdAndName(any(), any());
     }
 
     // ── createEntry ───────────────────────────────────────────────────
@@ -209,6 +232,18 @@ class TimetableServiceTest {
 
         assertThatThrownBy(() -> timetableService.updateEntry(1L, 999L, dto))
                 .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    void 항목_수정시_종료시간이_시작시간보다_빠르면_예외() {
+        Festival f = festival(1L);
+        TimetableEntry existing = entry(100L, f, "기존", "메인");
+        given(timetableRepository.findById(100L)).willReturn(Optional.of(existing));
+        TimetableEntryRequestDto dto = requestDto("수정", "메인", LocalTime.of(20, 0), LocalTime.of(19, 0));
+
+        assertThatThrownBy(() -> timetableService.updateEntry(1L, 100L, dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("종료 시간은 시작 시간보다 늦어야 합니다.");
     }
 
     // ── nullifyArtistId ───────────────────────────────────────────────

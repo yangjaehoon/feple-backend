@@ -80,7 +80,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequestDto req) {
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequestDto req,
+                                       HttpServletRequest httpRequest) {
+        loginRateLimiter.check(getClientIp(httpRequest));
         if (req != null && req.getRefreshToken() != null) {
             refreshTokenService.revoke(req.getRefreshToken());
         }

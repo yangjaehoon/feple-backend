@@ -126,20 +126,28 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @EvictAdminPendingCaches
     @Transactional
     public boolean approveAndMaybeSaveSong(Long requestId, String youtubeUrl) {
+        // YouTube API 호출(외부 I/O)을 DB 접근보다 먼저 수행해 트랜잭션 내 커넥션 점유 시간을 최소화
+        Optional<YoutubeVideoDto> videoOpt = fetchVideoIfProvided(youtubeUrl);
+
         SongRequest request = EntityLoader.getOrThrow(songRequestRepository::findById, requestId, "노래 요청");
         requirePending(request);
-
         request.approve();
-        boolean songSaved = trySaveSongFromYoutube(request, youtubeUrl);
+
+        boolean songSaved = false;
+        if (youtubeUrl != null && !youtubeUrl.isBlank()) {
+            request.updateYoutubeUrl(youtubeUrl);
+            songSaved = trySaveSong(request, videoOpt);
+        }
         publishApprovedEvent(request);
         return songSaved;
     }
 
-    private boolean trySaveSongFromYoutube(SongRequest request, String youtubeUrl) {
-        if (youtubeUrl == null || youtubeUrl.isBlank()) return false;
+    private Optional<YoutubeVideoDto> fetchVideoIfProvided(String youtubeUrl) {
+        if (youtubeUrl == null || youtubeUrl.isBlank()) return Optional.empty();
+        return youtubeSearchService.fetchVideoByUrl(youtubeUrl);
+    }
 
-        request.updateYoutubeUrl(youtubeUrl);
-        Optional<YoutubeVideoDto> videoOpt = youtubeSearchService.fetchVideoByUrl(youtubeUrl);
+    private boolean trySaveSong(SongRequest request, Optional<YoutubeVideoDto> videoOpt) {
         if (videoOpt.isEmpty()) return false;
 
         YoutubeVideoDto video = videoOpt.get();

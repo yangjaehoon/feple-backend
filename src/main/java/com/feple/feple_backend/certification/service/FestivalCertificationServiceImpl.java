@@ -23,6 +23,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -37,8 +38,10 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     private final FileStorageService fileStorageService;
     private final CertificationReviewLikeRepository reviewLikeRepository;
 
+    // S3 검증(headObject)은 커넥션 점유 없이 수행; 이후 각 리포지토리 호출이
+    // 자체 트랜잭션으로 DB에 반영한다 (ArtistGalleryPhotoService.register와 동일 패턴)
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
         S3PathConstants.requireWithinPrefix(photoKey, S3PathConstants.certificationPrefix(userId));
         // presign만 받고 실제 업로드하지 않은 채로 제출하면 영구히 깨진 이미지 레코드가 생성되므로

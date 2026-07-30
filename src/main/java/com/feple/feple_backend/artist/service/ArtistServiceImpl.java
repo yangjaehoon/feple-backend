@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -245,11 +244,8 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "artistRanking", allEntries = true),
-        @CacheEvict(value = "topArtists", allEntries = true),
-        @CacheEvict(value = "artistDetail", key = "#id")
-    })
+    @EvictArtistCaches
+    @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         String oldKey = artist.getProfileImageKey();

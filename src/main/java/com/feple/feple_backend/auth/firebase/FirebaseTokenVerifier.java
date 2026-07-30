@@ -14,6 +14,6 @@ import org.springframework.stereotype.Component;
 public class FirebaseTokenVerifier {
 
     public FirebaseToken verify(String idToken) throws FirebaseAuthException {
-        return FirebaseAuth.getInstance().verifyIdToken(idToken);
+        return FirebaseAuth.getInstance().verifyIdToken(idToken, true);
     }
 }
