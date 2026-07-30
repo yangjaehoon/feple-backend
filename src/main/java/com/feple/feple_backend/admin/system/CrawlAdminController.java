@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
+
 import com.feple.feple_backend.admin.ocr.GeminiUsageTracker;
 import com.feple.feple_backend.artistfestival.dto.ArtistNameOption;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.CRAWL)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/crawl")

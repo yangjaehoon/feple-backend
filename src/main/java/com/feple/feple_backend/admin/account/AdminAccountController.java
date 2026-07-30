@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/accounts")
 @PreAuthorize("hasRole('SUPER_ADMIN')")
+@RequiresSuperAdmin
 @RequiredArgsConstructor
 public class AdminAccountController {
 

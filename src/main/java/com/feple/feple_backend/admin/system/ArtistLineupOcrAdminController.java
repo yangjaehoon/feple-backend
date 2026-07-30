@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
+
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.ocr.ArtistLineupOcrResult;
@@ -27,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 /** 크롤 대시보드의 라인업 포스터 OCR 파싱/적용 + 미매칭 아티스트 제안 관리 전담 컨트롤러. */
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.CRAWL)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/crawl/ocr/lineup")

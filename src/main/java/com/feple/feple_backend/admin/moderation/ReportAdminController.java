@@ -2,6 +2,8 @@ package com.feple.feple_backend.admin.moderation;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.service.PhotoPresignedUrlProvider;
@@ -21,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.REPORTS)
 @Controller
 @RequestMapping("/admin/reports")
 public class ReportAdminController {

@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
+
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.ocr.OcrApplyRequestDto;
@@ -22,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 /** 크롤 대시보드의 타임테이블 포스터 OCR 파싱/적용 기능 전담 컨트롤러. */
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.CRAWL)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/crawl/ocr")

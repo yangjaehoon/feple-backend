@@ -1,6 +1,8 @@
 package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -27,6 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.FESTIVALS)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/festivals/{festivalId}/artists")

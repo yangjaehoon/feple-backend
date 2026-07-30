@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.festival;
 
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
+
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.FESTIVALS)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/festivals")

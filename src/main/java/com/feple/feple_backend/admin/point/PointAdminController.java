@@ -1,6 +1,8 @@
 package com.feple.feple_backend.admin.point;
 
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.user.dto.PointLogResponseDto;
 import com.feple.feple_backend.user.service.PointService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.USERS)
 @Controller
 @RequestMapping("/admin/points")
 @RequiredArgsConstructor

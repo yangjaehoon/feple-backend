@@ -1,6 +1,5 @@
 package com.feple.feple_backend.admin.system;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -8,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.moderation.ReportCsvExporter;
-import com.feple.feple_backend.admin.moderation.UserCsvExporter;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,45 +18,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
-class AdminCsvControllerTest {
+class AdminReportCsvControllerTest {
 
-    @Mock UserCsvExporter userCsvExporter;
     @Mock AdminLogService adminLogService;
 
     ReportCsvExporter postExporter = mock(ReportCsvExporter.class);
 
-    AdminCsvController controller;
     MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         given(postExporter.getReportType()).willReturn("post");
-        controller = new AdminCsvController(userCsvExporter, adminLogService, List.of(postExporter));
+        AdminReportCsvController controller = new AdminReportCsvController(adminLogService, List.of(postExporter));
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
-
-    // ── GET /admin/export/users.csv ───────────────────────────────────────────
-
-    @Test
-    void users_csv_내보내기_성공() throws Exception {
-        given(userCsvExporter.buildCsv()).willReturn("ID,닉네임,이메일,역할,가입일,정지여부\n1,tester,tester@example.com,일반,,\n");
-
-        mockMvc.perform(get("/admin/export/users.csv"))
-                .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "text/csv;charset=UTF-8"))
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("attachment")));
-    }
-
-    @Test
-    void users_csv_목록_비어있어도_헤더_행_포함() throws Exception {
-        given(userCsvExporter.buildCsv()).willReturn("ID,닉네임,이메일,역할,가입일,정지여부\n");
-
-        mockMvc.perform(get("/admin/export/users.csv"))
-                .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "text/csv;charset=UTF-8"));
-    }
-
-    // ── GET /admin/export/reports.csv ─────────────────────────────────────────
 
     @Test
     void reports_csv_post_타입_내보내기_성공() throws Exception {
@@ -81,8 +54,7 @@ class AdminCsvControllerTest {
 
     @Test
     void reports_csv_엑스포터_없으면_400_반환() throws Exception {
-        AdminCsvController emptyController =
-                new AdminCsvController(userCsvExporter, adminLogService, List.of());
+        AdminReportCsvController emptyController = new AdminReportCsvController(adminLogService, List.of());
         MockMvc emptyMvc = MockMvcBuilders.standaloneSetup(emptyController).build();
 
         emptyMvc.perform(get("/admin/export/reports.csv").param("type", "unknown"))

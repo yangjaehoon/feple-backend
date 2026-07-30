@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.account.RequiresSuperAdmin;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.global.exception.ErrorCode;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @PreAuthorize("hasRole('SUPER_ADMIN')")
+@RequiresSuperAdmin
 @Controller
 @RequestMapping("/admin/push")
 @RequiredArgsConstructor

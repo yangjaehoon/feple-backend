@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.dashboard;
 
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
+
 import com.feple.feple_backend.admin.service.AdminStatsMetrics;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.STATS)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/stats")

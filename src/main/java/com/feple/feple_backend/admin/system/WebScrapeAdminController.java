@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
+
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.scraper.ScrapedFestivalDto;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /** 크롤 대시보드의 웹 스크래핑(URL로 페스티벌 정보 자동 추출) 기능 전담 컨트롤러. */
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.CRAWL)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/crawl")

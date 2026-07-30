@@ -1,11 +1,12 @@
 package com.feple.feple_backend.admin.system;
 
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.moderation.CsvExporter;
 import com.feple.feple_backend.admin.moderation.ReportCsvExporter;
-import com.feple.feple_backend.admin.moderation.UserCsvExporter;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -21,29 +22,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.REPORTS)
 @Controller
 @RequestMapping("/admin/export")
-public class AdminCsvController {
+public class AdminReportCsvController {
 
-    private final UserCsvExporter userCsvExporter;
     private final AdminLogService adminLogService;
     private final Map<String, ReportCsvExporter> reportExporters;
 
-    public AdminCsvController(UserCsvExporter userCsvExporter,
-                               AdminLogService adminLogService,
-                               List<ReportCsvExporter> exporters) {
-        this.userCsvExporter = userCsvExporter;
-        this.adminLogService  = adminLogService;
-        this.reportExporters  = exporters.stream()
+    public AdminReportCsvController(AdminLogService adminLogService, List<ReportCsvExporter> exporters) {
+        this.adminLogService = adminLogService;
+        this.reportExporters = exporters.stream()
                 .collect(Collectors.toMap(ReportCsvExporter::getReportType, e -> e));
-    }
-
-    @GetMapping("/users.csv")
-    @ResponseBody
-    public ResponseEntity<byte[]> exportUsers() {
-        String csv = userCsvExporter.buildCsv();
-        adminLogService.log(AdminAction.EXPORT_USERS, "USER", null, "CSV 내보내기");
-        return CsvExporter.csvResponse(csv, "users_" + LocalDate.now() + ".csv");
     }
 
     @GetMapping("/reports.csv")

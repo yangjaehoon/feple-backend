@@ -1,5 +1,8 @@
 package com.feple.feple_backend.admin.system;
 
+import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.admin.account.RequiresAdminPermission;
+
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogFilter;
 import com.feple.feple_backend.admin.log.AdminLogService;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @PreAuthorize("hasRole('ADMIN')")
+@RequiresAdminPermission(AdminPermission.LOGS)
 @Controller
 @RequestMapping("/admin/logs")
 @RequiredArgsConstructor

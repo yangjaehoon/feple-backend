@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.account;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -11,10 +12,25 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.method.HandlerMethod;
 
 class AdminPermissionInterceptorTest {
 
     private final AdminPermissionInterceptor interceptor = new AdminPermissionInterceptor();
+
+    @RequiresAdminPermission(AdminPermission.USERS)
+    static class UsersController {
+        public void handle() {}
+    }
+
+    @RequiresSuperAdmin
+    static class SuperAdminController {
+        public void handle() {}
+    }
+
+    static class UnannotatedController {
+        public void handle() {}
+    }
 
     @AfterEach
     void clearSecurityContext() {
@@ -25,6 +41,11 @@ class AdminPermissionInterceptorTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI(uri);
         return request;
+    }
+
+    private HandlerMethod handlerMethod(Class<?> controllerClass) throws Exception {
+        Method method = controllerClass.getMethod("handle");
+        return new HandlerMethod(controllerClass.getDeclaredConstructor().newInstance(), method);
     }
 
     // SecurityConfig가 /admin/**에 hasRole("ADMIN")을 강제하므로 실제로는 도달하지 않아야 하는 경로지만,
@@ -57,7 +78,7 @@ class AdminPermissionInterceptorTest {
                 "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        boolean result = interceptor.preHandle(request("/admin/users"), response, new Object());
+        boolean result = interceptor.preHandle(request("/admin/users"), response, handlerMethod(UsersController.class));
 
         assertThat(result).isTrue();
     }
@@ -68,56 +89,69 @@ class AdminPermissionInterceptorTest {
                 "admin", null, List.of(new SimpleGrantedAuthority("PERM_POSTS"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        boolean result = interceptor.preHandle(request("/admin/users"), response, new Object());
+        boolean result = interceptor.preHandle(request("/admin/users"), response, handlerMethod(UsersController.class));
 
         assertThat(result).isFalse();
         assertThat(response.getRedirectedUrl()).isEqualTo("/admin/access-denied");
     }
 
     @Test
-    void SUPER_ADMIN_경로는_ROLE_SUPER_ADMIN_없으면_접근_거부() throws Exception {
+    void SUPER_ADMIN_컨트롤러는_ROLE_SUPER_ADMIN_없으면_접근_거부() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                 "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        boolean result = interceptor.preHandle(request("/admin/accounts"), response, new Object());
+        boolean result = interceptor.preHandle(request("/admin/accounts"), response, handlerMethod(SuperAdminController.class));
 
         assertThat(result).isFalse();
         assertThat(response.getRedirectedUrl()).isEqualTo("/admin/access-denied");
     }
 
     @Test
-    void SUPER_ADMIN_경로는_ROLE_SUPER_ADMIN_있으면_통과() throws Exception {
+    void SUPER_ADMIN_컨트롤러는_ROLE_SUPER_ADMIN_있으면_통과() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                 "admin", null, List.of(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        boolean result = interceptor.preHandle(request("/admin/accounts"), response, new Object());
+        boolean result = interceptor.preHandle(request("/admin/accounts"), response, handlerMethod(SuperAdminController.class));
 
         assertThat(result).isTrue();
     }
 
-    // PREFIX_MAP에 등록을 잊은 신규 경로가 모든 ADMIN에게 뚫리는 걸 막기 위한 fail-closed 회귀 방지 테스트
+    // 어노테이션이 없는 컨트롤러는 무조건 차단한다 — 정상 배포라면 AdminPermissionAnnotationValidator가
+    // 기동 시점에 먼저 앱을 실패시켜야 하지만, 인터셉터 자체도 방어적으로 fail-closed여야 한다.
     @Test
-    void 매핑되지_않은_경로는_접근_거부() throws Exception {
+    void 권한_어노테이션이_없는_컨트롤러는_접근_거부() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                 "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        boolean result = interceptor.preHandle(request("/admin/unregistered-feature"), response, new Object());
+        boolean result = interceptor.preHandle(request("/admin/unregistered-feature"), response, handlerMethod(UnannotatedController.class));
 
         assertThat(result).isFalse();
         assertThat(response.getRedirectedUrl()).isEqualTo("/admin/access-denied");
     }
 
     @Test
-    void 대시보드_루트는_별도_권한_없이_통과() throws Exception {
+    void 대시보드_루트는_어노테이션_없어도_통과() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                 "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        boolean result = interceptor.preHandle(request("/admin"), response, new Object());
+        boolean result = interceptor.preHandle(request("/admin"), response, handlerMethod(UnannotatedController.class));
 
         assertThat(result).isTrue();
+    }
+
+    @Test
+    void HandlerMethod가_아니면_접근_거부() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean result = interceptor.preHandle(request("/admin/users"), response, new Object());
+
+        assertThat(result).isFalse();
+        assertThat(response.getRedirectedUrl()).isEqualTo("/admin/access-denied");
     }
 }
