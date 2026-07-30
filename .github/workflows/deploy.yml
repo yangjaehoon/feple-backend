@@ -88,7 +88,7 @@ jobs:
 
       - name: Stop service before deploy
         if: needs.changes.outputs.backend == 'true'
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
@@ -111,7 +111,7 @@ jobs:
 
       - name: Start Spring Boot service
         if: needs.changes.outputs.backend == 'true'
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
