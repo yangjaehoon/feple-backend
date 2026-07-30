@@ -77,6 +77,8 @@ public enum AdminAction {
 
     EXPORT_USERS("회원 내보내기"),
     EXPORT_REPORTS("신고 내보내기"),
+    EXPORT_ARTISTS("아티스트 내보내기"),
+    EXPORT_FESTIVALS("페스티벌 내보내기"),
 
     ADMIN_ACCOUNT_CREATE("관리자 계정 생성"),
     ADMIN_ACCOUNT_UPDATE("관리자 계정 수정"),
