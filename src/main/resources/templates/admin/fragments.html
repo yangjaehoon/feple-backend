@@ -33,6 +33,12 @@
         </a>
     </div>
 
+    <!-- 전역 검색 -->
+    <form th:action="@{/admin/search}" method="get" class="sb-search-form">
+        <input type="text" name="keyword" placeholder="회원·게시글·아티스트·페스티벌 검색"
+               autocomplete="off" class="sb-search-input"/>
+    </form>
+
     <!-- 메뉴 -->
     <nav class="sb-nav">
 

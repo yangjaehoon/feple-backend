@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('전역 검색')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('search')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('전역 검색', '검색')}"></div>
+    <div class="content-area">
+
+        <div class="card">
+            <div class="search-bar">
+                <form th:action="@{/admin/search}" method="get">
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           placeholder="회원·게시글·아티스트·페스티벌 검색"
+                           autocomplete="off" class="search-input"/>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${keyword != null and !#strings.isEmpty(keyword) and results == null}" class="card card-mb">
+            <div class="card-body">검색어를 입력해주세요.</div>
+        </div>
+
+        <div th:if="${results != null and results.isEmpty()}" class="card card-mb">
+            <div class="card-body">'<span th:text="${keyword}"></span>'에 대한 검색 결과가 없습니다.</div>
+        </div>
+
+        <th:block th:if="${results != null}">
+
+            <!-- ── 회원 ── -->
+            <div th:if="${results.users().permitted() and !results.users().isEmpty()}" class="card card-mb">
+                <div class="card-header">
+                    <div class="card-title">
+                        👤 회원
+                        <span class="card-count" th:text="${results.users().total()}"></span>
+                    </div>
+                    <a th:href="@{/admin/users(keyword=${keyword})}" class="btn btn-secondary btn-sm">더보기</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <tbody>
+                        <tr th:each="u : ${results.users().items()}">
+                            <td>
+                                <a th:href="@{/admin/users/{id}(id=${u.id})}" th:text="${u.nickname}" class="td-link"></a>
+                                <div class="cell-secondary" th:text="${u.email}"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── 게시글 ── -->
+            <div th:if="${results.posts().permitted() and !results.posts().isEmpty()}" class="card card-mb">
+                <div class="card-header">
+                    <div class="card-title">
+                        📝 게시글
+                        <span class="card-count" th:text="${results.posts().total()}"></span>
+                    </div>
+                    <a th:href="@{/admin/posts(keyword=${keyword})}" class="btn btn-secondary btn-sm">더보기</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <tbody>
+                        <tr th:each="p : ${results.posts().items()}">
+                            <td>
+                                <a th:href="@{/admin/posts/{id}(id=${p.id})}" th:text="${p.title}" class="td-link"></a>
+                                <div class="cell-secondary" th:text="${p.boardDisplayName} + ' · ' + ${p.nickname}"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── 아티스트 ── -->
+            <div th:if="${results.artists().permitted() and !results.artists().isEmpty()}" class="card card-mb">
+                <div class="card-header">
+                    <div class="card-title">
+                        🎤 아티스트
+                        <span class="card-count" th:text="${results.artists().total()}"></span>
+                    </div>
+                    <a th:href="@{/admin/artists(keyword=${keyword})}" class="btn btn-secondary btn-sm">더보기</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <tbody>
+                        <tr th:each="a : ${results.artists().items()}">
+                            <td>
+                                <a th:href="@{/admin/artists/{id}/edit(id=${a.id})}" th:text="${a.name}" class="td-link"></a>
+                                <div class="cell-secondary" th:if="${a.nameEn != null}" th:text="${a.nameEn}"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── 페스티벌 ── -->
+            <div th:if="${results.festivals().permitted() and !results.festivals().isEmpty()}" class="card card-mb">
+                <div class="card-header">
+                    <div class="card-title">
+                        🎪 페스티벌
+                        <span class="card-count" th:text="${results.festivals().total()}"></span>
+                    </div>
+                    <a th:href="@{/admin/festivals(keyword=${keyword})}" class="btn btn-secondary btn-sm">더보기</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <tbody>
+                        <tr th:each="f : ${results.festivals().items()}">
+                            <td>
+                                <a th:href="@{/admin/festivals/{id}(id=${f.id})}" th:text="${f.title}" class="td-link"></a>
+                                <div class="cell-secondary" th:text="${f.location}"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </th:block>
+
+    </div>
+</div>
+</body>
+</html>

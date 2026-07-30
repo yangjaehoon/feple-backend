@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 public class AdminPermissionAnnotationValidator implements ApplicationRunner {
 
     private static final Set<String> EXEMPT_PATHS = Set.of(
-            "/admin", "/admin/", "/admin/login", "/admin/logout", "/admin/access-denied");
+            "/admin", "/admin/", "/admin/login", "/admin/logout", "/admin/access-denied", "/admin/search");
 
     private final RequestMappingHandlerMapping handlerMapping;
 

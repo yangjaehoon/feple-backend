@@ -21,9 +21,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class AdminPermissionInterceptor implements HandlerInterceptor {
 
-    // 어떤 어노테이션도 요구하지 않고 모든 ADMIN에게 열려 있어야 하는 경로 — 대시보드 루트만 해당.
+    // 어떤 어노테이션도 요구하지 않고 모든 ADMIN에게 열려 있어야 하는 경로 — 대시보드 루트와 전역 검색.
+    // 전역 검색은 여러 PERM_*를 넘나들어 단일 권한으로 못 묶으므로, AdminGlobalSearchService가
+    // 도메인별 결과를 호출자의 PERM_* 권한으로 직접 걸러낸다.
     // 앱 구조상 거의 변하지 않는 고정 경로라 별도 어노테이션 없이 URI로 직접 예외 처리한다.
-    private static final Set<String> OPEN_TO_ANY_ADMIN = Set.of("/admin", "/admin/");
+    private static final Set<String> OPEN_TO_ANY_ADMIN = Set.of("/admin", "/admin/", "/admin/search");
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,

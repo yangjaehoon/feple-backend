@@ -610,6 +610,14 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
   padding: 2px 7px; border-radius: 20px;
   margin-left: auto; flex-shrink: 0;
 }
+.sb-search-form { padding: 10px 12px; border-bottom: 1.5px solid var(--border); flex-shrink: 0; }
+.sb-search-input {
+  width: 100%; padding: 7px 10px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 12.5px; font-family: inherit;
+  background: var(--surface); color: var(--text);
+}
+.sb-search-input:focus { outline: none; border-color: var(--primary); }
 .sb-project { padding: 10px 12px; border-bottom: 1.5px solid var(--border); flex-shrink: 0; }
 .sb-project-sel {
   width: 100%; padding: 7px 30px 7px 10px;
