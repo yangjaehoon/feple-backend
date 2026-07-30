@@ -64,8 +64,8 @@ dependencies {
 	implementation platform("software.amazon.awssdk:bom:2.25.1")
 	implementation 'com.google.firebase:firebase-admin:9.3.0'
 
-	implementation 'net.javacrumbs.shedlock:shedlock-spring:5.16.0'
-	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.16.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.7.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0'
 
 	implementation 'org.jsoup:jsoup:1.22.2'
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
