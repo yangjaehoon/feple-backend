@@ -35,9 +35,4 @@ public class UnmatchedArtistSuggestion {
         s.updatedAt = LocalDateTime.now();
         return s;
     }
-
-    public void incrementMentionCount() {
-        this.mentionCount++;
-        this.updatedAt = LocalDateTime.now();
-    }
 }

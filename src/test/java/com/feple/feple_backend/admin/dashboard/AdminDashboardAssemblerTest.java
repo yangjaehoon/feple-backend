@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.dashboard;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.AdminDashboardMetrics;
@@ -70,6 +71,31 @@ class AdminDashboardAssemblerTest {
         assertThat(dto.pending().reportCount()).isEqualTo(3L);
         assertThat(dto.pending().songRequestCount()).isEqualTo(1L);
         assertThat(dto.pending().artistSuggestionCount()).isEqualTo(4L);
+        assertThat(dto.hasLoadError()).isFalse();
+    }
+
+    @Test
+    void assemble_통계_조회_실패_시_hasLoadError_true_다른_섹션은_정상() {
+        willThrow(new RuntimeException("DB down")).given(festivalService).getTotalCount();
+
+        given(adminPendingItemsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(adminPendingItemsService.getPendingCertCount()).willReturn(2L);
+        given(adminPendingItemsService.getPendingPostReports(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(adminPendingItemsService.getPendingPostReportCount()).willReturn(0L);
+        given(adminPendingItemsService.getPendingSongRequests(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(adminPendingItemsService.getPendingSongRequestCount()).willReturn(0L);
+        given(adminPendingItemsService.getPendingArtistSuggestions(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(adminPendingItemsService.getPendingArtistSuggestionCount()).willReturn(0L);
+        given(postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE)).willReturn(List.of());
+        given(adminMetricsService.getRecentUsers()).willReturn(List.of());
+        given(adminMetricsService.getDailyStats()).willReturn(List.of());
+
+        AdminDashboardDto dto = assembler.assemble();
+
+        assertThat(dto.hasLoadError()).isTrue();
+        assertThat(dto.stats().totalFestivals()).isEqualTo(0L);
+        assertThat(dto.pending().certCount()).isEqualTo(2L);
     }
 
     @Test

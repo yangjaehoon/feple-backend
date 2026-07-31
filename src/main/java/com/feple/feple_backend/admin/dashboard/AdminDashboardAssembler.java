@@ -16,6 +16,7 @@ import com.feple.feple_backend.post.service.PostAdminService;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,11 @@ public class AdminDashboardAssembler {
     private final Executor dashboardExecutor;
 
     public AdminDashboardDto assemble() {
-        return new AdminDashboardDto(buildStats(), buildPending(), buildContent());
+        AtomicBoolean hasLoadError = new AtomicBoolean(false);
+        AdminStatsSummary stats = buildStats(hasLoadError);
+        AdminPendingItemsSummary pending = buildPending(hasLoadError);
+        AdminContentSummary content = buildContent(hasLoadError);
+        return new AdminDashboardDto(stats, pending, content, hasLoadError.get());
     }
 
     // 통계·처리대기·콘텐츠를 섹션별로 격리해 하나가 실패해도 나머지 섹션은 렌더링된다.
@@ -44,7 +49,7 @@ public class AdminDashboardAssembler {
         return CompletableFuture.supplyAsync(supplier, dashboardExecutor);
     }
 
-    private AdminStatsSummary buildStats() {
+    private AdminStatsSummary buildStats(AtomicBoolean hasLoadError) {
         try {
             CompletableFuture<Long> totalFestivals = async(festivalService::getTotalCount);
             CompletableFuture<Long> totalArtists = async(artistService::getTotalCount);
@@ -57,11 +62,12 @@ public class AdminDashboardAssembler {
                     totalUsers.join(), recentPosts.join());
         } catch (Exception e) {
             log.error("대시보드 통계 조회 실패", e);
+            hasLoadError.set(true);
             return new AdminStatsSummary(0, 0, 0, 0, 0);
         }
     }
 
-    private AdminPendingItemsSummary buildPending() {
+    private AdminPendingItemsSummary buildPending(AtomicBoolean hasLoadError) {
         try {
             CompletableFuture<List<CertificationSummaryDto>> certs = async(() -> adminPendingItemsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE));
             CompletableFuture<Long> certCount = async(adminPendingItemsService::getPendingCertCount);
@@ -79,11 +85,12 @@ public class AdminDashboardAssembler {
                     artistSuggestions.join(), artistSuggestionCount.join());
         } catch (Exception e) {
             log.error("대시보드 처리대기 항목 조회 실패", e);
+            hasLoadError.set(true);
             return new AdminPendingItemsSummary(List.of(), 0, List.of(), 0, List.of(), 0, List.of(), 0);
         }
     }
 
-    private AdminContentSummary buildContent() {
+    private AdminContentSummary buildContent(AtomicBoolean hasLoadError) {
         try {
             CompletableFuture<List<PostResponseDto>> hotPosts = async(() -> postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE));
             CompletableFuture<List<ArtistResponseDto>> topArtists = async(() -> artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE));
@@ -94,6 +101,7 @@ public class AdminDashboardAssembler {
                     hotPosts.join(), topArtists.join(), recentUsers.join(), dailyStats.join());
         } catch (Exception e) {
             log.error("대시보드 콘텐츠 조회 실패", e);
+            hasLoadError.set(true);
             return new AdminContentSummary(List.of(), List.of(), List.of(), List.of());
         }
     }

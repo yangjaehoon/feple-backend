@@ -6,7 +6,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,7 +23,7 @@ class UnmatchedArtistSuggestionServiceTest {
 
     @Test
     void saveAll_새_이름은_엔티티_생성_후_저장() {
-        given(repository.findByNameIgnoreCase("신인가수")).willReturn(Optional.empty());
+        given(repository.incrementMentionCountByNameIgnoreCase("신인가수")).willReturn(0);
 
         service.saveAll(List.of("신인가수"));
 
@@ -32,21 +31,20 @@ class UnmatchedArtistSuggestionServiceTest {
     }
 
     @Test
-    void saveAll_이미_있는_이름은_mentionCount_증가_명시적_save_없음() {
-        UnmatchedArtistSuggestion existing = mock(UnmatchedArtistSuggestion.class);
-        given(repository.findByNameIgnoreCase("신인가수")).willReturn(Optional.of(existing));
+    void saveAll_이미_있는_이름은_원자적_UPDATE만_수행_저장_없음() {
+        given(repository.incrementMentionCountByNameIgnoreCase("신인가수")).willReturn(1);
 
         service.saveAll(List.of("신인가수"));
 
-        verify(existing).incrementMentionCount();
-        verify(repository, never()).save(existing);
+        verify(repository).incrementMentionCountByNameIgnoreCase("신인가수");
+        verify(repository, never()).save(any());
     }
 
     @Test
     void saveAll_빈_이름은_건너뜀() {
         service.saveAll(List.of("  ", ""));
 
-        verify(repository, never()).findByNameIgnoreCase(any());
+        verify(repository, never()).incrementMentionCountByNameIgnoreCase(any());
         verify(repository, never()).save(any());
     }
 

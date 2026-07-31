@@ -88,7 +88,7 @@ class ArtistFestivalServiceTest {
         given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(100L)).willReturn(List.of(af));
 
         List<ArtistFestivalResponseDto> result =
-                service.getArtistFestivals(100L, Map.of("아이유", List.of("2026-08-02")));
+                service.getArtistFestivalsUsingTimetable(100L, Map.of("아이유", List.of("2026-08-02")));
 
         assertThat(result.get(0).getPerformanceDate()).isEqualTo("2026-08-02");
         then(timetableRepository).should(never()).findByFestivalIdWithStage(any());
@@ -100,7 +100,7 @@ class ArtistFestivalServiceTest {
         ArtistFestival af = artistFestival(artist, festival(100L, null));
         given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(100L)).willReturn(List.of(af));
 
-        List<ArtistFestivalResponseDto> result = service.getArtistFestivals(
+        List<ArtistFestivalResponseDto> result = service.getArtistFestivalsWithStageFallback(
                 100L, Map.of(), Map.of("아이유", "메인스테이지"));
 
         assertThat(result.get(0).getStageName()).isEqualTo("메인스테이지");
@@ -220,30 +220,39 @@ class ArtistFestivalServiceTest {
     @Test
     void 아티스트_일괄연결_이미_참여중인_아티스트는_건너뛰고_계속() {
         Festival festival = festival(100L, null);
+        Artist existingArtist = artist(1L, "아이유");
         given(festivalRepository.findById(100L)).willReturn(Optional.of(festival));
-        given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L, "아이유")));
-        given(artistRepository.findById(2L)).willReturn(Optional.of(artist(2L, "뉴진스")));
-        given(artistFestivalRepository.existsByFestivalIdAndArtistId(100L, 1L)).willReturn(true);
-        given(artistFestivalRepository.existsByFestivalIdAndArtistId(100L, 2L)).willReturn(false);
-        given(artistFestivalRepository.save(any())).willReturn(artistFestival(artist(2L, "뉴진스"), festival));
+        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(100L))
+                .willReturn(List.of(artistFestival(existingArtist, festival)));
+        given(artistRepository.findAllById(List.of(1L, 2L)))
+                .willReturn(List.of(existingArtist, artist(2L, "뉴진스")));
 
-        service.linkArtistsToFestival(100L, List.of(1L, 2L));
+        ArtistFestivalService.LinkArtistsResult result = service.linkArtistsToFestival(100L, List.of(1L, 2L));
 
-        then(artistFestivalRepository).should().save(any());
+        assertThat(result.added()).isEqualTo(1);
+        assertThat(result.duplicates()).isEqualTo(1);
+        assertThat(result.errors()).isEqualTo(0);
+        ArgumentCaptor<List<ArtistFestival>> captor = ArgumentCaptor.forClass(List.class);
+        then(artistFestivalRepository).should().saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(1);
+        assertThat(captor.getValue().get(0).getArtistId()).isEqualTo(2L);
     }
 
     @Test
     void 아티스트_일괄연결_존재하지않는_아티스트는_건너뛰고_계속() {
         Festival festival = festival(100L, null);
         given(festivalRepository.findById(100L)).willReturn(Optional.of(festival));
-        given(artistRepository.findById(1L)).willReturn(Optional.empty());
-        given(artistRepository.findById(2L)).willReturn(Optional.of(artist(2L, "뉴진스")));
-        given(artistFestivalRepository.existsByFestivalIdAndArtistId(100L, 2L)).willReturn(false);
-        given(artistFestivalRepository.save(any())).willReturn(artistFestival(artist(2L, "뉴진스"), festival));
+        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(100L)).willReturn(List.of());
+        // artistId=1은 findAllById 결과에 없음 → 존재하지 않는 아티스트로 취급
+        given(artistRepository.findAllById(List.of(1L, 2L))).willReturn(List.of(artist(2L, "뉴진스")));
 
-        service.linkArtistsToFestival(100L, List.of(1L, 2L));
+        ArtistFestivalService.LinkArtistsResult result = service.linkArtistsToFestival(100L, List.of(1L, 2L));
 
-        then(artistFestivalRepository).should().save(any());
+        assertThat(result.added()).isEqualTo(1);
+        assertThat(result.errors()).isEqualTo(1);
+        ArgumentCaptor<List<ArtistFestival>> captor = ArgumentCaptor.forClass(List.class);
+        then(artistFestivalRepository).should().saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(1);
     }
 
     // ── updateArtistFestival ──────────────────────────────────────────────
@@ -285,6 +294,47 @@ class ArtistFestivalServiceTest {
 
         assertThat(af.getPerformanceDate()).isEqualTo(LocalDate.of(2026, 8, 3));
         then(timetableSyncService).should().syncDate(100L, "아이유", LocalDate.of(2026, 8, 3), LocalDate.of(2026, 8, 1));
+    }
+
+    // ── updateArtistFestivalsBatch ──────────────────────────────────────────
+
+    @Test
+    void 라인업_일괄수정_빈맵이면_아무일도_안함() {
+        ArtistFestivalService.BatchUpdateResult result = service.updateArtistFestivalsBatch(100L, Map.of());
+
+        assertThat(result.success()).isEqualTo(0);
+        assertThat(result.errors()).isEqualTo(0);
+        then(artistFestivalRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 라인업_일괄수정_findById_반복_없이_findAllById로_한번에_조회() {
+        Festival festival = festival(100L, null);
+        ArtistFestival af1 = ArtistFestival.builder().artist(artist(1L, "아이유")).festival(festival).build();
+        ArtistFestival af2 = ArtistFestival.builder().artist(artist(2L, "뉴진스")).festival(festival).build();
+        given(artistFestivalRepository.findAllById(List.of(10L, 11L))).willReturn(List.of(af1, af2));
+
+        ArtistFestivalService.BatchUpdateResult result = service.updateArtistFestivalsBatch(100L, Map.of(
+                10L, new LineupUpdate("메인스테이지", null),
+                11L, new LineupUpdate("서브스테이지", null)));
+
+        assertThat(result.success()).isEqualTo(2);
+        assertThat(result.errors()).isEqualTo(0);
+        then(artistFestivalRepository).should().findAllById(List.of(10L, 11L));
+        then(artistFestivalRepository).should(never()).findById(any());
+    }
+
+    @Test
+    void 라인업_일괄수정_다른_페스티벌_행은_에러로_집계() {
+        ArtistFestival wrongFestivalAf =
+                artistFestival(artist(1L, "아이유"), festival(200L, null));
+        given(artistFestivalRepository.findAllById(List.of(10L))).willReturn(List.of(wrongFestivalAf));
+
+        ArtistFestivalService.BatchUpdateResult result =
+                service.updateArtistFestivalsBatch(100L, Map.of(10L, new LineupUpdate("메인스테이지", null)));
+
+        assertThat(result.success()).isEqualTo(0);
+        assertThat(result.errors()).isEqualTo(1);
     }
 
     // ── syncFromTimetableEntry ────────────────────────────────────────────

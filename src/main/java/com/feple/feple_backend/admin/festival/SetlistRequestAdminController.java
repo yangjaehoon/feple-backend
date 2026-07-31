@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
-@RequiresAdminPermission(AdminPermission.SONG_REQUESTS)
+@RequiresAdminPermission(AdminPermission.FESTIVALS)
 @Controller
 @RequestMapping("/admin/setlist-requests")
 @RequiredArgsConstructor

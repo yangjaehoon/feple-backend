@@ -16,10 +16,9 @@ public class UnmatchedArtistSuggestionService {
         for (String name : names) {
             if (name == null || name.isBlank()) continue;
             String trimmed = name.trim();
-            repository.findByNameIgnoreCase(trimmed).ifPresentOrElse(
-                    UnmatchedArtistSuggestion::incrementMentionCount,
-                    () -> repository.save(UnmatchedArtistSuggestion.of(trimmed))
-            );
+            if (repository.incrementMentionCountByNameIgnoreCase(trimmed) == 0) {
+                repository.save(UnmatchedArtistSuggestion.of(trimmed));
+            }
         }
     }
 

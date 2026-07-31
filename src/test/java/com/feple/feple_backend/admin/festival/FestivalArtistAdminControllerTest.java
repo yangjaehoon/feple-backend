@@ -12,7 +12,6 @@ import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
-import com.feple.feple_backend.global.exception.ConflictException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,6 +65,9 @@ class FestivalArtistAdminControllerTest {
 
     @Test
     void 아티스트_추가_성공_successMessage_설정() throws Exception {
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(1, 0, 0));
+
         mockMvc.perform(post("/admin/festivals/1/artists")
                         .param("artistIds", "10"))
                 .andExpect(redirectedUrl("/admin/festivals/1"))
@@ -74,8 +76,8 @@ class FestivalArtistAdminControllerTest {
 
     @Test
     void 아티스트_추가_모두_중복이면_errorMessage_설정() throws Exception {
-        willThrow(new ConflictException("이미 이 페스티벌에 참여 중인 아티스트입니다."))
-                .given(artistFestivalService).addArtistToFestival(eq(1L), any());
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(0, 1, 0));
 
         mockMvc.perform(post("/admin/festivals/1/artists")
                         .param("artistIds", "10"))
@@ -119,6 +121,9 @@ class FestivalArtistAdminControllerTest {
 
     @Test
     void 라인업_일괄수정_성공() throws Exception {
+        given(artistFestivalService.updateArtistFestivalsBatch(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.BatchUpdateResult(2, 0));
+
         mockMvc.perform(post("/admin/festivals/1/artists/batch-edit")
                         .param("afIds", "2", "3")
                         .param("performanceDates", "2026-06-01", "2026-06-02")
@@ -129,8 +134,8 @@ class FestivalArtistAdminControllerTest {
 
     @Test
     void 라인업_일괄수정_일부_실패_errorCount_포함() throws Exception {
-        willThrow(new RuntimeException("오류"))
-                .given(artistFestivalService).updateArtistFestival(anyLong(), anyLong(), any());
+        given(artistFestivalService.updateArtistFestivalsBatch(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.BatchUpdateResult(0, 1));
 
         mockMvc.perform(post("/admin/festivals/1/artists/batch-edit")
                         .param("afIds", "2")

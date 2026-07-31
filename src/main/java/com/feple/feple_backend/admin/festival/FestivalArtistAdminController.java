@@ -13,10 +13,11 @@ import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
-import com.feple.feple_backend.global.exception.ConflictException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +67,7 @@ public class FestivalArtistAdminController {
             ra.addFlashAttribute("errorMessage", "아티스트를 한 명 이상 선택해주세요.");
             return "redirect:/admin/festivals/" + festivalId + "/artists/new";
         }
-        ArtistAddResult result = processAdditions(festivalId, artistIds);
+        ArtistFestivalService.LinkArtistsResult result = artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
         applyFlashMessage(result, ra);
         if (result.added() > 0) {
             adminLogService.log(AdminAction.FESTIVAL_ARTIST_ADD, "FESTIVAL", festivalId, result.added() + "명 추가");
@@ -74,25 +75,7 @@ public class FestivalArtistAdminController {
         return AdminFestivalRedirects.detail(festivalId);
     }
 
-    private ArtistAddResult processAdditions(Long festivalId, List<Long> artistIds) {
-        int added = 0, duplicates = 0, errors = 0;
-        for (Long artistId : artistIds) {
-            try {
-                ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
-                req.setArtistId(artistId);
-                artistFestivalService.addArtistToFestival(festivalId, req);
-                added++;
-            } catch (ConflictException ignored) {
-                duplicates++;
-            } catch (Exception e) {
-                log.error("아티스트 추가 실패: festivalId={}, artistId={}", festivalId, artistId, e);
-                errors++;
-            }
-        }
-        return new ArtistAddResult(added, duplicates, errors);
-    }
-
-    private void applyFlashMessage(ArtistAddResult result, RedirectAttributes ra) {
+    private void applyFlashMessage(ArtistFestivalService.LinkArtistsResult result, RedirectAttributes ra) {
         if (result.added() == 0 && result.errors() == 0) {
             ra.addFlashAttribute("errorMessage", "선택한 아티스트가 이미 모두 참여 중입니다.");
         } else if (result.added() == 0) {
@@ -143,16 +126,12 @@ public class FestivalArtistAdminController {
             return AdminFestivalRedirects.artists(festivalId);
         }
         List<LineupBatchItem> items = toLineupBatchItems(afIds, performanceDates, stageNames);
-        int errorCount = 0;
-        for (LineupBatchItem item : items) {
-            try {
-                artistFestivalService.updateArtistFestival(festivalId, item.afId(), item.update());
-            } catch (Exception e) {
-                log.warn("batchUpdateLineup 실패: festivalId={}, afId={}", festivalId, item.afId(), e);
-                errorCount++;
-            }
-        }
-        int successCount = items.size() - errorCount;
+        Map<Long, LineupUpdate> updates = items.stream()
+                .collect(Collectors.toMap(LineupBatchItem::afId, LineupBatchItem::update, (a, b) -> b, LinkedHashMap::new));
+        ArtistFestivalService.BatchUpdateResult batchResult =
+                artistFestivalService.updateArtistFestivalsBatch(festivalId, updates);
+        int errorCount = batchResult.errors();
+        int successCount = batchResult.success();
         if (errorCount > 0 && successCount > 0) {
             ra.addFlashAttribute("errorMessage",
                     successCount + "건 수정 완료, " + errorCount + "건 실패. 항목을 확인해 주세요.");
@@ -196,5 +175,4 @@ public class FestivalArtistAdminController {
         return AdminFestivalRedirects.artists(festivalId);
     }
 
-    private record ArtistAddResult(int added, int duplicates, int errors) {}
 }
