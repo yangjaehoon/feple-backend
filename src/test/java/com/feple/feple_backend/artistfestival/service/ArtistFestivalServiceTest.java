@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -310,9 +311,10 @@ class ArtistFestivalServiceTest {
     @Test
     void 라인업_일괄수정_findById_반복_없이_findAllById로_한번에_조회() {
         Festival festival = festival(100L, null);
-        ArtistFestival af1 = ArtistFestival.builder().artist(artist(1L, "아이유")).festival(festival).build();
-        ArtistFestival af2 = ArtistFestival.builder().artist(artist(2L, "뉴진스")).festival(festival).build();
-        given(artistFestivalRepository.findAllById(List.of(10L, 11L))).willReturn(List.of(af1, af2));
+        ArtistFestival af1 = ArtistFestival.builder().id(10L).artist(artist(1L, "아이유")).festival(festival).build();
+        ArtistFestival af2 = ArtistFestival.builder().id(11L).artist(artist(2L, "뉴진스")).festival(festival).build();
+        // updateArtistFestivalsBatch는 Map.keySet()(Set)을 그대로 넘기므로 List가 아닌 Set으로 매칭해야 함
+        given(artistFestivalRepository.findAllById(Set.of(10L, 11L))).willReturn(List.of(af1, af2));
 
         ArtistFestivalService.BatchUpdateResult result = service.updateArtistFestivalsBatch(100L, Map.of(
                 10L, new LineupUpdate("메인스테이지", null),
@@ -320,7 +322,7 @@ class ArtistFestivalServiceTest {
 
         assertThat(result.success()).isEqualTo(2);
         assertThat(result.errors()).isEqualTo(0);
-        then(artistFestivalRepository).should().findAllById(List.of(10L, 11L));
+        then(artistFestivalRepository).should().findAllById(Set.of(10L, 11L));
         then(artistFestivalRepository).should(never()).findById(any());
     }
 
@@ -328,7 +330,7 @@ class ArtistFestivalServiceTest {
     void 라인업_일괄수정_다른_페스티벌_행은_에러로_집계() {
         ArtistFestival wrongFestivalAf =
                 artistFestival(artist(1L, "아이유"), festival(200L, null));
-        given(artistFestivalRepository.findAllById(List.of(10L))).willReturn(List.of(wrongFestivalAf));
+        given(artistFestivalRepository.findAllById(Set.of(10L))).willReturn(List.of(wrongFestivalAf));
 
         ArtistFestivalService.BatchUpdateResult result =
                 service.updateArtistFestivalsBatch(100L, Map.of(10L, new LineupUpdate("메인스테이지", null)));
