@@ -53,7 +53,7 @@ public class FestivalDetailAggregationService {
         // 타임테이블 1회만 로드 — 아티스트 참여 정보와 타임테이블 그리드 양쪽에서 재사용
         Map<String, List<String>> datesByArtistName = buildDatesByArtistName(entries);
         Map<String, String> stageByArtistName = buildStageByArtistName(entries);
-        List<ArtistFestivalResponseDto> artists = artistFestivalService.getArtistFestivals(festivalId, datesByArtistName, stageByArtistName);
+        List<ArtistFestivalResponseDto> artists = artistFestivalService.getArtistFestivalsWithStageFallback(festivalId, datesByArtistName, stageByArtistName);
 
         double avg = reviewService.getAverageRating(festivalId);
         int cnt = reviewService.getRatingCount(festivalId);
