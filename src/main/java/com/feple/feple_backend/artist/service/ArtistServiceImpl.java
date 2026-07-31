@@ -57,7 +57,6 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     private final ArtistFollowRepository artistFollowRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FileStorageService fileStorageService;
-    private final ArtistCascadeDeleteService cascadeDeleteService;
     private final SongRepository songRepository;
     private final ArtistNameValidator artistNameValidator;
 
@@ -85,7 +84,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Transactional(readOnly = true)
     @Cacheable("allArtistsSortedByName")
     public List<ArtistResponseDto> getAllArtistsSortedByName() {
-        return artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+        return artistRepository.findAllByDeletedAtIsNull(Sort.by(Sort.Direction.ASC, "name")).stream()
                 .map(this::toDto).toList();
     }
 
@@ -106,7 +105,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Cacheable("artistRanking")
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getAllArtists() {
-        return artistRepository.findAll(PageRequest.of(0, PageSize.MY_ACTIVITIES,
+        return artistRepository.findAllByDeletedAtIsNull(PageRequest.of(0, PageSize.MY_ACTIVITIES,
                         Sort.by(Sort.Direction.DESC, "weeklyScore").and(Sort.by(Sort.Direction.ASC, "id"))))
                 .stream()
                 .map(this::toDto)
@@ -150,7 +149,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         Map<Long, Integer> songCountMap = buildSongCountMap();
         List<Artist> artists = hasSearchKeyword(keyword)
                 ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(keyword.trim()))
-                : artistRepository.findAll();
+                : artistRepository.findAllByDeletedAtIsNull();
         if (genre != null) {
             artists = artists.stream().filter(a -> a.getGenres().contains(genre)).toList();
         }
@@ -173,7 +172,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         PageRequest pageable = PageRequest.of(page, ADMIN_PAGE_SIZE, adminSort(sort));
         Page<Artist> artistPage = (genre != null)
                 ? artistRepository.findByGenreName(genre.name(), pageable)
-                : artistRepository.findAll(pageable);
+                : artistRepository.findAllByDeletedAtIsNull(pageable);
         List<Long> artistIds = artistPage.getContent().stream().map(Artist::getId).toList();
         Map<Long, Integer> songCountMap = buildSongCountMapForIds(artistIds);
         return artistPage.map(a -> toAdminDto(a, songCountMap));
@@ -198,7 +197,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Transactional(readOnly = true)
     @Cacheable(value = "artistDetail", key = "#id")
     public ArtistResponseDto getArtistById(Long id) {
-        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findByIdAndDeletedAtIsNull, id, "아티스트");
         return toDto(artist);
     }
 
@@ -238,7 +237,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Cacheable(value = "topArtists", key = "#limit")
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getTopArtists(int limit) {
-        return artistRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "followerCount")))
+        return artistRepository.findAllByDeletedAtIsNull(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "followerCount")))
                 .getContent().stream().map(this::toDto).toList();
     }
 
@@ -260,9 +259,27 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @EvictArtistCaches
     @CacheEvict(value = "artistDetail", key = "#id")
     public void deleteArtist(Long id) {
-        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
-        cascadeDeleteService.delete(artist);
+        // 소프트 삭제 — 라인업·팔로우·곡 등 연관 데이터는 그대로 두고 목록·검색에서만 제외한다.
+        // 물리적으로 row가 남아있어 기존 FK 참조(게시글·타임테이블 등)도 깨지지 않고,
+        // 관리자가 휴지통에서 그대로 복구할 수 있다.
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findByIdAndDeletedAtIsNull, id, "아티스트");
+        artist.softDelete();
         artistNameValidator.reload();
+    }
+
+    @Override
+    @Transactional
+    @EvictArtistCaches
+    @CacheEvict(value = "artistDetail", key = "#id")
+    public void restoreArtist(Long id) {
+        artistRepository.restoreById(id);
+        artistNameValidator.reload();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArtistResponseDto> getDeletedArtists() {
+        return artistRepository.findSoftDeleted().stream().map(this::toDto).toList();
     }
 
     @Override
@@ -296,14 +313,14 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
         return topIds.stream()
                 .map(artistMap::get)
-                .filter(Objects::nonNull)
+                .filter(a -> a != null && !a.isDeleted())
                 .map(this::toDto)
                 .toList();
     }
 
     @Override
     public long getTotalCount() {
-        return artistRepository.count();
+        return artistRepository.countByDeletedAtIsNull();
     }
 
     // artist_aliases.alias 컬럼 길이(VARCHAR(200))와 일치 — 콤마 없는 단일 별명이 DTO 전체 길이

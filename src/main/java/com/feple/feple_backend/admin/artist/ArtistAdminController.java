@@ -211,4 +211,24 @@ public class ArtistAdminController {
                 ra);
         return "redirect:/admin/artists";
     }
+
+    @GetMapping("/deleted")
+    public String deletedArtists(Model model) {
+        model.addAttribute("artists", artistAdminService.getDeletedArtists());
+        return "admin/artist/deleted";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restoreArtist(@PathVariable Long id, RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    artistAdminService.restoreArtist(id);
+                    adminLogService.log(AdminAction.ARTIST_RESTORE, "ARTIST", id, null);
+                },
+                "아티스트가 복구되었습니다.",
+                e -> log.error("아티스트 복구 실패. id={}", id, e),
+                "복구 중 오류가 발생했습니다.",
+                ra);
+        return "redirect:/admin/artists/deleted";
+    }
 }

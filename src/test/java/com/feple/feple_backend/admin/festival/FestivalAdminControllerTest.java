@@ -158,6 +158,29 @@ class FestivalAdminControllerTest {
                 .andExpect(flash().attribute("errorMessage", "삭제 중 오류가 발생했습니다."));
     }
 
+    // ── GET /admin/festivals/deleted ────────────────────────────────────────
+
+    @Test
+    void 삭제된_페스티벌_목록_조회() throws Exception {
+        given(festivalService.getDeletedFestivals()).willReturn(List.of());
+
+        mockMvc.perform(get("/admin/festivals/deleted"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/festival/deleted"))
+                .andExpect(model().attributeExists("festivals"));
+    }
+
+    // ── POST /admin/festivals/{id}/restore ──────────────────────────────────
+
+    @Test
+    void 페스티벌_복구_성공() throws Exception {
+        mockMvc.perform(post("/admin/festivals/1/restore"))
+                .andExpect(redirectedUrl("/admin/festivals/deleted"))
+                .andExpect(flash().attribute("successMessage", "페스티벌이 복구되었습니다."));
+
+        then(festivalService).should().restoreFestival(1L);
+    }
+
     // ── POST /admin/festivals/new ─────────────────────────────────────────────
 
     @Test

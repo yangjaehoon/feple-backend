@@ -295,4 +295,27 @@ class ArtistAdminControllerTest {
                 .andExpect(redirectedUrl("/admin/artists/photos"))
                 .andExpect(flash().attribute("errorMessage", "사진 업로드에 실패했습니다. 다시 시도해주세요."));
     }
+
+    // ── GET /admin/artists/deleted ───────────────────────────────────────────
+
+    @Test
+    void 삭제된_아티스트_목록_조회() throws Exception {
+        given(artistAdminService.getDeletedArtists()).willReturn(List.of());
+
+        mockMvc.perform(get("/admin/artists/deleted"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/artist/deleted"))
+                .andExpect(model().attributeExists("artists"));
+    }
+
+    // ── POST /admin/artists/{id}/restore ─────────────────────────────────────
+
+    @Test
+    void 아티스트_복구_성공() throws Exception {
+        mockMvc.perform(post("/admin/artists/1/restore"))
+                .andExpect(redirectedUrl("/admin/artists/deleted"))
+                .andExpect(flash().attribute("successMessage", "아티스트가 복구되었습니다."));
+
+        then(artistAdminService).should().restoreArtist(1L);
+    }
 }

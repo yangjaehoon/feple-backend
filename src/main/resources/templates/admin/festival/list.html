@@ -34,9 +34,10 @@
                         <th:block th:replace="~{admin/fragments :: searchInputs(${keyword}, '페스티벌명 검색...', @{/admin/festivals})}"></th:block>
                     </form>
                 </div>
-                <!-- CSV 내보내기 -->
+                <!-- CSV 내보내기 / 휴지통 -->
                 <div class="list-csv-row">
                     <a th:href="@{/admin/export/festivals.csv}" class="btn btn-secondary btn-sm">CSV 내보내기</a>
+                    <a th:href="@{/admin/festivals/deleted}" class="btn btn-secondary btn-sm">🗑 휴지통</a>
                 </div>
                 <div class="table-wrap">
                     <table>

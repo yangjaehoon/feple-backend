@@ -48,9 +48,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.id = :id")
     java.util.Optional<Post> findWithAssociationsById(@Param("id") Long id);
 
-    // ── 아티스트 게시글 ──────────────────────────────────────────────────────
-    List<Post> findByArtist(Artist artist);
-
     // ── 아티스트 게시글 커서 페이징 (id 기반 — 신규 게시글 삽입에 영향받지 않음) ──
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.artist = :artist ORDER BY p.id DESC")
@@ -59,9 +56,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.artist = :artist AND p.id < :cursor ORDER BY p.id DESC")
     List<Post> findByArtistAndIdLessThanOrderByIdDesc(@Param("artist") Artist artist, @Param("cursor") Long cursor, Pageable pageable);
-
-    // ── 페스티벌 게시글 ──────────────────────────────────────────────────────
-    List<Post> findByFestival(Festival festival);
 
     // ── 페스티벌 일반 게시글 커서 페이징 (id 기반) ──────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
@@ -269,17 +263,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Transactional
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
     void incrementViewCount(@Param("postId") Long postId);
-
-    // ── Soft delete 관련 FK 무효화 (cascade delete 시 soft-deleted 행의 FK 정리) ──
-    @Modifying(clearAutomatically = true)
-    @Transactional
-    @Query(value = "UPDATE post SET artist_id = NULL WHERE artist_id = :artistId AND deleted_at IS NOT NULL", nativeQuery = true)
-    void nullifyArtistIdForSoftDeleted(@Param("artistId") Long artistId);
-
-    @Modifying(clearAutomatically = true)
-    @Transactional
-    @Query(value = "UPDATE post SET festival_id = NULL WHERE festival_id = :festivalId AND deleted_at IS NOT NULL", nativeQuery = true)
-    void nullifyFestivalIdForSoftDeleted(@Param("festivalId") Long festivalId);
 
     // ── Soft delete 관리자용 ──────────────────────────────────────────────────
     @Modifying(clearAutomatically = true)

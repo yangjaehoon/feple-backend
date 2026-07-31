@@ -18,17 +18,18 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     List<ArtistFestival> findByFestivalId(@Param("festivalId") Long festivalId);
 
     // artist JOIN FETCH — getLineup()에서 af.getArtist() 접근 시 N+1 방지
-    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist WHERE af.festival.id = :festivalId ORDER BY af.lineupOrder ASC")
+    // 소프트 삭제된 아티스트/페스티벌은 라인업·일정 화면에서 제외 (연결 자체는 남아있어 복구 시 다시 노출됨)
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist a WHERE af.festival.id = :festivalId AND a.deletedAt IS NULL ORDER BY af.lineupOrder ASC")
     List<ArtistFestival> findByFestivalIdOrderByLineupOrderAsc(@Param("festivalId") Long festivalId);
 
-    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival WHERE af.artist.id = :artistId ORDER BY af.festival.startDate ASC")
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival f WHERE af.artist.id = :artistId AND f.deletedAt IS NULL ORDER BY af.festival.startDate ASC")
     List<ArtistFestival> findByArtistIdOrderByFestivalStartDateAsc(@Param("artistId") Long artistId);
 
     // festival JOIN FETCH — getArtistSchedule()에서 af.getFestival() 접근 시 N+1 방지
-    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival WHERE af.artist.id = :artistId ORDER BY af.festival.startDate DESC")
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival f WHERE af.artist.id = :artistId AND f.deletedAt IS NULL ORDER BY af.festival.startDate DESC")
     List<ArtistFestival> findByArtistIdOrderByFestivalStartDateDesc(@Param("artistId") Long artistId);
 
-    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist WHERE af.festival.id IN :festivalIds ORDER BY af.lineupOrder ASC")
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist a WHERE af.festival.id IN :festivalIds AND a.deletedAt IS NULL ORDER BY af.lineupOrder ASC")
     List<ArtistFestival> findByFestivalIdInWithArtist(@Param("festivalIds") List<Long> festivalIds);
 
     @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist WHERE af.festival.id = :festivalId AND af.artist.name = :artistName")

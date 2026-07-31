@@ -43,7 +43,6 @@ class ArtistServiceImplTest {
     @Mock ArtistFollowRepository artistFollowRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;
     @Mock FileStorageService fileStorageService;
-    @Mock ArtistCascadeDeleteService cascadeDeleteService;
     @Mock SongRepository songRepository;
     @Mock ArtistNameValidator artistNameValidator;
 
@@ -100,7 +99,7 @@ class ArtistServiceImplTest {
 
     @Test
     void 이름순_전체조회는_repository_결과를_dto로_매핑() {
-        given(artistRepository.findAll(Sort.by(Sort.Direction.ASC, "name")))
+        given(artistRepository.findAllByDeletedAtIsNull(Sort.by(Sort.Direction.ASC, "name")))
                 .willReturn(List.of(artist(1L, "가수A")));
 
         List<ArtistResponseDto> result = service.getAllArtistsSortedByName();
@@ -142,14 +141,14 @@ class ArtistServiceImplTest {
         Page<ArtistResponseDto> result = service.getAdminArtistList(null, "뉴진스", null, 0);
 
         assertThat(result.getContent()).extracting(ArtistResponseDto::getName).containsExactly("뉴진스");
-        verify(artistRepository, never()).findAll(any(Pageable.class));
+        verify(artistRepository, never()).findAllByDeletedAtIsNull(any(Pageable.class));
     }
 
     @Test
     void 관리자_목록_songs_정렬이면_인메모리_처리후_곡수_내림차순() {
         given(songRepository.countGroupedByArtist())
                 .willReturn(List.<Object[]>of(new Object[]{1L, 5L}, new Object[]{2L, 1L}));
-        given(artistRepository.findAll()).willReturn(List.of(artist(1L, "A"), artist(2L, "B")));
+        given(artistRepository.findAllByDeletedAtIsNull()).willReturn(List.of(artist(1L, "A"), artist(2L, "B")));
 
         Page<ArtistResponseDto> result = service.getAdminArtistList("songs", null, null, 0);
 
@@ -172,13 +171,13 @@ class ArtistServiceImplTest {
     @Test
     void 관리자_목록_기본은_DB_페이지네이션() {
         Page<Artist> page = new PageImpl<>(List.of(artist(1L, "A")));
-        given(artistRepository.findAll(any(Pageable.class))).willReturn(page);
+        given(artistRepository.findAllByDeletedAtIsNull(any(Pageable.class))).willReturn(page);
         given(songRepository.countGroupedByArtistIds(anyList())).willReturn(List.of());
 
         Page<ArtistResponseDto> result = service.getAdminArtistList(null, null, null, 0);
 
         assertThat(result.getContent()).hasSize(1);
-        verify(artistRepository).findAll(any(Pageable.class));
+        verify(artistRepository).findAllByDeletedAtIsNull(any(Pageable.class));
     }
 
     @Test
@@ -196,14 +195,14 @@ class ArtistServiceImplTest {
 
     @Test
     void 단건조회_성공() {
-        given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L, "가수A")));
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(artist(1L, "가수A")));
 
         assertThat(service.getArtistById(1L).getName()).isEqualTo("가수A");
     }
 
     @Test
     void 단건조회_존재하지_않으면_예외() {
-        given(artistRepository.findById(1L)).willReturn(Optional.empty());
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getArtistById(1L)).isInstanceOf(NoSuchElementException.class);
     }
@@ -253,7 +252,7 @@ class ArtistServiceImplTest {
     @Test
     void 인기_아티스트_상위N개_조회() {
         Page<Artist> page = new PageImpl<>(List.of(artist(1L, "A")));
-        given(artistRepository.findAll(any(Pageable.class))).willReturn(page);
+        given(artistRepository.findAllByDeletedAtIsNull(any(Pageable.class))).willReturn(page);
 
         assertThat(service.getTopArtists(5)).extracting(ArtistResponseDto::getName).containsExactly("A");
     }
@@ -281,17 +280,34 @@ class ArtistServiceImplTest {
         verify(fileStorageService, never()).deleteFileAfterCommit(any());
     }
 
-    // ── deleteArtist ─────────────────────────────────────────────────────
+    // ── deleteArtist / restoreArtist / getDeletedArtists ──────────────────
 
     @Test
-    void 삭제시_cascade_위임후_이름검증기_갱신() {
+    void 삭제시_소프트_삭제후_이름검증기_갱신() {
         Artist a = artist(1L, "A");
-        given(artistRepository.findById(1L)).willReturn(Optional.of(a));
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(a));
 
         service.deleteArtist(1L);
 
-        verify(cascadeDeleteService).delete(a);
+        assertThat(a.isDeleted()).isTrue();
         verify(artistNameValidator).reload();
+    }
+
+    @Test
+    void 복구시_repository_restoreById_위임후_이름검증기_갱신() {
+        service.restoreArtist(1L);
+
+        verify(artistRepository).restoreById(1L);
+        verify(artistNameValidator).reload();
+    }
+
+    @Test
+    void 삭제된_아티스트_목록_조회() {
+        Artist deleted = artist(1L, "A");
+        deleted.softDelete();
+        given(artistRepository.findSoftDeleted()).willReturn(List.of(deleted));
+
+        assertThat(service.getDeletedArtists()).extracting(ArtistResponseDto::getId).containsExactly(1L);
     }
 
     // ── getRelatedArtists ────────────────────────────────────────────────
@@ -337,7 +353,7 @@ class ArtistServiceImplTest {
 
     @Test
     void 전체_아티스트_수_위임() {
-        given(artistRepository.count()).willReturn(42L);
+        given(artistRepository.countByDeletedAtIsNull()).willReturn(42L);
 
         assertThat(service.getTotalCount()).isEqualTo(42L);
     }

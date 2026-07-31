@@ -59,6 +59,18 @@ public class Artist {
 
     private LocalDateTime rankUpdatedAt;
 
+    private LocalDateTime deletedAt;
+
+    public boolean isDeleted() { return deletedAt != null; }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+        this.deletedAt = null;
+    }
+
     public String getAliasesDisplay() {
         return (aliases == null || aliases.isEmpty()) ? null : String.join(", ", aliases);
     }

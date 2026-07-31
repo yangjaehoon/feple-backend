@@ -189,10 +189,10 @@ class AdminMetricsServiceImplTest {
         given(searchLogRepository.findTopKeywordsSince(any(LocalDateTime.class), anyInt()))
                 .willReturn(List.<Object[]>of(new Object[]{"페스티벌", 10L}));
         Festival festival = mock(Festival.class);
-        given(festivalRepository.findTop10ByOrderByLikeCountDesc()).willReturn(List.of(festival));
+        given(festivalRepository.findTop10ByDeletedAtIsNullOrderByLikeCountDesc()).willReturn(List.of(festival));
         given(festivalRepository.findUpcomingFestivalsSortedByLike(any(), any(), any())).willReturn(List.of(festival));
         Artist artist = mock(Artist.class);
-        given(artistRepository.findTop10ByOrderByFollowerCountDesc()).willReturn(List.of(artist));
+        given(artistRepository.findTop10ByDeletedAtIsNullOrderByFollowerCountDesc()).willReturn(List.of(artist));
         Post post = mock(Post.class);
         given(postRepository.findPopularPosts(any(), any())).willReturn(List.of(post));
 

@@ -19,4 +19,6 @@ public interface ArtistAdminService {
     String uploadProfile(MultipartFile file, String artistName) throws IOException;
     void deleteArtist(Long id);
     long getTotalCount();
+    void restoreArtist(Long id);
+    List<ArtistResponseDto> getDeletedArtists();
 }

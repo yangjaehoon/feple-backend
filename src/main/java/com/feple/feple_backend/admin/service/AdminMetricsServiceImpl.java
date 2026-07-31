@@ -106,13 +106,13 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
         List<TopKeywordDto> topKeywords = mapTopKeywords(
                 searchLogRepository.findTopKeywordsSince(since7days, AdminConstants.TREND_TOP_LIMIT));
 
-        List<Festival> topFestivalsByLike = festivalRepository.findTop10ByOrderByLikeCountDesc();
+        List<Festival> topFestivalsByLike = festivalRepository.findTop10ByDeletedAtIsNullOrderByLikeCountDesc();
 
         List<Festival> upcomingHotFestivals = festivalRepository.findUpcomingFestivalsSortedByLike(
                 today, today.plusDays(AdminConstants.TREND_UPCOMING_DAYS),
                 PageRequest.of(0, AdminConstants.DASHBOARD_PREVIEW_SIZE));
 
-        List<Artist> topArtistsByFollower = artistRepository.findTop10ByOrderByFollowerCountDesc();
+        List<Artist> topArtistsByFollower = artistRepository.findTop10ByDeletedAtIsNullOrderByFollowerCountDesc();
 
         List<Post> topPostsByLike = postRepository.findPopularPosts(since30days,
                 PageRequest.of(0, AdminConstants.TREND_TOP_LIMIT));

@@ -10,10 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
-import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
-import com.feple.feple_backend.booth.service.BoothService;
-import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
@@ -24,11 +20,7 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
-import com.feple.feple_backend.notification.service.NotificationQueryService;
-import com.feple.feple_backend.post.service.PostCascadeDeleteService;
-import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.support.TestEntityFactory;
-import com.feple.feple_backend.timetable.service.TimetableService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -47,19 +39,8 @@ import org.springframework.data.domain.Pageable;
 class FestivalServiceImplTest {
 
     @Mock FestivalRepository festivalRepository;
-    @Mock ArtistFestivalService artistFestivalService;
-    @Mock NotificationQueryService notificationQueryService;
     @Mock FestivalLikeRepository festivalLikeRepository;
-    @Mock FestivalLikeService festivalLikeService;
-    @Mock FestivalAttendanceService festivalAttendanceService;
     @Mock FileStorageService fileStorageService;
-    @Mock StageService stageService;
-    @Mock BoothService boothService;
-    @Mock TimetableService timetableService;
-    @Mock FestivalCertificationService certificationService;
-    @Mock PostCascadeDeleteService postCascadeService;
-    @Mock WeatherService weatherService;
-    @Mock FestivalChecklistService festivalChecklistService;
 
     @InjectMocks FestivalServiceImpl festivalService;
 
@@ -91,7 +72,7 @@ class FestivalServiceImplTest {
     @Test
     void 페스티벌_상세_조회_성공() {
         Festival f = festival(1L, "락페", "posters/1.jpg");
-        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(f));
         given(fileStorageService.buildUrl("posters/1.jpg")).willReturn("https://cdn.example.com/posters/1.jpg");
 
         FestivalDetailResponseDto result = festivalService.getFestivalDetail(1L);
@@ -101,7 +82,7 @@ class FestivalServiceImplTest {
 
     @Test
     void 존재하지_않는_페스티벌_상세_조회시_예외() {
-        given(festivalRepository.findById(99L)).willReturn(Optional.empty());
+        given(festivalRepository.findByIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> festivalService.getFestivalDetail(99L))
                 .isInstanceOf(NoSuchElementException.class);
@@ -135,28 +116,42 @@ class FestivalServiceImplTest {
         verify(fileStorageService, never()).deleteFileAfterCommit(any());
     }
 
-    // ── deleteFestival ────────────────────────────────────────────────
+    // ── deleteFestival / restoreFestival / getDeletedFestivals ─────────
 
     @Test
-    void 페스티벌_삭제시_연관데이터_모두_정리() {
+    void 삭제시_소프트_삭제만_수행하고_연관데이터는_보존() {
         Festival f = festival(1L, "락페", "posters/1.jpg");
-        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(f));
 
         festivalService.deleteFestival(1L);
 
-        verify(timetableService).removeAllByFestival(1L);
-        verify(boothService).removeAllByFestival(1L);
-        verify(stageService).removeAllByFestival(1L);
-        verify(certificationService).removeAllByFestival(1L);
-        verify(festivalLikeService).removeAllByFestival(1L);
-        verify(festivalAttendanceService).removeAllByFestival(1L);
-        verify(postCascadeService).deletePostsByFestival(f);
-        verify(artistFestivalService).removeAllByFestival(1L);
-        verify(notificationQueryService).removeAllByFestivalId(1L);
-        verify(weatherService).removeAllByFestival(1L);
-        verify(festivalChecklistService).removeByFestivalId(1L);
-        verify(festivalRepository).deleteById(1L);
-        verify(fileStorageService).deleteFileAfterCommit("posters/1.jpg");
+        assertThat(f.isDeleted()).isTrue();
+        verify(festivalRepository, never()).deleteById(any());
+        verify(fileStorageService, never()).deleteFileAfterCommit(any());
+    }
+
+    @Test
+    void 존재하지_않는_페스티벌_삭제시_예외() {
+        given(festivalRepository.findByIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> festivalService.deleteFestival(99L))
+                .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    void 복구시_repository_restoreById_위임() {
+        festivalService.restoreFestival(1L);
+
+        verify(festivalRepository).restoreById(1L);
+    }
+
+    @Test
+    void 삭제된_페스티벌_목록_조회() {
+        Festival deleted = festival(1L, "락페", null);
+        deleted.softDelete();
+        given(festivalRepository.findSoftDeleted()).willReturn(List.of(deleted));
+
+        assertThat(festivalService.getDeletedFestivals()).extracting(FestivalResponseDto::getId).containsExactly(1L);
     }
 
     // ── uploadPosterFile ──────────────────────────────────────────────
@@ -215,7 +210,7 @@ class FestivalServiceImplTest {
     @Test
     void 키워드_없으면_전체_페스티벌_최신순_조회() {
         Festival f = festival(1L, "락페", null);
-        given(festivalRepository.findAll(any(Pageable.class))).willReturn(new PageImpl<>(List.of(f)));
+        given(festivalRepository.findAllByDeletedAtIsNull(any(Pageable.class))).willReturn(new PageImpl<>(List.of(f)));
 
         Page<FestivalResponseDto> result = festivalService.getFestivalsAdminPage(null, 0, 20);
 
@@ -237,7 +232,7 @@ class FestivalServiceImplTest {
 
     @Test
     void 전체_페스티벌_수_조회() {
-        given(festivalRepository.count()).willReturn(15L);
+        given(festivalRepository.countByDeletedAtIsNull()).willReturn(15L);
 
         assertThat(festivalService.getTotalCount()).isEqualTo(15L);
     }

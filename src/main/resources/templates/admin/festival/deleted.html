@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('삭제된 페스티벌')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('festivals')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('삭제된 페스티벌 (휴지통)', '페스티벌')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="search-bar">
+                <span class="cell-primary">소프트 삭제된 페스티벌 — 복구 가능</span>
+                <a th:href="@{/admin/festivals}" class="btn btn-secondary btn-sm">← 페스티벌 목록으로</a>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>기간</th>
+                        <th>지역</th>
+                        <th>복구</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(festivals)}" th:replace="~{admin/fragments :: emptyRow(5, '삭제된 페스티벌이 없습니다.')}"></tr>
+                    <tr th:each="festival : ${festivals}">
+                        <td th:text="${festival.id}"></td>
+                        <td th:text="${festival.title}"></td>
+                        <td th:text="${festival.dateRangeDisplay}"></td>
+                        <td th:text="${festival.region != null ? festival.region.displayName : '-'}"></td>
+                        <td>
+                            <form th:action="@{/admin/festivals/{id}/restore(id=${festival.id})}" method="post"
+                                  data-confirm="이 페스티벌을 복구하시겠습니까?">
+                                <button type="submit" class="btn btn-primary btn-sm">복구</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

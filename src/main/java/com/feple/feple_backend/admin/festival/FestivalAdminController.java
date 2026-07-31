@@ -205,6 +205,26 @@ public class FestivalAdminController {
         return "redirect:/admin/festivals";
     }
 
+    @GetMapping("/deleted")
+    public String deletedFestivals(Model model) {
+        model.addAttribute("festivals", festivalService.getDeletedFestivals());
+        return "admin/festival/deleted";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restoreFestival(@PathVariable Long id, RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    festivalService.restoreFestival(id);
+                    adminLogService.log(AdminAction.FESTIVAL_RESTORE, "FESTIVAL", id, null);
+                },
+                "페스티벌이 복구되었습니다.",
+                e -> log.error("페스티벌 복구 실패. id={}", id, e),
+                "복구 중 오류가 발생했습니다.",
+                ra);
+        return "redirect:/admin/festivals/deleted";
+    }
+
     private void applyPosterFile(MultipartFile posterFile, FestivalRequestDto dto,
                                   BindingResult bindingResult) {
         if (posterFile == null || posterFile.isEmpty()) return;

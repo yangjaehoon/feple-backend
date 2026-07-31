@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('삭제된 아티스트')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('artists')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('삭제된 아티스트 (휴지통)', '아티스트')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="search-bar">
+                <span class="cell-primary">소프트 삭제된 아티스트 — 복구 가능</span>
+                <a th:href="@{/admin/artists}" class="btn btn-secondary btn-sm">← 아티스트 목록으로</a>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>이름</th>
+                        <th>영어 이름</th>
+                        <th>카테고리</th>
+                        <th>복구</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(artists)}" th:replace="~{admin/fragments :: emptyRow(5, '삭제된 아티스트가 없습니다.')}"></tr>
+                    <tr th:each="artist : ${artists}">
+                        <td th:text="${artist.id}"></td>
+                        <td th:text="${artist.name}"></td>
+                        <td th:text="${artist.nameEn}"></td>
+                        <td th:text="${artist.genre}"></td>
+                        <td>
+                            <form th:action="@{/admin/artists/{id}/restore(id=${artist.id})}" method="post"
+                                  data-confirm="이 아티스트를 복구하시겠습니까?">
+                                <button type="submit" class="btn btn-primary btn-sm">복구</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

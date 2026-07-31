@@ -1,9 +1,5 @@
 package com.feple.feple_backend.festival.service;
 
-import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
-import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
-import com.feple.feple_backend.booth.service.BoothService;
-import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
@@ -23,10 +19,6 @@ import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictFestivalCaches;
-import com.feple.feple_backend.notification.service.NotificationQueryService;
-import com.feple.feple_backend.post.service.PostCascadeDeleteService;
-import com.feple.feple_backend.stage.service.StageService;
-import com.feple.feple_backend.timetable.service.TimetableService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -49,19 +41,8 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     private static final String ERR_END_BEFORE_START = "종료일은 시작일보다 이전일 수 없습니다.";
 
     private final FestivalRepository festivalRepository;
-    private final ArtistFestivalService artistFestivalService;
-    private final NotificationQueryService notificationQueryService;
     private final FestivalLikeRepository festivalLikeRepository;
-    private final FestivalLikeService festivalLikeService;
-    private final FestivalAttendanceService festivalAttendanceService;
     private final FileStorageService fileStorageService;
-    private final StageService stageService;
-    private final BoothService boothService;
-    private final TimetableService timetableService;
-    private final FestivalCertificationService certificationService;
-    private final PostCascadeDeleteService postCascadeService;
-    private final WeatherService weatherService;
-    private final FestivalChecklistService festivalChecklistService;
 
     private FestivalResponseDto toDto(Festival festival) {
         return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
@@ -143,7 +124,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
-        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, id, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findByIdAndDeletedAtIsNull, id, "페스티벌");
         return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
     }
 
@@ -151,7 +132,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Transactional(readOnly = true)
     @Cacheable(value = "festivalDetail", key = "#festivalId")
     public FestivalResponseDto getFestival(Long festivalId) {
-        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findByIdAndDeletedAtIsNull, festivalId, "페스티벌");
         return toDto(festival);
     }
 
@@ -187,25 +168,25 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @EvictFestivalCaches
     @CacheEvict(value = "festivalDetail", key = "#festivalId")
     public void deleteFestival(Long festivalId) {
-        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        String posterKey = festival.getPosterKey();
+        // 소프트 삭제 — 타임테이블·부스·인증·좋아요 등 연관 데이터는 그대로 두고 목록·검색에서만
+        // 제외한다. row가 물리적으로 남아있어 기존 FK 참조도 깨지지 않고, 휴지통에서 복구하면
+        // 라인업까지 포함해 그대로 되돌아온다.
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findByIdAndDeletedAtIsNull, festivalId, "페스티벌");
+        festival.softDelete();
+    }
 
-        timetableService.removeAllByFestival(festivalId);
-        boothService.removeAllByFestival(festivalId);
-        stageService.removeAllByFestival(festivalId);
-        certificationService.removeAllByFestival(festivalId);
-        festivalLikeService.removeAllByFestival(festivalId);
-        festivalAttendanceService.removeAllByFestival(festivalId);
+    @Override
+    @Transactional
+    @EvictFestivalCaches
+    @CacheEvict(value = "festivalDetail", key = "#festivalId")
+    public void restoreFestival(Long festivalId) {
+        festivalRepository.restoreById(festivalId);
+    }
 
-        postCascadeService.deletePostsByFestival(festival);
-
-        artistFestivalService.removeAllByFestival(festivalId);
-        notificationQueryService.removeAllByFestivalId(festivalId);
-        weatherService.removeAllByFestival(festivalId);
-        festivalChecklistService.removeByFestivalId(festivalId);
-        festivalRepository.deleteById(festivalId);
-
-        fileStorageService.deleteFileAfterCommit(posterKey);
+    @Override
+    @Transactional(readOnly = true)
+    public List<FestivalResponseDto> getDeletedFestivals() {
+        return festivalRepository.findSoftDeleted().stream().map(this::toDto).toList();
     }
 
     @Override
@@ -238,7 +219,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     public Page<FestivalResponseDto> getFestivalsAdminPage(String keyword, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size);
         if (keyword == null || keyword.isBlank()) {
-            return festivalRepository.findAll(
+            return festivalRepository.findAllByDeletedAtIsNull(
                     PageableFactory.orderByLatestStartDate(page, size))
                     .map(this::toDto);
         }
@@ -247,6 +228,6 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
 
     @Override
     public long getTotalCount() {
-        return festivalRepository.count();
+        return festivalRepository.countByDeletedAtIsNull();
     }
 }

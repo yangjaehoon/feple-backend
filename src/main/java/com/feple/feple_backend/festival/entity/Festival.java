@@ -4,6 +4,7 @@ import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.global.MusicGenre;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
@@ -76,6 +77,18 @@ public class Festival {
     @Builder.Default
     @OneToMany(mappedBy = "festival")
     private List<ArtistFestival> artistFestivals = new ArrayList<>();
+
+    private LocalDateTime deletedAt;
+
+    public boolean isDeleted() { return deletedAt != null; }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+        this.deletedAt = null;
+    }
 
     public void update(FestivalUpdateFields fields) {
         this.title = fields.title();

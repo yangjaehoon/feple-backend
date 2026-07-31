@@ -18,4 +18,6 @@ public interface FestivalAdminService {
     Page<FestivalResponseDto> getFestivalsAdminPage(String keyword, int page, int size);
     String uploadPosterFile(MultipartFile file, LocalDate startDate) throws IOException;
     long getTotalCount();
+    void restoreFestival(Long festivalId);
+    List<FestivalResponseDto> getDeletedFestivals();
 }
