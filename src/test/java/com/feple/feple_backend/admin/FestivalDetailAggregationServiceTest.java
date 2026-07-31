@@ -49,7 +49,7 @@ class FestivalDetailAggregationServiceTest {
                           List<ArtistFestivalResponseDto> artists) {
         given(festivalService.getFestival(festivalId)).willReturn(mock(FestivalResponseDto.class));
         given(timetableService.getEntries(festivalId)).willReturn(entries);
-        given(artistFestivalService.getArtistFestivals(eq(festivalId), any(), any())).willReturn(artists);
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(festivalId), any(), any())).willReturn(artists);
         given(stageService.getStages(festivalId)).willReturn(List.of());
         given(boothService.getBooths(festivalId)).willReturn(List.of());
         given(reviewService.getAverageRating(festivalId)).willReturn(0.0);
@@ -108,7 +108,7 @@ class FestivalDetailAggregationServiceTest {
         service.getDetail(festivalId);
 
         ArgumentCaptor<Map<String, List<String>>> datesCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(artistFestivalService).getArtistFestivals(eq(festivalId), datesCaptor.capture(), any());
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), datesCaptor.capture(), any());
         assertThat(datesCaptor.getValue())
                 .containsKey("Artist1")
                 .doesNotContainKey(null);
@@ -126,7 +126,7 @@ class FestivalDetailAggregationServiceTest {
         service.getDetail(festivalId);
 
         ArgumentCaptor<Map<String, List<String>>> datesCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(artistFestivalService).getArtistFestivals(eq(festivalId), datesCaptor.capture(), any());
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), datesCaptor.capture(), any());
         assertThat(datesCaptor.getValue().get("Artist1"))
                 .containsExactlyInAnyOrder("2025-06-21", "2025-06-22");
     }
@@ -145,7 +145,7 @@ class FestivalDetailAggregationServiceTest {
         service.getDetail(festivalId);
 
         ArgumentCaptor<Map<String, String>> stageCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(artistFestivalService).getArtistFestivals(eq(festivalId), any(), stageCaptor.capture());
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), any(), stageCaptor.capture());
         assertThat(stageCaptor.getValue())
                 .containsEntry("Artist2", "Sub")
                 .doesNotContainKey("Artist1");
@@ -163,7 +163,7 @@ class FestivalDetailAggregationServiceTest {
         service.getDetail(festivalId);
 
         ArgumentCaptor<Map<String, String>> stageCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(artistFestivalService).getArtistFestivals(eq(festivalId), any(), stageCaptor.capture());
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), any(), stageCaptor.capture());
         assertThat(stageCaptor.getValue().get("Artist1")).isEqualTo("Main");
     }
 
