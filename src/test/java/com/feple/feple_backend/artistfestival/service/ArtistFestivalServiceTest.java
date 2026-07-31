@@ -38,6 +38,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ArtistFestivalServiceTest {
@@ -311,8 +312,10 @@ class ArtistFestivalServiceTest {
     @Test
     void 라인업_일괄수정_findById_반복_없이_findAllById로_한번에_조회() {
         Festival festival = festival(100L, null);
-        ArtistFestival af1 = ArtistFestival.builder().id(10L).artist(artist(1L, "아이유")).festival(festival).build();
-        ArtistFestival af2 = ArtistFestival.builder().id(11L).artist(artist(2L, "뉴진스")).festival(festival).build();
+        ArtistFestival af1 = ArtistFestival.builder().artist(artist(1L, "아이유")).festival(festival).build();
+        ArtistFestival af2 = ArtistFestival.builder().artist(artist(2L, "뉴진스")).festival(festival).build();
+        ReflectionTestUtils.setField(af1, "id", 10L);
+        ReflectionTestUtils.setField(af2, "id", 11L);
         // updateArtistFestivalsBatch는 Map.keySet()(Set)을 그대로 넘기므로 List가 아닌 Set으로 매칭해야 함
         given(artistFestivalRepository.findAllById(Set.of(10L, 11L))).willReturn(List.of(af1, af2));
 
