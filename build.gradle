@@ -53,21 +53,21 @@ dependencies {
 	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
 	implementation "io.awspring.cloud:spring-cloud-aws-starter-s3"
 
-	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
 	implementation 'com.bucket4j:bucket4j-core:8.10.1'
 	implementation 'com.github.ben-manes.caffeine:caffeine'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
-	implementation platform("software.amazon.awssdk:bom:2.25.1")
+	implementation platform("software.amazon.awssdk:bom:2.49.3")
 	implementation 'com.google.firebase:firebase-admin:9.3.0'
 
-	implementation 'net.javacrumbs.shedlock:shedlock-spring:5.16.0'
-	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.16.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.7.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0'
 
-	implementation 'org.jsoup:jsoup:1.18.3'
+	implementation 'org.jsoup:jsoup:1.22.2'
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
 
 	implementation 'com.drewnoakes:metadata-extractor:2.19.0' // 이미지 리사이즈 시 EXIF Orientation 태그 반영용
