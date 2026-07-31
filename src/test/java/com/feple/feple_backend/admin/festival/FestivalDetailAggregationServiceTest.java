@@ -54,7 +54,7 @@ class FestivalDetailAggregationServiceTest {
     void 평점없으면_빈_통계_반환() {
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
@@ -69,7 +69,7 @@ class FestivalDetailAggregationServiceTest {
     void 평점있으면_통계_상세_포함() {
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
         given(reviewService.getAverageRating(1L)).willReturn(4.5);
         given(reviewService.getRatingCount(1L)).willReturn(10);
         given(reviewService.getRatingDistribution(1L)).willReturn(Map.of(5, 8L, 4, 2L));
@@ -89,7 +89,7 @@ class FestivalDetailAggregationServiceTest {
         TimetableEntryResponseDto e2 = entry("아이유", "메인스테이지", "2026-08-02");
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of(e1, e2));
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
@@ -98,7 +98,7 @@ class FestivalDetailAggregationServiceTest {
 
         var datesCaptor = org.mockito.ArgumentCaptor.forClass(Map.class);
         var stageCaptor = org.mockito.ArgumentCaptor.forClass(Map.class);
-        org.mockito.Mockito.verify(artistFestivalService).getArtistFestivals(eq(1L), datesCaptor.capture(), stageCaptor.capture());
+        org.mockito.Mockito.verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(1L), datesCaptor.capture(), stageCaptor.capture());
         assertThat((List<String>) datesCaptor.getValue().get("아이유")).containsExactly("2026-08-01", "2026-08-02");
         assertThat(stageCaptor.getValue().get("아이유")).isEqualTo("메인스테이지");
     }
@@ -109,7 +109,7 @@ class FestivalDetailAggregationServiceTest {
         TimetableEntryResponseDto nullName = entry(null, "메인스테이지", "2026-08-01");
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of(blank, nullName));
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
@@ -124,7 +124,7 @@ class FestivalDetailAggregationServiceTest {
         TimetableEntryResponseDto announcement = entry("공지", TimetableEntry.ANNOUNCEMENT_SENTINEL, "2026-08-01");
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of(announcement));
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
@@ -140,7 +140,7 @@ class FestivalDetailAggregationServiceTest {
         ArtistFestivalResponseDto A = artistFestival(2L, "Apple");
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of(b, A));
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of(b, A));
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
@@ -157,7 +157,7 @@ class FestivalDetailAggregationServiceTest {
         ArtistFestivalResponseDto artist = artistFestival(1L, "아이유");
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of(artist));
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of(artist));
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
@@ -172,7 +172,7 @@ class FestivalDetailAggregationServiceTest {
     void 참여아티스트_없으면_셋리스트_조회_스킵() {
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
@@ -188,7 +188,7 @@ class FestivalDetailAggregationServiceTest {
         ReflectionTestUtils.setField(aggregationService, "googleMapsKey", "");
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivals(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
