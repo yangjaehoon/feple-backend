@@ -27,12 +27,11 @@ public class NotificationPreference {
         return NotificationPreference.builder().userId(userId).build();
     }
 
-    public void update(boolean certEnabled, boolean commentEnabled,
-                       boolean festivalEnabled, boolean songRequestEnabled) {
-        this.certEnabled = certEnabled;
-        this.commentEnabled = commentEnabled;
-        this.festivalEnabled = festivalEnabled;
-        this.songRequestEnabled = songRequestEnabled;
+    public void update(NotificationPreferenceFields fields) {
+        this.certEnabled = fields.certEnabled();
+        this.commentEnabled = fields.commentEnabled();
+        this.festivalEnabled = fields.festivalEnabled();
+        this.songRequestEnabled = fields.songRequestEnabled();
     }
 
     public boolean isEnabledFor(NotificationType type) {

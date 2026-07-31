@@ -63,6 +63,10 @@ public class NotificationService {
         }
     }
 
+    private User findUserOrNull(Long userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
+
     /** 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송 — 커밋 후에만 발송 */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -91,15 +95,15 @@ public class NotificationService {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onCertificationApproved(CertificationApprovedEvent event) {
-        User user = userRepository.findById(event.userId()).orElse(null);
+        User user = findUserOrNull(event.userId());
         if (user == null) return;
         Festival festival = festivalRepository.findById(event.festivalId()).orElse(null);
-        notifySingle(event.userId(), NotificationType.CERT_APPROVED,
-                NotificationMessages.CERT_APPROVED_TITLE,
-                NotificationMessages.certApprovedBody(event.festivalTitle()),
-                NotificationMessages.CERT_APPROVED_TITLE_EN,
-                NotificationMessages.certApprovedBodyEn(event.festivalTitleEn()),
-                String.valueOf(event.festivalId()),
+        notifySingle(event.userId(), new NotificationMessage(NotificationType.CERT_APPROVED,
+                        NotificationMessages.CERT_APPROVED_TITLE,
+                        NotificationMessages.certApprovedBody(event.festivalTitle()),
+                        NotificationMessages.CERT_APPROVED_TITLE_EN,
+                        NotificationMessages.certApprovedBodyEn(event.festivalTitleEn()),
+                        String.valueOf(event.festivalId())),
                 content -> Notification.of(user, content, festival));
     }
 
@@ -107,81 +111,81 @@ public class NotificationService {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onCertificationRejected(CertificationRejectedEvent event) {
-        User user = userRepository.findById(event.userId()).orElse(null);
+        User user = findUserOrNull(event.userId());
         if (user == null) return;
         Festival festival = festivalRepository.findById(event.festivalId()).orElse(null);
-        notifySingle(event.userId(), NotificationType.CERT_REJECTED,
-                NotificationMessages.CERT_REJECTED_TITLE,
-                NotificationMessages.certRejectedBody(event.festivalTitle(), event.reason()),
-                NotificationMessages.CERT_REJECTED_TITLE_EN,
-                NotificationMessages.certRejectedBodyEn(event.festivalTitleEn(), event.reason()),
-                String.valueOf(event.festivalId()),
+        notifySingle(event.userId(), new NotificationMessage(NotificationType.CERT_REJECTED,
+                        NotificationMessages.CERT_REJECTED_TITLE,
+                        NotificationMessages.certRejectedBody(event.festivalTitle(), event.reason()),
+                        NotificationMessages.CERT_REJECTED_TITLE_EN,
+                        NotificationMessages.certRejectedBodyEn(event.festivalTitleEn(), event.reason()),
+                        String.valueOf(event.festivalId())),
                 content -> Notification.of(user, content, festival));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onSongRequestApproved(SongRequestApprovedEvent event) {
-        User user = userRepository.findById(event.userId()).orElse(null);
+        User user = findUserOrNull(event.userId());
         if (user == null) return;
         Artist artist = artistRepository.findById(event.artistId()).orElse(null);
-        notifySingle(event.userId(), NotificationType.SONG_REQUEST_APPROVED,
-                NotificationMessages.SONG_REQUEST_APPROVED_TITLE,
-                NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName()),
-                NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN,
-                NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistNameEn()),
-                String.valueOf(event.artistId()),
+        notifySingle(event.userId(), new NotificationMessage(NotificationType.SONG_REQUEST_APPROVED,
+                        NotificationMessages.SONG_REQUEST_APPROVED_TITLE,
+                        NotificationMessages.songRequestApprovedBody(event.songTitle(), event.artistName()),
+                        NotificationMessages.SONG_REQUEST_APPROVED_TITLE_EN,
+                        NotificationMessages.songRequestApprovedBodyEn(event.songTitle(), event.artistNameEn()),
+                        String.valueOf(event.artistId())),
                 content -> Notification.of(user, content, artist));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onSongRequestRejected(SongRequestRejectedEvent event) {
-        User user = userRepository.findById(event.userId()).orElse(null);
+        User user = findUserOrNull(event.userId());
         if (user == null) return;
         Artist artist = artistRepository.findById(event.artistId()).orElse(null);
-        notifySingle(event.userId(), NotificationType.SONG_REQUEST_REJECTED,
-                NotificationMessages.SONG_REQUEST_REJECTED_TITLE,
-                NotificationMessages.songRequestRejectedBody(event.songTitle(), event.reason()),
-                NotificationMessages.SONG_REQUEST_REJECTED_TITLE_EN,
-                NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason()),
-                String.valueOf(event.artistId()),
+        notifySingle(event.userId(), new NotificationMessage(NotificationType.SONG_REQUEST_REJECTED,
+                        NotificationMessages.SONG_REQUEST_REJECTED_TITLE,
+                        NotificationMessages.songRequestRejectedBody(event.songTitle(), event.reason()),
+                        NotificationMessages.SONG_REQUEST_REJECTED_TITLE_EN,
+                        NotificationMessages.songRequestRejectedBodyEn(event.songTitle(), event.reason()),
+                        String.valueOf(event.artistId())),
                 content -> Notification.of(user, content, artist));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onArtistSuggestionProcessed(ArtistSuggestionProcessedEvent event) {
-        User user = userRepository.findById(event.userId()).orElse(null);
+        User user = findUserOrNull(event.userId());
         if (user == null) return;
         String resourceId = event.artistId() != null ? String.valueOf(event.artistId()) : null;
         Artist artist = event.artistId() != null ? artistRepository.findById(event.artistId()).orElse(null) : null;
         String artistNameEn = (artist != null && artist.getNameEn() != null && !artist.getNameEn().isBlank())
                 ? artist.getNameEn() : event.artistName();
-        notifySingle(event.userId(), NotificationType.ARTIST_SUGGESTION_PROCESSED,
-                NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE,
-                NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note()),
-                NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN,
-                NotificationMessages.artistSuggestionProcessedBodyEn(artistNameEn, event.note()),
-                resourceId,
+        notifySingle(event.userId(), new NotificationMessage(NotificationType.ARTIST_SUGGESTION_PROCESSED,
+                        NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE,
+                        NotificationMessages.artistSuggestionProcessedBody(event.artistName(), event.note()),
+                        NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN,
+                        NotificationMessages.artistSuggestionProcessedBodyEn(artistNameEn, event.note()),
+                        resourceId),
                 content -> artist != null ? Notification.of(user, content, artist) : Notification.of(user, content, (Festival) null));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onFestivalSuggestionProcessed(FestivalSuggestionProcessedEvent event) {
-        User user = userRepository.findById(event.userId()).orElse(null);
+        User user = findUserOrNull(event.userId());
         if (user == null) return;
         String resourceId = event.festivalId() != null ? String.valueOf(event.festivalId()) : null;
         Festival festival = event.festivalId() != null ? festivalRepository.findById(event.festivalId()).orElse(null) : null;
         String festivalNameEn = (festival != null && festival.getTitleEn() != null && !festival.getTitleEn().isBlank())
                 ? festival.getTitleEn() : event.festivalName();
-        notifySingle(event.userId(), NotificationType.FESTIVAL_SUGGESTION_PROCESSED,
-                NotificationMessages.FESTIVAL_SUGGESTION_PROCESSED_TITLE,
-                NotificationMessages.festivalSuggestionProcessedBody(event.festivalName(), event.note()),
-                NotificationMessages.FESTIVAL_SUGGESTION_PROCESSED_TITLE_EN,
-                NotificationMessages.festivalSuggestionProcessedBodyEn(festivalNameEn, event.note()),
-                resourceId,
+        notifySingle(event.userId(), new NotificationMessage(NotificationType.FESTIVAL_SUGGESTION_PROCESSED,
+                        NotificationMessages.FESTIVAL_SUGGESTION_PROCESSED_TITLE,
+                        NotificationMessages.festivalSuggestionProcessedBody(event.festivalName(), event.note()),
+                        NotificationMessages.FESTIVAL_SUGGESTION_PROCESSED_TITLE_EN,
+                        NotificationMessages.festivalSuggestionProcessedBodyEn(festivalNameEn, event.note()),
+                        resourceId),
                 content -> festival != null ? Notification.of(user, content, festival) : Notification.of(user, content, (Artist) null));
     }
 
@@ -200,29 +204,29 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPostLiked(PostLikedEvent event) {
         if (userBlockService.isBlocked(event.postAuthorId(), event.likerId())) return;
-        User author = userRepository.findById(event.postAuthorId()).orElse(null);
+        User author = findUserOrNull(event.postAuthorId());
         if (author == null) return;
         Post post = postRepository.findById(event.postId()).orElse(null);
-        notifySingle(event.postAuthorId(), NotificationType.POST_LIKED,
-                NotificationMessages.postLikedTitle(event.likerNickname()),
-                NotificationMessages.postLikedBody(event.postTitle()),
-                NotificationMessages.postLikedTitleEn(event.likerNickname()),
-                NotificationMessages.postLikedBodyEn(event.postTitle()),
-                String.valueOf(event.postId()),
+        notifySingle(event.postAuthorId(), new NotificationMessage(NotificationType.POST_LIKED,
+                        NotificationMessages.postLikedTitle(event.likerNickname()),
+                        NotificationMessages.postLikedBody(event.postTitle()),
+                        NotificationMessages.postLikedTitleEn(event.likerNickname()),
+                        NotificationMessages.postLikedBodyEn(event.postTitle()),
+                        String.valueOf(event.postId())),
                 content -> Notification.of(author, content, post));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPostDeletedByAdmin(PostDeletedByAdminEvent event) {
-        User author = userRepository.findById(event.postAuthorId()).orElse(null);
+        User author = findUserOrNull(event.postAuthorId());
         if (author == null) return;
-        notifySingle(event.postAuthorId(), NotificationType.POST_DELETED_BY_ADMIN,
-                NotificationMessages.POST_DELETED_BY_ADMIN_TITLE,
-                NotificationMessages.postDeletedByAdminBody(event.postTitle()),
-                NotificationMessages.POST_DELETED_BY_ADMIN_TITLE_EN,
-                NotificationMessages.postDeletedByAdminBodyEn(event.postTitle()),
-                null,
+        notifySingle(event.postAuthorId(), new NotificationMessage(NotificationType.POST_DELETED_BY_ADMIN,
+                        NotificationMessages.POST_DELETED_BY_ADMIN_TITLE,
+                        NotificationMessages.postDeletedByAdminBody(event.postTitle()),
+                        NotificationMessages.POST_DELETED_BY_ADMIN_TITLE_EN,
+                        NotificationMessages.postDeletedByAdminBodyEn(event.postTitle()),
+                        null),
                 content -> Notification.of(author, content, (Festival) null));
     }
 
@@ -230,55 +234,53 @@ public class NotificationService {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onAdminPointGranted(AdminPointGrantedEvent event) {
-        User user = userRepository.findById(event.userId()).orElse(null);
+        User user = findUserOrNull(event.userId());
         if (user == null) return;
-        notifySingle(event.userId(), NotificationType.ADMIN_POINT_GRANTED,
-                NotificationMessages.adminPointGrantedTitle(event.amount()),
-                NotificationMessages.adminPointGrantedBody(event.reason()),
-                NotificationMessages.adminPointGrantedTitleEn(event.amount()),
-                NotificationMessages.adminPointGrantedBodyEn(event.amount()),
-                null,
+        notifySingle(event.userId(), new NotificationMessage(NotificationType.ADMIN_POINT_GRANTED,
+                        NotificationMessages.adminPointGrantedTitle(event.amount()),
+                        NotificationMessages.adminPointGrantedBody(event.reason()),
+                        NotificationMessages.adminPointGrantedTitleEn(event.amount()),
+                        NotificationMessages.adminPointGrantedBodyEn(event.amount()),
+                        null),
                 content -> Notification.of(user, content, (Festival) null));
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
     private void notifyNewComment(Long postAuthorId, CommentCreatedEvent event) {
         // 자기 자신의 댓글이면 알림 없음
-        User author = userRepository.findById(postAuthorId).orElse(null);
+        User author = findUserOrNull(postAuthorId);
         if (author == null) return;
 
         String commenterNickname = event.commenterNickname();
         String postTitle = event.postTitle();
         Post post = postRepository.findById(event.postId()).orElse(null);
-        notifySingle(postAuthorId, NotificationType.NEW_COMMENT,
-                NotificationMessages.newCommentTitle(commenterNickname),
-                NotificationMessages.newCommentBody(postTitle),
-                NotificationMessages.newCommentTitleEn(commenterNickname),
-                NotificationMessages.newCommentBodyEn(postTitle),
-                null,
+        notifySingle(postAuthorId, new NotificationMessage(NotificationType.NEW_COMMENT,
+                        NotificationMessages.newCommentTitle(commenterNickname),
+                        NotificationMessages.newCommentBody(postTitle),
+                        NotificationMessages.newCommentTitleEn(commenterNickname),
+                        NotificationMessages.newCommentBodyEn(postTitle),
+                        null),
                 content -> Notification.of(author, content, post));
     }
 
     /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
     private void notifyNewReply(Long parentCommentAuthorId, CommentCreatedEvent event) {
-        User author = userRepository.findById(parentCommentAuthorId).orElse(null);
+        User author = findUserOrNull(parentCommentAuthorId);
         if (author == null) return;
         String replierNickname = event.commenterNickname();
         String postTitle = event.postTitle();
         Post post = postRepository.findById(event.postId()).orElse(null);
-        notifySingle(parentCommentAuthorId, NotificationType.NEW_REPLY,
-                NotificationMessages.newReplyTitle(replierNickname),
-                NotificationMessages.newReplyBody(postTitle),
-                NotificationMessages.newReplyTitleEn(replierNickname),
-                NotificationMessages.newReplyBodyEn(postTitle),
-                null,
+        notifySingle(parentCommentAuthorId, new NotificationMessage(NotificationType.NEW_REPLY,
+                        NotificationMessages.newReplyTitle(replierNickname),
+                        NotificationMessages.newReplyBody(postTitle),
+                        NotificationMessages.newReplyTitleEn(replierNickname),
+                        NotificationMessages.newReplyBodyEn(postTitle),
+                        null),
                 content -> Notification.of(author, content, post));
     }
 
-    private void notifySingle(Long userId, NotificationType type,
-                               String title, String body, String titleEn, String bodyEn, String resourceId,
+    private void notifySingle(Long userId, NotificationMessage message,
                                Function<NotificationContent, Notification> notificationFactory) {
-        NotificationMessage message = new NotificationMessage(type, title, body, titleEn, bodyEn, resourceId);
         saveAndPushSingle(notificationFactory.apply(message.toContent()), userId, message);
     }
 

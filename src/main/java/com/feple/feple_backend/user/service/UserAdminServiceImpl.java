@@ -82,6 +82,8 @@ public class UserAdminServiceImpl implements UserAdminService {
         userRepository.findAllById(ids).forEach(cascadeDeleteService::delete);
     }
 
+    // 삭제 대상 User는 어차피 cascadeDeleteService.delete()를 위해 로드해야 하므로,
+    // 별도 조회 없이 그 김에 관리자 로그용 닉네임도 함께 반환한다.
     @Override
     public String adminDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");

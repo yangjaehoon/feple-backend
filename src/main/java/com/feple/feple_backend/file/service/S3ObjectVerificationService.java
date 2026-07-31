@@ -37,7 +37,7 @@ public class S3ObjectVerificationService {
         if (!ALLOWED_IMAGE_CONTENT_TYPES.contains(baseType)) {
             throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. 이미지 파일만 등록할 수 있습니다.");
         }
-        if (head.contentLength() != null && head.contentLength() > ImageUploadPolicy.MAX_PRESIGNED_UPLOAD_BYTES) {
+        if (head.contentLength() != null && head.contentLength() > ImageUploadPolicy.MAX_IMAGE_UPLOAD_BYTES) {
             deleteOversizedObject(objectKey);
             throw new IllegalArgumentException("파일 크기가 너무 큽니다.");
         }

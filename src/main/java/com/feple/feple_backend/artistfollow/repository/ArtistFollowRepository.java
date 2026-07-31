@@ -37,9 +37,6 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
 
     // artist JOIN FETCH — getFollowedArtists()에서 follow.getArtist() 접근 시 N+1 방지
     @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.artist WHERE af.user.id = :userId")
-    List<ArtistFollow> findByUserId(@Param("userId") Long userId);
-
-    @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.artist WHERE af.user.id = :userId")
     List<ArtistFollow> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     // user JOIN FETCH — notifyNewFestivalForArtist()에서 f.getUser() 접근 시 N+1 방지

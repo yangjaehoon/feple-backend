@@ -61,15 +61,13 @@ public class TimetableService {
     public TimetableEntryResponseDto createEntry(Long festivalId, TimetableEntryRequestDto req) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         validateTimeRange(req);
-        String rawStageName = req.getStageName();
-        String stageName = (rawStageName == null || rawStageName.isBlank()) ? "" : rawStageName.trim();
-        Stage stage = stageName.isEmpty() ? null : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
+        StageResolution stageResolution = resolveStage(festivalId, req.getStageName());
 
         String color = (req.getColor() != null && !req.getColor().isBlank()) ? req.getColor().trim() : null;
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)
-                .stage(stage)
-                .stageName(stageName)
+                .stage(stageResolution.stage())
+                .stageName(stageResolution.stageName())
                 .artistName(req.getArtistName() != null ? req.getArtistName().trim() : "")
                 .festivalDate(req.getFestivalDate())
                 .startTime(req.getStartTime())
@@ -88,19 +86,25 @@ public class TimetableService {
         TimetableEntry entry = EntityLoader.getOrThrow(timetableRepository::findById, entryId, "타임테이블 항목");
         EntityLoader.requireBelongsToFestival(festivalId, entry.getFestivalId(), "항목이");
         validateTimeRange(req);
-        String stageName = req.getStageName() == null ? "" : req.getStageName().trim();
-        Stage stage = stageName.isEmpty() ? null
-                : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
+        StageResolution stageResolution = resolveStage(festivalId, req.getStageName());
         entry.update(new TimetableEntryFields(
                 req.getArtistName() != null ? req.getArtistName().trim() : "",
-                stageName,
-                stage,
+                stageResolution.stageName(),
+                stageResolution.stage(),
                 req.getFestivalDate(),
                 req.getStartTime(),
                 req.getEndTime(),
                 req.getColor()));
         syncMembers(entry, req.getMemberArtistIds());
         broadcastLineupUpdate(festivalId, entry);
+    }
+
+    private record StageResolution(String stageName, Stage stage) {}
+
+    private StageResolution resolveStage(Long festivalId, String rawStageName) {
+        String stageName = (rawStageName == null || rawStageName.isBlank()) ? "" : rawStageName.trim();
+        Stage stage = stageName.isEmpty() ? null : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
+        return new StageResolution(stageName, stage);
     }
 
     private void validateTimeRange(TimetableEntryRequestDto req) {

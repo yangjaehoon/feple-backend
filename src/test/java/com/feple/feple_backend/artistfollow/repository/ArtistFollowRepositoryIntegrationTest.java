@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,7 +106,7 @@ class ArtistFollowRepositoryIntegrationTest {
         artistFollowRepository.save(ArtistFollow.of(user, artist2));
         em.flush(); em.clear();
 
-        List<ArtistFollow> follows = artistFollowRepository.findByUserId(user.getId());
+        List<ArtistFollow> follows = artistFollowRepository.findByUserId(user.getId(), Pageable.unpaged());
 
         assertThat(follows).hasSize(2);
         // JOIN FETCH로 artist가 이미 로딩됨 — 추가 쿼리 없이 접근 가능
@@ -120,7 +121,7 @@ class ArtistFollowRepositoryIntegrationTest {
         artistFollowRepository.save(ArtistFollow.of(other, artist));
         em.flush(); em.clear();
 
-        List<ArtistFollow> follows = artistFollowRepository.findByUserId(user.getId());
+        List<ArtistFollow> follows = artistFollowRepository.findByUserId(user.getId(), Pageable.unpaged());
 
         assertThat(follows).hasSize(1);
         assertThat(follows.get(0).getUserId()).isEqualTo(user.getId());

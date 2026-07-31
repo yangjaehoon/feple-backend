@@ -34,29 +34,21 @@ public class UserPostHistoryServiceImpl implements UserPostHistoryService {
     @Override
     public CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        int fetchSize = size + 1;
-        PageRequest limit = PageRequest.of(0, fetchSize);
-        List<Post> posts = (cursor == null)
-                ? postRepository.findByUserOrderByIdDesc(user, limit)
-                : postRepository.findByUserAndIdLessThanOrderByIdDesc(user, cursor, limit);
-        boolean hasNext = posts.size() == fetchSize;
-        List<PostResponseDto> content = posts.stream().limit(size).map(PostResponseDto::from).toList();
-        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
-        return new CursorPage<>(content, nextCursor, hasNext);
+        return CursorPageAssembler.assemble(cursor, size,
+                limit -> postRepository.findByUserOrderByIdDesc(user, limit),
+                limit -> postRepository.findByUserAndIdLessThanOrderByIdDesc(user, cursor, limit),
+                pageItems -> pageItems.stream().map(PostResponseDto::from).toList(),
+                Post::getId);
     }
 
     @Override
     public CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        int fetchSize = size + 1;
-        PageRequest limit = PageRequest.of(0, fetchSize);
-        List<Post> posts = (cursor == null)
-                ? postRepository.findPublicByUserOrderByIdDesc(user, limit)
-                : postRepository.findPublicByUserAndIdLessThanOrderByIdDesc(user, cursor, limit);
-        boolean hasNext = posts.size() == fetchSize;
-        List<PostResponseDto> content = posts.stream().limit(size).map(PostResponseDto::from).toList();
-        Long nextCursor = hasNext && !content.isEmpty() ? content.get(content.size() - 1).getId() : null;
-        return new CursorPage<>(content, nextCursor, hasNext);
+        return CursorPageAssembler.assemble(cursor, size,
+                limit -> postRepository.findPublicByUserOrderByIdDesc(user, limit),
+                limit -> postRepository.findPublicByUserAndIdLessThanOrderByIdDesc(user, cursor, limit),
+                pageItems -> pageItems.stream().map(PostResponseDto::from).toList(),
+                Post::getId);
     }
 
     @Override

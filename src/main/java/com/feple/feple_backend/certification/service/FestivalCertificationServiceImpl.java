@@ -43,29 +43,38 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public CertificationResponseDto submit(Long userId, Long festivalId, String photoKey) {
-        S3PathConstants.requireWithinPrefix(photoKey, S3PathConstants.certificationPrefix(userId));
-        // presign만 받고 실제 업로드하지 않은 채로 제출하면 영구히 깨진 이미지 레코드가 생성되므로
-        // ArtistGalleryPhotoService.register()와 동일하게 S3 오브젝트 존재 여부를 검증한다
-        s3ObjectVerificationService.verifyImageObject(photoKey);
+        validateUpload(userId, photoKey);
 
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        requireNotAlreadyCertified(userId, festivalId);
 
+        FestivalCertification cert = saveCertification(user, festival, photoKey);
+        return toDto(cert);
+    }
+
+    // presign만 받고 실제 업로드하지 않은 채로 제출하면 영구히 깨진 이미지 레코드가 생성되므로
+    // ArtistGalleryPhotoService.register()와 동일하게 S3 오브젝트 존재 여부를 검증한다
+    private void validateUpload(Long userId, String photoKey) {
+        S3PathConstants.requireWithinPrefix(photoKey, S3PathConstants.certificationPrefix(userId));
+        s3ObjectVerificationService.verifyImageObject(photoKey);
+    }
+
+    private void requireNotAlreadyCertified(Long userId, Long festivalId) {
         certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
                 .ifPresent(existing -> {
                     throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
                 });
+    }
 
+    private FestivalCertification saveCertification(User user, Festival festival, String photoKey) {
         FestivalCertification cert = FestivalCertification.create(user, festival, photoKey);
         try {
             certificationRepository.saveAndFlush(cert);
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
         }
-
-        String posterUrl = festival.getPosterKey() != null ? s3PresignService.presignGetUrl(festival.getPosterKey()) : null;
-        String photoUrl = s3PresignService.presignGetUrl(photoKey);
-        return CertificationResponseDto.from(cert, posterUrl, photoUrl);
+        return cert;
     }
 
     @Override

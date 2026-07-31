@@ -5,6 +5,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
 import com.drew.metadata.exif.ExifIFD0Directory;
+import com.feple.feple_backend.file.ImageUploadPolicy;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -24,14 +25,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageResizeService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif");
-    private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MAX_DIMENSION_PX = 8_000;
 
     public void validateFile(MultipartFile file) {
         if (file.isEmpty())
             throw new IllegalArgumentException("파일이 비어있습니다.");
 
-        if (file.getSize() > MAX_FILE_SIZE_BYTES)
+        if (file.getSize() > ImageUploadPolicy.MAX_IMAGE_UPLOAD_BYTES)
             throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
 
         String original = file.getOriginalFilename();

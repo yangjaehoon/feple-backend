@@ -3,6 +3,7 @@ package com.feple.feple_backend.notification.service;
 import com.feple.feple_backend.notification.dto.NotificationPreferenceDto;
 import com.feple.feple_backend.notification.dto.UpdateNotificationPreferenceDto;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
+import com.feple.feple_backend.notification.entity.NotificationPreferenceFields;
 import com.feple.feple_backend.notification.repository.NotificationPreferenceRepository;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +29,8 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     @Transactional
     public void updatePreferences(Long userId, UpdateNotificationPreferenceDto dto) {
         NotificationPreference pref = getOrCreate(userId);
-        pref.update(dto.isCertEnabled(), dto.isCommentEnabled(),
-                dto.isFestivalEnabled(), dto.isSongRequestEnabled());
+        pref.update(new NotificationPreferenceFields(dto.isCertEnabled(), dto.isCommentEnabled(),
+                dto.isFestivalEnabled(), dto.isSongRequestEnabled()));
     }
 
     @Override

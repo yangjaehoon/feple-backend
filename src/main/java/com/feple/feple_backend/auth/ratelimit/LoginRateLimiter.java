@@ -1,6 +1,5 @@
 package com.feple.feple_backend.auth.ratelimit;
 
-import com.feple.feple_backend.global.exception.TooManyRequestsException;
 import java.time.Duration;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +15,6 @@ public class LoginRateLimiter {
             new RateLimiterSupport(Duration.ofMinutes(15), 10_000, 10, Duration.ofMinutes(10));
 
     public void check(String ip) {
-        if (!limiter.tryConsume(ip)) {
-            throw new TooManyRequestsException("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
-        }
+        limiter.checkOrThrow(ip);
     }
 }

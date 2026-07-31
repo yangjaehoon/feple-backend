@@ -24,7 +24,7 @@ public final class JwtProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim("type", "access")
+                .claim(JwtConstants.CLAIM_TYPE, JwtConstants.TOKEN_TYPE_ACCESS)
                 .issuedAt(now)
                 .expiration(exp)
                 .signWith(key)
@@ -38,8 +38,8 @@ public final class JwtProvider {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload()
-                    .get("type", String.class);
-            return "refresh".equals(type);
+                    .get(JwtConstants.CLAIM_TYPE, String.class);
+            return JwtConstants.TOKEN_TYPE_REFRESH.equals(type);
         } catch (Exception e) {
             return false;
         }
@@ -51,7 +51,7 @@ public final class JwtProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim("type", "refresh")
+                .claim(JwtConstants.CLAIM_TYPE, JwtConstants.TOKEN_TYPE_REFRESH)
                 .issuedAt(now)
                 .expiration(exp)
                 .signWith(key)
@@ -67,8 +67,8 @@ public final class JwtProvider {
                 .parseSignedClaims(token)
                 .getPayload();
 
-        String type = payload.get("type", String.class);
-        if (!"access".equals(type)) {
+        String type = payload.get(JwtConstants.CLAIM_TYPE, String.class);
+        if (!JwtConstants.TOKEN_TYPE_ACCESS.equals(type)) {
             throw new IllegalArgumentException("액세스 토큰이 아닙니다.");
         }
 

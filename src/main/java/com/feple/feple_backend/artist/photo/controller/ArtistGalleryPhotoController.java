@@ -5,13 +5,13 @@ import com.feple.feple_backend.artist.photo.dto.RegisterPhotoRequestDto;
 import com.feple.feple_backend.artist.photo.dto.UpdatePhotoRequestDto;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
+import com.feple.feple_backend.file.ImageUploadPolicy;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,14 +24,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/artists/{artistId}/photos")
 public class ArtistGalleryPhotoController {
 
-    private static final Map<String, String> ALLOWED_IMAGE_TYPES = Map.of(
-            "jpg",  "image/jpeg",
-            "jpeg", "image/jpeg",
-            "png",  "image/png",
-            "gif",  "image/gif",
-            "webp", "image/webp"
-    );
-
     private final ArtistGalleryPhotoService artistGalleryPhotoService;
     private final ArtistPhotoReportService artistPhotoReportService;
 
@@ -42,7 +34,7 @@ public class ArtistGalleryPhotoController {
             @AuthenticationPrincipal Long userId
     ) {
         String ext = req.extension() == null ? "" : req.extension().toLowerCase();
-        if (!req.contentType().equals(ALLOWED_IMAGE_TYPES.get(ext))) {
+        if (!ImageUploadPolicy.isAllowed(ext, req.contentType())) {
             throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (jpg, jpeg, png, gif, webp 만 가능)");
         }
         return artistGalleryPhotoService.generateUploadUrl(artistId, ext, req.contentType());

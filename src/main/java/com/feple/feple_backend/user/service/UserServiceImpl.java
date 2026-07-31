@@ -75,7 +75,8 @@ public class UserServiceImpl implements UserService {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
         if (!user.canChangeNickname()) {
             long daysLeft = ChronoUnit.DAYS.between(LocalDateTime.now(), user.nextNicknameChangeAt()) + 1;
-            throw new IllegalArgumentException("닉네임은 90일에 한 번만 변경할 수 있습니다. " + daysLeft + "일 후에 변경 가능합니다.");
+            throw new IllegalArgumentException(
+                    "닉네임은 " + User.NICKNAME_COOLDOWN_DAYS + "일에 한 번만 변경할 수 있습니다. " + daysLeft + "일 후에 변경 가능합니다.");
         }
         user.changeNickname(nickname.trim());
         try {

@@ -22,7 +22,7 @@ public class AdminWriteOperationRateLimitInterceptor implements HandlerIntercept
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String key = (auth != null && auth.isAuthenticated()) ? auth.getName() : request.getRemoteAddr();
         if (!adminMutationRateLimiter.tryConsume(key)) {
-            response.sendError(429, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
+            response.sendError(429, RateLimiterSupport.TOO_MANY_REQUESTS_MESSAGE);
             return false;
         }
         return true;

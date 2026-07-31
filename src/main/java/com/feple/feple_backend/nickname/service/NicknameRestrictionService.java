@@ -1,40 +1,31 @@
 package com.feple.feple_backend.nickname.service;
 
+import com.feple.feple_backend.global.BaseWordListService;
 import com.feple.feple_backend.nickname.entity.NicknameRestriction;
 import com.feple.feple_backend.nickname.event.NicknameRestrictionChangedEvent;
 import com.feple.feple_backend.nickname.repository.NicknameRestrictionRepository;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class NicknameRestrictionService {
+public class NicknameRestrictionService extends BaseWordListService<NicknameRestriction> {
 
-    private final NicknameRestrictionRepository repository;
-    private final ApplicationEventPublisher eventPublisher;
-
-    public List<NicknameRestriction> findAll() {
-        return repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    public NicknameRestrictionService(NicknameRestrictionRepository repository, ApplicationEventPublisher eventPublisher) {
+        super(repository, eventPublisher);
     }
 
-    @Transactional
-    public void add(String word) {
-        String trimmed = word.trim().toLowerCase();
-        if (trimmed.isEmpty()) throw new IllegalArgumentException("단어를 입력해 주세요.");
-        if (trimmed.length() > 50) throw new IllegalArgumentException("50자 이하여야 합니다.");
-        if (repository.existsByWord(trimmed)) throw new IllegalArgumentException("이미 등록된 단어입니다: " + trimmed);
-        repository.save(new NicknameRestriction(trimmed));
-        eventPublisher.publishEvent(new NicknameRestrictionChangedEvent());
+    @Override
+    protected NicknameRestriction newEntity(String word) {
+        return new NicknameRestriction(word);
     }
 
-    @Transactional
-    public void delete(Long id) {
-        repository.deleteById(id);
-        eventPublisher.publishEvent(new NicknameRestrictionChangedEvent());
+    @Override
+    protected Object changedEvent() {
+        return new NicknameRestrictionChangedEvent();
+    }
+
+    @Override
+    protected String label() {
+        return "단어";
     }
 }

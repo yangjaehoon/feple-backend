@@ -76,7 +76,7 @@ public class User {
     @Column(name = "nickname_changed_at")
     private LocalDateTime nicknameChangedAt;
 
-    private static final int NICKNAME_COOLDOWN_DAYS = 90;
+    public static final int NICKNAME_COOLDOWN_DAYS = 90;
 
     public boolean isAdmin() { return role == UserRole.ADMIN; }
     public boolean isArtist() { return role == UserRole.ARTIST; }

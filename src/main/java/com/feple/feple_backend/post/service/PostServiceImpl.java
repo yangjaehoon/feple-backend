@@ -204,23 +204,14 @@ public class PostServiceImpl implements PostService {
     }
 
     // fetchFirst/fetchAfterCursor는 cursor==null 여부에 따라 호출부에서 다른 리포지토리 메서드를 넘긴다.
-    // hasNext는 차단 필터링 전 fetch 개수(size+1) 기준으로 판단한다.
     private CursorPage<PostResponseDto> buildCursorPage(CursorPageRequest pageRequest,
                                                           Function<PageRequest, List<Post>> fetchFirst,
                                                           Function<PageRequest, List<Post>> fetchAfterCursor,
                                                           Function<Post, PostResponseDto> mapper) {
-        int size = pageRequest.size();
-        int fetchSize = size + 1;
-        PageRequest limit = PageRequest.of(0, fetchSize);
-        List<Post> posts = (pageRequest.cursor() == null) ? fetchFirst.apply(limit) : fetchAfterCursor.apply(limit);
-        boolean hasNext = posts.size() == fetchSize;
-        List<Post> pageItems = posts.stream().limit(size).toList();
-        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
-                pageItems.stream().map(mapper).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
-        // nextCursor는 필터링 전 raw 목록(pageItems) 기준으로 계산한다 — 차단된 작성자의 글이
-        // 이번 배치를 전부 채워 content가 비어도(hasNext=true) 다음 배치를 계속 조회할 수 있어야 한다.
-        Long nextCursor = hasNext && !pageItems.isEmpty() ? pageItems.get(pageItems.size() - 1).getId() : null;
-        return new CursorPage<>(content, nextCursor, hasNext);
+        return CursorPageAssembler.assemble(pageRequest.cursor(), pageRequest.size(), fetchFirst, fetchAfterCursor,
+                pageItems -> blockedContentFilter.excludeBlocked(
+                        pageItems.stream().map(mapper).toList(), pageRequest.viewerId(), PostResponseDto::getUserId),
+                Post::getId);
     }
 
     private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
