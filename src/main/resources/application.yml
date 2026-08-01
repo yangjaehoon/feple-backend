@@ -1,7 +1,9 @@
 spring:
   datasource:
     hikari:
-      maximum-pool-size: 5
+      maximum-pool-size: 15      # Tomcat max=50과 격차가 컸음 — 자체 호스팅 MySQL max_connections=30 중
+                                  # 절반을 이 앱에 할당(관리자 CLI 등 다른 접속 여유분 확보), 나머지는
+                                  # connection-timeout으로 빠르게 실패시켜 스레드 적체 방지
       minimum-idle: 1
       keepalive-time: 120000     # 2분마다 유휴 커넥션 ping — MySQL wait_timeout(8h) 대비 충분
       max-lifetime: 600000       # 10분 후 커넥션 재생성 (MySQL wait_timeout보다 짧게)

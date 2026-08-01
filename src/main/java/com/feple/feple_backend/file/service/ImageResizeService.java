@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import org.springframework.stereotype.Service;
@@ -53,9 +54,12 @@ public class ImageResizeService {
     /** 이미지를 targetPx × targetPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
     public byte[] resizeToJpeg(InputStream inputStream, int targetPx) throws IOException {
         byte[] bytes = inputStream.readAllBytes();
-        validateImageDimensions(bytes);
+        int[] originalDims = readImageDimensions(bytes);
 
-        BufferedImage src = ImageIO.read(new ByteArrayInputStream(bytes));
+        // 원본 해상도 그대로 전체 디코딩하면 8000×8000 사진 한 장이 힙(-Xmx300m)의
+        // 상당 부분을 차지할 수 있다. 실제 필요한 건 targetPx(최대 720px) 근방뿐이므로
+        // 디코딩 단계에서 서브샘플링해 애초에 큰 버퍼를 만들지 않는다.
+        BufferedImage src = decodeSubsampled(bytes, originalDims[0], originalDims[1], targetPx);
         if (src == null)
             throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
 
@@ -67,6 +71,27 @@ public class ImageResizeService {
 
         int[] dims = computeTargetSize(src.getWidth(), src.getHeight(), targetPx);
         return encodeToJpeg(src, dims[0], dims[1]);
+    }
+
+    /** targetPx에 맞는 서브샘플링 비율로 디코딩해 원본 해상도 전체를 메모리에 올리지 않는다. */
+    private BufferedImage decodeSubsampled(byte[] bytes, int originalWidth, int originalHeight, int targetPx)
+            throws IOException {
+        int longSide = Math.max(originalWidth, originalHeight);
+        int subsampling = Math.max(1, longSide / Math.max(targetPx, 1));
+
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
+            Iterator<ImageReader> it = ImageIO.getImageReaders(iis);
+            if (!it.hasNext()) throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+            ImageReader reader = it.next();
+            try {
+                reader.setInput(iis, true, true);
+                ImageReadParam param = reader.getDefaultReadParam();
+                param.setSourceSubsampling(subsampling, subsampling, 0, 0);
+                return reader.read(0, param);
+            } finally {
+                reader.dispose();
+            }
+        }
     }
 
     private int readExifOrientation(byte[] bytes) {
@@ -132,8 +157,8 @@ public class ImageResizeService {
         return rotated;
     }
 
-    /** 헤더만 읽어 픽셀 크기 검증 — 전체 디코딩 전에 ImageBomb 차단 */
-    private void validateImageDimensions(byte[] bytes) throws IOException {
+    /** 헤더만 읽어 픽셀 크기를 반환 — 전체 디코딩 전에 ImageBomb 차단 + 서브샘플링 비율 계산에 재사용 */
+    private int[] readImageDimensions(byte[] bytes) throws IOException {
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
             Iterator<ImageReader> it = ImageIO.getImageReaders(iis);
             if (!it.hasNext()) throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
@@ -145,6 +170,7 @@ public class ImageResizeService {
                 if (width > MAX_DIMENSION_PX || height > MAX_DIMENSION_PX)
                     throw new IllegalArgumentException(
                         "이미지 크기가 너무 큽니다. 최대 " + MAX_DIMENSION_PX + "×" + MAX_DIMENSION_PX + " 픽셀까지 허용됩니다.");
+                return new int[]{width, height};
             } finally {
                 reader.dispose();
             }
@@ -169,7 +195,9 @@ public class ImageResizeService {
         graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         graphics.setColor(Color.WHITE);
         graphics.fillRect(0, 0, width, height);
-        graphics.drawImage(src.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
+        // getScaledInstance()는 별도의 스케일된 임시 이미지를 하나 더 할당한다 — 이미
+        // 위에서 보간 힌트를 설정했으므로 drawImage에 목표 크기를 직접 넘겨 그 임시 버퍼를 없앤다.
+        graphics.drawImage(src, 0, 0, width, height, null);
         graphics.dispose();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
