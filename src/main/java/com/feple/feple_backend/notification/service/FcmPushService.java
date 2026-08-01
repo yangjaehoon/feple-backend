@@ -27,17 +27,18 @@ public class FcmPushService implements PushNotificationClient {
     @Override
     @Async
     public void sendBroadcast(List<String> tokens, String title, String body) {
-        sendMulticastInternal(tokens, title, body, null, NotificationType.ADMIN_BROADCAST.name());
+        sendMulticastInternal(tokens, title, body, null, NotificationType.ADMIN_BROADCAST.name(), null);
     }
 
     @Override
     @Async
     public void sendMulticast(List<String> tokens, PushMessage message) {
-        sendMulticastInternal(tokens, message.title(), message.body(), message.resourceId(), message.type().name());
+        sendMulticastInternal(tokens, message.title(), message.body(), message.resourceId(),
+                message.type().name(), message.imageUrl());
     }
 
     private void sendMulticastInternal(List<String> tokens, String title, String body,
-                               String resourceId, String type) {
+                               String resourceId, String type, String imageUrl) {
         if (tokens.isEmpty()) return;
         if (FirebaseApp.getApps().isEmpty()) {
             // @Async라 호출부로 예외가 전파되지 않아 이 로그가 유일한 신호 — warn이 아닌
@@ -52,7 +53,7 @@ public class FcmPushService implements PushNotificationClient {
         for (int batchStart = 0; batchStart < tokens.size(); batchStart += BATCH_SIZE) {
             List<String> batch = tokens.subList(batchStart, Math.min(batchStart + BATCH_SIZE, tokens.size()));
             try {
-                MulticastMessage message = buildMulticastMessage(batch, title, body, resourceId, type);
+                MulticastMessage message = buildMulticastMessage(batch, title, body, resourceId, type, imageUrl);
                 BatchResponse response = messaging.sendEachForMulticast(message);
                 log.info("[FCM] 발송 완료 — 성공: {}, 실패: {}",
                         response.getSuccessCount(), response.getFailureCount());
@@ -69,13 +70,14 @@ public class FcmPushService implements PushNotificationClient {
     }
 
     private MulticastMessage buildMulticastMessage(List<String> batch, String title, String body,
-                                                     String resourceId, String type) {
+                                                     String resourceId, String type, String imageUrl) {
+        Notification.Builder notificationBuilder = Notification.builder()
+                .setTitle(title)
+                .setBody(body);
+        if (imageUrl != null) notificationBuilder.setImage(imageUrl);
         return MulticastMessage.builder()
                 .addAllTokens(batch)
-                .setNotification(Notification.builder()
-                        .setTitle(title)
-                        .setBody(body)
-                        .build())
+                .setNotification(notificationBuilder.build())
                 .putData("type", type)
                 .putData("festivalId", resourceId != null ? resourceId : "")
                 .setAndroidConfig(AndroidConfig.builder()

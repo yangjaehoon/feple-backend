@@ -24,6 +24,7 @@ import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
@@ -59,6 +60,7 @@ class NotificationServiceTest {
     @Mock PushNotificationClient fcmPushService;
     @Mock NotificationPreferenceService preferenceService;
     @Mock UserBlockService userBlockService;
+    @Mock FileStorageService fileStorageService;
 
     @InjectMocks NotificationService service;
 
@@ -146,6 +148,23 @@ class NotificationServiceTest {
         service.onCertificationApproved(new CertificationApprovedEvent(1L, "펜타포트", "Pentaport", 10L));
 
         then(notificationRepository).should().save(any());
+    }
+
+    @Test
+    void 인증승인_페스티벌에_포스터_있으면_푸시에_이미지_URL_포함() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(festivalRepository.findById(10L)).willReturn(Optional.of(
+                Festival.builder().id(10L).title("펜타포트").posterKey("festival-posters/2026/p.jpg").build()));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+        given(fileStorageService.buildUrl("festival-posters/2026/p.jpg"))
+                .willReturn("https://cdn.feple.com/festival-posters/2026/p.jpg");
+        given(deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(1L)))
+                .willReturn(List.of(token("tok1", "ko")));
+
+        service.onCertificationApproved(new CertificationApprovedEvent(1L, "펜타포트", "Pentaport", 10L));
+
+        then(fcmPushService).should().sendMulticast(anyList(),
+                argThat(m -> "https://cdn.feple.com/festival-posters/2026/p.jpg".equals(m.imageUrl())));
     }
 
     @Test

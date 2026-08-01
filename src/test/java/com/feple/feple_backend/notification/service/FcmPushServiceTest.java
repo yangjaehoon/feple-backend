@@ -134,7 +134,7 @@ class FcmPushServiceTest {
         BatchResponse response = mock(BatchResponse.class);
         given(response.getResponses()).willReturn(List.of());
         given(messaging.sendEachForMulticast(any(MulticastMessage.class))).willReturn(response);
-        PushMessage message = new PushMessage("제목", "내용", "10", NotificationType.NEW_COMMENT);
+        PushMessage message = new PushMessage("제목", "내용", "10", NotificationType.NEW_COMMENT, null);
 
         try (MockedStatic<FirebaseApp> appMock = mockStatic(FirebaseApp.class);
                 MockedStatic<FirebaseMessaging> messagingMock = mockStatic(FirebaseMessaging.class)) {
@@ -142,6 +142,26 @@ class FcmPushServiceTest {
             messagingMock.when(FirebaseMessaging::getInstance).thenReturn(messaging);
 
             service.sendMulticast(List.of("token1"), message);
+
+            verify(messaging).sendEachForMulticast(any(MulticastMessage.class));
+        }
+    }
+
+    @Test
+    void sendMulticast_imageUrl_있어도_정상_발송된다() throws Exception {
+        BatchResponse response = mock(BatchResponse.class);
+        given(response.getResponses()).willReturn(List.of());
+        given(messaging.sendEachForMulticast(any(MulticastMessage.class))).willReturn(response);
+        PushMessage message = new PushMessage(
+                "제목", "내용", "10", NotificationType.NEW_FESTIVAL, "https://cdn.feple.com/poster.jpg");
+
+        try (MockedStatic<FirebaseApp> appMock = mockStatic(FirebaseApp.class);
+                MockedStatic<FirebaseMessaging> messagingMock = mockStatic(FirebaseMessaging.class)) {
+            appMock.when(FirebaseApp::getApps).thenReturn(List.of(mock(FirebaseApp.class)));
+            messagingMock.when(FirebaseMessaging::getInstance).thenReturn(messaging);
+
+            assertThatCode(() -> service.sendMulticast(List.of("token1"), message))
+                    .doesNotThrowAnyException();
 
             verify(messaging).sendEachForMulticast(any(MulticastMessage.class));
         }

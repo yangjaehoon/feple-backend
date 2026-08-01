@@ -14,6 +14,7 @@ import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationContent;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
@@ -55,11 +56,23 @@ public class NotificationService {
     private final PushNotificationClient fcmPushService;
     private final NotificationPreferenceService preferenceService;
     private final UserBlockService userBlockService;
+    private final FileStorageService fileStorageService;
 
     private record NotificationMessage(NotificationType type, String title, String body,
-                                        String titleEn, String bodyEn, String resourceId) {
+                                        String titleEn, String bodyEn, String resourceId, String imageUrl) {
+        // 기존 호출부(이미지 없음)와의 호환용 — imageUrl은 notifySingle/saveAndPush/sendFestivalReminders에서
+        // 엔티티의 포스터/프로필 이미지 키를 resolveImageUrl()로 채워 넣는다.
+        NotificationMessage(NotificationType type, String title, String body,
+                             String titleEn, String bodyEn, String resourceId) {
+            this(type, title, body, titleEn, bodyEn, resourceId, null);
+        }
+
         NotificationContent toContent() {
             return new NotificationContent(type, title, body, titleEn, bodyEn);
+        }
+
+        NotificationMessage withImageUrl(String imageUrl) {
+            return new NotificationMessage(type, title, body, titleEn, bodyEn, resourceId, imageUrl);
         }
     }
 
@@ -281,7 +294,15 @@ public class NotificationService {
 
     private void notifySingle(Long userId, NotificationMessage message,
                                Function<NotificationContent, Notification> notificationFactory) {
-        saveAndPushSingle(notificationFactory.apply(message.toContent()), userId, message);
+        Notification notification = notificationFactory.apply(message.toContent());
+        NotificationMessage messageWithImage = resolveImage(message, notification.getImageKey());
+        saveAndPushSingle(notification, userId, messageWithImage);
+    }
+
+    /** 알림에 딸린 포스터/프로필 이미지 키를 공개 URL로 변환해 FCM payload에 실을 수 있게 한다 */
+    private NotificationMessage resolveImage(NotificationMessage message, String imageKey) {
+        if (imageKey == null) return message;
+        return message.withImageUrl(fileStorageService.buildUrl(imageKey));
     }
 
     /** 관리자 테스트 발송용 개별 알림 저장 (AdminPushService에서 호출) */
@@ -335,6 +356,8 @@ public class NotificationService {
         notificationRepository.saveAll(users.stream()
                 .map(u -> Notification.of(u, message.toContent(), festival))
                 .toList());
+        NotificationMessage messageWithImage =
+                resolveImage(message, festival != null ? festival.getPosterKey() : null);
         List<Long> allUserIds = users.stream().map(User::getId).toList();
         Map<Long, NotificationPreference> prefMap = preferenceService.getOrCreateBatch(allUserIds);
         List<Long> enabledUserIds = allUserIds.stream()
@@ -342,7 +365,7 @@ public class NotificationService {
                 .toList();
         List<TokenLanguageProjection> tokens =
                 deviceTokenRepository.findTokensWithLanguageByUserIds(enabledUserIds);
-        sendByLanguage(tokens, message);
+        sendByLanguage(tokens, messageWithImage);
     }
 
     private void sendByLanguage(List<TokenLanguageProjection> tokens, NotificationMessage message) {
@@ -354,10 +377,12 @@ public class NotificationService {
         List<String> koTokens = byLang.getOrDefault("ko", List.of());
         List<String> enTokens = byLang.getOrDefault("en", List.of());
         if (!koTokens.isEmpty()) {
-            fcmPushService.sendMulticast(koTokens, new PushMessage(message.title(), message.body(), message.resourceId(), message.type()));
+            fcmPushService.sendMulticast(koTokens, new PushMessage(
+                    message.title(), message.body(), message.resourceId(), message.type(), message.imageUrl()));
         }
         if (!enTokens.isEmpty()) {
-            fcmPushService.sendMulticast(enTokens, new PushMessage(message.titleEn(), message.bodyEn(), message.resourceId(), message.type()));
+            fcmPushService.sendMulticast(enTokens, new PushMessage(
+                    message.titleEn(), message.bodyEn(), message.resourceId(), message.type(), message.imageUrl()));
         }
     }
 
