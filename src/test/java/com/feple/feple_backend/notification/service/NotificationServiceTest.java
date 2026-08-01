@@ -158,8 +158,9 @@ class NotificationServiceTest {
         given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
         given(fileStorageService.buildUrl("festival-posters/2026/p.jpg"))
                 .willReturn("https://cdn.feple.com/festival-posters/2026/p.jpg");
+        TokenLanguageProjection koToken = token("tok1", "ko");
         given(deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(1L)))
-                .willReturn(List.of(token("tok1", "ko")));
+                .willReturn(List.of(koToken));
 
         service.onCertificationApproved(new CertificationApprovedEvent(1L, "펜타포트", "Pentaport", 10L));
 
