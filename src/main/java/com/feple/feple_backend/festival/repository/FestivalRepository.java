@@ -85,6 +85,26 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                                  @Param("activeFrom") LocalDate activeFrom,
                                  Pageable pageable);
 
+    // 프론트 검색/브라우즈 화면 전용 — 정렬은 호출부가 Pageable에 담아 넘긴 Sort를 그대로 사용한다.
+    // DISTINCT+JOIN 쿼리는 count 쿼리를 자동 유추하면 부정확할 수 있어 명시한다.
+    @Query(value = "SELECT DISTINCT f FROM Festival f LEFT JOIN f.genres g " +
+           "WHERE f.deletedAt IS NULL " +
+           "AND (:genres IS NULL OR g IN :genres) " +
+           "AND (:regions IS NULL OR f.region IN :regions) " +
+           "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions) " +
+           "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom)",
+           countQuery = "SELECT COUNT(DISTINCT f) FROM Festival f LEFT JOIN f.genres g " +
+           "WHERE f.deletedAt IS NULL " +
+           "AND (:genres IS NULL OR g IN :genres) " +
+           "AND (:regions IS NULL OR f.region IN :regions) " +
+           "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions) " +
+           "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom)")
+    Page<Festival> findByFiltersPage(@Param("genres") List<MusicGenre> genres,
+                                     @Param("regions") List<Region> regions,
+                                     @Param("ageRestrictions") List<AgeRestriction> ageRestrictions,
+                                     @Param("activeFrom") LocalDate activeFrom,
+                                     Pageable pageable);
+
     List<Festival> findTop10ByDeletedAtIsNullOrderByLikeCountDesc();
 
     @Query("SELECT f FROM Festival f WHERE f.deletedAt IS NULL AND f.startDate BETWEEN :today AND :until ORDER BY f.likeCount DESC")

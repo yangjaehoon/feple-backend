@@ -30,6 +30,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -105,6 +107,34 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
             .limit(PageSize.FESTIVALS)
             .map(this::toDto)
             .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FestivalResponseDto> getFestivalsPage(FestivalFilterCriteria criteria, Pageable pageable) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate activeFrom = criteria.includeEnded() ? null : today;
+        List<MusicGenre> genres = criteria.genres();
+        List<Region> regions = criteria.regions();
+        List<AgeRestriction> ageRestrictions = criteria.ageRestrictions();
+
+        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), resolveSort(criteria.sort()));
+        Page<Festival> page = festivalRepository.findByFiltersPage(
+            genres == null || genres.isEmpty() ? null : genres,
+            regions == null || regions.isEmpty() ? null : regions,
+            ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions,
+            activeFrom,
+            sorted
+        );
+        return page.map(this::toDto);
+    }
+
+    // 명시적 정렬이 없으면 다가오는 순(오름차순)을 기본값으로 — 브라우즈 화면에서 가장 자연스러운 순서
+    private Sort resolveSort(String sort) {
+        if ("date_desc".equals(sort)) {
+            return Sort.by(Sort.Direction.DESC, "startDate");
+        }
+        return Sort.by(Sort.Direction.ASC, "startDate");
     }
 
     @Override

@@ -16,17 +16,23 @@ import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChan
 import com.feple.feple_backend.global.MusicGenre;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "페스티벌", description = "페스티벌 조회, 좋아요, 참석 여부, 날씨")
+@Validated
 @RestController
 @RequestMapping("/festivals")
 @RequiredArgsConstructor
@@ -47,6 +53,21 @@ public class FestivalController {
             @RequestParam(defaultValue = "false") boolean includeEnded,
             @RequestParam(required = false) String sort) {
         return festivalService.getAllFestivals(new FestivalFilterCriteria(genres, regions, ageRestrictions, includeEnded, sort));
+    }
+
+    /** 검색/브라우즈 화면 전용 페이지네이션 목록 — getAllFestivals와 달리 진짜 다음 페이지를 지원한다. */
+    @GetMapping("/page")
+    public Page<FestivalResponseDto> getFestivalsPage(
+            @RequestParam(required = false) List<MusicGenre> genres,
+            @RequestParam(required = false) List<Region> regions,
+            @RequestParam(required = false) List<AgeRestriction> ageRestrictions,
+            @RequestParam(defaultValue = "false") boolean includeEnded,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        return festivalService.getFestivalsPage(
+                new FestivalFilterCriteria(genres, regions, ageRestrictions, includeEnded, sort),
+                PageRequest.of(page, size));
     }
 
     @GetMapping("/{id}")

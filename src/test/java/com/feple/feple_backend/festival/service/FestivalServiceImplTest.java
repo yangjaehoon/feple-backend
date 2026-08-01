@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -277,5 +278,53 @@ class FestivalServiceImplTest {
         List<FestivalResponseDto> result = festivalService.getAllActiveFestivalsForAdmin();
 
         assertThat(result).isEmpty();
+    }
+
+    // ── getFestivalsPage ────────────────────────────────────────────────
+
+    @Test
+    void 페이지_조회_기본정렬은_startDate_오름차순() {
+        Festival f = festival(1L, "락페", null);
+        given(festivalRepository.findByFiltersPage(any(), any(), any(), any(), any()))
+                .willReturn(new org.springframework.data.domain.PageImpl<>(List.of(f)));
+
+        festivalService.getFestivalsPage(
+                new FestivalFilterCriteria(null, null, null, true, null),
+                org.springframework.data.domain.PageRequest.of(0, 20));
+
+        org.mockito.ArgumentCaptor<org.springframework.data.domain.Pageable> captor =
+                org.mockito.ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
+        then(festivalRepository).should().findByFiltersPage(any(), any(), any(), any(), captor.capture());
+        assertThat(captor.getValue().getSort().getOrderFor("startDate").getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.ASC);
+    }
+
+    @Test
+    void 페이지_조회_date_desc_지정시_내림차순() {
+        given(festivalRepository.findByFiltersPage(any(), any(), any(), any(), any()))
+                .willReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
+
+        festivalService.getFestivalsPage(
+                new FestivalFilterCriteria(null, null, null, true, "date_desc"),
+                org.springframework.data.domain.PageRequest.of(0, 20));
+
+        org.mockito.ArgumentCaptor<org.springframework.data.domain.Pageable> captor =
+                org.mockito.ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
+        then(festivalRepository).should().findByFiltersPage(any(), any(), any(), any(), captor.capture());
+        assertThat(captor.getValue().getSort().getOrderFor("startDate").getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.DESC);
+    }
+
+    @Test
+    void 페이지_조회_결과를_DTO로_매핑() {
+        Festival f = festival(1L, "락페", null);
+        given(festivalRepository.findByFiltersPage(any(), any(), any(), any(), any()))
+                .willReturn(new org.springframework.data.domain.PageImpl<>(List.of(f)));
+
+        Page<FestivalResponseDto> result = festivalService.getFestivalsPage(
+                new FestivalFilterCriteria(null, null, null, true, null),
+                org.springframework.data.domain.PageRequest.of(0, 20));
+
+        assertThat(result.getContent()).extracting(FestivalResponseDto::getTitle).containsExactly("락페");
     }
 }

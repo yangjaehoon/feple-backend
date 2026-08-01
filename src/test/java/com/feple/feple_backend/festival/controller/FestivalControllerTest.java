@@ -59,6 +59,15 @@ class FestivalControllerTest {
     }
 
     @Test
+    void 페스티벌_페이지_조회() throws Exception {
+        given(festivalService.getFestivalsPage(any(), any()))
+                .willReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
+
+        mockMvc.perform(get("/festivals/page").param("page", "0").param("size", "20"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void 페스티벌_단건_조회() throws Exception {
         FestivalDetailResponseDto dto = mock(FestivalDetailResponseDto.class);
         given(festivalService.getFestivalDetail(1L)).willReturn(dto);
