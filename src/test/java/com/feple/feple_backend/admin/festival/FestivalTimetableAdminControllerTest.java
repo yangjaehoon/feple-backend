@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -65,6 +66,18 @@ class FestivalTimetableAdminControllerTest {
     }
 
     // ── POST /admin/festivals/{festivalId}/timetable/{entryId}/update ─────────
+
+    @Test
+    void 타임테이블_항목_수정_검증실패_errorMessage_설정() throws Exception {
+        // @NotNull festivalDate 없음
+        mockMvc.perform(post("/admin/festivals/1/timetable/3/update")
+                        .param("startTime", "10:00:00")
+                        .param("endTime", "11:00:00"))
+                .andExpect(redirectedUrl("/admin/festivals/1#timetable"))
+                .andExpect(flash().attributeExists("errorMessage"));
+
+        then(timetableService).should(never()).updateEntry(anyLong(), anyLong(), any());
+    }
 
     @Test
     void 타임테이블_항목_수정_성공_successMessage_설정() throws Exception {

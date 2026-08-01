@@ -1,8 +1,10 @@
 package com.feple.feple_backend.admin.festival;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -85,6 +87,30 @@ class FestivalArtistAdminControllerTest {
                 .andExpect(flash().attribute("errorMessage", "선택한 아티스트가 이미 모두 참여 중입니다."));
     }
 
+    @Test
+    void 아티스트_추가_전부_실패시_errorMessage_설정() throws Exception {
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(0, 0, 1));
+
+        mockMvc.perform(post("/admin/festivals/1/artists")
+                        .param("artistIds", "10"))
+                .andExpect(redirectedUrl("/admin/festivals/1"))
+                .andExpect(flash().attribute("errorMessage", "아티스트 추가에 실패했습니다. 다시 시도해주세요."));
+
+        then(adminLogService).should(never()).log(any(), any(), any(), any());
+    }
+
+    @Test
+    void 아티스트_추가_일부_중복_일부_실패_메시지에_모두_포함() throws Exception {
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(1, 1, 1));
+
+        mockMvc.perform(post("/admin/festivals/1/artists")
+                        .param("artistIds", "10", "11", "12"))
+                .andExpect(redirectedUrl("/admin/festivals/1"))
+                .andExpect(flash().attribute("successMessage", "1명의 아티스트가 추가되었습니다. (1명은 이미 참여 중) (1명 추가 실패)"));
+    }
+
     // ── GET /admin/festivals/{festivalId}/artists/list ────────────────────────
 
     @Test
@@ -143,6 +169,40 @@ class FestivalArtistAdminControllerTest {
                         .param("stageNames", "MAIN"))
                 .andExpect(redirectedUrl("/admin/festivals/1#artists"))
                 .andExpect(flash().attributeExists("errorMessage"));
+    }
+
+    @Test
+    void 라인업_일괄수정_일부_성공_일부_실패_혼합_메시지() throws Exception {
+        given(artistFestivalService.updateArtistFestivalsBatch(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.BatchUpdateResult(1, 1));
+
+        mockMvc.perform(post("/admin/festivals/1/artists/batch-edit")
+                        .param("afIds", "2", "3")
+                        .param("performanceDates", "2026-06-01", "2026-06-02")
+                        .param("stageNames", "MAIN", "SIDE"))
+                .andExpect(redirectedUrl("/admin/festivals/1#artists"))
+                .andExpect(flash().attribute("errorMessage", "1건 수정 완료, 1건 실패. 항목을 확인해 주세요."));
+
+        then(adminLogService).should().log(any(), any(), any(), eq("1건 일괄 수정"));
+    }
+
+    @Test
+    void 라인업_일괄수정_같은_afId_중복행은_마지막_값으로_병합() throws Exception {
+        given(artistFestivalService.updateArtistFestivalsBatch(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.BatchUpdateResult(1, 0));
+
+        mockMvc.perform(post("/admin/festivals/1/artists/batch-edit")
+                        .param("afIds", "2", "2")
+                        .param("performanceDates", "2026-06-01", "2026-06-02")
+                        .param("stageNames", "MAIN", "SIDE"))
+                .andExpect(redirectedUrl("/admin/festivals/1#artists"))
+                .andExpect(flash().attribute("successMessage", "라인업이 일괄 수정되었습니다."));
+
+        org.mockito.ArgumentCaptor<java.util.Map<Long, com.feple.feple_backend.artistfestival.entity.LineupUpdate>> captor =
+                org.mockito.ArgumentCaptor.forClass(java.util.Map.class);
+        then(artistFestivalService).should().updateArtistFestivalsBatch(eq(1L), captor.capture());
+        assertThat(captor.getValue()).hasSize(1);
+        assertThat(captor.getValue().get(2L).stageName()).isEqualTo("SIDE");
     }
 
     @Test

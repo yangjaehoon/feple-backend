@@ -100,4 +100,12 @@ class FestivalStageAdminControllerTest {
 
         then(stageService).should().moveDown(1L, 2L);
     }
+
+    @Test
+    void 스테이지_순서_내리기_실패_errorMessage_설정() throws Exception {
+        willThrow(new RuntimeException("오류")).given(stageService).moveDown(anyLong(), anyLong());
+
+        mockMvc.perform(post("/admin/festivals/1/stages/2/down"))
+                .andExpect(flash().attribute("errorMessage", "순서 변경에 실패했습니다."));
+    }
 }

@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -63,5 +64,17 @@ class FestivalChecklistAdminControllerTest {
                 .andExpect(status().isOk());
 
         then(festivalChecklistService).should().saveMemo(1L, "준비 완료");
+    }
+
+    @Test
+    void 메모_길이초과시_400_반환() throws Exception {
+        String tooLong = "a".repeat(1001);
+
+        mockMvc.perform(post("/admin/festivals/1/checklist/memo")
+                        .param("memo", tooLong))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("메모는 1000자 이하여야 합니다."));
+
+        then(festivalChecklistService).should(never()).saveMemo(anyLong(), anyString());
     }
 }

@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -64,6 +65,22 @@ class FestivalBoothAdminControllerTest {
                         .param("longitude", "127.0"))
                 .andExpect(redirectedUrl("/admin/festivals/1#booths"))
                 .andExpect(flash().attribute("successMessage", "부스가 추가되었습니다."));
+    }
+
+    @Test
+    void 부스_생성_이미지_업로드_실패시_errorMessage_설정() throws Exception {
+        willThrow(new RuntimeException("S3 오류")).given(boothService).uploadBoothImage(any());
+
+        mockMvc.perform(multipart("/admin/festivals/1/booths")
+                        .file("boothImageFile", new byte[]{1, 2, 3})
+                        .param("name", "푸드 부스")
+                        .param("boothType", "FOOD")
+                        .param("latitude", "37.5")
+                        .param("longitude", "127.0"))
+                .andExpect(redirectedUrl("/admin/festivals/1#booths"))
+                .andExpect(flash().attribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요."));
+
+        then(boothService).should(never()).createBooth(anyLong(), any());
     }
 
     @Test
