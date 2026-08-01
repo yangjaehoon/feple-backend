@@ -114,6 +114,18 @@ management:
     tags:
       application: feple-backend
 
+# SENTRY_DSN 미설정 시 경고 로그만 남기고 비활성 상태로 정상 기동 — 로컬/CI에서 별도 처리 불필요.
+# 이미 코드 전역에서 쓰는 log.error(msg, exception) 패턴이 sentry-logback을 통해 그대로
+# 이벤트로 전송되므로, 이 설정 외에 컨트롤러/서비스 코드 변경은 필요 없다.
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: production
+  # 요청 IP·쿠키 등 개인정보를 함께 전송하지 않음 (기본값이지만 명시)
+  send-default-pii: false
+  logging:
+    minimum-event-level: error
+    minimum-breadcrumb-level: info
+
 kma:
   service-key: ${KMA_SERVICE_KEY:}
   base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
