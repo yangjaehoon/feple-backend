@@ -10,11 +10,11 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -41,10 +41,10 @@ public class SecurityConfig {
     // JPA 리포지토리를 @Configuration 빈 생성자에서 즉시(eager) 주입하면, EnableJpaRepositories가
     // jpaSharedEM_entityManagerFactory 등록을 마치기 전에 SecurityConfig가 먼저 처리될 경우
     // "Cannot resolve reference to bean 'jpaSharedEM_entityManagerFactory'"로 기동이 실패할 수 있다
-    // (2026-07-29, 2026-08-01 두 차례 관측). @Lazy로 지연 프록시를 주입해 실제 요청 처리 시점에만
-    // (컨텍스트 초기화가 끝난 뒤) 리포지토리를 resolve하도록 한다.
-    @Lazy
-    private final UserRepository userRepository;
+    // (2026-07-29, 2026-08-01 두 차례 관측 — 필드에 @Lazy를 붙이는 시도는 Lombok이 임의 애너테이션을
+    // 생성자 파라미터로 복사해주지 않아 효과가 없었다). ObjectProvider는 애너테이션 없이도 그 자체로
+    // 지연 조회를 보장하므로 Lombok 설정에 기대지 않고 확실하게 동작한다.
+    private final ObjectProvider<UserRepository> userRepositoryProvider;
     private final ObjectMapper objectMapper;
 
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
@@ -115,7 +115,7 @@ public class SecurityConfig {
     // ── 2. API용 FilterChain (JWT Stateless) ──
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtProvider, userRepository);
+        return new JwtAuthenticationFilter(jwtProvider, userRepositoryProvider.getObject());
     }
 
     // Spring Boot가 Filter Bean을 서블릿 체인에 자동 등록하지 않도록 비활성화
