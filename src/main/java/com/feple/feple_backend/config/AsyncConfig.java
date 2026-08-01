@@ -1,10 +1,13 @@
 package com.feple.feple_backend.config;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -21,6 +24,7 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setThreadNamePrefix("notification-async-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);
+        executor.setTaskDecorator(new MdcTaskDecorator());
         executor.initialize();
         return executor;
     }
@@ -42,7 +46,25 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setThreadNamePrefix("dashboard-async-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);
+        executor.setTaskDecorator(new MdcTaskDecorator());
         executor.initialize();
         return executor;
+    }
+
+    // @Async는 별도 스레드에서 실행돼 원 요청의 MDC(requestId 등)가 전파되지 않는다 —
+    // 비동기 작업의 에러 로그를 원 요청과 상관관계로 추적할 수 있도록 MDC를 복사해 넘긴다.
+    private static class MdcTaskDecorator implements TaskDecorator {
+        @Override
+        public Runnable decorate(Runnable runnable) {
+            Map<String, String> contextMap = MDC.getCopyOfContextMap();
+            return () -> {
+                try {
+                    if (contextMap != null) MDC.setContextMap(contextMap);
+                    runnable.run();
+                } finally {
+                    MDC.clear();
+                }
+            };
+        }
     }
 }

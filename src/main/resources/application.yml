@@ -106,7 +106,10 @@ management:
         include: health, prometheus, metrics
   endpoint:
     health:
-      show-details: never
+      # health는 permitAll(인증 없이 인터넷에 노출)이라 always로 두면 DB/디스크 상태 같은 내부
+      # 정보가 익명 요청에도 노출된다 — 관리자로 로그인된 세션에서만 세부 컴포넌트 상태를 보여준다
+      show-details: when-authorized
+      roles: ADMIN
   metrics:
     tags:
       application: feple-backend

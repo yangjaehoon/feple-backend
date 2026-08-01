@@ -117,6 +117,10 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # 롤백 대비 — 지금 배포돼 있는 jar를 백업해둔다 (최초 배포라면 없음)
+            if [ -f /opt/feple/feple.jar ]; then
+              sudo cp /opt/feple/feple.jar /opt/feple/feple.jar.bak
+            fi
             sudo mv /tmp/*.jar /opt/feple/feple.jar
             sudo mkdir -p /etc/systemd/system/feple.service.d
             sudo tee /etc/systemd/system/feple.service.d/jvm.conf > /dev/null << 'EOF'
@@ -125,16 +129,46 @@ jobs:
             EOF
             sudo systemctl daemon-reload
             sudo systemctl start feple.service
+
+            rollback() {
+              echo "=== 배포 실패 — 최근 로그 ==="
+              sudo journalctl -u feple.service --no-pager -n 50
+              if [ -f /opt/feple/feple.jar.bak ]; then
+                echo "=== 이전 jar로 롤백 ==="
+                sudo systemctl stop feple.service || true
+                sudo mv /opt/feple/feple.jar.bak /opt/feple/feple.jar
+                sudo systemctl start feple.service
+                echo "롤백 완료 — 배포 자체는 실패로 표시됨"
+              else
+                echo "백업된 이전 jar가 없어 롤백하지 않음 (최초 배포로 추정)"
+              fi
+              exit 1
+            }
+
+            # 1) systemd 프로세스가 뜨는지 확인 (Type=simple은 실제 부팅 완료 전에도 active가 됨)
+            PROCESS_UP=false
             for i in $(seq 1 12); do
               sleep 5
               STATUS=$(systemctl is-active feple.service)
               echo "[$i/12] feple.service: $STATUS"
-              if [ "$STATUS" = "active" ]; then exit 0; fi
-              if [ "$STATUS" = "failed" ]; then
-                journalctl -u feple.service --no-pager -n 30
-                exit 1
-              fi
+              if [ "$STATUS" = "active" ]; then PROCESS_UP=true; break; fi
+              if [ "$STATUS" = "failed" ]; then rollback; fi
             done
-            echo "Service did not become active within 60s"
-            journalctl -u feple.service --no-pager -n 30
-            exit 1
+            if [ "$PROCESS_UP" != "true" ]; then
+              echo "60초 내에 프로세스가 active 상태가 되지 않음"
+              rollback
+            fi
+
+            # 2) 프로세스 기동과 별개로, Spring Boot가 실제 요청을 받을 수 있는지 헬스체크로 확인
+            #    (기동에 약 45~48초가 걸리는 것으로 관측됨 — 여유를 두고 최대 90초 대기)
+            for i in $(seq 1 18); do
+              if curl -sf --max-time 3 http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+                echo "헬스체크 통과 — 배포 완료"
+                sudo rm -f /opt/feple/feple.jar.bak
+                exit 0
+              fi
+              echo "[$i/18] 헬스체크 대기 중..."
+              sleep 5
+            done
+            echo "90초 내에 헬스체크를 통과하지 못함"
+            rollback
