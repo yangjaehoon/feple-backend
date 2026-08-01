@@ -17,6 +17,7 @@ import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
+import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
@@ -92,9 +93,7 @@ public class ArtistGalleryPhotoService {
     @Transactional
     public void delete(Long photoId, Long userId) {
         ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
-        if (!photo.getUploaderId().equals(userId)) {
-            throw new IllegalArgumentException("본인이 업로드한 사진만 삭제할 수 있습니다.");
-        }
+        OwnershipValidator.checkOwner(photo.getUploaderId(), userId, "사진");
         String s3Key = photo.getS3Key();
         // FK 의존 순서: 신고 → 좋아요 → 사진 (artist_photo_report.photo_id는 ON DELETE 규칙이
         // 없어 미리 정리하지 않으면 사진 삭제 시 제약 위반으로 실패한다)
@@ -107,9 +106,7 @@ public class ArtistGalleryPhotoService {
     @Transactional
     public void update(Long photoId, Long userId, UpdatePhotoRequestDto command) {
         ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
-        if (!photo.getUploaderId().equals(userId)) {
-            throw new IllegalArgumentException("본인이 업로드한 사진만 수정할 수 있습니다.");
-        }
+        OwnershipValidator.checkOwner(photo.getUploaderId(), userId, "사진", "수정");
         photo.updateTitleAndDescription(command.title(), command.description());
     }
 

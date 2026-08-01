@@ -39,6 +39,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -228,8 +229,8 @@ class ArtistGalleryPhotoServiceTest {
         given(artistGalleryPhotoRepository.findById(5L)).willReturn(Optional.of(p));
 
         assertThatThrownBy(() -> service.delete(5L, 999L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("본인이 업로드한");
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("본인의");
     }
 
     @Test
@@ -263,8 +264,8 @@ class ArtistGalleryPhotoServiceTest {
         given(artistGalleryPhotoRepository.findById(5L)).willReturn(Optional.of(p));
 
         assertThatThrownBy(() -> service.update(5L, 999L, new UpdatePhotoRequestDto("t", "d")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("본인이 업로드한");
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("본인의");
     }
 
     // ── getPhoto ─────────────────────────────────────────────────────────

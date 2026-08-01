@@ -43,7 +43,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM notifications WHERE post_id IN :postIds", nativeQuery = true)
+    @Query(value = "DELETE FROM notifications WHERE post_id IN (:postIds)", nativeQuery = true)
     void deleteByPostIdIn(@Param("postIds") List<Long> postIds);
 
     @Modifying
