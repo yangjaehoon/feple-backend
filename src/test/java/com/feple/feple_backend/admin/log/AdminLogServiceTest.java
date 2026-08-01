@@ -92,20 +92,22 @@ class AdminLogServiceTest {
     }
 
     @Test
-    void XForwardedFor_있으면_첫번째_값_사용() {
+    void XForwardedFor_있어도_무시하고_remoteAddr_사용() {
+        // 리버스 프록시가 없어 X-Forwarded-For는 클라이언트가 임의로 조작 가능 — 신뢰하지 않는다
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("X-Forwarded-For", "203.0.113.1, 10.0.0.1");
+        request.setRemoteAddr("192.168.0.1");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
         adminLogService.log(AdminAction.POST_DELETE, "POST", 1L, null);
 
         ArgumentCaptor<AdminLog> captor = ArgumentCaptor.forClass(AdminLog.class);
         org.mockito.Mockito.verify(repository).save(captor.capture());
-        assertThat(captor.getValue().getIpAddress()).isEqualTo("203.0.113.1");
+        assertThat(captor.getValue().getIpAddress()).isEqualTo("192.168.0.1");
     }
 
     @Test
-    void XForwardedFor_없으면_remoteAddr_사용() {
+    void remoteAddr_사용() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRemoteAddr("192.168.0.1");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));

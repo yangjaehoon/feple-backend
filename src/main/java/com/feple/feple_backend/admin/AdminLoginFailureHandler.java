@@ -17,7 +17,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * 관리자 로그인 실패 횟수를 클라이언트 IP 기준으로 제한한다.
- * (forward-headers-strategy=native 설정으로 리버스 프록시 뒤에서도 X-Forwarded-For 기반 실제 IP 사용)
+ * 리버스 프록시 없이 JVM이 직접 트래픽을 받으므로 remoteAddr이 곧 실제 클라이언트 IP —
+ * X-Forwarded-For는 신뢰하지 않는다(조작 시 이 제한이 우회될 수 있음).
  * 10분 동안 최대 5회 실패 허용, 초과 시 429 응답.
  */
 @Component
@@ -38,8 +39,6 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, jakarta.servlet.ServletException {
-        // forward-headers-strategy=native 설정으로 Spring이 RemoteAddr를 X-Forwarded-For 첫 번째 값으로
-        // 자동 교체 — 리버스 프록시 뒤에서도 실제 클라이언트 IP가 잡힌다.
         String ip = request.getRemoteAddr();
         Bucket bucket = cache.get(ip, k -> Bucket.builder()
                 .addLimit(Bandwidth.builder()

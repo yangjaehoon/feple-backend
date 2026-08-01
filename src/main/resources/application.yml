@@ -47,7 +47,9 @@ spring:
 
 server:
   port: 8080
-  forward-headers-strategy: native
+  # 리버스 프록시 없이 JVM이 8080을 직접 리스닝 — X-Forwarded-For를 신뢰하면 클라이언트가
+  # 헤더를 조작해 IP 기반 rate limit(관리자 로그인 잠금, 로그인 시도 제한)을 우회할 수 있음
+  forward-headers-strategy: none
   servlet:
     session:
       timeout: 2h

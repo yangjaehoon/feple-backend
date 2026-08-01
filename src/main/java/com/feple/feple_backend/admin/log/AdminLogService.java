@@ -2,7 +2,6 @@ package com.feple.feple_backend.admin.log;
 
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -55,13 +54,9 @@ public class AdminLogService {
         try {
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attrs == null) return null;
-            HttpServletRequest req = attrs.getRequest();
-            // 리버스 프록시(nginx/ALB) 환경: X-Forwarded-For 첫 번째 값이 실제 클라이언트 IP
-            String forwarded = req.getHeader("X-Forwarded-For");
-            if (forwarded != null && !forwarded.isBlank()) {
-                return forwarded.split(",")[0].strip();
-            }
-            return req.getRemoteAddr();
+            // 리버스 프록시 없이 JVM이 직접 트래픽을 받으므로 remoteAddr이 곧 실제 클라이언트 IP —
+            // X-Forwarded-For는 신뢰하지 않는다(관리자가 조작하면 감사 로그의 IP를 위조할 수 있음)
+            return attrs.getRequest().getRemoteAddr();
         } catch (Exception ignored) {
             return null;
         }

@@ -89,8 +89,8 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    // application.yml의 server.forward-headers-strategy: native 설정으로
-    // Spring Boot가 신뢰된 프록시의 XFF를 처리하므로 remoteAddr이 실제 클라이언트 IP를 반환함
+    // 리버스 프록시 없이 JVM이 직접 트래픽을 받으므로 remoteAddr이 곧 실제 클라이언트 IP —
+    // X-Forwarded-For는 신뢰하지 않는다(조작 시 로그인 시도 제한이 우회될 수 있음)
     private String getClientIp(HttpServletRequest request) {
         return request.getRemoteAddr();
     }
