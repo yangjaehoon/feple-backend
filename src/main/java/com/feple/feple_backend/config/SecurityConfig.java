@@ -39,11 +39,12 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final AdminLoginFailureHandler adminLoginFailureHandler;
     // JPA 리포지토리를 @Configuration 빈 생성자에서 즉시(eager) 주입하면, EnableJpaRepositories가
-    // jpaSharedEM_entityManagerFactory 등록을 마치기 전에 SecurityConfig가 먼저 처리될 경우
-    // "Cannot resolve reference to bean 'jpaSharedEM_entityManagerFactory'"로 기동이 실패할 수 있다
-    // (2026-07-29, 2026-08-01 두 차례 관측 — 필드에 @Lazy를 붙이는 시도는 Lombok이 임의 애너테이션을
-    // 생성자 파라미터로 복사해주지 않아 효과가 없었다). ObjectProvider는 애너테이션 없이도 그 자체로
-    // 지연 조회를 보장하므로 Lombok 설정에 기대지 않고 확실하게 동작한다.
+    // jpaSharedEM_entityManagerFactory 등록을 마치기 전에 SecurityConfig(나아가 FilterRegistrationBean
+    // 처리 중인 jwtAuthenticationFilter 빈)가 먼저 처리될 경우 "Cannot resolve reference to bean
+    // 'jpaSharedEM_entityManagerFactory'"로 기동이 실패할 수 있다 (2026-07-29, 2026-08-01 세 차례 관측).
+    // 필드의 @Lazy는 Lombok이 생성자 파라미터로 복사해주지 않아 효과 없었고, 여기서 getObject()를
+    // 호출해도 FilterRegistrationBean 처리 자체가 이르게 일어나 소용없었다 — ObjectProvider를
+    // JwtAuthenticationFilter까지 그대로 넘겨 실제 요청 처리 시점에만 resolve하도록 미룬다.
     private final ObjectProvider<UserRepository> userRepositoryProvider;
     private final ObjectMapper objectMapper;
 
@@ -115,7 +116,7 @@ public class SecurityConfig {
     // ── 2. API용 FilterChain (JWT Stateless) ──
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtProvider, userRepositoryProvider.getObject());
+        return new JwtAuthenticationFilter(jwtProvider, userRepositoryProvider);
     }
 
     // Spring Boot가 Filter Bean을 서블릿 체인에 자동 등록하지 않도록 비활성화

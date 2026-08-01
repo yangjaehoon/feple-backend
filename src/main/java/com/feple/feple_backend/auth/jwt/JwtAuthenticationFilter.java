@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,11 +33,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public record JwtFailure(HttpStatus status, String message, ErrorCode code) {}
 
     private final JwtProvider jwtProvider;
-    private final UserRepository userRepository;
+    // 필터 빈 생성 시점(FilterRegistrationBean 처리 중 — JPA EntityManagerFactory보다 먼저
+    // 일어날 수 있음)이 아니라 실제 요청 처리 시점에만 조회하기 위해 ObjectProvider로 지연시킨다.
+    private final ObjectProvider<UserRepository> userRepositoryProvider;
 
-    public JwtAuthenticationFilter(JwtProvider jwtProvider, UserRepository userRepository) {
+    public JwtAuthenticationFilter(JwtProvider jwtProvider, ObjectProvider<UserRepository> userRepositoryProvider) {
         this.jwtProvider = jwtProvider;
-        this.userRepository = userRepository;
+        this.userRepositoryProvider = userRepositoryProvider;
     }
 
     @Override
@@ -93,7 +96,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return Optional.of(new JwtFailure(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID));
         }
 
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userRepositoryProvider.getObject().findById(userId).orElse(null);
         if (user == null || user.isDeleted()) {
             return Optional.of(new JwtFailure(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID));
         }
