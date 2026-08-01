@@ -69,17 +69,21 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     org.springframework.data.domain.Page<Festival> findByTitleKeywordPaged(
             @Param("keyword") String keyword, Pageable pageable);
 
-    // activeFrom: null이면 종료된 축제 포함, non-null이면 endDate >= activeFrom인 것만 반환
+    // activeFrom: null이면 종료된 축제 포함, non-null이면 endDate >= activeFrom인 것만 반환.
+    // 상태 분류·정렬은 서비스 레이어(FestivalStatus)가 담당해 여기선 최종 개수를 알 수 없으므로,
+    // Pageable로 넉넉한 상한(PageSize.FESTIVAL_FILTER_FETCH_CAP)만 적용해 무제한 전체조회를 막는다.
     @Query("SELECT DISTINCT f FROM Festival f LEFT JOIN f.genres g " +
            "WHERE f.deletedAt IS NULL " +
            "AND (:genres IS NULL OR g IN :genres) " +
            "AND (:regions IS NULL OR f.region IN :regions) " +
            "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions) " +
-           "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom)")
+           "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom) " +
+           "ORDER BY f.startDate DESC")
     List<Festival> findByFilters(@Param("genres") List<MusicGenre> genres,
                                  @Param("regions") List<Region> regions,
                                  @Param("ageRestrictions") List<AgeRestriction> ageRestrictions,
-                                 @Param("activeFrom") LocalDate activeFrom);
+                                 @Param("activeFrom") LocalDate activeFrom,
+                                 Pageable pageable);
 
     List<Festival> findTop10ByDeletedAtIsNullOrderByLikeCountDesc();
 

@@ -83,7 +83,8 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
             genres == null || genres.isEmpty() ? null : genres,
             regions == null || regions.isEmpty() ? null : regions,
             ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions,
-            activeFrom
+            activeFrom,
+            PageRequest.of(0, PageSize.FESTIVAL_FILTER_FETCH_CAP)
         );
 
         List<FestivalStatus> statuses = criteria.includeEnded()

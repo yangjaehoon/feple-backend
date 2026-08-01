@@ -244,7 +244,7 @@ class FestivalServiceImplTest {
         Festival earlier = festival(1L, "먼저", null);
         Festival later = Festival.builder().id(2L).title("나중").startDate(LocalDate.of(2026, 9, 1))
                 .endDate(LocalDate.of(2026, 9, 3)).region(Region.SEOUL).build();
-        given(festivalRepository.findByFilters(any(), any(), any(), any())).willReturn(List.of(later, earlier));
+        given(festivalRepository.findByFilters(any(), any(), any(), any(), any())).willReturn(List.of(later, earlier));
 
         List<FestivalResponseDto> result = festivalService.getAllFestivals(
                 new FestivalFilterCriteria(null, null, null, true, "date_asc"));
@@ -257,7 +257,7 @@ class FestivalServiceImplTest {
         Festival earlier = festival(1L, "먼저", null);
         Festival later = Festival.builder().id(2L).title("나중").startDate(LocalDate.of(2026, 9, 1))
                 .endDate(LocalDate.of(2026, 9, 3)).region(Region.SEOUL).build();
-        given(festivalRepository.findByFilters(any(), any(), any(), any())).willReturn(List.of(earlier, later));
+        given(festivalRepository.findByFilters(any(), any(), any(), any(), any())).willReturn(List.of(earlier, later));
 
         List<FestivalResponseDto> result = festivalService.getAllFestivals(
                 new FestivalFilterCriteria(null, null, null, true, "date_desc"));
@@ -272,7 +272,7 @@ class FestivalServiceImplTest {
         Festival ended = Festival.builder().id(1L).title("종료됨")
                 .startDate(LocalDate.now().minusDays(10)).endDate(LocalDate.now().minusDays(1))
                 .region(Region.SEOUL).build();
-        given(festivalRepository.findByFilters(any(), any(), any(), any())).willReturn(List.of(ended));
+        given(festivalRepository.findByFilters(any(), any(), any(), any(), any())).willReturn(List.of(ended));
 
         List<FestivalResponseDto> result = festivalService.getAllActiveFestivalsForAdmin();
 

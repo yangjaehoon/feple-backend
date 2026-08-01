@@ -51,8 +51,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("DELETE FROM Notification n WHERE n.id = :id AND n.user.id = :userId")
     int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
+    // 한 번에 전체를 지우면 하나의 커넥션·트랜잭션을 오래 붙잡는다 — LIMIT으로 잘라 여러 번 커밋
     @Modifying
     @Transactional
-    @Query("DELETE FROM Notification n WHERE n.createdAt < :cutoff")
-    void deleteOlderThan(@Param("cutoff") LocalDateTime cutoff);
+    @Query(value = "DELETE FROM notifications WHERE created_at < :cutoff LIMIT :batchSize", nativeQuery = true)
+    int deleteOlderThanBatch(@Param("cutoff") LocalDateTime cutoff, @Param("batchSize") int batchSize);
 }
