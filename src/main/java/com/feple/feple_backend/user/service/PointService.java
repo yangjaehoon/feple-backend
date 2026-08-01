@@ -15,7 +15,11 @@ import com.feple.feple_backend.user.entity.UserPointLog;
 import com.feple.feple_backend.user.event.AdminPointGrantedEvent;
 import com.feple.feple_backend.user.repository.UserPointLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -54,6 +58,26 @@ public class PointService {
     @Transactional
     public void addCertApprovedPoint(Long userId, Long certId) {
         addPoint(userId, new PointEntry(POINT_CERT_APPROVED, PointReason.CERT_APPROVED, certId));
+    }
+
+    public record PointAward(Long userId, Long refId) {}
+
+    /** 관리자 일괄 승인 전용 — 건마다 existsById/save를 반복하는 대신 조회·로그 저장을 배치로 처리 */
+    @Transactional
+    public void addCertApprovedPointsBulk(List<PointAward> awards) {
+        if (awards.isEmpty()) return;
+        Set<Long> userIds = awards.stream().map(PointAward::userId).collect(Collectors.toSet());
+        Map<Long, User> existingUsers = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        List<UserPointLog> logs = new ArrayList<>();
+        for (PointAward award : awards) {
+            User user = existingUsers.get(award.userId());
+            if (user == null) continue;
+            userRepository.addPointAtomically(award.userId(), POINT_CERT_APPROVED);
+            logs.add(UserPointLog.of(user, new PointEntry(POINT_CERT_APPROVED, PointReason.CERT_APPROVED, award.refId())));
+        }
+        pointLogRepository.saveAll(logs);
     }
 
     /** 관리자 회원 상세 페이지의 "최근 포인트 내역" 카드 전용 */

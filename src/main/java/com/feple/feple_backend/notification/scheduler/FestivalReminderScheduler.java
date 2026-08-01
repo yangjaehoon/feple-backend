@@ -31,8 +31,17 @@ public class FestivalReminderScheduler {
     @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Seoul")
     @SchedulerLock(name = "festivalReminderScheduler", lockAtMostFor = "5m", lockAtLeastFor = "1m")
     public void sendReminders() {
-        sendReminderForDDay(7);
-        sendReminderForDDay(1);
+        // D-7 처리 중 예외가 나도 D-1 리마인더는 별도로 발송돼야 함
+        try {
+            sendReminderForDDay(7);
+        } catch (Exception e) {
+            log.error("[ReminderScheduler] D-7 리마인더 처리 실패", e);
+        }
+        try {
+            sendReminderForDDay(1);
+        } catch (Exception e) {
+            log.error("[ReminderScheduler] D-1 리마인더 처리 실패", e);
+        }
     }
 
     private void sendReminderForDDay(int dDay) {
@@ -71,8 +80,13 @@ public class FestivalReminderScheduler {
                     .toList();
             if (userIds.isEmpty()) continue;
 
-            notificationService.sendFestivalReminders(
-                    festival.getId(), festival.getTitle(), festival.getTitleEn(), userIds, dDay);
+            // 한 페스티벌에서 예외가 나도 나머지 페스티벌의 리마인더는 계속 발송돼야 함
+            try {
+                notificationService.sendFestivalReminders(
+                        festival.getId(), festival.getTitle(), festival.getTitleEn(), userIds, dDay);
+            } catch (Exception e) {
+                log.error("[ReminderScheduler] D-{} 리마인더 발송 실패: festivalId={}", dDay, festival.getId(), e);
+            }
         }
     }
 }

@@ -141,6 +141,46 @@ class FestivalCertificationAdminServiceImplTest {
         then(eventPublisher).should(never()).publishEvent(any(CertificationRejectedEvent.class));
     }
 
+    // ── bulkApprove / bulkReject ─────────────────────────────────────
+
+    @Test
+    void 일괄승인_대기중인_것만_승인후_포인트_일괄지급_및_이벤트_발행() {
+        FestivalCertification pending = mock(FestivalCertification.class);
+        given(pending.getId()).willReturn(10L);
+        given(pending.getUserId()).willReturn(1L);
+        given(pending.getFestivalTitle()).willReturn("페스티벌");
+        given(pending.isPending()).willReturn(true);
+        FestivalCertification alreadyProcessed = mock(FestivalCertification.class);
+        given(alreadyProcessed.isPending()).willReturn(false);
+        given(certificationRepository.findWithUserAndFestivalByIdIn(List.of(10L, 11L)))
+                .willReturn(List.of(pending, alreadyProcessed));
+
+        adminService.bulkApprove(List.of(10L, 11L), "admin");
+
+        then(pending).should().approve("admin");
+        then(alreadyProcessed).should(never()).approve(any());
+        then(pointService).should().addCertApprovedPointsBulk(
+                List.of(new PointService.PointAward(1L, 10L)));
+        then(eventPublisher).should().publishEvent(any(CertificationApprovedEvent.class));
+    }
+
+    @Test
+    void 일괄거절_대기중인_것만_거절() {
+        FestivalCertification pending = mock(FestivalCertification.class);
+        given(pending.getUserId()).willReturn(1L);
+        given(pending.isPending()).willReturn(true);
+        FestivalCertification alreadyProcessed = mock(FestivalCertification.class);
+        given(alreadyProcessed.isPending()).willReturn(false);
+        given(certificationRepository.findWithUserAndFestivalByIdIn(List.of(10L, 11L)))
+                .willReturn(List.of(pending, alreadyProcessed));
+
+        adminService.bulkReject(List.of(10L, 11L), "사유", "admin");
+
+        then(pending).should().reject("사유", "admin");
+        then(alreadyProcessed).should(never()).reject(any(), any());
+        then(eventPublisher).should().publishEvent(any(CertificationRejectedEvent.class));
+    }
+
     // ── getPendingCount / findNextPendingId / buildPhotoUrl ─────────────
 
     @Test

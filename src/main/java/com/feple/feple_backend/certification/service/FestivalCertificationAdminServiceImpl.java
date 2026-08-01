@@ -91,9 +91,14 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @EvictAdminPendingCaches
     @Transactional
     public void bulkApprove(List<Long> ids, String reviewerName) {
-        certificationRepository.findWithUserAndFestivalByIdIn(ids).stream()
+        List<FestivalCertification> certs = certificationRepository.findWithUserAndFestivalByIdIn(ids).stream()
                 .filter(FestivalCertification::isPending)
-                .forEach(cert -> approveOne(cert, reviewerName));
+                .toList();
+        certs.forEach(cert -> cert.approve(reviewerName));
+        pointService.addCertApprovedPointsBulk(
+                certs.stream().map(c -> new PointService.PointAward(c.getUserId(), c.getId())).toList());
+        certs.forEach(cert -> eventPublisher.publishEvent(new CertificationApprovedEvent(
+                cert.getUserId(), cert.getFestivalTitle(), cert.getFestivalTitleEn(), cert.getFestivalId())));
     }
 
     @Override

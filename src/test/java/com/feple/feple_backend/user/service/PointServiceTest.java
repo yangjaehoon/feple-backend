@@ -105,6 +105,44 @@ class PointServiceTest {
     }
 
     @Test
+    void 인증_일괄승인_시_존재하는_유저만_포인트_적립_및_로그_배치저장() {
+        given(userRepository.findAllById(java.util.Set.of(1L, 2L))).willReturn(List.of(user(1L), user(2L)));
+
+        pointService.addCertApprovedPointsBulk(List.of(
+                new PointService.PointAward(1L, 10L),
+                new PointService.PointAward(2L, 11L)));
+
+        verify(userRepository).addPointAtomically(1L, 10);
+        verify(userRepository).addPointAtomically(2L, 10);
+        ArgumentCaptor<List<UserPointLog>> captor = ArgumentCaptor.forClass(List.class);
+        verify(pointLogRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(2);
+    }
+
+    @Test
+    void 인증_일괄승인_시_존재하지_않는_유저는_건너뜀() {
+        given(userRepository.findAllById(java.util.Set.of(1L, 999L))).willReturn(List.of(user(1L)));
+
+        pointService.addCertApprovedPointsBulk(List.of(
+                new PointService.PointAward(1L, 10L),
+                new PointService.PointAward(999L, 11L)));
+
+        verify(userRepository).addPointAtomically(1L, 10);
+        verify(userRepository, never()).addPointAtomically(eq(999L), any(Integer.class));
+        ArgumentCaptor<List<UserPointLog>> captor = ArgumentCaptor.forClass(List.class);
+        verify(pointLogRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(1);
+    }
+
+    @Test
+    void 인증_일괄승인_대상없으면_조회조차_안함() {
+        pointService.addCertApprovedPointsBulk(List.of());
+
+        verify(userRepository, never()).findAllById(any());
+        verify(pointLogRepository, never()).saveAll(any());
+    }
+
+    @Test
     void 최근_포인트_내역_조회시_참조_링크_종류가_사유별로_결정됨() {
         UserPointLog postLog = UserPointLog.of(user(1L), new PointEntry(5, PointReason.POST_CREATED, 10L));
         UserPointLog certLog = UserPointLog.of(user(1L), new PointEntry(10, PointReason.CERT_APPROVED, 3L));
