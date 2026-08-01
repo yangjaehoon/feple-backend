@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,12 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final AdminLoginFailureHandler adminLoginFailureHandler;
+    // JPA 리포지토리를 @Configuration 빈 생성자에서 즉시(eager) 주입하면, EnableJpaRepositories가
+    // jpaSharedEM_entityManagerFactory 등록을 마치기 전에 SecurityConfig가 먼저 처리될 경우
+    // "Cannot resolve reference to bean 'jpaSharedEM_entityManagerFactory'"로 기동이 실패할 수 있다
+    // (2026-07-29, 2026-08-01 두 차례 관측). @Lazy로 지연 프록시를 주입해 실제 요청 처리 시점에만
+    // (컨텍스트 초기화가 끝난 뒤) 리포지토리를 resolve하도록 한다.
+    @Lazy
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
