@@ -76,7 +76,7 @@ public class ArtistLineupOcrService {
     }
 
     private static boolean containsIgnoreCase(String candidate, String name) {
-        return candidate != null && candidate.toLowerCase().contains(name.toLowerCase());
+        return candidate != null && name != null && candidate.toLowerCase().contains(name.toLowerCase());
     }
 
     // @Transactional 제거: addArtistToFestival(ConflictException 발생 시)이 외부 트랜잭션을

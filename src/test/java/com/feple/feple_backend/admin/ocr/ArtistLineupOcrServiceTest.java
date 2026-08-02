@@ -101,6 +101,19 @@ class ArtistLineupOcrServiceTest {
     }
 
     @Test
+    void parseArtistLineup_OCR_이름이_null이어도_NPE없이_미매칭_처리() throws Exception {
+        // Gemini가 이름을 인식하지 못해 name=null을 반환하는 항목이 있어도 전체 요청이 죽으면 안 됨
+        Artist artist = mockArtist(1L, "아이유", "IU");
+        given(geminiOcrClient.parseLineup(any()))
+                .willReturn(new OcrParseResult<>(List.of(new LineupRawResult(null, 40)), false));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(artist));
+
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
+
+        assertThat(results.get(0).artistId()).isNull();
+    }
+
+    @Test
     void parseArtistLineup_geminiOcrClient가_truncated_true면_그대로_전파() throws Exception {
         given(geminiOcrClient.parseLineup(any()))
                 .willReturn(new OcrParseResult<>(List.of(new LineupRawResult("아이유", 95)), true));
