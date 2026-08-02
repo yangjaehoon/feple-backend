@@ -19,8 +19,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 class GeminiApiClient {
 
+    // 특정 버전을 고정하면 Google이 그 모델을 폐기할 때마다(2026-08-02, gemini-2.5-flash가
+    // "no longer available to new users" 404로 OCR 파싱이 전부 실패했음) 코드를 바꿔야 한다 —
+    // "latest" 별칭은 Google이 알아서 현재 세대 모델로 갱신해준다.
     static final String GEMINI_GENERATE_CONTENT_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
     private final WebClient geminiWebClient;
 
