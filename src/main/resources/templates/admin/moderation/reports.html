@@ -90,7 +90,7 @@
                                class="report-title-link"></a>
                             <div class="cell-secondary">
                                 <a th:href="@{/admin/users/{id}(id=${report.postAuthorId})}"
-                                   th:text="${report.posterNickname}"
+                                   th:text="${report.authorNickname}"
                                    class="td-link"></a>
                                 <span th:replace="~{admin/fragments :: reportCountBadge(${authorReportCounts}, ${report.postAuthorId})}"></span>
                             </div>
