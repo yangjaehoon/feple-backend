@@ -62,7 +62,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
 	implementation platform("software.amazon.awssdk:bom:2.49.3")
-	implementation 'com.google.firebase:firebase-admin:9.3.0'
+	implementation 'com.google.firebase:firebase-admin:9.10.0'
 
 	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.7.0'
 	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0'
