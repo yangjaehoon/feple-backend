@@ -2,6 +2,7 @@ package com.feple.feple_backend.global.exception;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import org.apache.catalina.connector.ClientAbortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -129,6 +130,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
         log.error("Illegal state: {}", ex.getMessage(), ex);
         return body(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", ErrorCode.ILLEGAL_STATE);
+    }
+
+    // 사용자가 응답(주로 이미지 등 리소스 스트리밍) 수신 도중 연결을 끊은 흔한 상황 — 서버 오류가
+    // 아니므로 ERROR로 남기지 않고, 이미 끊긴 연결에 응답을 쓰려는 시도도 하지 않는다(시도해도 다시
+    // 실패해 ExceptionHandlerExceptionResolver가 WARN을 추가로 남길 뿐이다). IOException보다 구체적인
+    // 타입이라 Spring이 이 핸들러를 먼저 선택한다.
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbort(ClientAbortException ex) {
+        log.debug("Client aborted connection: {}", ex.getMessage());
     }
 
     @ExceptionHandler(IOException.class)
