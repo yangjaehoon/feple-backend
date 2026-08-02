@@ -60,12 +60,12 @@ class FestivalStageAdminControllerTest {
                 .andExpect(redirectedUrl("/admin/festivals/1#timetable"))
                 .andExpect(flash().attribute("successMessage", "스테이지가 삭제되었습니다."));
 
-        then(stageService).should().deleteStage(2L);
+        then(stageService).should().deleteStage(1L, 2L);
     }
 
     @Test
     void 스테이지_삭제_실패_errorMessage_설정() throws Exception {
-        willThrow(new RuntimeException("오류")).given(stageService).deleteStage(anyLong());
+        willThrow(new RuntimeException("오류")).given(stageService).deleteStage(anyLong(), anyLong());
 
         mockMvc.perform(post("/admin/festivals/1/stages/2/delete"))
                 .andExpect(flash().attribute("errorMessage", "스테이지 삭제에 실패했습니다."));

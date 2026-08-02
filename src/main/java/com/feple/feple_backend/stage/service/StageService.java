@@ -9,6 +9,7 @@ import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,12 +48,17 @@ public class StageService {
         return stageRepository.save(stage);
     }
 
-    public void deleteStage(Long stageId) {
+    // TimetableService.getEntries가 30분 캐싱하는 응답의 정렬 기준(TimetableEntry.
+    // getStageDisplayOrder)이 스테이지 삭제/순서변경에 따라 바뀌므로, 같은 캐시를
+    // 여기서도 evict해야 한다.
+    @CacheEvict(value = "timetable", key = "#festivalId")
+    public void deleteStage(Long festivalId, Long stageId) {
         timetableRepository.nullifyStageId(stageId);
         stageRepository.deleteById(stageId);
     }
 
     /** 위로 이동: 바로 앞 스테이지와 순서를 교환 */
+    @CacheEvict(value = "timetable", key = "#festivalId")
     public void moveUp(Long festivalId, Long stageId) {
         Stage current = getStageInFestival(festivalId, stageId);
         stageRepository
@@ -62,6 +68,7 @@ public class StageService {
     }
 
     /** 아래로 이동: 바로 뒤 스테이지와 순서를 교환 */
+    @CacheEvict(value = "timetable", key = "#festivalId")
     public void moveDown(Long festivalId, Long stageId) {
         Stage current = getStageInFestival(festivalId, stageId);
         stageRepository

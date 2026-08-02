@@ -38,6 +38,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     // CommentReportService/ArtistPhotoReportService의 submitReport와 구조가 동일하지만,
     // 빌더 타입이 전부 달라 제네릭으로 묶으면 콜백만 많아지고 오히려 읽기 어려워져 통합하지 않는다.
     @Transactional
+    @EvictAdminReportCaches
     public void submitReport(Long postId, Long reporterId, ReportSubmitRequest command) {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
             throw new ConflictException("이미 신고한 게시글입니다.");

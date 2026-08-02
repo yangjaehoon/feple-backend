@@ -46,7 +46,7 @@ public class FestivalStageAdminController {
                               RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
-                    stageService.deleteStage(stageId);
+                    stageService.deleteStage(festivalId, stageId);
                     adminLogService.log(AdminAction.FESTIVAL_STAGE_DELETE, "FESTIVAL", festivalId, "stageId=" + stageId);
                 },
                 "스테이지가 삭제되었습니다.",

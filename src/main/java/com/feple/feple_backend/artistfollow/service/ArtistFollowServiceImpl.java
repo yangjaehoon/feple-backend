@@ -11,6 +11,7 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,9 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
     @Override
     @Transactional
+    // ArtistServiceImpl.getArtistById가 10분 캐싱하는 팔로워 수(followerCount)가 이 메서드로
+    // 갱신되므로, 같은 캐시를 여기서도 evict해야 상세 화면에 반영된다.
+    @CacheEvict(value = "artistDetail", key = "#artistId")
     public FollowResponseDto follow(Long userId, Long artistId) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
@@ -57,6 +61,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "artistDetail", key = "#artistId")
     public FollowResponseDto unfollow(Long userId, Long artistId) {
         int deleted = artistFollowRepository.deleteByUserIdAndArtistId(userId, artistId);
         if (deleted > 0) {
@@ -68,6 +73,9 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
     @Override
     @Transactional
+    // 탈퇴한 유저가 팔로우하던 아티스트가 몇 명인지 알 수 없어 특정 키만 evict할 수
+    // 없다 — 계정 삭제라는 드문 경로이므로 전체 evict 비용은 감수할 만하다.
+    @CacheEvict(value = "artistDetail", allEntries = true)
     public void removeAllByUser(Long userId) {
         artistFollowRepository.decrementFollowerCountByUserId(userId);
         artistFollowRepository.deleteByUserId(userId);

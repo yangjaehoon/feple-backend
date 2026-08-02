@@ -72,7 +72,7 @@ class StageServiceTest {
 
     @Test
     void deleteStage_nullify_후_삭제_호출() {
-        stageService.deleteStage(3L);
+        stageService.deleteStage(1L, 3L);
 
         then(timetableRepository).should().nullifyStageId(3L);
         then(stageRepository).should().deleteById(3L);
