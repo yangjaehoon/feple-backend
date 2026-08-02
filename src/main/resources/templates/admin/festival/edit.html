@@ -129,31 +129,41 @@
     const initLat = /*[[${festival.latitude}]]*/ null;
     const initLng = /*[[${festival.longitude}]]*/ null;
 
-    kakao.maps.load(function () {
-        const defaultLat = (initLat != null) ? initLat : 37.5665;
-        const defaultLng = (initLng != null) ? initLng : 126.9780;
-        const container = document.getElementById('kakaoMap');
-        const options = {
-            center: new kakao.maps.LatLng(defaultLat, defaultLng),
-            level: 5
-        };
-        map = new kakao.maps.Map(container, options);
-        geocoder = new kakao.maps.services.Geocoder();
-        marker = new kakao.maps.Marker({ position: options.center, map: (initLat != null) ? map : null });
+    // appkey 미설정 또는 카카오 개발자 콘솔에 현재 접속 도메인이 플랫폼(Web)으로
+    // 등록되어 있지 않으면 SDK 스크립트가 window.kakao를 정의하지 못한 채 끝난다 —
+    // 그 상태로 kakao.maps.load()를 호출하면 전체 폼 스크립트가 죽으므로 방어한다.
+    const kakaoAvailable = typeof kakao !== 'undefined' && !!kakao.maps;
+    if (!kakaoAvailable) {
+        console.error('[Kakao Maps] SDK 로드 실패 — appkey 또는 카카오 개발자 콘솔의 Web 플랫폼 도메인 등록을 확인하세요.');
+        const mapEl = document.getElementById('kakaoMap');
+        if (mapEl) mapEl.textContent = '지도를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.';
+    } else {
+        kakao.maps.load(function () {
+            const defaultLat = (initLat != null) ? initLat : 37.5665;
+            const defaultLng = (initLng != null) ? initLng : 126.9780;
+            const container = document.getElementById('kakaoMap');
+            const options = {
+                center: new kakao.maps.LatLng(defaultLat, defaultLng),
+                level: 5
+            };
+            map = new kakao.maps.Map(container, options);
+            geocoder = new kakao.maps.services.Geocoder();
+            marker = new kakao.maps.Marker({ position: options.center, map: (initLat != null) ? map : null });
 
-        kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
-            const latlng = mouseEvent.latLng;
-            placeMarker(latlng.getLat(), latlng.getLng());
-            geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function (result, status) {
-                if (status === kakao.maps.services.Status.OK) {
-                    const addr = result[0].road_address
-                        ? result[0].road_address.address_name
-                        : result[0].address.address_name;
-                    document.getElementById('locationInput').value = addr;
-                }
+            kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+                const latlng = mouseEvent.latLng;
+                placeMarker(latlng.getLat(), latlng.getLng());
+                geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function (result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        const addr = result[0].road_address
+                            ? result[0].road_address.address_name
+                            : result[0].address.address_name;
+                        document.getElementById('locationInput').value = addr;
+                    }
+                });
             });
         });
-    });
+    }
 
     function placeMarker(lat, lng) {
         const pos = new kakao.maps.LatLng(lat, lng);
@@ -165,6 +175,7 @@
     }
 
     function searchAddress() {
+        if (!kakaoAvailable) return;
         const keyword = document.getElementById('addrSearch').value.trim();
         if (!keyword) return;
         const ps = new kakao.maps.services.Places();
