@@ -52,26 +52,29 @@ public class NotificationQueryService {
     }
 
     private List<NotificationDto> fetchMergedNotifications(Long userId, Set<NotificationType> typeFilter) {
+        // 타입 필터가 있으면 쿼리 단계에서 바로 걸러낸다 — 최신 N건을 먼저 자른 뒤 타입으로
+        // 거르면, 그 N건이 특정 타입에 편중된 경우 결과가 실제보다 적게 나올 수 있다.
+        if (typeFilter != null) {
+            return notificationRepository
+                    .findByUserIdAndTypeInOrderByCreatedAtDesc(userId, typeFilter, PageRequest.of(0, MAX_PERSONAL))
+                    .stream()
+                    .map(n -> NotificationDto.from(n, resolveImageUrl(n)))
+                    .sorted(Comparator.comparing(NotificationDto::createdAt).reversed())
+                    .toList();
+        }
+
         List<NotificationDto> personal = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, MAX_PERSONAL))
                 .stream()
                 .map(n -> NotificationDto.from(n, resolveImageUrl(n)))
                 .toList();
+        List<NotificationDto> broadcasts = broadcastNotificationRepository
+                .findAllByOrderByCreatedAtDesc(PageRequest.of(0, MAX_BROADCAST))
+                .stream()
+                .map(NotificationDto::forBroadcast)
+                .toList();
 
-        Stream<NotificationDto> mergedStream = personal.stream();
-
-        // 타입 필터가 없을 때만 공지 포함
-        if (typeFilter == null) {
-            List<NotificationDto> broadcasts = broadcastNotificationRepository
-                    .findAllByOrderByCreatedAtDesc(PageRequest.of(0, MAX_BROADCAST))
-                    .stream()
-                    .map(NotificationDto::forBroadcast)
-                    .toList();
-            mergedStream = Stream.concat(mergedStream, broadcasts.stream());
-        }
-
-        return mergedStream
-                .filter(n -> typeFilter == null || typeFilter.contains(n.type()))
+        return Stream.concat(personal.stream(), broadcasts.stream())
                 .sorted(Comparator.comparing(NotificationDto::createdAt).reversed())
                 .toList();
     }

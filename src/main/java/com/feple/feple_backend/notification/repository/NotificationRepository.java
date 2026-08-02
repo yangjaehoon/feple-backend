@@ -1,8 +1,10 @@
 package com.feple.feple_backend.notification.repository;
 
 import com.feple.feple_backend.notification.entity.Notification;
+import com.feple.feple_backend.notification.entity.NotificationType;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -22,6 +24,21 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             ORDER BY n.createdAt DESC
             """)
     List<Notification> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
+
+    // 타입 필터가 있을 때는 최신 N건을 먼저 자른 뒤 타입으로 걸러내면(findByUserIdOrderByCreatedAtDesc +
+    // 인메모리 필터) 최신 N건이 특정 타입에 편중된 경우 결과가 실제보다 적게 나올 수 있다 —
+    // 타입 조건을 쿼리 단계에서 먼저 적용해 이 문제를 근본적으로 없앤다.
+    @Query("""
+            SELECT n FROM Notification n
+            LEFT JOIN FETCH n.festival
+            LEFT JOIN FETCH n.artist
+            LEFT JOIN FETCH n.post np
+            LEFT JOIN FETCH np.festival
+            WHERE n.user.id = :userId AND n.type IN :types
+            ORDER BY n.createdAt DESC
+            """)
+    List<Notification> findByUserIdAndTypeInOrderByCreatedAtDesc(
+            @Param("userId") Long userId, @Param("types") Set<NotificationType> types, Pageable pageable);
 
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.isRead = false")
     long countByUserIdAndIsReadFalse(@Param("userId") Long userId);

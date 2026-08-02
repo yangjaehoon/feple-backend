@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -25,6 +26,7 @@ import com.feple.feple_backend.user.entity.User;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -334,11 +336,41 @@ class ArtistServiceImplTest {
                 artistFestival(co2, festival(101L))
         );
         given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(coAppearances);
-        given(artistRepository.findAllById(List.of(3L, 2L))).willReturn(List.of(co2, co1));
+        given(artistRepository.findAllById(argThat((Iterable<Long> ids) ->
+                java.util.stream.StreamSupport.stream(ids.spliterator(), false)
+                        .collect(java.util.stream.Collectors.toSet()).equals(Set.of(2L, 3L)))))
+                .willReturn(List.of(co2, co1));
 
         List<ArtistResponseDto> result = service.getRelatedArtists(1L, 5);
 
         assertThat(result).extracting(ArtistResponseDto::getId).containsExactly(3L, 2L);
+    }
+
+    @Test
+    void 연관아티스트_삭제된_아티스트가_상위권이어도_limit을_채운다() {
+        // 삭제된 아티스트를 먼저 걸러낸 뒤 상위 limit개를 뽑아야 한다 — 순서가 반대면
+        // 삭제된 아티스트가 1등이었을 때 limit=1 요청에도 빈 결과가 나온다.
+        Artist target = artist(1L, "타깃");
+        ArtistFestival af1 = artistFestival(target, festival(100L));
+        given(artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(1L)).willReturn(List.of(af1));
+
+        Artist deleted = artist(2L, "삭제됨");
+        deleted.softDelete();
+        Artist alive = artist(3L, "생존");
+        List<ArtistFestival> coAppearances = List.of(
+                artistFestival(deleted, festival(100L)),
+                artistFestival(deleted, festival(100L)),
+                artistFestival(alive, festival(100L))
+        );
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(coAppearances);
+        given(artistRepository.findAllById(argThat((Iterable<Long> ids) ->
+                java.util.stream.StreamSupport.stream(ids.spliterator(), false)
+                        .collect(java.util.stream.Collectors.toSet()).equals(Set.of(2L, 3L)))))
+                .willReturn(List.of(deleted, alive));
+
+        List<ArtistResponseDto> result = service.getRelatedArtists(1L, 1);
+
+        assertThat(result).extracting(ArtistResponseDto::getId).containsExactly(3L);
     }
 
     private com.feple.feple_backend.festival.entity.Festival festival(Long id) {

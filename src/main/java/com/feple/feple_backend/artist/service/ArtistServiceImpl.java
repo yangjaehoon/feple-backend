@@ -300,19 +300,18 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
         if (coAppearanceCount.isEmpty()) return List.of();
 
-        // 공동 출연 많은 순 → 상위 limit 개 아티스트 ID 추출
-        List<Long> topIds = coAppearanceCount.entrySet().stream()
-                .sorted(Map.Entry.<Long, Long>comparingByValue(Comparator.reverseOrder()))
-                .limit(limit)
-                .map(Map.Entry::getKey)
-                .toList();
-
-        Map<Long, Artist> artistMap = artistRepository.findAllById(topIds).stream()
+        // 삭제된 아티스트를 먼저 걸러낸 뒤 상위 limit개를 뽑아야 한다 — 순서가 반대면
+        // (상위 limit개를 먼저 뽑고 그중 삭제된 것을 제외하면) 삭제된 아티스트가
+        // 상위권을 차지했을 때 최종 결과가 limit보다 적게 나온다.
+        Map<Long, Artist> artistMap = artistRepository.findAllById(coAppearanceCount.keySet()).stream()
+                .filter(a -> !a.isDeleted())
                 .collect(Collectors.toMap(Artist::getId, a -> a));
 
-        return topIds.stream()
-                .map(artistMap::get)
-                .filter(a -> a != null && !a.isDeleted())
+        return coAppearanceCount.entrySet().stream()
+                .filter(e -> artistMap.containsKey(e.getKey()))
+                .sorted(Map.Entry.<Long, Long>comparingByValue(Comparator.reverseOrder()))
+                .limit(limit)
+                .map(e -> artistMap.get(e.getKey()))
                 .map(this::toDto)
                 .toList();
     }

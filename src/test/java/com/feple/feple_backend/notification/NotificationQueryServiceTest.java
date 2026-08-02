@@ -146,18 +146,21 @@ class NotificationQueryServiceTest {
     // ── getMyNotifications: typeGroup 필터 ────────────────────────────
 
     @Test
-    void getMyNotifications_cert_타입그룹이면_인증관련_알림만_포함되고_공지는_제외() {
+    void getMyNotifications_cert_타입그룹이면_쿼리단계에서_인증관련_알림만_조회하고_공지는_제외() {
+        // 타입 필터는 인메모리 필터가 아니라 쿼리 단계에서 적용돼야 한다 — 최신 N건을
+        // 먼저 자른 뒤 타입으로 거르면, 그 N건이 다른 타입에 편중된 경우 cert 알림이
+        // 실제로 있어도 결과가 비어버릴 수 있기 때문이다.
         LocalDateTime t1 = LocalDateTime.of(2026, 1, 1, 12, 0);
         Notification certNotification = mockNotification(1L, NotificationType.CERT_APPROVED, "인증승인", "내용", null, null, t1);
-        Notification commentNotification = mockNotification(2L, NotificationType.NEW_COMMENT, "댓글", "내용", null, null, t1);
 
-        given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
-                .willReturn(List.of(certNotification, commentNotification));
+        given(notificationRepository.findByUserIdAndTypeInOrderByCreatedAtDesc(eq(1L), any(), any(PageRequest.class)))
+                .willReturn(List.of(certNotification));
 
         Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, PageRequest.of(0, 10), "cert");
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).type()).isEqualTo(NotificationType.CERT_APPROVED);
+        then(notificationRepository).should(org.mockito.Mockito.never()).findByUserIdOrderByCreatedAtDesc(any(), any());
         then(broadcastNotificationRepository).should(org.mockito.Mockito.never()).findAllByOrderByCreatedAtDesc(any());
     }
 
