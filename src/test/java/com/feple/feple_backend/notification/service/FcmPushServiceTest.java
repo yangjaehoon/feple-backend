@@ -115,6 +115,28 @@ class FcmPushServiceTest {
     }
 
     @Test
+    void sendBroadcast_실패토큰_에러코드_미분류면_삭제안함() throws Exception {
+        FirebaseMessagingException ex = mock(FirebaseMessagingException.class);
+        given(ex.getMessagingErrorCode()).willReturn(null);
+        SendResponse failed = mock(SendResponse.class);
+        given(failed.isSuccessful()).willReturn(false);
+        given(failed.getException()).willReturn(ex);
+        BatchResponse response = mock(BatchResponse.class);
+        given(response.getResponses()).willReturn(List.of(failed));
+        given(messaging.sendEachForMulticast(any(MulticastMessage.class))).willReturn(response);
+
+        try (MockedStatic<FirebaseApp> appMock = mockStatic(FirebaseApp.class);
+                MockedStatic<FirebaseMessaging> messagingMock = mockStatic(FirebaseMessaging.class)) {
+            appMock.when(FirebaseApp::getApps).thenReturn(List.of(mock(FirebaseApp.class)));
+            messagingMock.when(FirebaseMessaging::getInstance).thenReturn(messaging);
+
+            service.sendBroadcast(List.of("unclassified-fail-token"), "제목", "내용");
+
+            verify(deviceTokenService, never()).deleteStaleTokens(any());
+        }
+    }
+
+    @Test
     void sendBroadcast_발송중_예외발생시_전파되지않음() throws Exception {
         given(messaging.sendEachForMulticast(any(MulticastMessage.class)))
                 .willThrow(mock(FirebaseMessagingException.class));

@@ -96,7 +96,16 @@ public class FcmPushService implements PushNotificationClient {
             if (!responses.get(idx).isSuccessful()) {
                 FirebaseMessagingException ex = responses.get(idx).getException();
                 MessagingErrorCode code = ex != null ? ex.getMessagingErrorCode() : null;
-                log.debug("[FCM] 실패 토큰 ({}): {}", code, batch.get(idx));
+                // FCM이 MessagingErrorCode로 분류하지 못하는 실패(네트워크 오류 등)는 code가 null로
+                // 남아 원인을 알 수 없었다 — 그 경우 예외 클래스/메시지를 대신 남겨 다음 발생 시 진단 가능하게 한다.
+                if (code != null) {
+                    log.debug("[FCM] 실패 토큰 ({}): {}", code, batch.get(idx));
+                } else {
+                    log.debug("[FCM] 실패 토큰 (미분류, {}): {} - {}",
+                            ex != null ? ex.getClass().getSimpleName() : "예외 없음",
+                            batch.get(idx),
+                            ex != null ? ex.getMessage() : "n/a");
+                }
                 if (code == MessagingErrorCode.UNREGISTERED
                         || code == MessagingErrorCode.INVALID_ARGUMENT) {
                     staleTokens.add(batch.get(idx));
