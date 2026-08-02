@@ -75,11 +75,16 @@ public class FcmPushService implements PushNotificationClient {
                 .setTitle(title)
                 .setBody(body);
         if (imageUrl != null) notificationBuilder.setImage(imageUrl);
+        String linkId = resourceId != null ? resourceId : "";
         return MulticastMessage.builder()
                 .addAllTokens(batch)
                 .setNotification(notificationBuilder.build())
                 .putData("type", type)
-                .putData("festivalId", resourceId != null ? resourceId : "")
+                // linkId: 알림 타입에 따라 festivalId/postId/artistId 등 어떤 리소스든 담기는
+                // 범용 참조 ID. festivalId 키는 이미 배포된 구버전 클라이언트 호환을 위해 당분간
+                // 함께 보낸다 — 신버전은 linkId를 우선 사용한다.
+                .putData("linkId", linkId)
+                .putData("festivalId", linkId)
                 .setAndroidConfig(AndroidConfig.builder()
                         .setPriority(AndroidConfig.Priority.HIGH)
                         .build())

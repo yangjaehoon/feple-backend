@@ -302,6 +302,41 @@ class PostServiceImplTest {
         assertThat(postService.getPopularPosts(null)).isEmpty();
     }
 
+    @Test
+    void 핫_게시글_캐시풀이_4개보다_많아도_4개로_자름() {
+        List<PostResponseDto> pool = List.of(
+                PostResponseDto.builder().id(1L).userId(1L).build(),
+                PostResponseDto.builder().id(2L).userId(1L).build(),
+                PostResponseDto.builder().id(3L).userId(1L).build(),
+                PostResponseDto.builder().id(4L).userId(1L).build(),
+                PostResponseDto.builder().id(5L).userId(1L).build(),
+                PostResponseDto.builder().id(6L).userId(1L).build());
+        given(popularPostCache.getPopularPosts()).willReturn(pool);
+
+        List<PostResponseDto> result = postService.getPopularPosts(null);
+
+        assertThat(result).hasSize(4);
+    }
+
+    @Test
+    void 핫_게시글_차단필터링_후에도_4개까지_채움() {
+        // 캐시 풀에 차단 작성자의 글이 섞여 있어도, 풀을 넉넉히 가져왔기 때문에
+        // 필터링 후에도 최종 4개를 채울 수 있어야 한다 (POPULAR_POSTS_POOL 존재 이유)
+        List<PostResponseDto> pool = List.of(
+                PostResponseDto.builder().id(1L).userId(99L).build(), // 차단 작성자
+                PostResponseDto.builder().id(2L).userId(1L).build(),
+                PostResponseDto.builder().id(3L).userId(1L).build(),
+                PostResponseDto.builder().id(4L).userId(1L).build(),
+                PostResponseDto.builder().id(5L).userId(1L).build());
+        given(popularPostCache.getPopularPosts()).willReturn(pool);
+        given(userBlockService.getBlockedIds(1L)).willReturn(List.of(99L));
+
+        List<PostResponseDto> result = postService.getPopularPosts(1L);
+
+        assertThat(result).hasSize(4);
+        assertThat(result).extracting(PostResponseDto::getId).doesNotContain(1L);
+    }
+
     // ── getPostsByBoardTypeLatest ───────────────────────────────────────
 
     @Test

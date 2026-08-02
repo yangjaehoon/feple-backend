@@ -26,11 +26,15 @@ public class PostSearchServiceImpl implements PostSearchService {
     public List<PostResponseDto> searchPosts(String keyword, String boardType, Long viewerId) {
         String kw = keyword.trim();
         Optional<BoardType> type = parseBoardType(boardType);
-        PageRequest pageable = PageRequest.of(0, PageSize.SEARCH);
+        // 최종 노출 개수(SEARCH)가 아니라 넉넉한 풀(SEARCH_POOL)을 조회한다 — 다음 페이지
+        // 개념이 없는 단발성 목록이라, 차단 필터링으로 결과가 줄어들어도 재요청으로 보충할
+        // 방법이 없다.
+        PageRequest pageable = PageRequest.of(0, PageSize.SEARCH_POOL);
         List<PostResponseDto> results = FullTextSearchValidator.isTooShortForFullText(kw)
                 ? searchByTitleLike(type, kw, pageable)
                 : searchByTitleFullText(type, kw, pageable);
-        return blockedContentFilter.excludeBlocked(results, viewerId, PostResponseDto::getUserId);
+        List<PostResponseDto> filtered = blockedContentFilter.excludeBlocked(results, viewerId, PostResponseDto::getUserId);
+        return filtered.stream().limit(PageSize.SEARCH).toList();
     }
 
     private List<PostResponseDto> searchByTitleFullText(Optional<BoardType> type, String kw, PageRequest pageable) {

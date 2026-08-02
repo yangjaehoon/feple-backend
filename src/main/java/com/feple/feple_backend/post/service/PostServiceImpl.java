@@ -69,7 +69,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostResponseDto> getPopularPosts(Long viewerId) {
-        return blockedContentFilter.excludeBlocked(popularPostCache.getPopularPosts(), viewerId, PostResponseDto::getUserId);
+        List<PostResponseDto> pool = blockedContentFilter.excludeBlocked(
+                popularPostCache.getPopularPosts(), viewerId, PostResponseDto::getUserId);
+        return pool.stream().limit(PageSize.POPULAR_POSTS).toList();
     }
 
     @Override
