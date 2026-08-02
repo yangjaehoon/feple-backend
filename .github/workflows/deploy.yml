@@ -160,15 +160,16 @@ jobs:
             fi
 
             # 2) 프로세스 기동과 별개로, Spring Boot가 실제 요청을 받을 수 있는지 헬스체크로 확인
-            #    (기동에 약 45~48초가 걸리는 것으로 관측됨 — 여유를 두고 최대 90초 대기)
-            for i in $(seq 1 18); do
+            #    (기동 시간이 원래 45~48초였다가 최근 박스 부하로 95~100초대까지 늘어난 것을
+            #    실측함 — 90초 예산으로 4연속 배포가 타임아웃돼 롤백됐음. 여유를 두고 최대 180초 대기)
+            for i in $(seq 1 36); do
               if curl -sf --max-time 3 http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
                 echo "헬스체크 통과 — 배포 완료"
                 sudo rm -f /opt/feple/feple.jar.bak
                 exit 0
               fi
-              echo "[$i/18] 헬스체크 대기 중..."
+              echo "[$i/36] 헬스체크 대기 중..."
               sleep 5
             done
-            echo "90초 내에 헬스체크를 통과하지 못함"
+            echo "180초 내에 헬스체크를 통과하지 못함"
             rollback
