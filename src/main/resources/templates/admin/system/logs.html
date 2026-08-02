@@ -23,6 +23,7 @@
                         <option value="BAD_WORD"              th:selected="${targetType == 'BAD_WORD'}">금칙어</option>
                         <option value="NICKNAME_RESTRICTION" th:selected="${targetType == 'NICKNAME_RESTRICTION'}">닉네임 제한</option>
                         <option value="SONG_REQUEST"         th:selected="${targetType == 'SONG_REQUEST'}">노래 요청</option>
+                        <option value="ADMIN_ACCOUNT"        th:selected="${targetType == 'ADMIN_ACCOUNT'}">관리자 계정/로그인</option>
                     </select>
                     <input type="text" name="adminUsername" th:value="${adminUsername}"
                            placeholder="관리자 이름"
@@ -71,7 +72,7 @@
 
                         <td>
                             <span th:with="a=${entry.action.name()}"
-                                  th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT')}
+                                  th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT') or #strings.contains(a,'FAILURE')}
                                            ? 'log-badge log-danger'
                                            : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'}
                                               ? 'log-badge log-success'

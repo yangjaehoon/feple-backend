@@ -1,14 +1,20 @@
 package com.feple.feple_backend.admin;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 
@@ -18,16 +24,23 @@ class AdminLoginFailureHandlerTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private HttpSession session;
+    private AdminLogService adminLogService;
 
+    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
-        handler = new AdminLoginFailureHandler();
+        adminLogService = mock(AdminLogService.class);
+        ObjectProvider<AdminLogService> adminLogServiceProvider = mock(ObjectProvider.class);
+        given(adminLogServiceProvider.getObject()).willReturn(adminLogService);
+
+        handler = new AdminLoginFailureHandler(adminLogServiceProvider);
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
         given(request.getRemoteAddr()).willReturn("1.2.3.4");
         given(request.getSession()).willReturn(session);
         given(request.getContextPath()).willReturn("");
+        given(request.getParameter("username")).willReturn("testadmin");
     }
 
     @Test
@@ -36,6 +49,7 @@ class AdminLoginFailureHandlerTest {
 
         verify(session).setAttribute(AdminLoginFailureHandler.SESSION_KEY, "invalid");
         verify(response).sendRedirect("/admin/login");
+        verify(adminLogService).log(eq(AdminAction.LOGIN_FAILURE), eq("ADMIN_ACCOUNT"), isNull(), any());
     }
 
     @Test
@@ -44,6 +58,7 @@ class AdminLoginFailureHandlerTest {
 
         verify(session).setAttribute(AdminLoginFailureHandler.SESSION_KEY, "disabled");
         verify(response).sendRedirect("/admin/login");
+        verify(adminLogService).log(eq(AdminAction.LOGIN_FAILURE), eq("ADMIN_ACCOUNT"), isNull(), any());
     }
 
     @Test

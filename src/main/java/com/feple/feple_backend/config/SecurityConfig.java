@@ -2,6 +2,8 @@ package com.feple.feple_backend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.admin.AdminLoginFailureHandler;
+import com.feple.feple_backend.admin.AdminLoginSuccessHandler;
+import com.feple.feple_backend.admin.AdminLogoutSuccessHandler;
 import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.global.exception.ErrorCode;
@@ -38,6 +40,8 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final AdminLoginFailureHandler adminLoginFailureHandler;
+    private final AdminLoginSuccessHandler adminLoginSuccessHandler;
+    private final AdminLogoutSuccessHandler adminLogoutSuccessHandler;
     // JPA 리포지토리를 @Configuration 빈 생성자에서 즉시(eager) 주입하면, EnableJpaRepositories가
     // jpaSharedEM_entityManagerFactory 등록을 마치기 전에 SecurityConfig(나아가 FilterRegistrationBean
     // 처리 중인 jwtAuthenticationFilter 빈)가 먼저 처리될 경우 "Cannot resolve reference to bean
@@ -93,12 +97,12 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/admin/login")
                 .loginProcessingUrl("/admin/login")
-                .defaultSuccessUrl("/admin", true)
+                .successHandler(adminLoginSuccessHandler)
                 .failureHandler(adminLoginFailureHandler)
                 .permitAll())
             .logout(logout -> logout
                 .logoutUrl("/admin/logout")
-                .logoutSuccessUrl("/admin/login?logout=true")
+                .logoutSuccessHandler(adminLogoutSuccessHandler)
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll())

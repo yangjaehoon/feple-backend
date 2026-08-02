@@ -85,7 +85,11 @@ public enum AdminAction {
     ADMIN_ACCOUNT_CREATE("관리자 계정 생성"),
     ADMIN_ACCOUNT_UPDATE("관리자 계정 수정"),
     ADMIN_ACCOUNT_DELETE("관리자 계정 삭제"),
-    ADMIN_ACCOUNT_TOGGLE("계정 활성화 상태 변경");
+    ADMIN_ACCOUNT_TOGGLE("계정 활성화 상태 변경"),
+
+    LOGIN_SUCCESS("로그인 성공"),
+    LOGIN_FAILURE("로그인 실패"),
+    LOGOUT("로그아웃");
 
     private final String label;
 
