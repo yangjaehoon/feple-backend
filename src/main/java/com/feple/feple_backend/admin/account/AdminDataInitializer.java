@@ -38,7 +38,8 @@ public class AdminDataInitializer implements CommandLineRunner {
         try {
             AdminAccountService.validatePasswordComplexity(adminPassword);
         } catch (IllegalArgumentException e) {
-            log.warn("초기 관리자 비밀번호 복잡도 미충족: {} — 운영 환경에서는 강력한 비밀번호 사용을 권장합니다.", e.getMessage());
+            log.warn("초기 관리자 비밀번호가 복잡도 요건을 충족하지 않아 초기 계정을 생성하지 않습니다: {}", e.getMessage());
+            return;
         }
 
         AdminAccount superAdmin = AdminAccount.builder()

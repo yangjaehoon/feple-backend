@@ -83,6 +83,8 @@ public class FcmPushService implements PushNotificationClient {
                 // linkId: 알림 타입에 따라 festivalId/postId/artistId 등 어떤 리소스든 담기는
                 // 범용 참조 ID. festivalId 키는 이미 배포된 구버전 클라이언트 호환을 위해 당분간
                 // 함께 보낸다 — 신버전은 linkId를 우선 사용한다.
+                // TODO: linkId를 읽는 구버전 미만 클라이언트 비율이 무시할 수준으로 낮아지면
+                // (앱스토어/플레이스토어 버전 통계 확인 후) festivalId 중복 발행 제거할 것.
                 .putData("linkId", linkId)
                 .putData("festivalId", linkId)
                 .setAndroidConfig(AndroidConfig.builder()

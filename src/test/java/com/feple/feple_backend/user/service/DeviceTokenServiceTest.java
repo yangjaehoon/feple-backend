@@ -67,6 +67,12 @@ class DeviceTokenServiceTest {
     }
 
     @Test
+    void register_알수없는_플랫폼이면_예외() {
+        assertThatThrownBy(() -> service.register(1L, new DeviceTokenRegistration("token-a", "windows", "ko")))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void register_사용자없으면_예외() {
         given(tokenRepository.findByUserIdAndToken(1L, "token-a")).willReturn(Optional.empty());
         given(userRepository.findById(1L)).willReturn(Optional.empty());
