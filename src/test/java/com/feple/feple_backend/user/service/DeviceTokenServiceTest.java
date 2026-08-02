@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.user.entity.DevicePlatform;
 import com.feple.feple_backend.user.entity.DeviceTokenRegistration;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
@@ -39,6 +40,7 @@ class DeviceTokenServiceTest {
 
         verify(existing).updateLanguage("ko");
         verify(tokenRepository).deleteByTokenAndOtherUsers("token-a", 1L);
+        verify(tokenRepository).deleteByUserIdAndPlatformExceptToken(1L, DevicePlatform.ANDROID, "token-a");
         verify(tokenRepository, never()).save(any());
     }
 
@@ -51,6 +53,17 @@ class DeviceTokenServiceTest {
         service.register(1L, new DeviceTokenRegistration("token-a", "android", "ko"));
 
         verify(tokenRepository).save(any(UserDeviceToken.class));
+    }
+
+    @Test
+    void register_같은유저_같은플랫폼_이전토큰_정리() {
+        User author = user(1L);
+        given(tokenRepository.findByUserIdAndToken(1L, "new-token")).willReturn(Optional.empty());
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+
+        service.register(1L, new DeviceTokenRegistration("new-token", "ios", "ko"));
+
+        verify(tokenRepository).deleteByUserIdAndPlatformExceptToken(1L, DevicePlatform.IOS, "new-token");
     }
 
     @Test

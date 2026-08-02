@@ -22,15 +22,17 @@ public class DeviceTokenService {
     @Transactional
     public void register(Long userId, DeviceTokenRegistration registration) {
         String token = registration.token();
+        DevicePlatform platform = DevicePlatform.from(registration.platform());
         // 같은 기기에서 계정 전환 시 동일 토큰이 다른 계정에 남아 있으면 제거
         tokenRepository.deleteByTokenAndOtherUsers(token, userId);
+        // 재설치/토큰 로테이션으로 같은 유저·플랫폼에 이전 토큰이 쌓여 영구히 방치되는 것을 방지
+        tokenRepository.deleteByUserIdAndPlatformExceptToken(userId, platform, token);
 
         tokenRepository.findByUserIdAndToken(userId, token).ifPresentOrElse(
             existing -> existing.updateLanguage(registration.language()),
             () -> {
                 User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-                tokenRepository.save(UserDeviceToken.of(user, token,
-                        DevicePlatform.from(registration.platform()), registration.language()));
+                tokenRepository.save(UserDeviceToken.of(user, token, platform, registration.language()));
             }
         );
     }

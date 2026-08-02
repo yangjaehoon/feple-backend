@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.repository;
 
+import com.feple.feple_backend.user.entity.DevicePlatform;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +45,13 @@ public interface UserDeviceTokenRepository extends JpaRepository<UserDeviceToken
     @Transactional
     @Query("DELETE FROM UserDeviceToken t WHERE t.token = :token AND t.user.id != :userId")
     void deleteByTokenAndOtherUsers(@Param("token") String token, @Param("userId") Long userId);
+
+    /** 재설치/토큰 로테이션으로 발급된 이전 토큰 정리 — 같은 유저·플랫폼에는 최신 토큰 하나만 남긴다 */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM UserDeviceToken t WHERE t.user.id = :userId AND t.platform = :platform AND t.token != :token")
+    void deleteByUserIdAndPlatformExceptToken(
+            @Param("userId") Long userId, @Param("platform") DevicePlatform platform, @Param("token") String token);
 
     @Query("SELECT DISTINCT t.token FROM UserDeviceToken t")
     List<String> findAllTokens();
