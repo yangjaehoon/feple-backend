@@ -283,20 +283,19 @@ class FestivalServiceImplTest {
     // ── getFestivalsPage ────────────────────────────────────────────────
 
     @Test
-    void 페이지_조회_기본정렬은_startDate_오름차순() {
+    void 페이지_조회_정렬_미지정시_기본순서_쿼리사용() {
         Festival f = festival(1L, "락페", null);
-        given(festivalRepository.findByFiltersPage(any(), any(), any(), any(), any()))
+        given(festivalRepository.findByFiltersPageDefaultOrder(any(), any(), any(), any(), any(), any()))
                 .willReturn(new org.springframework.data.domain.PageImpl<>(List.of(f)));
 
         festivalService.getFestivalsPage(
                 new FestivalFilterCriteria(null, null, null, true, null),
                 org.springframework.data.domain.PageRequest.of(0, 20));
 
-        org.mockito.ArgumentCaptor<org.springframework.data.domain.Pageable> captor =
-                org.mockito.ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
-        then(festivalRepository).should().findByFiltersPage(any(), any(), any(), any(), captor.capture());
-        assertThat(captor.getValue().getSort().getOrderFor("startDate").getDirection())
-                .isEqualTo(org.springframework.data.domain.Sort.Direction.ASC);
+        // 정렬 미지정 시 진행중/예정 축제 우선 노출을 위해 별도의 기본순서 쿼리로 위임한다 —
+        // 단순 startDate 정렬(findByFiltersPage)은 호출되지 않아야 한다
+        then(festivalRepository).should().findByFiltersPageDefaultOrder(any(), any(), any(), any(), any(), any());
+        then(festivalRepository).should(never()).findByFiltersPage(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -318,7 +317,7 @@ class FestivalServiceImplTest {
     @Test
     void 페이지_조회_결과를_DTO로_매핑() {
         Festival f = festival(1L, "락페", null);
-        given(festivalRepository.findByFiltersPage(any(), any(), any(), any(), any()))
+        given(festivalRepository.findByFiltersPageDefaultOrder(any(), any(), any(), any(), any(), any()))
                 .willReturn(new org.springframework.data.domain.PageImpl<>(List.of(f)));
 
         Page<FestivalResponseDto> result = festivalService.getFestivalsPage(

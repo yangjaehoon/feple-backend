@@ -105,6 +105,33 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                                      @Param("activeFrom") LocalDate activeFrom,
                                      Pageable pageable);
 
+    // 정렬 미지정 시 기본 노출 순서 — FestivalStatus(ACTIVE는 임박한 순, ENDED는 최근 종료 순)와
+    // 동일한 규칙을 SQL로 재현한다. 단순히 startDate로만 정렬하면 오래전 종료된 축제가 앞쪽
+    // 페이지를 차지해, 홈 화면 캐러셀처럼 앞쪽 페이지만 보여주는 화면에서 진행중/예정 축제가
+    // 전혀 안 보이는 문제가 있었다.
+    @Query(value = "SELECT DISTINCT f FROM Festival f LEFT JOIN f.genres g " +
+           "WHERE f.deletedAt IS NULL " +
+           "AND (:genres IS NULL OR g IN :genres) " +
+           "AND (:regions IS NULL OR f.region IN :regions) " +
+           "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions) " +
+           "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom) " +
+           "ORDER BY " +
+           "CASE WHEN f.endDate IS NULL OR f.endDate >= :today THEN 0 ELSE 1 END, " +
+           "CASE WHEN f.endDate IS NULL OR f.endDate >= :today THEN f.startDate END ASC, " +
+           "CASE WHEN f.endDate IS NOT NULL AND f.endDate < :today THEN f.startDate END DESC",
+           countQuery = "SELECT COUNT(DISTINCT f) FROM Festival f LEFT JOIN f.genres g " +
+           "WHERE f.deletedAt IS NULL " +
+           "AND (:genres IS NULL OR g IN :genres) " +
+           "AND (:regions IS NULL OR f.region IN :regions) " +
+           "AND (:ageRestrictions IS NULL OR f.ageRestriction IN :ageRestrictions) " +
+           "AND (:activeFrom IS NULL OR f.endDate IS NULL OR f.endDate >= :activeFrom)")
+    Page<Festival> findByFiltersPageDefaultOrder(@Param("genres") List<MusicGenre> genres,
+                                     @Param("regions") List<Region> regions,
+                                     @Param("ageRestrictions") List<AgeRestriction> ageRestrictions,
+                                     @Param("activeFrom") LocalDate activeFrom,
+                                     @Param("today") LocalDate today,
+                                     Pageable pageable);
+
     List<Festival> findTop10ByDeletedAtIsNullOrderByLikeCountDesc();
 
     @Query("SELECT f FROM Festival f WHERE f.deletedAt IS NULL AND f.startDate BETWEEN :today AND :until ORDER BY f.likeCount DESC")

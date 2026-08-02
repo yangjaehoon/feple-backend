@@ -117,15 +117,21 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         List<MusicGenre> genres = criteria.genres();
         List<Region> regions = criteria.regions();
         List<AgeRestriction> ageRestrictions = criteria.ageRestrictions();
+        List<MusicGenre> genreFilter = genres == null || genres.isEmpty() ? null : genres;
+        List<Region> regionFilter = regions == null || regions.isEmpty() ? null : regions;
+        List<AgeRestriction> ageFilter = ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions;
 
-        Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), resolveSort(criteria.sort()));
-        Page<Festival> page = festivalRepository.findByFiltersPage(
-            genres == null || genres.isEmpty() ? null : genres,
-            regions == null || regions.isEmpty() ? null : regions,
-            ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions,
-            activeFrom,
-            sorted
-        );
+        Page<Festival> page;
+        if (criteria.sort() == null || criteria.sort().isBlank()) {
+            // 정렬 미지정 시 진행중/예정 축제를 우선 노출 — 홈 화면 캐러셀 등 앞쪽 페이지만
+            // 보여주는 화면에서 종료된 축제에 밀려 안 보이는 문제 방지
+            Pageable unsorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+            page = festivalRepository.findByFiltersPageDefaultOrder(
+                    genreFilter, regionFilter, ageFilter, activeFrom, today, unsorted);
+        } else {
+            Pageable sorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), resolveSort(criteria.sort()));
+            page = festivalRepository.findByFiltersPage(genreFilter, regionFilter, ageFilter, activeFrom, sorted);
+        }
         return page.map(this::toDto);
     }
 
