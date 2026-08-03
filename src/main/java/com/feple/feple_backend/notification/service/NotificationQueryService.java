@@ -47,44 +47,61 @@ public class NotificationQueryService {
 
     public Page<NotificationDto> getMyNotifications(Long userId, Pageable pageable, String typeGroup) {
         Set<NotificationType> typeFilter = resolveTypeFilter(typeGroup);
-        List<NotificationDto> all = fetchMergedNotifications(userId, typeFilter);
+        List<MergedNotification> all = fetchMergedNotifications(userId, typeFilter);
         return paginate(all, pageable);
     }
 
-    private List<NotificationDto> fetchMergedNotifications(Long userId, Set<NotificationType> typeFilter) {
+    // presign은 최종 페이지에 실제로 노출되는 항목에 대해서만 수행해야 한다 — merge 단계에서
+    // 최대 250건(개인 200+공지 50) 전부에 대해 미리 presign하면 대부분 버려지는 낭비 작업이 된다.
+    private record MergedNotification(NotificationDto dto, String imageKey) {}
+
+    private List<MergedNotification> fetchMergedNotifications(Long userId, Set<NotificationType> typeFilter) {
         // 타입 필터가 있으면 쿼리 단계에서 바로 걸러낸다 — 최신 N건을 먼저 자른 뒤 타입으로
         // 거르면, 그 N건이 특정 타입에 편중된 경우 결과가 실제보다 적게 나올 수 있다.
         if (typeFilter != null) {
             return notificationRepository
                     .findByUserIdAndTypeInOrderByCreatedAtDesc(userId, typeFilter, PageRequest.of(0, MAX_PERSONAL))
                     .stream()
-                    .map(n -> NotificationDto.from(n, resolveImageUrl(n)))
-                    .sorted(Comparator.comparing(NotificationDto::createdAt).reversed())
+                    .map(this::toMergedPersonal)
+                    .sorted(Comparator.comparing(m -> m.dto().createdAt(), Comparator.reverseOrder()))
                     .toList();
         }
 
-        List<NotificationDto> personal = notificationRepository
+        List<MergedNotification> personal = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, MAX_PERSONAL))
                 .stream()
-                .map(n -> NotificationDto.from(n, resolveImageUrl(n)))
+                .map(this::toMergedPersonal)
                 .toList();
-        List<NotificationDto> broadcasts = broadcastNotificationRepository
+        List<MergedNotification> broadcasts = broadcastNotificationRepository
                 .findAllByOrderByCreatedAtDesc(PageRequest.of(0, MAX_BROADCAST))
                 .stream()
-                .map(NotificationDto::forBroadcast)
+                .map(b -> new MergedNotification(NotificationDto.forBroadcast(b), null))
                 .toList();
 
         return Stream.concat(personal.stream(), broadcasts.stream())
-                .sorted(Comparator.comparing(NotificationDto::createdAt).reversed())
+                .sorted(Comparator.comparing(m -> m.dto().createdAt(), Comparator.reverseOrder()))
                 .toList();
     }
 
-    private Page<NotificationDto> paginate(List<NotificationDto> all, Pageable pageable) {
+    private MergedNotification toMergedPersonal(Notification n) {
+        return new MergedNotification(NotificationDto.from(n, null), n.getImageKey());
+    }
+
+    private Page<NotificationDto> paginate(List<MergedNotification> all, Pageable pageable) {
         int total = all.size();
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), total);
-        List<NotificationDto> paged = start >= total ? List.of() : all.subList(start, end);
+        List<NotificationDto> paged = start >= total
+                ? List.of()
+                : all.subList(start, end).stream().map(this::resolveImage).toList();
         return new PageImpl<>(paged, pageable, total);
+    }
+
+    private NotificationDto resolveImage(MergedNotification merged) {
+        if (merged.imageKey() == null) return merged.dto();
+        NotificationDto dto = merged.dto();
+        return new NotificationDto(dto.id(), dto.type(), dto.title(), dto.body(), dto.titleEn(), dto.bodyEn(),
+                dto.referenceId(), dto.read(), dto.createdAt(), s3PresignService.presignGetUrl(merged.imageKey()));
     }
 
     public long getUnreadCount(Long userId) {
@@ -124,11 +141,6 @@ public class NotificationQueryService {
     @Transactional
     public void removeAllByFestivalId(Long festivalId) {
         notificationRepository.deleteByFestivalId(festivalId);
-    }
-
-    private String resolveImageUrl(Notification n) {
-        String key = n.getImageKey();
-        return key != null ? s3PresignService.presignGetUrl(key) : null;
     }
 
     private Set<NotificationType> resolveTypeFilter(String typeGroup) {

@@ -8,9 +8,9 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.KoreaClock;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
@@ -75,7 +75,7 @@ public class WeatherService {
      * 외부 API 호출(fetchFromApi)이 커넥션을 물고 있지 않도록 트랜잭션은 DB 저장(saveOrUpdate)에만 건다.
      */
     public boolean collectWeather(Festival festival) {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate today = KoreaClock.today();
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
         if (end != null && end.isBefore(today)) return false;
 
@@ -102,7 +102,7 @@ public class WeatherService {
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate today = KoreaClock.today();
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
         if (end != null && end.isBefore(today)) {
             return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
@@ -241,7 +241,7 @@ public class WeatherService {
         }
 
         // 기상청 API는 발표시각 이후 약 10분 뒤 데이터가 올라옴 — 그 전에 조회하면 최신 시간대 누락
-        LocalTime nowKST = LocalTime.now(ZoneId.of("Asia/Seoul")).minusMinutes(10);
+        LocalTime nowKST = KoreaClock.now().minusMinutes(10);
         int currentHour = nowKST.getHour();
         LocalDate apiDate = today;
         int bestHour = 2;

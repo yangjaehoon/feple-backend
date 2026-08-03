@@ -14,12 +14,12 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import com.feple.feple_backend.timetable.service.TimetableSyncService;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -168,7 +168,7 @@ public class ArtistFestivalService {
 
     private boolean isBeforeFestivalStart(Festival festival) {
         return festival.getStartDate() != null
-                && festival.getStartDate().isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")));
+                && festival.getStartDate().isAfter(KoreaClock.today());
     }
 
     private void publishArtistAddedEvent(Artist artist, Festival festival) {

@@ -5,9 +5,9 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.notification.service.NotificationService;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,7 +45,7 @@ public class FestivalReminderScheduler {
     }
 
     private void sendReminderForDDay(int dDay) {
-        LocalDate targetDate = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(dDay);
+        LocalDate targetDate = KoreaClock.today().plusDays(dDay);
         List<Festival> festivals = festivalRepository.findByStartDate(targetDate);
 
         if (festivals.isEmpty()) return;

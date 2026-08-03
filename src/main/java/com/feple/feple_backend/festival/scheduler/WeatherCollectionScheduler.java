@@ -3,8 +3,8 @@ package com.feple.feple_backend.festival.scheduler;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.service.WeatherService;
+import com.feple.feple_backend.global.KoreaClock;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class WeatherCollectionScheduler {
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
     @SchedulerLock(name = "weatherCollectionScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     public void collect() {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate today = KoreaClock.today();
         LocalDate until = today.plusDays(WeatherService.FORECAST_LOOKAHEAD_DAYS);
 
         List<Festival> targets = festivalRepository.findOngoingOrStartingBefore(today, until);

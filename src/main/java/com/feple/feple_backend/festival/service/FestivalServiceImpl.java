@@ -15,13 +15,13 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictFestivalCaches;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -75,7 +75,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getAllFestivals(FestivalFilterCriteria criteria) {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate today = KoreaClock.today();
         // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
         List<MusicGenre> genres = criteria.genres();
@@ -112,7 +112,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalResponseDto> getFestivalsPage(FestivalFilterCriteria criteria, Pageable pageable) {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDate today = KoreaClock.today();
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
         List<MusicGenre> genres = criteria.genres();
         List<Region> regions = criteria.regions();

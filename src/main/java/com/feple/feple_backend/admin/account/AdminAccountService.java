@@ -44,13 +44,16 @@ public class AdminAccountService {
     /** @return 생성된 계정 — 컨트롤러가 감사 로그(id, username) 기록에 사용 */
     public AdminAccount create(AdminAccountCreateRequestDto req) {
         validateNewAccount(req.username(), req.password());
+        String profileImageUrl = uploadProfileIfPresent(req.profileImage(), req.username());
+        // DB 저장 실패로 트랜잭션이 롤백되면 이미 올라간 S3 파일이 orphan으로 남지 않도록 정리
+        fileStorageService.deleteFileOnRollback(profileImageUrl);
         return accountRepository.save(AdminAccount.builder()
                 .username(req.username())
                 .password(passwordEncoder.encode(req.password()))
                 .displayName(req.displayName())
                 .role(req.role())
                 .permissions(resolvePermissions(req.role(), req.permissions()))
-                .profileImageUrl(uploadProfileIfPresent(req.profileImage(), req.username()))
+                .profileImageUrl(profileImageUrl)
                 .build());
     }
 
@@ -154,12 +157,15 @@ public class AdminAccountService {
             fileStorageService.deleteFileAfterCommit(oldImageUrl);
         } else if (req.profileImage() != null && !req.profileImage().isEmpty()) {
             String oldImageUrl = account.getProfileImageUrl();
+            String newImageUrl;
             try {
-                account.updateProfileImage(
-                        fileStorageService.storeAdminProfile(req.profileImage(), account.getUsername()));
+                newImageUrl = fileStorageService.storeAdminProfile(req.profileImage(), account.getUsername());
             } catch (IOException e) {
                 throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
             }
+            // DB 저장 실패로 트랜잭션이 롤백되면 이미 올라간 S3 파일이 orphan으로 남지 않도록 정리
+            fileStorageService.deleteFileOnRollback(newImageUrl);
+            account.updateProfileImage(newImageUrl);
             fileStorageService.deleteFileAfterCommit(oldImageUrl);
         }
     }

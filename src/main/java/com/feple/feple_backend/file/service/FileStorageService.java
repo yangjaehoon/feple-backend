@@ -146,4 +146,21 @@ public class FileStorageService {
         }
     }
 
+    /**
+     * 트랜잭션 안에서 새로 업로드한 파일을 등록해두면, 이후 DB 저장 실패로 트랜잭션이 롤백될 때만
+     * 정리한다(커밋되면 그대로 유지). 활성 트랜잭션이 없으면 롤백 개념이 없으므로 아무 것도 하지 않는다.
+     */
+    public void deleteFileOnRollback(String key) {
+        if (key == null || key.isBlank()) return;
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) return;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    deleteFile(key);
+                }
+            }
+        });
+    }
+
 }
