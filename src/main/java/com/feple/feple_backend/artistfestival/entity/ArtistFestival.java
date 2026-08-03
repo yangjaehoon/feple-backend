@@ -62,7 +62,12 @@ public class ArtistFestival {
     public String getArtistProfileImageKey() { return artist.getProfileImageKey(); }
     public Long getFestivalId() { return festival.getId(); }
     public String getFestivalTitle() { return festival.getTitle(); }
+    public String getFestivalDescription() { return festival.getDescription(); }
+    public String getFestivalLocation() { return festival.getLocation(); }
+    public String getFestivalPosterKey() { return festival.getPosterKey(); }
+    public com.feple.feple_backend.festival.entity.EventType getFestivalEventType() { return festival.getEventType(); }
     public java.time.LocalDate getFestivalStartDate() { return festival.getStartDate(); }
+    public java.time.LocalDate getFestivalEndDate() { return festival.getEndDate(); }
 
     public void updateLineup(String stageName, LocalDate performanceDate) {
         this.stageName = stageName;

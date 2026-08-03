@@ -19,16 +19,7 @@ public final class JwtProvider {
     }
 
     public String createAccessToken(Long userId) {
-        Date now = new Date();
-        Date exp = new Date(now.getTime() + props.accessTokenExpirationMs());
-
-        return Jwts.builder()
-                .subject(String.valueOf(userId))
-                .claim(JwtConstants.CLAIM_TYPE, JwtConstants.TOKEN_TYPE_ACCESS)
-                .issuedAt(now)
-                .expiration(exp)
-                .signWith(key)
-                .compact();
+        return issueToken(userId, props.accessTokenExpirationMs(), JwtConstants.TOKEN_TYPE_ACCESS);
     }
 
     public boolean isRefreshToken(String token) {
@@ -46,12 +37,16 @@ public final class JwtProvider {
     }
 
     public String createRefreshToken(Long userId) {
+        return issueToken(userId, props.refreshTokenExpirationMs(), JwtConstants.TOKEN_TYPE_REFRESH);
+    }
+
+    private String issueToken(Long userId, long expirationMs, String tokenType) {
         Date now = new Date();
-        Date exp = new Date(now.getTime() + props.refreshTokenExpirationMs());
+        Date exp = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim(JwtConstants.CLAIM_TYPE, JwtConstants.TOKEN_TYPE_REFRESH)
+                .claim(JwtConstants.CLAIM_TYPE, tokenType)
                 .issuedAt(now)
                 .expiration(exp)
                 .signWith(key)

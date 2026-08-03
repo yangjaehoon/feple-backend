@@ -291,18 +291,25 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 .toList();
         if (festivalIds.isEmpty()) return List.of();
 
-        // 같은 페스티벌에 출연한 다른 아티스트의 공동 출연 횟수 집계
-        Map<Long, Long> coAppearanceCount = artistFestivalRepository
+        Map<Long, Long> coAppearanceCount = computeCoAppearanceCounts(artistId, festivalIds);
+        if (coAppearanceCount.isEmpty()) return List.of();
+
+        return topRelatedArtists(coAppearanceCount, limit);
+    }
+
+    // 같은 페스티벌에 출연한 다른 아티스트의 공동 출연 횟수 집계
+    private Map<Long, Long> computeCoAppearanceCounts(Long artistId, List<Long> festivalIds) {
+        return artistFestivalRepository
                 .findByFestivalIdInWithArtist(festivalIds)
                 .stream()
                 .filter(af -> !af.getArtistId().equals(artistId))
                 .collect(Collectors.groupingBy(ArtistFestival::getArtistId, Collectors.counting()));
+    }
 
-        if (coAppearanceCount.isEmpty()) return List.of();
-
-        // 삭제된 아티스트를 먼저 걸러낸 뒤 상위 limit개를 뽑아야 한다 — 순서가 반대면
-        // (상위 limit개를 먼저 뽑고 그중 삭제된 것을 제외하면) 삭제된 아티스트가
-        // 상위권을 차지했을 때 최종 결과가 limit보다 적게 나온다.
+    // 삭제된 아티스트를 먼저 걸러낸 뒤 상위 limit개를 뽑아야 한다 — 순서가 반대면
+    // (상위 limit개를 먼저 뽑고 그중 삭제된 것을 제외하면) 삭제된 아티스트가
+    // 상위권을 차지했을 때 최종 결과가 limit보다 적게 나온다.
+    private List<ArtistResponseDto> topRelatedArtists(Map<Long, Long> coAppearanceCount, int limit) {
         Map<Long, Artist> artistMap = artistRepository.findAllById(coAppearanceCount.keySet()).stream()
                 .filter(a -> !a.isDeleted())
                 .collect(Collectors.toMap(Artist::getId, a -> a));

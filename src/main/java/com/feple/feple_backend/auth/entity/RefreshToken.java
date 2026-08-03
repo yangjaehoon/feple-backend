@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 @Getter
 @NoArgsConstructor
 @Table(name = "refresh_tokens", indexes = {
-        @Index(name = "idx_refresh_token_hash", columnList = "tokenHash"),
         @Index(name = "idx_refresh_user_id", columnList = "user_id")
 })
 public class RefreshToken {

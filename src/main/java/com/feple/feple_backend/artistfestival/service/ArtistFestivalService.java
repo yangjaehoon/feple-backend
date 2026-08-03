@@ -110,10 +110,8 @@ public class ArtistFestivalService {
         ArtistFestival saved = artistFestivalRepository.save(artistFestival);
 
         // 트랜잭션 커밋 후에만 알림 발송 — 아직 시작 전인 페스티벌에만 발송
-        if (festival.getStartDate() != null && festival.getStartDate().isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
-            eventPublisher.publishEvent(new ArtistAddedToFestivalEvent(
-                    artist.getId(), artist.getName(), artist.getNameEn(),
-                    festival.getId(), festival.getTitle(), festival.getTitleEn()));
+        if (isBeforeFestivalStart(festival)) {
+            publishArtistAddedEvent(artist, festival);
         }
 
         return saved.getId();
@@ -126,16 +124,27 @@ public class ArtistFestivalService {
         if (artistIds == null || artistIds.isEmpty()) return new LinkArtistsResult(0, 0, 0);
 
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-
         Set<Long> existingArtistIds = artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId)
                 .stream().map(ArtistFestival::getArtistId).collect(Collectors.toSet());
         Map<Long, Artist> artistsById = artistRepository.findAllById(artistIds).stream()
                 .collect(Collectors.toMap(Artist::getId, a -> a));
 
-        boolean notYetStarted = festival.getStartDate() != null
-                && festival.getStartDate().isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")));
+        ArtistLinkBatch batch = classifyArtistsToLink(festivalId, artistIds, artistsById, existingArtistIds, festival);
+        artistFestivalRepository.saveAll(batch.toSave());
 
-        int added = 0, duplicates = 0, errors = 0;
+        // 트랜잭션 커밋 후에만 알림 발송 — 아직 시작 전인 페스티벌에만 발송
+        if (isBeforeFestivalStart(festival)) {
+            batch.addedArtists().forEach(artist -> publishArtistAddedEvent(artist, festival));
+        }
+        return new LinkArtistsResult(batch.addedArtists().size(), batch.duplicates(), batch.errors());
+    }
+
+    private record ArtistLinkBatch(List<ArtistFestival> toSave, List<Artist> addedArtists,
+                                    int duplicates, int errors) {}
+
+    private ArtistLinkBatch classifyArtistsToLink(Long festivalId, List<Long> artistIds, Map<Long, Artist> artistsById,
+                                                   Set<Long> existingArtistIds, Festival festival) {
+        int duplicates = 0, errors = 0;
         List<ArtistFestival> toSave = new ArrayList<>();
         List<Artist> addedArtists = new ArrayList<>();
         for (Long artistId : artistIds) {
@@ -151,22 +160,22 @@ public class ArtistFestivalService {
             }
             toSave.add(ArtistFestival.builder().festival(festival).artist(artist).build());
             addedArtists.add(artist);
-            added++;
         }
-        artistFestivalRepository.saveAll(toSave);
-
-        // 트랜잭션 커밋 후에만 알림 발송 — 아직 시작 전인 페스티벌에만 발송
-        if (notYetStarted) {
-            for (Artist artist : addedArtists) {
-                eventPublisher.publishEvent(new ArtistAddedToFestivalEvent(
-                        artist.getId(), artist.getName(), artist.getNameEn(),
-                        festival.getId(), festival.getTitle(), festival.getTitleEn()));
-            }
-        }
-        return new LinkArtistsResult(added, duplicates, errors);
+        return new ArtistLinkBatch(toSave, addedArtists, duplicates, errors);
     }
 
     public record LinkArtistsResult(int added, int duplicates, int errors) {}
+
+    private boolean isBeforeFestivalStart(Festival festival) {
+        return festival.getStartDate() != null
+                && festival.getStartDate().isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")));
+    }
+
+    private void publishArtistAddedEvent(Artist artist, Festival festival) {
+        eventPublisher.publishEvent(new ArtistAddedToFestivalEvent(
+                artist.getId(), artist.getName(), artist.getNameEn(),
+                festival.getId(), festival.getTitle(), festival.getTitleEn()));
+    }
 
     @Transactional
     public void updateArtistFestival(Long festivalId, Long artistFestivalId, LineupUpdate lineup) {
@@ -174,17 +183,7 @@ public class ArtistFestivalService {
         if (!af.getFestivalId().equals(festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
-
-        // 빈 문자열("미지정" 선택)은 null로 정규화
-        String resolvedStage = (lineup.stageName() != null && !lineup.stageName().isBlank()) ? lineup.stageName() : null;
-        LocalDate performanceDate = lineup.date();
-        String oldStage = af.getStageName();
-        LocalDate oldDate = af.getPerformanceDate();
-        af.updateLineup(resolvedStage, performanceDate);
-
-        String artistName = af.getArtistName();
-        timetableSyncService.syncStage(festivalId, artistName, resolvedStage, oldStage);
-        timetableSyncService.syncDate(festivalId, artistName, performanceDate, oldDate);
+        applyLineupUpdate(festivalId, af, lineup);
     }
 
     // 라인업 그리드 일괄 수정 — 행마다 findById를 반복하지 않고 한 번에 조회한다.
@@ -203,15 +202,7 @@ public class ArtistFestivalService {
                 continue;
             }
             try {
-                LineupUpdate lineup = entry.getValue();
-                String resolvedStage = (lineup.stageName() != null && !lineup.stageName().isBlank()) ? lineup.stageName() : null;
-                String oldStage = af.getStageName();
-                LocalDate oldDate = af.getPerformanceDate();
-                af.updateLineup(resolvedStage, lineup.date());
-
-                String artistName = af.getArtistName();
-                timetableSyncService.syncStage(festivalId, artistName, resolvedStage, oldStage);
-                timetableSyncService.syncDate(festivalId, artistName, lineup.date(), oldDate);
+                applyLineupUpdate(festivalId, af, entry.getValue());
                 success++;
             } catch (Exception e) {
                 log.warn("batchUpdateLineup 실패: festivalId={}, afId={}", festivalId, entry.getKey(), e);
@@ -223,15 +214,29 @@ public class ArtistFestivalService {
 
     public record BatchUpdateResult(int success, int errors) {}
 
+    // 라인업(스테이지/날짜) 수정 + 타임테이블 역방향 동기화 — updateArtistFestival/updateArtistFestivalsBatch 공통
+    private void applyLineupUpdate(Long festivalId, ArtistFestival af, LineupUpdate lineup) {
+        String resolvedStage = resolveStage(lineup.stageName());
+        String oldStage = af.getStageName();
+        LocalDate oldDate = af.getPerformanceDate();
+        af.updateLineup(resolvedStage, lineup.date());
+
+        String artistName = af.getArtistName();
+        timetableSyncService.syncStage(festivalId, artistName, resolvedStage, oldStage);
+        timetableSyncService.syncDate(festivalId, artistName, lineup.date(), oldDate);
+    }
+
     // 타임테이블 항목 저장 후 ArtistFestival 날짜·스테이지 역방향 동기화
     @Transactional
     public void syncFromTimetableEntry(Long festivalId, String artistName, LineupUpdate lineup) {
         if (artistName == null || artistName.isBlank()) return;
         artistFestivalRepository.findByFestivalIdAndArtistName(festivalId, artistName)
-                .ifPresent(af -> {
-                    String resolvedStage = (lineup.stageName() != null && !lineup.stageName().isBlank()) ? lineup.stageName() : null;
-                    af.updateLineup(resolvedStage, lineup.date());
-                });
+                .ifPresent(af -> af.updateLineup(resolveStage(lineup.stageName()), lineup.date()));
+    }
+
+    // 빈 문자열("미지정" 선택)은 null로 정규화
+    private String resolveStage(String stageName) {
+        return (stageName != null && !stageName.isBlank()) ? stageName : null;
     }
 
     public List<ArtistNameOption> getArtistFestivalsWithEnName(Long festivalId) {

@@ -3,7 +3,6 @@ package com.feple.feple_backend.artistfestival.service;
 import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponseDto;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
-import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.file.service.FileStorageService;
 import java.time.LocalDate;
 import java.util.List;
@@ -43,37 +42,34 @@ public class ArtistScheduleService {
 
     private ArtistScheduleResponseDto buildResponse(ArtistFestival af, Long artistId,
                                                   Map<Long, List<ArtistFestival>> coArtistMap) {
-        Festival festival = af.getFestival();
-        List<ArtistScheduleResponseDto.CoArtistInfo> coArtists =
-                coArtistMap.getOrDefault(festival.getId(), List.of())
-                        .stream()
-                        .filter(other -> !other.getArtistId().equals(artistId))
-                        .map(other -> ArtistScheduleResponseDto.CoArtistInfo.builder()
-                                .artistId(other.getArtistId())
-                                .artistName(other.getArtistName())
-                                .artistNameEn(other.getArtistNameEn())
-                                .profileImageUrl(fileStorageService.buildUrl(
-                                        other.getArtistProfileImageKey()))
-                                .build())
-                        .toList();
-
-        LocalDate startDate = af.getPerformanceDate() != null
-                ? af.getPerformanceDate()
-                : festival.getStartDate();
-        LocalDate endDate = af.getPerformanceDate() != null
-                ? af.getPerformanceDate()
-                : festival.getEndDate();
+        List<ArtistScheduleResponseDto.CoArtistInfo> coArtists = buildCoArtists(af, artistId, coArtistMap);
+        LocalDate performanceDate = af.getPerformanceDate();
 
         return ArtistScheduleResponseDto.builder()
-                .festivalId(festival.getId())
-                .title(festival.getTitle())
-                .description(festival.getDescription())
-                .location(festival.getLocation())
-                .startDate(startDate)
-                .endDate(endDate)
-                .posterUrl(fileStorageService.buildUrl(festival.getPosterKey()))
-                .eventType(festival.getEventType())
+                .festivalId(af.getFestivalId())
+                .title(af.getFestivalTitle())
+                .description(af.getFestivalDescription())
+                .location(af.getFestivalLocation())
+                .startDate(performanceDate != null ? performanceDate : af.getFestivalStartDate())
+                .endDate(performanceDate != null ? performanceDate : af.getFestivalEndDate())
+                .posterUrl(fileStorageService.buildUrl(af.getFestivalPosterKey()))
+                .eventType(af.getFestivalEventType())
                 .coArtists(coArtists)
                 .build();
+    }
+
+    private List<ArtistScheduleResponseDto.CoArtistInfo> buildCoArtists(ArtistFestival af, Long artistId,
+                                                  Map<Long, List<ArtistFestival>> coArtistMap) {
+        return coArtistMap.getOrDefault(af.getFestivalId(), List.of())
+                .stream()
+                .filter(other -> !other.getArtistId().equals(artistId))
+                .map(other -> ArtistScheduleResponseDto.CoArtistInfo.builder()
+                        .artistId(other.getArtistId())
+                        .artistName(other.getArtistName())
+                        .artistNameEn(other.getArtistNameEn())
+                        .profileImageUrl(fileStorageService.buildUrl(
+                                other.getArtistProfileImageKey()))
+                        .build())
+                .toList();
     }
 }
