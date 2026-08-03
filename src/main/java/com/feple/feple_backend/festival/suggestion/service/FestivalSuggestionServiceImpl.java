@@ -20,6 +20,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// ArtistSuggestionServiceImpl과 엔티티·리포지토리·서비스 구조가 거의 동일하지만, 두 엔티티가
+// 서로 다른 테이블(festivalName/approvedFestivalId ↔ artistName/approvedArtistId)이라 제네릭
+// 서비스로 묶으려면 필드 접근용 콜백이 늘어나 오히려 읽기 어려워지고, 테이블을 합치려면 운영 공유
+// DB에 스키마 변경이 필요해 리스크가 커진다. ArtistPhotoReportService와 같은 이유로 통합하지 않는다.
 @Service
 @RequiredArgsConstructor
 public class FestivalSuggestionServiceImpl implements FestivalSuggestionService, FestivalSuggestionAdminService {
