@@ -200,6 +200,36 @@ class CommentServiceImplTest {
     }
 
     @Test
+    void 대댓글의_대댓글은_최상위_댓글로_평탄화() {
+        User postAuthor = user(1L);
+        User replier = user(2L);
+        User grandReplier = user(3L);
+        Post post = freePost(10L, postAuthor);
+        Comment root = comment(50L, post, postAuthor);
+        Comment reply = Comment.builder()
+                .id(60L).content("답글").post(post).user(replier).parent(root)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).build();
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("답글의 답글");
+        given(dto.getParentId()).willReturn(60L);
+
+        Comment saved = comment(100L, post, grandReplier);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(3L)).willReturn(Optional.of(grandReplier));
+        given(commentRepository.findById(60L)).willReturn(Optional.of(reply));
+        given(commentRepository.save(any(Comment.class))).willReturn(saved);
+
+        commentService.createComment(dto, 3L);
+
+        ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
+        verify(commentRepository).save(captor.capture());
+        assertThat(captor.getValue().getParentId()).isEqualTo(50L);
+    }
+
+    @Test
     void 다른_게시글의_댓글을_부모로_지정하면_예외() {
         User postAuthor = user(1L);
         User otherAuthor = user(3L);

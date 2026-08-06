@@ -62,13 +62,7 @@ public class CommentServiceImpl implements CommentService {
 
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        Comment parent = null;
-        if (dto.getParentId() != null) {
-            parent = EntityLoader.getOrThrow(commentRepository::findById, dto.getParentId(), "부모 댓글");
-            if (!parent.getPostId().equals(post.getId())) {
-                throw new IllegalArgumentException("부모 댓글이 해당 게시글에 속하지 않습니다.");
-            }
-        }
+        Comment parent = resolveParent(dto.getParentId(), post);
         Comment saved = saveComment(dto, post, user, parent);
 
         publishCommentCreatedEvent(dto, post, user, parent, userId);
@@ -77,6 +71,17 @@ public class CommentServiceImpl implements CommentService {
                 certificationService.existsApprovedCertification(post.getFestivalId(), userId);
 
         return CommentResponseDto.from(saved, certified, false);
+    }
+
+    // 답글에 다시 답글을 달면 depth가 계속 깊어져 대화가 읽기 어려워지므로, 답글의 답글은
+    // 항상 최상위 댓글로 평탄화한다(depth 1단계 고정) — 다른 커뮤니티 앱들의 일반적인 동작과 동일.
+    private Comment resolveParent(Long parentId, Post post) {
+        if (parentId == null) return null;
+        Comment requestedParent = EntityLoader.getOrThrow(commentRepository::findById, parentId, "부모 댓글");
+        if (!requestedParent.getPostId().equals(post.getId())) {
+            throw new IllegalArgumentException("부모 댓글이 해당 게시글에 속하지 않습니다.");
+        }
+        return requestedParent.getParentId() != null ? requestedParent.getParent() : requestedParent;
     }
 
     private Comment saveComment(CreateCommentDto dto, Post post, User user, Comment parent) {
