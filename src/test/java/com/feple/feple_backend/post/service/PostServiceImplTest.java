@@ -26,6 +26,7 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
+import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -52,6 +53,7 @@ import org.springframework.security.access.AccessDeniedException;
 class PostServiceImplTest {
 
     @Mock PostRepository postRepository;
+    @Mock PostImageRepository postImageRepository;
     @Mock UserRepository userRepository;
     @Mock ArtistRepository artistRepository;
     @Mock FestivalRepository festivalRepository;
@@ -112,7 +114,7 @@ class PostServiceImplTest {
     void 본인_프리픽스_밖의_이미지URL이면_게시글_생성_예외() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).imageUrl("posts/2/other-user.jpg").build();
+                .boardType(BoardType.FREE).imageUrls(List.of("posts/2/other-user.jpg")).build();
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
 
         assertThatThrownBy(() -> postService.createPost(dto, 1L))
@@ -125,7 +127,7 @@ class PostServiceImplTest {
     void 본인_프리픽스_이미지URL이면_S3_존재검증후_게시글_생성() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).imageUrl("posts/1/photo.jpg").build();
+                .boardType(BoardType.FREE).imageUrls(List.of("posts/1/photo.jpg")).build();
         Post saved = freePost(10L, author);
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
         given(postRepository.save(any(Post.class))).willReturn(saved);
@@ -250,7 +252,7 @@ class PostServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
-                .boardType(BoardType.FREE).imageUrl("posts/2/other-user.jpg").build();
+                .boardType(BoardType.FREE).imageUrls(List.of("posts/2/other-user.jpg")).build();
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 1L))

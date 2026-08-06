@@ -17,12 +17,15 @@ import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.entity.PostImage;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
+import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -40,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
+    private final PostImageRepository postImageRepository;
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
@@ -56,7 +60,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public Long createPost(PostRequestDto dto, Long userId) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = postRepository.save(buildPost(dto, user, new PostContext(dto.getBoardType(), null, null))).getId();
+        Long postId = savePost(dto, user, new PostContext(dto.getBoardType(), null, null));
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
     }
@@ -101,8 +105,10 @@ public class PostServiceImpl implements PostService {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글", "수정");
         validatePostContent(dto);
-        validateImageUrl(dto.getImageUrl(), requestUserId);
-        post.update(dto.getTitle(), dto.getContent(), dto.getImageUrl());
+        validateImageUrls(dto.getImageUrls(), requestUserId);
+        post.update(dto.getTitle(), dto.getContent());
+        postImageRepository.deleteByPostId(postId);
+        saveImages(post, dto.getImageUrls());
     }
 
     @Override
@@ -129,7 +135,7 @@ public class PostServiceImpl implements PostService {
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = postRepository.save(buildPost(dto, user, new PostContext(null, artist, null))).getId();
+        Long postId = savePost(dto, user, new PostContext(null, artist, null));
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
     }
@@ -150,7 +156,7 @@ public class PostServiceImpl implements PostService {
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = postRepository.save(buildPost(dto, user, new PostContext(null, null, festival))).getId();
+        Long postId = savePost(dto, user, new PostContext(null, null, festival));
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
     }
@@ -171,7 +177,7 @@ public class PostServiceImpl implements PostService {
     public Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = postRepository.save(buildPost(dto, user, new PostContext(boardType, null, festival))).getId();
+        Long postId = savePost(dto, user, new PostContext(boardType, null, festival));
         eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
         return postId;
     }
@@ -216,9 +222,15 @@ public class PostServiceImpl implements PostService {
                 Post::getId);
     }
 
-    private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
+    private Long savePost(PostRequestDto dto, User user, PostContext ctx) {
         validatePostContent(dto);
-        validateImageUrl(dto.getImageUrl(), user.getId());
+        validateImageUrls(dto.getImageUrls(), user.getId());
+        Post saved = postRepository.save(buildPost(dto, user, ctx));
+        saveImages(saved, dto.getImageUrls());
+        return saved.getId();
+    }
+
+    private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
         return Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
@@ -230,21 +242,31 @@ public class PostServiceImpl implements PostService {
                 .artist(ctx.artist())
                 .festival(ctx.festival())
                 .anonymous(dto.isAnonymous())
-                .imageUrl(dto.getImageUrl())
                 .build();
     }
 
+    private void saveImages(Post post, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) return;
+        List<PostImage> images = new ArrayList<>();
+        for (int i = 0; i < imageUrls.size(); i++) {
+            images.add(PostImage.builder().post(post).imageKey(imageUrls.get(i)).sortOrder(i).build());
+        }
+        postImageRepository.saveAll(images);
+    }
 
     private void validatePostContent(PostRequestDto dto) {
         badWordFilter.validateField("title", dto.getTitle());
         badWordFilter.validateField("content", dto.getContent());
     }
 
-    // 클라이언트가 presign 없이 임의 문자열(타인의 S3 키·외부 URL)을 imageUrl로 제출하는 것을 막는다.
+    // 클라이언트가 presign 없이 임의 문자열(타인의 S3 키·외부 URL)을 이미지로 제출하는 것을 막는다.
     // /posts/image-upload-url이 발급한 "posts/{userId}/..." 접두사 범위 내 실제 업로드된 객체만 허용.
-    private void validateImageUrl(String imageUrl, Long userId) {
-        if (imageUrl == null || imageUrl.isBlank()) return;
-        S3PathConstants.requireWithinPrefix(imageUrl, S3PathConstants.postImagePrefix(userId));
-        s3ObjectVerificationService.verifyImageObject(imageUrl);
+    private void validateImageUrls(List<String> imageUrls, Long userId) {
+        if (imageUrls == null) return;
+        for (String imageUrl : imageUrls) {
+            if (imageUrl == null || imageUrl.isBlank()) continue;
+            S3PathConstants.requireWithinPrefix(imageUrl, S3PathConstants.postImagePrefix(userId));
+            s3ObjectVerificationService.verifyImageObject(imageUrl);
+        }
     }
 }

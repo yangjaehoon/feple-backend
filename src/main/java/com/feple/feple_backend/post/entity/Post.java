@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -48,9 +49,6 @@ public class Post {
 
     private int scrapCount;
 
-    @Column(name = "image_url")
-    private String imageUrl;
-
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -79,10 +77,9 @@ public class Post {
     @JoinColumn(name = "festival_id", nullable = true)
     private Festival festival;
 
-    public void update(String title, String content, String imageUrl) {
+    public void update(String title, String content) {
         this.title = title;
         this.content = content;
-        this.imageUrl = imageUrl;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -94,6 +91,18 @@ public class Post {
     @Builder.Default
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
+
+    // 목록 조회 시 게시글마다 별도 쿼리가 나가지 않도록 BatchSize로 묶어 조회한다
+    // (JOIN FETCH는 페이지네이션과 함께 쓰면 결과가 뒤틀리므로 사용하지 않음).
+    @Builder.Default
+    @OneToMany(mappedBy = "post")
+    @OrderBy("sortOrder ASC")
+    @BatchSize(size = 20)
+    private List<PostImage> images = new ArrayList<>();
+
+    public List<String> getImageKeys() {
+        return images.stream().map(PostImage::getImageKey).toList();
+    }
 
     public String getBoardDisplayName() {
         if (artist != null) return artist.getName() + " 게시판";

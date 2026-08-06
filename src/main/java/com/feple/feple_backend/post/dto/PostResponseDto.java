@@ -4,6 +4,7 @@ import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.UserRole;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class PostResponseDto {
     private boolean certified;
     private UserRole userRole;
     private boolean anonymous;
-    private String imageUrl;
+    private List<String> imageUrls;
     private LocalDateTime deletedAt;
     private String authorLevel;
 
@@ -63,7 +64,7 @@ public class PostResponseDto {
                 .certified(certified && !anon)
                 .userRole(anon ? null : post.getAuthorRole())
                 .anonymous(anon)
-                .imageUrl(post.getImageUrl())
+                .imageUrls(post.getImageKeys())
                 .deletedAt(post.getDeletedAt())
                 .authorLevel(anon ? null : post.getAuthorLevel())
                 .build();
