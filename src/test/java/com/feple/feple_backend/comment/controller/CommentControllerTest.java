@@ -57,7 +57,7 @@ class CommentControllerTest {
 
     @Test
     void 댓글_목록_인증없이_조회_가능() throws Exception {
-        given(commentService.getCommentsByPost(1L, null)).willReturn(List.of());
+        given(commentService.getCommentsByPost(1L, null, null)).willReturn(List.of());
 
         mockMvc.perform(get("/comments/post/1"))
                 .andExpect(status().isOk());
@@ -65,13 +65,13 @@ class CommentControllerTest {
 
     @Test
     void 댓글_목록_인증된_사용자로_조회() throws Exception {
-        given(commentService.getCommentsByPost(1L, 1L)).willReturn(List.of());
+        given(commentService.getCommentsByPost(1L, 1L, null)).willReturn(List.of());
 
         mockMvc.perform(get("/comments/post/1")
                         .with(AuthTestHelper.userAuth(1L)))
                 .andExpect(status().isOk());
 
-        org.mockito.Mockito.verify(commentService).getCommentsByPost(1L, 1L);
+        org.mockito.Mockito.verify(commentService).getCommentsByPost(1L, 1L, null);
     }
 
     @Test

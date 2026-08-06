@@ -272,7 +272,7 @@ class CommentServiceImplTest {
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of()));
 
-        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, null);
+        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, null, null);
 
         assertThat(result).isEmpty();
     }
@@ -289,10 +289,38 @@ class CommentServiceImplTest {
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))
                 .willReturn(List.of());
 
-        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, 1L);
+        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, 1L, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(100L);
+    }
+
+    @Test
+    void 베스트순_정렬시_최상위_댓글은_좋아요순_답글은_항상_작성순() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        LocalDateTime t0 = LocalDateTime.now();
+        Comment rootLowLike = Comment.builder()
+                .id(100L).content("낮은 좋아요").post(post).user(author)
+                .likeCount(1).createdAt(t0).updatedAt(t0).build();
+        Comment rootHighLike = Comment.builder()
+                .id(101L).content("높은 좋아요").post(post).user(author)
+                .likeCount(10).createdAt(t0.plusMinutes(1)).updatedAt(t0.plusMinutes(1)).build();
+        Comment replyToLowLike = Comment.builder()
+                .id(102L).content("답글").post(post).user(author).parent(rootLowLike)
+                .likeCount(0).createdAt(t0.plusMinutes(2)).updatedAt(t0.plusMinutes(2)).build();
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(rootLowLike, rootHighLike, replyToLowLike)));
+        given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))
+                .willReturn(List.of());
+
+        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, 1L, "best");
+
+        // 좋아요 높은 rootHighLike가 먼저, 좋아요 낮은 rootLowLike는 그 답글(replyToLowLike)과 묶여 뒤에 온다
+        assertThat(result).extracting(CommentResponseDto::getId)
+                .containsExactly(101L, 100L, 102L);
     }
 
     @Test
@@ -314,7 +342,7 @@ class CommentServiceImplTest {
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))
                 .willReturn(List.of());
 
-        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, 1L);
+        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, 1L, null);
 
         assertThat(result.get(0).isCertified()).isTrue();
     }

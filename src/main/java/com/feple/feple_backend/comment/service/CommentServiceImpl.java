@@ -99,9 +99,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId) {
+    public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId, String sort) {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, PageSize.COMMENTS)).getContent();
+        if ("best".equals(sort)) {
+            comments = CommentSorter.sortByBest(comments);
+        }
         List<Long> commentIds = comments.stream().map(Comment::getId).toList();
 
         Set<Long> certifiedUserIds = getCertifiedUserIds(post);

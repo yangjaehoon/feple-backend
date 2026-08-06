@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface CommentService {
     CommentResponseDto createComment(CreateCommentDto dto, Long userId);
-    List<CommentResponseDto> getCommentsByPost(Long postId, Long userId);
+    /** @param sort "best"면 최상위 댓글을 좋아요순으로, 그 외(null 포함)는 작성순으로 정렬 */
+    List<CommentResponseDto> getCommentsByPost(Long postId, Long userId, String sort);
     List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit);
     void deleteComment(Long commentId);
     void deleteOwnComment(Long commentId, Long requestUserId);

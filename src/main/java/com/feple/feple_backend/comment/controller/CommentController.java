@@ -37,9 +37,10 @@ public class CommentController {
     @GetMapping("/post/{postId}")
     public ResponseEntity<List<CommentResponseDto>> list(
             @PathVariable Long postId,
+            @RequestParam(required = false) String sort,
             Authentication authentication) {
         Long userId = (authentication != null) ? (Long) authentication.getPrincipal() : null;
-        return ResponseEntity.ok(commentService.getCommentsByPost(postId, userId));
+        return ResponseEntity.ok(commentService.getCommentsByPost(postId, userId, sort));
     }
 
     @DeleteMapping("/{id}")
