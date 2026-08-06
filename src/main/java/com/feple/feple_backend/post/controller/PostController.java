@@ -7,9 +7,12 @@ import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.CursorPageRequest;
+import com.feple.feple_backend.post.dto.PostDraftRequestDto;
+import com.feple.feple_backend.post.dto.PostDraftResponseDto;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
+import com.feple.feple_backend.post.service.PostDraftService;
 import com.feple.feple_backend.post.service.PostLikeService;
 import com.feple.feple_backend.post.service.PostScrapService;
 import com.feple.feple_backend.post.service.PostSearchService;
@@ -38,6 +41,7 @@ public class PostController {
     private final PostSearchService postSearchService;
     private final PostLikeService postLikeService;
     private final PostScrapService postScrapService;
+    private final PostDraftService postDraftService;
     private final S3PresignService s3PresignService;
 
     @GetMapping("/{postId}")
@@ -241,6 +245,26 @@ public class PostController {
         }
         String key = "posts/" + userId + "/" + UUID.randomUUID() + "." + req.extension();
         return ResponseEntity.ok(s3PresignService.presignPut(key, req.contentType()));
+    }
+
+    @PutMapping("/draft")
+    public ResponseEntity<Void> saveDraft(@Valid @RequestBody PostDraftRequestDto dto,
+                                          @AuthenticationPrincipal Long userId) {
+        postDraftService.saveDraft(userId, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/draft")
+    public ResponseEntity<PostDraftResponseDto> getDraft(@AuthenticationPrincipal Long userId) {
+        return postDraftService.getDraft(userId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @DeleteMapping("/draft")
+    public ResponseEntity<Void> deleteDraft(@AuthenticationPrincipal Long userId) {
+        postDraftService.deleteDraft(userId);
+        return ResponseEntity.noContent().build();
     }
 
 }

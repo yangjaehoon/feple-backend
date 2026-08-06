@@ -19,6 +19,7 @@ import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostImage;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
+import com.feple.feple_backend.post.repository.PostDraftRepository;
 import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
@@ -46,6 +47,7 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
+    private final PostDraftRepository postDraftRepository;
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
@@ -241,6 +243,8 @@ public class PostServiceImpl implements PostService {
         validateImageUrls(dto.getImageUrls(), user.getId());
         Post saved = postRepository.save(buildPost(dto, user, ctx));
         saveImages(saved, dto.getImageUrls());
+        // 게시글이 실제로 등록됐으니 남아있던 임시저장은 정리한다 (없어도 no-op).
+        postDraftRepository.deleteByUserId(user.getId());
         return saved.getId();
     }
 

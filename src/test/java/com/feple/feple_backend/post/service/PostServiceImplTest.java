@@ -26,6 +26,7 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
+import com.feple.feple_backend.post.repository.PostDraftRepository;
 import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
@@ -54,6 +55,7 @@ class PostServiceImplTest {
 
     @Mock PostRepository postRepository;
     @Mock PostImageRepository postImageRepository;
+    @Mock PostDraftRepository postDraftRepository;
     @Mock UserRepository userRepository;
     @Mock ArtistRepository artistRepository;
     @Mock FestivalRepository festivalRepository;
