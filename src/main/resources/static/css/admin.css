@@ -220,7 +220,10 @@ body {
    TABLE
    ============================================================ */
 .table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+/* min-width 없으면 컨테이너가 좁아질 때 table-layout: auto가 열을 억지로 욱여넣어 word-break
+   규칙과 맞물려 텍스트가 한 글자씩 줄바꿈된다 — min-width로 더는 못 줄어들게 막아 대신
+   .table-wrap의 가로 스크롤이 뜨도록 한다 */
+table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 13.5px; }
 thead th {
   background: var(--bg-2); color: var(--muted);
   font-size: 10.5px; font-weight: 700;
