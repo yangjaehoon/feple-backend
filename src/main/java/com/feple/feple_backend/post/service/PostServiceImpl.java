@@ -18,10 +18,12 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostImage;
+import com.feple.feple_backend.post.entity.PostTag;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
 import com.feple.feple_backend.post.repository.PostDraftRepository;
 import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.repository.PostTagRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
@@ -47,6 +49,7 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
+    private final PostTagRepository postTagRepository;
     private final PostDraftRepository postDraftRepository;
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
@@ -114,6 +117,8 @@ public class PostServiceImpl implements PostService {
         post.update(dto.getTitle(), dto.getContent());
         postImageRepository.deleteByPostId(postId);
         saveImages(post, dto.getImageUrls());
+        postTagRepository.deleteByPostId(postId);
+        saveTags(post, dto.getTags());
     }
 
     @Override
@@ -133,6 +138,17 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByArtistOrderByIdDesc(artist, limit),
                 limit -> postRepository.findByArtistAndIdLessThanOrderByIdDesc(artist, cursor, limit),
                 () -> postRepository.findByArtistAndPinnedTrueOrderByCreatedAtDesc(artist, PageRequest.of(0, PageSize.PINNED_POSTS)),
+                PostResponseDto::from);
+    }
+
+    @Override
+    public CursorPage<PostResponseDto> getPostsByTagPaged(String tag, CursorPageRequest pageRequest) {
+        String normalized = normalizeTag(tag);
+        Long cursor = pageRequest.cursor();
+        return buildCursorPage(pageRequest,
+                limit -> postTagRepository.findByTagOrderByPostIdDesc(normalized, limit).stream().map(PostTag::getPost).toList(),
+                limit -> postTagRepository.findByTagAndPostIdLessThanOrderByPostIdDesc(normalized, cursor, limit).stream().map(PostTag::getPost).toList(),
+                List::of,
                 PostResponseDto::from);
     }
 
@@ -243,6 +259,7 @@ public class PostServiceImpl implements PostService {
         validateImageUrls(dto.getImageUrls(), user.getId());
         Post saved = postRepository.save(buildPost(dto, user, ctx));
         saveImages(saved, dto.getImageUrls());
+        saveTags(saved, dto.getTags());
         // 게시글이 실제로 등록됐으니 남아있던 임시저장은 정리한다 (없어도 no-op).
         postDraftRepository.deleteByUserId(user.getId());
         return saved.getId();
@@ -270,6 +287,23 @@ public class PostServiceImpl implements PostService {
             images.add(PostImage.builder().post(post).imageKey(imageUrls.get(i)).sortOrder(i).build());
         }
         postImageRepository.saveAll(images);
+    }
+
+    // 대소문자·앞뒤 공백만 다른 태그가 중복 저장되지 않도록 정규화 후 중복을 제거한다.
+    private void saveTags(Post post, List<String> tags) {
+        if (tags == null || tags.isEmpty()) return;
+        List<PostTag> postTags = tags.stream()
+                .map(this::normalizeTag)
+                .filter(tag -> !tag.isBlank())
+                .distinct()
+                .map(tag -> PostTag.builder().post(post).tag(tag).build())
+                .toList();
+        postTagRepository.saveAll(postTags);
+    }
+
+    private String normalizeTag(String tag) {
+        String trimmed = tag == null ? "" : tag.trim().toLowerCase();
+        return trimmed.startsWith("#") ? trimmed.substring(1) : trimmed;
     }
 
     private void validatePostContent(PostRequestDto dto) {

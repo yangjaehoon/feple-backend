@@ -25,10 +25,12 @@ import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
+import com.feple.feple_backend.post.entity.PostTag;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
 import com.feple.feple_backend.post.repository.PostDraftRepository;
 import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.repository.PostTagRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
@@ -40,6 +42,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -55,6 +58,7 @@ class PostServiceImplTest {
 
     @Mock PostRepository postRepository;
     @Mock PostImageRepository postImageRepository;
+    @Mock PostTagRepository postTagRepository;
     @Mock PostDraftRepository postDraftRepository;
     @Mock UserRepository userRepository;
     @Mock ArtistRepository artistRepository;
@@ -138,6 +142,22 @@ class PostServiceImplTest {
 
         assertThat(id).isEqualTo(10L);
         verify(s3ObjectVerificationService).verifyImageObject("posts/1/photo.jpg");
+    }
+
+    @Test
+    void 태그는_정규화되고_중복이_제거되어_저장된다() {
+        User author = user(1L);
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
+                .boardType(BoardType.FREE).tags(List.of("#Rock", " rock ", "festival")).build();
+        Post saved = freePost(10L, author);
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(postRepository.save(any(Post.class))).willReturn(saved);
+
+        postService.createPost(dto, 1L);
+
+        ArgumentCaptor<List<PostTag>> captor = ArgumentCaptor.forClass(List.class);
+        verify(postTagRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).extracting(PostTag::getTag).containsExactly("rock", "festival");
     }
 
     // ── getPost ──────────────────────────────────────────────────────

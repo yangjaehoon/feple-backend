@@ -37,6 +37,7 @@ public class PostResponseDto {
     private boolean pinned;
     private boolean blinded;
     private List<String> imageUrls;
+    private List<String> tags;
     private LocalDateTime deletedAt;
     private String authorLevel;
 
@@ -69,6 +70,7 @@ public class PostResponseDto {
                 .pinned(post.isPinned())
                 .blinded(post.isBlinded())
                 .imageUrls(post.getImageKeys())
+                .tags(post.getTagNames())
                 .deletedAt(post.getDeletedAt())
                 .authorLevel(anon ? null : post.getAuthorLevel())
                 .build();

@@ -26,4 +26,5 @@ public interface PostService {
     void incrementViewCount(Long postId);
     void incrementCommentCount(Long postId);
     void decrementCommentCount(Long postId);
+    CursorPage<PostResponseDto> getPostsByTagPaged(String tag, CursorPageRequest pageRequest);
 }

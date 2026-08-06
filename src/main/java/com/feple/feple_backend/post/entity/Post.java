@@ -124,6 +124,15 @@ public class Post {
         return images.stream().map(PostImage::getImageKey).toList();
     }
 
+    @Builder.Default
+    @OneToMany(mappedBy = "post")
+    @BatchSize(size = 20)
+    private List<PostTag> tags = new ArrayList<>();
+
+    public List<String> getTagNames() {
+        return tags.stream().map(PostTag::getTag).toList();
+    }
+
     public String getBoardDisplayName() {
         if (artist != null) return artist.getName() + " 게시판";
         if (festival != null) return festival.getTitle() + " 게시판";

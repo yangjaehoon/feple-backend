@@ -149,6 +149,15 @@ public class PostController {
         return ResponseEntity.ok(postScrapService.getMyScraps(userId));
     }
 
+    @GetMapping("/tag/{tag}")
+    public ResponseEntity<CursorPage<PostResponseDto>> getPostsByTag(
+            @PathVariable String tag,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.getPostsByTagPaged(tag, pageRequest(cursor, size, userId)));
+    }
+
     @GetMapping("/artist/{artistId}")
     public ResponseEntity<CursorPage<PostResponseDto>> getArtistPosts(
             @PathVariable Long artistId,
