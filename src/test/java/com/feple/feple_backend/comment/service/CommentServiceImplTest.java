@@ -166,11 +166,11 @@ class CommentServiceImplTest {
 
         commentService.createComment(dto, 1L);
 
-        // 알림 대상은 없지만(postAuthorId/parentCommentAuthorId null), 포인트 지급을 위해 이벤트는 발행됨
+        // 알림 대상은 없지만(postAuthorId/mentionedUserId null), 포인트 지급을 위해 이벤트는 발행됨
         ArgumentCaptor<CommentCreatedEvent> captor = ArgumentCaptor.forClass(CommentCreatedEvent.class);
         verify(eventPublisher).publishEvent(captor.capture());
         assertThat(captor.getValue().postAuthorId()).isNull();
-        assertThat(captor.getValue().parentCommentAuthorId()).isNull();
+        assertThat(captor.getValue().mentionedUserId()).isNull();
         assertThat(captor.getValue().commenterId()).isEqualTo(1L);
     }
 
@@ -224,9 +224,16 @@ class CommentServiceImplTest {
 
         commentService.createComment(dto, 3L);
 
+        // 저장되는 parentId는 최상위 댓글(50L)로 평탄화되지만, 멘션 대상은 실제로 답글을 단
+        // reply(작성자 2L)를 가리켜야 한다 — 평탄화된 parent(postAuthor=1L)가 아님.
         ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
         verify(commentRepository).save(captor.capture());
         assertThat(captor.getValue().getParentId()).isEqualTo(50L);
+        assertThat(captor.getValue().getMentionedUserId()).isEqualTo(2L);
+
+        ArgumentCaptor<CommentCreatedEvent> eventCaptor = ArgumentCaptor.forClass(CommentCreatedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        assertThat(eventCaptor.getValue().mentionedUserId()).isEqualTo(2L);
     }
 
     @Test
@@ -288,7 +295,7 @@ class CommentServiceImplTest {
 
         ArgumentCaptor<CommentCreatedEvent> captor = ArgumentCaptor.forClass(CommentCreatedEvent.class);
         verify(eventPublisher).publishEvent(captor.capture());
-        assertThat(captor.getValue().parentCommentAuthorId()).isEqualTo(3L);
+        assertThat(captor.getValue().mentionedUserId()).isEqualTo(3L);
     }
 
     // ── getCommentsByPost ────────────────────────────────────────────

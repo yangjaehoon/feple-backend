@@ -62,10 +62,10 @@ public class CommentServiceImpl implements CommentService {
 
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        Comment parent = resolveParent(dto.getParentId(), post);
-        Comment saved = saveComment(dto, post, user, parent);
+        ParentResolution parentResolution = resolveParent(dto.getParentId(), post);
+        Comment saved = saveComment(dto, post, user, parentResolution);
 
-        publishCommentCreatedEvent(dto, post, user, parent, userId);
+        publishCommentCreatedEvent(dto, post, user, parentResolution, userId);
 
         boolean certified = post.getFestivalId() != null &&
                 certificationService.existsApprovedCertification(post.getFestivalId(), userId);
@@ -73,33 +73,41 @@ public class CommentServiceImpl implements CommentService {
         return CommentResponseDto.from(saved, certified, false);
     }
 
+    // storageParent: 실제 저장될 부모(depth 1단계로 평탄화된 최상위 댓글, 최상위 댓글이면 null).
+    // mentionTarget: 사용자가 실제로 "답글"을 누른 댓글 — 평탄화 이후에도 멘션·알림 대상은 이걸 써야 한다.
+    private record ParentResolution(Comment storageParent, Comment mentionTarget) {}
+
     // 답글에 다시 답글을 달면 depth가 계속 깊어져 대화가 읽기 어려워지므로, 답글의 답글은
     // 항상 최상위 댓글로 평탄화한다(depth 1단계 고정) — 다른 커뮤니티 앱들의 일반적인 동작과 동일.
-    private Comment resolveParent(Long parentId, Post post) {
-        if (parentId == null) return null;
+    private ParentResolution resolveParent(Long parentId, Post post) {
+        if (parentId == null) return new ParentResolution(null, null);
         Comment requestedParent = EntityLoader.getOrThrow(commentRepository::findById, parentId, "부모 댓글");
         if (!requestedParent.getPostId().equals(post.getId())) {
             throw new IllegalArgumentException("부모 댓글이 해당 게시글에 속하지 않습니다.");
         }
-        return requestedParent.getParentId() != null ? requestedParent.getParent() : requestedParent;
+        Comment storageParent = requestedParent.getParentId() != null ? requestedParent.getParent() : requestedParent;
+        return new ParentResolution(storageParent, requestedParent);
     }
 
-    private Comment saveComment(CreateCommentDto dto, Post post, User user, Comment parent) {
-        Comment comment = new Comment(dto.getContent(), post, user, parent, dto.isAnonymous());
+    private Comment saveComment(CreateCommentDto dto, Post post, User user, ParentResolution parentResolution) {
+        User mentionedUser = parentResolution.mentionTarget() != null ? parentResolution.mentionTarget().getUser() : null;
+        Comment comment = new Comment(dto.getContent(), post, user,
+                parentResolution.storageParent(), mentionedUser, dto.isAnonymous());
         Comment saved = commentRepository.save(comment);
         postService.incrementCommentCount(post.getId());
         return saved;
     }
 
-    private void publishCommentCreatedEvent(CreateCommentDto dto, Post post, User user, Comment parent, Long userId) {
+    private void publishCommentCreatedEvent(CreateCommentDto dto, Post post, User user,
+                                             ParentResolution parentResolution, Long userId) {
         Long postAuthorId = post.getUserId();
         String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
-        Long parentCommentAuthorId = resolveParentCommentAuthorId(parent, userId, postAuthorId);
+        Long mentionedUserId = resolveMentionedUserId(parentResolution.mentionTarget(), userId, postAuthorId);
         // 게시글 작성자 본인이 자기 글에 댓글을 달면 게시글 알림은 생략 (원댓글 알림은 그대로 유지)
         Long notifyPostAuthorId = postAuthorId.equals(userId) ? null : postAuthorId;
 
         eventPublisher.publishEvent(
-                new CommentCreatedEvent(notifyPostAuthorId, commenterName, post.getTitle(), post.getId(), parentCommentAuthorId, userId));
+                new CommentCreatedEvent(notifyPostAuthorId, commenterName, post.getTitle(), post.getId(), mentionedUserId, userId));
     }
 
     @Override
@@ -170,11 +178,11 @@ public class CommentServiceImpl implements CommentService {
         deleteAndDecrement(comment);
     }
 
-    private Long resolveParentCommentAuthorId(Comment parent, Long userId, Long postAuthorId) {
-        if (parent == null) return null;
-        Long parentAuthorId = parent.getUserId();
-        if (parentAuthorId.equals(userId) || parentAuthorId.equals(postAuthorId)) return null;
-        return parentAuthorId;
+    private Long resolveMentionedUserId(Comment mentionTarget, Long userId, Long postAuthorId) {
+        if (mentionTarget == null) return null;
+        Long mentionedUserId = mentionTarget.getUserId();
+        if (mentionedUserId.equals(userId) || mentionedUserId.equals(postAuthorId)) return null;
+        return mentionedUserId;
     }
 
     private void deleteAndDecrement(Comment comment) {

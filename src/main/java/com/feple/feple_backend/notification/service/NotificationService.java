@@ -208,8 +208,8 @@ public class NotificationService {
         if (event.postAuthorId() != null && !userBlockService.isBlocked(event.postAuthorId(), event.commenterId())) {
             notifyNewComment(event.postAuthorId(), event);
         }
-        if (event.parentCommentAuthorId() != null && !userBlockService.isBlocked(event.parentCommentAuthorId(), event.commenterId())) {
-            notifyNewReply(event.parentCommentAuthorId(), event);
+        if (event.mentionedUserId() != null && !userBlockService.isBlocked(event.mentionedUserId(), event.commenterId())) {
+            notifyNewReply(event.mentionedUserId(), event);
         }
     }
 
@@ -277,13 +277,13 @@ public class NotificationService {
     }
 
     /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
-    private void notifyNewReply(Long parentCommentAuthorId, CommentCreatedEvent event) {
-        User author = findUserOrNull(parentCommentAuthorId);
+    private void notifyNewReply(Long mentionedUserId, CommentCreatedEvent event) {
+        User author = findUserOrNull(mentionedUserId);
         if (author == null) return;
         String replierNickname = event.commenterNickname();
         String postTitle = event.postTitle();
         Post post = postRepository.findById(event.postId()).orElse(null);
-        notifySingle(parentCommentAuthorId, new NotificationMessage(NotificationType.NEW_REPLY,
+        notifySingle(mentionedUserId, new NotificationMessage(NotificationType.NEW_REPLY,
                         NotificationMessages.newReplyTitle(replierNickname),
                         NotificationMessages.newReplyBody(postTitle),
                         NotificationMessages.newReplyTitleEn(replierNickname),

@@ -46,6 +46,12 @@ public class Comment {
     @JoinColumn(name = "parent_id")
     private Comment parent;
 
+    // 답글은 depth 1단계로 평탄화되어 parent가 최상위 댓글을 가리키므로, 실제로 답글을 향한
+    // 대상(댓글을 작성할 당시 "답글" 버튼을 누른 그 댓글의 작성자)은 따로 기록해야 한다.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mentioned_user_id")
+    private User mentionedUser;
+
     @Builder.Default
     @Column(nullable = false)
     private int likeCount = 0;
@@ -58,11 +64,12 @@ public class Comment {
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private boolean blinded = false;
 
-    public Comment(String content, Post post, User user, Comment parent, boolean anonymous) {
+    public Comment(String content, Post post, User user, Comment parent, User mentionedUser, boolean anonymous) {
         this.content = content;
         this.post = post;
         this.user = user;
         this.parent = parent;
+        this.mentionedUser = mentionedUser;
         this.anonymous = anonymous;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -82,6 +89,8 @@ public class Comment {
     }
 
     public Long getParentId() { return parent != null ? parent.getId() : null; }
+    public Long getMentionedUserId() { return mentionedUser != null ? mentionedUser.getId() : null; }
+    public String getMentionedNickname() { return mentionedUser != null ? mentionedUser.getNickname() : null; }
     public Long getPostId() { return post.getId(); }
     public String getPostTitle() { return post.getTitle(); }
     public Long getUserId() { return user.getId(); }
