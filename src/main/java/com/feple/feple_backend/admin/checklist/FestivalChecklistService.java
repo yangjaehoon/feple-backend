@@ -22,6 +22,11 @@ public class FestivalChecklistService {
                 .collect(Collectors.toMap(FestivalChecklist::getFestivalId, c -> c));
     }
 
+    /**
+     * @return 토글 후 값 — 컨트롤러가 JSON 응답과 감사 로그에 사용. 별도 조회로 분리하면 그 사이에
+     * 다른 요청이 끼어들어 감사 로그에 실제와 다른 값이 남을 수 있어, 이미 메모리에 로드된 엔티티의
+     * 값을 그대로 반환한다(추가 쿼리 없음).
+     */
     @Transactional
     @CacheEvict(value = "festivalChecklistMap", allEntries = true)
     public boolean toggle(Long festivalId, String field) {
