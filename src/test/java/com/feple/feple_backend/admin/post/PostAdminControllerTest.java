@@ -11,7 +11,6 @@ import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostAdminService;
-import com.feple.feple_backend.post.service.PostService;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,6 @@ import org.springframework.ui.Model;
 @ExtendWith(MockitoExtension.class)
 class PostAdminControllerTest {
 
-    @Mock PostService postService;
     @Mock PostAdminService postAdminService;
     @Mock CommentService commentService;
     @Mock AdminLogService adminLogService;
@@ -37,7 +35,7 @@ class PostAdminControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(
-                new PostAdminController(postService, postAdminService, commentService, adminLogService, List.of())
+                new PostAdminController(postAdminService, commentService, adminLogService,List.of())
         ).build();
     }
 
@@ -60,7 +58,7 @@ class PostAdminControllerTest {
         given(postAdminService.getPostsForAdmin(any())).willReturn(new PageImpl<>(List.of()));
 
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
-                new PostAdminController(postService, postAdminService, commentService, adminLogService, List.of(provider))
+                new PostAdminController(postAdminService, commentService, adminLogService,List.of(provider))
         ).build();
 
         mvc.perform(get("/admin/posts").param("filter", "artist"))
@@ -76,7 +74,7 @@ class PostAdminControllerTest {
         given(postAdminService.getPostsForAdmin(any())).willReturn(new PageImpl<>(List.of()));
 
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
-                new PostAdminController(postService, postAdminService, commentService, adminLogService, List.of(provider))
+                new PostAdminController(postAdminService, commentService, adminLogService,List.of(provider))
         ).build();
 
         mvc.perform(get("/admin/posts"))
@@ -89,7 +87,7 @@ class PostAdminControllerTest {
 
     @Test
     void 상세_조회_성공() throws Exception {
-        given(postService.getPost(1L)).willReturn(mock(PostResponseDto.class));
+        given(postAdminService.getPostForAdmin(1L)).willReturn(mock(PostResponseDto.class));
         given(commentService.getAdminCommentsByPost(1L, AdminConstants.POST_DETAIL_COMMENT_LIMIT)).willReturn(List.of());
 
         mockMvc.perform(get("/admin/posts/1"))
@@ -100,7 +98,7 @@ class PostAdminControllerTest {
 
     @Test
     void 상세_조회_NoSuchElementException_목록으로_리다이렉트() throws Exception {
-        given(postService.getPost(99L)).willThrow(new NoSuchElementException("존재하지 않는 게시글"));
+        given(postAdminService.getPostForAdmin(99L)).willThrow(new NoSuchElementException("존재하지 않는 게시글"));
 
         mockMvc.perform(get("/admin/posts/99"))
                 .andExpect(status().is3xxRedirection())
@@ -110,7 +108,7 @@ class PostAdminControllerTest {
 
     @Test
     void 상세_조회_일반_예외_일반_에러메시지() throws Exception {
-        given(postService.getPost(1L)).willThrow(new RuntimeException("DB 오류"));
+        given(postAdminService.getPostForAdmin(1L)).willThrow(new RuntimeException("DB 오류"));
 
         mockMvc.perform(get("/admin/posts/1"))
                 .andExpect(status().is3xxRedirection())

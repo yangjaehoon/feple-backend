@@ -359,7 +359,7 @@ class CommentServiceImplTest {
 
         commentService.deleteOwnComment(100L, 1L);
 
-        verify(commentRepository).deleteById(100L);
+        verify(commentRepository).softDeleteById(100L);
         verify(postService).decrementCommentCount(10L);
     }
 
@@ -374,7 +374,7 @@ class CommentServiceImplTest {
         assertThatThrownBy(() -> commentService.deleteOwnComment(100L, 2L))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(commentRepository, never()).deleteById(any());
+        verify(commentRepository, never()).softDeleteById(any());
     }
 
     // ── toggleLike ───────────────────────────────────────────────────
@@ -441,8 +441,8 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
-                .willReturn(new PageImpl<>(List.of(c)));
+        given(commentRepository.findByPostIdIgnoringBlindOrderByCreatedAtAsc(10L, 50))
+                .willReturn(List.of(c));
 
         List<CommentResponseDto> result = commentService.getAdminCommentsByPost(10L, 50);
 
@@ -511,17 +511,17 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        given(commentRepository.findByIdIgnoringRestrictions(100L)).willReturn(Optional.of(c));
 
         commentService.deleteComment(100L);
 
-        verify(commentRepository).deleteById(100L);
+        verify(commentRepository).softDeleteById(100L);
         verify(postService).decrementCommentCount(10L);
     }
 
     @Test
     void 존재하지_않는_댓글_관리자_삭제시_예외() {
-        given(commentRepository.findById(999L)).willReturn(Optional.empty());
+        given(commentRepository.findByIdIgnoringRestrictions(999L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentService.deleteComment(999L))
                 .isInstanceOf(NoSuchElementException.class);

@@ -49,7 +49,7 @@ class PostAdminServiceImplTest {
     void 관리자_게시글_삭제시_삭제이벤트_발행() {
         User author = user(1L);
         Post post = freePost(10L, author);
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
 
         postAdminService.deletePost(10L);
 

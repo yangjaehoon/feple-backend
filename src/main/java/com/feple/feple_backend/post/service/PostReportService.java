@@ -43,7 +43,8 @@ public class PostReportService implements ReportAdminService<PostReport> {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
             throw new ConflictException("이미 신고한 게시글입니다.");
         }
-        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        // 이미 블라인드된 글도 추가 신고를 받을 수 있어야 하므로 조회는 제약을 우회한다.
+        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(PostReport.builder()
@@ -52,6 +53,17 @@ public class PostReportService implements ReportAdminService<PostReport> {
                 .reason(command.reason())
                 .detail(command.detail())
                 .build());
+
+        autoBlindIfThresholdReached(post);
+    }
+
+    // 신고(대기 상태)가 임계치 이상 쌓이면 관리자 검토 전이라도 자동으로 블라인드 처리한다.
+    private void autoBlindIfThresholdReached(Post post) {
+        if (post.isBlinded()) return;
+        long pendingCount = reportRepository.countByPostIdAndStatus(post.getId(), ReportStatus.PENDING);
+        if (pendingCount >= AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+            post.blind();
+        }
     }
 
     @Cacheable(value = "adminReportTypeCounts", key = "'postPending'")
@@ -99,14 +111,27 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
+        Long postId = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고").getPostId();
         ReportRejectionService.reject(reportRepository, reportId);
+        unblindIfBelowThreshold(postId);
     }
 
     @Override
     @EvictAdminReportCaches
     @Transactional
     public void bulkDismiss(List<Long> ids) {
+        if (ids.isEmpty()) return;
+        List<Long> postIds = reportRepository.findAllById(ids).stream().map(PostReport::getPostId).distinct().toList();
         ReportRejectionService.bulkDismiss(reportRepository, ids);
+        postIds.forEach(this::unblindIfBelowThreshold);
+    }
+
+    // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.
+    private void unblindIfBelowThreshold(Long postId) {
+        long pendingCount = reportRepository.countByPostIdAndStatus(postId, ReportStatus.PENDING);
+        if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+            postRepository.findByIdIgnoringRestrictions(postId).ifPresent(Post::unblind);
+        }
     }
 
     @Override

@@ -45,7 +45,8 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         if (reportRepository.existsByReporterIdAndCommentId(reporterId, commentId)) {
             throw new ConflictException("이미 신고한 댓글입니다.");
         }
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        // 이미 블라인드된 댓글도 추가 신고를 받을 수 있어야 하므로 조회는 제약을 우회한다.
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         reportRepository.save(CommentReport.builder()
@@ -54,6 +55,17 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
                 .reason(command.reason())
                 .detail(command.detail())
                 .build());
+
+        autoBlindIfThresholdReached(comment);
+    }
+
+    // 신고(대기 상태)가 임계치 이상 쌓이면 관리자 검토 전이라도 자동으로 블라인드 처리한다.
+    private void autoBlindIfThresholdReached(Comment comment) {
+        if (comment.isBlinded()) return;
+        long pendingCount = reportRepository.countByCommentIdAndStatus(comment.getId(), ReportStatus.PENDING);
+        if (pendingCount >= AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+            comment.blind();
+        }
     }
 
     @Cacheable(value = "adminReportTypeCounts", key = "'commentPending'")
@@ -93,7 +105,8 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     public void deleteContentAndResolve(Long reportId) {
         CommentReport report = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고");
         Long commentId = report.getCommentId();
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        // 블라인드된 댓글도 관리자는 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
         commentDeleter.deleteSingle(commentId);
         postService.decrementCommentCount(comment.getPostId());
     }
@@ -101,14 +114,28 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
+        Long commentId = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고").getCommentId();
         ReportRejectionService.reject(reportRepository, reportId);
+        unblindIfBelowThreshold(commentId);
     }
 
     @Override
     @EvictAdminReportCaches
     @Transactional
     public void bulkDismiss(List<Long> ids) {
+        if (ids.isEmpty()) return;
+        List<Long> commentIds = reportRepository.findAllById(ids).stream()
+                .map(CommentReport::getCommentId).distinct().toList();
         ReportRejectionService.bulkDismiss(reportRepository, ids);
+        commentIds.forEach(this::unblindIfBelowThreshold);
+    }
+
+    // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.
+    private void unblindIfBelowThreshold(Long commentId) {
+        long pendingCount = reportRepository.countByCommentIdAndStatus(commentId, ReportStatus.PENDING);
+        if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+            commentRepository.findByIdIgnoringRestrictions(commentId).ifPresent(Comment::unblind);
+        }
     }
 
     @Override

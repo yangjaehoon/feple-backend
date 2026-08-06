@@ -15,6 +15,8 @@ public final class AdminConstants {
     public static final int TREND_UPCOMING_DAYS     = 30;
     public static final int BROADCAST_HISTORY_LIMIT  = 100;
     public static final int POST_DETAIL_COMMENT_LIMIT = 100;
+    // 신고가 이 건수(대기 상태) 이상 쌓이면 관리자 검토 전이라도 자동으로 블라인드 처리한다.
+    public static final int AUTO_BLIND_REPORT_THRESHOLD = 5;
 
     public static final String REPORT_TYPE_POST    = "post";
     public static final String REPORT_TYPE_COMMENT = "comment";

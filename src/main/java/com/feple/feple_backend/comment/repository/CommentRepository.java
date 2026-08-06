@@ -22,6 +22,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt ASC")
     Page<Comment> findByPostIdOrderByCreatedAtAsc(@Param("postId") Long postId, Pageable pageable);
 
+    // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 댓글도 관리자는 검토할 수 있어야 함
+    @Query(value = "SELECT * FROM comment WHERE post_id = :postId AND deleted_at IS NULL ORDER BY created_at ASC LIMIT :limit",
+           nativeQuery = true)
+    List<Comment> findByPostIdIgnoringBlindOrderByCreatedAtAsc(@Param("postId") Long postId, @Param("limit") int limit);
+
     // post/artist/festival/user JOIN FETCH — MyCommentResponseDto::from에서 N+1 방지
     @Query("SELECT c FROM Comment c " +
            "JOIN FETCH c.post p " +
@@ -85,4 +90,16 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Transactional
     @Query(value = "UPDATE comment SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementLikeCount(@Param("id") Long id);
+
+    // ── 블라인드 관리자용 ──────────────────────────────────────────────────────
+    // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 댓글도 신고 접수·관리자 삭제는 가능해야 함
+    @Query(value = "SELECT * FROM comment WHERE id = :id", nativeQuery = true)
+    java.util.Optional<Comment> findByIdIgnoringRestrictions(@Param("id") Long id);
+
+    // deleteById()는 findById()로 먼저 존재를 확인하는데 blinded=true면 @SQLRestriction에 걸려
+    // 못 찾으므로, 블라인드 여부와 무관하게 소프트 삭제(@SQLDelete와 동일한 SQL)하는 벌크 쿼리로 우회한다.
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE comment SET deleted_at = NOW() WHERE id = :id", nativeQuery = true)
+    void softDeleteById(@Param("id") Long id);
 }

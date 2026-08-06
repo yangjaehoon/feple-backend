@@ -15,7 +15,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE comment SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL AND blinded = false")
 @Table(name = "comment", indexes = {
     @Index(name = "idx_comment_post_id_created_at", columnList = "post_id, created_at ASC"),
     @Index(name = "idx_comment_user_id_created_at", columnList = "user_id, created_at DESC")
@@ -54,6 +54,10 @@ public class Comment {
     @Column(nullable = false)
     private boolean anonymous = false;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    private boolean blinded = false;
+
     public Comment(String content, Post post, User user, Comment parent, boolean anonymous) {
         this.content = content;
         this.post = post;
@@ -67,6 +71,14 @@ public class Comment {
     public void update(String content) {
         this.content = content;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void blind() {
+        this.blinded = true;
+    }
+
+    public void unblind() {
+        this.blinded = false;
     }
 
     public Long getParentId() { return parent != null ? parent.getId() : null; }

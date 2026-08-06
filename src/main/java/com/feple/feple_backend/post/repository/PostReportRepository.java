@@ -51,6 +51,9 @@ public interface PostReportRepository extends BaseReportRepository<PostReport> {
     @Query("SELECT pr FROM PostReport pr WHERE pr.post.id = :postId")
     List<PostReport> findByPostId(@Param("postId") Long postId);
 
+    @Query("SELECT COUNT(pr) FROM PostReport pr WHERE pr.post.id = :postId AND pr.status = :status")
+    long countByPostIdAndStatus(@Param("postId") Long postId, @Param("status") ReportStatus status);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM PostReport pr WHERE pr.post.id = :postId")

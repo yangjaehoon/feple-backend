@@ -122,8 +122,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit) {
-        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, limit))
-                .getContent().stream()
+        // 관리자는 블라인드된 댓글도 검토할 수 있어야 하므로 @SQLRestriction을 우회한다.
+        return commentRepository.findByPostIdIgnoringBlindOrderByCreatedAtAsc(postId, limit).stream()
                 .map(c -> CommentResponseDto.from(c, false, false))
                 .toList();
     }
@@ -152,8 +152,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteComment(Long commentId){
-        // soft delete: 신고 기록(CommentReport) 보존, 행이 남아 FK 무결성 유지
-        deleteAndDecrement(EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글"));
+        // soft delete: 신고 기록(CommentReport) 보존, 행이 남아 FK 무결성 유지.
+        // 관리자 전용 경로라 블라인드된 댓글도 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
+        deleteAndDecrement(EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글"));
     }
 
     @Override
@@ -172,7 +173,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void deleteAndDecrement(Comment comment) {
-        commentRepository.deleteById(comment.getId());
+        commentRepository.softDeleteById(comment.getId());
         postService.decrementCommentCount(comment.getPostId());
     }
 

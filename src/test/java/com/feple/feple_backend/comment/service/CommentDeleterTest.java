@@ -49,6 +49,6 @@ class CommentDeleterTest {
         InOrder order = inOrder(commentLikeRepository, commentReportRepository, commentRepository);
         order.verify(commentLikeRepository).deleteByCommentId(10L);
         order.verify(commentReportRepository).deleteByCommentId(10L);
-        order.verify(commentRepository).deleteById(10L);
+        order.verify(commentRepository).softDeleteById(10L);
     }
 }

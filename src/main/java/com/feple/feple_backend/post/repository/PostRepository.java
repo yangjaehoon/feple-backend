@@ -296,4 +296,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "UPDATE post SET deleted_at = NULL WHERE id = :id", nativeQuery = true)
     void restore(@Param("id") Long id);
 
+    // ── 블라인드 관리자용 ──────────────────────────────────────────────────────
+    // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 글도 관리자는 검토할 수 있어야 함
+    @Query(value = "SELECT * FROM post WHERE id = :id", nativeQuery = true)
+    java.util.Optional<Post> findByIdIgnoringRestrictions(@Param("id") Long id);
+
 }

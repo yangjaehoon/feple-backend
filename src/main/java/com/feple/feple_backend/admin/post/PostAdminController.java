@@ -10,7 +10,6 @@ import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.service.PostAdminService;
-import com.feple.feple_backend.post.service.PostService;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -29,18 +28,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/posts")
 public class PostAdminController {
 
-    private final PostService postService;
     private final PostAdminService postAdminService;
     private final CommentService commentService;
     private final AdminLogService adminLogService;
     private final Map<String, FilterDropdownProvider> dropdownProviders;
 
-    public PostAdminController(PostService postService,
-                               PostAdminService postAdminService,
+    public PostAdminController(PostAdminService postAdminService,
                                CommentService commentService,
                                AdminLogService adminLogService,
                                List<FilterDropdownProvider> providers) {
-        this.postService = postService;
         this.postAdminService = postAdminService;
         this.commentService = commentService;
         this.adminLogService = adminLogService;
@@ -65,7 +61,7 @@ public class PostAdminController {
                              Model model,
                              RedirectAttributes ra) {
         try {
-            model.addAttribute("post", postService.getPost(id));
+            model.addAttribute("post", postAdminService.getPostForAdmin(id));
             model.addAttribute("comments", commentService.getAdminCommentsByPost(id, AdminConstants.POST_DETAIL_COMMENT_LIMIT));
             model.addAttribute("backUrl", "/admin/posts?page=" + params.page() + "&" + params.toExtraParams());
             return "admin/post/detail";

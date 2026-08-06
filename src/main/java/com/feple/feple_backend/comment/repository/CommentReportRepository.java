@@ -46,6 +46,9 @@ public interface CommentReportRepository extends BaseReportRepository<CommentRep
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.id = :commentId")
     void deleteByCommentId(@Param("commentId") Long commentId);
 
+    @Query("SELECT COUNT(cr) FROM CommentReport cr WHERE cr.comment.id = :commentId AND cr.status = :status")
+    long countByCommentIdAndStatus(@Param("commentId") Long commentId, @Param("status") ReportStatus status);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.post.id IN :postIds")

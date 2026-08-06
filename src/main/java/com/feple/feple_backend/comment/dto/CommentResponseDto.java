@@ -23,11 +23,13 @@ public class CommentResponseDto {
     private boolean liked;
     private String profileImageUrl;
     private boolean anonymous;
+    private boolean blinded;
 
     public CommentResponseDto(Long id, Long postId, Long userId, String nickname,
                               String content, LocalDateTime createdAt, LocalDateTime updatedAt,
                               boolean certified, UserRole userRole, Long parentId,
-                              int likeCount, boolean liked, String profileImageUrl, boolean anonymous) {
+                              int likeCount, boolean liked, String profileImageUrl, boolean anonymous,
+                              boolean blinded) {
         this.id = id;
         this.postId = postId;
         this.userId = userId;
@@ -42,6 +44,7 @@ public class CommentResponseDto {
         this.liked = liked;
         this.profileImageUrl = profileImageUrl;
         this.anonymous = anonymous;
+        this.blinded = blinded;
     }
 
     public static CommentResponseDto from(Comment comment, boolean certified, boolean liked) {
@@ -60,7 +63,8 @@ public class CommentResponseDto {
                 comment.getLikeCount(),
                 liked,
                 anon ? null : comment.getUserProfileImageUrl(),
-                anon
+                anon,
+                comment.isBlinded()
         );
     }
 }

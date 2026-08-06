@@ -19,4 +19,6 @@ public interface PostAdminService {
     List<PostResponseDto> getRecentPostsByUser(Long userId, int limit);
     /** @return 토글 후 고정 여부 — 컨트롤러가 감사 로그 기록에 사용 */
     boolean togglePin(Long postId);
+    /** 블라인드된 글도 관리자는 검토할 수 있어야 하므로 @SQLRestriction을 우회해 조회한다. */
+    PostResponseDto getPostForAdmin(Long postId);
 }

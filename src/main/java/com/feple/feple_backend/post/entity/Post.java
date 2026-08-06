@@ -20,7 +20,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE post SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL AND blinded = false")
 @Table(name = "post", indexes = {
     @Index(name = "idx_post_board_type_created_at", columnList = "board_type, created_at DESC"),
     @Index(name = "idx_post_like_count_created_at", columnList = "like_count DESC, created_at DESC"),
@@ -67,6 +67,10 @@ public class Post {
     private boolean pinned = false;
 
     @Builder.Default
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    private boolean blinded = false;
+
+    @Builder.Default
     private int viewCount = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -89,6 +93,14 @@ public class Post {
 
     public void togglePinned() {
         this.pinned = !this.pinned;
+    }
+
+    public void blind() {
+        this.blinded = true;
+    }
+
+    public void unblind() {
+        this.blinded = false;
     }
 
     @Builder.Default

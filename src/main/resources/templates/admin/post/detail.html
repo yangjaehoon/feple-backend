@@ -16,6 +16,7 @@
                           th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
                           th:text="${post.boardDisplayName}"></span>
                     <span th:if="${post.pinned}" class="badge badge-primary">📌 고정됨</span>
+                    <span th:if="${post.blinded}" class="badge badge-danger">🚫 블라인드됨(신고 누적)</span>
                     <form th:action="@{/admin/posts/{id}/pin(id=${post.id})}" method="post">
                         <button type="submit"
                                 class="btn btn-secondary"
