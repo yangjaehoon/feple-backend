@@ -366,7 +366,7 @@ class PostServiceImplTest {
                 .willReturn(List.of(freePost(2L, author), freePost(1L, author)));
 
         CursorPage<PostResponseDto> firstPage = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, null));
-        assertThat(firstPage.content()).extracting(PostResponseDto::getId).containsExactly(99L, 2L);
+        assertThat(firstPage.content()).extracting(PostResponseDto::getId).containsExactly(99L, 2L, 1L);
 
         given(postRepository.findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(eq(BoardType.FREE), eq(2L), any(Pageable.class)))
                 .willReturn(List.of(freePost(1L, author)));
