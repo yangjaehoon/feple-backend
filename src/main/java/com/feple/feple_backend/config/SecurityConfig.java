@@ -1,9 +1,9 @@
 package com.feple.feple_backend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.feple.feple_backend.admin.AdminLoginFailureHandler;
-import com.feple.feple_backend.admin.AdminLoginSuccessHandler;
-import com.feple.feple_backend.admin.AdminLogoutSuccessHandler;
+import com.feple.feple_backend.admin.auth.AdminLoginFailureHandler;
+import com.feple.feple_backend.admin.auth.AdminLoginSuccessHandler;
+import com.feple.feple_backend.admin.auth.AdminLogoutSuccessHandler;
 import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.global.exception.ErrorCode;

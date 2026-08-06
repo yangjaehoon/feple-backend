@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
+import com.feple.feple_backend.admin.dashboard.SongRequestSummaryDto;
 import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
-import com.feple.feple_backend.admin.system.SongRequestSummaryDto;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.service.SongRequestAdminService;
 import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;

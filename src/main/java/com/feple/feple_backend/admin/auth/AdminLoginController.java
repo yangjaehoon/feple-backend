@@ -1,6 +1,5 @@
 package com.feple.feple_backend.admin.auth;
 
-import com.feple.feple_backend.admin.AdminLoginFailureHandler;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

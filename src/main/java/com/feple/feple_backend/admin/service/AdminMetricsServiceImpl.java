@@ -3,7 +3,7 @@ package com.feple.feple_backend.admin.service;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.dashboard.ContentTrendDto;
 import com.feple.feple_backend.admin.dashboard.DailyStatDto;
-import com.feple.feple_backend.admin.system.TopKeywordDto;
+import com.feple.feple_backend.admin.dashboard.TopKeywordDto;
 import com.feple.feple_backend.admin.user.UserActivityStatsDto;
 import com.feple.feple_backend.admin.user.UserSummaryDto;
 import com.feple.feple_backend.artist.entity.Artist;
