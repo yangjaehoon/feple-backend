@@ -49,31 +49,44 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     java.util.Optional<Post> findWithAssociationsById(@Param("id") Long id);
 
     // ── 아티스트 게시글 커서 페이징 (id 기반 — 신규 게시글 삽입에 영향받지 않음) ──
+    // 고정글은 fetchPinned 전용 쿼리로 첫 페이지에만 별도 노출하므로 일반 목록에서는 제외한다.
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.artist = :artist ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p WHERE p.artist = :artist AND p.pinned = false ORDER BY p.id DESC")
     List<Post> findByArtistOrderByIdDesc(@Param("artist") Artist artist, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.artist = :artist AND p.id < :cursor ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p WHERE p.artist = :artist AND p.pinned = false AND p.id < :cursor ORDER BY p.id DESC")
     List<Post> findByArtistAndIdLessThanOrderByIdDesc(@Param("artist") Artist artist, @Param("cursor") Long cursor, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.artist = :artist AND p.pinned = true ORDER BY p.createdAt DESC")
+    List<Post> findByArtistAndPinnedTrueOrderByCreatedAtDesc(@Param("artist") Artist artist, Pageable pageable);
 
     // ── 페스티벌 일반 게시글 커서 페이징 (id 기반) ──────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL AND p.pinned = false ORDER BY p.id DESC")
     List<Post> findGeneralFestivalPostsOrderByIdDesc(@Param("festival") Festival festival, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL AND p.id < :cursor ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL AND p.pinned = false AND p.id < :cursor ORDER BY p.id DESC")
     List<Post> findGeneralFestivalPostsAndIdLessThanOrderByIdDesc(@Param("festival") Festival festival, @Param("cursor") Long cursor, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType IS NULL AND p.pinned = true ORDER BY p.createdAt DESC")
+    List<Post> findGeneralFestivalPinnedPostsOrderByCreatedAtDesc(@Param("festival") Festival festival, Pageable pageable);
 
     // ── 페스티벌+게시판타입 커서 페이징 (id 기반) ────────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType AND p.pinned = false ORDER BY p.id DESC")
     List<Post> findByFestivalAndBoardTypeOrderByIdDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType AND p.id < :cursor ORDER BY p.id DESC")
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType AND p.pinned = false AND p.id < :cursor ORDER BY p.id DESC")
     List<Post> findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, @Param("cursor") Long cursor, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    @Query("SELECT p FROM Post p WHERE p.festival = :festival AND p.boardType = :boardType AND p.pinned = true ORDER BY p.createdAt DESC")
+    List<Post> findByFestivalAndBoardTypeAndPinnedTrueOrderByCreatedAtDesc(@Param("festival") Festival festival, @Param("boardType") BoardType boardType, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.festival = :festival ORDER BY p.likeCount DESC, p.createdAt DESC")
@@ -128,11 +141,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByBoardTypeOrderByCreatedAtDesc(BoardType boardType, Pageable pageable);
 
     // ── 커서 기반 최신순 (id < cursor) ─────────────────────────────────────────
+    // 고정글은 fetchPinned 전용 쿼리로 첫 페이지에만 별도 노출하므로 일반 목록에서는 제외한다.
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    List<Post> findByBoardTypeOrderByIdDesc(BoardType boardType, Pageable pageable);
+    List<Post> findByBoardTypeAndPinnedFalseOrderByIdDesc(BoardType boardType, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
-    List<Post> findByBoardTypeAndIdLessThanOrderByIdDesc(BoardType boardType, Long id, Pageable pageable);
+    List<Post> findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(BoardType boardType, Long id, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "artist", "festival"})
+    List<Post> findByBoardTypeAndPinnedTrueOrderByCreatedAtDesc(BoardType boardType, Pageable pageable);
 
     // id를 최종 타이브레이커로 둬 likeCount가 동률이거나 페이지 조회 사이에 변경돼도
     // 페이지 경계에서 게시글이 중복/누락되지 않도록 한다

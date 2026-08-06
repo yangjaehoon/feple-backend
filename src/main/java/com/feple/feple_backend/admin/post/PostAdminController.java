@@ -98,6 +98,20 @@ public class PostAdminController {
         return redirectUrl;
     }
 
+    @PostMapping("/{id}/pin")
+    public String togglePin(@PathVariable Long id, RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    boolean pinned = postAdminService.togglePin(id);
+                    adminLogService.log(AdminAction.POST_PIN_TOGGLE, "POST", id, "pinned=" + pinned);
+                },
+                "게시글 고정 상태가 변경되었습니다.",
+                e -> log.error("게시글 고정 토글 실패 id={}", id, e),
+                "고정 상태 변경 중 오류가 발생했습니다.",
+                ra);
+        return "redirect:/admin/posts/" + id;
+    }
+
     @PostMapping("/{id}/delete")
     public String deletePost(@PathVariable Long id,
                              @ModelAttribute PostListParams params,

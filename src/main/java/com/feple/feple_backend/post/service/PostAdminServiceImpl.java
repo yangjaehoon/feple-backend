@@ -133,4 +133,12 @@ public class PostAdminServiceImpl implements PostAdminService {
         return postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, limit))
                 .stream().map(PostResponseDto::from).toList();
     }
+
+    @Override
+    @Transactional
+    public boolean togglePin(Long postId) {
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        post.togglePinned();
+        return post.isPinned();
+    }
 }

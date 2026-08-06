@@ -17,4 +17,6 @@ public interface PostAdminService {
     List<PostResponseDto> getDeletedPosts(int limit);
     void restorePost(Long postId);
     List<PostResponseDto> getRecentPostsByUser(Long userId, int limit);
+    /** @return 토글 후 고정 여부 — 컨트롤러가 감사 로그 기록에 사용 */
+    boolean togglePin(Long postId);
 }

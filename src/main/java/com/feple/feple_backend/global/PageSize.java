@@ -22,4 +22,6 @@ public final class PageSize {
     // 검색 결과도 차단 필터링 후 노출 — 다음 페이지 개념이 없는 단발성 목록이라 필터링으로
     // 결과가 줄어들어도 재요청으로 보충할 방법이 없다. 넉넉히 조회한 뒤 필터링 후 자른다.
     public static final int SEARCH_POOL = 30;
+    // 게시판당 고정글은 첫 페이지 상단에 별도로 붙는 목록이라 페이지네이션 크기와 무관하게 작게 제한한다.
+    public static final int PINNED_POSTS = 5;
 }

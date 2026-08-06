@@ -345,7 +345,7 @@ class PostServiceImplTest {
     void 게시판타입_커서_페이징_다음페이지_있음() {
         User author = user(1L);
         List<Post> posts = List.of(freePost(3L, author), freePost(2L, author), freePost(1L, author));
-        given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+        given(postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
         CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, null));
@@ -356,10 +356,29 @@ class PostServiceImplTest {
     }
 
     @Test
+    void 게시판타입_커서_페이징_첫페이지에만_고정글이_상단에_붙음() {
+        User author = user(1L);
+        Post pinned = freePost(99L, author);
+        pinned.togglePinned();
+        given(postRepository.findByBoardTypeAndPinnedTrueOrderByCreatedAtDesc(eq(BoardType.FREE), any(Pageable.class)))
+                .willReturn(List.of(pinned));
+        given(postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+                .willReturn(List.of(freePost(2L, author), freePost(1L, author)));
+
+        CursorPage<PostResponseDto> firstPage = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, null));
+        assertThat(firstPage.content()).extracting(PostResponseDto::getId).containsExactly(99L, 2L);
+
+        given(postRepository.findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(eq(BoardType.FREE), eq(2L), any(Pageable.class)))
+                .willReturn(List.of(freePost(1L, author)));
+        CursorPage<PostResponseDto> secondPage = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(2L, 2, null));
+        assertThat(secondPage.content()).extracting(PostResponseDto::getId).containsExactly(1L);
+    }
+
+    @Test
     void 게시판타입_커서_페이징_다음페이지_없음() {
         User author = user(1L);
         List<Post> posts = List.of(freePost(1L, author));
-        given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+        given(postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
 
         CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, null));
@@ -373,7 +392,7 @@ class PostServiceImplTest {
         User blockedAuthor = user(9L);
         // size=2, fetchSize=3 — 3건 모두 차단된 작성자의 글
         List<Post> posts = List.of(freePost(3L, blockedAuthor), freePost(2L, blockedAuthor), freePost(1L, blockedAuthor));
-        given(postRepository.findByBoardTypeOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+        given(postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
                 .willReturn(posts);
         given(userBlockService.getBlockedIds(100L)).willReturn(List.of(9L));
 

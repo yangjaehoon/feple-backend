@@ -63,6 +63,10 @@ public class Post {
     private boolean anonymous = false;
 
     @Builder.Default
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    private boolean pinned = false;
+
+    @Builder.Default
     private int viewCount = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -81,6 +85,10 @@ public class Post {
         this.title = title;
         this.content = content;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void togglePinned() {
+        this.pinned = !this.pinned;
     }
 
     @Builder.Default

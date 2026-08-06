@@ -48,6 +48,7 @@ public enum AdminAction {
     POST_DELETE("게시글 삭제"),
     POST_BULK_DELETE("게시글 일괄 삭제"),
     POST_RESTORE("게시글 복구"),
+    POST_PIN_TOGGLE("게시글 고정 토글"),
 
     COMMENT_DELETE("댓글 삭제"),
 

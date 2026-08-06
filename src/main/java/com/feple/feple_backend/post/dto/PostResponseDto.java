@@ -34,6 +34,7 @@ public class PostResponseDto {
     private boolean certified;
     private UserRole userRole;
     private boolean anonymous;
+    private boolean pinned;
     private List<String> imageUrls;
     private LocalDateTime deletedAt;
     private String authorLevel;
@@ -64,6 +65,7 @@ public class PostResponseDto {
                 .certified(certified && !anon)
                 .userRole(anon ? null : post.getAuthorRole())
                 .anonymous(anon)
+                .pinned(post.isPinned())
                 .imageUrls(post.getImageKeys())
                 .deletedAt(post.getDeletedAt())
                 .authorLevel(anon ? null : post.getAuthorLevel())

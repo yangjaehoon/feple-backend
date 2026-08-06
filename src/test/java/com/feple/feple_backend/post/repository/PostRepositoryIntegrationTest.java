@@ -84,7 +84,7 @@ class PostRepositoryIntegrationTest {
         em.flush(); em.clear();
 
         // p3 이전(id < p3.id)의 포스트만 내림차순
-        List<Post> result = postRepository.findByBoardTypeAndIdLessThanOrderByIdDesc(
+        List<Post> result = postRepository.findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(
                 BoardType.FREE, p3.getId(), PageRequest.of(0, 10));
 
         assertThat(result).extracting(Post::getId)

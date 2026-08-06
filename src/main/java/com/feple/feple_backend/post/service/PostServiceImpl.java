@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -82,8 +84,9 @@ public class PostServiceImpl implements PostService {
     public CursorPage<PostResponseDto> getPostsByBoardTypeLatest(BoardType boardType, CursorPageRequest pageRequest) {
         Long cursor = pageRequest.cursor();
         return buildCursorPage(pageRequest,
-                limit -> postRepository.findByBoardTypeOrderByIdDesc(boardType, limit),
-                limit -> postRepository.findByBoardTypeAndIdLessThanOrderByIdDesc(boardType, cursor, limit),
+                limit -> postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(boardType, limit),
+                limit -> postRepository.findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(boardType, cursor, limit),
+                () -> postRepository.findByBoardTypeAndPinnedTrueOrderByCreatedAtDesc(boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
                 PostResponseDto::from);
     }
 
@@ -127,6 +130,7 @@ public class PostServiceImpl implements PostService {
         return buildCursorPage(pageRequest,
                 limit -> postRepository.findByArtistOrderByIdDesc(artist, limit),
                 limit -> postRepository.findByArtistAndIdLessThanOrderByIdDesc(artist, cursor, limit),
+                () -> postRepository.findByArtistAndPinnedTrueOrderByCreatedAtDesc(artist, PageRequest.of(0, PageSize.PINNED_POSTS)),
                 PostResponseDto::from);
     }
 
@@ -148,6 +152,7 @@ public class PostServiceImpl implements PostService {
         return buildCursorPage(pageRequest,
                 limit -> postRepository.findGeneralFestivalPostsOrderByIdDesc(festival, limit),
                 limit -> postRepository.findGeneralFestivalPostsAndIdLessThanOrderByIdDesc(festival, cursor, limit),
+                () -> postRepository.findGeneralFestivalPinnedPostsOrderByCreatedAtDesc(festival, PageRequest.of(0, PageSize.PINNED_POSTS)),
                 post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())));
     }
 
@@ -169,6 +174,7 @@ public class PostServiceImpl implements PostService {
         return buildCursorPage(pageRequest,
                 limit -> postRepository.findByFestivalAndBoardTypeOrderByIdDesc(festival, boardType, limit),
                 limit -> postRepository.findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(festival, boardType, cursor, limit),
+                () -> postRepository.findByFestivalAndBoardTypeAndPinnedTrueOrderByCreatedAtDesc(festival, boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
                 post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())));
     }
 
@@ -212,13 +218,21 @@ public class PostServiceImpl implements PostService {
     }
 
     // fetchFirst/fetchAfterCursor는 cursor==null 여부에 따라 호출부에서 다른 리포지토리 메서드를 넘긴다.
+    // 고정글(fetchPinned)은 첫 페이지(cursor==null)에만 상단에 붙인다 — 매 페이지마다 붙이면
+    // 커서 페이지네이션 특성상 넘길 때마다 같은 고정글이 반복 노출된다.
     private CursorPage<PostResponseDto> buildCursorPage(CursorPageRequest pageRequest,
                                                           Function<PageRequest, List<Post>> fetchFirst,
                                                           Function<PageRequest, List<Post>> fetchAfterCursor,
+                                                          Supplier<List<Post>> fetchPinned,
                                                           Function<Post, PostResponseDto> mapper) {
         return CursorPageAssembler.assemble(pageRequest.cursor(), pageRequest.size(), fetchFirst, fetchAfterCursor,
-                pageItems -> blockedContentFilter.excludeBlocked(
-                        pageItems.stream().map(mapper).toList(), pageRequest.viewerId(), PostResponseDto::getUserId),
+                pageItems -> {
+                    List<Post> combined = pageRequest.cursor() == null
+                            ? Stream.concat(fetchPinned.get().stream(), pageItems.stream()).toList()
+                            : pageItems;
+                    return blockedContentFilter.excludeBlocked(
+                            combined.stream().map(mapper).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
+                },
                 Post::getId);
     }
 

@@ -228,4 +228,30 @@ class PostAdminServiceImplTest {
 
         assertThat(result).hasSize(1);
     }
+
+    // ── togglePin ────────────────────────────────────────────────────
+
+    @Test
+    void 게시글_고정_토글시_상태가_반전되고_반전된_값을_반환() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+
+        boolean pinned = postAdminService.togglePin(10L);
+
+        assertThat(pinned).isTrue();
+        assertThat(post.isPinned()).isTrue();
+    }
+
+    @Test
+    void 이미_고정된_게시글_토글시_고정_해제() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        post.togglePinned();
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+
+        boolean pinned = postAdminService.togglePin(10L);
+
+        assertThat(pinned).isFalse();
+    }
 }
