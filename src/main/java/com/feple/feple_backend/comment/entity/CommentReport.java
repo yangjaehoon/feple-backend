@@ -47,12 +47,16 @@ public class CommentReport extends BaseTimeEntity implements ResolvableReport {
     @Column
     private String detail;
 
-    public Long getCommentId() { return comment.getId(); }
-    public String getCommentContent() { return comment.getContent(); }
-    public Long getCommentPostId() { return comment.getPostId(); }
-    public String getCommentPostTitle() { return comment.getPostTitle(); }
-    public String getCommentUserNickname() { return comment.getUserNickname(); }
-    public Long getCommentAuthorId() { return comment.getUserId(); }
+    // comment는 @ManyToOne(comment_id NOT NULL)이라 항상 존재해야 하지만, Comment의 @SQLRestriction이
+    // blinded=true를 제외하면서 관리자 신고 목록 조회(EntityGraph LEFT JOIN)에서는 블라인드된
+    // 댓글에 대해 comment가 null로 채워진다 — 신고 자체(CommentReport)는 그대로 남아있으므로 여기서
+    // NPE 없이 안전한 값을 반환해야 관리자가 블라인드된 댓글의 신고도 목록에서 확인할 수 있다.
+    public Long getCommentId() { return comment != null ? comment.getId() : null; }
+    public String getCommentContent() { return comment != null ? comment.getContent() : "(블라인드된 댓글)"; }
+    public Long getCommentPostId() { return comment != null ? comment.getPostId() : null; }
+    public String getCommentPostTitle() { return comment != null ? comment.getPostTitle() : null; }
+    public String getCommentUserNickname() { return comment != null ? comment.getUserNickname() : null; }
+    public Long getCommentAuthorId() { return comment != null ? comment.getUserId() : null; }
     public String getReporterNickname() { return reporter.getNickname(); }
     public boolean isPending() { return status == ReportStatus.PENDING; }
 

@@ -173,7 +173,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteOwnComment(Long commentId, Long requestUserId) {
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        // 블라인드된 자기 댓글도 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
         OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
         deleteAndDecrement(comment);
     }
@@ -206,7 +207,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
+        // 블라인드된 자기 댓글도 수정할 수 있어야 하므로 조회는 제약을 우회한다.
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
         OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글", "수정");
         badWordValidator.validateField("content", content);
         comment.update(content);

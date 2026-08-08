@@ -392,7 +392,7 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        given(commentRepository.findByIdIgnoringRestrictions(100L)).willReturn(Optional.of(c));
 
         commentService.deleteOwnComment(100L, 1L);
 
@@ -406,7 +406,7 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        given(commentRepository.findByIdIgnoringRestrictions(100L)).willReturn(Optional.of(c));
 
         assertThatThrownBy(() -> commentService.deleteOwnComment(100L, 2L))
                 .isInstanceOf(AccessDeniedException.class);
@@ -604,7 +604,7 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        given(commentRepository.findByIdIgnoringRestrictions(100L)).willReturn(Optional.of(c));
 
         commentService.updateOwnComment(100L, 1L, "수정된 내용");
 
@@ -618,7 +618,7 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        given(commentRepository.findByIdIgnoringRestrictions(100L)).willReturn(Optional.of(c));
 
         assertThatThrownBy(() -> commentService.updateOwnComment(100L, 2L, "수정 시도"))
                 .isInstanceOf(AccessDeniedException.class);
@@ -630,7 +630,7 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(commentRepository.findById(100L)).willReturn(Optional.of(c));
+        given(commentRepository.findByIdIgnoringRestrictions(100L)).willReturn(Optional.of(c));
         willThrow(new BadWordException("content"))
                 .given(badWordValidator).validateField(eq("content"), anyString());
 

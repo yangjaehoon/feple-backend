@@ -111,9 +111,8 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {
-        Long postId = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고").getPostId();
-        ReportRejectionService.reject(reportRepository, reportId);
-        unblindIfBelowThreshold(postId);
+        PostReport report = ReportRejectionService.reject(reportRepository, reportId);
+        unblindIfBelowThreshold(report.getPostId());
     }
 
     @Override
@@ -121,9 +120,8 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @Transactional
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;
-        List<Long> postIds = reportRepository.findAllById(ids).stream().map(PostReport::getPostId).distinct().toList();
-        ReportRejectionService.bulkDismiss(reportRepository, ids);
-        postIds.forEach(this::unblindIfBelowThreshold);
+        List<PostReport> rejected = ReportRejectionService.bulkDismiss(reportRepository, ids);
+        rejected.stream().map(PostReport::getPostId).distinct().forEach(this::unblindIfBelowThreshold);
     }
 
     // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.

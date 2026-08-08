@@ -138,7 +138,8 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional
     public boolean togglePin(Long postId) {
-        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        // 블라인드된 글도 관리자는 고정/해제할 수 있어야 하므로 조회는 제약을 우회한다.
+        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
         post.togglePinned();
         return post.isPinned();
     }

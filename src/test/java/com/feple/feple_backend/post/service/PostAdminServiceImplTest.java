@@ -235,7 +235,7 @@ class PostAdminServiceImplTest {
     void 게시글_고정_토글시_상태가_반전되고_반전된_값을_반환() {
         User author = user(1L);
         Post post = freePost(10L, author);
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
 
         boolean pinned = postAdminService.togglePin(10L);
 
@@ -248,7 +248,7 @@ class PostAdminServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         post.togglePinned();
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
 
         boolean pinned = postAdminService.togglePin(10L);
 

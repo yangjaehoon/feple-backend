@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -110,7 +111,8 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId) {
-        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        // 블라인드된 자기 글도 수정할 수 있어야 하므로 조회는 제약을 우회한다.
+        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글", "수정");
         validatePostContent(dto);
         validateImageUrls(dto.getImageUrls(), requestUserId);
@@ -124,10 +126,13 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void deleteOwnPost(Long postId, Long requestUserId) {
-        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        // 블라인드된 자기 글도 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
+        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글");
-        // soft delete: 행이 남아 FK 무결성 유지, 신고 등 증거 보존
-        postRepository.deleteById(postId);
+        // soft delete: 행이 남아 FK 무결성 유지, 신고 등 증거 보존.
+        // deleteById()는 findById()로 먼저 존재를 확인하는데 블라인드된 글은 제약에 걸려
+        // 못 찾으므로, 제약을 우회하는 벌크 쿼리(softDeleteByIds)로 삭제한다.
+        postRepository.softDeleteByIds(List.of(postId));
     }
 
     @Override
@@ -145,9 +150,13 @@ public class PostServiceImpl implements PostService {
     public CursorPage<PostResponseDto> getPostsByTagPaged(String tag, CursorPageRequest pageRequest) {
         String normalized = normalizeTag(tag);
         Long cursor = pageRequest.cursor();
+        // 게시글이 삭제/블라인드되면 PostTag는 남아있어도 post 연관관계는 @SQLRestriction에 의해
+        // null로 채워지므로, 매핑 전에 걸러내지 않으면 이후 PostResponseDto::from에서 NPE가 난다.
         return buildCursorPage(pageRequest,
-                limit -> postTagRepository.findByTagOrderByPostIdDesc(normalized, limit).stream().map(PostTag::getPost).toList(),
-                limit -> postTagRepository.findByTagAndPostIdLessThanOrderByPostIdDesc(normalized, cursor, limit).stream().map(PostTag::getPost).toList(),
+                limit -> postTagRepository.findByTagOrderByPostIdDesc(normalized, limit).stream()
+                        .map(PostTag::getPost).filter(Objects::nonNull).toList(),
+                limit -> postTagRepository.findByTagAndPostIdLessThanOrderByPostIdDesc(normalized, cursor, limit).stream()
+                        .map(PostTag::getPost).filter(Objects::nonNull).toList(),
                 List::of,
                 PostResponseDto::from);
     }
