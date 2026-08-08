@@ -6,7 +6,6 @@ import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
-import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -39,11 +38,8 @@ public class Comment {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    // 관리자 댓글 목록(findByPostIdIgnoringBlindOrderByCreatedAtAsc)은 네이티브 쿼리라 EntityGraph로
-    // 즉시 로딩할 수 없으므로, BatchSize로 지연 로딩 시 N+1을 방지한다.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @BatchSize(size = 20)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,7 +50,6 @@ public class Comment {
     // 대상(댓글을 작성할 당시 "답글" 버튼을 누른 그 댓글의 작성자)은 따로 기록해야 한다.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentioned_user_id")
-    @BatchSize(size = 20)
     private User mentionedUser;
 
     @Builder.Default

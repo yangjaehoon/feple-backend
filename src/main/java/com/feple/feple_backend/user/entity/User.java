@@ -3,6 +3,7 @@ package com.feple.feple_backend.user.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 
 
@@ -21,6 +22,10 @@ import org.hibernate.annotations.CreationTimestamp;
                 @Index(name = "idx_users_deleted_at", columnList = "deleted_at")
         }
         )
+// @ManyToOne으로 User를 참조하는 연관관계(Comment.user 등)를 지연 로딩할 때, 클래스 레벨
+// BatchSize로 여러 프록시를 한 번에 배치 조회해 N+1을 방지한다 — Hibernate 6는 to-one
+// 연관관계 필드에 프로퍼티 레벨 @BatchSize를 허용하지 않으므로(컬렉션 전용) 대상 엔티티에 붙여야 한다.
+@BatchSize(size = 20)
 public class User {
 
     @Id
