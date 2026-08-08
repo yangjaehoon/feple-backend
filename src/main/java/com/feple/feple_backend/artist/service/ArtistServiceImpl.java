@@ -209,7 +209,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 .name(artist.getName())
                 .nameEn(artist.getNameEn())
                 .aliases(artist.getAliasesDisplay())
-                .genres(artist.getGenres())
+                .genres(new ArrayList<>(artist.getGenres()))
                 .profileImageKey(fileStorageService.buildUrl(artist.getProfileImageKey()))
                 .followerCount(artist.getFollowerCount())
                 .build();
