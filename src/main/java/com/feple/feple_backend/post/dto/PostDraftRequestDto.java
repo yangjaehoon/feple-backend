@@ -27,7 +27,7 @@ public class PostDraftRequestDto {
 
     @Size(max = PostRequestDto.MAX_IMAGES, message = "이미지는 최대 " + PostRequestDto.MAX_IMAGES + "장까지 첨부할 수 있습니다.")
     @Builder.Default
-    private List<@Size(max = 255) String> imageUrls = List.of();
+    private List<@Size(max = 255, message = "이미지 URL이 너무 깁니다.") String> imageUrls = List.of();
 
     private Long artistId;
 

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.dto;
 
 import com.feple.feple_backend.post.entity.BoardType;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.*;
@@ -14,11 +15,11 @@ public class PostRequestDto {
     public static final int MAX_IMAGES = 10;
     public static final int MAX_TAGS = 5;
 
-    @jakarta.validation.constraints.NotBlank(message = "제목을 입력해주세요.")
-    @jakarta.validation.constraints.Size(max = 100, message = "제목은 100자 이내로 입력해주세요.")
+    @NotBlank(message = "제목을 입력해주세요.")
+    @Size(max = 100, message = "제목은 100자 이내로 입력해주세요.")
     private String title;
-    @jakarta.validation.constraints.NotBlank(message = "내용을 입력해주세요.")
-    @jakarta.validation.constraints.Size(max = 5000, message = "내용은 5000자 이내로 입력해주세요.")
+    @NotBlank(message = "내용을 입력해주세요.")
+    @Size(max = 5000, message = "내용은 5000자 이내로 입력해주세요.")
     private String content;
     @Setter
     private BoardType boardType;

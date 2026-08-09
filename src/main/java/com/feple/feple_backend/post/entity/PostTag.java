@@ -9,9 +9,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "post_tag", indexes = {
-    @Index(name = "idx_post_tag_tag", columnList = "tag")
-})
+@Table(name = "post_tag",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uq_post_tag_post_id_tag", columnNames = {"post_id", "tag"})
+    },
+    indexes = {
+        @Index(name = "idx_post_tag_tag", columnList = "tag")
+    })
 public class PostTag {
 
     @Id

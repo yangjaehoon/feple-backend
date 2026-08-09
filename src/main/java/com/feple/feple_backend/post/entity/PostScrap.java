@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
+        name = "post_scrap",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"user_id", "post_id"})
         }
@@ -30,5 +31,13 @@ public class PostScrap {
     public PostScrap(User user, Post post) {
         this.user = user;
         this.post = post;
+    }
+
+    public Long getUserId() {
+        return user.getId();
+    }
+
+    public Long getPostId() {
+        return post.getId();
     }
 }

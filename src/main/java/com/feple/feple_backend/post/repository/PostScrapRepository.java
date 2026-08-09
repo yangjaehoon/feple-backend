@@ -2,7 +2,6 @@ package com.feple.feple_backend.post.repository;
 
 import com.feple.feple_backend.post.entity.PostScrap;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,9 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
-
-    @Query("SELECT ps FROM PostScrap ps WHERE ps.user.id = :userId AND ps.post.id = :postId")
-    Optional<PostScrap> findByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
     @Modifying
     @Transactional
@@ -30,16 +26,6 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
 
     @Query("SELECT COUNT(ps) FROM PostScrap ps WHERE ps.user.id = :userId")
     long countByUserId(@Param("userId") Long userId);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM PostScrap ps WHERE ps.post.id = :postId")
-    void deleteByPostId(@Param("postId") Long postId);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM PostScrap ps WHERE ps.post.id IN :postIds")
-    void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
     @Modifying(clearAutomatically = true)
     @Transactional

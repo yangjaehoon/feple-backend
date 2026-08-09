@@ -1,33 +1,20 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.post.dto.PostAdminFilterDto;
-import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-class FestivalPostFilterStrategy implements PostRelationFilterStrategy {
+class FestivalPostFilterStrategy extends AbstractPostRelationFilterStrategy {
 
-    private final PostRepository postRepository;
+    FestivalPostFilterStrategy(PostRepository postRepository) {
+        super(PostAdminFilterDto::festivalId,
+                postRepository::findByFestivalIdAndTitleLikeOrderByCreatedAtDesc,
+                postRepository::findByFestivalIdOrderByCreatedAtDesc,
+                postRepository::findByFestivalIsNotNullAndTitleLikeOrderByCreatedAtDesc,
+                postRepository::findByFestivalIsNotNullOrderByCreatedAtDesc);
+    }
 
     @Override
     public String filterKey() { return "FESTIVAL"; }
-
-    @Override
-    public Page<Post> findPosts(PostAdminFilterDto params, String keyword, PageRequest pageable) {
-        boolean hasKeyword = !keyword.isEmpty();
-        Long festivalId = params.festivalId();
-        if (festivalId != null) {
-            return hasKeyword
-                    ? postRepository.findByFestivalIdAndTitleLikeOrderByCreatedAtDesc(festivalId, keyword, pageable)
-                    : postRepository.findByFestivalIdOrderByCreatedAtDesc(festivalId, pageable);
-        }
-        return hasKeyword
-                ? postRepository.findByFestivalIsNotNullAndTitleLikeOrderByCreatedAtDesc(keyword, pageable)
-                : postRepository.findByFestivalIsNotNullOrderByCreatedAtDesc(pageable);
-    }
 }
