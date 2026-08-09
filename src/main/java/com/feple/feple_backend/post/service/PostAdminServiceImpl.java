@@ -149,4 +149,12 @@ public class PostAdminServiceImpl implements PostAdminService {
     public PostResponseDto getPostForAdmin(Long postId) {
         return PostResponseDto.from(EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글"));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getBlindedPosts(int limit) {
+        return postRepository.findBlinded(limit).stream()
+                .map(PostResponseDto::from)
+                .toList();
+    }
 }

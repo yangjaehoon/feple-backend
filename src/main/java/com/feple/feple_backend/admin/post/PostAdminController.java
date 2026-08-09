@@ -155,6 +155,12 @@ public class PostAdminController {
         return "admin/post/deleted";
     }
 
+    @GetMapping("/blinded")
+    public String blindedPosts(Model model) {
+        model.addAttribute("posts", postAdminService.getBlindedPosts(AdminConstants.BLINDED_POSTS_LIMIT));
+        return "admin/post/blinded";
+    }
+
     @PostMapping("/{id}/restore")
     public String restorePost(@PathVariable Long id, RedirectAttributes ra) {
         AdminActionUtils.tryAction(

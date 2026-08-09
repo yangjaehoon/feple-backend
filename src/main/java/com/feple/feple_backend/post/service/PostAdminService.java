@@ -21,4 +21,6 @@ public interface PostAdminService {
     boolean togglePin(Long postId);
     /** 블라인드된 글도 관리자는 검토할 수 있어야 하므로 @SQLRestriction을 우회해 조회한다. */
     PostResponseDto getPostForAdmin(Long postId);
+    /** 블라인드된 글은 일반 목록/검색에 노출되지 않으므로 전용 목록으로 제공한다. */
+    List<PostResponseDto> getBlindedPosts(int limit);
 }

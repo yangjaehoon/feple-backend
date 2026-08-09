@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('블라인드된 게시글')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('posts')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('블라인드된 게시글', '게시글')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="search-bar">
+                <span class="cell-primary">신고 누적 등으로 블라인드 처리된 게시글 — 일반 목록/검색에는 노출되지 않음</span>
+                <a th:href="@{/admin/posts}" class="btn btn-secondary btn-sm">← 게시글 목록으로</a>
+            </div>
+
+            <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>게시판</th>
+                        <th>수정일시</th>
+                        <th>상세</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${posts.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(6, '블라인드된 게시글이 없습니다.')}"></tr>
+                    <tr th:each="post : ${posts}">
+                        <td th:text="${post.id}"></td>
+                        <td>
+                            <span th:text="${#strings.abbreviate(post.title, 60)}"></span>
+                        </td>
+                        <td th:text="${post.nickname}"></td>
+                        <td th:text="${post.boardType != null ? post.boardType : '-'}"></td>
+                        <td th:text="${post.updatedAt != null ? #temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                        <td>
+                            <a th:href="@{/admin/posts/{id}(id=${post.id})}" class="btn btn-secondary btn-sm">상세보기</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

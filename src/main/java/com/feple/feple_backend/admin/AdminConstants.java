@@ -11,6 +11,7 @@ public final class AdminConstants {
     public static final int STATS_RECENT_DAYS       = 7;
     public static final int MAX_EXPORT_ROWS         = 50_000;
     public static final int DELETED_POSTS_LIMIT     = 200;
+    public static final int BLINDED_POSTS_LIMIT     = 200;
     public static final int TREND_TOP_LIMIT         = 10;
     public static final int TREND_UPCOMING_DAYS     = 30;
     public static final int BROADCAST_HISTORY_LIMIT  = 100;

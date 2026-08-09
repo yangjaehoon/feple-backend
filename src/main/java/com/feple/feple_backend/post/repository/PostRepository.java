@@ -301,4 +301,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "SELECT * FROM post WHERE id = :id", nativeQuery = true)
     java.util.Optional<Post> findByIdIgnoringRestrictions(@Param("id") Long id);
 
+    // 블라인드된 글은 일반 목록/검색(@SQLRestriction)에서 전혀 노출되지 않아 관리자가 찾을 방법이
+    // 없으므로, 삭제된 글의 휴지통(findSoftDeleted)과 동일한 패턴으로 전용 목록을 제공한다.
+    @Query(value = "SELECT * FROM post WHERE blinded = true AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT :limit", nativeQuery = true)
+    List<Post> findBlinded(@Param("limit") int limit);
+
 }

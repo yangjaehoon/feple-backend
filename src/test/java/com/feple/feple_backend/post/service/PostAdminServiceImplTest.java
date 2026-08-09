@@ -92,6 +92,18 @@ class PostAdminServiceImplTest {
         assertThat(result).hasSize(1);
     }
 
+    // ── getBlindedPosts ──────────────────────────────────────────────
+
+    @Test
+    void 블라인드된_게시글_목록_조회() {
+        User author = user(1L);
+        given(postRepository.findBlinded(20)).willReturn(List.of(freePost(1L, author)));
+
+        List<PostResponseDto> result = postAdminService.getBlindedPosts(20);
+
+        assertThat(result).hasSize(1);
+    }
+
     // ── countPostsContaining / getPostCountsByUserIds ───────────────────
 
     @Test

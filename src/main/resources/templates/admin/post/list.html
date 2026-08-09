@@ -50,6 +50,8 @@
                     페스티벌 게시판
                     <span th:if="${filter == 'FESTIVAL'}" class="card-count" th:text="${posts.totalElements}"></span>
                 </a>
+                <a th:href="@{/admin/posts/blinded}"
+                   class="type-tab">블라인드됨</a>
                 <a th:href="@{/admin/posts/deleted}"
                    class="type-tab type-tab-end">휴지통</a>
             </div>
