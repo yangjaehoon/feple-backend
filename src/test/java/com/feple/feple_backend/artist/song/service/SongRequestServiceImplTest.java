@@ -34,7 +34,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -97,6 +99,18 @@ class SongRequestServiceImplTest {
         assertThatThrownBy(() -> service.submit(1L, 10L, dto))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("이미 요청한");
+        verify(songRequestRepository, never()).save(any());
+    }
+
+    @Test
+    void 요청_존재하지_않는_아티스트면_예외() {
+        given(artistRepository.findById(99L)).willReturn(Optional.empty());
+        SubmitSongRequestDto dto = new SubmitSongRequestDto();
+        ReflectionTestUtils.setField(dto, "songTitle", "어떤 곡");
+
+        assertThatThrownBy(() -> service.submit(99L, 10L, dto))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(songRequestRepository, never()).save(any());
     }
 
     // ── approveAndMaybeSaveSong ──────────────────────────────────────────
@@ -110,9 +124,34 @@ class SongRequestServiceImplTest {
         boolean saved = service.approveAndMaybeSaveSong(1L, null);
 
         assertThat(saved).isFalse();
-        assertThat(request.isPending()).isFalse();
+        assertThat(request.getStatus()).isEqualTo(SongRequestStatus.APPROVED);
         verify(songAdminService, never()).saveSongIfAbsent(any(), any());
         verify(eventPublisher).publishEvent(any(SongRequestApprovedEvent.class));
+    }
+
+    @Test
+    void 승인_유튜브URL_공백이면_곡_저장_안함() {
+        Artist artist = artist(1L, "아이유");
+        SongRequest request = pending(1L, artist, 10L, "밤편지");
+        given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
+
+        boolean saved = service.approveAndMaybeSaveSong(1L, "  ");
+
+        assertThat(saved).isFalse();
+        verify(songAdminService, never()).saveSongIfAbsent(any(), any());
+    }
+
+    @Test
+    void 승인_유튜브_영상_조회안되면_곡_저장_안함() {
+        Artist artist = artist(1L, "아이유");
+        SongRequest request = pending(1L, artist, 10L, "밤편지");
+        given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
+        given(youtubeSearchService.fetchVideoByUrl("https://youtu.be/abc123")).willReturn(Optional.empty());
+
+        boolean saved = service.approveAndMaybeSaveSong(1L, "https://youtu.be/abc123");
+
+        assertThat(saved).isFalse();
+        verify(songAdminService, never()).saveSongIfAbsent(any(), any());
     }
 
     @Test
@@ -171,17 +210,60 @@ class SongRequestServiceImplTest {
                 .hasMessageContaining("이미 처리된");
     }
 
+    // ── getPendingCount / getTotalCount ──────────────────────────────────
+
+    @Test
+    void getPendingCount_레포지토리에_위임됨() {
+        given(songRequestRepository.countByStatus(SongRequestStatus.PENDING)).willReturn(3L);
+
+        assertThat(service.getPendingCount()).isEqualTo(3L);
+    }
+
+    @Test
+    void getTotalCount_레포지토리에_위임됨() {
+        given(songRequestRepository.count()).willReturn(20L);
+
+        assertThat(service.getTotalCount()).isEqualTo(20L);
+    }
+
+    // ── getMyAllRequests / getMyRequests ─────────────────────────────────
+
+    @Test
+    void 내_전체_요청목록_조회() {
+        Artist artist = artist(1L, "아이유");
+        SongRequest request = pending(1L, artist, 10L, "밤편지");
+        given(nicknameResolver.lookup(10L)).willReturn("닉네임");
+        given(songRequestRepository.findByUserIdOrderByCreatedAtDesc(10L)).willReturn(List.of(request));
+
+        List<SongRequestResponseDto> result = service.getMyAllRequests(10L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getSongTitle()).isEqualTo("밤편지");
+    }
+
+    @Test
+    void 특정_아티스트에_대한_내_요청목록_조회() {
+        Artist artist = artist(1L, "아이유");
+        SongRequest request = pending(1L, artist, 10L, "밤편지");
+        given(nicknameResolver.lookup(10L)).willReturn("닉네임");
+        given(songRequestRepository.findByArtistIdAndUserIdOrderByCreatedAtDesc(1L, 10L)).willReturn(List.of(request));
+
+        List<SongRequestResponseDto> result = service.getMyRequests(1L, 10L);
+
+        assertThat(result).hasSize(1);
+    }
+
     // ── getRequestsPage ──────────────────────────────────────────────────
 
     @Test
-    void 알수없는_상태값이면_전체조회로_폴백() {
+    void 상태_ALL이면_필터없이_전체조회() {
         given(songRequestRepository.findWithFilters(eq(null), any(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of()));
         given(nicknameResolver.buildMap(anyList(), any())).willReturn(Map.of());
 
-        service.getRequestsPage(0, 20, "INVALID_STATUS", null);
+        Page<SongRequestResponseDto> result = service.getRequestsPage(0, 20, "ALL", null);
 
-        verify(songRequestRepository).findWithFilters(eq(null), any(), any(Pageable.class));
+        assertThat(result.getContent()).isEmpty();
     }
 
     @Test
@@ -195,6 +277,58 @@ class SongRequestServiceImplTest {
         verify(songRequestRepository).findWithFilters(eq(SongRequestStatus.APPROVED), any(), any(Pageable.class));
     }
 
+    @Test
+    void 알수없는_상태값이면_전체조회로_폴백() {
+        given(songRequestRepository.findWithFilters(eq(null), any(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of()));
+        given(nicknameResolver.buildMap(anyList(), any())).willReturn(Map.of());
+
+        service.getRequestsPage(0, 20, "INVALID_STATUS", null);
+
+        verify(songRequestRepository).findWithFilters(eq(null), any(), any(Pageable.class));
+    }
+
+    @Test
+    void 닉네임_매핑에_없는_사용자는_UNKNOWN으로_표시() {
+        Artist artist = artist(1L, "아이유");
+        SongRequest request = pending(1L, artist, 10L, "밤편지");
+        given(songRequestRepository.findWithFilters(eq(null), any(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(request)));
+        given(nicknameResolver.buildMap(anyList(), any())).willReturn(Map.of());
+
+        Page<SongRequestResponseDto> result = service.getRequestsPage(0, 20, null, null);
+
+        assertThat(result.getContent().get(0).getUserNickname()).isEqualTo(UserNicknameLookup.UNKNOWN);
+    }
+
+    // ── getPendingRequests / getPendingPreview ────────────────────────────
+
+    @Test
+    void 대기중인_요청목록_조회() {
+        Artist artist = artist(1L, "아이유");
+        SongRequest request = pending(1L, artist, 10L, "밤편지");
+        given(songRequestRepository.findByArtistIdAndStatusOrderByCreatedAtDesc(1L, SongRequestStatus.PENDING))
+                .willReturn(List.of(request));
+        given(nicknameResolver.buildMap(anyList(), any())).willReturn(Map.of(10L, "닉네임"));
+
+        List<SongRequestResponseDto> result = service.getPendingRequests(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getUserNickname()).isEqualTo("닉네임");
+    }
+
+    @Test
+    void 대기중인_요청_미리보기_조회() {
+        Artist artist = artist(1L, "아이유");
+        SongRequest request = pending(1L, artist, 10L, "밤편지");
+        given(songRequestRepository.findByStatusOrderByCreatedAtDesc(SongRequestStatus.PENDING, PageRequest.of(0, 5)))
+                .willReturn(List.of(request));
+
+        List<SongRequest> result = service.getPendingPreview(5);
+
+        assertThat(result).hasSize(1);
+    }
+
     // ── reject ───────────────────────────────────────────────────────────
 
     @Test
@@ -205,7 +339,7 @@ class SongRequestServiceImplTest {
 
         service.reject(1L, "저작권 문제");
 
-        assertThat(request.isPending()).isFalse();
+        assertThat(request.getStatus()).isEqualTo(SongRequestStatus.REJECTED);
         ArgumentCaptor<SongRequestRejectedEvent> captor = ArgumentCaptor.forClass(SongRequestRejectedEvent.class);
         verify(eventPublisher).publishEvent(captor.capture());
         assertThat(captor.getValue().reason()).isEqualTo("저작권 문제");
