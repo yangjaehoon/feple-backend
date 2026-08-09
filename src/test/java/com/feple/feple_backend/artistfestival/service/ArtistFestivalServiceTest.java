@@ -84,19 +84,6 @@ class ArtistFestivalServiceTest {
     }
 
     @Test
-    void 아티스트_목록_조회_사전로드된_날짜맵_재사용시_타임테이블_재조회_안함() {
-        Artist artist = artist(1L, "아이유");
-        ArtistFestival af = artistFestival(artist, festival(100L, null));
-        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(100L)).willReturn(List.of(af));
-
-        List<ArtistFestivalResponseDto> result =
-                service.getArtistFestivalsUsingTimetable(100L, Map.of("아이유", List.of("2026-08-02")));
-
-        assertThat(result.get(0).getPerformanceDate()).isEqualTo("2026-08-02");
-        then(timetableRepository).should(never()).findByFestivalIdWithStage(any());
-    }
-
-    @Test
     void 아티스트_목록_조회_관리자용은_스테이지_폴백_적용() {
         Artist artist = artist(1L, "아이유");
         ArtistFestival af = artistFestival(artist, festival(100L, null));

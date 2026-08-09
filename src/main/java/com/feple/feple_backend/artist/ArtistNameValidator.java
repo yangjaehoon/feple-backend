@@ -1,11 +1,14 @@
 package com.feple.feple_backend.artist;
 
+import com.feple.feple_backend.artist.event.ArtistDirectoryChangedEvent;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import jakarta.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
@@ -13,6 +16,11 @@ public class ArtistNameValidator {
 
     private final ArtistRepository artistRepository;
     private volatile Set<String> artistNames = Set.of();
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleArtistDirectoryChanged(ArtistDirectoryChangedEvent event) {
+        reload();
+    }
 
     @PostConstruct
     public void reload() {

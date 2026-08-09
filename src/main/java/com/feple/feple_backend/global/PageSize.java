@@ -25,4 +25,6 @@ public final class PageSize {
     // 게시판당 고정글은 첫 페이지 상단에 별도로 붙는 목록이라 페이지네이션 크기와 무관하게 작게 제한한다.
     public static final int PINNED_POSTS = 5;
     public static final int RELATED_ARTISTS = 10;
+    // 아티스트 주간 랭킹 노출 상한 — MY_ACTIVITIES(내 활동 목록용)를 재사용하지 않고 별도 상수로 분리
+    public static final int ARTIST_RANKING = 200;
 }

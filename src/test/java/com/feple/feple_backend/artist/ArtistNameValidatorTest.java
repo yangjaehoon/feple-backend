@@ -3,7 +3,10 @@ package com.feple.feple_backend.artist;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.artist.event.ArtistDirectoryChangedEvent;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,5 +87,16 @@ class ArtistNameValidatorTest {
 
         assertThatCode(() -> validator.validate("나는뉴진스팬")).doesNotThrowAnyException();
         assertThatThrownBy(() -> validator.validate("나는아이브팬")).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 아티스트_디렉터리_변경_이벤트_수신시_다시_로드() {
+        given(artistRepository.findAllKoreanNames()).willReturn(List.of());
+        given(artistRepository.findAllEnglishNames()).willReturn(List.of());
+        validator.reload();
+
+        validator.handleArtistDirectoryChanged(new ArtistDirectoryChangedEvent());
+
+        verify(artistRepository, times(2)).findAllKoreanNames();
     }
 }

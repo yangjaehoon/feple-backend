@@ -24,7 +24,7 @@ public class ArtistController {
 
     @GetMapping
     public List<ArtistResponseDto> getArtists() {
-        return artistService.getAllArtists();
+        return artistService.getArtistRanking();
     }
 
     @GetMapping("/{id}")

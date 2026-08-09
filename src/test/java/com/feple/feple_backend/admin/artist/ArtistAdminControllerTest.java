@@ -253,7 +253,7 @@ class ArtistAdminControllerTest {
 
     @Test
     void 사진관리_뷰와_모델() throws Exception {
-        given(artistService.getAllArtists()).willReturn(List.of());
+        given(artistAdminService.getAllArtistsSortedByName()).willReturn(List.of());
 
         mockMvc.perform(get("/admin/artists/photos"))
                 .andExpect(status().isOk())

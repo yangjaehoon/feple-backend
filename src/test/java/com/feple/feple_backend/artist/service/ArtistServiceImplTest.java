@@ -10,11 +10,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.artist.event.ArtistDirectoryChangedEvent;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
@@ -34,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -47,7 +48,7 @@ class ArtistServiceImplTest {
     @Mock ArtistFestivalRepository artistFestivalRepository;
     @Mock FileStorageService fileStorageService;
     @Mock SongRepository songRepository;
-    @Mock ArtistNameValidator artistNameValidator;
+    @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks ArtistServiceImpl service;
 
@@ -70,7 +71,7 @@ class ArtistServiceImplTest {
         Long id = service.createArtist(dto);
 
         assertThat(id).isEqualTo(1L);
-        verify(artistNameValidator).reload();
+        verify(eventPublisher).publishEvent(any(ArtistDirectoryChangedEvent.class));
     }
 
     @Test
@@ -98,7 +99,7 @@ class ArtistServiceImplTest {
                 .hasMessageContaining("200");
     }
 
-    // ── getAllArtistsSortedByName / getFollowedArtists / getAllArtists ────
+    // ── getAllArtistsSortedByName / getFollowedArtists / getArtistRanking ────
 
     @Test
     void 이름순_전체조회는_repository_결과를_dto로_매핑() {
@@ -121,6 +122,19 @@ class ArtistServiceImplTest {
         assertThat(result).extracting(ArtistResponseDto::getId).containsExactly(1L);
     }
 
+    @Test
+    void 아티스트_랭킹은_weeklyScore_기준_전용_상한을_사용() {
+        given(artistRepository.findAllByDeletedAtIsNull(any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(artist(1L, "가수A"))));
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        List<ArtistResponseDto> result = service.getArtistRanking();
+
+        assertThat(result).extracting(ArtistResponseDto::getId).containsExactly(1L);
+        verify(artistRepository).findAllByDeletedAtIsNull(pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(com.feple.feple_backend.global.PageSize.ARTIST_RANKING);
+    }
+
     // ── searchArtists ────────────────────────────────────────────────────
 
     @Test
@@ -131,6 +145,22 @@ class ArtistServiceImplTest {
         List<ArtistResponseDto> result = service.searchArtists("iu");
 
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void 검색어가_null이면_빈_목록_반환() {
+        List<ArtistResponseDto> result = service.searchArtists(null);
+
+        assertThat(result).isEmpty();
+        verify(artistRepository, never()).findByNameOrNameEnContainingIgnoreCase(any());
+    }
+
+    @Test
+    void 검색어가_공백뿐이면_빈_목록_반환() {
+        List<ArtistResponseDto> result = service.searchArtists("   ");
+
+        assertThat(result).isEmpty();
+        verify(artistRepository, never()).findByNameOrNameEnContainingIgnoreCase(any());
     }
 
     // ── getAdminArtistList ───────────────────────────────────────────────
@@ -234,7 +264,7 @@ class ArtistServiceImplTest {
 
         assertThat(a.getName()).isEqualTo("변경됨");
         verify(fileStorageService, never()).deleteFileAfterCommit(any());
-        verify(artistNameValidator).reload();
+        verify(eventPublisher).publishEvent(any(ArtistDirectoryChangedEvent.class));
     }
 
     @Test
@@ -293,7 +323,7 @@ class ArtistServiceImplTest {
         service.deleteArtist(1L);
 
         assertThat(a.isDeleted()).isTrue();
-        verify(artistNameValidator).reload();
+        verify(eventPublisher).publishEvent(any(ArtistDirectoryChangedEvent.class));
     }
 
     @Test
@@ -301,7 +331,7 @@ class ArtistServiceImplTest {
         service.restoreArtist(1L);
 
         verify(artistRepository).restoreById(1L);
-        verify(artistNameValidator).reload();
+        verify(eventPublisher).publishEvent(any(ArtistDirectoryChangedEvent.class));
     }
 
     @Test

@@ -42,7 +42,7 @@ class ArtistControllerTest {
     void 아티스트_목록_조회() throws Exception {
         ArtistResponseDto dto = mock(ArtistResponseDto.class);
         given(dto.getId()).willReturn(1L);
-        given(artistService.getAllArtists()).willReturn(List.of(dto));
+        given(artistService.getArtistRanking()).willReturn(List.of(dto));
 
         mockMvc.perform(get("/artists"))
                 .andExpect(status().isOk())

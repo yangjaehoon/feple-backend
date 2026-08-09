@@ -2,6 +2,7 @@ package com.feple.feple_backend.artistfestival.entity;
 
 
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.festival.entity.EventType;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.global.MusicGenre;
 import jakarta.persistence.*;
@@ -65,9 +66,9 @@ public class ArtistFestival {
     public String getFestivalDescription() { return festival.getDescription(); }
     public String getFestivalLocation() { return festival.getLocation(); }
     public String getFestivalPosterKey() { return festival.getPosterKey(); }
-    public com.feple.feple_backend.festival.entity.EventType getFestivalEventType() { return festival.getEventType(); }
-    public java.time.LocalDate getFestivalStartDate() { return festival.getStartDate(); }
-    public java.time.LocalDate getFestivalEndDate() { return festival.getEndDate(); }
+    public EventType getFestivalEventType() { return festival.getEventType(); }
+    public LocalDate getFestivalStartDate() { return festival.getStartDate(); }
+    public LocalDate getFestivalEndDate() { return festival.getEndDate(); }
 
     public void updateLineup(String stageName, LocalDate performanceDate) {
         this.stageName = stageName;

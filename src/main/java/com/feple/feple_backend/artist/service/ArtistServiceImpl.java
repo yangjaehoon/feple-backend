@@ -1,11 +1,11 @@
 package com.feple.feple_backend.artist.service;
 
-import com.feple.feple_backend.artist.ArtistNameValidator;
 import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.entity.ArtistUpdateFields;
+import com.feple.feple_backend.artist.event.ArtistDirectoryChangedEvent;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
@@ -27,11 +27,11 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,22 +42,12 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
     private static final int ADMIN_PAGE_SIZE = 30;
 
-    private static Sort adminSort(String sort) {
-        return switch (sort == null ? "" : sort) {
-            case "name"          -> Sort.by(Direction.ASC,  "name");
-            case "name_desc"     -> Sort.by(Direction.DESC, "name");
-            case "followers"     -> Sort.by(Direction.DESC, "followerCount");
-            case "followers_asc" -> Sort.by(Direction.ASC,  "followerCount");
-            default              -> Sort.by(Direction.DESC, "weeklyScore").and(Sort.by(Direction.ASC, "id"));
-        };
-    }
-
     private final ArtistRepository artistRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final FileStorageService fileStorageService;
     private final SongRepository songRepository;
-    private final ArtistNameValidator artistNameValidator;
+    private final ApplicationEventPublisher eventPublisher;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -75,7 +65,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 .profileImageKey(dto.getProfileImageKey())
                 .build();
         Long id = artistRepository.save(artist).getId();
-        artistNameValidator.reload();
+        eventPublisher.publishEvent(new ArtistDirectoryChangedEvent());
         return id;
     }
 
@@ -103,8 +93,8 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Cacheable("artistRanking")
     @Transactional(readOnly = true)
-    public List<ArtistResponseDto> getAllArtists() {
-        return artistRepository.findAllByDeletedAtIsNull(PageRequest.of(0, PageSize.MY_ACTIVITIES,
+    public List<ArtistResponseDto> getArtistRanking() {
+        return artistRepository.findAllByDeletedAtIsNull(PageRequest.of(0, PageSize.ARTIST_RANKING,
                         Sort.by(Sort.Direction.DESC, "weeklyScore").and(Sort.by(Sort.Direction.ASC, "id"))))
                 .stream()
                 .map(this::toDto)
@@ -117,15 +107,11 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> searchArtists(String keyword) {
-        String trimmed = keyword.trim();
-        List<Artist> artists = artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(trimmed));
+        if (!hasSearchKeyword(keyword)) return List.of();
+        List<Artist> artists = artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(keyword.trim()));
         return artists.stream()
                 .map(this::toDto)
                 .toList();
-    }
-
-    private static boolean isSongCountSort(String sort) {
-        return "songs".equals(sort) || "songs_asc".equals(sort);
     }
 
     private static boolean hasSearchKeyword(String keyword) {
@@ -135,7 +121,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<ArtistResponseDto> getAdminArtistList(ArtistAdminListQuery query) {
-        boolean songSort   = isSongCountSort(query.sort());
+        boolean songSort   = AdminArtistSort.from(query.sort()).requiresInMemorySort();
         boolean hasKeyword = hasSearchKeyword(query.keyword());
 
         return (hasKeyword || songSort)
@@ -155,10 +141,9 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         List<ArtistResponseDto> dtos = artists.stream()
                 .map(a -> toAdminDto(a, songCountMap))
                 .collect(Collectors.toCollection(ArrayList::new));
-        if ("songs".equals(query.sort())) {
-            dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount).reversed());
-        } else if ("songs_asc".equals(query.sort())) {
-            dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount));
+        Comparator<ArtistResponseDto> comparator = AdminArtistSort.from(query.sort()).inMemoryComparator();
+        if (comparator != null) {
+            dtos.sort(comparator);
         }
         int start = query.page() * ADMIN_PAGE_SIZE;
         int end   = Math.min(start + ADMIN_PAGE_SIZE, dtos.size());
@@ -168,7 +153,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
     // 일반 케이스: DB 레벨 페이지네이션
     private Page<ArtistResponseDto> getAdminArtistListFromDb(ArtistAdminListQuery query) {
-        PageRequest pageable = PageRequest.of(query.page(), ADMIN_PAGE_SIZE, adminSort(query.sort()));
+        PageRequest pageable = PageRequest.of(query.page(), ADMIN_PAGE_SIZE, AdminArtistSort.from(query.sort()).dbSort());
         Page<Artist> artistPage = (query.genre() != null)
                 ? artistRepository.findByGenreName(query.genre().name(), pageable)
                 : artistRepository.findAllByDeletedAtIsNull(pageable);
@@ -223,13 +208,18 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
         artist.update(new ArtistUpdateFields(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAliases(dto.getAliases())));
         if (dto.getProfileImageKey() != null) {
-            String oldKey = artist.getProfileImageKey();
-            artist.updateProfileImage(dto.getProfileImageKey());
-            if (oldKey != null) {
-                fileStorageService.deleteFileAfterCommit(oldKey);
-            }
+            replaceProfileImage(artist, dto.getProfileImageKey());
         }
-        artistNameValidator.reload();
+        eventPublisher.publishEvent(new ArtistDirectoryChangedEvent());
+    }
+
+    // 기존 프로필 이미지를 새 이미지로 교체하고, 교체 전 이미지가 있었다면 커밋 후 삭제한다.
+    private void replaceProfileImage(Artist artist, String newImageKey) {
+        String oldKey = artist.getProfileImageKey();
+        artist.updateProfileImage(newImageKey);
+        if (oldKey != null) {
+            fileStorageService.deleteFileAfterCommit(oldKey);
+        }
     }
 
     @Override
@@ -246,11 +236,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtistPhoto(Long id, String imageKey) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
-        String oldKey = artist.getProfileImageKey();
-        artist.updateProfileImage(imageKey);
-        if (oldKey != null) {
-            fileStorageService.deleteFileAfterCommit(oldKey);
-        }
+        replaceProfileImage(artist, imageKey);
     }
 
     @Override
@@ -263,7 +249,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         // 관리자가 휴지통에서 그대로 복구할 수 있다.
         Artist artist = EntityLoader.getOrThrow(artistRepository::findByIdAndDeletedAtIsNull, id, "아티스트");
         artist.softDelete();
-        artistNameValidator.reload();
+        eventPublisher.publishEvent(new ArtistDirectoryChangedEvent());
     }
 
     @Override
@@ -272,7 +258,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @CacheEvict(value = "artistDetail", key = "#id")
     public void restoreArtist(Long id) {
         artistRepository.restoreById(id);
-        artistNameValidator.reload();
+        eventPublisher.publishEvent(new ArtistDirectoryChangedEvent());
     }
 
     @Override

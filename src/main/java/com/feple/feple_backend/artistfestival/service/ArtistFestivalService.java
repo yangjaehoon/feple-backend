@@ -65,14 +65,6 @@ public class ArtistFestivalService {
         return toResponseList(artistFestivals, datesByArtistName);
     }
 
-    // 타임테이블을 이미 로드한 경우 재사용 — 중복 쿼리 방지
-    public List<ArtistFestivalResponseDto> getArtistFestivalsUsingTimetable(Long festivalId,
-                                                           Map<String, List<String>> datesByArtistName) {
-        return toResponseList(
-                artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId),
-                datesByArtistName);
-    }
-
     // 관리자 상세 페이지 전용 — 타임테이블 기반 스테이지/날짜 폴백 적용
     public List<ArtistFestivalResponseDto> getArtistFestivalsWithStageFallback(Long festivalId,
                                                            Map<String, List<String>> datesByArtistName,

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -50,12 +51,18 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistGaller
         ArtistGalleryPhoto photo = EntityLoader.getOrThrow(photoRepository::findById, photoId, "사진");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
-        reportRepository.save(ArtistGalleryPhotoReport.builder()
-                .photo(photo)
-                .reporter(reporter)
-                .reason(command.reason())
-                .detail(command.detail())
-                .build());
+        // existsBy 체크 후 save() 사이의 TOCTOU 레이스(동시 중복 신고)는 유니크 제약(reporter_id, photo_id)이
+        // 최종 방어선이다 — 위 existsBy와 동일한 메시지의 ConflictException으로 변환해준다.
+        try {
+            reportRepository.save(ArtistGalleryPhotoReport.builder()
+                    .photo(photo)
+                    .reporter(reporter)
+                    .reason(command.reason())
+                    .detail(command.detail())
+                    .build());
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("이미 신고한 사진입니다.");
+        }
     }
 
     @Override
@@ -95,11 +102,6 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistGaller
     @EvictAdminReportCaches
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
-        deletePhotoAndResolve(reportId);
-    }
-
-    @Transactional
-    public void deletePhotoAndResolve(Long reportId) {
         ArtistGalleryPhotoReport report = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고");
         Long photoId = report.getPhotoId();
 

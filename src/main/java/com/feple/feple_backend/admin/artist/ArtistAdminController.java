@@ -119,7 +119,9 @@ public class ArtistAdminController {
 
     @GetMapping("/photos")
     public String photoManagement(Model model) {
-        model.addAttribute("artists", artistService.getAllArtists());
+        // getArtistRanking()은 weeklyScore 상위 상한(200)까지만 반환해 랭킹 밖 아티스트가
+        // 누락될 수 있다 — 사진 관리는 전체 아티스트를 다뤄야 하므로 이름순 전체 목록을 쓴다.
+        model.addAttribute("artists", artistAdminService.getAllArtistsSortedByName());
         return "admin/artist/photos";
     }
 

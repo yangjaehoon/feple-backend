@@ -98,6 +98,23 @@ class ArtistPhotoReportServiceTest {
         verify(reportRepository, never()).save(any());
     }
 
+    @Test
+    void 신고_동시요청으로_유니크제약_위반시_ConflictException으로_변환() {
+        Artist artist = artist(1L);
+        User uploader = user(10L);
+        User reporter = user(20L);
+        ArtistGalleryPhoto p = photo(5L, artist, uploader);
+        given(reportRepository.existsByReporterIdAndPhotoId(20L, 5L)).willReturn(false);
+        given(photoRepository.findById(5L)).willReturn(Optional.of(p));
+        given(userRepository.findById(20L)).willReturn(Optional.of(reporter));
+        given(reportRepository.save(any(ArtistGalleryPhotoReport.class)))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+
+        assertThatThrownBy(() -> service.submitReport(5L, 20L, new ReportSubmitRequest(ReportReason.SPAM, "상세")))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("이미 신고한");
+    }
+
     // ── 카운트/조회 위임 ─────────────────────────────────────────────────
 
     @Test
@@ -146,7 +163,7 @@ class ArtistPhotoReportServiceTest {
         assertThat(service.searchReportsByKeyword("키워드", ReportStatus.PENDING, pageable)).isSameAs(page);
     }
 
-    // ── deleteContentAndResolve / deletePhotoAndResolve ─────────────────
+    // ── deleteContentAndResolve ──────────────────────────────────────────
 
     @Test
     void 신고_승인시_사진_신고_좋아요_순서로_삭제() {
@@ -167,7 +184,7 @@ class ArtistPhotoReportServiceTest {
     void 존재하지_않는_신고_승인시_예외() {
         given(reportRepository.findById(1L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.deletePhotoAndResolve(1L))
+        assertThatThrownBy(() -> service.deleteContentAndResolve(1L))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
