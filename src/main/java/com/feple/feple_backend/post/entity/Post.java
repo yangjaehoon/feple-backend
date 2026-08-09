@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -19,6 +20,10 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+// update()/togglePinned()/blind()/unblind()의 더티체킹 flush가 전체 컬럼을 UPDATE하면서, 동시에 다른
+// 트랜잭션이 incrementLikeCount 등으로 원자적으로 갱신한 카운터(likeCount/scrapCount/commentCount/
+// viewCount)를 로드 시점 값으로 덮어쓰는 것을 방지한다.
+@DynamicUpdate
 @SQLDelete(sql = "UPDATE post SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL AND blinded = false")
 @Table(name = "post", indexes = {
