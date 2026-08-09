@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
@@ -45,7 +46,7 @@ class ArtistAdminControllerTest {
 
     @Test
     void 목록_조회_뷰와_모델_속성_확인() throws Exception {
-        given(artistAdminService.getAdminArtistList(anyString(), anyString(), any(), anyInt()))
+        given(artistAdminService.getAdminArtistList(any(ArtistAdminListQuery.class)))
                 .willReturn(new PageImpl<>(List.of()));
         given(artistSuggestionAdminService.getPendingSuggestionsPreview(anyInt())).willReturn(List.of());
         given(artistSuggestionAdminService.getProcessedSuggestionsPreview(anyInt())).willReturn(List.of());
@@ -60,7 +61,7 @@ class ArtistAdminControllerTest {
 
     @Test
     void 장르_필터_있으면_getAdminArtistList에_전달() throws Exception {
-        given(artistAdminService.getAdminArtistList(anyString(), anyString(), eq(MusicGenre.INDIE), anyInt()))
+        given(artistAdminService.getAdminArtistList(eq(new ArtistAdminListQuery("", "", MusicGenre.INDIE, 0))))
                 .willReturn(new PageImpl<>(List.of()));
         given(artistSuggestionAdminService.getPendingSuggestionsPreview(anyInt())).willReturn(List.of());
         given(artistSuggestionAdminService.getProcessedSuggestionsPreview(anyInt())).willReturn(List.of());
@@ -69,7 +70,7 @@ class ArtistAdminControllerTest {
         mockMvc.perform(get("/admin/artists").param("genre", "INDIE"))
                 .andExpect(status().isOk());
 
-        then(artistAdminService).should().getAdminArtistList(anyString(), anyString(), eq(MusicGenre.INDIE), anyInt());
+        then(artistAdminService).should().getAdminArtistList(eq(new ArtistAdminListQuery("", "", MusicGenre.INDIE, 0)));
     }
 
     // ── GET /admin/artists/new ────────────────────────────────────────────────

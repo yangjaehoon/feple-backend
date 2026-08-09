@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.search;
 
 import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -53,7 +54,7 @@ public class AdminGlobalSearchService {
 
     private AdminSearchSection<ArtistResponseDto> searchArtists(String keyword, Set<AdminPermission> granted) {
         if (!granted.contains(AdminPermission.ARTISTS)) return AdminSearchSection.notPermitted();
-        Page<ArtistResponseDto> page = artistAdminService.getAdminArtistList("", keyword, null, 0);
+        Page<ArtistResponseDto> page = artistAdminService.getAdminArtistList(new ArtistAdminListQuery("", keyword, null, 0));
         return new AdminSearchSection<>(preview(page.getContent()), page.getTotalElements(), true);
     }
 

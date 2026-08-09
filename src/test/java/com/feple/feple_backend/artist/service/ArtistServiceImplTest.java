@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.artist.ArtistNameValidator;
+import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
@@ -140,7 +141,7 @@ class ArtistServiceImplTest {
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase(any()))
                 .willReturn(List.of(artist(1L, "뉴진스")));
 
-        Page<ArtistResponseDto> result = service.getAdminArtistList(null, "뉴진스", null, 0);
+        Page<ArtistResponseDto> result = service.getAdminArtistList(new ArtistAdminListQuery(null, "뉴진스", null, 0));
 
         assertThat(result.getContent()).extracting(ArtistResponseDto::getName).containsExactly("뉴진스");
         verify(artistRepository, never()).findAllByDeletedAtIsNull(any(Pageable.class));
@@ -152,7 +153,7 @@ class ArtistServiceImplTest {
                 .willReturn(List.<Object[]>of(new Object[]{1L, 5L}, new Object[]{2L, 1L}));
         given(artistRepository.findAllByDeletedAtIsNull()).willReturn(List.of(artist(1L, "A"), artist(2L, "B")));
 
-        Page<ArtistResponseDto> result = service.getAdminArtistList("songs", null, null, 0);
+        Page<ArtistResponseDto> result = service.getAdminArtistList(new ArtistAdminListQuery("songs", null, null, 0));
 
         assertThat(result.getContent()).extracting(ArtistResponseDto::getName).containsExactly("A", "B");
     }
@@ -165,7 +166,7 @@ class ArtistServiceImplTest {
         given(artistRepository.findByNameOrNameEnContainingIgnoreCase(any()))
                 .willReturn(List.of(idol, artist(2L, "밴드팀")));
 
-        Page<ArtistResponseDto> result = service.getAdminArtistList(null, "팀", MusicGenre.IDOL, 0);
+        Page<ArtistResponseDto> result = service.getAdminArtistList(new ArtistAdminListQuery(null, "팀", MusicGenre.IDOL, 0));
 
         assertThat(result.getContent()).extracting(ArtistResponseDto::getName).containsExactly("아이돌팀");
     }
@@ -176,7 +177,7 @@ class ArtistServiceImplTest {
         given(artistRepository.findAllByDeletedAtIsNull(any(Pageable.class))).willReturn(page);
         given(songRepository.countGroupedByArtistIds(anyList())).willReturn(List.of());
 
-        Page<ArtistResponseDto> result = service.getAdminArtistList(null, null, null, 0);
+        Page<ArtistResponseDto> result = service.getAdminArtistList(new ArtistAdminListQuery(null, null, null, 0));
 
         assertThat(result.getContent()).hasSize(1);
         verify(artistRepository).findAllByDeletedAtIsNull(any(Pageable.class));
@@ -188,7 +189,7 @@ class ArtistServiceImplTest {
         given(artistRepository.findByGenreName(eq("IDOL"), any(Pageable.class))).willReturn(page);
         given(songRepository.countGroupedByArtistIds(anyList())).willReturn(List.of());
 
-        Page<ArtistResponseDto> result = service.getAdminArtistList(null, null, MusicGenre.IDOL, 0);
+        Page<ArtistResponseDto> result = service.getAdminArtistList(new ArtistAdminListQuery(null, null, MusicGenre.IDOL, 0));
 
         assertThat(result.getContent()).hasSize(1);
     }

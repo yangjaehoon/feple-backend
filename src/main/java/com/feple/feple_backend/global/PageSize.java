@@ -24,4 +24,5 @@ public final class PageSize {
     public static final int SEARCH_POOL = 30;
     // 게시판당 고정글은 첫 페이지 상단에 별도로 붙는 목록이라 페이지네이션 크기와 무관하게 작게 제한한다.
     public static final int PINNED_POSTS = 5;
+    public static final int RELATED_ARTISTS = 10;
 }

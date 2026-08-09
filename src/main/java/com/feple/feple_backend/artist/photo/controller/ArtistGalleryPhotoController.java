@@ -33,10 +33,7 @@ public class ArtistGalleryPhotoController {
             @Valid @RequestBody PresignRequest req,
             @AuthenticationPrincipal Long userId
     ) {
-        String ext = req.extension() == null ? "" : req.extension().toLowerCase();
-        if (!ImageUploadPolicy.isAllowed(ext, req.contentType())) {
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (jpg, jpeg, png, gif, webp 만 가능)");
-        }
+        String ext = ImageUploadPolicy.assertAllowed(req.extension(), req.contentType());
         return artistGalleryPhotoService.generateUploadUrl(artistId, ext, req.contentType());
     }
 

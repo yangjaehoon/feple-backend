@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artistfestival.dto.ArtistScheduleResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistScheduleService;
+import com.feple.feple_backend.global.PageSize;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,6 @@ public class ArtistController {
 
     @GetMapping("/{id}/related")
     public List<ArtistResponseDto> getRelatedArtists(@PathVariable Long id) {
-        return artistService.getRelatedArtists(id, 10);
+        return artistService.getRelatedArtists(id, PageSize.RELATED_ARTISTS);
     }
 }

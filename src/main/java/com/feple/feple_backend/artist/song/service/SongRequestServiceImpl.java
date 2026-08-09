@@ -66,18 +66,18 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getMyAllRequests(Long userId) {
         String nickname = nicknameResolver.lookup(userId);
-        return songRequestRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(r -> SongRequestResponseDto.from(r, nickname))
-                .toList();
+        return toResponseList(songRequestRepository.findByUserIdOrderByCreatedAtDesc(userId), nickname);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SongRequestResponseDto> getMyRequests(Long artistId, Long userId) {
         String nickname = nicknameResolver.lookup(userId);
-        return songRequestRepository.findByArtistIdAndUserIdOrderByCreatedAtDesc(artistId, userId)
-                .stream()
+        return toResponseList(songRequestRepository.findByArtistIdAndUserIdOrderByCreatedAtDesc(artistId, userId), nickname);
+    }
+
+    private List<SongRequestResponseDto> toResponseList(List<SongRequest> requests, String nickname) {
+        return requests.stream()
                 .map(r -> SongRequestResponseDto.from(r, nickname))
                 .toList();
     }

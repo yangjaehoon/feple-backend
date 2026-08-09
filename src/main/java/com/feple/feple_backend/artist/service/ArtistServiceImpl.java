@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.service;
 
 import com.feple.feple_backend.artist.ArtistNameValidator;
+import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.entity.Artist;
@@ -13,7 +14,6 @@ import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
-import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.cache.EvictArtistCaches;
@@ -134,43 +134,43 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ArtistResponseDto> getAdminArtistList(String sort, String keyword, MusicGenre genre, int page) {
-        boolean songSort   = isSongCountSort(sort);
-        boolean hasKeyword = hasSearchKeyword(keyword);
+    public Page<ArtistResponseDto> getAdminArtistList(ArtistAdminListQuery query) {
+        boolean songSort   = isSongCountSort(query.sort());
+        boolean hasKeyword = hasSearchKeyword(query.keyword());
 
         return (hasKeyword || songSort)
-                ? getAdminArtistListInMemory(sort, keyword, genre, page)
-                : getAdminArtistListFromDb(sort, genre, page);
+                ? getAdminArtistListInMemory(query)
+                : getAdminArtistListFromDb(query);
     }
 
     // 키워드 검색·곡수 정렬은 인메모리 처리 후 PageImpl로 슬라이싱
-    private Page<ArtistResponseDto> getAdminArtistListInMemory(String sort, String keyword, MusicGenre genre, int page) {
+    private Page<ArtistResponseDto> getAdminArtistListInMemory(ArtistAdminListQuery query) {
         Map<Long, Integer> songCountMap = buildSongCountMap();
-        List<Artist> artists = hasSearchKeyword(keyword)
-                ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(keyword.trim()))
+        List<Artist> artists = hasSearchKeyword(query.keyword())
+                ? artistRepository.findByNameOrNameEnContainingIgnoreCase(JpqlLikeEscaper.escape(query.keyword().trim()))
                 : artistRepository.findAllByDeletedAtIsNull();
-        if (genre != null) {
-            artists = artists.stream().filter(a -> a.getGenres().contains(genre)).toList();
+        if (query.genre() != null) {
+            artists = artists.stream().filter(a -> a.getGenres().contains(query.genre())).toList();
         }
         List<ArtistResponseDto> dtos = artists.stream()
                 .map(a -> toAdminDto(a, songCountMap))
                 .collect(Collectors.toCollection(ArrayList::new));
-        if ("songs".equals(sort)) {
+        if ("songs".equals(query.sort())) {
             dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount).reversed());
-        } else if ("songs_asc".equals(sort)) {
+        } else if ("songs_asc".equals(query.sort())) {
             dtos.sort(Comparator.comparingInt(ArtistResponseDto::getSongCount));
         }
-        int start = page * ADMIN_PAGE_SIZE;
+        int start = query.page() * ADMIN_PAGE_SIZE;
         int end   = Math.min(start + ADMIN_PAGE_SIZE, dtos.size());
         return new PageImpl<>(start >= dtos.size() ? List.of() : dtos.subList(start, end),
-                PageRequest.of(page, ADMIN_PAGE_SIZE), dtos.size());
+                PageRequest.of(query.page(), ADMIN_PAGE_SIZE), dtos.size());
     }
 
     // 일반 케이스: DB 레벨 페이지네이션
-    private Page<ArtistResponseDto> getAdminArtistListFromDb(String sort, MusicGenre genre, int page) {
-        PageRequest pageable = PageRequest.of(page, ADMIN_PAGE_SIZE, adminSort(sort));
-        Page<Artist> artistPage = (genre != null)
-                ? artistRepository.findByGenreName(genre.name(), pageable)
+    private Page<ArtistResponseDto> getAdminArtistListFromDb(ArtistAdminListQuery query) {
+        PageRequest pageable = PageRequest.of(query.page(), ADMIN_PAGE_SIZE, adminSort(query.sort()));
+        Page<Artist> artistPage = (query.genre() != null)
+                ? artistRepository.findByGenreName(query.genre().name(), pageable)
                 : artistRepository.findAllByDeletedAtIsNull(pageable);
         List<Long> artistIds = artistPage.getContent().stream().map(Artist::getId).toList();
         Map<Long, Integer> songCountMap = buildSongCountMapForIds(artistIds);

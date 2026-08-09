@@ -44,6 +44,14 @@ public class ArtistRankingScheduler {
         log.info("[ArtistRankingScheduler] 주간 랭킹 갱신 시작");
         LocalDateTime since = LocalDateTime.now().minusWeeks(1);
 
+        Map<Long, Long> scores = buildScoreMap(since);
+        int updatedCount = applyScores(scores);
+
+        log.info("[ArtistRankingScheduler] 주간 랭킹 갱신 완료 ({}명)", updatedCount);
+    }
+
+    // 점수 = 지난 7일간 아티스트 게시판에 달린 좋아요 수 + 게시글 수 + 댓글 수 + 팔로우 수
+    private Map<Long, Long> buildScoreMap(LocalDateTime since) {
         Map<Long, Long> postScores = new HashMap<>();
         for (Object[] row : postRepository.countAndSumByArtistSince(since)) {
             Long artistId = (Long) row[0];
@@ -51,18 +59,20 @@ public class ArtistRankingScheduler {
             long likeSum = (Long) row[2];
             postScores.put(artistId, postCount + likeSum);
         }
-
         Map<Long, Long> commentScores = QueryResultMapper.toLongMap(commentRepository.countByArtistSince(since));
         Map<Long, Long> followScores = QueryResultMapper.toLongMap(artistFollowRepository.countByArtistSince(since));
 
+        Map<Long, Long> combined = new HashMap<>(postScores);
+        commentScores.forEach((artistId, score) -> combined.merge(artistId, score, Long::sum));
+        followScores.forEach((artistId, score) -> combined.merge(artistId, score, Long::sum));
+        return combined;
+    }
+
+    private int applyScores(Map<Long, Long> scores) {
         List<Artist> artists = artistRepository.findAll();
         for (Artist artist : artists) {
-            long score = postScores.getOrDefault(artist.getId(), 0L)
-                    + commentScores.getOrDefault(artist.getId(), 0L)
-                    + followScores.getOrDefault(artist.getId(), 0L);
-            artist.updateWeeklyScore((int) score);
+            artist.updateWeeklyScore(scores.getOrDefault(artist.getId(), 0L).intValue());
         }
-
-        log.info("[ArtistRankingScheduler] 주간 랭킹 갱신 완료 ({}명)", artists.size());
+        return artists.size();
     }
 }

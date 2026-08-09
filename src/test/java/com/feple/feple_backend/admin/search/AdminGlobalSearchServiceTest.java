@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.account.AdminPermission;
+import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
@@ -49,7 +50,7 @@ class AdminGlobalSearchServiceTest {
         assertThat(results.artists().permitted()).isFalse();
         assertThat(results.festivals().permitted()).isFalse();
         verify(postAdminService, never()).getPostsForAdmin(any());
-        verify(artistAdminService, never()).getAdminArtistList(any(), any(), any(), anyInt());
+        verify(artistAdminService, never()).getAdminArtistList(any());
         verify(festivalAdminService, never()).getFestivalsAdminPage(any(), anyInt(), anyInt());
     }
 
@@ -78,7 +79,7 @@ class AdminGlobalSearchServiceTest {
         List<ArtistResponseDto> tenArtists = java.util.stream.IntStream.range(0, 10)
                 .mapToObj(i -> ArtistResponseDto.builder().id((long) i).name("아티스트" + i).build())
                 .toList();
-        given(artistAdminService.getAdminArtistList(eq(""), eq("키워드"), eq(null), eq(0)))
+        given(artistAdminService.getAdminArtistList(eq(new ArtistAdminListQuery("", "키워드", null, 0))))
                 .willReturn(new PageImpl<>(tenArtists));
 
         AdminSearchResults results = searchService.search("키워드", Set.of(AdminPermission.ARTISTS));

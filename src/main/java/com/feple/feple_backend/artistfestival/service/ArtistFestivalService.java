@@ -180,10 +180,20 @@ public class ArtistFestivalService {
     @Transactional
     public void updateArtistFestival(Long festivalId, Long artistFestivalId, LineupUpdate lineup) {
         ArtistFestival af = EntityLoader.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
-        if (!af.getFestivalId().equals(festivalId)) {
+        assertBelongsToFestival(af, festivalId);
+        applyLineupUpdate(festivalId, af, lineup);
+    }
+
+    // updateArtistFestival/updateArtistFestivalsBatch/removeArtistFromFestival 공통 —
+    // 다른 페스티벌 소속 참여 정보에 접근/수정하는 것을 막는다.
+    private static boolean belongsToFestival(ArtistFestival af, Long festivalId) {
+        return af.getFestivalId().equals(festivalId);
+    }
+
+    private static void assertBelongsToFestival(ArtistFestival af, Long festivalId) {
+        if (!belongsToFestival(af, festivalId)) {
             throw new IllegalArgumentException("잘못된 페스티벌입니다.");
         }
-        applyLineupUpdate(festivalId, af, lineup);
     }
 
     // 라인업 그리드 일괄 수정 — 행마다 findById를 반복하지 않고 한 번에 조회한다.
@@ -197,7 +207,7 @@ public class ArtistFestivalService {
         int success = 0, errors = 0;
         for (Map.Entry<Long, LineupUpdate> entry : updates.entrySet()) {
             ArtistFestival af = byId.get(entry.getKey());
-            if (af == null || !af.getFestivalId().equals(festivalId)) {
+            if (af == null || !belongsToFestival(af, festivalId)) {
                 errors++;
                 continue;
             }
@@ -264,11 +274,7 @@ public class ArtistFestivalService {
     @Transactional
     public void removeArtistFromFestival(Long festivalId, Long artistFestivalId) {
         ArtistFestival artistFestival = EntityLoader.getOrThrow(artistFestivalRepository::findById, artistFestivalId, "참여 정보");
-
-        if (!artistFestival.getFestivalId().equals(festivalId)) {
-            throw new IllegalArgumentException("잘못된 페스티벌입니다.");
-        }
-
+        assertBelongsToFestival(artistFestival, festivalId);
         artistFestivalRepository.delete(artistFestival);
     }
 

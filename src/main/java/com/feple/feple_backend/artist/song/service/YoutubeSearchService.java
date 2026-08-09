@@ -50,13 +50,8 @@ public class YoutubeSearchService {
 
         try {
             // 1) 아티스트명으로 YouTube Music Topic 채널 탐색
-            String topicChannelId = findTopicChannelId(artistName);
-            if (topicChannelId != null) {
-                log.debug("[YT] Topic channel found: {}", topicChannelId);
-                List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
-                log.debug("[YT] Channel videos count: {}", channelVideos.size());
-                return filterByQuery(channelVideos, query);
-            }
+            List<YoutubeVideoDto> viaTopicChannel = searchViaTopicChannel(artistName, query);
+            if (viaTopicChannel != null) return viaTopicChannel;
 
             // 2) Topic 채널 없음 → 곡명만으로 검색 (아티스트명 붙이면 API 품질 저하)
             String keywordQuery = (query != null && !query.isBlank()) ? query : artistName;
@@ -68,6 +63,18 @@ public class YoutubeSearchService {
             log.warn("[YT] search 실패 - artistName='{}', query='{}', 원인={}", artistName, query, e.getClass().getSimpleName());
             return Collections.emptyList();
         }
+    }
+
+    // Topic 채널이 있으면 해당 채널의 영상만 검색해 반환하고, 없으면 null을 반환해
+    // 호출부가 키워드 검색으로 폴백하도록 한다.
+    private List<YoutubeVideoDto> searchViaTopicChannel(String artistName, String query) {
+        String topicChannelId = findTopicChannelId(artistName);
+        if (topicChannelId == null) return null;
+
+        log.debug("[YT] Topic channel found: {}", topicChannelId);
+        List<YoutubeVideoDto> channelVideos = searchByChannel(topicChannelId);
+        log.debug("[YT] Channel videos count: {}", channelVideos.size());
+        return filterByQuery(channelVideos, query);
     }
 
     // query가 없으면 채널 영상 전체 반환, 있으면 제목에 포함되는 것만 — 필터링 결과가 없으면 전체로 폴백
@@ -150,8 +157,12 @@ public class YoutubeSearchService {
                 .map(this::toDto)
                 .toList();
 
-        // channelTitle 또는 영상 title에 아티스트명이 포함된 경우 우선 반환
-        // (유통사 채널 업로드 시 channelTitle≠아티스트명이므로 title도 함께 확인)
+        return prioritizeByArtist(all, artistName, query);
+    }
+
+    // channelTitle 또는 영상 title에 아티스트명이 포함된 경우 우선 반환
+    // (유통사 채널 업로드 시 channelTitle≠아티스트명이므로 title도 함께 확인)
+    private List<YoutubeVideoDto> prioritizeByArtist(List<YoutubeVideoDto> all, String artistName, String query) {
         String lowerArtist = artistName.toLowerCase();
         List<YoutubeVideoDto> byArtist = all.stream()
                 .filter(v -> v.getChannelTitle().toLowerCase().contains(lowerArtist)

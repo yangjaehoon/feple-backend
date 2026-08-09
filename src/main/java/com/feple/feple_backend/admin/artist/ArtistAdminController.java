@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
@@ -87,7 +88,7 @@ public class ArtistAdminController {
                               @RequestParam(required = false) MusicGenre genre,
                               @RequestParam(defaultValue = "0") int page,
                               Model model) {
-        Page<ArtistResponseDto> artistsPage = artistAdminService.getAdminArtistList(sort, keyword, genre, page);
+        Page<ArtistResponseDto> artistsPage = artistAdminService.getAdminArtistList(new ArtistAdminListQuery(sort, keyword, genre, page));
         model.addAttribute("artistsPage", artistsPage);
         model.addAttribute("artists", artistsPage.getContent());
         model.addAttribute("keyword", keyword);

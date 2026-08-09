@@ -3,8 +3,6 @@ package com.feple.feple_backend.post.controller;
 import com.feple.feple_backend.file.ImageUploadPolicy;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.PageSize;
-import com.feple.feple_backend.global.exception.ErrorCode;
-import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.CursorPageRequest;
 import com.feple.feple_backend.post.dto.PostDraftRequestDto;
@@ -248,11 +246,8 @@ public class PostController {
     public ResponseEntity<?> getPostImageUploadUrl(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody PostImagePresignRequest req) {
-        if (!ImageUploadPolicy.isAllowed(req.extension(), req.contentType())) {
-            return ResponseEntity.badRequest().body(
-                ErrorResponse.of(HttpStatus.BAD_REQUEST, "파일 형식과 Content-Type이 일치하지 않습니다.", ErrorCode.ILLEGAL_ARGUMENT));
-        }
-        String key = "posts/" + userId + "/" + UUID.randomUUID() + "." + req.extension();
+        String ext = ImageUploadPolicy.assertAllowed(req.extension(), req.contentType());
+        String key = "posts/" + userId + "/" + UUID.randomUUID() + "." + ext;
         return ResponseEntity.ok(s3PresignService.presignPut(key, req.contentType()));
     }
 
