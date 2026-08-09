@@ -3,6 +3,7 @@ package com.feple.feple_backend.user.repository;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -24,13 +25,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "UPDATE users SET point = GREATEST(0, point + :delta) WHERE id = :id", nativeQuery = true)
     void addPointAtomically(@Param("id") Long id, @Param("delta") int delta);
 
+    // 여러 유저에게 동일한 delta를 한 번의 UPDATE로 반영 — 관리자 일괄 지급처럼 유저마다 별도 쿼리를
+    // 반복할 필요가 없는 배치 경로 전용.
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "UPDATE users SET point = GREATEST(0, point + :delta) WHERE id IN (:ids)", nativeQuery = true)
+    void addPointAtomicallyBulk(@Param("ids") Collection<Long> ids, @Param("delta") int delta);
+
     @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND " +
            "(LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')")
     Page<User> findActiveByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Page<User> findAllByDeletedAtIsNull(Pageable pageable);
 
-    java.util.List<User> findTop5ByDeletedAtIsNullOrderByIdDesc();
+    List<User> findTop5ByDeletedAtIsNullOrderByIdDesc();
 
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE u.nickname = :nickname AND u.deletedAt IS NULL")
     boolean existsByNickname(@Param("nickname") String nickname);

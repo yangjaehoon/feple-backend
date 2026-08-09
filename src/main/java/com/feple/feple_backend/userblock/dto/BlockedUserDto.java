@@ -21,7 +21,7 @@ public class BlockedUserDto {
     public static BlockedUserDto from(UserBlock block) {
         var blocked = block.getBlocked();
         return new BlockedUserDto(
-                blocked.getId(),
+                block.getBlockedId(),
                 blocked.getNickname(),
                 blocked.getProfileImageUrl(),
                 block.getCreatedAt()

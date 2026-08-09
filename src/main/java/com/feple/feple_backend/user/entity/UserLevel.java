@@ -1,18 +1,19 @@
 package com.feple.feple_backend.user.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum UserLevel {
-    SEED(0, "씨앗"),
-    SPROUT(100, "새싹"),
-    BLOOM(300, "꽃"),
-    FESTIVAL(700, "페스티버"),
-    LEGEND(1500, "레전드");
+    SEED(0),
+    SPROUT(100),
+    BLOOM(300),
+    FESTIVAL(700),
+    LEGEND(1500);
 
-    public final int requiredMinPoint;
-    public final String displayName;
+    private final int requiredMinPoint;
 
-    UserLevel(int requiredMinPoint, String displayName) {
+    UserLevel(int requiredMinPoint) {
         this.requiredMinPoint = requiredMinPoint;
-        this.displayName = displayName;
     }
 
     public static UserLevel of(int point) {

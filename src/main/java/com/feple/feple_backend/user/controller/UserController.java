@@ -10,11 +10,13 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UpdateBioDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
+import com.feple.feple_backend.user.entity.DevicePlatform;
 import com.feple.feple_backend.user.entity.DeviceTokenRegistration;
 import com.feple.feple_backend.user.service.DeviceTokenService;
 import com.feple.feple_backend.user.service.MyPageService;
@@ -50,7 +52,9 @@ public class UserController {
 
     @GetMapping("/check-nickname")
     public ResponseEntity<NicknameAvailabilityResponse> checkNickname(
-            @RequestParam @NotBlank @Size(min = 2, max = 8) String nickname,
+            @RequestParam @NotBlank
+            @Size(min = NicknameValidator.MIN_NICKNAME_LENGTH, max = NicknameValidator.MAX_NICKNAME_LENGTH)
+            String nickname,
             @RequestParam(required = false) Long excludeUserId) {
         return ResponseEntity.ok(userService.checkNicknameAvailable(nickname, excludeUserId));
     }
@@ -202,7 +206,7 @@ public class UserController {
     public ResponseEntity<Void> registerDeviceToken(
             @Valid @RequestBody RegisterDeviceTokenRequest req,
             @AuthenticationPrincipal Long userId) {
-        String platform = req.platform() != null ? req.platform() : "android";
+        String platform = req.platform() != null ? req.platform() : DevicePlatform.DEFAULT;
         // 언어 기본값("ko")은 UserDeviceToken이 유일한 출처 — 여기서는 원본 값을 그대로 넘긴다.
         deviceTokenService.register(userId, new DeviceTokenRegistration(req.token(), platform, req.language()));
         return ResponseEntity.noContent().build();

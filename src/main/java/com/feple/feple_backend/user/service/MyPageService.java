@@ -18,6 +18,7 @@ import com.feple.feple_backend.user.dto.UserStatsDto;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -66,19 +67,28 @@ public class MyPageService {
         return artistService.getFollowedArtists(userId);
     }
 
+    // 신고 집계 소스(게시글/댓글/아티스트 사진) — getReportCounts/getUserStats가 함께 참조하는 단일 출처.
+    // 새 신고 유형이 추가되면 여기 한 곳만 늘리면 된다.
+    private List<Function<List<Long>, Map<Long, Long>>> reportCountSources() {
+        return List.of(
+                postReportService::getAuthorReportCounts,
+                commentReportService::getAuthorReportCounts,
+                photoReportService::getAuthorReportCounts
+        );
+    }
+
     public Map<Long, Long> getReportCounts(List<Long> userIds) {
         if (userIds.isEmpty()) return Map.of();
         Map<Long, Long> counts = new HashMap<>();
-        postReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
-        commentReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
-        photoReportService.getAuthorReportCounts(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum));
+        reportCountSources().forEach(source ->
+                source.apply(userIds).forEach((id, cnt) -> counts.merge(id, cnt, Long::sum)));
         return counts;
     }
 
     public UserStatsDto getUserStats(@NonNull Long userId) {
-        long reportCount = postReportService.getReportCountForUser(userId)
-                + commentReportService.getReportCountForUser(userId)
-                + photoReportService.getReportCountForUser(userId);
+        long reportCount = reportCountSources().stream()
+                .mapToLong(source -> source.apply(List.of(userId)).getOrDefault(userId, 0L))
+                .sum();
         return new UserStatsDto(
                 postActivityService.countPublicPosts(userId),
                 commentService.countMyComments(userId),

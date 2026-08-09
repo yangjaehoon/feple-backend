@@ -110,12 +110,12 @@ class UserBlockServiceImplTest {
     }
 
     @Test
-    void 차단해제_내역_없으면_예외() {
+    void 차단해제_내역_없어도_예외없이_no_op() {
         given(blockRepository.deleteByBlockerIdAndBlockedId(1L, 2L)).willReturn(0);
 
-        assertThatThrownBy(() -> service.unblock(1L, 2L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("차단 내역이 없습니다.");
+        service.unblock(1L, 2L);
+
+        then(blockRepository).should().deleteByBlockerIdAndBlockedId(1L, 2L);
     }
 
     // ── getBlockedUsers ───────────────────────────────────────────────────

@@ -2,11 +2,14 @@ package com.feple.feple_backend.user.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user_point_log", indexes = {
     @Index(name = "idx_user_point_log_user_id", columnList = "user_id")
 })
@@ -35,8 +38,6 @@ public class UserPointLog {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
-
-    protected UserPointLog() {}
 
     public static UserPointLog of(User user, PointEntry entry) {
         UserPointLog log = new UserPointLog();

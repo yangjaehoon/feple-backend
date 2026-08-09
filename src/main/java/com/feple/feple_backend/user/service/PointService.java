@@ -16,6 +16,7 @@ import com.feple.feple_backend.user.event.AdminPointGrantedEvent;
 import com.feple.feple_backend.user.repository.UserPointLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,12 +72,18 @@ public class PointService {
                 .collect(Collectors.toMap(User::getId, u -> u));
 
         List<UserPointLog> logs = new ArrayList<>();
+        Map<Long, Integer> deltaByUserId = new HashMap<>();
         for (PointAward award : awards) {
             User user = existingUsers.get(award.userId());
             if (user == null) continue;
-            userRepository.addPointAtomically(award.userId(), POINT_CERT_APPROVED);
+            deltaByUserId.merge(award.userId(), POINT_CERT_APPROVED, Integer::sum);
             logs.add(UserPointLog.of(user, new PointEntry(POINT_CERT_APPROVED, PointReason.CERT_APPROVED, award.refId())));
         }
+        // 동일한 delta를 받는 유저끼리 묶어 배치 UPDATE — 한 유저가 이번 배치에서 여러 건 승인되면
+        // delta가 배수로 달라지므로 delta값별로 나눠 IN절 쿼리를 호출한다(대부분은 유저당 1건이라 쿼리 1회로 끝남).
+        deltaByUserId.entrySet().stream()
+                .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())))
+                .forEach((delta, ids) -> userRepository.addPointAtomicallyBulk(ids, delta));
         pointLogRepository.saveAll(logs);
     }
 

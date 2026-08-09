@@ -39,13 +39,12 @@ public class UserBlockServiceImpl implements UserBlockService {
         }
     }
 
+    // ArtistFollowServiceImpl.unfollow()와 동일하게, 대상 관계가 이미 없는 상태에서의 삭제 요청은
+    // 예외가 아닌 멱등한 no-op으로 처리한다(중복 탭 등으로 인한 재요청에도 안전).
     @Override
     @Transactional
     public void unblock(Long blockerId, Long targetId) {
-        int deleted = blockRepository.deleteByBlockerIdAndBlockedId(blockerId, targetId);
-        if (deleted == 0) {
-            throw new IllegalArgumentException("차단 내역이 없습니다.");
-        }
+        blockRepository.deleteByBlockerIdAndBlockedId(blockerId, targetId);
     }
 
     @Override

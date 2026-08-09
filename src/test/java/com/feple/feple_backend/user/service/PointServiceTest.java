@@ -112,8 +112,9 @@ class PointServiceTest {
                 new PointService.PointAward(1L, 10L),
                 new PointService.PointAward(2L, 11L)));
 
-        verify(userRepository).addPointAtomically(1L, 10);
-        verify(userRepository).addPointAtomically(2L, 10);
+        verify(userRepository).addPointAtomicallyBulk(
+                org.mockito.ArgumentMatchers.argThat(ids -> ids.containsAll(java.util.Set.of(1L, 2L)) && ids.size() == 2),
+                eq(10));
         ArgumentCaptor<List<UserPointLog>> captor = ArgumentCaptor.forClass(List.class);
         verify(pointLogRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(2);
@@ -127,11 +128,26 @@ class PointServiceTest {
                 new PointService.PointAward(1L, 10L),
                 new PointService.PointAward(999L, 11L)));
 
-        verify(userRepository).addPointAtomically(1L, 10);
-        verify(userRepository, never()).addPointAtomically(eq(999L), any(Integer.class));
+        verify(userRepository).addPointAtomicallyBulk(
+                org.mockito.ArgumentMatchers.argThat(ids -> ids.equals(java.util.Set.of(1L))), eq(10));
         ArgumentCaptor<List<UserPointLog>> captor = ArgumentCaptor.forClass(List.class);
         verify(pointLogRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(1);
+    }
+
+    @Test
+    void 인증_일괄승인_시_동일유저가_여러건이면_delta가_합산됨() {
+        given(userRepository.findAllById(java.util.Set.of(1L))).willReturn(List.of(user(1L)));
+
+        pointService.addCertApprovedPointsBulk(List.of(
+                new PointService.PointAward(1L, 10L),
+                new PointService.PointAward(1L, 11L)));
+
+        verify(userRepository).addPointAtomicallyBulk(
+                org.mockito.ArgumentMatchers.argThat(ids -> ids.equals(java.util.Set.of(1L))), eq(20));
+        ArgumentCaptor<List<UserPointLog>> captor = ArgumentCaptor.forClass(List.class);
+        verify(pointLogRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(2);
     }
 
     @Test

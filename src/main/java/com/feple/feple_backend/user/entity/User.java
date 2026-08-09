@@ -107,8 +107,7 @@ public class User {
     }
 
     public boolean canChangeNickname() {
-        return nicknameChangedAt == null ||
-               LocalDateTime.now().isAfter(nicknameChangedAt.plusDays(NICKNAME_COOLDOWN_DAYS));
+        return nicknameChangedAt == null || LocalDateTime.now().isAfter(nextNicknameChangeAt());
     }
 
     public LocalDateTime nextNicknameChangeAt() {

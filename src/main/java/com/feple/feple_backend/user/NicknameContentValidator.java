@@ -17,6 +17,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NicknameContentValidator {
 
+    private static final String BAD_WORD_CODE = "BAD_WORD";
+    private static final String ARTIST_NAME_CODE = "ARTIST_NAME";
+    private static final String RESTRICTED_CODE = "RESTRICTED";
+
     private final BadWordValidator badWordValidator;
     private final ArtistNameValidator artistNameValidator;
     private final NicknameRestrictionValidator nicknameRestrictionValidator;
@@ -26,9 +30,9 @@ public class NicknameContentValidator {
     /** 실패 사유별 코드가 필요한 호출부용 (예: 닉네임 중복확인 API) */
     public List<Step> steps() {
         return List.of(
-                new Step("BAD_WORD", badWordValidator::validate),
-                new Step("ARTIST_NAME", artistNameValidator::validate),
-                new Step("RESTRICTED", nicknameRestrictionValidator::validate)
+                new Step(BAD_WORD_CODE, badWordValidator::validate),
+                new Step(ARTIST_NAME_CODE, artistNameValidator::validate),
+                new Step(RESTRICTED_CODE, nicknameRestrictionValidator::validate)
         );
     }
 
@@ -37,9 +41,10 @@ public class NicknameContentValidator {
         steps().forEach(step -> step.validate().accept(nickname));
     }
 
-    /** 금칙어를 필드-태그 예외(BadWordException)로 별도 처리하는 호출부용 — steps()에서 첫 단계(금칙어)를 제외한 나머지 검증 */
+    /** 금칙어를 필드-태그 예외(BadWordException)로 별도 처리하는 호출부용 — steps()에서 금칙어 단계를 제외한 나머지 검증 */
     public void validateArtistAndRestriction(String nickname) {
-        List<Step> steps = steps();
-        steps.subList(1, steps.size()).forEach(step -> step.validate().accept(nickname));
+        steps().stream()
+                .filter(step -> !step.failureCode().equals(BAD_WORD_CODE))
+                .forEach(step -> step.validate().accept(nickname));
     }
 }

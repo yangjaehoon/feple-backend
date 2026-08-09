@@ -22,8 +22,10 @@ public class NicknameGenerator {
      */
     public String sanitize(String raw, String fallback) {
         String sanitized = raw.trim().replaceAll("[^가-힣a-zA-Z0-9_]", "");
-        if (sanitized.length() < 2) return fallback;
-        if (sanitized.length() > 8) sanitized = sanitized.substring(0, 8);
+        if (sanitized.length() < NicknameValidator.MIN_NICKNAME_LENGTH) return fallback;
+        if (sanitized.length() > NicknameValidator.MAX_NICKNAME_LENGTH) {
+            sanitized = sanitized.substring(0, NicknameValidator.MAX_NICKNAME_LENGTH);
+        }
         try {
             nicknameContentValidator.validate(sanitized);
         } catch (IllegalArgumentException ignored) {
@@ -36,14 +38,16 @@ public class NicknameGenerator {
      * 이미 사용 중인 닉네임이면 숫자 suffix를 붙여 고유하게 만든다.
      */
     public String uniquify(String base) {
-        if (base.length() > 8) base = base.substring(0, 8);
-        if (base.length() < 2) base = "User";
+        if (base.length() > NicknameValidator.MAX_NICKNAME_LENGTH) {
+            base = base.substring(0, NicknameValidator.MAX_NICKNAME_LENGTH);
+        }
+        if (base.length() < NicknameValidator.MIN_NICKNAME_LENGTH) base = "User";
         if (!userRepository.existsByNickname(base)) return base;
         // suffix가 세 자리(100~999)가 되어도 8자를 넘지 않도록, suffix 길이만큼 base를 더 잘라낸다
         // (OAuth 자동 생성 경로는 NicknameValidator를 거치지 않아 여기서 걸러지지 않으면 그대로 저장됨)
         for (int i = 2; i <= 999; i++) {
             String suffix = String.valueOf(i);
-            String candidate = base.substring(0, Math.min(base.length(), 8 - suffix.length())) + suffix;
+            String candidate = base.substring(0, Math.min(base.length(), NicknameValidator.MAX_NICKNAME_LENGTH - suffix.length())) + suffix;
             if (!userRepository.existsByNickname(candidate)) return candidate;
         }
         // 999개 후보가 모두 소진된 극단적 상황 — 타임스탬프 모듈로 추측(충돌 가능)이 아닌

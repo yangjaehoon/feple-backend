@@ -164,9 +164,9 @@ class MyPageServiceTest {
         given(postActivityService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
         given(certificationService.countApprovedByUser(1L)).willReturn(0L);
-        given(postReportService.getReportCountForUser(1L)).willReturn(3L);
-        given(commentReportService.getReportCountForUser(1L)).willReturn(2L);
-        given(photoReportService.getReportCountForUser(1L)).willReturn(1L);
+        given(postReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of(1L, 3L));
+        given(commentReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of(1L, 2L));
+        given(photoReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of(1L, 1L));
 
         UserStatsDto stats = myPageService.getUserStats(1L);
 
@@ -182,9 +182,9 @@ class MyPageServiceTest {
         given(postActivityService.countLikedPosts(1L)).willReturn(0L);
         given(postScrapService.countMyScraps(1L)).willReturn(0L);
         given(certificationService.countApprovedByUser(1L)).willReturn(0L);
-        given(postReportService.getReportCountForUser(1L)).willReturn(0L);
-        given(commentReportService.getReportCountForUser(1L)).willReturn(0L);
-        given(photoReportService.getReportCountForUser(1L)).willReturn(0L);
+        given(postReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of());
+        given(commentReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of());
+        given(photoReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of());
 
         UserStatsDto stats = myPageService.getUserStats(1L);
 
