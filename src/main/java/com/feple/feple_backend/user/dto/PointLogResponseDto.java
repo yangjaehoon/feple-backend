@@ -18,12 +18,8 @@ public record PointLogResponseDto(
 ) {
     public static PointLogResponseDto from(UserPointLog log) {
         PointReason reason = log.getReason();
-        boolean linksToPost = reason == PointReason.POST_CREATED
-                || reason == PointReason.COMMENT_CREATED
-                || reason == PointReason.POST_LIKED_RECEIVED;
-        boolean linksToCertification = reason == PointReason.CERT_APPROVED;
         return new PointLogResponseDto(
                 log.getId(), log.getUserId(), log.getUserNickname(), log.getDelta(), reason, log.getRefId(), log.getNote(),
-                linksToPost, linksToCertification, log.getCreatedAt());
+                reason.linksToPost(), reason.linksToCertification(), log.getCreatedAt());
     }
 }

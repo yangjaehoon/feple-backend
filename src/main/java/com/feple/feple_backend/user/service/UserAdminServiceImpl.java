@@ -1,6 +1,7 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.CurrentAdminProvider;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
@@ -16,8 +17,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +28,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final UserCascadeDeleteService cascadeDeleteService;
+    private final CurrentAdminProvider currentAdminProvider;
 
     @Override
     @Transactional(readOnly = true)
@@ -47,11 +47,11 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponseDto> getUsersPage(int page, int size, String keyword) {
-        Pageable pageable = PageableFactory.orderByLatestId(page, size);
-        if (keyword != null && !keyword.isBlank()) {
-            return userRepository.findActiveByKeyword(JpqlLikeEscaper.escape(keyword.trim()), pageable).map(this::toAdminUserDto);
-        }
-        return userRepository.findAllByDeletedAtIsNull(pageable).map(this::toAdminUserDto);
+        // keyword가 빈 문자열이면 LIKE '%%'로 치환되어 전체 조회와 동일한 결과를 반환한다
+        // (findActiveByKeyword는 형제 메서드들과 달리 별도의 빈 키워드 분기가 쿼리에 없음)
+        String kw = JpqlLikeEscaper.escapeOrEmpty(keyword);
+        return userRepository.findActiveByKeyword(kw, PageableFactory.orderByLatestId(page, size))
+                .map(this::toAdminUserDto);
     }
 
     @Override
@@ -101,10 +101,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     public void banUser(Long userId, int days, String reason) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        String adminUsername = null;
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) adminUsername = auth.getName();
-        user.ban(days, reason, adminUsername);
+        user.ban(days, reason, currentAdminProvider.usernameOrNull());
     }
 
     @Override

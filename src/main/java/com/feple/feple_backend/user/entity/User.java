@@ -47,9 +47,6 @@ public class User {
     @Column(nullable = true)
     private String email;
 
-    @Column(nullable = true)
-    private String password;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
@@ -83,17 +80,17 @@ public class User {
 
     public static final int NICKNAME_COOLDOWN_DAYS = 90;
 
-    public boolean isAdmin() { return role == UserRole.ADMIN; }
-    public boolean isArtist() { return role == UserRole.ARTIST; }
+    public boolean isAdmin() { return UserStatusPolicy.isAdmin(role); }
+    public boolean isArtist() { return UserStatusPolicy.isArtist(role); }
     public boolean isDeleted() { return deletedAt != null; }
 
     public boolean isBanned() {
-        return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now());
+        return UserStatusPolicy.isBanned(bannedUntil);
     }
 
     public void ban(int days, String reason, String bannedBy) {
         this.bannedUntil = (days <= 0)
-                ? LocalDateTime.of(9999, 12, 31, 23, 59, 59)
+                ? UserStatusPolicy.permanentBanUntil()
                 : LocalDateTime.now().plusDays(days);
         this.banReason = (reason != null && !reason.isBlank()) ? reason.strip() : null;
         this.bannedBy = bannedBy;
@@ -125,10 +122,6 @@ public class User {
 
     public void changeProfileImage(String imageUrl) {
         this.profileImageUrl = imageUrl;
-    }
-
-    public void changePassword(String encodedPassword) {
-        this.password = encodedPassword;
     }
 
     public void updateBio(String bio) {

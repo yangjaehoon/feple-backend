@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
@@ -20,6 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class UserBlockServiceImplTest {
@@ -69,6 +71,21 @@ class UserBlockServiceImplTest {
                 .hasMessageContaining("이미 차단한 사용자입니다.");
 
         then(blockRepository).should(org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void 차단_동시요청으로_유니크_제약_위반시_충돌_예외로_변환() {
+        User blocker = user(1L, "차단자");
+        User blocked = user(2L, "피차단자");
+        given(blockRepository.existsByBlockerIdAndBlockedId(1L, 2L)).willReturn(false);
+        given(userRepository.findById(1L)).willReturn(Optional.of(blocker));
+        given(userRepository.findById(2L)).willReturn(Optional.of(blocked));
+        willThrow(new DataIntegrityViolationException("unique constraint"))
+                .given(blockRepository).flush();
+
+        assertThatThrownBy(() -> service.block(1L, 2L))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("이미 차단한 사용자입니다.");
     }
 
     @Test

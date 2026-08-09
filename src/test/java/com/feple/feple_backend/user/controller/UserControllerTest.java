@@ -3,6 +3,7 @@ package com.feple.feple_backend.user.controller;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.feple.feple_backend.artist.song.service.SongRequestService;
@@ -10,6 +11,7 @@ import com.feple.feple_backend.certification.service.FestivalCertificationServic
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.support.AuthTestHelper;
+import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.dto.UserStatsDto;
 import com.feple.feple_backend.user.entity.DeviceTokenRegistration;
@@ -18,7 +20,6 @@ import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.UserService;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +63,7 @@ class UserControllerTest {
 
     @Test
     void 닉네임_중복확인_성공() throws Exception {
-        given(userService.checkNicknameAvailable("tester", null)).willReturn(Map.of("available", true));
+        given(userService.checkNicknameAvailable("tester", null)).willReturn(NicknameAvailabilityResponse.ok());
 
         mockMvc.perform(get("/users/check-nickname")
                         .param("nickname", "tester"))
@@ -118,7 +119,8 @@ class UserControllerTest {
     }
 
     @Test
-    void 디바이스_토큰_등록시_platform_language_없으면_기본값_사용() throws Exception {
+    void 디바이스_토큰_등록시_platform_없으면_기본값_사용_language는_그대로_전달() throws Exception {
+        // language 기본값("ko")은 UserDeviceToken이 유일한 출처 — 컨트롤러는 null을 그대로 넘긴다
         mockMvc.perform(post("/users/device-token")
                         .with(AuthTestHelper.userAuth(1L))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -126,7 +128,7 @@ class UserControllerTest {
                 .andExpect(status().isNoContent());
 
         org.mockito.Mockito.verify(deviceTokenService)
-                .register(1L, new DeviceTokenRegistration("abc123", "android", "ko"));
+                .register(1L, new DeviceTokenRegistration("abc123", "android", null));
     }
 
     @Test
@@ -227,6 +229,16 @@ class UserControllerTest {
 
         mockMvc.perform(get("/users/1/stats"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void 사용자_통계_조회시_신고당한_횟수는_응답에_노출되지_않음() throws Exception {
+        // 본인 확인 없는 공개 엔드포인트라 신고당한 횟수(모더레이션 민감정보)는 JSON에서 제외되어야 한다
+        given(myPageService.getUserStats(1L)).willReturn(new UserStatsDto(0, 0, 99, 0, 0, 0));
+
+        mockMvc.perform(get("/users/1/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.reportCount").doesNotExist());
     }
 
     @Test

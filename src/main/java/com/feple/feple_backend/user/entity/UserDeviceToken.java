@@ -12,6 +12,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserDeviceToken {
 
+    // 언어 미지정/빈 값 시 기본값 — 이 클래스가 유일한 출처: 호출부(DeviceTokenService/컨트롤러)는
+    // 별도로 기본값을 채우지 않고 원본 값을 그대로 넘긴다.
+    private static final String DEFAULT_LANGUAGE = "ko";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,17 +32,18 @@ public class UserDeviceToken {
     private DevicePlatform platform;
 
     @Column(length = 10, nullable = false)
-    private String language = "ko";
+    private String language = DEFAULT_LANGUAGE;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public static UserDeviceToken of(User user, String token, DevicePlatform platform, String language) {
+    public static UserDeviceToken of(User user, DeviceTokenRegistration registration, DevicePlatform platform) {
         UserDeviceToken deviceToken = new UserDeviceToken();
         deviceToken.user = user;
-        deviceToken.token = token;
+        deviceToken.token = registration.token();
         deviceToken.platform = platform;
-        deviceToken.language = (language != null && !language.isBlank()) ? language : "ko";
+        String language = registration.language();
+        deviceToken.language = (language != null && !language.isBlank()) ? language : DEFAULT_LANGUAGE;
         return deviceToken;
     }
 

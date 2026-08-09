@@ -39,10 +39,11 @@ public class NicknameGenerator {
         if (base.length() > 8) base = base.substring(0, 8);
         if (base.length() < 2) base = "User";
         if (!userRepository.existsByNickname(base)) return base;
-        // base(최대 6자) + i(최대 3자리)로 최대 9자 — NicknameValidator의 8자 제한을 넘을 수 있음
+        // suffix가 세 자리(100~999)가 되어도 8자를 넘지 않도록, suffix 길이만큼 base를 더 잘라낸다
         // (OAuth 자동 생성 경로는 NicknameValidator를 거치지 않아 여기서 걸러지지 않으면 그대로 저장됨)
         for (int i = 2; i <= 999; i++) {
-            String candidate = base.substring(0, Math.min(base.length(), 6)) + i;
+            String suffix = String.valueOf(i);
+            String candidate = base.substring(0, Math.min(base.length(), 8 - suffix.length())) + suffix;
             if (!userRepository.existsByNickname(candidate)) return candidate;
         }
         // 999개 후보가 모두 소진된 극단적 상황 — 타임스탬프 모듈로 추측(충돌 가능)이 아닌

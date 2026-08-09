@@ -4,7 +4,7 @@ import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
-import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
+import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.comment.service.CommentService;
@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserCascadeDeleteService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
     private final UserDeviceTokenRepository userDeviceTokenRepository;
 
     private final FestivalLikeService festivalLikeService;
@@ -54,7 +54,7 @@ public class UserCascadeDeleteService {
         String profileImageKey = user.getProfileImageUrl();
 
         // 인증 세션 무효화
-        refreshTokenRepository.deleteByUserId(id);
+        refreshTokenService.revokeAll(id);
         userDeviceTokenRepository.deleteByUserId(id);
 
         // 소셜 활동 데이터 삭제 — 각 도메인 서비스에 위임하여 카운터 정합성 보장

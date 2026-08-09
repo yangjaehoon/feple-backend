@@ -7,7 +7,7 @@ import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
-import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
+import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.comment.service.CommentService;
@@ -30,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserCascadeDeleteServiceTest {
 
-    @Mock RefreshTokenRepository refreshTokenRepository;
+    @Mock RefreshTokenService refreshTokenService;
     @Mock UserDeviceTokenRepository userDeviceTokenRepository;
 
     @Mock FestivalLikeService festivalLikeService;
@@ -90,7 +90,7 @@ class UserCascadeDeleteServiceTest {
 
         userCascadeDeleteService.delete(user);
 
-        verify(refreshTokenRepository).deleteByUserId(1L);
+        verify(refreshTokenService).revokeAll(1L);
         verify(fileStorageService).deleteFileAfterCommit("profile/user-1.jpg");
         assertThat(user.isDeleted()).isTrue();
         assertThat(user.getNickname()).isEqualTo("(탈퇴한 사용자)");

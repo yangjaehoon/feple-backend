@@ -14,4 +14,12 @@ public enum PointReason {
     ADMIN_GRANTED("관리자 지급");
 
     private final String displayName;
+
+    public boolean linksToPost() {
+        return this == POST_CREATED || this == COMMENT_CREATED || this == POST_LIKED_RECEIVED;
+    }
+
+    public boolean linksToCertification() {
+        return this == CERT_APPROVED;
+    }
 }

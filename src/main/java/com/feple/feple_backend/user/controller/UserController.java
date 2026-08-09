@@ -10,6 +10,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UpdateBioDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -48,7 +49,7 @@ public class UserController {
     private final UserBlockService userBlockService;
 
     @GetMapping("/check-nickname")
-    public ResponseEntity<java.util.Map<String, Object>> checkNickname(
+    public ResponseEntity<NicknameAvailabilityResponse> checkNickname(
             @RequestParam @NotBlank @Size(min = 2, max = 8) String nickname,
             @RequestParam(required = false) Long excludeUserId) {
         return ResponseEntity.ok(userService.checkNicknameAvailable(nickname, excludeUserId));
@@ -202,8 +203,8 @@ public class UserController {
             @Valid @RequestBody RegisterDeviceTokenRequest req,
             @AuthenticationPrincipal Long userId) {
         String platform = req.platform() != null ? req.platform() : "android";
-        String language = req.language() != null ? req.language() : "ko";
-        deviceTokenService.register(userId, new DeviceTokenRegistration(req.token(), platform, language));
+        // 언어 기본값("ko")은 UserDeviceToken이 유일한 출처 — 여기서는 원본 값을 그대로 넘긴다.
+        deviceTokenService.register(userId, new DeviceTokenRegistration(req.token(), platform, req.language()));
         return ResponseEntity.noContent().build();
     }
 

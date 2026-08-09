@@ -32,16 +32,14 @@ public class NicknameContentValidator {
         );
     }
 
-    /** 실패 사유 구분이 필요 없는 호출부용 — 순서대로 검증, 첫 실패에서 예외 전파 */
+    /** 실패 사유 구분이 필요 없는 호출부용 — steps() 순서대로 검증, 첫 실패에서 예외 전파 */
     public void validate(String nickname) {
-        badWordValidator.validate(nickname);
-        artistNameValidator.validate(nickname);
-        nicknameRestrictionValidator.validate(nickname);
+        steps().forEach(step -> step.validate().accept(nickname));
     }
 
-    /** 금칙어를 필드-태그 예외(BadWordException)로 별도 처리하는 호출부용 나머지 검증 */
+    /** 금칙어를 필드-태그 예외(BadWordException)로 별도 처리하는 호출부용 — steps()에서 첫 단계(금칙어)를 제외한 나머지 검증 */
     public void validateArtistAndRestriction(String nickname) {
-        artistNameValidator.validate(nickname);
-        nicknameRestrictionValidator.validate(nickname);
+        List<Step> steps = steps();
+        steps.subList(1, steps.size()).forEach(step -> step.validate().accept(nickname));
     }
 }

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.log;
 
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.CurrentAdminProvider;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -9,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +22,13 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class AdminLogService {
 
     private final AdminLogRepository repository;
+    private final CurrentAdminProvider currentAdminProvider;
 
     // REQUIRES_NEW: 호출 측 트랜잭션이 롤백되더라도 감사 로그는 별도 트랜잭션으로 반드시 커밋한다.
     // 예) 아티스트 삭제 중 예외 → 삭제 트랜잭션은 롤백되지만 "삭제 시도" 로그는 DB에 남아야 함.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(AdminAction action, String targetType, Long targetId, String detail) {
-        String adminUsername = null;
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.isAuthenticated()) {
-                adminUsername = auth.getName();
-            }
-        } catch (Exception ignored) {}
+        String adminUsername = currentAdminProvider.usernameOrNull();
         try {
             repository.save(AdminLog.builder()
                     .adminUsername(adminUsername)

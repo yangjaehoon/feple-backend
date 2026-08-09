@@ -9,6 +9,7 @@ import com.feple.feple_backend.userblock.entity.UserBlock;
 import com.feple.feple_backend.userblock.repository.UserBlockRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +31,12 @@ public class UserBlockServiceImpl implements UserBlockService {
         }
         User blocker = EntityLoader.getOrThrow(userRepository::findById, blockerId, "사용자");
         User blocked = EntityLoader.getOrThrow(userRepository::findById, targetId, "사용자");
-        blockRepository.save(UserBlock.of(blocker, blocked));
+        try {
+            blockRepository.save(UserBlock.of(blocker, blocked));
+            blockRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("이미 차단한 사용자입니다.");
+        }
     }
 
     @Override

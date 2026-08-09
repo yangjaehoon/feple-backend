@@ -7,12 +7,12 @@ import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.user.NicknameValidator;
+import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,32 +29,32 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
-    private final UserAdminService userAdminService;
+    private final UserCascadeDeleteService cascadeDeleteService;
     private final BadWordValidator badWordValidator;
     private final NicknameContentValidator nicknameContentValidator;
 
     @Override
     @Transactional(readOnly = true)
-    public Map<String, Object> checkNicknameAvailable(String nickname, Long excludeUserId) {
+    public NicknameAvailabilityResponse checkNicknameAvailable(String nickname, Long excludeUserId) {
         try {
             NicknameValidator.validate(nickname);
         } catch (IllegalArgumentException e) {
-            return Map.of("available", false, "code", "INVALID_FORMAT", "message", e.getMessage());
+            return NicknameAvailabilityResponse.invalidFormat(e.getMessage());
         }
         for (NicknameContentValidator.Step step : nicknameContentValidator.steps()) {
             try {
                 step.validate().accept(nickname);
             } catch (IllegalArgumentException e) {
-                return Map.of("available", false, "code", step.failureCode(), "message", e.getMessage());
+                return NicknameAvailabilityResponse.rejected(step.failureCode(), e.getMessage());
             }
         }
         boolean taken = excludeUserId != null
                 ? userRepository.existsByNicknameAndIdNot(nickname.trim(), excludeUserId)
                 : userRepository.existsByNickname(nickname.trim());
         if (taken) {
-            return Map.of("available", false, "code", "DUPLICATE", "message", "이미 사용 중인 닉네임입니다.");
+            return NicknameAvailabilityResponse.duplicate();
         }
-        return Map.of("available", true, "code", "AVAILABLE", "message", "사용 가능한 닉네임입니다.");
+        return NicknameAvailabilityResponse.ok();
     }
 
     @Override
@@ -109,7 +109,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(@NonNull Long id) {
-        userAdminService.adminDeleteUser(id);
+        User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
+        cascadeDeleteService.delete(user);
     }
 
     @Override

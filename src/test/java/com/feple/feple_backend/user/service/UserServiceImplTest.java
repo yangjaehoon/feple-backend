@@ -14,6 +14,7 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.NicknameContentValidator;
+import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -21,7 +22,6 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -40,7 +40,7 @@ class UserServiceImplTest {
 
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
-    @Mock UserAdminService userAdminService;
+    @Mock UserCascadeDeleteService cascadeDeleteService;
     @Mock BadWordValidator badWordValidator;
     @Mock NicknameContentValidator nicknameContentValidator;
 
@@ -65,68 +65,68 @@ class UserServiceImplTest {
 
     @Test
     void 닉네임_null이면_사용불가_반환() {
-        Map<String, Object> result = userService.checkNicknameAvailable(null, null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable(null, null);
 
-        assertThat(result.get("available")).isEqualTo(false);
+        assertThat(result.available()).isFalse();
     }
 
     @Test
     void 닉네임_공백이면_사용불가_반환() {
-        Map<String, Object> result = userService.checkNicknameAvailable("   ", null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("   ", null);
 
-        assertThat(result.get("available")).isEqualTo(false);
+        assertThat(result.available()).isFalse();
     }
 
     @Test
     void 닉네임_1자면_사용불가_반환() {
-        Map<String, Object> result = userService.checkNicknameAvailable("a", null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("a", null);
 
-        assertThat(result.get("available")).isEqualTo(false);
-        assertThat(result.get("message").toString()).contains("2자");
+        assertThat(result.available()).isFalse();
+        assertThat(result.message()).contains("2자");
     }
 
     @Test
     void 닉네임_9자면_사용불가_반환() {
-        Map<String, Object> result = userService.checkNicknameAvailable("abcdefghi", null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("abcdefghi", null);
 
-        assertThat(result.get("available")).isEqualTo(false);
-        assertThat(result.get("message").toString()).contains("8자");
+        assertThat(result.available()).isFalse();
+        assertThat(result.message()).contains("8자");
     }
 
     @Test
     void 닉네임에_특수문자_포함시_사용불가_반환() {
-        Map<String, Object> result = userService.checkNicknameAvailable("ab cd", null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("ab cd", null);
 
-        assertThat(result.get("available")).isEqualTo(false);
-        assertThat(result.get("message").toString()).contains("한글, 영문, 숫자, 밑줄");
+        assertThat(result.available()).isFalse();
+        assertThat(result.message()).contains("한글, 영문, 숫자, 밑줄");
     }
 
     @Test
     void 이미_사용중인_닉네임이면_사용불가_반환() {
         given(userRepository.existsByNickname("taker")).willReturn(true);
 
-        Map<String, Object> result = userService.checkNicknameAvailable("taker", null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("taker", null);
 
-        assertThat(result.get("available")).isEqualTo(false);
-        assertThat(result.get("message").toString()).contains("이미 사용 중인");
+        assertThat(result.available()).isFalse();
+        assertThat(result.message()).contains("이미 사용 중인");
     }
 
     @Test
     void 사용가능한_닉네임이면_사용가능_반환() {
         given(userRepository.existsByNickname("newbie")).willReturn(false);
 
-        Map<String, Object> result = userService.checkNicknameAvailable("newbie", null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("newbie", null);
 
-        assertThat(result.get("available")).isEqualTo(true);
+        assertThat(result.available()).isTrue();
     }
 
     @Test
     void excludeUserId가_있으면_existsByNicknameAndIdNot_호출() {
         given(userRepository.existsByNicknameAndIdNot("newbie", 1L)).willReturn(false);
 
-        Map<String, Object> result = userService.checkNicknameAvailable("newbie", 1L);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("newbie", 1L);
 
-        assertThat(result.get("available")).isEqualTo(true);
+        assertThat(result.available()).isTrue();
         verify(userRepository).existsByNicknameAndIdNot("newbie", 1L);
     }
 
@@ -140,10 +140,10 @@ class UserServiceImplTest {
                 new NicknameContentValidator.Step("RESTRICTED", n -> { })
         ));
 
-        Map<String, Object> result = userService.checkNicknameAvailable("아이유", null);
+        NicknameAvailabilityResponse result = userService.checkNicknameAvailable("아이유", null);
 
-        assertThat(result.get("available")).isEqualTo(false);
-        assertThat(result.get("code")).isEqualTo("ARTIST_NAME");
+        assertThat(result.available()).isFalse();
+        assertThat(result.code()).isEqualTo("ARTIST_NAME");
     }
 
     // ── getUser ───────────────────────────────────────────────────────
@@ -319,10 +319,13 @@ class UserServiceImplTest {
     // ── deleteUser ───────────────────────────────────────────────────
 
     @Test
-    void 사용자_삭제시_userAdminService에_위임() {
+    void 사용자_삭제시_cascadeDeleteService에_위임() {
+        User user = user(1L, "user1");
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+
         userService.deleteUser(1L);
 
-        verify(userAdminService).adminDeleteUser(1L);
+        verify(cascadeDeleteService).delete(user);
     }
 
     // ── currentUserId ─────────────────────────────────────────────────

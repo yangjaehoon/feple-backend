@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 
+import com.feple.feple_backend.admin.CurrentAdminProvider;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,6 +30,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 class AdminLogServiceTest {
 
     @Mock AdminLogRepository repository;
+    @Spy CurrentAdminProvider currentAdminProvider = new CurrentAdminProvider();
 
     @InjectMocks AdminLogService adminLogService;
 

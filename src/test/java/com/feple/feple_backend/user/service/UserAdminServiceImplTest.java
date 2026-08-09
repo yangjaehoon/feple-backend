@@ -2,9 +2,11 @@ package com.feple.feple_backend.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.admin.CurrentAdminProvider;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,6 +33,7 @@ class UserAdminServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
     @Mock UserCascadeDeleteService cascadeDeleteService;
+    @Spy CurrentAdminProvider currentAdminProvider = new CurrentAdminProvider();
 
     @InjectMocks UserAdminServiceImpl userAdminService;
 
@@ -76,8 +80,8 @@ class UserAdminServiceImplTest {
     }
 
     @Test
-    void 키워드_없으면_전체_활성_사용자_조회() {
-        given(userRepository.findAllByDeletedAtIsNull(any(Pageable.class)))
+    void 키워드_없으면_빈_키워드로_활성_사용자_전체_조회() {
+        given(userRepository.findActiveByKeyword(eq(""), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(user(1L, "유저1"))));
 
         Page<UserResponseDto> result = userAdminService.getUsersPage(0, 20, null);

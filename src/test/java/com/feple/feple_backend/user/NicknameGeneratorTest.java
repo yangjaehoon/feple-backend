@@ -108,4 +108,17 @@ class NicknameGeneratorTest {
 
         assertThat(generator.uniquify("홍길동")).isEqualTo("홍길동3");
     }
+
+    @Test
+    void uniquify_suffix가_세자리가_되어도_8자를_넘지_않음() {
+        String base = "abcdefgh";
+        // suffix 길이만큼 base를 더 잘라야 하는 "abcde100"(5자+3자리)만 미사용으로 응답
+        given(userRepository.existsByNickname(any()))
+                .willAnswer(inv -> !((String) inv.getArgument(0)).equals("abcde100"));
+
+        String result = generator.uniquify(base);
+
+        assertThat(result).isEqualTo("abcde100");
+        assertThat(result).hasSizeLessThanOrEqualTo(8);
+    }
 }

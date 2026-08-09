@@ -32,7 +32,7 @@ public class DeviceTokenService {
             existing -> existing.updateLanguage(registration.language()),
             () -> {
                 User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-                tokenRepository.save(UserDeviceToken.of(user, token, platform, registration.language()));
+                tokenRepository.save(UserDeviceToken.of(user, registration, platform));
             }
         );
     }

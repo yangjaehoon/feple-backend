@@ -3,6 +3,7 @@ package com.feple.feple_backend.user.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.UserRole;
+import com.feple.feple_backend.user.entity.UserStatusPolicy;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,9 +39,9 @@ public class UserResponseDto {
     private Integer point;
 
     public String getRoleDisplayName() { return role != null ? role.getDisplayName() : ""; }
-    public boolean isAdmin() { return role == UserRole.ADMIN; }
-    public boolean isArtist() { return role == UserRole.ARTIST; }
+    public boolean isAdmin() { return UserStatusPolicy.isAdmin(role); }
+    public boolean isArtist() { return UserStatusPolicy.isArtist(role); }
     public boolean isRegularUser() { return !isAdmin() && !isArtist(); }
-    public boolean isBanned() { return bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now()); }
-    public boolean isPermanentBan() { return bannedUntil != null && bannedUntil.getYear() >= 9999; }
+    public boolean isBanned() { return UserStatusPolicy.isBanned(bannedUntil); }
+    public boolean isPermanentBan() { return UserStatusPolicy.isPermanentBan(bannedUntil); }
 }
