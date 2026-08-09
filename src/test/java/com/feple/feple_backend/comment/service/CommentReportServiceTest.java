@@ -103,6 +103,22 @@ class CommentReportServiceTest {
         verify(reportRepository).save(any(CommentReport.class));
     }
 
+    @Test
+    void 신고_동시요청으로_유니크제약_위반시_ConflictException으로_변환() {
+        Comment comment = mockComment();
+        User reporter = user(1L);
+        given(reportRepository.existsByReporterIdAndCommentId(1L, 10L)).willReturn(false);
+        given(commentRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(comment));
+        given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
+        given(reportRepository.save(any(CommentReport.class)))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+
+        assertThatThrownBy(() -> commentReportService.submitReport(
+                10L, 1L, new ReportSubmitRequest(ReportReason.SPAM, "상세 사유")))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("이미 신고한");
+    }
+
     // ── deleteContentAndResolve ──────────────────────────────────────
 
     @Test

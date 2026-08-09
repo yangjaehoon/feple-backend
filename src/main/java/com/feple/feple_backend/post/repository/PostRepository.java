@@ -8,7 +8,10 @@ import com.feple.feple_backend.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +49,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // ── 단건 조회 (user/artist/festival 연관 즉시 로딩) ─────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.id = :id")
-    java.util.Optional<Post> findWithAssociationsById(@Param("id") Long id);
+    Optional<Post> findWithAssociationsById(@Param("id") Long id);
 
     // ── 아티스트 게시글 커서 페이징 (id 기반 — 신규 게시글 삽입에 영향받지 않음) ──
     // 고정글은 fetchPinned 전용 쿼리로 첫 페이지에만 별도 노출하므로 일반 목록에서는 제외한다.
@@ -186,8 +189,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     private Page<Post> reorderByFullTextMatch(Page<Long> idsPage, Pageable pageable) {
         Map<Long, Post> byId = findAllWithAssociationsByIdIn(idsPage.getContent()).stream()
-                .collect(java.util.stream.Collectors.toMap(Post::getId, Function.identity()));
-        List<Post> ordered = idsPage.getContent().stream().map(byId::get).filter(java.util.Objects::nonNull).toList();
+                .collect(Collectors.toMap(Post::getId, Function.identity()));
+        List<Post> ordered = idsPage.getContent().stream().map(byId::get).filter(Objects::nonNull).toList();
         return new PageImpl<>(ordered, pageable, idsPage.getTotalElements());
     }
 
@@ -299,7 +302,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // ── 블라인드 관리자용 ──────────────────────────────────────────────────────
     // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 글도 관리자는 검토할 수 있어야 함
     @Query(value = "SELECT * FROM post WHERE id = :id", nativeQuery = true)
-    java.util.Optional<Post> findByIdIgnoringRestrictions(@Param("id") Long id);
+    Optional<Post> findByIdIgnoringRestrictions(@Param("id") Long id);
 
     // 블라인드된 글은 일반 목록/검색(@SQLRestriction)에서 전혀 노출되지 않아 관리자가 찾을 방법이
     // 없으므로, 삭제된 글의 휴지통(findSoftDeleted)과 동일한 패턴으로 전용 목록을 제공한다.

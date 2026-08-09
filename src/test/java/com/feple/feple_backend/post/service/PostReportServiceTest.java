@@ -84,6 +84,23 @@ class PostReportServiceTest {
         verify(reportRepository).save(any(PostReport.class));
     }
 
+    @Test
+    void 신고_동시요청으로_유니크제약_위반시_ConflictException으로_변환() {
+        User author = user(2L);
+        Post post = freePost(10L, author);
+        User reporter = user(1L);
+        given(reportRepository.existsByReporterIdAndPostId(1L, 10L)).willReturn(false);
+        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
+        given(reportRepository.save(any(PostReport.class)))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+
+        assertThatThrownBy(() -> postReportService.submitReport(
+                10L, 1L, new ReportSubmitRequest(ReportReason.ABUSE, "상세 사유")))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("이미 신고한");
+    }
+
     // ── deleteContentAndResolve ──────────────────────────────────────
 
     @Test

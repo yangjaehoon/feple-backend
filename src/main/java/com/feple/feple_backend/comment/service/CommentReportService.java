@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -49,12 +50,18 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
-        reportRepository.save(CommentReport.builder()
-                .comment(comment)
-                .reporter(reporter)
-                .reason(command.reason())
-                .detail(command.detail())
-                .build());
+        // existsBy 체크 후 save() 사이의 TOCTOU 레이스(동시 중복 신고)는 유니크 제약(reporter_id, comment_id)이
+        // 최종 방어선이다 — 위 existsBy와 동일한 메시지의 ConflictException으로 변환해준다.
+        try {
+            reportRepository.save(CommentReport.builder()
+                    .comment(comment)
+                    .reporter(reporter)
+                    .reason(command.reason())
+                    .detail(command.detail())
+                    .build());
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("이미 신고한 댓글입니다.");
+        }
 
         autoBlindIfThresholdReached(comment);
     }

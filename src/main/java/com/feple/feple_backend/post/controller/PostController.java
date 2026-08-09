@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.controller;
 
 import com.feple.feple_backend.file.ImageUploadPolicy;
+import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.CursorPage;
@@ -247,7 +248,7 @@ public class PostController {
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody PostImagePresignRequest req) {
         String ext = ImageUploadPolicy.assertAllowed(req.extension(), req.contentType());
-        String key = "posts/" + userId + "/" + UUID.randomUUID() + "." + ext;
+        String key = S3PathConstants.postImagePrefix(userId) + UUID.randomUUID() + "." + ext;
         return ResponseEntity.ok(s3PresignService.presignPut(key, req.contentType()));
     }
 
