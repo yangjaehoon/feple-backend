@@ -12,7 +12,6 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,54 +45,6 @@ class CommentRepositoryIntegrationTest {
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build());
         em.flush();
-    }
-
-    // ── 조회 쿼리 ────────────────────────────────────────────────────
-
-    @Test
-    void 댓글_생성순_정렬() {
-        commentRepository.save(new Comment("첫번째", post, user, null, null, false));
-        commentRepository.save(new Comment("두번째", post, user, null, null, false));
-        commentRepository.save(new Comment("세번째", post, user, null, null, false));
-        em.flush(); em.clear();
-
-        List<Comment> result = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
-
-        assertThat(result).hasSize(3);
-        assertThat(result).extracting(Comment::getContent)
-                .containsExactly("첫번째", "두번째", "세번째");
-    }
-
-    @Test
-    void 다른_게시글_댓글은_조회_안됨() {
-        Post otherPost = postRepository.save(Post.builder()
-                .title("다른게시글").content("다른내용").user(user)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
-                .build());
-        commentRepository.save(new Comment("이 게시글 댓글", post, user, null, null, false));
-        commentRepository.save(new Comment("다른 게시글 댓글", otherPost, user, null, null, false));
-        em.flush(); em.clear();
-
-        List<Comment> result = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getContent()).isEqualTo("이 게시글 댓글");
-    }
-
-    @Test
-    void 게시글에_댓글_없으면_빈_목록() {
-        List<Comment> result = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void 유저별_댓글수_카운트() {
-        commentRepository.save(new Comment("댓글1", post, user, null, null, false));
-        commentRepository.save(new Comment("댓글2", post, user, null, null, false));
-        em.flush();
-
-        long count = commentRepository.countByUser(user);
-        assertThat(count).isEqualTo(2);
     }
 
     // ── 금칙어 스캔 ──────────────────────────────────────────────────

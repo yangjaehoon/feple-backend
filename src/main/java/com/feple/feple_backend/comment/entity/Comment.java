@@ -6,6 +6,7 @@ import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -14,6 +15,9 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+// update()/blind()/unblind()의 더티체킹 flush가 전체 컬럼을 UPDATE하면서, 동시에 다른 트랜잭션이
+// incrementLikeCount/decrementLikeCount로 원자적으로 갱신한 likeCount를 로드 시점 값으로 덮어쓰는 것을 방지한다.
+@DynamicUpdate
 @SQLDelete(sql = "UPDATE comment SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL AND blinded = false")
 @Table(name = "comment", indexes = {
@@ -21,6 +25,9 @@ import org.hibernate.annotations.SQLRestriction;
     @Index(name = "idx_comment_user_id_created_at", columnList = "user_id, created_at DESC")
 })
 public class Comment {
+
+    public static final int MAX_CONTENT_LENGTH = 1000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

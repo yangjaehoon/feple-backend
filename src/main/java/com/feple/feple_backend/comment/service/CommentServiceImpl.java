@@ -26,6 +26,7 @@ import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -199,8 +200,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public java.util.Map<Long, Long> getCommentCountsByUserIds(java.util.List<Long> userIds) {
-        if (userIds.isEmpty()) return java.util.Map.of();
+    public Map<Long, Long> getCommentCountsByUserIds(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
         return QueryResultMapper.toLongMap(commentRepository.countGroupByUserId(userIds));
     }
 

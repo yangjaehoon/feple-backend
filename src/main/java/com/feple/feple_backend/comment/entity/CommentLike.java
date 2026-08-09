@@ -32,4 +32,12 @@ public class CommentLike {
         this.comment = comment;
         this.user = user;
     }
+
+    public Long getCommentId() {
+        return comment.getId();
+    }
+
+    public Long getUserId() {
+        return user.getId();
+    }
 }

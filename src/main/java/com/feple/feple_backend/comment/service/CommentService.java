@@ -6,6 +6,7 @@ import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CommentService {
     CommentResponseDto createComment(CreateCommentDto dto, Long userId);
@@ -21,7 +22,7 @@ public interface CommentService {
     long countMyComments(Long userId);
     void updateOwnComment(Long commentId, Long requestUserId, String content);
     long countCommentsContaining(String word);
-    java.util.Map<Long, Long> getCommentCountsByUserIds(java.util.List<Long> userIds);
+    Map<Long, Long> getCommentCountsByUserIds(List<Long> userIds);
     /** 회원 탈퇴 시 해당 유저의 댓글 좋아요 데이터 일괄 제거 */
     void removeLikesByUser(Long userId);
 }

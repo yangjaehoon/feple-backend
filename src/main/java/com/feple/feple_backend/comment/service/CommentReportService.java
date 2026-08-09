@@ -32,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CommentReportService implements ReportAdminService<CommentReport> {
 
+    private static final String ALREADY_REPORTED_MESSAGE = "이미 신고한 댓글입니다.";
+
     private final CommentReportRepository reportRepository;
     private final CommentRepository commentRepository;
     private final CommentDeleter commentDeleter;
@@ -44,7 +46,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     @EvictAdminReportCaches
     public void submitReport(Long commentId, Long reporterId, ReportSubmitRequest command) {
         if (reportRepository.existsByReporterIdAndCommentId(reporterId, commentId)) {
-            throw new ConflictException("이미 신고한 댓글입니다.");
+            throw new ConflictException(ALREADY_REPORTED_MESSAGE);
         }
         // 이미 블라인드된 댓글도 추가 신고를 받을 수 있어야 하므로 조회는 제약을 우회한다.
         Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
@@ -60,7 +62,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
                     .detail(command.detail())
                     .build());
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("이미 신고한 댓글입니다.");
+            throw new ConflictException(ALREADY_REPORTED_MESSAGE);
         }
 
         autoBlindIfThresholdReached(comment);
@@ -118,6 +120,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         postService.decrementCommentCount(comment.getPostId());
     }
 
+    @Override
     @EvictAdminReportCaches
     @Transactional
     public void dismissReport(Long reportId) {

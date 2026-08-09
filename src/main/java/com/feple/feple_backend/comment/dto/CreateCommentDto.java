@@ -1,5 +1,6 @@
 package com.feple.feple_backend.comment.dto;
 
+import com.feple.feple_backend.comment.entity.Comment;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -14,7 +15,7 @@ public class CreateCommentDto {
     @Positive(message = "게시글 ID는 양수여야 합니다.")
     private Long postId;
     @NotBlank(message = "내용을 입력해주세요.")
-    @Size(max = 1000, message = "댓글은 1000자 이내로 입력해주세요.")
+    @Size(max = Comment.MAX_CONTENT_LENGTH, message = "댓글은 1000자 이내로 입력해주세요.")
     private String content;
     private Long parentId; // 대댓글인 경우 부모 댓글 ID
     private boolean anonymous = false;

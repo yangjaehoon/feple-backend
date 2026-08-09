@@ -24,8 +24,8 @@ public class MyCommentResponseDto {
         return new MyCommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
-                post.getId(),
-                post.getTitle(),
+                comment.getPostId(),
+                comment.getPostTitle(),
                 post.getContent(),
                 post.getAuthorNickname(),
                 post.getLikeCount(),
