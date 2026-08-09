@@ -28,8 +28,8 @@ public class FestivalWeather {
     private Double minTemp;
     private Double maxTemp;
     private Integer rainProb;
-    private String skyCode;
-    private String ptyCode;
+    private SkyCode skyCode;
+    private PtyCode ptyCode;
     private LocalDateTime savedAt;
 
     public static FestivalWeather of(Festival festival, WeatherDto dto) {

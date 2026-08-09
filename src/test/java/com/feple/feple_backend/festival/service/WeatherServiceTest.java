@@ -13,7 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.festival.dto.WeatherDto;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalWeather;
+import com.feple.feple_backend.festival.entity.PtyCode;
 import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.festival.entity.SkyCode;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import java.net.URI;
@@ -45,7 +47,8 @@ class WeatherServiceTest {
 
     @BeforeEach
     void setUp() {
-        weatherService = new WeatherService(restTemplate, festivalRepository, weatherRepository);
+        weatherService = new WeatherService(restTemplate, festivalRepository, weatherRepository,
+                new FestivalWeatherStore(weatherRepository));
         ReflectionTestUtils.setField(weatherService, "serviceKey", "test-key");
         ReflectionTestUtils.setField(weatherService, "baseUrl", "https://apis.data.go.kr/kma");
     }
@@ -152,8 +155,8 @@ class WeatherServiceTest {
         assertThat(saved.getMinTemp()).isEqualTo(10.0);
         assertThat(saved.getMaxTemp()).isEqualTo(25.0);
         assertThat(saved.getRainProb()).isEqualTo(70);
-        assertThat(saved.getSkyCode()).isEqualTo("3");
-        assertThat(saved.getPtyCode()).isEqualTo("1");
+        assertThat(saved.getSkyCode()).isEqualTo(SkyCode.CLOUDY);
+        assertThat(saved.getPtyCode()).isEqualTo(PtyCode.RAIN);
     }
 
     @Test
@@ -182,7 +185,7 @@ class WeatherServiceTest {
         String date = today().format(KMA_DATE);
         String itemsJson = "[" + item("TMN", date, "0600", "5.0") + "," + item("TMX", date, "1500", "15.0") + "]";
         given(restTemplate.getForObject(any(URI.class), eq(JsonNode.class))).willReturn(successBody(itemsJson));
-        FestivalWeather existing = FestivalWeather.of(f, new WeatherDto(date, 0, 0, 0, "1", "0"));
+        FestivalWeather existing = FestivalWeather.of(f, new WeatherDto(date, 0, 0, 0, SkyCode.SUNNY, PtyCode.NONE));
         given(weatherRepository.findByFestivalId(1L)).willReturn(Optional.of(existing));
 
         weatherService.collectWeather(f);
@@ -204,7 +207,7 @@ class WeatherServiceTest {
     void 종료된_페스티벌은_캐시된_날씨만_반환() {
         Festival f = festival(1L, today().minusDays(10), today().minusDays(1));
         given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
-        FestivalWeather cached = FestivalWeather.of(f, new WeatherDto("20260101", 1, 2, 3, "1", "0"));
+        FestivalWeather cached = FestivalWeather.of(f, new WeatherDto("20260101", 1, 2, 3, SkyCode.SUNNY, PtyCode.NONE));
         given(weatherRepository.findByFestivalId(1L)).willReturn(Optional.of(cached));
 
         Optional<WeatherDto> result = weatherService.getByFestivalId(1L);
@@ -221,7 +224,7 @@ class WeatherServiceTest {
         String itemsJson = "[" + item("TMN", date, "0600", "5.0") + "," + item("TMX", date, "1500", "15.0") + "]";
         given(restTemplate.getForObject(any(URI.class), eq(JsonNode.class))).willReturn(successBody(itemsJson));
         given(weatherRepository.findByFestivalId(1L)).willReturn(Optional.empty(),
-                Optional.of(FestivalWeather.of(f, new WeatherDto(date, 5, 15, 0, "1", "0"))));
+                Optional.of(FestivalWeather.of(f, new WeatherDto(date, 5, 15, 0, SkyCode.SUNNY, PtyCode.NONE))));
 
         Optional<WeatherDto> result = weatherService.getByFestivalId(1L);
 

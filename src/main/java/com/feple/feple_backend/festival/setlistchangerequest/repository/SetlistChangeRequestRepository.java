@@ -17,4 +17,9 @@ public interface SetlistChangeRequestRepository extends JpaRepository<SetlistCha
     Page<SetlistChangeRequest> findByStatusAndKeyword(@Param("status") SetlistChangeRequestStatus status, @Param("keyword") String keyword, Pageable pageable);
 
     long countByStatus(SetlistChangeRequestStatus status);
+
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN TRUE ELSE FALSE END FROM SetlistChangeRequest r " +
+           "WHERE r.user.id = :userId AND r.artistFestivalId = :artistFestivalId AND r.status = :status")
+    boolean existsByUserIdAndArtistFestivalIdAndStatus(@Param("userId") Long userId,
+            @Param("artistFestivalId") Long artistFestivalId, @Param("status") SetlistChangeRequestStatus status);
 }

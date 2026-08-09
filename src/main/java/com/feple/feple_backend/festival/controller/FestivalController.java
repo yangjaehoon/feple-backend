@@ -12,6 +12,7 @@ import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
+import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestCommand;
 import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
 import com.feple.feple_backend.global.MusicGenre;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,7 +53,7 @@ public class FestivalController {
             @RequestParam(required = false) List<AgeRestriction> ageRestrictions,
             @RequestParam(defaultValue = "false") boolean includeEnded,
             @RequestParam(required = false) String sort) {
-        return festivalService.getAllFestivals(new FestivalFilterCriteria(genres, regions, ageRestrictions, includeEnded, sort));
+        return festivalService.getAllFestivals(buildCriteria(genres, regions, ageRestrictions, includeEnded, sort));
     }
 
     /** 검색/브라우즈 화면 전용 페이지네이션 목록 — getAllFestivals와 달리 진짜 다음 페이지를 지원한다. */
@@ -66,8 +67,13 @@ public class FestivalController {
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return festivalService.getFestivalsPage(
-                new FestivalFilterCriteria(genres, regions, ageRestrictions, includeEnded, sort),
+                buildCriteria(genres, regions, ageRestrictions, includeEnded, sort),
                 PageRequest.of(page, size));
+    }
+
+    private FestivalFilterCriteria buildCriteria(List<MusicGenre> genres, List<Region> regions,
+            List<AgeRestriction> ageRestrictions, boolean includeEnded, String sort) {
+        return new FestivalFilterCriteria(genres, regions, ageRestrictions, includeEnded, sort);
     }
 
     @GetMapping("/{id}")
@@ -124,7 +130,8 @@ public class FestivalController {
             @PathVariable Long id,
             @Valid @RequestBody SetlistChangeRequestBody body,
             @AuthenticationPrincipal Long userId) {
-        setlistChangeRequestService.submit(userId, id, body.artistFestivalId(), body.message());
+        setlistChangeRequestService.submit(
+                new SetlistChangeRequestCommand(userId, id, body.artistFestivalId(), body.message()));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

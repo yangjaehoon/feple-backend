@@ -9,6 +9,7 @@ import com.feple.feple_backend.festival.setlistchangerequest.entity.SetlistChang
 import com.feple.feple_backend.festival.setlistchangerequest.repository.SetlistChangeRequestRepository;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
+import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,16 +28,20 @@ public class SetlistChangeRequestService {
     private final ArtistFestivalRepository artistFestivalRepository;
 
     @Transactional
-    public void submit(Long userId, Long festivalId, Long artistFestivalId, String message) {
-        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+    public void submit(SetlistChangeRequestCommand command) {
+        if (repository.existsByUserIdAndArtistFestivalIdAndStatus(
+                command.userId(), command.artistFestivalId(), SetlistChangeRequestStatus.PENDING)) {
+            throw new ConflictException("이미 처리 대기 중인 변경 요청이 있습니다.");
+        }
+        User user = EntityLoader.getOrThrow(userRepository::findById, command.userId(), "사용자");
+        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, command.festivalId(), "페스티벌");
         ArtistFestival artistFestival = EntityLoader.getOrThrow(
-                artistFestivalRepository::findById, artistFestivalId, "아티스트 참여 정보");
-        if (!festivalId.equals(artistFestival.getFestivalId())) {
+                artistFestivalRepository::findById, command.artistFestivalId(), "아티스트 참여 정보");
+        if (!command.festivalId().equals(artistFestival.getFestivalId())) {
             throw new IllegalArgumentException("해당 페스티벌의 참여 정보가 아닙니다.");
         }
-        repository.save(SetlistChangeRequest.of(
-                user, festivalId, artistFestivalId, artistFestival.getArtistName(), festival.getTitle(), message));
+        repository.save(SetlistChangeRequest.of(user, command.festivalId(), command.artistFestivalId(),
+                artistFestival.getArtistName(), festival.getTitle(), command.message()));
     }
 
     @Transactional(readOnly = true)

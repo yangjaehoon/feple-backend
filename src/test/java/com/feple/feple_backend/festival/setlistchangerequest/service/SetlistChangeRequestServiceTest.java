@@ -50,10 +50,23 @@ class SetlistChangeRequestServiceTest {
         given(artistFestival.getFestivalId()).willReturn(10L);
         given(artistFestival.getArtistName()).willReturn("아이유");
 
-        assertThatCode(() -> service.submit(1L, 10L, 100L, "셋리스트 변경 요청"))
+        assertThatCode(() -> service.submit(new SetlistChangeRequestCommand(1L, 10L, 100L, "셋리스트 변경 요청")))
                 .doesNotThrowAnyException();
 
         then(repository).should().save(any());
+    }
+
+    @Test
+    void submit_이미_대기중인_동일_요청이면_예외() {
+        given(repository.existsByUserIdAndArtistFestivalIdAndStatus(1L, 100L, SetlistChangeRequestStatus.PENDING))
+                .willReturn(true);
+
+        assertThatThrownBy(() -> service.submit(new SetlistChangeRequestCommand(1L, 10L, 100L, "또 요청")))
+                .isInstanceOf(com.feple.feple_backend.global.exception.ConflictException.class)
+                .hasMessageContaining("이미 처리 대기 중인");
+
+        then(userRepository).shouldHaveNoInteractions();
+        then(repository).should(never()).save(any());
     }
 
     @Test
@@ -64,7 +77,7 @@ class SetlistChangeRequestServiceTest {
         given(festivalRepository.findById(10L)).willReturn(Optional.of(festival));
         given(artistFestivalRepository.findById(999L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.submit(1L, 10L, 999L, "메시지"))
+        assertThatThrownBy(() -> service.submit(new SetlistChangeRequestCommand(1L, 10L, 999L, "메시지")))
                 .isInstanceOf(java.util.NoSuchElementException.class);
 
         then(repository).shouldHaveNoInteractions();
@@ -80,7 +93,7 @@ class SetlistChangeRequestServiceTest {
         given(artistFestivalRepository.findById(100L)).willReturn(Optional.of(artistFestival));
         given(artistFestival.getFestivalId()).willReturn(999L);
 
-        assertThatThrownBy(() -> service.submit(1L, 10L, 100L, "메시지"))
+        assertThatThrownBy(() -> service.submit(new SetlistChangeRequestCommand(1L, 10L, 100L, "메시지")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("해당 페스티벌의 참여 정보가 아닙니다.");
 

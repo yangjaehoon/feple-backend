@@ -16,7 +16,7 @@ public enum FestivalStatus {
     ACTIVE {
         @Override
         public Predicate<Festival> predicate(LocalDate today) {
-            return f -> f.getEndDate() == null || !f.getEndDate().isBefore(today);
+            return f -> !FestivalPeriod.isEnded(f.getEndDate(), today);
         }
 
         @Override
@@ -28,7 +28,7 @@ public enum FestivalStatus {
     ENDED {
         @Override
         public Predicate<Festival> predicate(LocalDate today) {
-            return f -> f.getEndDate() != null && f.getEndDate().isBefore(today);
+            return f -> FestivalPeriod.isEnded(f.getEndDate(), today);
         }
 
         @Override

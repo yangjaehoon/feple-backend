@@ -2,6 +2,7 @@ package com.feple.feple_backend.festival.dto;
 
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.entity.FestivalPeriod;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.MusicGenre;
@@ -36,17 +37,15 @@ public class FestivalResponseDto {
     private Double longitude;
 
     public boolean isEnded() {
-        return endDate != null && endDate.isBefore(KoreaClock.today());
+        return FestivalPeriod.isEnded(endDate, KoreaClock.today());
     }
 
     public boolean isOngoing() {
-        LocalDate today = KoreaClock.today();
-        return (endDate == null || !endDate.isBefore(today))
-                && startDate != null && !startDate.isAfter(today);
+        return FestivalPeriod.isOngoing(startDate, endDate, KoreaClock.today());
     }
 
     public boolean isUpcoming() {
-        return startDate != null && startDate.isAfter(KoreaClock.today());
+        return FestivalPeriod.isUpcoming(startDate, KoreaClock.today());
     }
 
     public String getStartDateIso() { return startDate != null ? startDate.toString() : null; }

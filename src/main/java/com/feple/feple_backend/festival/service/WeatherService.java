@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.feple.feple_backend.festival.dto.WeatherDto;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalWeather;
+import com.feple.feple_backend.festival.entity.PtyCode;
 import com.feple.feple_backend.festival.entity.Region;
+import com.feple.feple_backend.festival.entity.SkyCode;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.repository.FestivalWeatherRepository;
 import com.feple.feple_backend.global.EntityLoader;
@@ -55,8 +57,6 @@ public class WeatherService {
     private static final String KMA_SUCCESS_CODE = "00";
     private static final String NOON_FORECAST_TIME = "1200";
     private static final String EARLY_MORNING_BASE_TIME = "0200";
-    private static final String DEFAULT_SKY_CODE = "1";
-    private static final String DEFAULT_PTY_CODE = "0";
 
     @Value("${kma.service-key}")
     private String serviceKey;
@@ -67,12 +67,14 @@ public class WeatherService {
     private final RestTemplate restTemplate;
     private final FestivalRepository festivalRepository;
     private final FestivalWeatherRepository weatherRepository;
+    private final FestivalWeatherStore weatherStore;
 
     /**
      * 스케줄러 전용: API에서 날씨를 수집해 DB에 저장.
      * 종료된 페스티벌·API 키 미설정·날짜 범위 초과 시 false 반환(정상 스킵).
      * API 호출 실패 시 예외를 그대로 전파.
-     * 외부 API 호출(fetchFromApi)이 커넥션을 물고 있지 않도록 트랜잭션은 DB 저장(saveOrUpdate)에만 건다.
+     * 외부 API 호출(fetchFromApi)이 커넥션을 물고 있지 않도록 트랜잭션은 DB 저장
+     * (FestivalWeatherStore.saveOrUpdate, 별도 빈)에만 건다.
      */
     public boolean collectWeather(Festival festival) {
         LocalDate today = KoreaClock.today();
@@ -94,7 +96,7 @@ public class WeatherService {
 
         int[] grid = resolveGrid(festival);
         WeatherDto dto = fetchFromApi(grid, targetDate, baseDatetime);
-        saveOrUpdate(festival, dto);
+        weatherStore.saveOrUpdate(festival, dto);
         return true;
     }
 
@@ -119,13 +121,6 @@ public class WeatherService {
     @Transactional
     public void removeAllByFestival(Long festivalId) {
         weatherRepository.deleteByFestivalId(festivalId);
-    }
-
-    private void saveOrUpdate(Festival festival, WeatherDto dto) {
-        FestivalWeather weather = weatherRepository.findByFestivalId(festival.getId())
-                .orElse(FestivalWeather.of(festival, dto));
-        weather.apply(dto);
-        weatherRepository.save(weather);
     }
 
     private WeatherDto fetchFromApi(int[] grid, LocalDate targetDate, String[] baseDatetime) {
@@ -155,7 +150,7 @@ public class WeatherService {
     }
 
     private record WeatherAccumulator(double minTemp, double maxTemp, int maxRainProb,
-                                       String skyCode, String ptyCode, boolean hasTmn, boolean hasTmx) {}
+                                       SkyCode skyCode, PtyCode ptyCode, boolean hasTmn, boolean hasTmx) {}
 
     private WeatherDto parseWeather(JsonNode items, String fcstDate) {
         WeatherAccumulator acc = extractForecastValues(items, fcstDate);
@@ -176,8 +171,8 @@ public class WeatherService {
         double minTemp = Double.MAX_VALUE;
         double maxTemp = -Double.MAX_VALUE;
         int maxRainProb = 0;
-        String skyCode = DEFAULT_SKY_CODE;
-        String ptyCode = DEFAULT_PTY_CODE;
+        SkyCode skyCode = SkyCode.SUNNY;
+        PtyCode ptyCode = PtyCode.NONE;
         boolean hasTmn = false, hasTmx = false;
 
         for (JsonNode item : items) {
@@ -190,10 +185,11 @@ public class WeatherService {
                 case "TMN" -> { minTemp = Double.parseDouble(value); hasTmn = true; }
                 case "TMX" -> { maxTemp = Double.parseDouble(value); hasTmx = true; }
                 case "POP" -> maxRainProb = Math.max(maxRainProb, Integer.parseInt(value));
-                case "SKY" -> { if (NOON_FORECAST_TIME.equals(fcstTime)) skyCode = value; }
+                case "SKY" -> { if (NOON_FORECAST_TIME.equals(fcstTime)) skyCode = SkyCode.fromCode(value); }
                 case "PTY" -> {
-                    int next = Integer.parseInt(value);
-                    if (next > Integer.parseInt(ptyCode)) ptyCode = value;
+                    // 코드 값이 클수록 더 심한 강수 형태 — 하루치 예보 중 가장 심한 것을 채택 (enum 선언 순서 = 코드 순서)
+                    PtyCode next = PtyCode.fromCode(value);
+                    if (next.ordinal() > ptyCode.ordinal()) ptyCode = next;
                 }
                 default -> { /* 관심 없는 나머지 예보 카테고리(REH, VEC, WSD 등)는 무시 */ }
             }

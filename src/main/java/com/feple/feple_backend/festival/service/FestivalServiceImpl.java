@@ -78,13 +78,10 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         LocalDate today = KoreaClock.today();
         // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
-        List<MusicGenre> genres = criteria.genres();
-        List<Region> regions = criteria.regions();
-        List<AgeRestriction> ageRestrictions = criteria.ageRestrictions();
         List<Festival> all = festivalRepository.findByFilters(
-            genres == null || genres.isEmpty() ? null : genres,
-            regions == null || regions.isEmpty() ? null : regions,
-            ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions,
+            nullIfEmpty(criteria.genres()),
+            nullIfEmpty(criteria.regions()),
+            nullIfEmpty(criteria.ageRestrictions()),
             activeFrom,
             PageRequest.of(0, PageSize.FESTIVAL_FILTER_FETCH_CAP)
         );
@@ -114,12 +111,9 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     public Page<FestivalResponseDto> getFestivalsPage(FestivalFilterCriteria criteria, Pageable pageable) {
         LocalDate today = KoreaClock.today();
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
-        List<MusicGenre> genres = criteria.genres();
-        List<Region> regions = criteria.regions();
-        List<AgeRestriction> ageRestrictions = criteria.ageRestrictions();
-        List<MusicGenre> genreFilter = genres == null || genres.isEmpty() ? null : genres;
-        List<Region> regionFilter = regions == null || regions.isEmpty() ? null : regions;
-        List<AgeRestriction> ageFilter = ageRestrictions == null || ageRestrictions.isEmpty() ? null : ageRestrictions;
+        List<MusicGenre> genreFilter = nullIfEmpty(criteria.genres());
+        List<Region> regionFilter = nullIfEmpty(criteria.regions());
+        List<AgeRestriction> ageFilter = nullIfEmpty(criteria.ageRestrictions());
 
         Page<Festival> page;
         if (criteria.sort() == null || criteria.sort().isBlank()) {
@@ -133,6 +127,12 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
             page = festivalRepository.findByFiltersPage(genreFilter, regionFilter, ageFilter, activeFrom, sorted);
         }
         return page.map(this::toDto);
+    }
+
+    // 빈 리스트는 "필터 없음"과 같은 의미이므로 null로 정규화한다 —
+    // 리포지토리 쿼리의 "(:filter IS NULL OR ...)" 조건이 이를 전제로 함
+    private static <T> List<T> nullIfEmpty(List<T> list) {
+        return (list == null || list.isEmpty()) ? null : list;
     }
 
     // 명시적 정렬이 없으면 다가오는 순(오름차순)을 기본값으로 — 브라우즈 화면에서 가장 자연스러운 순서
