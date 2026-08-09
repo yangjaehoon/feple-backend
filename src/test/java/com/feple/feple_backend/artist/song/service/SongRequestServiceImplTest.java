@@ -3,24 +3,28 @@ package com.feple.feple_backend.artist.song.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.dto.SaveSongDto;
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
+import com.feple.feple_backend.artist.song.dto.SongResponseDto;
 import com.feple.feple_backend.artist.song.dto.SubmitSongRequestDto;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
-import com.feple.feple_backend.artist.song.entity.Song;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
-import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +34,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,7 +45,7 @@ class SongRequestServiceImplTest {
     @Mock ArtistRepository artistRepository;
     @Mock UserNicknameLookup nicknameResolver;
     @Mock YoutubeSearchService youtubeSearchService;
-    @Mock SongRepository songRepository;
+    @Mock SongAdminService songAdminService;
     @Mock ApplicationEventPublisher eventPublisher;
 
     private SongRequestServiceImpl service;
@@ -47,7 +53,7 @@ class SongRequestServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new SongRequestServiceImpl(
-                songRequestRepository, artistRepository, nicknameResolver, youtubeSearchService, songRepository, eventPublisher);
+                songRequestRepository, artistRepository, nicknameResolver, youtubeSearchService, songAdminService, eventPublisher);
     }
 
     private Artist artist(Long id, String name) {
@@ -105,7 +111,7 @@ class SongRequestServiceImplTest {
 
         assertThat(saved).isFalse();
         assertThat(request.isPending()).isFalse();
-        verify(songRepository, never()).save(any());
+        verify(songAdminService, never()).saveSongIfAbsent(any(), any());
         verify(eventPublisher).publishEvent(any(SongRequestApprovedEvent.class));
     }
 
@@ -117,13 +123,14 @@ class SongRequestServiceImplTest {
         YoutubeVideoDto video = YoutubeVideoDto.builder()
                 .videoId("abc123").title("밤편지 MV").thumbnailUrl("https://thumb").build();
         given(youtubeSearchService.fetchVideoByUrl("https://youtu.be/abc123")).willReturn(Optional.of(video));
-        given(songRepository.existsByYoutubeVideoIdAndArtistId("abc123", 1L)).willReturn(false);
+        given(songAdminService.saveSongIfAbsent(eq(1L), any(SaveSongDto.class)))
+                .willReturn(Optional.of(SongResponseDto.builder().build()));
 
         boolean saved = service.approveAndMaybeSaveSong(1L, "https://youtu.be/abc123");
 
         assertThat(saved).isTrue();
         assertThat(request.getYoutubeUrl()).isEqualTo("https://youtu.be/abc123");
-        verify(songRepository).save(any(Song.class));
+        verify(songAdminService).saveSongIfAbsent(eq(1L), any(SaveSongDto.class));
         ArgumentCaptor<SongRequestApprovedEvent> captor = ArgumentCaptor.forClass(SongRequestApprovedEvent.class);
         verify(eventPublisher).publishEvent(captor.capture());
         assertThat(captor.getValue().userId()).isEqualTo(10L);
@@ -137,12 +144,11 @@ class SongRequestServiceImplTest {
         given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
         YoutubeVideoDto video = YoutubeVideoDto.builder().videoId("abc123").title("밤편지 MV").build();
         given(youtubeSearchService.fetchVideoByUrl("https://youtu.be/abc123")).willReturn(Optional.of(video));
-        given(songRepository.existsByYoutubeVideoIdAndArtistId("abc123", 1L)).willReturn(true);
+        given(songAdminService.saveSongIfAbsent(eq(1L), any(SaveSongDto.class))).willReturn(Optional.empty());
 
         boolean saved = service.approveAndMaybeSaveSong(1L, "https://youtu.be/abc123");
 
         assertThat(saved).isFalse();
-        verify(songRepository, never()).save(any());
     }
 
     @Test
@@ -163,6 +169,30 @@ class SongRequestServiceImplTest {
         assertThatThrownBy(() -> service.approveAndMaybeSaveSong(1L, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("이미 처리된");
+    }
+
+    // ── getRequestsPage ──────────────────────────────────────────────────
+
+    @Test
+    void 알수없는_상태값이면_전체조회로_폴백() {
+        given(songRequestRepository.findWithFilters(eq(null), any(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of()));
+        given(nicknameResolver.buildMap(anyList(), any())).willReturn(Map.of());
+
+        service.getRequestsPage(0, 20, "INVALID_STATUS", null);
+
+        verify(songRequestRepository).findWithFilters(eq(null), any(), any(Pageable.class));
+    }
+
+    @Test
+    void 유효한_상태값이면_해당_상태로_필터링() {
+        given(songRequestRepository.findWithFilters(eq(SongRequestStatus.APPROVED), any(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of()));
+        given(nicknameResolver.buildMap(anyList(), any())).willReturn(Map.of());
+
+        service.getRequestsPage(0, 20, "APPROVED", null);
+
+        verify(songRequestRepository).findWithFilters(eq(SongRequestStatus.APPROVED), any(), any(Pageable.class));
     }
 
     // ── reject ───────────────────────────────────────────────────────────

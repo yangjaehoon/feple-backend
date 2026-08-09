@@ -88,13 +88,26 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
         if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
             throw new IllegalArgumentException("이미 등록된 곡입니다.");
         }
-        Song song = Song.builder()
+        return SongResponseDto.from(songRepository.save(buildSong(artist, dto)));
+    }
+
+    @Override
+    @Transactional
+    public Optional<SongResponseDto> saveSongIfAbsent(Long artistId, SaveSongDto dto) {
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
+            return Optional.empty();
+        }
+        return Optional.of(SongResponseDto.from(songRepository.save(buildSong(artist, dto))));
+    }
+
+    private Song buildSong(Artist artist, SaveSongDto dto) {
+        return Song.builder()
                 .title(dto.getTitle())
                 .youtubeVideoId(dto.getYoutubeVideoId())
                 .thumbnailUrl(dto.getThumbnailUrl())
                 .artist(artist)
                 .build();
-        return SongResponseDto.from(songRepository.save(song));
     }
 
     @Override
@@ -114,14 +127,8 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
                 artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(festivalId);
         if (artistFestivals.isEmpty()) return List.of();
 
-        List<ArtistFestivalSong> afSongs =
-                artistFestivalSongRepository.findByFestivalIdWithDetails(festivalId);
-
-        Map<Long, List<SongResponseDto>> songsByAfId = new HashMap<>();
-        for (ArtistFestivalSong afs : afSongs) {
-            songsByAfId.computeIfAbsent(afs.getArtistFestivalId(), k -> new ArrayList<>())
-                       .add(SongResponseDto.from(afs.getSong()));
-        }
+        Map<Long, List<SongResponseDto>> songsByAfId = groupSongsByArtistFestivalId(
+                artistFestivalSongRepository.findByFestivalIdWithDetails(festivalId));
 
         return artistFestivals.stream()
                 .map(af -> FestivalSetlistEntryDto.builder()
@@ -133,6 +140,15 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
                         .songs(songsByAfId.getOrDefault(af.getId(), List.of()))
                         .build())
                 .toList();
+    }
+
+    private Map<Long, List<SongResponseDto>> groupSongsByArtistFestivalId(List<ArtistFestivalSong> afSongs) {
+        Map<Long, List<SongResponseDto>> songsByAfId = new HashMap<>();
+        for (ArtistFestivalSong afs : afSongs) {
+            songsByAfId.computeIfAbsent(afs.getArtistFestivalId(), k -> new ArrayList<>())
+                       .add(SongResponseDto.from(afs.getSong()));
+        }
+        return songsByAfId;
     }
 
     @Override

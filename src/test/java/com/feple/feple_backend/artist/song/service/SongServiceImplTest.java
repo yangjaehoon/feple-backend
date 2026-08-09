@@ -155,6 +155,39 @@ class SongServiceImplTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
+    // ── saveSongIfAbsent ─────────────────────────────────────────────────
+
+    @Test
+    void 곡_저장_중복없으면_값_반환() {
+        Artist artist = artist(1L);
+        given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
+        given(songRepository.existsByYoutubeVideoIdAndArtistId("yt1", 1L)).willReturn(false);
+        given(songRepository.save(any())).willReturn(song(100L, "제목", artist));
+
+        SaveSongDto dto = new SaveSongDto();
+        dto.setYoutubeVideoId("yt1");
+        dto.setTitle("제목");
+
+        Optional<SongResponseDto> result = service.saveSongIfAbsent(1L, dto);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(100L);
+    }
+
+    @Test
+    void 곡_저장_이미_등록된_곡이면_예외없이_빈값_반환() {
+        given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L)));
+        given(songRepository.existsByYoutubeVideoIdAndArtistId("yt1", 1L)).willReturn(true);
+
+        SaveSongDto dto = new SaveSongDto();
+        dto.setYoutubeVideoId("yt1");
+        dto.setTitle("제목");
+
+        Optional<SongResponseDto> result = service.saveSongIfAbsent(1L, dto);
+
+        assertThat(result).isEmpty();
+    }
+
     // ── deleteSong ────────────────────────────────────────────────────────
 
     @Test

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -12,15 +13,15 @@ import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.dto.SaveSongDto;
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
+import com.feple.feple_backend.artist.song.dto.SongResponseDto;
 import com.feple.feple_backend.artist.song.dto.SubmitSongRequestDto;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
-import com.feple.feple_backend.artist.song.entity.Song;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
-import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -45,7 +46,7 @@ class SongRequestServiceTest {
     @Mock ArtistRepository artistRepository;
     @Mock UserNicknameLookup nicknameResolver;
     @Mock YoutubeSearchService youtubeSearchService;
-    @Mock SongRepository songRepository;
+    @Mock SongAdminService songAdminService;
     @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks SongRequestServiceImpl songRequestService;
@@ -244,14 +245,14 @@ class SongRequestServiceTest {
     }
 
     @Test
-    void 상태_잘못된_값이면_PENDING으로_폴백() {
-        given(songRequestRepository.findWithFilters(SongRequestStatus.PENDING, null, PageRequest.of(0, 10)))
+    void 상태_잘못된_값이면_전체조회로_폴백() {
+        given(songRequestRepository.findWithFilters(null, null, PageRequest.of(0, 10)))
                 .willReturn(new PageImpl<>(List.of()));
         given(nicknameResolver.buildMap(anyList(), org.mockito.ArgumentMatchers.any())).willReturn(Map.of());
 
         songRequestService.getRequestsPage(0, 10, "INVALID_STATUS", null);
 
-        verify(songRequestRepository).findWithFilters(SongRequestStatus.PENDING, null, PageRequest.of(0, 10));
+        verify(songRequestRepository).findWithFilters(null, null, PageRequest.of(0, 10));
     }
 
     @Test
@@ -317,7 +318,7 @@ class SongRequestServiceTest {
         boolean songSaved = songRequestService.approveAndMaybeSaveSong(1L, "  ");
 
         assertThat(songSaved).isFalse();
-        verify(songRepository, never()).save(any());
+        verify(songAdminService, never()).saveSongIfAbsent(any(), any());
     }
 
     @Test
@@ -330,7 +331,7 @@ class SongRequestServiceTest {
         boolean songSaved = songRequestService.approveAndMaybeSaveSong(1L, "https://youtube.com/watch?v=abc");
 
         assertThat(songSaved).isFalse();
-        verify(songRepository, never()).save(any());
+        verify(songAdminService, never()).saveSongIfAbsent(any(), any());
     }
 
     @Test
@@ -340,12 +341,11 @@ class SongRequestServiceTest {
         given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
         YoutubeVideoDto video = YoutubeVideoDto.builder().videoId("abc").title("Lilac").thumbnailUrl("thumb.jpg").build();
         given(youtubeSearchService.fetchVideoByUrl("https://youtube.com/watch?v=abc")).willReturn(Optional.of(video));
-        given(songRepository.existsByYoutubeVideoIdAndArtistId("abc", 1L)).willReturn(true);
+        given(songAdminService.saveSongIfAbsent(eq(1L), any(SaveSongDto.class))).willReturn(Optional.empty());
 
         boolean songSaved = songRequestService.approveAndMaybeSaveSong(1L, "https://youtube.com/watch?v=abc");
 
         assertThat(songSaved).isFalse();
-        verify(songRepository, never()).save(any());
     }
 
     @Test
@@ -355,12 +355,13 @@ class SongRequestServiceTest {
         given(songRequestRepository.findById(1L)).willReturn(Optional.of(request));
         YoutubeVideoDto video = YoutubeVideoDto.builder().videoId("abc").title("Lilac").thumbnailUrl("thumb.jpg").build();
         given(youtubeSearchService.fetchVideoByUrl("https://youtube.com/watch?v=abc")).willReturn(Optional.of(video));
-        given(songRepository.existsByYoutubeVideoIdAndArtistId("abc", 1L)).willReturn(false);
+        given(songAdminService.saveSongIfAbsent(eq(1L), any(SaveSongDto.class)))
+                .willReturn(Optional.of(SongResponseDto.builder().build()));
 
         boolean songSaved = songRequestService.approveAndMaybeSaveSong(1L, "https://youtube.com/watch?v=abc");
 
         assertThat(songSaved).isTrue();
-        verify(songRepository).save(any(Song.class));
+        verify(songAdminService).saveSongIfAbsent(eq(1L), any(SaveSongDto.class));
         assertThat(request.getYoutubeUrl()).isEqualTo("https://youtube.com/watch?v=abc");
     }
 

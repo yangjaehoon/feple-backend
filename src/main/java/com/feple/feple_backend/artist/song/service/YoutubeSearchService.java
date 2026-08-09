@@ -42,11 +42,7 @@ public class YoutubeSearchService {
      */
     public List<YoutubeVideoDto> search(String artistName, String query) {
         log.debug("[YT] search called — artistName='{}', query='{}'", artistName, query);
-        if (apiKey == null || apiKey.isBlank()) {
-            // 빈 결과가 "검색 결과 없음"과 구분이 안 되므로 error로 남겨 눈에 띄게 함
-            log.error("[YT] API key is blank — returning empty");
-            return Collections.emptyList();
-        }
+        if (isApiKeyMissing()) return Collections.emptyList();
 
         try {
             // 1) 아티스트명으로 YouTube Music Topic 채널 탐색
@@ -63,6 +59,20 @@ public class YoutubeSearchService {
             log.warn("[YT] search 실패 - artistName='{}', query='{}', 원인={}", artistName, query, e.getClass().getSimpleName());
             return Collections.emptyList();
         }
+    }
+
+    private boolean isApiKeyMissing() {
+        if (apiKey != null && !apiKey.isBlank()) return false;
+        // 빈 결과가 "검색 결과 없음"과 구분이 안 되므로 error로 남겨 눈에 띄게 함
+        log.error("[YT] API key is blank — returning empty");
+        return true;
+    }
+
+    // part/key 파라미터는 모든 YouTube Data API 요청에 공통이므로 한 곳에서만 조립한다.
+    private UriComponentsBuilder apiRequest(String url) {
+        return UriComponentsBuilder.fromUriString(url)
+                .queryParam("part", "snippet")
+                .queryParam("key", apiKey);
     }
 
     // Topic 채널이 있으면 해당 채널의 영상만 검색해 반환하고, 없으면 null을 반환해
@@ -89,12 +99,10 @@ public class YoutubeSearchService {
     }
 
     private String findTopicChannelId(String artistName) {
-        String uri = UriComponentsBuilder.fromUriString(YOUTUBE_SEARCH_URL)
-                .queryParam("part", "snippet")
+        String uri = apiRequest(YOUTUBE_SEARCH_URL)
                 .queryParam("q", artistName)
                 .queryParam("type", "channel")
                 .queryParam("maxResults", "5")
-                .queryParam("key", apiKey)
                 .toUriString();
 
         YoutubeSearchResponse response = restClient.get().uri(uri).retrieve()
@@ -118,13 +126,11 @@ public class YoutubeSearchService {
     }
 
     private List<YoutubeVideoDto> searchByChannel(String channelId) {
-        String uri = UriComponentsBuilder.fromUriString(YOUTUBE_SEARCH_URL)
-                .queryParam("part", "snippet")
+        String uri = apiRequest(YOUTUBE_SEARCH_URL)
                 .queryParam("channelId", channelId)
                 .queryParam("type", "video")
                 .queryParam("order", "date")
                 .queryParam("maxResults", "50")
-                .queryParam("key", apiKey)
                 .toUriString();
 
         YoutubeSearchResponse response = restClient.get().uri(uri).retrieve()
@@ -139,12 +145,10 @@ public class YoutubeSearchService {
     }
 
     private List<YoutubeVideoDto> searchByKeyword(String artistName, String query) {
-        String uri = UriComponentsBuilder.fromUriString(YOUTUBE_SEARCH_URL)
-                .queryParam("part", "snippet")
+        String uri = apiRequest(YOUTUBE_SEARCH_URL)
                 .queryParam("q", query)
                 .queryParam("type", "video")
                 .queryParam("maxResults", "25")
-                .queryParam("key", apiKey)
                 .toUriString();
 
         YoutubeSearchResponse response = restClient.get().uri(uri).retrieve()
@@ -193,31 +197,14 @@ public class YoutubeSearchService {
     }
 
     public Optional<YoutubeVideoDto> fetchVideoByUrl(String videoUrlOrId) {
-        if (apiKey == null || apiKey.isBlank()) {
-            log.error("[YT] API key is blank — returning empty");
-            return Optional.empty();
-        }
+        if (isApiKeyMissing()) return Optional.empty();
         String videoId = extractVideoId(videoUrlOrId);
         if (videoId == null) {
             log.warn("[YT] fetchVideo: could not extract video ID from '{}'", videoUrlOrId);
             return Optional.empty();
         }
         try {
-            URI uri = UriComponentsBuilder.fromUriString(YOUTUBE_VIDEOS_URL)
-                    .queryParam("part", "snippet")
-                    .queryParam("id", videoId)
-                    .queryParam("key", apiKey)
-                    .build().encode().toUri();
-            YoutubeVideoListResponse response = restClient.get().uri(uri).retrieve()
-                    .body(YoutubeVideoListResponse.class);
-            if (response == null || response.items() == null || response.items().isEmpty()) return Optional.empty();
-            YoutubeVideoItem item = response.items().get(0);
-            return Optional.of(YoutubeVideoDto.builder()
-                    .videoId(item.id())
-                    .title(HtmlUtils.htmlUnescape(item.snippet().title()))
-                    .channelTitle(HtmlUtils.htmlUnescape(item.snippet().channelTitle()))
-                    .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
-                    .build());
+            return callVideosApi(videoId);
         } catch (Exception e) {
             // API 키가 담긴 요청 URI가 예외 메시지에 포함될 수 있어 e.getMessage()는 로깅하지 않는다
             log.warn("[YT] fetchVideo 실패 - videoUrlOrId='{}', 원인={}", videoUrlOrId, e.getClass().getSimpleName());
@@ -225,29 +212,57 @@ public class YoutubeSearchService {
         }
     }
 
+    private Optional<YoutubeVideoDto> callVideosApi(String videoId) {
+        URI uri = apiRequest(YOUTUBE_VIDEOS_URL)
+                .queryParam("id", videoId)
+                .build().encode().toUri();
+        YoutubeVideoListResponse response = restClient.get().uri(uri).retrieve()
+                .body(YoutubeVideoListResponse.class);
+        if (response == null || response.items() == null || response.items().isEmpty()) return Optional.empty();
+        YoutubeVideoItem item = response.items().get(0);
+        return Optional.of(YoutubeVideoDto.builder()
+                .videoId(item.id())
+                .title(HtmlUtils.htmlUnescape(item.snippet().title()))
+                .channelTitle(HtmlUtils.htmlUnescape(item.snippet().channelTitle()))
+                .thumbnailUrl(extractThumbnailUrl(item.snippet().thumbnails()))
+                .build());
+    }
+
+    private static final String VIDEO_ID_PATTERN = "[a-zA-Z0-9_\\-]{11}";
+
     private String extractVideoId(String input) {
         if (input == null || input.isBlank()) return null;
-        input = input.trim();
-        // 11자리 영상 ID 직접 입력
-        if (input.matches("[a-zA-Z0-9_\\-]{11}")) return input;
-        // URL에서 v= 파라미터 추출 (youtube.com/watch?v=ID, music.youtube.com/watch?v=ID)
+        String trimmed = input.trim();
+        if (trimmed.matches(VIDEO_ID_PATTERN)) return trimmed;
+
         try {
-            URI uri = new URI(input);
-            String query = uri.getQuery();
-            if (query != null) {
-                for (String param : query.split("&")) {
-                    if (param.startsWith("v=")) return param.substring(2);
-                }
-            }
-            // youtu.be/ID 형태
-            String path = uri.getPath();
-            if (path != null) {
-                String[] parts = path.split("/");
-                for (int i = parts.length - 1; i >= 0; i--) {
-                    if (parts[i].matches("[a-zA-Z0-9_\\-]{11}")) return parts[i];
-                }
-            }
-        } catch (Exception ignored) {}
+            URI uri = new URI(trimmed);
+            String fromQuery = extractFromQueryParam(uri);
+            if (fromQuery != null) return fromQuery;
+            return extractFromPathSegment(uri);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    // youtube.com/watch?v=ID, music.youtube.com/watch?v=ID
+    private String extractFromQueryParam(URI uri) {
+        String query = uri.getQuery();
+        if (query == null) return null;
+        for (String param : query.split("&")) {
+            if (param.startsWith("v=")) return param.substring(2);
+        }
+        return null;
+    }
+
+    // youtu.be/ID 형태
+    private String extractFromPathSegment(URI uri) {
+        String path = uri.getPath();
+        if (path == null) return null;
+        String[] parts = path.split("/");
+        for (int i = parts.length - 1; i >= 0; i--) {
+            if (parts[i].matches(VIDEO_ID_PATTERN)) return parts[i];
+        }
         return null;
     }
 

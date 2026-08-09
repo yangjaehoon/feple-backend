@@ -2,15 +2,14 @@ package com.feple.feple_backend.artist.song.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.artist.song.dto.SaveSongDto;
 import com.feple.feple_backend.artist.song.dto.SongRequestResponseDto;
 import com.feple.feple_backend.artist.song.dto.SubmitSongRequestDto;
 import com.feple.feple_backend.artist.song.dto.YoutubeVideoDto;
-import com.feple.feple_backend.artist.song.entity.Song;
 import com.feple.feple_backend.artist.song.entity.SongRequest;
 import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
-import com.feple.feple_backend.artist.song.repository.SongRepository;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
@@ -21,12 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SongRequestServiceImpl implements SongRequestService, SongRequestAdminService {
@@ -35,7 +36,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     private final ArtistRepository artistRepository;
     private final UserNicknameLookup nicknameResolver;
     private final YoutubeSearchService youtubeSearchService;
-    private final SongRepository songRepository;
+    private final SongAdminService songAdminService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -147,22 +148,16 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
         return youtubeSearchService.fetchVideoByUrl(youtubeUrl);
     }
 
+    // 곡 생성 로직(중복 체크+저장)은 SongAdminService가 소유 — 여기서 재구현하지 않고 위임한다.
     private boolean trySaveSong(SongRequest request, Optional<YoutubeVideoDto> videoOpt) {
         if (videoOpt.isEmpty()) return false;
 
         YoutubeVideoDto video = videoOpt.get();
-        if (songRepository.existsByYoutubeVideoIdAndArtistId(video.getVideoId(), request.getArtistId())) {
-            return false;
-        }
-
-        Song song = Song.builder()
-                .title(video.getTitle())
-                .youtubeVideoId(video.getVideoId())
-                .thumbnailUrl(video.getThumbnailUrl())
-                .artist(request.getArtist())
-                .build();
-        songRepository.save(song);
-        return true;
+        SaveSongDto dto = new SaveSongDto();
+        dto.setYoutubeVideoId(video.getVideoId());
+        dto.setTitle(video.getTitle());
+        dto.setThumbnailUrl(video.getThumbnailUrl());
+        return songAdminService.saveSongIfAbsent(request.getArtistId(), dto).isPresent();
     }
 
     private void publishApprovedEvent(SongRequest request) {
@@ -171,12 +166,16 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
                 request.getArtistName(), request.getArtistNameEn()));
     }
 
+    // 알 수 없는 status 값은 PENDING으로 조용히 대체하면 "필터를 걸었는데 계속 대기중 건만
+    // 보인다"는 원인 불명 증상으로 이어진다 — null(findWithFilters에서 전체 조회로 해석됨)로
+    // 폴백하고 흔적을 로그에 남긴다.
     private SongRequestStatus parseStatus(String status) {
         if (status == null || status.isBlank() || status.equals("ALL")) return null;
         try {
             return SongRequestStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            return SongRequestStatus.PENDING;
+            log.warn("알 수 없는 노래 요청 상태값이라 전체 조회로 대체합니다: {}", status);
+            return null;
         }
     }
 
