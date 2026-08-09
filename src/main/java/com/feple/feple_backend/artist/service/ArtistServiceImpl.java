@@ -60,7 +60,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         Artist artist = Artist.builder()
                 .name(dto.getName())
                 .nameEn(dto.getNameEn())
-                .aliases(parseAliases(dto.getAliases()))
+                .aliases(parseAndValidateAliases(dto.getAliases()))
                 .genres(dto.getGenres())
                 .profileImageKey(dto.getProfileImageKey())
                 .build();
@@ -145,10 +145,15 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
         if (comparator != null) {
             dtos.sort(comparator);
         }
-        int start = query.page() * ADMIN_PAGE_SIZE;
+        return sliceIntoPage(dtos, query.page());
+    }
+
+    // DB 페이지네이션 없이 이미 메모리에 올라온 전체 목록을 ADMIN_PAGE_SIZE 단위로 잘라 Page로 감싼다.
+    private Page<ArtistResponseDto> sliceIntoPage(List<ArtistResponseDto> dtos, int page) {
+        int start = page * ADMIN_PAGE_SIZE;
         int end   = Math.min(start + ADMIN_PAGE_SIZE, dtos.size());
         return new PageImpl<>(start >= dtos.size() ? List.of() : dtos.subList(start, end),
-                PageRequest.of(query.page(), ADMIN_PAGE_SIZE), dtos.size());
+                PageRequest.of(page, ADMIN_PAGE_SIZE), dtos.size());
     }
 
     // 일반 케이스: DB 레벨 페이지네이션
@@ -206,7 +211,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
-        artist.update(new ArtistUpdateFields(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAliases(dto.getAliases())));
+        artist.update(new ArtistUpdateFields(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAndValidateAliases(dto.getAliases())));
         if (dto.getProfileImageKey() != null) {
             replaceProfileImage(artist, dto.getProfileImageKey());
         }
@@ -318,7 +323,9 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     // 제한(500자)은 통과하고도 컬럼 길이를 넘어 저장 시 truncation 오류가 나는 것을 막는다
     private static final int ALIAS_MAX_LENGTH = 200;
 
-    private List<String> parseAliases(String raw) {
+    // 파싱과 동시에 컬럼 길이 제약을 검증한다 — 별도 검증 단계를 두지 않고 여기서 겸하는 이유는
+    // 파싱 직후에만 원본 개별 항목 문자열에 접근할 수 있기 때문이다.
+    private List<String> parseAndValidateAliases(String raw) {
         if (raw == null || raw.isBlank()) return List.of();
         List<String> aliases = Arrays.stream(raw.split(","))
                 .map(String::trim)
