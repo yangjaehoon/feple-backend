@@ -129,7 +129,7 @@ class PointServiceTest {
                 new PointService.PointAward(999L, 11L)));
 
         verify(userRepository).addPointAtomicallyBulk(
-                org.mockito.ArgumentMatchers.argThat(ids -> ids.equals(java.util.Set.of(1L))), eq(10));
+                org.mockito.ArgumentMatchers.argThat(ids -> ids.size() == 1 && ids.contains(1L)), eq(10));
         ArgumentCaptor<List<UserPointLog>> captor = ArgumentCaptor.forClass(List.class);
         verify(pointLogRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(1);
@@ -144,7 +144,7 @@ class PointServiceTest {
                 new PointService.PointAward(1L, 11L)));
 
         verify(userRepository).addPointAtomicallyBulk(
-                org.mockito.ArgumentMatchers.argThat(ids -> ids.equals(java.util.Set.of(1L))), eq(20));
+                org.mockito.ArgumentMatchers.argThat(ids -> ids.size() == 1 && ids.contains(1L)), eq(20));
         ArgumentCaptor<List<UserPointLog>> captor = ArgumentCaptor.forClass(List.class);
         verify(pointLogRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(2);
