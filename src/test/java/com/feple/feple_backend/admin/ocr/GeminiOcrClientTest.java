@@ -42,7 +42,7 @@ class GeminiOcrClientTest {
                 "[{\"artist\":\"아이유\",\"stage\":\"Main\",\"date\":\"2026-08-01\",\"startTime\":\"18:00\",\"endTime\":\"19:00\",\"confidence\":95,\"type\":\"PERFORMANCE\"}]");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
 
-        OcrParseResult<OcrResultDto> result = client.parseTimetable(image(), null);
+        OcrParseResult<TimetableOcrResultDto> result = client.parseTimetable(image(), null);
 
         assertThat(result.truncated()).isFalse();
         assertThat(result.entries()).hasSize(1);
@@ -57,7 +57,7 @@ class GeminiOcrClientTest {
                 "```json\n[{\"artist\":\"입장 게이트 오픈\",\"stage\":null,\"date\":null,\"startTime\":\"10:00\",\"endTime\":null,\"confidence\":80,\"type\":\"OPS\"}]\n```");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
 
-        OcrParseResult<OcrResultDto> result = client.parseTimetable(image(), null);
+        OcrParseResult<TimetableOcrResultDto> result = client.parseTimetable(image(), null);
 
         assertThat(result.entries()).hasSize(1);
         assertThat(result.entries().get(0).isAnnouncement()).isTrue();
@@ -71,7 +71,7 @@ class GeminiOcrClientTest {
                 "[{\"artist\":\"아이유\",\"stage\":\"Main\",\"date\":\"2026-08-01\",\"startTime\":\"18:00\",\"endTime\":\"19:00\",\"confidence\":95,\"type\":\"PERFORMANCE\"},{\"artist\":\"잘린항목");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(true);
 
-        OcrParseResult<OcrResultDto> result = client.parseTimetable(image(), null);
+        OcrParseResult<TimetableOcrResultDto> result = client.parseTimetable(image(), null);
 
         assertThat(result.truncated()).isTrue();
         assertThat(result.entries()).hasSize(1);
@@ -84,7 +84,7 @@ class GeminiOcrClientTest {
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("이건 JSON이 아닙니다");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
 
-        OcrParseResult<OcrResultDto> result = client.parseTimetable(image(), null);
+        OcrParseResult<TimetableOcrResultDto> result = client.parseTimetable(image(), null);
 
         assertThat(result.entries()).isEmpty();
     }

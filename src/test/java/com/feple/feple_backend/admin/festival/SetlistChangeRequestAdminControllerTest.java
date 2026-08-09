@@ -23,12 +23,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
-class SetlistRequestAdminControllerTest {
+class SetlistChangeRequestAdminControllerTest {
 
     @Mock SetlistChangeRequestService service;
     @Mock AdminLogService adminLogService;
 
-    @InjectMocks SetlistRequestAdminController controller;
+    @InjectMocks SetlistChangeRequestAdminController controller;
 
     MockMvc mockMvc;
 

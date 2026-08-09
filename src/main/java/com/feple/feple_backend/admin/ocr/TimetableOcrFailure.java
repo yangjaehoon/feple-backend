@@ -1,4 +1,4 @@
 package com.feple.feple_backend.admin.ocr;
 
-public record OcrFailure(int index, String artist, String stage, String reason) {
+public record TimetableOcrFailure(int index, String artist, String stage, String reason) {
 }

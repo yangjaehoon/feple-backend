@@ -71,7 +71,7 @@ class TimetableOcrAdminControllerTest {
 
     @Test
     void OCR_적용_festivalId없으면_400_반환() throws Exception {
-        OcrApplyRequestDto req = new OcrApplyRequestDto(null, List.of());
+        TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(null, List.of());
 
         mockMvc.perform(post("/admin/crawl/ocr/apply")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,10 +81,10 @@ class TimetableOcrAdminControllerTest {
 
     @Test
     void OCR_적용_성공_결과_반환() throws Exception {
-        OcrApplyResultDto result = new OcrApplyResultDto(2, 0, List.of());
+        TimetableOcrApplyResultDto result = new TimetableOcrApplyResultDto(2, 0, List.of());
         given(ocrService.applyEntries(any())).willReturn(result);
 
-        OcrApplyRequestDto req = new OcrApplyRequestDto(1L, List.of(mock(OcrResultDto.class)));
+        TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(1L, List.of(mock(TimetableOcrResultDto.class)));
 
         mockMvc.perform(post("/admin/crawl/ocr/apply")
                         .contentType(MediaType.APPLICATION_JSON)

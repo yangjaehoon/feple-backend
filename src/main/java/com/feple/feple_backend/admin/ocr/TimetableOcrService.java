@@ -26,17 +26,17 @@ public class TimetableOcrService {
         return geminiOcrClient.isConfigured();
     }
 
-    public OcrParseResult<OcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
+    public OcrParseResult<TimetableOcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
         return geminiOcrClient.parseTimetable(image, year);
     }
 
-    public OcrApplyResultDto applyEntries(OcrApplyRequestDto request) {
-        List<OcrFailure> failures = new ArrayList<>();
+    public TimetableOcrApplyResultDto applyEntries(TimetableOcrApplyRequestDto request) {
+        List<TimetableOcrFailure> failures = new ArrayList<>();
         int savedCount = 0;
 
-        List<OcrResultDto> entries = request.entries();
+        List<TimetableOcrResultDto> entries = request.entries();
         for (int i = 0; i < entries.size(); i++) {
-            OcrResultDto entry = entries.get(i);
+            TimetableOcrResultDto entry = entries.get(i);
             Optional<String> error = validateEntry(entry);
             if (error.isPresent()) {
                 failures.add(toFailure(entry, error.get(), i));
@@ -53,10 +53,10 @@ public class TimetableOcrService {
                 failures.add(toFailure(entry, reason, i));
             }
         }
-        return new OcrApplyResultDto(savedCount, failures.size(), failures);
+        return new TimetableOcrApplyResultDto(savedCount, failures.size(), failures);
     }
 
-    private Optional<String> validateEntry(OcrResultDto entry) {
+    private Optional<String> validateEntry(TimetableOcrResultDto entry) {
         if (entry.date() == null || entry.date().isBlank())
             return Optional.of("날짜 누락");
         if (entry.startTime() == null || entry.endTime() == null)
@@ -69,7 +69,7 @@ public class TimetableOcrService {
         return Optional.empty();
     }
 
-    private TimetableEntryRequestDto toTimetableRequest(OcrResultDto entry) {
+    private TimetableEntryRequestDto toTimetableRequest(TimetableOcrResultDto entry) {
         TimetableEntryRequestDto req = new TimetableEntryRequestDto();
         if (entry.isAnnouncement()) {
             req.setStageName(TimetableEntry.ANNOUNCEMENT_SENTINEL);
@@ -83,8 +83,8 @@ public class TimetableOcrService {
         return req;
     }
 
-    private OcrFailure toFailure(OcrResultDto entry, String reason, int index) {
-        return new OcrFailure(
+    private TimetableOcrFailure toFailure(TimetableOcrResultDto entry, String reason, int index) {
+        return new TimetableOcrFailure(
                 index,
                 Objects.requireNonNullElse(entry.artist(), "—"),
                 Objects.requireNonNullElse(entry.stage(), "—"),

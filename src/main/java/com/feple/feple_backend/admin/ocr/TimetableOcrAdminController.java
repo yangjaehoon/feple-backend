@@ -37,7 +37,7 @@ public class TimetableOcrAdminController {
         if (image.isEmpty()) return AdminErrorResponses.badRequest("이미지를 업로드해주세요.");
         if (!ocrService.isConfigured()) return AdminErrorResponses.geminiNotConfigured();
         try {
-            OcrParseResult<OcrResultDto> results = ocrService.parseTimetable(image, year);
+            OcrParseResult<TimetableOcrResultDto> results = ocrService.parseTimetable(image, year);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             log.error("OCR 파싱 실패", e);
@@ -47,11 +47,11 @@ public class TimetableOcrAdminController {
 
     @PostMapping("/apply")
     @ResponseBody
-    public ResponseEntity<?> applyOcr(@RequestBody OcrApplyRequestDto request) {
+    public ResponseEntity<?> applyOcr(@RequestBody TimetableOcrApplyRequestDto request) {
         if (request.festivalId() == null)                    return AdminErrorResponses.badRequest("페스티벌을 선택해주세요.");
         if (request.entries() == null || request.entries().isEmpty()) return AdminErrorResponses.badRequest("저장할 항목이 없습니다.");
         try {
-            OcrApplyResultDto result = ocrService.applyEntries(request);
+            TimetableOcrApplyResultDto result = ocrService.applyEntries(request);
             adminLogService.log(AdminAction.TIMETABLE_OCR_APPLY, "FESTIVAL", request.festivalId(),
                     "saved=" + result.savedCount() + " failed=" + result.failedCount());
             return ResponseEntity.ok(result);

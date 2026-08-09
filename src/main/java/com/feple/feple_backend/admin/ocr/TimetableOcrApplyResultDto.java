@@ -2,8 +2,8 @@ package com.feple.feple_backend.admin.ocr;
 
 import java.util.List;
 
-public record OcrApplyResultDto(
+public record TimetableOcrApplyResultDto(
         int savedCount,
         int failedCount,
-        List<OcrFailure> failures) {
+        List<TimetableOcrFailure> failures) {
 }

@@ -69,7 +69,7 @@ public class GeminiOcrClient {
         return usageTracker.getDailyLimit();
     }
 
-    public OcrParseResult<OcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
+    public OcrParseResult<TimetableOcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
         String prompt = year != null ? buildPromptWithYear(year) : PROMPT;
@@ -123,7 +123,7 @@ public class GeminiOcrClient {
         return parseJsonArrayWithRecovery(content, new TypeReference<>() {}, "Lineup OCR");
     }
 
-    private List<OcrResultDto> parseJsonArray(String content) {
+    private List<TimetableOcrResultDto> parseJsonArray(String content) {
         return parseJsonArrayWithRecovery(content, new TypeReference<>() {}, "OCR");
     }
 

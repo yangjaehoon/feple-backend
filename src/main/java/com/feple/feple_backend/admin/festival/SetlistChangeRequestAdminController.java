@@ -23,13 +23,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/setlist-requests")
 @RequiredArgsConstructor
-public class SetlistRequestAdminController {
+public class SetlistChangeRequestAdminController {
 
     private final SetlistChangeRequestService service;
     private final AdminLogService adminLogService;
 
     @GetMapping
-    public String list(@ModelAttribute SetlistRequestListParams params, Model model) {
+    public String list(@ModelAttribute SetlistChangeRequestListParams params, Model model) {
         SetlistChangeRequestStatus statusEnum = parseStatus(params.status());
         var requests = service.list(statusEnum, params.keyword(), PageRequest.of(params.page(), AdminConstants.LIST_PAGE_SIZE));
         model.addAttribute("requests", requests);
@@ -41,7 +41,7 @@ public class SetlistRequestAdminController {
 
     @PostMapping("/{id}/resolve")
     public String resolve(@PathVariable Long id,
-                          @ModelAttribute SetlistRequestListParams params,
+                          @ModelAttribute SetlistChangeRequestListParams params,
                           RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
