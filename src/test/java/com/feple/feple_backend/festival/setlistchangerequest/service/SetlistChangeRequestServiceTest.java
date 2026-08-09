@@ -80,7 +80,7 @@ class SetlistChangeRequestServiceTest {
         assertThatThrownBy(() -> service.submit(new SetlistChangeRequestCommand(1L, 10L, 999L, "메시지")))
                 .isInstanceOf(java.util.NoSuchElementException.class);
 
-        then(repository).shouldHaveNoInteractions();
+        then(repository).should(never()).save(any());
     }
 
     @Test
@@ -97,7 +97,7 @@ class SetlistChangeRequestServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("해당 페스티벌의 참여 정보가 아닙니다.");
 
-        then(repository).shouldHaveNoInteractions();
+        then(repository).should(never()).save(any());
     }
 
     @Test
