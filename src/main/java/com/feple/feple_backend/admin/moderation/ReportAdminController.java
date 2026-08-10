@@ -38,7 +38,17 @@ public class ReportAdminController {
     }
 
     @GetMapping
-    public String list(@ModelAttribute ReportFilter filter, Model model) {
+    public String list(@ModelAttribute ReportFilter filter, Model model, RedirectAttributes ra) {
+        return AdminActionUtils.tryRender(
+                () -> populateListModel(filter, model),
+                "admin/moderation/reports",
+                e -> log.error("신고 목록 조회 실패 type={}", filter.type(), e),
+                "신고 목록을 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/reports",
+                ra);
+    }
+
+    private void populateListModel(ReportFilter filter, Model model) {
         ReportAdminService<?> handler = resolveHandler(filter.type());
         Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(filter.page(), AdminConstants.LIST_PAGE_SIZE, filter.status(), filter.keyword()));
         // 타입별 pendingCount를 한 번씩만 조회해 재사용 — 현재 타입 카운트를 handler.getPendingCount()로 또 조회하지 않는다.
@@ -54,7 +64,6 @@ public class ReportAdminController {
         model.addAttribute("photoUrls", handler instanceof PhotoPresignedUrlProvider provider
                 ? provider.buildPhotoPresignedUrls(reports) : Map.of());
         pendingCounts.forEach((t, count) -> model.addAttribute(t + "PendingCount", count));
-        return "admin/moderation/reports";
     }
 
     @PostMapping("/{id}/delete")
@@ -129,8 +138,14 @@ public class ReportAdminController {
         return redirectReports(filter);
     }
 
+    // 등록되지 않은 type을 post 핸들러로 조용히 폴백하면 삭제/기각 등 쓰기 작업이 엉뚱한
+    // 신고 테이블의 id를 대상으로 실행될 수 있어(오타·구버전 폼·수동 조작 등), 명시적으로 거부한다.
     private ReportAdminService<?> resolveHandler(String type) {
-        return handlers.getOrDefault(type, handlers.get(AdminConstants.REPORT_TYPE_POST));
+        ReportAdminService<?> handler = handlers.get(type);
+        if (handler == null) {
+            throw new IllegalArgumentException("지원하지 않는 신고 유형입니다: " + type);
+        }
+        return handler;
     }
 
     @SuppressWarnings("unchecked")

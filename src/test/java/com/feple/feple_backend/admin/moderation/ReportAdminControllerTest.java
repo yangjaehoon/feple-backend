@@ -49,6 +49,16 @@ class ReportAdminControllerTest {
                         "status", "type", "keyword", "authorReportCounts"));
     }
 
+    @Test
+    void 목록_조회_등록되지_않은_타입이면_기본_경로로_리다이렉트() throws Exception {
+        mockMvc.perform(get("/admin/reports").param("type", "unknown"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/reports"))
+                .andExpect(flash().attribute("errorMessage", "지원하지 않는 신고 유형입니다: unknown"));
+
+        then(postHandler).should(never()).searchReportsForAdmin(any());
+    }
+
     // ── POST /admin/reports/{id}/delete ───────────────────────────────────────
 
     @Test
@@ -79,6 +89,15 @@ class ReportAdminControllerTest {
                 .andExpect(flash().attribute("successMessage", "신고를 기각했습니다."));
 
         then(postHandler).should().dismissReport(1L);
+    }
+
+    @Test
+    void 콘텐츠_삭제_등록되지_않은_타입이면_post_핸들러로_폴백하지_않고_에러() throws Exception {
+        mockMvc.perform(post("/admin/reports/1/delete")
+                        .param("type", "unknown").param("status", "PENDING"))
+                .andExpect(flash().attribute("errorMessage", "지원하지 않는 신고 유형입니다: unknown"));
+
+        then(postHandler).should(never()).deleteContentAndResolve(anyLong());
     }
 
     // ── POST /admin/reports/bulk-dismiss ──────────────────────────────────────
