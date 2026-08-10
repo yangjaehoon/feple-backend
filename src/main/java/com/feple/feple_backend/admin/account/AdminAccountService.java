@@ -8,7 +8,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +30,7 @@ public class AdminAccountService {
     private final AdminAccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageService;
+    private final SessionRegistry sessionRegistry;
 
     @Transactional(readOnly = true)
     public List<AdminAccount> findAll() {
@@ -47,14 +53,22 @@ public class AdminAccountService {
         String profileImageUrl = uploadProfileIfPresent(req.profileImage(), req.username());
         // DB 저장 실패로 트랜잭션이 롤백되면 이미 올라간 S3 파일이 orphan으로 남지 않도록 정리
         fileStorageService.deleteFileOnRollback(profileImageUrl);
-        return accountRepository.save(AdminAccount.builder()
-                .username(req.username())
-                .password(passwordEncoder.encode(req.password()))
-                .displayName(req.displayName())
-                .role(req.role())
-                .permissions(resolvePermissions(req.role(), req.permissions()))
-                .profileImageUrl(profileImageUrl)
-                .build());
+        // existsByUsername 체크 후 save() 사이의 TOCTOU 레이스(동시 생성)는 유니크 제약이 최종
+        // 방어선이다 — AdminActionUtils.tryAction은 ConflictException을 별도 처리하지 않아
+        // (Thymeleaf 플로우이지 REST가 아니므로) 위 사전 검증과 동일하게 IllegalArgumentException으로
+        // 변환해야 구체적인 에러 메시지가 화면에 그대로 노출된다.
+        try {
+            return accountRepository.save(AdminAccount.builder()
+                    .username(req.username())
+                    .password(passwordEncoder.encode(req.password()))
+                    .displayName(req.displayName())
+                    .role(req.role())
+                    .permissions(resolvePermissions(req.role(), req.permissions()))
+                    .profileImageUrl(profileImageUrl)
+                    .build());
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + req.username());
+        }
     }
 
     public void update(Long id, AdminAccountUpdateRequestDto req) {
@@ -66,6 +80,9 @@ public class AdminAccountService {
             account.updatePassword(passwordEncoder.encode(req.password()));
         }
         applyProfileImageUpdate(account, req);
+        // 역할/권한/비밀번호가 바뀌었을 수 있으므로 로그인 세션에 캐시된 권한이 낡은 상태로 남지
+        // 않도록 기존 세션을 만료시킨다 — 다음 요청 시 재로그인하며 최신 권한을 다시 받는다.
+        expireSessionsFor(account.getUsername());
     }
 
     /** @return 삭제된 계정 — 컨트롤러가 감사 로그(username) 기록에 사용 */
@@ -77,12 +94,13 @@ public class AdminAccountService {
         }
 
         if (account.getRole() == AdminRole.SUPER_ADMIN) {
-            ensureNotLastSuperAdmin(accountRepository.countByRole(AdminRole.SUPER_ADMIN),
+            ensureNotLastSuperAdmin(accountRepository.findByRoleForUpdate(AdminRole.SUPER_ADMIN),
                     "마지막 최고 관리자 계정은 삭제할 수 없습니다.");
         }
 
         accountRepository.delete(account);
         fileStorageService.deleteFileAfterCommit(account.getProfileImageUrl());
+        expireSessionsFor(account.getUsername());
         return account;
     }
 
@@ -95,12 +113,26 @@ public class AdminAccountService {
         }
 
         if (account.isEnabled() && account.getRole() == AdminRole.SUPER_ADMIN) {
-            ensureNotLastSuperAdmin(accountRepository.countByRoleAndEnabled(AdminRole.SUPER_ADMIN, true),
+            ensureNotLastSuperAdmin(accountRepository.findByRoleAndEnabledForUpdate(AdminRole.SUPER_ADMIN, true),
                     "마지막 활성 최고 관리자 계정은 비활성화할 수 없습니다.");
         }
 
         account.toggle();
+        if (!account.isEnabled()) {
+            expireSessionsFor(account.getUsername());
+        }
         return account;
+    }
+
+    // 계정 삭제/비활성화/정보변경 시 이미 로그인된 세션에 캐시된 권한이 낡은 채로 유지되지 않도록
+    // 강제로 만료시킨다. SessionRegistry는 principal.equals()로 세션을 찾고 User.equals()는
+    // username만 비교하므로(계정이 이미 삭제됐을 수도 있어 DB 재조회 없이) 더미 값으로 조회 키를
+    // 직접 구성한다.
+    private void expireSessionsFor(String username) {
+        UserDetails principal = new User(username, "N/A", List.of());
+        for (SessionInformation session : sessionRegistry.getAllSessions(principal, false)) {
+            session.expireNow();
+        }
     }
 
     private void validateNewAccount(String username, String password) {
@@ -138,14 +170,14 @@ public class AdminAccountService {
 
     private void validateRoleChange(AdminAccount account, AdminRole newRole) {
         if (account.getRole() == AdminRole.SUPER_ADMIN && newRole == AdminRole.MANAGER) {
-            ensureNotLastSuperAdmin(accountRepository.countByRole(AdminRole.SUPER_ADMIN),
+            ensureNotLastSuperAdmin(accountRepository.findByRoleForUpdate(AdminRole.SUPER_ADMIN),
                     "마지막 최고 관리자의 역할을 변경할 수 없습니다.");
         }
     }
 
-    /** 남은 SUPER_ADMIN 수(remainingSuperAdminCount)가 1명 이하면 보호 규칙 위반으로 거부한다. */
-    private static void ensureNotLastSuperAdmin(long remainingSuperAdminCount, String errorMessage) {
-        if (remainingSuperAdminCount <= 1) {
+    /** 현재 SUPER_ADMIN 수(currentSuperAdmins, PESSIMISTIC_WRITE로 잠긴 목록)가 1명 이하면 보호 규칙 위반으로 거부한다. */
+    private static void ensureNotLastSuperAdmin(List<AdminAccount> currentSuperAdmins, String errorMessage) {
+        if (currentSuperAdmins.size() <= 1) {
             throw new IllegalArgumentException(errorMessage);
         }
     }

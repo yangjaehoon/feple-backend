@@ -8,6 +8,7 @@ import static org.mockito.Mockito.*;
 
 import com.feple.feple_backend.file.service.FileStorageService;
 import java.io.IOException;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -17,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +27,7 @@ class AdminAccountServiceTest {
     @Mock AdminAccountRepository accountRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock FileStorageService fileStorageService;
+    @Mock SessionRegistry sessionRegistry;
 
     @InjectMocks AdminAccountService service;
 
@@ -74,6 +77,18 @@ class AdminAccountServiceTest {
 
         verify(accountRepository).save(any());
         assertThat(result).isEqualTo(saved);
+    }
+
+    @Test
+    void 계정_생성_동시요청으로_유니크_제약_위반시_IllegalArgumentException으로_변환() {
+        given(accountRepository.existsByUsername("admin1")).willReturn(false);
+        given(passwordEncoder.encode(any())).willReturn("encoded");
+        given(accountRepository.save(any()))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+
+        assertThatThrownBy(() -> service.create(createReq("admin1", "Pass1234!", AdminRole.MANAGER)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 사용 중인 아이디입니다");
     }
 
     @Test
@@ -192,8 +207,9 @@ class AdminAccountServiceTest {
 
     @Test
     void 마지막_SUPER_ADMIN은_삭제_불가() {
-        stubFindById(1L, buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true));
-        given(accountRepository.countByRole(AdminRole.SUPER_ADMIN)).willReturn(1L);
+        AdminAccount account = buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true);
+        stubFindById(1L, account);
+        given(accountRepository.findByRoleForUpdate(AdminRole.SUPER_ADMIN)).willReturn(List.of(account));
 
         assertThatThrownBy(() -> service.delete(1L, "other"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -203,8 +219,9 @@ class AdminAccountServiceTest {
     @Test
     void SUPER_ADMIN이_2명이면_삭제_가능() {
         AdminAccount account = buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true);
+        AdminAccount other = buildAccount(2L, "super2", AdminRole.SUPER_ADMIN, true);
         stubFindById(1L, account);
-        given(accountRepository.countByRole(AdminRole.SUPER_ADMIN)).willReturn(2L);
+        given(accountRepository.findByRoleForUpdate(AdminRole.SUPER_ADMIN)).willReturn(List.of(account, other));
 
         service.delete(1L, "other");
 
@@ -245,8 +262,9 @@ class AdminAccountServiceTest {
 
     @Test
     void 마지막_활성_SUPER_ADMIN은_비활성화_불가() {
-        stubFindById(1L, buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true));
-        given(accountRepository.countByRoleAndEnabled(AdminRole.SUPER_ADMIN, true)).willReturn(1L);
+        AdminAccount account = buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true);
+        stubFindById(1L, account);
+        given(accountRepository.findByRoleAndEnabledForUpdate(AdminRole.SUPER_ADMIN, true)).willReturn(List.of(account));
 
         assertThatThrownBy(() -> service.toggleEnabled(1L, "other"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -256,8 +274,9 @@ class AdminAccountServiceTest {
     @Test
     void 활성_SUPER_ADMIN이_2명이면_비활성화_가능() {
         AdminAccount account = buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true);
+        AdminAccount other = buildAccount(2L, "super2", AdminRole.SUPER_ADMIN, true);
         stubFindById(1L, account);
-        given(accountRepository.countByRoleAndEnabled(AdminRole.SUPER_ADMIN, true)).willReturn(2L);
+        given(accountRepository.findByRoleAndEnabledForUpdate(AdminRole.SUPER_ADMIN, true)).willReturn(List.of(account, other));
 
         service.toggleEnabled(1L, "other");
 
@@ -278,8 +297,9 @@ class AdminAccountServiceTest {
 
     @Test
     void 마지막_SUPER_ADMIN의_역할은_변경_불가() throws IOException {
-        stubFindById(1L, buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true));
-        given(accountRepository.countByRole(AdminRole.SUPER_ADMIN)).willReturn(1L);
+        AdminAccount account = buildAccount(1L, "super1", AdminRole.SUPER_ADMIN, true);
+        stubFindById(1L, account);
+        given(accountRepository.findByRoleForUpdate(AdminRole.SUPER_ADMIN)).willReturn(List.of(account));
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
                 "새이름", AdminRole.MANAGER, Set.of(), null, null, false);

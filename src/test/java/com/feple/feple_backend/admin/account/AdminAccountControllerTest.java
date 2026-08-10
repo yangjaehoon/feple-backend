@@ -110,11 +110,25 @@ class AdminAccountControllerTest {
                 .andExpect(model().attributeExists("account", "allPermissions", "allRoles"));
     }
 
+    @Test
+    void 편집_폼_조회시_존재하지_않는_계정이면_목록으로_리다이렉트() throws Exception {
+        given(accountService.findById(999L)).willThrow(new java.util.NoSuchElementException("관리자 계정을 찾을 수 없습니다: 999"));
+
+        mockMvc.perform(get("/admin/accounts/999/edit"))
+                .andExpect(redirectedUrl("/admin/accounts"))
+                .andExpect(flash().attribute("errorMessage", "관리자 계정을 찾을 수 없습니다: 999"));
+    }
+
     // ── POST /admin/accounts/{id}/update ─────────────────────────────────────
 
     @Test
     void 계정_수정_성공_successMessage_설정() throws Exception {
         MockMultipartFile emptyFile = new MockMultipartFile("profileImage", new byte[0]);
+        AdminAccount before = mock(AdminAccount.class);
+        given(before.getUsername()).willReturn("target");
+        given(before.getRole()).willReturn(AdminRole.MANAGER);
+        given(before.getPermissions()).willReturn(java.util.Set.of());
+        given(accountService.findById(1L)).willReturn(before);
 
         mockMvc.perform(multipart("/admin/accounts/1/update")
                         .file(emptyFile)
@@ -128,6 +142,11 @@ class AdminAccountControllerTest {
 
     @Test
     void 계정_수정_실패_errorMessage_설정() throws Exception {
+        AdminAccount before = mock(AdminAccount.class);
+        given(before.getUsername()).willReturn("target");
+        given(before.getRole()).willReturn(AdminRole.MANAGER);
+        given(before.getPermissions()).willReturn(java.util.Set.of());
+        given(accountService.findById(1L)).willReturn(before);
         willThrow(new RuntimeException("오류")).given(accountService).update(anyLong(), any());
 
         mockMvc.perform(multipart("/admin/accounts/1/update")

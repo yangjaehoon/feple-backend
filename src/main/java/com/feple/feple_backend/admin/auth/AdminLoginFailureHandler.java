@@ -67,7 +67,10 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
             return;
         }
         String reason = (exception instanceof DisabledException) ? "disabled" : "invalid";
-        session.setAttribute(SESSION_KEY, reason);
+        // 로그인 페이지에는 계정 상태를 구분해 보여주지 않는다 — "비활성화된 계정" 메시지가
+        // 유효한 아이디의 존재 여부를 노출시킬 수 있으므로(계정 열거 공격) 사용자에게는 항상
+        // 동일한 메시지를 보여주고, 실제 사유는 감사 로그에만 남긴다.
+        session.setAttribute(SESSION_KEY, "invalid");
         logFailure(attemptedUsername, reason);
         response.sendRedirect(request.getContextPath() + "/admin/login");
     }

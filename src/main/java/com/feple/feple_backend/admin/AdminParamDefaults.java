@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin;
 
+import java.util.Set;
+
 public final class AdminParamDefaults {
 
     private AdminParamDefaults() {}
@@ -11,6 +13,10 @@ public final class AdminParamDefaults {
 
     public static String orEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    public static <T> Set<T> orEmptySet(Set<T> value) {
+        return value == null ? Set.of() : value;
     }
 
     public static String orDefault(String value, String defaultValue) {

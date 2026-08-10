@@ -54,11 +54,18 @@ public class AdminAccountController {
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
-        model.addAttribute("account", accountService.findById(id));
-        model.addAttribute("allPermissions", AdminPermission.values());
-        model.addAttribute("allRoles", AdminRole.values());
-        return "admin/account/form";
+    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        return AdminActionUtils.tryRender(
+                () -> {
+                    model.addAttribute("account", accountService.findById(id));
+                    model.addAttribute("allPermissions", AdminPermission.values());
+                    model.addAttribute("allRoles", AdminRole.values());
+                },
+                "admin/account/form",
+                e -> log.error("관리자 계정 편집 폼 조회 실패. id={}", id, e),
+                "계정 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/accounts",
+                redirectAttributes);
     }
 
     @PostMapping(value = "/{id}/update", consumes = "multipart/form-data")
@@ -67,14 +74,24 @@ public class AdminAccountController {
                          RedirectAttributes redirectAttributes) {
         AdminActionUtils.tryAction(
                 () -> {
+                    AdminAccount before = accountService.findById(id);
+                    String detail = buildUpdateLogDetail(before, req);
                     accountService.update(id, req);
-                    adminLogService.log(AdminAction.ADMIN_ACCOUNT_UPDATE, "ADMIN_ACCOUNT", id, req.displayName());
+                    adminLogService.log(AdminAction.ADMIN_ACCOUNT_UPDATE, "ADMIN_ACCOUNT", id, detail);
                 },
                 "관리자 계정이 수정되었습니다.",
                 e -> log.error("관리자 계정 수정 중 오류 발생, id={}", id, e),
                 "계정 수정 중 오류가 발생했습니다.",
                 redirectAttributes);
         return "redirect:/admin/accounts";
+    }
+
+    // 권한 관리 화면의 감사로그는 표시이름이 아니라 실제 변경된 역할·권한을 남겨야 사고 조사 시
+    // "누가 언제 SUPER_ADMIN을 부여받았는지" 추적할 수 있다.
+    private String buildUpdateLogDetail(AdminAccount before, AdminAccountUpdateRequestDto req) {
+        return before.getUsername()
+                + " | role: " + before.getRole() + " → " + req.role()
+                + " | permissions: " + before.getPermissions() + " → " + req.permissions();
     }
 
     @PostMapping("/{id}/delete")

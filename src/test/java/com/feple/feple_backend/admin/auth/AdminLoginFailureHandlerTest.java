@@ -53,12 +53,16 @@ class AdminLoginFailureHandlerTest {
     }
 
     @Test
-    void 비활성_계정이면_disabled_세션_설정() throws Exception {
+    void 비활성_계정이어도_계정_열거_방지를_위해_invalid_세션_설정() throws Exception {
         handler.onAuthenticationFailure(request, response, new DisabledException("비활성 계정"));
 
-        verify(session).setAttribute(AdminLoginFailureHandler.SESSION_KEY, "disabled");
+        // 사용자에게는 항상 동일한 메시지를 보여준다 — "비활성화됨"을 그대로 노출하면
+        // 아이디의 존재 여부(계정 상태)가 드러나는 계정 열거 공격에 악용될 수 있다.
+        verify(session).setAttribute(AdminLoginFailureHandler.SESSION_KEY, "invalid");
         verify(response).sendRedirect("/admin/login");
-        verify(adminLogService).log(eq(AdminAction.LOGIN_FAILURE), eq("ADMIN_ACCOUNT"), isNull(), any());
+        // 감사 로그에는 실제 사유("disabled")가 남아 관리자가 조사할 수 있어야 한다.
+        verify(adminLogService).log(eq(AdminAction.LOGIN_FAILURE), eq("ADMIN_ACCOUNT"), isNull(),
+                org.mockito.ArgumentMatchers.contains("disabled"));
     }
 
     @Test

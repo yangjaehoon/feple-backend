@@ -24,10 +24,13 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -110,11 +113,25 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .sessionFixation().changeSessionId()
                 .maximumSessions(1)
+                .sessionRegistry(adminSessionRegistry())
                 .expiredUrl("/admin/login?expired=true"))
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/admin/access-denied"));
 
         return http.build();
+    }
+
+    // 계정 비활성화/삭제/역할변경 시 해당 관리자의 기존 세션을 즉시 만료시키기 위해 빈으로 노출한다
+    // (AdminAccountService에서 주입받아 사용). HttpSessionEventPublisher 없이는 세션 소멸이
+    // 레지스트리에 반영되지 않아 만료된 세션이 유령 엔트리로 남는다.
+    @Bean
+    public SessionRegistry adminSessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     // ── 2. API용 FilterChain (JWT Stateless) ──
