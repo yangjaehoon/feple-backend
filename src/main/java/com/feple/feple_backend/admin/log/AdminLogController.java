@@ -1,12 +1,9 @@
 package com.feple.feple_backend.admin.log;
 
+import com.feple.feple_backend.admin.AdminUrlUtils;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -29,6 +26,9 @@ public class AdminLogController {
     public String list(@RequestParam(defaultValue = "0") int page,
                        @ModelAttribute AdminLogFilter filter,
                        Model model) {
+        // 음수 page는 PageRequest.of()가 IllegalArgumentException을 던져 관리자 화면 대신
+        // GlobalExceptionHandler의 raw JSON 에러로 빠지므로, URL을 직접 수정한 경우를 방어한다.
+        page = Math.max(0, page);
         model.addAttribute("logs", adminLogService.getLogs(page, filter));
         model.addAttribute("targetType", filter.targetType());
         model.addAttribute("adminUsername", filter.adminUsername());
@@ -36,12 +36,12 @@ public class AdminLogController {
         model.addAttribute("to", filter.to());
         model.addAttribute("actionLabels", AdminAction.actionLabelMap());
 
-        List<String> params = new ArrayList<>();
-        if (!filter.targetType().isBlank()) params.add("targetType=" + URLEncoder.encode(filter.targetType(), StandardCharsets.UTF_8));
-        if (!filter.adminUsername().isBlank()) params.add("adminUsername=" + URLEncoder.encode(filter.adminUsername(), StandardCharsets.UTF_8));
-        if (filter.from() != null) params.add("from=" + filter.from());
-        if (filter.to() != null) params.add("to=" + filter.to());
-        model.addAttribute("extraParams", params.isEmpty() ? null : String.join("&", params));
+        String extraParams = AdminUrlUtils.buildQueryString(
+                "targetType", filter.targetType(),
+                "adminUsername", filter.adminUsername(),
+                "from", filter.from(),
+                "to", filter.to());
+        model.addAttribute("extraParams", extraParams.isEmpty() ? null : extraParams);
 
         return "admin/system/logs";
     }

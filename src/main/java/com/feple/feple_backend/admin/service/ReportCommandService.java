@@ -1,9 +1,13 @@
 package com.feple.feple_backend.admin.service;
 
 import java.util.List;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public interface ReportCommandService {
+
+    Logger LOG = LoggerFactory.getLogger(ReportCommandService.class);
+
     void dismissReport(Long reportId);
     void bulkDismiss(List<Long> ids);
 
@@ -28,7 +32,7 @@ public interface ReportCommandService {
                 deleteContentAndResolve(id);
                 success++;
             } catch (Exception e) {
-                LoggerFactory.getLogger(ReportCommandService.class).warn("bulk delete failed id={}", id, e);
+                LOG.warn("bulk delete failed id={}", id, e);
             }
         }
         return success;

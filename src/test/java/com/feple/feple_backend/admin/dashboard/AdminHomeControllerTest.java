@@ -15,8 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -36,14 +38,18 @@ class AdminHomeControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
+    private static UsernamePasswordAuthenticationToken authWithLogsPermission() {
+        return new UsernamePasswordAuthenticationToken(
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_LOGS")));
+    }
+
     @Test
     void 대시보드_조회_뷰와_모델_속성_확인() throws Exception {
         given(dashboardAssembler.assemble()).willReturn(mock(AdminDashboardDto.class));
         given(adminLogService.getRecentLogs()).willReturn(List.of());
         given(adminAccountService.findByUsername("admin")).willReturn(Optional.empty());
 
-        mockMvc.perform(get("/admin")
-                        .principal(new UsernamePasswordAuthenticationToken("admin", null)))
+        mockMvc.perform(get("/admin").principal(authWithLogsPermission()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/dashboard/home"))
                 .andExpect(model().attributeExists("dashboard", "recentLogs", "actionLabels"));
@@ -56,8 +62,20 @@ class AdminHomeControllerTest {
         given(adminLogService.getRecentLogs()).willReturn(List.of());
         given(adminAccountService.findByUsername("admin")).willReturn(Optional.of(account));
 
-        mockMvc.perform(get("/admin")
-                        .principal(new UsernamePasswordAuthenticationToken("admin", null)))
+        mockMvc.perform(get("/admin").principal(authWithLogsPermission()))
                 .andExpect(model().attribute("currentAdmin", account));
+    }
+
+    @Test
+    void LOGS_권한_없으면_감사로그를_조회하지_않고_빈_목록_반환() throws Exception {
+        given(dashboardAssembler.assemble()).willReturn(mock(AdminDashboardDto.class));
+        given(adminAccountService.findByUsername("admin")).willReturn(Optional.empty());
+
+        mockMvc.perform(get("/admin")
+                        .principal(new UsernamePasswordAuthenticationToken("admin", null, List.of())))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("recentLogs", List.of()));
+
+        Mockito.verify(adminLogService, Mockito.never()).getRecentLogs();
     }
 }

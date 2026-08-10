@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.log;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,6 +39,16 @@ class AdminLogControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/system/logs"))
                 .andExpect(model().attributeExists("logs", "targetType", "adminUsername", "actionLabels"));
+    }
+
+    @Test
+    void 음수_page는_0으로_보정() throws Exception {
+        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+
+        mockMvc.perform(get("/admin/logs").param("page", "-1"))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(adminLogService).getLogs(eq(0), any());
     }
 
     @Test

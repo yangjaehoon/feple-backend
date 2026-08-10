@@ -71,12 +71,9 @@
                             th:text="${entry.ipAddress != null ? entry.ipAddress : '—'}"></td>
 
                         <td>
-                            <span th:with="a=${entry.action.name()}"
-                                  th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT') or #strings.contains(a,'FAILURE')}
-                                           ? 'log-badge log-danger'
-                                           : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'}
-                                              ? 'log-badge log-success'
-                                              : 'log-badge log-info')"
+                            <span th:with="a=${entry.action.name()}, sev=${entry.action.severity().name()}"
+                                  th:class="${sev == 'DANGER'} ? 'log-badge log-danger'
+                                           : (${sev == 'SUCCESS'} ? 'log-badge log-success' : 'log-badge log-info')"
                                   th:text="${actionLabels.getOrDefault(a, #strings.replace(a, '_', ' '))}">
                             </span>
                         </td>

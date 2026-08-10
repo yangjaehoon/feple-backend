@@ -64,6 +64,18 @@ class AdminLogServiceTest {
     }
 
     @Test
+    void detail이_500자_초과하면_잘려서_저장() {
+        String longDetail = "가".repeat(600);
+
+        adminLogService.log(AdminAction.POST_DELETE, "POST", 1L, longDetail);
+
+        ArgumentCaptor<AdminLog> captor = ArgumentCaptor.forClass(AdminLog.class);
+        org.mockito.Mockito.verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getDetail()).hasSize(500);
+        assertThat(captor.getValue().getDetail()).isEqualTo("가".repeat(500));
+    }
+
+    @Test
     void 인증되지_않은_상태면_adminUsername_null() {
         Authentication auth = new UsernamePasswordAuthenticationToken("admin", null, List.of());
         auth.setAuthenticated(false);

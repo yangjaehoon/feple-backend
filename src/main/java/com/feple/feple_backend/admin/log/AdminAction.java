@@ -106,4 +106,18 @@ public enum AdminAction {
         return Arrays.stream(values())
                 .collect(Collectors.toMap(Enum::name, AdminAction::getLabel));
     }
+
+    /** 관리자 활동 화면(logs.html, dashboard/home.html)에서 배지 색상을 정하는 데 쓰는 위험도 — 판정 기준을 여기 한 곳에 둔다. */
+    public enum Severity { DANGER, SUCCESS, INFO }
+
+    public Severity severity() {
+        String n = name();
+        if (n.contains("DELETE") || n.contains("BAN") || n.contains("REJECT") || n.contains("FAILURE")) {
+            return Severity.DANGER;
+        }
+        if (n.contains("CREATE") || n.contains("ADD") || n.contains("APPROVE") || this == USER_UNBAN) {
+            return Severity.SUCCESS;
+        }
+        return Severity.INFO;
+    }
 }

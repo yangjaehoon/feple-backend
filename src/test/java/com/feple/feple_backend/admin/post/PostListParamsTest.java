@@ -2,6 +2,8 @@ package com.feple.feple_backend.admin.post;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 class PostListParamsTest {
@@ -32,7 +34,9 @@ class PostListParamsTest {
     void toExtraParams_키워드_있으면_포함() {
         PostListParams params = new PostListParams(0, "FREE", "공지", null, null);
 
-        assertThat(params.toExtraParams()).isEqualTo("filter=FREE&keyword=공지");
+        // 쿼리스트링 값은 URL 인코딩되므로(한글 등 특수문자 안전 처리), 디코딩한 값으로 비교한다.
+        assertThat(URLDecoder.decode(params.toExtraParams(), StandardCharsets.UTF_8))
+                .isEqualTo("filter=FREE&keyword=공지");
     }
 
     @Test

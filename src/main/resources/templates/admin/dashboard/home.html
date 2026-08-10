@@ -244,10 +244,9 @@
                     <div th:replace="~{admin/fragments :: dashboardCardHeader('📋', '최근 관리자 활동', null, null, @{/admin/logs})}"></div>
                     <div class="activity-list">
                         <div th:each="entry : ${recentLogs}" class="act-item">
-                            <div th:with="a=${entry.action.name()}"
-                                 th:class="${#strings.contains(a,'DELETE') or #strings.contains(a,'BAN') or #strings.contains(a,'REJECT')} ? 'act-dot red'
-                                         : (${#strings.contains(a,'CREATE') or #strings.contains(a,'ADD') or #strings.contains(a,'APPROVE') or a == 'USER_UNBAN'} ? 'act-dot green'
-                                         : 'act-dot yellow')"></div>
+                            <div th:with="sev=${entry.action.severity().name()}"
+                                 th:class="${sev == 'DANGER'} ? 'act-dot red'
+                                         : (${sev == 'SUCCESS'} ? 'act-dot green' : 'act-dot yellow')"></div>
                             <div class="act-body">
                                 <div class="act-type" th:text="${actionLabels.getOrDefault(entry.action.name(), #strings.replace(entry.action.name(), '_', ' '))}"></div>
                                 <div class="act-title" th:text="${entry.detail != null ? entry.detail : (entry.targetType != null ? entry.targetType + (entry.targetId != null ? ' #' + entry.targetId : '') : '—')}"></div>

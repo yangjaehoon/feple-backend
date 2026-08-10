@@ -21,6 +21,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 public class AdminLogService {
 
+    private static final int DETAIL_MAX_LENGTH = 500;
+
     private final AdminLogRepository repository;
     private final CurrentAdminProvider currentAdminProvider;
 
@@ -35,13 +37,21 @@ public class AdminLogService {
                     .action(action)
                     .targetType(targetType)
                     .targetId(targetId)
-                    .detail(detail)
+                    .detail(truncate(detail))
                     .ipAddress(extractClientIp())
                     .build());
         } catch (Exception e) {
             // 감사 로그 저장 실패가 관리자 액션 자체를 중단시켜선 안 됨 — fail-safe
             log.error("감사 로그 저장 실패: action={}, targetType={}, targetId={}", action, targetType, targetId, e);
         }
+    }
+
+    // detail은 DB 컬럼이 500자 제한이라 그대로 저장하면 예외로 감사로그 자체가 조용히 유실된다
+    // (아래 catch가 fail-safe로 삼키므로) — 초과분은 잘라서라도 기록을 남긴다.
+    private static String truncate(String detail) {
+        return (detail != null && detail.length() > DETAIL_MAX_LENGTH)
+                ? detail.substring(0, DETAIL_MAX_LENGTH)
+                : detail;
     }
 
     private String extractClientIp() {

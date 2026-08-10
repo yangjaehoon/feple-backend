@@ -31,6 +31,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// 다른 admin 통계/집계 클래스(AdminPendingItemsServiceImpl, AdminSidebarCountService,
+// AdminDashboardAssembler)는 각 도메인의 *Service/*AdminService를 경유하지만, 이 클래스는
+// 예외적으로 여러 도메인의 Repository를 직접 주입한다 — 여기서 쓰는 쿼리(countGroupByDate,
+// findTopKeywordsSince, findUpcomingFestivalsSortedByLike 등)는 도메인 서비스가 아닌 이
+// 대시보드/통계 화면 전용으로 만들어진 순수 조회·집계 쿼리라, 도메인 서비스에 위임용 패스스루
+// 메서드를 추가해도 실질적인 캡슐화 이득이 없다(쓰기 작업이 없어 도메인 불변식을 우회할 위험도 없음).
+// 읽기 전용 리포팅 레이어로 의도적으로 둔 예외이니 새 집계 지표를 추가할 때도 이 패턴을 유지한다.
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -75,6 +82,8 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
         return buildDailyStats(from, to);
     }
 
+    // 고정 캐시 키를 쓰는 이유는 getDailyStats()와 동일 — CacheConfig의 TTL로 날짜가 바뀌어도
+    // 자연 갱신되므로, 캐시 키 계산에 LocalDate.now()를 SpEL로 넣는 시스템 시계 하드 의존을 피한다.
     @Override
     @Cacheable("adminActivityStats")
     public UserActivityStatsDto getUserActivityStats() {
@@ -96,6 +105,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
         );
     }
 
+    // 고정 캐시 키를 쓰는 이유는 getDailyStats()와 동일 (위 getUserActivityStats() 참고).
     @Override
     @Cacheable("adminContentTrend")
     public ContentTrendDto getContentTrend() {
