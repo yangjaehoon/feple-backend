@@ -122,25 +122,14 @@ public class NotificationQueryService {
 
     @Transactional
     public void deleteById(Long notificationId, Long userId) {
-        int deleted = notificationRepository.deleteByIdAndUserId(notificationId, userId);
-        if (deleted == 0) {
-            throw new IllegalArgumentException("해당 알림을 찾을 수 없습니다.");
-        }
+        Notification notification = EntityLoader.getOrThrow(notificationRepository::findById, notificationId, "알림");
+        OwnershipValidator.checkOwner(notification.getUserId(), userId, "알림", "삭제");
+        notificationRepository.delete(notification);
     }
 
     @Transactional
     public void deleteAll(Long userId) {
         notificationRepository.deleteByUserId(userId);
-    }
-
-    @Transactional
-    public void removeAllByPostIds(List<Long> postIds) {
-        notificationRepository.deleteByPostIdIn(postIds);
-    }
-
-    @Transactional
-    public void removeAllByFestivalId(Long festivalId) {
-        notificationRepository.deleteByFestivalId(festivalId);
     }
 
     private Set<NotificationType> resolveTypeFilter(String typeGroup) {

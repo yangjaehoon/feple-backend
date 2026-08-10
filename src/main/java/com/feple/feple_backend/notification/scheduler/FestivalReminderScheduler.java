@@ -52,11 +52,7 @@ public class FestivalReminderScheduler {
         log.info("[ReminderScheduler] D-{} 대상 페스티벌 {}개", dDay, festivals.size());
 
         List<Long> festivalIds = festivals.stream().map(Festival::getId).toList();
-        Map<Long, List<Long>> artistIdsByFestivalId = artistFestivalRepository
-                .findByFestivalIdInWithArtist(festivalIds)
-                .stream()
-                .collect(Collectors.groupingBy(ArtistFestival::getFestivalId,
-                        Collectors.mapping(ArtistFestival::getArtistId, Collectors.toList())));
+        Map<Long, List<Long>> artistIdsByFestivalId = buildArtistIdsByFestival(festivalIds);
 
         List<Long> allArtistIds = artistIdsByFestivalId.values().stream()
                 .flatMap(List::stream)
@@ -64,29 +60,47 @@ public class FestivalReminderScheduler {
                 .toList();
         if (allArtistIds.isEmpty()) return;
 
-        Map<Long, List<Long>> userIdsByArtistId = artistFollowRepository
-                .findArtistIdAndUserIdByArtistIdIn(allArtistIds)
+        Map<Long, List<Long>> userIdsByArtistId = buildUserIdsByArtist(allArtistIds);
+
+        for (Festival festival : festivals) {
+            dispatchReminder(festival, dDay, artistIdsByFestivalId, userIdsByArtistId);
+        }
+    }
+
+    private Map<Long, List<Long>> buildArtistIdsByFestival(List<Long> festivalIds) {
+        return artistFestivalRepository
+                .findByFestivalIdInWithArtist(festivalIds)
+                .stream()
+                .collect(Collectors.groupingBy(ArtistFestival::getFestivalId,
+                        Collectors.mapping(ArtistFestival::getArtistId, Collectors.toList())));
+    }
+
+    private Map<Long, List<Long>> buildUserIdsByArtist(List<Long> artistIds) {
+        return artistFollowRepository
+                .findArtistIdAndUserIdByArtistIdIn(artistIds)
                 .stream()
                 .collect(Collectors.groupingBy(row -> (Long) row[0],
                         Collectors.mapping(row -> (Long) row[1], Collectors.toList())));
+    }
 
-        for (Festival festival : festivals) {
-            List<Long> artistIds = artistIdsByFestivalId.getOrDefault(festival.getId(), List.of());
-            if (artistIds.isEmpty()) continue;
+    private void dispatchReminder(Festival festival, int dDay,
+                                   Map<Long, List<Long>> artistIdsByFestivalId,
+                                   Map<Long, List<Long>> userIdsByArtistId) {
+        List<Long> artistIds = artistIdsByFestivalId.getOrDefault(festival.getId(), List.of());
+        if (artistIds.isEmpty()) return;
 
-            List<Long> userIds = artistIds.stream()
-                    .flatMap(artistId -> userIdsByArtistId.getOrDefault(artistId, List.of()).stream())
-                    .distinct()
-                    .toList();
-            if (userIds.isEmpty()) continue;
+        List<Long> userIds = artistIds.stream()
+                .flatMap(artistId -> userIdsByArtistId.getOrDefault(artistId, List.of()).stream())
+                .distinct()
+                .toList();
+        if (userIds.isEmpty()) return;
 
-            // 한 페스티벌에서 예외가 나도 나머지 페스티벌의 리마인더는 계속 발송돼야 함
-            try {
-                notificationService.sendFestivalReminders(
-                        festival.getId(), festival.getTitle(), festival.getTitleEn(), userIds, dDay);
-            } catch (Exception e) {
-                log.error("[ReminderScheduler] D-{} 리마인더 발송 실패: festivalId={}", dDay, festival.getId(), e);
-            }
+        // 한 페스티벌에서 예외가 나도 나머지 페스티벌의 리마인더는 계속 발송돼야 함
+        try {
+            notificationService.sendFestivalReminders(
+                    festival.getId(), festival.getTitle(), festival.getTitleEn(), userIds, dDay);
+        } catch (Exception e) {
+            log.error("[ReminderScheduler] D-{} 리마인더 발송 실패: festivalId={}", dDay, festival.getId(), e);
         }
     }
 }

@@ -53,12 +53,13 @@ class NotificationPreferenceServiceImplTest {
         given(dto.isFestivalEnabled()).willReturn(true);
         given(dto.isSongRequestEnabled()).willReturn(false);
 
-        service.updatePreferences(1L, dto);
+        NotificationPreferenceDto result = service.updatePreferences(1L, dto);
 
         assertThat(pref.isCertEnabled()).isFalse();
         assertThat(pref.isCommentEnabled()).isFalse();
         assertThat(pref.isFestivalEnabled()).isTrue();
         assertThat(pref.isSongRequestEnabled()).isFalse();
+        assertThat(result.isFestivalEnabled()).isTrue();
     }
 
     // ── getOrCreate ──────────────────────────────────────────────────────

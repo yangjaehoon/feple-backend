@@ -181,7 +181,7 @@ public class NotificationService {
                         NotificationMessages.ARTIST_SUGGESTION_PROCESSED_TITLE_EN,
                         NotificationMessages.artistSuggestionProcessedBodyEn(artistNameEn, event.note()),
                         resourceId),
-                content -> artist != null ? Notification.of(user, content, artist) : Notification.of(user, content, (Festival) null));
+                content -> artist != null ? Notification.of(user, content, artist) : Notification.of(user, content));
     }
 
     @Async
@@ -199,7 +199,7 @@ public class NotificationService {
                         NotificationMessages.FESTIVAL_SUGGESTION_PROCESSED_TITLE_EN,
                         NotificationMessages.festivalSuggestionProcessedBodyEn(festivalNameEn, event.note()),
                         resourceId),
-                content -> festival != null ? Notification.of(user, content, festival) : Notification.of(user, content, (Artist) null));
+                content -> festival != null ? Notification.of(user, content, festival) : Notification.of(user, content));
     }
 
     @Async
@@ -240,7 +240,7 @@ public class NotificationService {
                         NotificationMessages.POST_DELETED_BY_ADMIN_TITLE_EN,
                         NotificationMessages.postDeletedByAdminBodyEn(event.postTitle()),
                         null),
-                content -> Notification.of(author, content, (Festival) null));
+                content -> Notification.of(author, content));
     }
 
     /** 관리자 수동 포인트 지급 알림 — 커밋 후에만 발송 */
@@ -255,7 +255,7 @@ public class NotificationService {
                         NotificationMessages.adminPointGrantedTitleEn(event.amount()),
                         NotificationMessages.adminPointGrantedBodyEn(event.amount()),
                         null),
-                content -> Notification.of(user, content, (Festival) null));
+                content -> Notification.of(user, content));
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
@@ -310,14 +310,14 @@ public class NotificationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (userId=" + userId + ")"));
         notificationRepository.save(Notification.of(
-                user, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null));
+                user, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null)));
     }
 
     /** 관리자 타겟 발송(아티스트 팔로워/페스티벌 인증자)용 개별 알림 일괄 저장 (AdminPushService에서 호출) */
     public void saveAdminBroadcastNotifications(List<Long> userIds, String title, String body) {
         List<User> users = userRepository.findAllById(userIds);
         notificationRepository.saveAll(users.stream()
-                .map(u -> Notification.of(u, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null), (Festival) null))
+                .map(u -> Notification.of(u, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null)))
                 .toList());
     }
 

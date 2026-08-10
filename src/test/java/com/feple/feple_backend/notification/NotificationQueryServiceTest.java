@@ -18,6 +18,7 @@ import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.notification.service.NotificationQueryService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -202,42 +203,40 @@ class NotificationQueryServiceTest {
 
     @Test
     void deleteById_성공() {
-        given(notificationRepository.deleteByIdAndUserId(10L, 1L)).willReturn(1);
+        Notification n = mock(Notification.class);
+        given(n.getUserId()).willReturn(1L);
+        given(notificationRepository.findById(10L)).willReturn(Optional.of(n));
 
         notificationQueryService.deleteById(10L, 1L);
 
-        then(notificationRepository).should().deleteByIdAndUserId(10L, 1L);
+        then(notificationRepository).should().delete(n);
     }
 
     @Test
     void deleteById_대상없으면_예외() {
-        given(notificationRepository.deleteByIdAndUserId(99L, 1L)).willReturn(0);
+        given(notificationRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> notificationQueryService.deleteById(99L, 1L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("해당 알림을 찾을 수 없습니다.");
+                .isInstanceOf(NoSuchElementException.class);
     }
 
-    // ── deleteAll / removeAllByPostIds / removeAllByFestivalId ────────
+    @Test
+    void deleteById_다른_사용자_예외() {
+        Notification n = mock(Notification.class);
+        given(n.getUserId()).willReturn(99L);
+        given(notificationRepository.findById(10L)).willReturn(Optional.of(n));
+
+        assertThatThrownBy(() -> notificationQueryService.deleteById(10L, 1L))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("본인의 알림만 삭제");
+    }
+
+    // ── deleteAll ──────────────────────────────────────────────────────
 
     @Test
     void deleteAll_호출() {
         notificationQueryService.deleteAll(1L);
 
         then(notificationRepository).should().deleteByUserId(1L);
-    }
-
-    @Test
-    void removeAllByPostIds_호출() {
-        notificationQueryService.removeAllByPostIds(List.of(1L, 2L));
-
-        then(notificationRepository).should().deleteByPostIdIn(List.of(1L, 2L));
-    }
-
-    @Test
-    void removeAllByFestivalId_호출() {
-        notificationQueryService.removeAllByFestivalId(5L);
-
-        then(notificationRepository).should().deleteByFestivalId(5L);
     }
 }

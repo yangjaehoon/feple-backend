@@ -4,7 +4,6 @@ import com.feple.feple_backend.notification.dto.NotificationPreferenceDto;
 import com.feple.feple_backend.notification.dto.UpdateNotificationPreferenceDto;
 import com.feple.feple_backend.notification.service.NotificationPreferenceService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,8 +26,7 @@ public class NotificationPreferenceController {
     @PutMapping
     public ResponseEntity<NotificationPreferenceDto> updatePreferences(
             @AuthenticationPrincipal Long userId,
-            @Valid @RequestBody UpdateNotificationPreferenceDto dto) {
-        preferenceService.updatePreferences(userId, dto);
-        return ResponseEntity.ok(preferenceService.getPreferences(userId));
+            @RequestBody UpdateNotificationPreferenceDto dto) {
+        return ResponseEntity.ok(preferenceService.updatePreferences(userId, dto));
     }
 }

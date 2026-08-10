@@ -1,35 +1,44 @@
 package com.feple.feple_backend.notification.service;
 
+import java.util.Map;
+
 /** 알림 메시지 문자열 상수 모음 */
 public final class NotificationMessages {
 
     private NotificationMessages() {}
 
-    private static final java.util.Map<String, String> ARTIST_REASON_EN_MAP = java.util.Map.of(
+    private static final Map<String, String> ARTIST_REASON_EN_MAP = Map.of(
         "요청하신 아티스트를 등록했어요!", "Your requested artist has been registered!",
         "이미 등록된 아티스트예요.", "The artist is already in our database.",
         "정보가 부족해서 등록이 어려워요.", "We couldn't register the artist due to insufficient information.",
         "활동 이력이 없어서 등록이 어려워요.", "The artist doesn't have enough activity history for registration."
     );
 
-    private static final java.util.Map<String, String> FESTIVAL_REASON_EN_MAP = java.util.Map.of(
+    private static final Map<String, String> FESTIVAL_REASON_EN_MAP = Map.of(
         "요청하신 페스티벌을 등록했어요!", "Your requested festival has been registered!",
         "이미 등록된 페스티벌이에요.", "The festival is already in our database.",
         "정보가 부족해서 등록이 어려워요.", "We couldn't register the festival due to insufficient information.",
         "아직 개최가 확정되지 않았어요.", "The festival hasn't been confirmed to take place yet."
     );
 
-    private static final java.util.Map<String, String> CERT_REASON_EN_MAP = java.util.Map.of(
+    private static final Map<String, String> CERT_REASON_EN_MAP = Map.of(
         "사진이 불분명해요.", "The submitted photo is unclear.",
         "해당 페스티벌 인증이 아닌 것 같아요.", "This doesn't appear to be a valid festival certification.",
         "이미 인증된 내역이 있어요.", "You already have a certification for this festival."
     );
 
-    private static final java.util.Map<String, String> SONG_REASON_EN_MAP = java.util.Map.of(
+    private static final Map<String, String> SONG_REASON_EN_MAP = Map.of(
         "이미 등록된 곡이에요.", "This song is already in our database.",
         "해당 아티스트의 곡이 아닌 것 같아요.", "This doesn't appear to be this artist's song.",
         "정보가 부족해요.", "Insufficient information provided."
     );
+
+    // 사유 문자열을 영문 맵에서 찾아 없으면 원문 그대로, base에 separator로 이어붙인다.
+    // 사유가 없으면 base를 그대로 반환한다.
+    private static String appendReason(String base, String separator, Map<String, String> reasonMap, String reason) {
+        if (reason == null || reason.isBlank()) return base;
+        return base + separator + reasonMap.getOrDefault(reason.trim(), reason);
+    }
 
     public static String newFestivalTitle(String artistName) {
         return artistName + "의 새 페스티벌";
@@ -78,11 +87,7 @@ public final class NotificationMessages {
         String base = title.isEmpty()
                 ? "Your festival certification was rejected."
                 : "Your certification for '" + title + "' was rejected.";
-        if (reason != null && !reason.isBlank()) {
-            String translated = CERT_REASON_EN_MAP.getOrDefault(reason.trim(), reason);
-            return base + " Reason: " + translated;
-        }
-        return base;
+        return appendReason(base, " Reason: ", CERT_REASON_EN_MAP, reason);
     }
 
     public static String newCommentTitle(String commenterNickname) {
@@ -145,11 +150,7 @@ public final class NotificationMessages {
 
     public static String songRequestRejectedBodyEn(String songTitle, String reason) {
         String base = "Your request for '" + songTitle + "' was rejected.";
-        if (reason != null && !reason.isBlank()) {
-            String translated = SONG_REASON_EN_MAP.getOrDefault(reason.trim(), reason);
-            return base + " Reason: " + translated;
-        }
-        return base;
+        return appendReason(base, " Reason: ", SONG_REASON_EN_MAP, reason);
     }
 
     public static final String ARTIST_SUGGESTION_PROCESSED_TITLE = "아티스트 신청 결과";
@@ -163,11 +164,9 @@ public final class NotificationMessages {
 
     public static String artistSuggestionProcessedBodyEn(String artistName, String note) {
         String base = "Your request for '" + artistName + "'";
-        if (note != null && !note.isBlank()) {
-            String translated = ARTIST_REASON_EN_MAP.getOrDefault(note.trim(), note);
-            return base + ": " + translated;
-        }
-        return base + " has been reviewed.";
+        return (note != null && !note.isBlank())
+                ? appendReason(base, ": ", ARTIST_REASON_EN_MAP, note)
+                : base + " has been reviewed.";
     }
 
     public static final String FESTIVAL_SUGGESTION_PROCESSED_TITLE = "페스티벌 신청 결과";
@@ -181,11 +180,9 @@ public final class NotificationMessages {
 
     public static String festivalSuggestionProcessedBodyEn(String festivalName, String note) {
         String base = "Your request for '" + festivalName + "'";
-        if (note != null && !note.isBlank()) {
-            String translated = FESTIVAL_REASON_EN_MAP.getOrDefault(note.trim(), note);
-            return base + ": " + translated;
-        }
-        return base + " has been reviewed.";
+        return (note != null && !note.isBlank())
+                ? appendReason(base, ": ", FESTIVAL_REASON_EN_MAP, note)
+                : base + " has been reviewed.";
     }
 
     public static String newReplyTitle(String replierNickname) {

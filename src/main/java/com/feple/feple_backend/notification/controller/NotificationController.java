@@ -23,7 +23,7 @@ public class NotificationController {
 
     private final NotificationQueryService notificationQueryService;
 
-    /** 내 알림 목록. typeGroup: cert | comment | festival | null(전체) */
+    /** 내 알림 목록. typeGroup 허용값은 {@link NotificationQueryService#resolveTypeFilter} 참고 (null이면 전체) */
     @GetMapping
     public ResponseEntity<Page<NotificationDto>> getMyNotifications(
             @AuthenticationPrincipal Long userId,

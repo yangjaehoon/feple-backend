@@ -52,18 +52,15 @@ public class Notification {
     @JoinColumn(name = "artist_id")
     private Artist artist;
 
-    public Long getReferenceId() {
-        if (festival != null) return festival.getId();
-        if (post != null) return post.getId();
-        if (artist != null) return artist.getId();
-        return null;
-    }
-
     @Column(nullable = false)
     private boolean isRead = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    public static Notification of(User user, NotificationContent content) {
+        return base(user, content);
+    }
 
     public static Notification of(User user, NotificationContent content, Festival festival) {
         Notification notification = base(user, content);
@@ -96,11 +93,23 @@ public class Notification {
 
     public Long getUserId() { return user.getId(); }
 
+    // festival/post/artist는 of() 팩토리에 의해 상호 배타적으로 하나만 채워진다 — referenceId/imageKey를
+    // 항상 같은 우선순위(festival → post → artist)로 함께 판별해 두 값이 서로 다른 연관을 가리키지 않게 한다.
+    private record Reference(Long id, String imageKey) {}
+
+    private Reference resolveReference() {
+        if (festival != null) return new Reference(festival.getId(), festival.getPosterKey());
+        if (post != null) return new Reference(post.getId(), post.getFestivalPosterKey());
+        if (artist != null) return new Reference(artist.getId(), artist.getProfileImageKey());
+        return new Reference(null, null);
+    }
+
+    public Long getReferenceId() {
+        return resolveReference().id();
+    }
+
     public String getImageKey() {
-        if (festival != null) return festival.getPosterKey();
-        if (artist != null) return artist.getProfileImageKey();
-        if (post != null && post.getFestivalPosterKey() != null) return post.getFestivalPosterKey();
-        return null;
+        return resolveReference().imageKey();
     }
 
     public void markRead() {

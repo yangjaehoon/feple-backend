@@ -53,21 +53,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("DELETE FROM Notification n WHERE n.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM Notification n WHERE n.festival.id = :festivalId")
-    void deleteByFestivalId(@Param("festivalId") Long festivalId);
-
-    @Modifying
-    @Transactional
-    @Query(value = "DELETE FROM notifications WHERE post_id IN (:postIds)", nativeQuery = true)
-    void deleteByPostIdIn(@Param("postIds") List<Long> postIds);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM Notification n WHERE n.id = :id AND n.user.id = :userId")
-    int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
-
     // 한 번에 전체를 지우면 하나의 커넥션·트랜잭션을 오래 붙잡는다 — LIMIT으로 잘라 여러 번 커밋
     @Modifying
     @Transactional

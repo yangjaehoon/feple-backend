@@ -48,7 +48,8 @@ class NotificationPreferenceControllerTest {
     @Test
     void 알림_설정_수정() throws Exception {
         NotificationPreferenceDto dto = mock(NotificationPreferenceDto.class);
-        given(preferenceService.getPreferences(1L)).willReturn(dto);
+        given(preferenceService.updatePreferences(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.any()))
+                .willReturn(dto);
 
         mockMvc.perform(put("/users/me/notification-preferences")
                         .with(AuthTestHelper.userAuth(1L))

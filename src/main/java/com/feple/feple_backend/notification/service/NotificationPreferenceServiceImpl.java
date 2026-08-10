@@ -27,10 +27,11 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
 
     @Override
     @Transactional
-    public void updatePreferences(Long userId, UpdateNotificationPreferenceDto dto) {
+    public NotificationPreferenceDto updatePreferences(Long userId, UpdateNotificationPreferenceDto dto) {
         NotificationPreference pref = getOrCreate(userId);
         pref.update(new NotificationPreferenceFields(dto.isCertEnabled(), dto.isCommentEnabled(),
                 dto.isFestivalEnabled(), dto.isSongRequestEnabled()));
+        return NotificationPreferenceDto.from(pref);
     }
 
     @Override
