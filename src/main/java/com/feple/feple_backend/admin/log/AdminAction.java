@@ -111,11 +111,15 @@ public enum AdminAction {
     public enum Severity { DANGER, SUCCESS, INFO }
 
     public Severity severity() {
+        // USER_UNBAN은 "UNBAN"이 "BAN"을 부분 문자열로 포함해 아래 DANGER 판정에 먼저 걸리므로
+        // 특수 케이스로 먼저 처리한다 (기존 Thymeleaf 템플릿 두 곳 모두 동일한 순서 버그로
+        // 이 분기가 죽은 코드였음 — 여기로 통합하며 함께 수정).
+        if (this == USER_UNBAN) return Severity.SUCCESS;
         String n = name();
         if (n.contains("DELETE") || n.contains("BAN") || n.contains("REJECT") || n.contains("FAILURE")) {
             return Severity.DANGER;
         }
-        if (n.contains("CREATE") || n.contains("ADD") || n.contains("APPROVE") || this == USER_UNBAN) {
+        if (n.contains("CREATE") || n.contains("ADD") || n.contains("APPROVE")) {
             return Severity.SUCCESS;
         }
         return Severity.INFO;
