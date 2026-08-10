@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.ocr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -29,8 +30,9 @@ class TimetableOcrServiceTest {
     @BeforeEach
     void setUp() {
         // applyEntries가 루프 시작 전 festival을 한 번만 조회하도록 바뀌어(N+1 방지),
-        // 모든 테스트가 이 스텁을 거친다.
-        given(timetableService.getFestivalOrThrow(anyLong())).willReturn(festival);
+        // applyEntries를 호출하는 테스트들이 이 스텁을 거친다. isConfigured 위임 테스트처럼
+        // applyEntries를 아예 호출하지 않는 케이스도 있어 lenient로 strict-stub 오탐을 막는다.
+        lenient().when(timetableService.getFestivalOrThrow(anyLong())).thenReturn(festival);
     }
 
     // ── applyEntries ──────────────────────────────────────────────────────────
