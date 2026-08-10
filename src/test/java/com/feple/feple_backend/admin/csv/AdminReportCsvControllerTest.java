@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.csv;
 
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -22,14 +23,28 @@ class AdminReportCsvControllerTest {
     @Mock AdminLogService adminLogService;
 
     ReportCsvExporter postExporter = mock(ReportCsvExporter.class);
+    ReportCsvExporter photoExporter = mock(ReportCsvExporter.class);
 
     MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         given(postExporter.getReportType()).willReturn("post");
-        AdminReportCsvController controller = new AdminReportCsvController(adminLogService, List.of(postExporter));
+        given(photoExporter.getReportType()).willReturn("photo");
+        AdminReportCsvController controller =
+                new AdminReportCsvController(adminLogService, List.of(postExporter, photoExporter));
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
+
+    @Test
+    void reports_csv_photo_타입은_photo_엑스포터로_라우팅되고_post로_폴백하지_않음() throws Exception {
+        given(photoExporter.buildCsv()).willReturn("ID,내용\n1,사진신고\n");
+
+        mockMvc.perform(get("/admin/export/reports.csv").param("type", "photo"))
+                .andExpect(status().isOk());
+
+        then(photoExporter).should().buildCsv();
+        then(postExporter).should(never()).buildCsv();
     }
 
     @Test
@@ -42,13 +57,11 @@ class AdminReportCsvControllerTest {
     }
 
     @Test
-    void reports_csv_알_수_없는_타입이면_post_엑스포터_폴백() throws Exception {
-        given(postExporter.buildCsv()).willReturn("ID,내용\n");
-
+    void reports_csv_알_수_없는_타입이면_400_반환하고_post로_폴백하지_않음() throws Exception {
         mockMvc.perform(get("/admin/export/reports.csv").param("type", "unknown"))
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
 
-        then(postExporter).should().buildCsv();
+        then(postExporter).should(never()).buildCsv();
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.feple.feple_backend.global;
 import com.feple.feple_backend.global.repository.BaseWordListRepository;
 import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,14 @@ public abstract class BaseWordListService<T> {
         if (repository.existsByWord(trimmed)) {
             throw new IllegalArgumentException("이미 등록된 " + label() + "입니다: " + trimmed);
         }
-        repository.save(newEntity(trimmed));
+        // existsByWord 체크 후 save() 사이의 TOCTOU 레이스(동시 등록)는 유니크 제약이 최종 방어선이다 —
+        // 위 사전 검증과 동일한 메시지로 변환해준다(AdminActionUtils.tryAction은 IllegalArgumentException의
+        // 메시지를 그대로 노출하므로 이 타입을 써야 구체적인 안내가 화면에 남는다).
+        try {
+            repository.save(newEntity(trimmed));
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("이미 등록된 " + label() + "입니다: " + trimmed);
+        }
         eventPublisher.publishEvent(changedEvent());
     }
 

@@ -51,4 +51,8 @@ public interface ArtistGalleryPhotoReportRepository extends BaseReportRepository
 
     @Query("SELECT apr.photo.uploader.id, COUNT(apr) FROM ArtistGalleryPhotoReport apr WHERE apr.photo.uploader.id IN :userIds GROUP BY apr.photo.uploader.id")
     List<Object[]> countByPhotoUploaderIds(@Param("userIds") Collection<Long> userIds);
+
+    @EntityGraph(attributePaths = {"photo", "photo.artist", "photo.uploader", "reporter"})
+    @Query("SELECT apr FROM ArtistGalleryPhotoReport apr ORDER BY apr.createdAt DESC")
+    List<ArtistGalleryPhotoReport> findAllForExport(Pageable pageable);
 }

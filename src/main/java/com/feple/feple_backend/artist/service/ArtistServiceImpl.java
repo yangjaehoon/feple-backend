@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -75,6 +76,14 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     public List<ArtistResponseDto> getAllArtistsSortedByName() {
         return artistRepository.findAllByDeletedAtIsNull(Sort.by(Sort.Direction.ASC, "name")).stream()
                 .map(this::toDto).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArtistResponseDto> getArtistsForExport() {
+        Sort byName = Sort.by(Sort.Direction.ASC, "name");
+        return artistRepository.findAllByDeletedAtIsNull(PageRequest.of(0, AdminConstants.MAX_EXPORT_ROWS, byName))
+                .stream().map(this::toDto).toList();
     }
 
     @Override

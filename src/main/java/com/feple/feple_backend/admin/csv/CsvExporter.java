@@ -1,9 +1,13 @@
 package com.feple.feple_backend.admin.csv;
 
+import com.feple.feple_backend.admin.log.AdminAction;
+import com.feple.feple_backend.admin.log.AdminLogService;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Supplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
@@ -53,5 +57,15 @@ public final class CsvExporter {
                 .header(HttpHeaders.CONTENT_TYPE, "text/csv;charset=UTF-8")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encoded)
                 .body(result);
+    }
+
+    // Artist/Festival/User CSV 내보내기 컨트롤러가 공유하는 "생성 → 감사로그 → 응답" 3단계를 한 곳에 모은다.
+    // 신고(report) 내보내기는 type 파라미터에 따라 exporter를 여러 개 중 골라야 해서 이 헬퍼에 맞지 않아 제외.
+    public static ResponseEntity<byte[]> export(AdminLogService adminLogService, AdminAction action,
+                                                 String targetType, String filenamePrefix,
+                                                 Supplier<String> csvSupplier) {
+        String csv = csvSupplier.get();
+        adminLogService.log(action, targetType, null, "CSV 내보내기");
+        return csvResponse(csv, filenamePrefix + "_" + LocalDate.now() + ".csv");
     }
 }

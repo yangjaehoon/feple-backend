@@ -37,10 +37,13 @@ public class AdminReportCsvController {
     @GetMapping("/reports.csv")
     @ResponseBody
     public ResponseEntity<byte[]> exportReports(@RequestParam(defaultValue = AdminConstants.REPORT_TYPE_POST) String type) {
-        ReportCsvExporter exporter = reportExporters.getOrDefault(type, reportExporters.get(AdminConstants.REPORT_TYPE_POST));
-        if (exporter == null) {
+        // type이 어느 exporter에도 등록되지 않은 값이면 getOrDefault로 post 쪽에 조용히 fallback하지
+        // 않고 400을 반환한다 — 과거에 여기서 photo 타입 exporter가 누락돼 photo 요청이 post 신고
+        // 데이터로 조용히 내려가던 버그가 있었다.
+        if (!reportExporters.containsKey(type)) {
             return ResponseEntity.badRequest().build();
         }
+        ReportCsvExporter exporter = reportExporters.get(type);
         adminLogService.log(AdminAction.EXPORT_REPORTS, "REPORT", null, type);
         return CsvExporter.csvResponse(exporter.buildCsv(), "reports_" + type + "_" + LocalDate.now() + ".csv");
     }

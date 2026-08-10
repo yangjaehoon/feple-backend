@@ -13,7 +13,7 @@ public class ArtistCsvExporter {
 
     public String buildCsv() {
         StringBuilder sb = new StringBuilder("ID,이름,영어이름,카테고리,팔로워수,곡수\n");
-        for (ArtistResponseDto a : artistAdminService.getAllArtistsSortedByName()) {
+        for (ArtistResponseDto a : artistAdminService.getArtistsForExport()) {
             sb.append(CsvExporter.row(
                     a.getId(),
                     a.getName(),

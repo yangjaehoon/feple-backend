@@ -112,6 +112,16 @@ class ArtistServiceImplTest {
     }
 
     @Test
+    void CSV_내보내기용_조회는_상한이_있는_Pageable_쿼리_사용() {
+        given(artistRepository.findAllByDeletedAtIsNull(any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(artist(1L, "가수A"))));
+
+        List<ArtistResponseDto> result = service.getArtistsForExport();
+
+        assertThat(result).extracting(ArtistResponseDto::getName).containsExactly("가수A");
+    }
+
+    @Test
     void 팔로우한_아티스트_목록_조회() {
         Artist a = artist(1L, "가수A");
         ArtistFollow follow = ArtistFollow.of(User.builder().id(10L).build(), a);

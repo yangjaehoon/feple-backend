@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.dashboard.ContentTrendDto;
 import com.feple.feple_backend.admin.dashboard.DailyStatDto;
-import com.feple.feple_backend.admin.user.UserActivityStatsDto;
-import com.feple.feple_backend.admin.user.UserSummaryDto;
+import com.feple.feple_backend.admin.dashboard.UserActivityStatsDto;
+import com.feple.feple_backend.admin.dashboard.UserSummaryDto;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;

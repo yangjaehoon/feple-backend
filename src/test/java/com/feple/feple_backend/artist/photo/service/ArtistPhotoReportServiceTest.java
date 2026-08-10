@@ -274,4 +274,13 @@ class ArtistPhotoReportServiceTest {
 
         assertThat(service.getReportCountForUser(10L)).isEqualTo(5L);
     }
+
+    @Test
+    void 전체_사진신고_내보내기용_목록_조회() {
+        given(reportRepository.findAllForExport(any())).willReturn(List.of());
+
+        List<ArtistGalleryPhotoReport> result = service.getAllPhotoReportsForExport();
+
+        assertThat(result).isEmpty();
+    }
 }

@@ -11,7 +11,6 @@ import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -60,22 +59,20 @@ public class UserAdminController {
     public String userDetail(@PathVariable Long id,
                              @ModelAttribute UserListFilter listFilter,
                              Model model, RedirectAttributes ra) {
-        try {
-            addDetailModel(model, userDetailAggregationService.getDetail(id));
-            UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.fromPath("/admin/users"), listFilter)
-                    .queryParam("page", listFilter.page());
-            if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
-            model.addAttribute("returnUrl", builder.build().toUriString());
-            model.addAttribute("listFilter", listFilter);
-            return "admin/user/detail";
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/users";
-        } catch (Exception e) {
-            log.error("회원 상세 조회 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "회원 정보를 불러오는 중 오류가 발생했습니다.");
-            return "redirect:/admin/users";
-        }
+        return AdminActionUtils.tryRender(
+                () -> {
+                    addDetailModel(model, userDetailAggregationService.getDetail(id));
+                    UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.fromPath("/admin/users"), listFilter)
+                            .queryParam("page", listFilter.page());
+                    if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
+                    model.addAttribute("returnUrl", builder.build().toUriString());
+                    model.addAttribute("listFilter", listFilter);
+                },
+                "admin/user/detail",
+                e -> log.error("회원 상세 조회 실패 id={}", id, e),
+                "회원 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/users",
+                ra);
     }
 
     @PostMapping("/bulk-delete")

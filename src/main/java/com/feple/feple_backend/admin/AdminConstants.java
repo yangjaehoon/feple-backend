@@ -21,6 +21,7 @@ public final class AdminConstants {
 
     public static final String REPORT_TYPE_POST    = "post";
     public static final String REPORT_TYPE_COMMENT = "comment";
+    public static final String REPORT_TYPE_PHOTO   = "photo";
     public static final String STATUS_PENDING      = "PENDING";
     public static final String STATUS_ALL          = "ALL";
 

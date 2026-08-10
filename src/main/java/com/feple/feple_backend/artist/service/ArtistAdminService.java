@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ArtistAdminService {
     Long createArtist(ArtistRequestDto dto);
     List<ArtistResponseDto> getAllArtistsSortedByName();
+    /** CSV 내보내기 전용 — 다른 4개 exporter와 동일하게 상한을 둔다. */
+    List<ArtistResponseDto> getArtistsForExport();
     Page<ArtistResponseDto> getAdminArtistList(ArtistAdminListQuery query);
     ArtistRequestDto getArtistForEdit(Long id);
     void updateArtist(Long id, ArtistRequestDto dto);

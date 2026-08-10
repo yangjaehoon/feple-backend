@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.photo.service;
 
+import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.PhotoPresignedUrlProvider;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
@@ -78,7 +79,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistGaller
     }
 
     @Override
-    public String getReportType() { return "photo"; }
+    public String getReportType() { return AdminConstants.REPORT_TYPE_PHOTO; }
 
     @Override
     public Page<ArtistGalleryPhotoReport> findPendingReports(PageRequest pageable) {
@@ -144,5 +145,9 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistGaller
 
     public long getReportCountForUser(Long userId) {
         return QueryResultMapper.extractSingleCount(reportRepository.countByPhotoUploaderIds(List.of(userId)));
+    }
+
+    public List<ArtistGalleryPhotoReport> getAllPhotoReportsForExport() {
+        return reportRepository.findAllForExport(PageRequest.of(0, AdminConstants.MAX_EXPORT_ROWS));
     }
 }

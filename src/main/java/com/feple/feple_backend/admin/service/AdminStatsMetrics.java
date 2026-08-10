@@ -2,7 +2,7 @@ package com.feple.feple_backend.admin.service;
 
 import com.feple.feple_backend.admin.dashboard.ContentTrendDto;
 import com.feple.feple_backend.admin.dashboard.DailyStatDto;
-import com.feple.feple_backend.admin.user.UserActivityStatsDto;
+import com.feple.feple_backend.admin.dashboard.UserActivityStatsDto;
 
 import java.time.LocalDate;
 import java.util.List;

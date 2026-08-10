@@ -50,6 +50,17 @@ class BadWordServiceTest {
     }
 
     @Test
+    void add_동시요청으로_유니크_제약_위반시_중복_메시지로_변환() {
+        given(badWordRepository.existsByWord("hello")).willReturn(false);
+        given(badWordRepository.save(any(BadWord.class)))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+
+        assertThatThrownBy(() -> badWordService.add("hello"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("이미 등록된");
+    }
+
+    @Test
     void add_성공_소문자_변환_저장_이벤트_발행() {
         given(badWordRepository.existsByWord("hello")).willReturn(false);
 

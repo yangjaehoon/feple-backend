@@ -1,4 +1,4 @@
-package com.feple.feple_backend.admin.user;
+package com.feple.feple_backend.admin.dashboard;
 
 public record UserActivityStatsDto(
         long dau,

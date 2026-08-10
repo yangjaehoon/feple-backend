@@ -1,6 +1,5 @@
 package com.feple.feple_backend.admin.dashboard;
 
-import com.feple.feple_backend.admin.user.UserSummaryDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 
