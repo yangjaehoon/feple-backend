@@ -47,6 +47,15 @@ class TimetableOcrAdminControllerTest {
     }
 
     @Test
+    void OCR_파싱_이미지가_아닌_파일이면_400_반환() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("image", "test.pdf",
+                MediaType.APPLICATION_PDF_VALUE, new byte[]{1, 2, 3});
+
+        mockMvc.perform(multipart("/admin/crawl/ocr").file(file))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void OCR_파싱_API키_미설정_503_반환() throws Exception {
         MockMultipartFile image = new MockMultipartFile("image", "test.jpg",
                 MediaType.IMAGE_JPEG_VALUE, new byte[]{1, 2, 3});

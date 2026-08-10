@@ -4,6 +4,7 @@ import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 /** 크롤/OCR 관리자 컨트롤러들(WebScrapeAdminController, TimetableOcrAdminController,
  * ArtistLineupOcrAdminController)이 서로 다른 하위 패키지(admin.scraper, admin.ocr)에
@@ -20,6 +21,14 @@ public final class AdminErrorResponses {
     public static ResponseEntity<ErrorResponse> serverError(String error) {
         return ResponseEntity.internalServerError()
                 .body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, error, ErrorCode.SERVER_ERROR));
+    }
+
+    // OCR 컨트롤러들이 업로드받은 파일을 그대로 base64 인코딩해 Gemini API에 전달하므로,
+    // content-type이 이미지가 아닌 파일(PDF·실행파일 등)이 크기 제한만 통과하면 그대로
+    // 전송되는 것을 막기 위한 화이트리스트 검증.
+    public static boolean isNotImage(MultipartFile image) {
+        String contentType = image.getContentType();
+        return contentType == null || !contentType.startsWith("image/");
     }
 
     public static ResponseEntity<ErrorResponse> geminiNotConfigured() {

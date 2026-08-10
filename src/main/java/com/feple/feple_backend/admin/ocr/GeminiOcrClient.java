@@ -61,14 +61,6 @@ public class GeminiOcrClient {
         return apiKey != null && !apiKey.isBlank();
     }
 
-    int getTodayUsage() {
-        return usageTracker.getTodayCount();
-    }
-
-    int getDailyLimit() {
-        return usageTracker.getDailyLimit();
-    }
-
     public OcrParseResult<TimetableOcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
@@ -116,7 +108,8 @@ public class GeminiOcrClient {
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
         usageTracker.increment();
         // 대형 포스터 이미지 처리 시간을 고려해 넉넉히 설정 (app.gemini.ocr-timeout-seconds로 조정 가능)
-        return geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, apiKey, request, Duration.ofSeconds(timeoutSeconds));
+        return geminiApiClient.call(new GeminiApiRequest(
+                GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, apiKey, request, Duration.ofSeconds(timeoutSeconds)));
     }
 
     private List<LineupRawResult> parseLineupJsonArray(String content) {

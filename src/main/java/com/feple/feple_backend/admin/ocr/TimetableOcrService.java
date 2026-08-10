@@ -1,11 +1,13 @@
 package com.feple.feple_backend.admin.ocr;
 
+import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -34,6 +36,9 @@ public class TimetableOcrService {
         List<TimetableOcrFailure> failures = new ArrayList<>();
         int savedCount = 0;
 
+        // 엔트리마다 festival을 재조회하지 않도록 한 번만 조회해 재사용한다(60~100개 엔트리 포스터
+        // 적용 시 N+1 방지). festivalId는 관리자가 선택한 단일 값으로 요청 전체에서 동일하다.
+        Festival festival = timetableService.getFestivalOrThrow(request.festivalId());
         List<TimetableOcrResultDto> entries = request.entries();
         for (int i = 0; i < entries.size(); i++) {
             TimetableOcrResultDto entry = entries.get(i);
@@ -43,7 +48,7 @@ public class TimetableOcrService {
                 continue;
             }
             try {
-                timetableService.createEntry(request.festivalId(), toTimetableRequest(entry));
+                timetableService.createEntry(festival, toTimetableRequest(entry));
                 savedCount++;
             } catch (Exception e) {
                 // 사용자에게 드러낼 수 있는 검증 오류만 메시지 전달, 내부 예외는 고정 문구 사용
@@ -63,8 +68,14 @@ public class TimetableOcrService {
             return Optional.of("시작/종료 시간 누락");
         try {
             LocalDate.parse(entry.date());
-        } catch (java.time.format.DateTimeParseException ex) {
+        } catch (DateTimeParseException ex) {
             return Optional.of("날짜 형식 오류: " + entry.date());
+        }
+        try {
+            LocalTime.parse(entry.startTime());
+            LocalTime.parse(entry.endTime());
+        } catch (DateTimeParseException ex) {
+            return Optional.of("시간 형식 오류: " + entry.startTime() + "~" + entry.endTime());
         }
         return Optional.empty();
     }

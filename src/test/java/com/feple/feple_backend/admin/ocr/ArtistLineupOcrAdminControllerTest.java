@@ -49,12 +49,21 @@ class ArtistLineupOcrAdminControllerTest {
                 .andExpect(status().isServiceUnavailable());
     }
 
+    @Test
+    void 라인업_OCR_파싱_이미지가_아닌_파일이면_400_반환() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("image", "lineup.pdf",
+                MediaType.APPLICATION_PDF_VALUE, new byte[]{1, 2, 3});
+
+        mockMvc.perform(multipart("/admin/crawl/ocr/lineup").file(file))
+                .andExpect(status().isBadRequest());
+    }
+
     // ── POST /admin/crawl/ocr/lineup/apply ────────────────────────────────────
 
     @Test
     void 라인업_OCR_적용_성공_결과_반환() throws Exception {
         given(ocrService.applyArtistLineup(any(LineupOcrApplyRequestDto.class)))
-                .willReturn(new LineupApplyResult(2, 2, 0));
+                .willReturn(new LineupApplyResult(2, 2, 0, 0));
 
         LineupOcrApplyRequestDto req = new LineupOcrApplyRequestDto(1L, List.of(10L, 11L), List.of());
 

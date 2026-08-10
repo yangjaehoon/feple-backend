@@ -2,7 +2,6 @@ package com.feple.feple_backend.admin.ocr;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willReturn;
 
@@ -37,7 +36,7 @@ class GeminiOcrClientTest {
 
     @Test
     void parseTimetable_정상_JSON_배열을_파싱한다() throws Exception {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn(
                 "[{\"artist\":\"아이유\",\"stage\":\"Main\",\"date\":\"2026-08-01\",\"startTime\":\"18:00\",\"endTime\":\"19:00\",\"confidence\":95,\"type\":\"PERFORMANCE\"}]");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
@@ -52,7 +51,7 @@ class GeminiOcrClientTest {
 
     @Test
     void parseTimetable_마크다운_코드블록으로_감싸진_응답도_파싱한다() throws Exception {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn(
                 "```json\n[{\"artist\":\"입장 게이트 오픈\",\"stage\":null,\"date\":null,\"startTime\":\"10:00\",\"endTime\":null,\"confidence\":80,\"type\":\"OPS\"}]\n```");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
@@ -65,7 +64,7 @@ class GeminiOcrClientTest {
 
     @Test
     void parseTimetable_잘린_응답은_마지막_완성된_항목까지_복구한다() throws Exception {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
         // 두 번째 객체가 중간에 잘려 닫는 ]가 없는 상황
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn(
                 "[{\"artist\":\"아이유\",\"stage\":\"Main\",\"date\":\"2026-08-01\",\"startTime\":\"18:00\",\"endTime\":\"19:00\",\"confidence\":95,\"type\":\"PERFORMANCE\"},{\"artist\":\"잘린항목");
@@ -80,7 +79,7 @@ class GeminiOcrClientTest {
 
     @Test
     void parseTimetable_완전히_파싱불가능한_응답은_빈_목록을_반환한다() throws Exception {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("이건 JSON이 아닙니다");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
 
@@ -91,7 +90,7 @@ class GeminiOcrClientTest {
 
     @Test
     void parseLineup_정상_JSON_배열을_파싱한다() throws Exception {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn(
                 "[{\"name\":\"아이유\",\"confidence\":90},{\"name\":\"NewJeans\",\"confidence\":85}]");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
@@ -104,7 +103,7 @@ class GeminiOcrClientTest {
 
     @Test
     void 이미지_처리시마다_사용량을_증가시킨다() throws Exception {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("[]");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
 
@@ -115,16 +114,16 @@ class GeminiOcrClientTest {
 
     @Test
     void 연도가_주어지면_연도가_반영된_프롬프트로_요청한다() throws Exception {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
         given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("[]");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
 
         client.parseTimetable(image(), 2026);
 
-        org.mockito.ArgumentCaptor<Map<String, Object>> captor = org.mockito.ArgumentCaptor.forClass(Map.class);
-        org.mockito.Mockito.verify(geminiApiClient).call(anyString(), any(), captor.capture(), any());
+        org.mockito.ArgumentCaptor<GeminiApiRequest> captor = org.mockito.ArgumentCaptor.forClass(GeminiApiRequest.class);
+        org.mockito.Mockito.verify(geminiApiClient).call(captor.capture());
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> contents = (List<Map<String, Object>>) captor.getValue().get("contents");
+        List<Map<String, Object>> contents = (List<Map<String, Object>>) captor.getValue().body().get("contents");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> parts = (List<Map<String, Object>>) contents.get(0).get("parts");
         String promptText = (String) parts.get(0).get("text");

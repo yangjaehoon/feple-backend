@@ -38,6 +38,7 @@ public class ArtistLineupOcrAdminController {
     @ResponseBody
     public ResponseEntity<?> parseLineupOcr(@RequestParam("image") MultipartFile image) {
         if (image.isEmpty()) return AdminErrorResponses.badRequest("이미지를 업로드해주세요.");
+        if (AdminErrorResponses.isNotImage(image)) return AdminErrorResponses.badRequest("이미지 파일만 업로드할 수 있습니다.");
         if (!ocrService.isConfigured()) return AdminErrorResponses.geminiNotConfigured();
         try {
             OcrParseResult<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image);
@@ -56,7 +57,7 @@ public class ArtistLineupOcrAdminController {
         try {
             LineupApplyResult result = ocrService.applyArtistLineup(request);
             adminLogService.log(AdminAction.LINEUP_OCR_APPLY, "FESTIVAL", request.festivalId(),
-                    "added=" + result.added() + " duplicates=" + result.duplicates());
+                    "added=" + result.added() + " duplicates=" + result.duplicates() + " failed=" + result.failed());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("라인업 OCR 적용 실패: festivalId={}", request.festivalId(), e);

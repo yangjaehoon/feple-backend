@@ -156,6 +156,20 @@ class ArtistLineupOcrServiceTest {
     }
 
     @Test
+    void applyArtistLineup_존재하지_않는_아티스트는_실패로_집계되고_나머지는_계속_처리() {
+        willThrow(new java.util.NoSuchElementException("아티스트를 찾을 수 없습니다"))
+                .given(artistFestivalService).addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(10L)));
+        given(artistFestivalService.addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(20L)))).willReturn(20L);
+
+        LineupApplyResult result = ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
+
+        assertThat(result.requested()).isEqualTo(2);
+        assertThat(result.added()).isEqualTo(1);
+        assertThat(result.failed()).isEqualTo(1);
+        verify(artistFestivalService).addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(20L)));
+    }
+
+    @Test
     void applyArtistLineup_미매칭_이름은_suggestionService에_위임() {
         List<String> unmatched = List.of("신인가수");
 

@@ -2,7 +2,6 @@ package com.feple.feple_backend.admin.ocr;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.Mockito.never;
@@ -36,7 +35,7 @@ class GeminiUrlContextClientTest {
     }
 
     private void stubCall() {
-        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(anyString(), any(), any(), any());
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
     }
 
     private void stubNotBlocked() {

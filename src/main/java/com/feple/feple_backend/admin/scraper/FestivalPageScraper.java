@@ -1,12 +1,14 @@
 package com.feple.feple_backend.admin.scraper;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.HttpEntity;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,6 +20,9 @@ public class FestivalPageScraper {
 
     private static final String USER_AGENT =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+    // 대상 서버가 비정상적으로 큰 응답을 반환해도 메모리를 무제한 소비하지 않도록 상한을 둔다.
+    private static final int MAX_RESPONSE_BYTES = 10 * 1024 * 1024;
 
     private static final List<String> SPA_FALLBACK_TITLES = List.of(
         "NOL 티켓", "NOL 인터파크", "인터파크티켓", "인터파크 티켓",
@@ -58,9 +63,25 @@ public class FestivalPageScraper {
             if (status < 200 || status >= 300) {
                 throw new IOException("페이지 요청 실패: HTTP " + status);
             }
-            byte[] body = EntityUtils.toByteArray(response.getEntity());
+            HttpEntity entity = response.getEntity();
+            byte[] body = entity == null ? new byte[0] : readBounded(entity.getContent());
             return Jsoup.parse(new ByteArrayInputStream(body), null, url);
         });
+    }
+
+    private static byte[] readBounded(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int total = 0;
+        int n;
+        while ((n = in.read(buf)) != -1) {
+            total += n;
+            if (total > MAX_RESPONSE_BYTES) {
+                throw new IOException("응답 크기가 허용 범위를 초과했습니다.");
+            }
+            out.write(buf, 0, n);
+        }
+        return out.toByteArray();
     }
 
     boolean isSpaOrEmpty(ScrapedFestivalDto r) {

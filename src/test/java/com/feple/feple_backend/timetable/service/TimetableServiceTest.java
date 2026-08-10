@@ -122,6 +122,20 @@ class TimetableServiceTest {
     }
 
     @Test
+    void Festival을_직접_전달하면_festivalRepository_재조회_없이_생성() {
+        // OCR 일괄 적용처럼 같은 festival로 여러 엔트리를 연속 생성할 때 매 호출마다
+        // festivalRepository.findById를 다시 타지 않는지 확인 (N+1 방지 회귀 테스트)
+        Festival f = festival(1L);
+        TimetableEntryRequestDto dto = requestDto("아이유", "", LocalTime.of(19, 0), LocalTime.of(20, 0));
+        given(timetableRepository.save(any(TimetableEntry.class))).willAnswer(inv -> inv.getArgument(0));
+
+        TimetableEntryResponseDto result = timetableService.createEntry(f, dto);
+
+        assertThat(result).isNotNull();
+        verify(festivalRepository, never()).findById(any());
+    }
+
+    @Test
     void 심야공연_시간대는_역전되어도_허용() {
         Festival f = festival(1L);
         given(festivalRepository.findById(1L)).willReturn(Optional.of(f));

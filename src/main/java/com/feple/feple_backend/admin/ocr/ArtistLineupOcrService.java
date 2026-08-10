@@ -7,6 +7,7 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -85,6 +86,7 @@ public class ArtistLineupOcrService {
     public LineupApplyResult applyArtistLineup(LineupOcrApplyRequestDto request) {
         int added = 0;
         int duplicates = 0;
+        int failed = 0;
         for (Long id : request.artistIds()) {
             try {
                 ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
@@ -93,12 +95,16 @@ public class ArtistLineupOcrService {
                 added++;
             } catch (ConflictException e) {
                 duplicates++;
+            } catch (NoSuchElementException e) {
+                // 존재하지 않는 artistId/festivalId — 이전에 이미 커밋된 등록 건은 그대로 두고
+                // 이 항목만 실패로 집계해, 앞선 성공 건이 "전체 실패"로 잘못 보고되지 않게 한다.
+                failed++;
             }
         }
         if (request.unmatchedNames() != null) {
             suggestionService.saveAll(request.unmatchedNames());
         }
-        return new LineupApplyResult(request.artistIds().size(), added, duplicates);
+        return new LineupApplyResult(request.artistIds().size(), added, duplicates, failed);
     }
 
     public List<UnmatchedArtistSuggestionDto> getSuggestions() {

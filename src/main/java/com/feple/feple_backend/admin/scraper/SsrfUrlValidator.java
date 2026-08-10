@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.scraper;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -40,6 +42,23 @@ final class SsrfUrlValidator {
     static boolean isUnsafeAddress(InetAddress addr) {
         return addr.isLoopbackAddress() || addr.isLinkLocalAddress()
                 || addr.isSiteLocalAddress() || addr.isAnyLocalAddress()
-                || addr.isMulticastAddress();
+                || addr.isMulticastAddress()
+                || isIpv6UniqueLocal(addr) || isIpv4ZeroBlock(addr);
+    }
+
+    // Inet6Address.isSiteLocalAddress()는 폐기된 IPv6 site-local(fec0::/10)만 인식하고
+    // 현재 표준인 ULA(Unique Local Address, fc00::/7)는 걸러내지 못한다 — 공격자가 도메인의
+    // AAAA 레코드를 fd00::/8 등 내부망 주소로 설정하면 우회 가능하므로 별도로 차단한다.
+    private static boolean isIpv6UniqueLocal(InetAddress addr) {
+        if (!(addr instanceof Inet6Address)) return false;
+        byte[] bytes = addr.getAddress();
+        return (bytes[0] & 0xFE) == 0xFC;
+    }
+
+    // isAnyLocalAddress()는 정확히 0.0.0.0만 차단한다 — 0.0.0.0/8 나머지 대역(0.0.0.1 등)도
+    // 일부 환경에서 loopback처럼 라우팅될 수 있어 대역 전체를 차단한다.
+    private static boolean isIpv4ZeroBlock(InetAddress addr) {
+        if (!(addr instanceof Inet4Address)) return false;
+        return addr.getAddress()[0] == 0;
     }
 }

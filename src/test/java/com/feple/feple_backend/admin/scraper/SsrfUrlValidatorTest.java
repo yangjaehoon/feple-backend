@@ -87,6 +87,7 @@ class SsrfUrlValidatorTest {
         "http://172.31.255.255",      // private class B
         "http://169.254.1.1",         // link-local
         "http://0.0.0.0",             // any-local
+        "http://0.0.0.1",             // 0.0.0.0/8 나머지 대역
         "http://224.0.0.1",           // multicast
     })
     void 내부_네트워크_IP는_차단(String url) {
@@ -115,6 +116,26 @@ class SsrfUrlValidatorTest {
         assertThatThrownBy(() -> SsrfUrlValidator.validate("http://[::1]"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("내부 네트워크 주소는 허용되지 않습니다.");
+    }
+
+    @ParameterizedTest(name = "IPv6 ULA {0} 차단")
+    @ValueSource(strings = {
+        "http://[fd00::1]",           // ULA 대표 대역
+        "http://[fc00::1]",           // ULA 대역 하위
+        "http://[fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]", // ULA 대역 상단 경계
+    })
+    void IPv6_ULA는_차단(String url) {
+        // Inet6Address.isSiteLocalAddress()는 폐기된 fec0::/10만 인식하므로 별도 검증 필요
+        assertThatThrownBy(() -> SsrfUrlValidator.validate(url))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("내부 네트워크 주소는 허용되지 않습니다.");
+    }
+
+    @Test
+    void IPv6_ULA_경계_밖은_통과() {
+        // fe00::은 fc00::/7 범위 밖(공인 대역은 아니지만 ULA 오탐 경계 검증용)
+        assertThatCode(() -> SsrfUrlValidator.validate("http://[2001:4860:4860::8888]"))
+                .doesNotThrowAnyException();
     }
 
     // ── 존재하지 않는 호스트 ─────────────────────────────────────────────────

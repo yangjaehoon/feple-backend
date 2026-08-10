@@ -36,7 +36,8 @@ public class GeminiUrlContextClient {
     public ScrapedFestivalDto scrape(String url, String source) {
         Map<String, Object> request = buildUrlContextRequest(url);
         usageTracker.increment();
-        Map<?, ?> response = geminiApiClient.call(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiApiKey, request, Duration.ofSeconds(timeoutSeconds));
+        Map<?, ?> response = geminiApiClient.call(new GeminiApiRequest(
+                GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiApiKey, request, Duration.ofSeconds(timeoutSeconds)));
 
         if (isUrlBlocked(response)) {
             log.warn("Gemini URL context blocked for: {}", url);

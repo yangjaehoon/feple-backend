@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.ocr;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -38,6 +39,20 @@ class UnmatchedArtistSuggestionServiceTest {
 
         verify(repository).incrementMentionCountByNameIgnoreCase("신인가수");
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void saveAll_저장중_유니크_제약_위반이면_무시하고_계속_진행() {
+        // 완전히 새로운 이름을 동시에 두 배치가 언급해 increment가 0건으로 나온 뒤 save()가
+        // 유니크 제약과 경합하는 상황을 재현 — 예외가 전체 saveAll을 중단시키면 안 됨
+        given(repository.incrementMentionCountByNameIgnoreCase("신인가수")).willReturn(0);
+        given(repository.incrementMentionCountByNameIgnoreCase("기존가수")).willReturn(1);
+        willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"))
+                .given(repository).save(any(UnmatchedArtistSuggestion.class));
+
+        service.saveAll(List.of("신인가수", "기존가수"));
+
+        verify(repository).incrementMentionCountByNameIgnoreCase("기존가수");
     }
 
     @Test

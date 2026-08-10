@@ -6,8 +6,10 @@ import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,8 +22,16 @@ class TimetableOcrServiceTest {
 
     @Mock GeminiOcrClient geminiOcrClient;
     @Mock TimetableService timetableService;
+    @Mock Festival festival;
 
     @InjectMocks TimetableOcrService ocrService;
+
+    @BeforeEach
+    void setUp() {
+        // applyEntries가 루프 시작 전 festival을 한 번만 조회하도록 바뀌어(N+1 방지),
+        // 모든 테스트가 이 스텁을 거친다.
+        given(timetableService.getFestivalOrThrow(anyLong())).willReturn(festival);
+    }
 
     // ── applyEntries ──────────────────────────────────────────────────────────
 
@@ -34,7 +44,7 @@ class TimetableOcrServiceTest {
 
         assertThat(result.savedCount()).isEqualTo(1);
         assertThat(result.failedCount()).isEqualTo(0);
-        verify(timetableService).createEntry(eq(1L), any());
+        verify(timetableService).createEntry(eq(festival), any());
     }
 
     @Test
@@ -47,7 +57,7 @@ class TimetableOcrServiceTest {
         assertThat(result.savedCount()).isEqualTo(0);
         assertThat(result.failedCount()).isEqualTo(1);
         assertThat(result.failures().get(0).reason()).isEqualTo("날짜 누락");
-        verify(timetableService, never()).createEntry(anyLong(), any());
+        verify(timetableService, never()).createEntry(any(Festival.class), any());
     }
 
     @Test
@@ -84,10 +94,22 @@ class TimetableOcrServiceTest {
     }
 
     @Test
+    void applyEntries_시간_형식_오류_엔트리는_실패_처리() {
+        TimetableOcrResultDto entry = new TimetableOcrResultDto("아이유", "Main", "2024-07-20", "18시", "19:00", 95, null);
+        TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(1L, List.of(entry));
+
+        TimetableOcrApplyResultDto result = ocrService.applyEntries(req);
+
+        assertThat(result.failedCount()).isEqualTo(1);
+        assertThat(result.failures().get(0).reason()).startsWith("시간 형식 오류");
+        verify(timetableService, never()).createEntry(any(Festival.class), any());
+    }
+
+    @Test
     void applyEntries_timetableService_예외시_실패_목록에_추가() {
         TimetableOcrResultDto entry = new TimetableOcrResultDto("아이유", "Main", "2024-07-20", "18:00", "19:00", 95, null);
         TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(1L, List.of(entry));
-        willThrow(new IllegalArgumentException("스테이지 없음")).given(timetableService).createEntry(anyLong(), any());
+        willThrow(new IllegalArgumentException("스테이지 없음")).given(timetableService).createEntry(any(Festival.class), any());
 
         TimetableOcrApplyResultDto result = ocrService.applyEntries(req);
 
@@ -116,7 +138,7 @@ class TimetableOcrServiceTest {
         ocrService.applyEntries(req);
 
         var captor = ArgumentCaptor.forClass(com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto.class);
-        verify(timetableService).createEntry(eq(1L), captor.capture());
+        verify(timetableService).createEntry(eq(festival), captor.capture());
         assertThat(captor.getValue().getStageName()).isEqualTo("📢");
     }
 

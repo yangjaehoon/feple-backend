@@ -59,7 +59,16 @@ public class TimetableService {
     @Transactional
     @CacheEvict(value = "timetable", key = "#festivalId")
     public TimetableEntryResponseDto createEntry(Long festivalId, TimetableEntryRequestDto req) {
-        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        Festival festival = getFestivalOrThrow(festivalId);
+        return createEntry(festival, req);
+    }
+
+    // OCR 일괄 적용처럼 같은 festivalId로 여러 엔트리를 연속 생성하는 호출부가 매 엔트리마다
+    // festival을 재조회하지 않도록, 호출부가 한 번만 조회한 Festival을 재사용할 수 있게 공개한다.
+    @Transactional
+    @CacheEvict(value = "timetable", key = "#festival.id")
+    public TimetableEntryResponseDto createEntry(Festival festival, TimetableEntryRequestDto req) {
+        Long festivalId = festival.getId();
         validateTimeRange(req);
         StageResolution stageResolution = resolveStage(festivalId, req.getStageName());
 
@@ -78,6 +87,10 @@ public class TimetableService {
         syncMembers(saved, req.getMemberArtistIds());
         broadcastLineupUpdate(festivalId, saved);
         return TimetableEntryResponseDto.from(saved);
+    }
+
+    public Festival getFestivalOrThrow(Long festivalId) {
+        return EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
     }
 
     @Transactional

@@ -144,4 +144,32 @@ class FestivalPageScraperTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("내부 네트워크");
     }
+
+    @Test
+    void scrape_응답_크기가_상한을_초과하면_예외() throws Exception {
+        // 10MB 상한을 넘기는 응답을 흉내내기 위해 InputStream을 직접 구현(문자열로 만들면 메모리 낭비)
+        CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+        ClassicHttpResponse response = mock(ClassicHttpResponse.class);
+        given(response.getCode()).willReturn(200);
+        org.apache.hc.core5.http.HttpEntity entity = mock(org.apache.hc.core5.http.HttpEntity.class);
+        given(entity.getContent()).willReturn(new java.io.InputStream() {
+            private long remaining = 11L * 1024 * 1024;
+
+            @Override
+            public int read() {
+                if (remaining <= 0) return -1;
+                remaining--;
+                return 'a';
+            }
+        });
+        given(response.getEntity()).willReturn(entity);
+        doAnswer(invocation -> {
+            HttpClientResponseHandler<?> handler = invocation.getArgument(1);
+            return handler.handleResponse(response);
+        }).when(httpClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
+
+        assertThatThrownBy(() -> new FestivalPageScraper(httpClient).scrape("http://8.8.8.8/festival", "unknown"))
+                .isInstanceOf(java.io.IOException.class)
+                .hasMessageContaining("응답 크기");
+    }
 }

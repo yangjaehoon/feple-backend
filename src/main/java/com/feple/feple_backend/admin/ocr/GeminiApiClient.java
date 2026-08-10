@@ -1,6 +1,5 @@
 package com.feple.feple_backend.admin.ocr;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -28,15 +27,15 @@ class GeminiApiClient {
     private final WebClient geminiWebClient;
 
     @SuppressWarnings("unchecked")
-    Map<?, ?> call(String url, String apiKey, Map<String, Object> requestBody, Duration timeout) {
+    Map<?, ?> call(GeminiApiRequest request) {
         return geminiWebClient.post()
-                .uri(url)
-                .header("x-goog-api-key", apiKey)
+                .uri(request.url())
+                .header("x-goog-api-key", request.apiKey())
                 .header("Content-Type", "application/json")
-                .bodyValue(requestBody)
+                .bodyValue(request.body())
                 .retrieve()
                 .bodyToMono(Map.class)
-                .block(timeout);
+                .block(request.timeout());
     }
 
     Object getNestedValue(Object current, Object... path) {
