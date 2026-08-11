@@ -1,12 +1,36 @@
 -- DBA 리뷰에서 발견된 스키마 위생 문제 정리 (기능 오류는 아니지만 방치 시 위험/낭비)
 
--- 1) 중복 UNIQUE 인덱스 제거 — 과거 마이그레이션이 여러 벌 겹쳐 돌며 같은 컬럼 조합에
---    해시 이름(UKxxx) 인덱스가 추가로 생겼다. 매 INSERT/UPDATE마다 불필요하게 더 유지되던
---    중복 인덱스를 지우고, 의미 있는 이름이 붙은 인덱스만 남긴다.
-ALTER TABLE certification_review_like DROP INDEX UKkk9g40eu34xmu16pcjf9dk3hc;
-ALTER TABLE certification_review_like DROP INDEX UKrsgda85maepdtslk8uayfeko3;
-ALTER TABLE song DROP INDEX UKj562it5ah9qjh344is8ax21ke;
-ALTER TABLE user_block DROP INDEX UKtn2g2sexr2nbc612n8714c9mw;
+-- 1) 중복 UNIQUE 인덱스 제거 — 운영 DB에만 남아있던 해시 이름(UKxxx) 인덱스로, 어떤
+--    Flyway 마이그레이션도 이걸 만든 적이 없다(과거 ddl-auto 시절 흔적으로 추정). 그래서
+--    CI가 V1부터 새로 재생하는 테스트 DB에는 애초에 존재하지 않아 무조건 DROP하면 실패한다
+--    — information_schema로 존재를 확인한 뒤에만 조건부로 지운다.
+SET @idx_exists = (SELECT COUNT(1) FROM information_schema.statistics
+    WHERE table_schema = DATABASE() AND table_name = 'certification_review_like' AND index_name = 'UKkk9g40eu34xmu16pcjf9dk3hc');
+SET @drop_sql = IF(@idx_exists > 0, 'ALTER TABLE certification_review_like DROP INDEX UKkk9g40eu34xmu16pcjf9dk3hc', 'DO 0');
+PREPARE stmt FROM @drop_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(1) FROM information_schema.statistics
+    WHERE table_schema = DATABASE() AND table_name = 'certification_review_like' AND index_name = 'UKrsgda85maepdtslk8uayfeko3');
+SET @drop_sql = IF(@idx_exists > 0, 'ALTER TABLE certification_review_like DROP INDEX UKrsgda85maepdtslk8uayfeko3', 'DO 0');
+PREPARE stmt FROM @drop_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(1) FROM information_schema.statistics
+    WHERE table_schema = DATABASE() AND table_name = 'song' AND index_name = 'UKj562it5ah9qjh344is8ax21ke');
+SET @drop_sql = IF(@idx_exists > 0, 'ALTER TABLE song DROP INDEX UKj562it5ah9qjh344is8ax21ke', 'DO 0');
+PREPARE stmt FROM @drop_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(1) FROM information_schema.statistics
+    WHERE table_schema = DATABASE() AND table_name = 'user_block' AND index_name = 'UKtn2g2sexr2nbc612n8714c9mw');
+SET @drop_sql = IF(@idx_exists > 0, 'ALTER TABLE user_block DROP INDEX UKtn2g2sexr2nbc612n8714c9mw', 'DO 0');
+PREPARE stmt FROM @drop_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- 2) festival_genres에 PRIMARY KEY가 없어 InnoDB가 내부 clustering key로 대체하고 있었다.
 --    자매 테이블 artist_genres와 동일하게 자연키를 PK로 승격 (기존 UNIQUE 제약이 이미
