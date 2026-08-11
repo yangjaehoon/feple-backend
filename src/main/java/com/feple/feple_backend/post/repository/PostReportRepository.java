@@ -51,6 +51,11 @@ public interface PostReportRepository extends BaseReportRepository<PostReport> {
     @Query("SELECT COUNT(pr) FROM PostReport pr WHERE pr.post.id = :postId AND pr.status = :status")
     long countByPostIdAndStatus(@Param("postId") Long postId, @Param("status") ReportStatus status);
 
+    // bulkDismiss처럼 여러 postId의 대기 신고 수를 한 번에 확인해야 할 때, 항목마다 countByPostIdAndStatus를
+    // 반복 호출하지 않도록 그룹 집계로 한 번에 조회한다.
+    @Query("SELECT pr.post.id, COUNT(pr) FROM PostReport pr WHERE pr.post.id IN :postIds AND pr.status = :status GROUP BY pr.post.id")
+    List<Object[]> countByPostIdInAndStatus(@Param("postIds") Collection<Long> postIds, @Param("status") ReportStatus status);
+
     @Query("SELECT pr.post.user.id, COUNT(pr) FROM PostReport pr WHERE pr.post.user.id IN :userIds GROUP BY pr.post.user.id")
     List<Object[]> countByPostAuthorIds(@Param("userIds") Collection<Long> userIds);
 }

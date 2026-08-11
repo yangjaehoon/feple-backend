@@ -6,6 +6,7 @@ import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.User;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -303,6 +304,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 글도 관리자는 검토할 수 있어야 함
     @Query(value = "SELECT * FROM post WHERE id = :id", nativeQuery = true)
     Optional<Post> findByIdIgnoringRestrictions(@Param("id") Long id);
+
+    // findByIdIgnoringRestrictions의 배치 버전 — 신고 일괄 반려처럼 여러 건의 블라인드 해제 대상을
+    // 한 번에 조회해야 할 때 id마다 반복 호출하지 않도록 한다.
+    @Query(value = "SELECT * FROM post WHERE id IN (:ids)", nativeQuery = true)
+    List<Post> findAllByIdInIgnoringRestrictions(@Param("ids") Collection<Long> ids);
 
     // 블라인드된 글은 일반 목록/검색(@SQLRestriction)에서 전혀 노출되지 않아 관리자가 찾을 방법이
     // 없으므로, 삭제된 글의 휴지통(findSoftDeleted)과 동일한 패턴으로 전용 목록을 제공한다.

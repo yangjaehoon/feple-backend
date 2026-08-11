@@ -49,6 +49,11 @@ public interface CommentReportRepository extends BaseReportRepository<CommentRep
     @Query("SELECT COUNT(cr) FROM CommentReport cr WHERE cr.comment.id = :commentId AND cr.status = :status")
     long countByCommentIdAndStatus(@Param("commentId") Long commentId, @Param("status") ReportStatus status);
 
+    // bulkDismiss처럼 여러 commentId의 대기 신고 수를 한 번에 확인해야 할 때, 항목마다
+    // countByCommentIdAndStatus를 반복 호출하지 않도록 그룹 집계로 한 번에 조회한다.
+    @Query("SELECT cr.comment.id, COUNT(cr) FROM CommentReport cr WHERE cr.comment.id IN :commentIds AND cr.status = :status GROUP BY cr.comment.id")
+    List<Object[]> countByCommentIdInAndStatus(@Param("commentIds") Collection<Long> commentIds, @Param("status") ReportStatus status);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.post.id IN :postIds")

@@ -134,7 +134,8 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;
         List<CommentReport> rejected = ReportRejectionService.bulkDismiss(reportRepository, ids);
-        rejected.stream().map(CommentReport::getCommentId).distinct().forEach(this::unblindIfBelowThreshold);
+        List<Long> commentIds = rejected.stream().map(CommentReport::getCommentId).distinct().toList();
+        unblindAllBelowThreshold(commentIds);
     }
 
     // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.
@@ -143,6 +144,20 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
             commentRepository.findByIdIgnoringRestrictions(commentId).ifPresent(Comment::unblind);
         }
+    }
+
+    // unblindIfBelowThreshold의 배치 버전 — bulkDismiss는 최대 20건(관리자 페이지 크기)이 한 번에
+    // 반려되는데, 댓글마다 대기 신고 수 조회+단건 블라인드 해제 조회를 반복하면 최대 40쿼리가 발생하므로
+    // 그룹 집계 1쿼리 + IN 조회 1쿼리로 묶는다.
+    private void unblindAllBelowThreshold(List<Long> commentIds) {
+        if (commentIds.isEmpty()) return;
+        Map<Long, Long> pendingCountsByCommentId = QueryResultMapper.toLongMap(
+                reportRepository.countByCommentIdInAndStatus(commentIds, ReportStatus.PENDING));
+        List<Long> toUnblind = commentIds.stream()
+                .filter(commentId -> pendingCountsByCommentId.getOrDefault(commentId, 0L) < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD)
+                .toList();
+        if (toUnblind.isEmpty()) return;
+        commentRepository.findAllByIdInIgnoringRestrictions(toUnblind).forEach(Comment::unblind);
     }
 
     @Override

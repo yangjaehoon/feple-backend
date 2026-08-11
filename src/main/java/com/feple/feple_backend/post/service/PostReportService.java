@@ -128,7 +128,8 @@ public class PostReportService implements ReportAdminService<PostReport> {
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;
         List<PostReport> rejected = ReportRejectionService.bulkDismiss(reportRepository, ids);
-        rejected.stream().map(PostReport::getPostId).distinct().forEach(this::unblindIfBelowThreshold);
+        List<Long> postIds = rejected.stream().map(PostReport::getPostId).distinct().toList();
+        unblindAllBelowThreshold(postIds);
     }
 
     // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.
@@ -137,6 +138,20 @@ public class PostReportService implements ReportAdminService<PostReport> {
         if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
             postRepository.findByIdIgnoringRestrictions(postId).ifPresent(Post::unblind);
         }
+    }
+
+    // unblindIfBelowThreshold의 배치 버전 — bulkDismiss는 최대 20건(관리자 페이지 크기)이 한 번에
+    // 반려되는데, 게시글마다 대기 신고 수 조회+단건 블라인드 해제 조회를 반복하면 최대 40쿼리가 발생하므로
+    // 그룹 집계 1쿼리 + IN 조회 1쿼리로 묶는다.
+    private void unblindAllBelowThreshold(List<Long> postIds) {
+        if (postIds.isEmpty()) return;
+        Map<Long, Long> pendingCountsByPostId =
+                QueryResultMapper.toLongMap(reportRepository.countByPostIdInAndStatus(postIds, ReportStatus.PENDING));
+        List<Long> toUnblind = postIds.stream()
+                .filter(postId -> pendingCountsByPostId.getOrDefault(postId, 0L) < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD)
+                .toList();
+        if (toUnblind.isEmpty()) return;
+        postRepository.findAllByIdInIgnoringRestrictions(toUnblind).forEach(Post::unblind);
     }
 
     @Override

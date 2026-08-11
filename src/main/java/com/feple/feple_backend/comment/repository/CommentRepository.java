@@ -78,6 +78,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query(value = "SELECT * FROM comment WHERE id = :id", nativeQuery = true)
     java.util.Optional<Comment> findByIdIgnoringRestrictions(@Param("id") Long id);
 
+    // findByIdIgnoringRestrictions의 배치 버전 — 신고 일괄 반려처럼 여러 건의 블라인드 해제 대상을
+    // 한 번에 조회해야 할 때 id마다 반복 호출하지 않도록 한다.
+    @Query(value = "SELECT * FROM comment WHERE id IN (:ids)", nativeQuery = true)
+    List<Comment> findAllByIdInIgnoringRestrictions(@Param("ids") java.util.Collection<Long> ids);
+
     // deleteById()는 findById()로 먼저 존재를 확인하는데 blinded=true면 @SQLRestriction에 걸려
     // 못 찾으므로, 블라인드 여부와 무관하게 소프트 삭제(@SQLDelete와 동일한 SQL)하는 벌크 쿼리로 우회한다.
     @Modifying
