@@ -16,6 +16,7 @@ import com.feple.feple_backend.timetable.entity.TimetableEntryFields;
 import com.feple.feple_backend.timetable.entity.TimetableEntryMember;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,55 @@ public class TimetableService {
 
     public Festival getFestivalOrThrow(Long festivalId) {
         return EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+    }
+
+    public record BatchCreateResult(TimetableEntry entry, RuntimeException error) {}
+
+    // createEntry(Festival, req)의 배치 버전 — OCR 일괄 적용(60~100건)이 항목마다 스테이지 조회
+    // (resolveStage)와 라인업 역동기화(syncFromTimetableEntry) 쿼리를 반복하지 않도록, festival의
+    // 스테이지 목록을 한 번만 조회해 맵으로 매칭하고 라인업 동기화도 전부 모았다가 한 번에 처리한다.
+    // 항목별 실패는 예외를 던지지 않고 결과에 담아, 앞선 성공 건이 뒤 항목의 실패로 롤백되지 않게 한다.
+    @Transactional
+    @CacheEvict(value = "timetable", key = "#festival.id")
+    public List<BatchCreateResult> createEntriesBatch(Festival festival, List<TimetableEntryRequestDto> reqs) {
+        Long festivalId = festival.getId();
+        Map<String, Stage> stagesByName = stageService.getStages(festivalId).stream()
+                .collect(Collectors.toMap(Stage::getName, s -> s, (a, b) -> a));
+
+        List<BatchCreateResult> results = new ArrayList<>();
+        List<ArtistFestivalService.ArtistNameLineup> lineupUpdates = new ArrayList<>();
+        for (TimetableEntryRequestDto req : reqs) {
+            try {
+                validateTimeRange(req);
+                String stageName = (req.getStageName() == null || req.getStageName().isBlank())
+                        ? "" : req.getStageName().trim();
+                Stage stage = stageName.isEmpty() ? null : stagesByName.get(stageName);
+                String color = (req.getColor() != null && !req.getColor().isBlank()) ? req.getColor().trim() : null;
+                TimetableEntry entry = TimetableEntry.builder()
+                        .festival(festival)
+                        .stage(stage)
+                        .stageName(stageName)
+                        .artistName(req.getArtistName() != null ? req.getArtistName().trim() : "")
+                        .festivalDate(req.getFestivalDate())
+                        .startTime(req.getStartTime())
+                        .endTime(req.getEndTime())
+                        .color(color)
+                        .build();
+                TimetableEntry saved = timetableRepository.save(entry);
+                syncMembers(saved, req.getMemberArtistIds());
+
+                LineupUpdate lineup = new LineupUpdate(saved.getStageName(), saved.getFestivalDate());
+                lineupUpdates.add(new ArtistFestivalService.ArtistNameLineup(saved.getArtistName(), lineup));
+                for (TimetableEntryMember member : saved.getMembers()) {
+                    lineupUpdates.add(new ArtistFestivalService.ArtistNameLineup(member.getArtistName(), lineup));
+                }
+                results.add(new BatchCreateResult(saved, null));
+            } catch (RuntimeException e) {
+                results.add(new BatchCreateResult(null, e));
+            }
+        }
+        artistFestivalService.syncFromTimetableEntriesBatch(festivalId, lineupUpdates);
+        return results;
     }
 
     @Transactional

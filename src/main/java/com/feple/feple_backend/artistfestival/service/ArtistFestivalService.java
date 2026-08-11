@@ -236,6 +236,24 @@ public class ArtistFestivalService {
                 .ifPresent(af -> af.updateLineup(resolveStage(lineup.stageName()), lineup.date()));
     }
 
+    public record ArtistNameLineup(String artistName, LineupUpdate lineup) {}
+
+    // syncFromTimetableEntry의 배치 버전 — OCR 타임테이블 일괄 적용(60~100건) 시 항목마다
+    // artistName으로 ArtistFestival을 조회하지 않도록, festival 전체를 한 번만 조회해 메모리에서
+    // 매칭한다.
+    @Transactional
+    public void syncFromTimetableEntriesBatch(Long festivalId, List<ArtistNameLineup> updates) {
+        if (updates.isEmpty()) return;
+        Map<String, ArtistFestival> byArtistName = artistFestivalRepository
+                .findByFestivalIdOrderByLineupOrderAsc(festivalId).stream()
+                .collect(Collectors.toMap(ArtistFestival::getArtistName, af -> af, (a, b) -> a));
+        for (ArtistNameLineup update : updates) {
+            if (update.artistName() == null || update.artistName().isBlank()) continue;
+            ArtistFestival af = byArtistName.get(update.artistName());
+            if (af != null) af.updateLineup(resolveStage(update.lineup().stageName()), update.lineup().date());
+        }
+    }
+
     // 빈 문자열("미지정" 선택)은 null로 정규화
     private String resolveStage(String stageName) {
         return (stageName != null && !stageName.isBlank()) ? stageName : null;

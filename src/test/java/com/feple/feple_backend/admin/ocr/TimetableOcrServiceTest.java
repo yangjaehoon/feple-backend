@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,12 +42,14 @@ class TimetableOcrServiceTest {
     void applyEntries_유효한_엔트리는_타임테이블에_저장되고_savedCount_증가() {
         TimetableOcrResultDto entry = new TimetableOcrResultDto("아이유", "Main", "2024-07-20", "18:00", "19:00", 95, null);
         TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(1L, List.of(entry));
+        given(timetableService.createEntriesBatch(eq(festival), any()))
+                .willReturn(List.of(new TimetableService.BatchCreateResult(mock(TimetableEntry.class), null)));
 
         TimetableOcrApplyResultDto result = ocrService.applyEntries(req);
 
         assertThat(result.savedCount()).isEqualTo(1);
         assertThat(result.failedCount()).isEqualTo(0);
-        verify(timetableService).createEntry(eq(festival), any());
+        verify(timetableService).createEntriesBatch(eq(festival), any());
     }
 
     @Test
@@ -59,7 +62,8 @@ class TimetableOcrServiceTest {
         assertThat(result.savedCount()).isEqualTo(0);
         assertThat(result.failedCount()).isEqualTo(1);
         assertThat(result.failures().get(0).reason()).isEqualTo("날짜 누락");
-        verify(timetableService, never()).createEntry(any(Festival.class), any());
+        // 형식 검증에서 걸러진 항목뿐이라 배치 생성에는 빈 리스트가 전달된다
+        verify(timetableService).createEntriesBatch(eq(festival), eq(List.of()));
     }
 
     @Test
@@ -104,14 +108,16 @@ class TimetableOcrServiceTest {
 
         assertThat(result.failedCount()).isEqualTo(1);
         assertThat(result.failures().get(0).reason()).startsWith("시간 형식 오류");
-        verify(timetableService, never()).createEntry(any(Festival.class), any());
+        // 형식 검증에서 걸러진 항목뿐이라 배치 생성에는 빈 리스트가 전달된다
+        verify(timetableService).createEntriesBatch(eq(festival), eq(List.of()));
     }
 
     @Test
     void applyEntries_timetableService_예외시_실패_목록에_추가() {
         TimetableOcrResultDto entry = new TimetableOcrResultDto("아이유", "Main", "2024-07-20", "18:00", "19:00", 95, null);
         TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(1L, List.of(entry));
-        willThrow(new IllegalArgumentException("스테이지 없음")).given(timetableService).createEntry(any(Festival.class), any());
+        given(timetableService.createEntriesBatch(eq(festival), any())).willReturn(
+                List.of(new TimetableService.BatchCreateResult(null, new IllegalArgumentException("스테이지 없음"))));
 
         TimetableOcrApplyResultDto result = ocrService.applyEntries(req);
 
@@ -125,6 +131,8 @@ class TimetableOcrServiceTest {
         TimetableOcrResultDto valid = new TimetableOcrResultDto("아이유", "Main", "2024-07-20", "18:00", "19:00", 95, null);
         TimetableOcrResultDto invalid = new TimetableOcrResultDto("BTS", "Sub", null, "20:00", "21:00", 80, null);
         TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(1L, List.of(valid, invalid));
+        given(timetableService.createEntriesBatch(eq(festival), any()))
+                .willReturn(List.of(new TimetableService.BatchCreateResult(mock(TimetableEntry.class), null)));
 
         TimetableOcrApplyResultDto result = ocrService.applyEntries(req);
 
@@ -139,9 +147,10 @@ class TimetableOcrServiceTest {
 
         ocrService.applyEntries(req);
 
-        var captor = ArgumentCaptor.forClass(com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto.class);
-        verify(timetableService).createEntry(eq(festival), captor.capture());
-        assertThat(captor.getValue().getStageName()).isEqualTo("📢");
+        ArgumentCaptor<List<com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto>> captor =
+                ArgumentCaptor.forClass(List.class);
+        verify(timetableService).createEntriesBatch(eq(festival), captor.capture());
+        assertThat(captor.getValue().get(0).getStageName()).isEqualTo("📢");
     }
 
     @Test

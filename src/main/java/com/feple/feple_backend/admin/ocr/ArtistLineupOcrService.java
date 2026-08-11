@@ -2,12 +2,9 @@ package com.feple.feple_backend.admin.ocr;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
-import com.feple.feple_backend.artistfestival.dto.ArtistFestivalCreateRequestDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
-import com.feple.feple_backend.global.exception.ConflictException;
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -80,31 +77,16 @@ public class ArtistLineupOcrService {
         return candidate != null && name != null && candidate.toLowerCase().contains(name.toLowerCase());
     }
 
-    // @Transactional 제거: addArtistToFestival(ConflictException 발생 시)이 외부 트랜잭션을
-    // rollback-only로 마킹해 UnexpectedRollbackException이 발생하는 것을 방지.
-    // 각 addArtistToFestival 호출은 자신의 독립 트랜잭션을 사용함.
+    // 아티스트별로 addArtistToFestival을 반복 호출하면 포스터 한 장(아티스트 20~60명)에
+    // 최대 수백 회 쿼리가 발생하므로, festival/artist/기존 참여 여부를 한 번씩만 조회하는
+    // linkArtistsToFestival로 일괄 처리한다.
     public LineupApplyResult applyArtistLineup(LineupOcrApplyRequestDto request) {
-        int added = 0;
-        int duplicates = 0;
-        int failed = 0;
-        for (Long id : request.artistIds()) {
-            try {
-                ArtistFestivalCreateRequestDto req = new ArtistFestivalCreateRequestDto();
-                req.setArtistId(id);
-                artistFestivalService.addArtistToFestival(request.festivalId(), req);
-                added++;
-            } catch (ConflictException e) {
-                duplicates++;
-            } catch (NoSuchElementException e) {
-                // 존재하지 않는 artistId/festivalId — 이전에 이미 커밋된 등록 건은 그대로 두고
-                // 이 항목만 실패로 집계해, 앞선 성공 건이 "전체 실패"로 잘못 보고되지 않게 한다.
-                failed++;
-            }
-        }
+        ArtistFestivalService.LinkArtistsResult result =
+                artistFestivalService.linkArtistsToFestival(request.festivalId(), request.artistIds());
         if (request.unmatchedNames() != null) {
             suggestionService.saveAll(request.unmatchedNames());
         }
-        return new LineupApplyResult(request.artistIds().size(), added, duplicates, failed);
+        return new LineupApplyResult(request.artistIds().size(), result.added(), result.duplicates(), result.errors());
     }
 
     public List<UnmatchedArtistSuggestionDto> getSuggestions() {

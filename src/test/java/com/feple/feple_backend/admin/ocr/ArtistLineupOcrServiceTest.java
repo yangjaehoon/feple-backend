@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
-import com.feple.feple_backend.global.exception.ConflictException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -126,16 +125,23 @@ class ArtistLineupOcrServiceTest {
 
     // ── applyArtistLineup ─────────────────────────────────────────────────────
 
+    // applyArtistLineup은 아티스트마다 개별 조회/등록을 반복하지 않고 linkArtistsToFestival로
+    // 일괄 위임한다(N+1 방지) — added/duplicates/errors 집계 자체는 linkArtistsToFestival의
+    // 책임이라 여기서는 그 결과가 LineupApplyResult로 그대로 전달되는지만 검증한다.
     @Test
-    void applyArtistLineup_모두_성공시_added_카운트_일치() {
+    void applyArtistLineup_linkArtistsToFestival에_아티스트ID_목록_그대로_위임() {
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), eq(List.of(10L, 20L))))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(2, 0, 0));
+
         ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
 
-        verify(artistFestivalService, times(2)).addArtistToFestival(eq(1L), any());
+        verify(artistFestivalService).linkArtistsToFestival(1L, List.of(10L, 20L));
     }
 
     @Test
-    void applyArtistLineup_중복_아티스트는_ConflictException_처리후_duplicates_카운트() {
-        willThrow(new ConflictException("중복")).given(artistFestivalService).addArtistToFestival(eq(1L), any());
+    void applyArtistLineup_모두_중복이면_duplicates_카운트_그대로_전달() {
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(0, 2, 0));
 
         LineupApplyResult result = ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
 
@@ -145,8 +151,8 @@ class ArtistLineupOcrServiceTest {
 
     @Test
     void applyArtistLineup_일부_중복시_added와_duplicates_합계가_requested와_일치() {
-        given(artistFestivalService.addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(10L)))).willReturn(10L);
-        willThrow(new ConflictException("중복")).given(artistFestivalService).addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(20L)));
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(1, 1, 0));
 
         LineupApplyResult result = ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
 
@@ -156,17 +162,15 @@ class ArtistLineupOcrServiceTest {
     }
 
     @Test
-    void applyArtistLineup_존재하지_않는_아티스트는_실패로_집계되고_나머지는_계속_처리() {
-        willThrow(new java.util.NoSuchElementException("아티스트를 찾을 수 없습니다"))
-                .given(artistFestivalService).addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(10L)));
-        given(artistFestivalService.addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(20L)))).willReturn(20L);
+    void applyArtistLineup_존재하지_않는_아티스트는_failed로_집계() {
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(1, 0, 1));
 
         LineupApplyResult result = ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L, List.of(10L, 20L), null));
 
         assertThat(result.requested()).isEqualTo(2);
         assertThat(result.added()).isEqualTo(1);
         assertThat(result.failed()).isEqualTo(1);
-        verify(artistFestivalService).addArtistToFestival(eq(1L), argThat(r -> r.getArtistId().equals(20L)));
     }
 
     @Test
