@@ -32,7 +32,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    // 닉네임 유일성은 활성 유저 사이에서만 요구된다(UserRepository.existsByNickname 등이
+    // deletedAt IS NULL로 스코핑) — 탈퇴 유저는 전부 같은 표시 문자열을 쓰므로 DB 유니크
+    // 제약을 걸면 안 된다(V62 마이그레이션에서 idx_user_nickname의 UNIQUE를 제거).
+    @Column
     private String nickname;
 
     @Column(nullable = false)
