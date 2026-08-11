@@ -81,12 +81,14 @@ public class ArtistLineupOcrService {
     // 최대 수백 회 쿼리가 발생하므로, festival/artist/기존 참여 여부를 한 번씩만 조회하는
     // linkArtistsToFestival로 일괄 처리한다.
     public LineupApplyResult applyArtistLineup(LineupOcrApplyRequestDto request) {
-        ArtistFestivalService.LinkArtistsResult result =
-                artistFestivalService.linkArtistsToFestival(request.festivalId(), request.artistIds());
+        List<Long> artistIds = request.artistIds();
+        ArtistFestivalService.LinkArtistsResult result = artistIds.isEmpty()
+                ? new ArtistFestivalService.LinkArtistsResult(0, 0, 0)
+                : artistFestivalService.linkArtistsToFestival(request.festivalId(), artistIds);
         if (request.unmatchedNames() != null) {
             suggestionService.saveAll(request.unmatchedNames());
         }
-        return new LineupApplyResult(request.artistIds().size(), result.added(), result.duplicates(), result.errors());
+        return new LineupApplyResult(artistIds.size(), result.added(), result.duplicates(), result.errors());
     }
 
     public List<UnmatchedArtistSuggestionDto> getSuggestions() {
