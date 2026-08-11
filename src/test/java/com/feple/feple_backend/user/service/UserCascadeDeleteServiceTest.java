@@ -20,6 +20,7 @@ import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
+import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserCascadeDeleteServiceTest {
 
+    @Mock UserRepository userRepository;
     @Mock RefreshTokenService refreshTokenService;
     @Mock UserDeviceTokenRepository userDeviceTokenRepository;
 
@@ -92,6 +94,7 @@ class UserCascadeDeleteServiceTest {
 
         verify(refreshTokenService).revokeAll(1L);
         verify(fileStorageService).deleteFileAfterCommit("profile/user-1.jpg");
+        verify(userRepository).save(user);
         assertThat(user.isDeleted()).isTrue();
         assertThat(user.getNickname()).isEqualTo("(탈퇴한 사용자)");
     }
