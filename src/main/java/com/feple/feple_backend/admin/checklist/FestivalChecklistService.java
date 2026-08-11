@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +31,7 @@ public class FestivalChecklistService {
     @Transactional
     @CacheEvict(value = "festivalChecklistMap", allEntries = true)
     public boolean toggle(Long festivalId, String field) {
-        FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
-                .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
+        FestivalChecklist checklist = getOrCreate(festivalId);
         checklist.toggle(field);
         return checklist.isChecked(field);
     }
@@ -46,9 +46,21 @@ public class FestivalChecklistService {
     @Transactional
     @CacheEvict(value = "festivalChecklistMap", allEntries = true)
     public void saveMemo(Long festivalId, String memo) {
-        FestivalChecklist checklist = checklistRepository.findByFestivalId(festivalId)
-                .orElseGet(() -> checklistRepository.save(FestivalChecklist.of(festivalId)));
+        FestivalChecklist checklist = getOrCreate(festivalId);
         checklist.updateMemo(memo);
+    }
+
+    // festival_id unique 제약 위반(같은 festival의 체크리스트를 처음 만드는 두 요청이 경합)이 나면
+    // 상대가 이미 만든 행을 재조회해 이번 요청의 toggle/updateMemo가 유실되지 않게 한다.
+    private FestivalChecklist getOrCreate(Long festivalId) {
+        return checklistRepository.findByFestivalId(festivalId)
+                .orElseGet(() -> {
+                    try {
+                        return checklistRepository.save(FestivalChecklist.of(festivalId));
+                    } catch (DataIntegrityViolationException e) {
+                        return checklistRepository.findByFestivalId(festivalId).orElseThrow(() -> e);
+                    }
+                });
     }
 
     /** 페스티벌 삭제 시 연관 체크리스트를 정리한다. Repository를 직접 호출하면 이 캐시가 무효화되지 않으므로 반드시 이 메서드를 거칠 것. */

@@ -61,6 +61,11 @@ public class FestivalCertification extends BaseTimeEntity {
     @Column(nullable = false)
     private int likeCount = 0;
 
+    // 승인/거절 처리 전 상태(PENDING) 확인과 실제 쓰기 사이의 TOCTOU를 막는다 —
+    // 동시 승인 요청이 둘 다 PENDING을 읽고 통과하면 포인트가 중복 지급될 수 있다.
+    @Version
+    private Long version;
+
     public Long getFestivalId() { return festival.getId(); }
     public String getFestivalTitle() { return festival.getTitle(); }
     public String getFestivalTitleEn() { return festival.getTitleEn(); }

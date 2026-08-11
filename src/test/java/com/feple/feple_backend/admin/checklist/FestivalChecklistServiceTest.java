@@ -71,6 +71,23 @@ class FestivalChecklistServiceTest {
     }
 
     @Test
+    void toggle_저장중_유니크_제약_위반이면_상대가_만든_행을_재조회해_토글() {
+        // 같은 festival의 체크리스트를 처음 만드는 두 요청이 경합하는 상황을 재현 —
+        // save()가 유니크 제약(festival_id)에서 실패해도 요청자의 toggle이 유실되면 안 됨
+        FestivalChecklist raceWinnerRow = FestivalChecklist.of(1L);
+        given(checklistRepository.findByFestivalId(1L))
+                .willReturn(Optional.empty())
+                .willReturn(Optional.of(raceWinnerRow));
+        given(checklistRepository.save(any()))
+                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+
+        boolean newValue = service.toggle(1L, "lineup1");
+
+        assertThat(newValue).isTrue();
+        assertThat(raceWinnerRow.isChecked("lineup1")).isTrue();
+    }
+
+    @Test
     void toggle_알_수_없는_항목은_예외_전파() {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
         given(checklistRepository.findByFestivalId(1L)).willReturn(Optional.of(checklist));
