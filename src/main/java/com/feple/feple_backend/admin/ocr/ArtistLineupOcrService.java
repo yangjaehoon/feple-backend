@@ -73,8 +73,13 @@ public class ArtistLineupOcrService {
         return candidate != null && name != null && normalize(candidate).equalsIgnoreCase(normalize(name));
     }
 
+    // OCR이 "LOCO (로꼬)"처럼 영문/한글을 함께 반환하는 경우 DB에 저장된 단일 이름이
+    // OCR 원문보다 짧아 한쪽 방향 포함 검사만으로는 매칭되지 않으므로 양방향으로 확인한다.
     private static boolean containsIgnoreCase(String candidate, String name) {
-        return candidate != null && name != null && normalize(candidate).toLowerCase().contains(normalize(name).toLowerCase());
+        if (candidate == null || name == null) return false;
+        String normalizedCandidate = normalize(candidate).toLowerCase();
+        String normalizedName = normalize(name).toLowerCase();
+        return normalizedCandidate.contains(normalizedName) || normalizedName.contains(normalizedCandidate);
     }
 
     // OCR이 "다이나믹듀오"를 "다이나믹 듀오"처럼 띄어쓰기를 다르게 읽는 경우가 있어

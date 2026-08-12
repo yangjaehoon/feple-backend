@@ -65,6 +65,19 @@ class ArtistLineupOcrServiceTest {
     }
 
     @Test
+    void parseArtistLineup_OCR값이_영문한글_조합이고_DB값이_단일이어도_매칭() throws Exception {
+        // OCR이 "LOCO (로꼬)"처럼 DB에 저장된 단일 이름(로꼬/Loco)보다 긴 조합 문자열을
+        // 반환하는 경우로, candidate.contains(name) 방향만 확인하면 매칭에 실패했었다
+        Artist artist = mockArtist(30L, "로꼬", "Loco");
+        given(geminiOcrClient.parseLineup(any())).willReturn(new OcrParseResult<>(List.of(new LineupRawResult("LOCO (로꼬)", 100)), false));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(artist));
+
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null).entries();
+
+        assertThat(results.get(0).artistId()).isEqualTo(30L);
+    }
+
+    @Test
     void parseArtistLineup_부분_매칭이_복수면_artistId_null_반환() throws Exception {
         Artist a1 = mockArtist(1L, "아이유", "IU (아이유)");
         Artist a2 = mockArtist(2L, "IU Fan Club", null);
