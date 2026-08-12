@@ -82,17 +82,19 @@
                     <img id="lineupPreviewImg" src="" alt="라인업 이미지">
                 </div>
                 <div class="ocr-result-area">
-                    <table class="parse-table">
-                        <thead>
-                        <tr>
-                            <th class="col-w28"><input type="checkbox" id="lineupCheckAll" title="전체 선택"/></th>
-                            <th>이미지에서 추출한 이름</th>
-                            <th>DB 매칭 아티스트</th>
-                            <th class="col-w56">확신도</th>
-                        </tr>
-                        </thead>
-                        <tbody id="lineupParseBody"></tbody>
-                    </table>
+                    <div class="table-wrap">
+                        <table class="parse-table">
+                            <thead>
+                            <tr>
+                                <th class="col-w28"><input type="checkbox" id="lineupCheckAll" title="전체 선택"/></th>
+                                <th>이미지에서 추출한 이름</th>
+                                <th>DB 매칭 아티스트</th>
+                                <th class="col-w56">확신도</th>
+                            </tr>
+                            </thead>
+                            <tbody id="lineupParseBody"></tbody>
+                        </table>
+                    </div>
                     <div class="ocr-legend">
                         ✅ DB 매칭됨 &nbsp; ❌ 미매칭 (등록 불가) &nbsp;&nbsp; 🟢 90+ &nbsp; 🟡 70~89 &nbsp; 🔴 ~69
                     </div>

@@ -86,22 +86,24 @@
                 <img id="ocrPreviewImg" src="" alt="타임테이블 이미지">
             </div>
             <div class="ocr-result-area">
-                <table class="parse-table">
-                    <thead>
-                    <tr>
-                        <th class="col-w28">#</th>
-                        <th>아티스트명</th>
-                        <th>스테이지</th>
-                        <th class="col-w110">날짜</th>
-                        <th class="col-w80">시작</th>
-                        <th class="col-w80">종료</th>
-                        <th class="col-w56">확신도</th>
-                        <th style="min-width:130px">오류 사유</th>
-                        <th class="col-w28"></th>
-                    </tr>
-                    </thead>
-                    <tbody id="ocrParseBody"></tbody>
-                </table>
+                <div class="table-wrap">
+                    <table class="parse-table">
+                        <thead>
+                        <tr>
+                            <th class="col-w28">#</th>
+                            <th>아티스트명</th>
+                            <th>스테이지</th>
+                            <th class="col-w110">날짜</th>
+                            <th class="col-w80">시작</th>
+                            <th class="col-w80">종료</th>
+                            <th class="col-w56">확신도</th>
+                            <th style="min-width:130px">오류 사유</th>
+                            <th class="col-w28"></th>
+                        </tr>
+                        </thead>
+                        <tbody id="ocrParseBody"></tbody>
+                    </table>
+                </div>
                 <div class="ocr-legend">
                     🟢 90+ &nbsp; 🟡 70~89 &nbsp; 🔴 ~69 — 낮은 항목은 직접 수정하세요.
                 </div>
@@ -113,20 +115,22 @@
     <!-- 3. 처리 이력 -->
     <div class="crawl-card">
         <div class="crawl-card-title">3. OCR 처리 이력</div>
-        <table class="compact-table" id="ocrHistoryTable">
-            <thead>
-            <tr>
-                <th>페스티벌</th>
-                <th>날짜</th>
-                <th>저장 수</th>
-                <th>실패 수</th>
-                <th>처리 일시</th>
-            </tr>
-            </thead>
-            <tbody id="ocrHistoryBody">
-            <tr><td colspan="5" class="td-empty-center">처리된 항목이 없습니다.</td></tr>
-            </tbody>
-        </table>
+        <div class="table-wrap">
+            <table class="compact-table" id="ocrHistoryTable">
+                <thead>
+                <tr>
+                    <th>페스티벌</th>
+                    <th>날짜</th>
+                    <th>저장 수</th>
+                    <th>실패 수</th>
+                    <th>처리 일시</th>
+                </tr>
+                </thead>
+                <tbody id="ocrHistoryBody">
+                <tr><td colspan="5" class="td-empty-center">처리된 항목이 없습니다.</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div><!-- /tab-ocr -->

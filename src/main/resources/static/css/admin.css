@@ -1227,7 +1227,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .cert-photo-col    { flex: 0 0 360px; }
 .cert-photo        { width: 100%; border-radius: 12px; object-fit: cover; max-height: 480px; }
 .cert-info-col     { flex: 1; min-width: 280px; }
-.cert-info-table   { width: 100%; border-collapse: collapse; }
+.cert-info-table   { width: 100%; min-width: 0; border-collapse: collapse; }
 .cert-border-row   { border-bottom: 1px solid var(--border); }
 .cert-label        { padding: 12px 0; font-weight: 600; width: 100px; color: var(--muted); }
 .cert-value        { padding: 12px 0; }
