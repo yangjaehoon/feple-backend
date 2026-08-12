@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.4'
+	id 'org.springframework.boot' version '3.5.16'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'jacoco'
 	id 'com.diffplug.spotless' version '8.8.0'
@@ -52,7 +52,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
-	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
+	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2")
 	implementation "io.awspring.cloud:spring-cloud-aws-starter-s3"
 
 	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
@@ -79,7 +79,7 @@ dependencies {
 
 	implementation 'com.drewnoakes:metadata-extractor:2.21.0' // 이미지 리사이즈 시 EXIF Orientation 태그 반영용
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
 
 	// sentry.dsn 미설정 시 경고만 남기고 비활성 상태로 정상 기동 — SENTRY_DSN 없어도 안전
 	implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.51.0'
