@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ArtistLineupOcrService {
@@ -28,9 +30,13 @@ public class ArtistLineupOcrService {
         // 이름마다 개별 조회하면 포스터 한 장(아티스트 20~60명)에 최대 60회 쿼리가 발생하므로
         // 전체 아티스트를 한 번만 조회해 메모리에서 매칭한다.
         List<Artist> allArtists = artistRepository.findAllWithAliases();
+        log.info("라인업 OCR 매칭 디버그: allArtists.size()={}", allArtists.size());
         List<ArtistLineupOcrResult> matched = raw.entries().stream()
                 .map(entry -> matchArtist(entry, allArtists))
                 .toList();
+        for (ArtistLineupOcrResult r : matched) {
+            log.info("라인업 OCR 매칭 디버그: parsedName={}, artistId={}, matchedName={}", r.parsedName(), r.artistId(), r.matchedName());
+        }
         return new OcrParseResult<>(matched, raw.truncated());
     }
 
