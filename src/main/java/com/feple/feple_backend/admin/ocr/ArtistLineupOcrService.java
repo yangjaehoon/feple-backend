@@ -70,11 +70,17 @@ public class ArtistLineupOcrService {
     }
 
     private static boolean equalsIgnoreCase(String candidate, String name) {
-        return candidate != null && candidate.equalsIgnoreCase(name);
+        return candidate != null && name != null && normalize(candidate).equalsIgnoreCase(normalize(name));
     }
 
     private static boolean containsIgnoreCase(String candidate, String name) {
-        return candidate != null && name != null && candidate.toLowerCase().contains(name.toLowerCase());
+        return candidate != null && name != null && normalize(candidate).toLowerCase().contains(normalize(name).toLowerCase());
+    }
+
+    // OCR이 "다이나믹듀오"를 "다이나믹 듀오"처럼 띄어쓰기를 다르게 읽는 경우가 있어
+    // 매칭 전에 공백을 제거해 비교한다.
+    private static String normalize(String text) {
+        return text.replaceAll("\\s+", "");
     }
 
     // 아티스트별로 addArtistToFestival을 반복 호출하면 포스터 한 장(아티스트 20~60명)에
