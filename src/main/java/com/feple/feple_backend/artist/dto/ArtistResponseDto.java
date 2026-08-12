@@ -23,6 +23,10 @@ public class ArtistResponseDto {
         return from(artist, imageUrl, 0);
     }
 
+    public String getAliasesDisplay() {
+        return (aliases == null || aliases.isEmpty()) ? null : String.join(", ", aliases);
+    }
+
     public static ArtistResponseDto from(Artist artist, String imageUrl, int songCount) {
         String genreDisplay = (artist.getGenres() != null && !artist.getGenres().isEmpty())
                 ? artist.getGenres().stream()
