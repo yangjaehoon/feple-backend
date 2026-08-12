@@ -1073,6 +1073,8 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .ocr-image-preview img { width: 100%; display: block; }
 .ocr-result-area       { flex: 1; min-width: 0; }
 .parse-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#suggestionTable { table-layout: fixed; min-width: 0; }
+#suggestionTable td:first-child { word-break: break-word; }
 .parse-table th { padding: 8px 10px; text-align: left; font-weight: 700; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1.5px solid var(--border); background: var(--bg-2); }
 .parse-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .parse-table td input, .parse-table td select { width: 100%; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--text); outline: none; }
