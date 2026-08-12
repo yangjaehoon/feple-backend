@@ -10,7 +10,6 @@ import org.springframework.cache.annotation.Caching;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Caching(evict = {
-    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true),
-    @CacheEvict(value = "activeFestivalCount",  allEntries = true)
+    @CacheEvict(value = "allFestivalsForAdmin", allEntries = true)
 })
 public @interface EvictFestivalCaches {}

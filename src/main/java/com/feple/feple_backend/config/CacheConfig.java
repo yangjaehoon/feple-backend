@@ -55,9 +55,6 @@ public class CacheConfig {
             // 신고 페이지 타입별 카운트(pending+total × 3종): 30초 TTL
             new CacheSpec("adminReportTypeCounts", Duration.ofSeconds(30), 10),
 
-            // 진행 중 페스티벌 COUNT: 목록 페이지 매 로드마다 실행되던 쿼리 — 5분 TTL, 페스티벌 변경 시 evict
-            new CacheSpec("activeFestivalCount", Duration.ofMinutes(5), 10),
-
             // 체크리스트 맵(festivalId → FestivalChecklist): 목록 페이지 매 로드마다 IN 쿼리 — 5분 TTL, toggle/saveMemo 시 evict
             new CacheSpec("festivalChecklistMap", Duration.ofMinutes(5), 1),
 

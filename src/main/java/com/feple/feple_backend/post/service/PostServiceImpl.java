@@ -234,12 +234,17 @@ public class PostServiceImpl implements PostService {
         postRepository.incrementViewCount(postId);
     }
 
+    // 클래스 기본값(readOnly=true)을 오버라이드하지 않으면, 이 메서드가 트랜잭션을 여는
+    // 진입점으로 호출될 경우 물리 커넥션이 읽기 전용으로 열려 아래 @Modifying UPDATE가
+    // 조용히 무시될 수 있다 — incrementViewCount와 동일하게 명시적으로 쓰기 트랜잭션을 연다.
     @Override
+    @Transactional
     public void incrementCommentCount(Long postId) {
         postRepository.incrementCommentCount(postId);
     }
 
     @Override
+    @Transactional
     public void decrementCommentCount(Long postId) {
         postRepository.decrementCommentCount(postId);
     }
