@@ -804,8 +804,11 @@ input[type="file"] { font-size: 13px; color: var(--muted); padding: 7px 0; borde
 /* ============================================================
    COMPACT STATS TABLE  (대시보드 일별 지표 · 통계 일별 상세)
    ============================================================ */
-/* compact-table: stats / rank / summary 등 밀도 높은 테이블 공통 스타일 */
-.compact-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+/* compact-table: stats / rank / summary 등 밀도 높은 테이블 공통 스타일.
+   범용 table 규칙의 min-width: 760px를 그대로 물려받으면 대시보드 2열(290px 고정)처럼
+   좁은 컨테이너에서 테이블이 억지로 넓어져 대부분 잘려 보인다 — 컬럼이 짧은 숫자/날짜뿐이라
+   글자 단위 줄바꿈 문제도 없으므로 min-width 제약을 해제한다. */
+.compact-table { width: 100%; min-width: auto; border-collapse: collapse; font-size: 12px; }
 .compact-table thead tr { background: var(--bg-2); }
 .compact-table thead th {
   padding: 8px 12px; color: var(--muted); font-weight: 700; text-align: left;
