@@ -120,7 +120,9 @@ class SetlistChangeRequestAdminControllerTest {
                         .param("status", "PENDING")
                         .param("page", "0")
                         .param("keyword", "라인업"))
-                .andExpect(redirectedUrl("/admin/setlist-requests?status=PENDING&page=0&keyword=라인업"));
+                // build().encode()로 한글 keyword를 퍼센트 인코딩하지 않으면 Tomcat이 Location
+                // 헤더를 "invalid"로 판단해 응답에서 제거해버려 리다이렉트가 무산된다 — 인코딩된 값이 정상
+                .andExpect(redirectedUrl("/admin/setlist-requests?status=PENDING&page=0&keyword=%EB%9D%BC%EC%9D%B8%EC%97%85"));
     }
 
     @Test
