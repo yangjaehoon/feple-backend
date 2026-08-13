@@ -260,23 +260,27 @@
         var btn = e.target.closest('.btn-delete-suggestion');
         if (!btn) return;
         var id = btn.getAttribute('data-id');
-        var headers = window.AdminUtils.getCsrfHeaders();
-        btn.disabled = true;
-        fetch(CrawlUrls.lineupSuggestions + '/' + id, { method: 'DELETE', headers: headers })
-            .then(function (r) {
-                if (!r.ok) throw new Error();
-                var tr = document.querySelector('#suggestionBody tr[data-suggestion-id="' + id + '"]');
-                if (tr) tr.remove();
-                var remaining = document.querySelectorAll('#suggestionBody tr').length;
-                if (remaining === 0) {
-                    document.getElementById('suggestionBadge').classList.add('d-none');
-                    document.getElementById('suggestionTable').classList.add('d-none');
-                    document.getElementById('suggestionEmptyState').classList.remove('d-none');
-                } else {
-                    document.getElementById('suggestionBadge').textContent = remaining;
-                }
-            })
-            .catch(function () { btn.disabled = false; });
+        var row = document.querySelector('#suggestionBody tr[data-suggestion-id="' + id + '"]');
+        var name = row ? row.querySelector('td').textContent.trim() : '';
+
+        window.AdminConfirm.show('\'' + name + '\' 제안을 삭제하시겠습니까?', function () {
+            var headers = window.AdminUtils.getCsrfHeaders();
+            btn.disabled = true;
+            fetch(CrawlUrls.lineupSuggestions + '/' + id, { method: 'DELETE', headers: headers })
+                .then(function (r) {
+                    if (!r.ok) throw new Error();
+                    if (row) row.remove();
+                    var remaining = document.querySelectorAll('#suggestionBody tr').length;
+                    if (remaining === 0) {
+                        document.getElementById('suggestionBadge').classList.add('d-none');
+                        document.getElementById('suggestionTable').classList.add('d-none');
+                        document.getElementById('suggestionEmptyState').classList.remove('d-none');
+                    } else {
+                        document.getElementById('suggestionBadge').textContent = remaining;
+                    }
+                })
+                .catch(function () { btn.disabled = false; });
+        });
     });
 
     document.getElementById('btnRefreshSuggestions').addEventListener('click', loadSuggestions);
