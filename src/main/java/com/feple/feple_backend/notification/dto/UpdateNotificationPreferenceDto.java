@@ -10,4 +10,5 @@ public class UpdateNotificationPreferenceDto {
     private boolean commentEnabled;
     private boolean festivalEnabled;
     private boolean songRequestEnabled;
+    private boolean quietHoursEnabled;
 }

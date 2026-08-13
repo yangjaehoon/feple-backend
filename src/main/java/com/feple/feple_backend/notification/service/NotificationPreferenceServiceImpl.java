@@ -30,7 +30,7 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     public NotificationPreferenceDto updatePreferences(Long userId, UpdateNotificationPreferenceDto dto) {
         NotificationPreference pref = getOrCreate(userId);
         pref.update(new NotificationPreferenceFields(dto.isCertEnabled(), dto.isCommentEnabled(),
-                dto.isFestivalEnabled(), dto.isSongRequestEnabled()));
+                dto.isFestivalEnabled(), dto.isSongRequestEnabled(), dto.isQuietHoursEnabled()));
         return NotificationPreferenceDto.from(pref);
     }
 

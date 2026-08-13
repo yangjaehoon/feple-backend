@@ -5,5 +5,6 @@ public record NotificationPreferenceFields(
         boolean certEnabled,
         boolean commentEnabled,
         boolean festivalEnabled,
-        boolean songRequestEnabled
+        boolean songRequestEnabled,
+        boolean quietHoursEnabled
 ) {}

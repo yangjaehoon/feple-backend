@@ -15,6 +15,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationContent;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
@@ -30,6 +31,7 @@ import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository.TokenLanguageProjection;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -45,6 +47,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
+
+    /** 심야 알림 차단 시간대(KST) — 사용자가 설정에서 켠 경우에만 적용, 관리자 수동 발송(AdminPushService)은 이 게이트를 거치지 않는다 */
+    private static final LocalTime QUIET_HOURS_START = LocalTime.MIDNIGHT;
+    private static final LocalTime QUIET_HOURS_END = LocalTime.of(7, 0);
 
     private final NotificationRepository notificationRepository;
     private final ArtistFollowRepository artistFollowRepository;
@@ -346,7 +352,7 @@ public class NotificationService {
 
     private void pushIfEnabled(Long userId, NotificationMessage message) {
         NotificationPreference pref = preferenceService.getOrCreate(userId);
-        if (!pref.isEnabledFor(message.type())) return;
+        if (!pref.isEnabledFor(message.type()) || isBlockedByQuietHours(pref)) return;
         List<TokenLanguageProjection> tokens =
                 deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(userId));
         sendByLanguage(tokens, message);
@@ -361,11 +367,17 @@ public class NotificationService {
         List<Long> allUserIds = users.stream().map(User::getId).toList();
         Map<Long, NotificationPreference> prefMap = preferenceService.getOrCreateBatch(allUserIds);
         List<Long> enabledUserIds = allUserIds.stream()
-                .filter(id -> prefMap.get(id).isEnabledFor(message.type()))
+                .filter(id -> prefMap.get(id).isEnabledFor(message.type()) && !isBlockedByQuietHours(prefMap.get(id)))
                 .toList();
         List<TokenLanguageProjection> tokens =
                 deviceTokenRepository.findTokensWithLanguageByUserIds(enabledUserIds);
         sendByLanguage(tokens, messageWithImage);
+    }
+
+    private boolean isBlockedByQuietHours(NotificationPreference pref) {
+        if (!pref.isQuietHoursEnabled()) return false;
+        LocalTime now = KoreaClock.now();
+        return !now.isBefore(QUIET_HOURS_START) && now.isBefore(QUIET_HOURS_END);
     }
 
     private void sendByLanguage(List<TokenLanguageProjection> tokens, NotificationMessage message) {

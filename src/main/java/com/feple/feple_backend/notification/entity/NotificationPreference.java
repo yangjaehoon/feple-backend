@@ -22,6 +22,7 @@ public class NotificationPreference {
     @Column(nullable = false) @Builder.Default private boolean commentEnabled = true;
     @Column(nullable = false) @Builder.Default private boolean festivalEnabled = true;
     @Column(nullable = false) @Builder.Default private boolean songRequestEnabled = true;
+    @Column(nullable = false) @Builder.Default private boolean quietHoursEnabled = false;
 
     public static NotificationPreference defaultFor(Long userId) {
         return NotificationPreference.builder().userId(userId).build();
@@ -32,6 +33,7 @@ public class NotificationPreference {
         this.commentEnabled = fields.commentEnabled();
         this.festivalEnabled = fields.festivalEnabled();
         this.songRequestEnabled = fields.songRequestEnabled();
+        this.quietHoursEnabled = fields.quietHoursEnabled();
     }
 
     public boolean isEnabledFor(NotificationType type) {

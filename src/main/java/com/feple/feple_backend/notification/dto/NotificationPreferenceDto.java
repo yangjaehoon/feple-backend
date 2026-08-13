@@ -11,6 +11,7 @@ public class NotificationPreferenceDto {
     private boolean commentEnabled;
     private boolean festivalEnabled;
     private boolean songRequestEnabled;
+    private boolean quietHoursEnabled;
 
     public static NotificationPreferenceDto from(NotificationPreference pref) {
         return NotificationPreferenceDto.builder()
@@ -18,6 +19,7 @@ public class NotificationPreferenceDto {
                 .commentEnabled(pref.isCommentEnabled())
                 .festivalEnabled(pref.isFestivalEnabled())
                 .songRequestEnabled(pref.isSongRequestEnabled())
+                .quietHoursEnabled(pref.isQuietHoursEnabled())
                 .build();
     }
 }

@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 
 import com.feple.feple_backend.artist.entity.Artist;
@@ -25,6 +26,7 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
@@ -37,6 +39,7 @@ import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository.TokenLanguageProjection;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,6 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -431,6 +435,57 @@ class NotificationServiceTest {
 
         then(notificationRepository).should().save(any());
         then(deviceTokenRepository).should(never()).findTokensWithLanguageByUserIds(any());
+    }
+
+    // ── 심야시간(00:00~07:00) 알림 차단 ──────────────────────────────────
+
+    @Test
+    void 심야시간_설정켜져있고_새벽3시면_저장은_되지만_푸시는_안함() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        NotificationPreference quietHours = mock(NotificationPreference.class);
+        given(quietHours.isEnabledFor(any())).willReturn(true);
+        given(quietHours.isQuietHoursEnabled()).willReturn(true);
+        given(preferenceService.getOrCreate(1L)).willReturn(quietHours);
+
+        try (MockedStatic<KoreaClock> clock = mockStatic(KoreaClock.class)) {
+            clock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+
+            service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
+        }
+
+        then(notificationRepository).should().save(any());
+        then(deviceTokenRepository).should(never()).findTokensWithLanguageByUserIds(any());
+    }
+
+    @Test
+    void 심야시간_설정켜져있어도_낮시간이면_정상_푸시() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        NotificationPreference quietHours = mock(NotificationPreference.class);
+        given(quietHours.isEnabledFor(any())).willReturn(true);
+        given(quietHours.isQuietHoursEnabled()).willReturn(true);
+        given(preferenceService.getOrCreate(1L)).willReturn(quietHours);
+
+        try (MockedStatic<KoreaClock> clock = mockStatic(KoreaClock.class)) {
+            clock.when(KoreaClock::now).thenReturn(LocalTime.of(14, 0));
+
+            service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
+        }
+
+        then(deviceTokenRepository).should().findTokensWithLanguageByUserIds(List.of(1L));
+    }
+
+    @Test
+    void 심야시간_설정꺼져있으면_새벽에도_정상_푸시() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+
+        try (MockedStatic<KoreaClock> clock = mockStatic(KoreaClock.class)) {
+            clock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+
+            service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
+        }
+
+        then(deviceTokenRepository).should().findTokensWithLanguageByUserIds(List.of(1L));
     }
 
     // ── 언어별 토큰 분기 발송 ─────────────────────────────────────────────
