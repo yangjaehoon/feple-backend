@@ -94,7 +94,7 @@ class ImageResizeServiceTest {
 
     @Test
     void validateFile_허용된_확장자면_통과() {
-        for (String ext : new String[]{"jpg", "jpeg", "png", "gif", "JPG", "PNG"}) {
+        for (String ext : new String[]{"jpg", "jpeg", "png", "gif", "webp", "JPG", "PNG", "WEBP"}) {
             MockMultipartFile file = new MockMultipartFile("file", "photo." + ext, "image/jpeg", new byte[]{1});
             assertThatCode(() -> service.validateFile(file)).doesNotThrowAnyException();
         }
@@ -122,6 +122,22 @@ class ImageResizeServiceTest {
         BufferedImage decoded = ImageIO.read(new ByteArrayInputStream(result));
         assertThat(decoded.getWidth()).isEqualTo(100);
         assertThat(decoded.getHeight()).isEqualTo(50);
+    }
+
+    // javax.imageio는 webp를 기본 지원하지 않아 org.sejda.imageio:webp-imageio를 추가했다 —
+    // ImageIO.getImageReaders()가 실제로 webp 리더를 찾아 디코딩까지 되는지 확인 (cwebp로 생성한
+    // 40x20 실제 webp 파일을 base64로 내장).
+    @Test
+    void resizeToJpeg_webp_파일도_디코딩된다() throws IOException {
+        byte[] webp = java.util.Base64.getDecoder().decode(
+                "UklGRk4AAABXRUJQVlA4IEIAAABQAwCdASooABQAPpFGnkslo6KhpWgAsBIJZwDO3oAAK/fDcAD"
+                + "+7qY//2LOWwLx//7nA/7nA/7nA/jbB+29aoAAAAA=");
+
+        byte[] result = service.resizeToJpeg(new ByteArrayInputStream(webp), 100);
+
+        BufferedImage decoded = ImageIO.read(new ByteArrayInputStream(result));
+        assertThat(decoded.getWidth()).isEqualTo(40);
+        assertThat(decoded.getHeight()).isEqualTo(20);
     }
 
     @Test

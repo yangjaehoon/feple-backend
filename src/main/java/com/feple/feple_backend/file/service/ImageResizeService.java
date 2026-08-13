@@ -25,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class ImageResizeService {
 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif");
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
     private static final int MAX_DIMENSION_PX = 8_000;
 
     public void validateFile(MultipartFile file) {
@@ -48,7 +48,7 @@ public class ImageResizeService {
 
         String ext = original.substring(original.lastIndexOf(".")).toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(ext))
-            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. jpg, jpeg, png, gif 파일만 업로드할 수 있습니다.");
+            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. jpg, jpeg, png, gif, webp 파일만 업로드할 수 있습니다.");
     }
 
     /** 이미지를 targetPx × targetPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
