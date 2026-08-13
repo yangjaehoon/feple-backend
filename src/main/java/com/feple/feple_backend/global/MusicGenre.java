@@ -8,6 +8,7 @@ public enum MusicGenre {
     RNB("R&B"),
     DANCE("댄스"),
     IDOL("아이돌"),
+    GUGAK("국악"),
     ETC("기타");
 
     private final String displayName;
