@@ -275,7 +275,7 @@ public class FestivalAdminController {
                     UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/festivals")
                             .queryParam("page", page);
                     if (!keyword.isBlank()) builder.queryParam("keyword", keyword);
-                    model.addAttribute("returnUrl", builder.build().toUriString());
+                    model.addAttribute("returnUrl", builder.build().encode().toUriString());
                 },
                 "admin/festival/detail",
                 e -> log.error("페스티벌 상세 조회 실패. id={}", id, e),

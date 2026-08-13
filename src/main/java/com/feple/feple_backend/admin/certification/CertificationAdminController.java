@@ -73,7 +73,7 @@ public class CertificationAdminController {
                             .queryParam("status", filter.status())
                             .queryParam("page", filter.page());
                     if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
-                    model.addAttribute("returnUrl", builder.build().toUriString());
+                    model.addAttribute("returnUrl", builder.build().encode().toUriString());
                 },
                 "admin/certification/detail",
                 e -> log.error("인증 상세 조회 실패 id={}", id, e),
@@ -170,6 +170,8 @@ public class CertificationAdminController {
                 .queryParam("status", filter.status())
                 .queryParam("page", filter.page());
         if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
-        return "redirect:" + builder.build().toUriString();
+        // encode() 없이 build()만 하면 keyword의 한글이 그대로 Location 헤더에 들어가
+        // Tomcat이 "invalid header"로 판단해 리다이렉트 자체를 제거해버린다(빈 화면 원인).
+        return "redirect:" + builder.build().encode().toUriString();
     }
 }

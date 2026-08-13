@@ -65,7 +65,7 @@ public class UserAdminController {
                     UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.fromPath("/admin/users"), listFilter)
                             .queryParam("page", listFilter.page());
                     if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
-                    model.addAttribute("returnUrl", builder.build().toUriString());
+                    model.addAttribute("returnUrl", builder.build().encode().toUriString());
                     model.addAttribute("listFilter", listFilter);
                 },
                 "admin/user/detail",
@@ -207,7 +207,7 @@ public class UserAdminController {
     private static String buildListParams(UserListFilter listFilter) {
         UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.newInstance(), listFilter);
         if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
-        String query = builder.build().toUriString();
+        String query = builder.build().encode().toUriString();
         return query.startsWith("?") ? query.substring(1) : query;
     }
 
