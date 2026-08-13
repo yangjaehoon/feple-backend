@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class ArtistSuggestionAdminControllerTest {
 
     @Mock ArtistSuggestionAdminService artistSuggestionAdminService;
+    @Mock ArtistAdminService artistAdminService;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks ArtistSuggestionAdminController controller;
@@ -39,11 +41,12 @@ class ArtistSuggestionAdminControllerTest {
     void 목록_조회_뷰와_모델_속성_확인() throws Exception {
         given(artistSuggestionAdminService.getSuggestionsPage(anyInt(), anyInt()))
                 .willReturn(new PageImpl<>(List.of()));
+        given(artistAdminService.getAllArtistsSortedByName()).willReturn(List.of());
 
         mockMvc.perform(get("/admin/artist-suggestions"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/artist/suggestions"))
-                .andExpect(model().attributeExists("suggestions"));
+                .andExpect(model().attributeExists("suggestions", "allArtists"));
     }
 
     // ── POST /admin/artist-suggestions/{id}/approve ───────────────────────────

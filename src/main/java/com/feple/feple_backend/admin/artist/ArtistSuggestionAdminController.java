@@ -6,6 +6,7 @@ import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ArtistSuggestionAdminController {
 
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final ArtistAdminService artistAdminService;
     private final AdminLogService adminLogService;
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page, Model model) {
         Page<ArtistSuggestionResponseDto> suggestions = artistSuggestionAdminService.getSuggestionsPage(page, AdminConstants.LIST_PAGE_SIZE);
         model.addAttribute("suggestions", suggestions);
+        // "기존 아티스트와 연결" 모달에서 ID를 직접 입력하는 대신 이름으로 검색해 고를 수 있도록
+        // 전체 아티스트 목록을 함께 내려준다.
+        model.addAttribute("allArtists", artistAdminService.getAllArtistsSortedByName());
         return "admin/artist/suggestions";
     }
 
