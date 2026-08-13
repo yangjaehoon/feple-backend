@@ -29,7 +29,9 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.entity.NotificationType;
+import com.feple.feple_backend.notification.entity.PendingPush;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.repository.PendingPushRepository;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -43,6 +45,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,8 +68,13 @@ class NotificationServiceTest {
     @Mock NotificationPreferenceService preferenceService;
     @Mock UserBlockService userBlockService;
     @Mock FileStorageService fileStorageService;
+    @Mock PendingPushRepository pendingPushRepository;
 
     @InjectMocks NotificationService service;
+
+    /** KoreaClock.now()가 실제 벽시계 시각에 의존하면 새벽 지연 발송 로직 때문에 테스트가 시간대별로 깨진다 —
+     * 낮 시간으로 고정하고, 새벽 시나리오를 검증하는 테스트에서만 개별적으로 재stub한다. */
+    private MockedStatic<KoreaClock> koreaClockMock;
 
     private User user(Long id) {
         return User.builder().id(id).oauthId("o" + id).nickname("유저" + id).build();
@@ -86,6 +94,13 @@ class NotificationServiceTest {
     @BeforeEach
     void setUpDefaults() {
         lenient().when(deviceTokenRepository.findTokensWithLanguageByUserIds(anyList())).thenReturn(List.of());
+        koreaClockMock = mockStatic(KoreaClock.class);
+        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(14, 0));
+    }
+
+    @AfterEach
+    void closeClockMock() {
+        koreaClockMock.close();
     }
 
     // ── onArtistAddedToFestival ───────────────────────────────────────────
@@ -446,12 +461,9 @@ class NotificationServiceTest {
         given(quietHours.isEnabledFor(any())).willReturn(true);
         given(quietHours.isQuietHoursEnabled()).willReturn(true);
         given(preferenceService.getOrCreate(1L)).willReturn(quietHours);
+        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
 
-        try (MockedStatic<KoreaClock> clock = mockStatic(KoreaClock.class)) {
-            clock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
-
-            service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
-        }
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
         then(notificationRepository).should().save(any());
         then(deviceTokenRepository).should(never()).findTokensWithLanguageByUserIds(any());
@@ -465,11 +477,7 @@ class NotificationServiceTest {
         given(quietHours.isQuietHoursEnabled()).willReturn(true);
         given(preferenceService.getOrCreate(1L)).willReturn(quietHours);
 
-        try (MockedStatic<KoreaClock> clock = mockStatic(KoreaClock.class)) {
-            clock.when(KoreaClock::now).thenReturn(LocalTime.of(14, 0));
-
-            service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
-        }
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
         then(deviceTokenRepository).should().findTokensWithLanguageByUserIds(List.of(1L));
     }
@@ -478,14 +486,69 @@ class NotificationServiceTest {
     void 심야시간_설정꺼져있으면_새벽에도_정상_푸시() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
         given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
 
-        try (MockedStatic<KoreaClock> clock = mockStatic(KoreaClock.class)) {
-            clock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
-
-            service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
-        }
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
         then(deviceTokenRepository).should().findTokensWithLanguageByUserIds(List.of(1L));
+    }
+
+    // ── 새벽 자동 알림 지연 발송(댓글/좋아요 제외) ──────────────────────────
+
+    @Test
+    void 새벽시간_인증승인알림은_즉시발송아닌_대기열적재() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(festivalRepository.findById(10L)).willReturn(Optional.of(Festival.builder().id(10L).title("펜타포트").build()));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+
+        service.onCertificationApproved(new CertificationApprovedEvent(1L, "펜타포트", "Pentaport", 10L));
+
+        then(deviceTokenRepository).should(never()).findTokensWithLanguageByUserIds(any());
+        then(pendingPushRepository).should().save(argThat(p ->
+                p.getType() == NotificationType.CERT_APPROVED && p.getUserIds().equals(List.of(1L))));
+    }
+
+    @Test
+    void 낮시간_인증승인알림은_즉시발송() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(festivalRepository.findById(10L)).willReturn(Optional.of(Festival.builder().id(10L).title("펜타포트").build()));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+
+        service.onCertificationApproved(new CertificationApprovedEvent(1L, "펜타포트", "Pentaport", 10L));
+
+        then(deviceTokenRepository).should().findTokensWithLanguageByUserIds(List.of(1L));
+        then(pendingPushRepository).should(never()).save(any());
+    }
+
+    @Test
+    void 새벽시간_좋아요알림은_예외로_즉시발송() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
+        given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
+        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+
+        service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
+
+        then(deviceTokenRepository).should().findTokensWithLanguageByUserIds(List.of(1L));
+        then(pendingPushRepository).should(never()).save(any());
+    }
+
+    @Test
+    void 오전9시_대기열발송_성공건은_삭제되고_실패건은_유지() {
+        PendingPush ok = PendingPush.builder()
+                .type(NotificationType.NEW_FESTIVAL).title("t").body("b").userIds(List.of(1L)).build();
+        PendingPush fail = PendingPush.builder()
+                .type(NotificationType.NEW_FESTIVAL).title("t2").body("b2").userIds(List.of(2L)).build();
+        given(pendingPushRepository.findAll()).willReturn(List.of(ok, fail));
+        given(deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(1L))).willReturn(List.of(token("tok1", "ko")));
+        given(deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(2L)))
+                .willThrow(new RuntimeException("device token 조회 실패"));
+
+        service.flushPendingPushes();
+
+        then(fcmPushService).should().sendMulticast(eq(List.of("tok1")), any());
+        then(pendingPushRepository).should().delete(ok);
+        then(pendingPushRepository).should(never()).delete(fail);
     }
 
     // ── 언어별 토큰 분기 발송 ─────────────────────────────────────────────

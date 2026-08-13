@@ -20,7 +20,10 @@ import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationContent;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.entity.NotificationType;
+import com.feple.feple_backend.notification.entity.PendingPush;
+import com.feple.feple_backend.notification.entity.PreferenceCategory;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.notification.repository.PendingPushRepository;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
@@ -40,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -52,7 +56,11 @@ public class NotificationService {
     private static final LocalTime QUIET_HOURS_START = LocalTime.MIDNIGHT;
     private static final LocalTime QUIET_HOURS_END = LocalTime.of(7, 0);
 
+    /** 댓글/좋아요를 제외한 자동 알림은 00:00~09:00(KST)에 발생하면 즉시 보내지 않고 대기열에 쌓았다가 오전 9시에 발송 */
+    private static final LocalTime MORNING_DELIVERY_TIME = LocalTime.of(9, 0);
+
     private final NotificationRepository notificationRepository;
+    private final PendingPushRepository pendingPushRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final ArtistRepository artistRepository;
     private final UserDeviceTokenRepository deviceTokenRepository;
@@ -353,9 +361,7 @@ public class NotificationService {
     private void pushIfEnabled(Long userId, NotificationMessage message) {
         NotificationPreference pref = preferenceService.getOrCreate(userId);
         if (!pref.isEnabledFor(message.type()) || isBlockedByQuietHours(pref)) return;
-        List<TokenLanguageProjection> tokens =
-                deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(userId));
-        sendByLanguage(tokens, message);
+        pushOrDeferToMorning(message, List.of(userId));
     }
 
     private void saveAndPush(List<User> users, NotificationMessage message, Festival festival) {
@@ -369,15 +375,64 @@ public class NotificationService {
         List<Long> enabledUserIds = allUserIds.stream()
                 .filter(id -> prefMap.get(id).isEnabledFor(message.type()) && !isBlockedByQuietHours(prefMap.get(id)))
                 .toList();
-        List<TokenLanguageProjection> tokens =
-                deviceTokenRepository.findTokensWithLanguageByUserIds(enabledUserIds);
-        sendByLanguage(tokens, messageWithImage);
+        pushOrDeferToMorning(messageWithImage, enabledUserIds);
     }
 
     private boolean isBlockedByQuietHours(NotificationPreference pref) {
         if (!pref.isQuietHoursEnabled()) return false;
         LocalTime now = KoreaClock.now();
         return !now.isBefore(QUIET_HOURS_START) && now.isBefore(QUIET_HOURS_END);
+    }
+
+    /** 대상이 없으면 무시, 새벽 배송 대상이면 대기열에 적재, 아니면 즉시 발송 */
+    private void pushOrDeferToMorning(NotificationMessage message, List<Long> userIds) {
+        if (userIds.isEmpty()) return;
+        if (shouldDeferToMorning(message.type())) {
+            enqueuePendingPush(message, userIds);
+            return;
+        }
+        List<TokenLanguageProjection> tokens = deviceTokenRepository.findTokensWithLanguageByUserIds(userIds);
+        sendByLanguage(tokens, message);
+    }
+
+    /** 댓글/좋아요(PreferenceCategory.COMMENT)는 사용자 상호작용에 대한 즉각적인 반응이라 예외 — 그 외 자동 알림만 새벽에 지연 */
+    private boolean shouldDeferToMorning(NotificationType type) {
+        return type.getCategory() != PreferenceCategory.COMMENT && KoreaClock.now().isBefore(MORNING_DELIVERY_TIME);
+    }
+
+    private void enqueuePendingPush(NotificationMessage message, List<Long> userIds) {
+        pendingPushRepository.save(PendingPush.builder()
+                .type(message.type())
+                .title(message.title())
+                .body(message.body())
+                .titleEn(message.titleEn())
+                .bodyEn(message.bodyEn())
+                .resourceId(message.resourceId())
+                .imageUrl(message.imageUrl())
+                .userIds(userIds)
+                .build());
+    }
+
+    /** 매일 오전 9시(KST) PendingPushScheduler가 호출 — 밤사이 쌓인 대기열을 발송한다 */
+    @Transactional
+    public void flushPendingPushes() {
+        List<PendingPush> pending = pendingPushRepository.findAll();
+        for (PendingPush p : pending) {
+            try {
+                dispatchPendingPush(p);
+                pendingPushRepository.delete(p);
+            } catch (Exception e) {
+                log.error("[PendingPush] 발송 실패 id={}", p.getId(), e);
+            }
+        }
+    }
+
+    private void dispatchPendingPush(PendingPush p) {
+        List<TokenLanguageProjection> tokens =
+                deviceTokenRepository.findTokensWithLanguageByUserIds(p.getUserIds());
+        NotificationMessage message = new NotificationMessage(
+                p.getType(), p.getTitle(), p.getBody(), p.getTitleEn(), p.getBodyEn(), p.getResourceId(), p.getImageUrl());
+        sendByLanguage(tokens, message);
     }
 
     private void sendByLanguage(List<TokenLanguageProjection> tokens, NotificationMessage message) {
