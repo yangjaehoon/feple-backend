@@ -41,7 +41,9 @@
                         <td class="td-sub" th:text="${suggestion.userNickname}"></td>
                         <td class="cell-secondary"
                             th:text="${#temporals.format(suggestion.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-                        <td>
+                        <td class="cell-actions">
+                            <a th:href="@{/admin/artists/new(name=${suggestion.artistName}, suggestionId=${suggestion.id})}"
+                               class="btn btn-success btn-sm">아티스트 등록</a>
                             <button type="button" class="btn btn-primary btn-sm open-dismiss-btn"
                                     th:data-id="${suggestion.id}"
                                     th:data-artist="${suggestion.artistName}">처리하기</button>

@@ -248,7 +248,8 @@
                 '<td><strong>' + window.AdminUtils.escapeHtml(item.name) + '</strong></td>' +
                 '<td><span class="badge-count">' + item.mentionCount + '회</span></td>' +
                 '<td>' +
-                  '<a href="' + CrawlUrls.artistCreateBase + '?name=' + encodeURIComponent(item.name) + '" ' +
+                  '<a href="' + CrawlUrls.artistCreateBase + '?name=' + encodeURIComponent(item.name) +
+                     '&unmatchedSuggestionId=' + item.id + '" ' +
                      'class="btn btn-sm btn-primary" target="_blank">아티스트 등록</a> ' +
                   '<button class="btn btn-sm btn-danger btn-delete-suggestion" data-id="' + item.id + '">삭제</button>' +
                 '</td>';

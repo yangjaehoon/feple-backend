@@ -18,6 +18,9 @@
                       method="post"
                       enctype="multipart/form-data">
 
+                    <input type="hidden" name="suggestionId" th:if="${suggestionId != null}" th:value="${suggestionId}"/>
+                    <input type="hidden" name="unmatchedSuggestionId" th:if="${unmatchedSuggestionId != null}" th:value="${unmatchedSuggestionId}"/>
+
                     <div class="form-grid">
                         <div class="form-group">
                             <label>이름</label>

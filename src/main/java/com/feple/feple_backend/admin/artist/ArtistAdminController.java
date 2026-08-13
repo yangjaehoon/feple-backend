@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.admin.ocr.UnmatchedArtistSuggestionService;
 import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -39,15 +40,20 @@ public class ArtistAdminController {
     private final ArtistService artistService;
     private final ArtistAdminService artistAdminService;
     private final ArtistSuggestionAdminService artistSuggestionAdminService;
+    private final UnmatchedArtistSuggestionService unmatchedArtistSuggestionService;
     private final AdminLogService adminLogService;
 
     @GetMapping("/new")
-    public String showCreateForm(@RequestParam(required = false) String name, Model model) {
+    public String showCreateForm(@RequestParam(required = false) String name,
+                                 @RequestParam(required = false) Long suggestionId,
+                                 @RequestParam(required = false) Long unmatchedSuggestionId,
+                                 Model model) {
         ArtistRequestDto dto = new ArtistRequestDto();
         if (name != null && !name.isBlank()) {
             dto.setName(name.trim());
         }
         model.addAttribute("artist", dto);
+        addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
         addGenreOptions(model);
         return "admin/artist/create";
     }
@@ -56,6 +62,8 @@ public class ArtistAdminController {
     public String createArtist(@Valid @ModelAttribute("artist") ArtistRequestDto dto,
                                BindingResult bindingResult,
                                @RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
+                               @RequestParam(required = false) Long suggestionId,
+                               @RequestParam(required = false) Long unmatchedSuggestionId,
                                Model model,
                                RedirectAttributes ra) {
 
@@ -64,6 +72,7 @@ public class ArtistAdminController {
         }
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+            addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
             addGenreOptions(model);
             return "admin/artist/create";
         }
@@ -72,14 +81,43 @@ public class ArtistAdminController {
             dto.setProfileImageKey(artistAdminService.uploadProfile(profileImageFile, dto.getName()));
             Long artistId = artistAdminService.createArtist(dto);
             adminLogService.log(AdminAction.ARTIST_CREATE, "ARTIST", artistId, dto.getName());
+            resolveSourceSuggestion(suggestionId, unmatchedSuggestionId, artistId);
             ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 등록 실패 name={}", dto.getName(), e);
             model.addAttribute("errors", List.of("등록 중 오류가 발생했습니다. 다시 시도해주세요."));
+            addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
             addGenreOptions(model);
             return "admin/artist/create";
         }
         return "redirect:/admin/artists";
+    }
+
+    // 아티스트 신청/미매칭 제안 목록의 "아티스트 등록" 링크로 이 폼에 들어온 경우, 생성 성공 시
+    // 그 출처를 자동으로 해소한다 — 관리자가 승인 모달에 ID를 다시 입력하거나 제안을 수동으로
+    // 지우지 않아도 되게 하기 위함. 아티스트는 이미 생성됐으므로 해소 실패는 경고만 남기고 넘어간다.
+    private void resolveSourceSuggestion(Long suggestionId, Long unmatchedSuggestionId, Long artistId) {
+        if (suggestionId != null) {
+            try {
+                artistSuggestionAdminService.approve(suggestionId, artistId);
+                adminLogService.log(AdminAction.ARTIST_SUGGESTION_APPROVE, "ARTIST_SUGGESTION", suggestionId, null);
+            } catch (Exception e) {
+                log.warn("아티스트 신청 자동 승인 실패: suggestionId={}, artistId={}", suggestionId, artistId, e);
+            }
+        }
+        if (unmatchedSuggestionId != null) {
+            try {
+                unmatchedArtistSuggestionService.delete(unmatchedSuggestionId);
+                adminLogService.log(AdminAction.UNMATCHED_SUGGESTION_DELETE, "UNMATCHED_SUGGESTION", unmatchedSuggestionId, null);
+            } catch (Exception e) {
+                log.warn("미매칭 아티스트 제안 자동 삭제 실패: id={}", unmatchedSuggestionId, e);
+            }
+        }
+    }
+
+    private static void addSuggestionRefs(Model model, Long suggestionId, Long unmatchedSuggestionId) {
+        model.addAttribute("suggestionId", suggestionId);
+        model.addAttribute("unmatchedSuggestionId", unmatchedSuggestionId);
     }
 
     @GetMapping

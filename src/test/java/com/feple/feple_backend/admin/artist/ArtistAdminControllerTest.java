@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.admin.ocr.UnmatchedArtistSuggestionService;
 import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
@@ -31,6 +32,7 @@ class ArtistAdminControllerTest {
     @Mock ArtistService artistService;
     @Mock ArtistAdminService artistAdminService;
     @Mock ArtistSuggestionAdminService artistSuggestionAdminService;
+    @Mock UnmatchedArtistSuggestionService unmatchedArtistSuggestionService;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks ArtistAdminController controller;
@@ -89,6 +91,13 @@ class ArtistAdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("artist",
                         org.hamcrest.Matchers.hasProperty("name", org.hamcrest.Matchers.equalTo("아이유"))));
+    }
+
+    @Test
+    void 신규_아티스트_폼_조회시_suggestionId_모델에_반영() throws Exception {
+        mockMvc.perform(get("/admin/artists/new").param("suggestionId", "7"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("suggestionId", 7L));
     }
 
     // ── GET /admin/artists/{id}/edit ──────────────────────────────────────────
@@ -222,6 +231,50 @@ class ArtistAdminControllerTest {
                 .andExpect(flash().attribute("successMessage", "'새아티스트' 아티스트가 등록되었습니다."));
 
         then(artistAdminService).should().createArtist(any());
+    }
+
+    @Test
+    void 아티스트_등록시_suggestionId_있으면_해당_신청_자동_승인() throws Exception {
+        given(artistAdminService.createArtist(any())).willReturn(5L);
+
+        mockMvc.perform(multipart("/admin/artists/new")
+                        .file("profileImageFile", new byte[]{1, 2, 3})
+                        .param("name", "새아티스트")
+                        .param("genres", "INDIE")
+                        .param("suggestionId", "7"))
+                .andExpect(status().is3xxRedirection());
+
+        then(artistSuggestionAdminService).should().approve(7L, 5L);
+    }
+
+    @Test
+    void 아티스트_등록시_unmatchedSuggestionId_있으면_해당_제안_자동_삭제() throws Exception {
+        given(artistAdminService.createArtist(any())).willReturn(5L);
+
+        mockMvc.perform(multipart("/admin/artists/new")
+                        .file("profileImageFile", new byte[]{1, 2, 3})
+                        .param("name", "새아티스트")
+                        .param("genres", "INDIE")
+                        .param("unmatchedSuggestionId", "9"))
+                .andExpect(status().is3xxRedirection());
+
+        then(unmatchedArtistSuggestionService).should().delete(9L);
+    }
+
+    @Test
+    void 아티스트_등록시_신청_자동_승인_실패해도_등록_자체는_성공() throws Exception {
+        given(artistAdminService.createArtist(any())).willReturn(5L);
+        willThrow(new IllegalArgumentException("이미 처리된 아티스트 신청입니다."))
+                .given(artistSuggestionAdminService).approve(anyLong(), anyLong());
+
+        mockMvc.perform(multipart("/admin/artists/new")
+                        .file("profileImageFile", new byte[]{1, 2, 3})
+                        .param("name", "새아티스트")
+                        .param("genres", "INDIE")
+                        .param("suggestionId", "7"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/artists"))
+                .andExpect(flash().attribute("successMessage", "'새아티스트' 아티스트가 등록되었습니다."));
     }
 
     @Test
