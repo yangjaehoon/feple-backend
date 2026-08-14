@@ -9,6 +9,7 @@ public enum MusicGenre {
     DANCE("댄스"),
     IDOL("아이돌"),
     GUGAK("국악"),
+    TROT("트로트"),
     ETC("기타");
 
     private final String displayName;
