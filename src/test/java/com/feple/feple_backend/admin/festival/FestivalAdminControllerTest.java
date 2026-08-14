@@ -13,6 +13,7 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
+import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -34,6 +35,7 @@ class FestivalAdminControllerTest {
     @Mock ArtistFestivalService artistFestivalService;
     @Mock FestivalDetailAggregationService festivalDetailAggregationService;
     @Mock FestivalChecklistService festivalChecklistService;
+    @Mock FestivalSuggestionAdminService festivalSuggestionAdminService;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks FestivalAdminController controller;
@@ -56,6 +58,17 @@ class FestivalAdminControllerTest {
                 .andExpect(view().name("admin/festival/create"))
                 .andExpect(model().attributeExists("festival", "allArtists", "allRegions",
                         "allGenres", "allAgeRestrictions"));
+    }
+
+    @Test
+    void 신규_페스티벌_폼_조회시_suggestionId와_이름_모델에_반영() throws Exception {
+        given(artistService.getAllArtistsSortedByName()).willReturn(List.of());
+
+        mockMvc.perform(get("/admin/festivals/new")
+                        .param("name", "신청된 페스티벌")
+                        .param("suggestionId", "7"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("suggestionId", 7L));
     }
 
     // ── GET /admin/festivals ──────────────────────────────────────────────────
@@ -217,6 +230,42 @@ class FestivalAdminControllerTest {
 
         then(artistFestivalService).should().linkArtistsToFestival(eq(10L), eq(List.of(1L, 2L)));
         then(adminLogService).should().log(any(), eq("FESTIVAL"), eq(10L), eq("테스트 페스티벌"));
+    }
+
+    @Test
+    void 페스티벌_생성시_suggestionId_있으면_해당_신청_자동_승인() throws Exception {
+        given(festivalService.createFestival(any())).willReturn(10L);
+
+        mockMvc.perform(post("/admin/festivals/new")
+                        .param("title", "테스트 페스티벌")
+                        .param("description", "설명")
+                        .param("location", "서울")
+                        .param("startDate", "2026-08-01")
+                        .param("endDate", "2026-08-02")
+                        .param("region", "SEOUL")
+                        .param("suggestionId", "7"))
+                .andExpect(status().is3xxRedirection());
+
+        then(festivalSuggestionAdminService).should().approve(7L, 10L);
+    }
+
+    @Test
+    void 페스티벌_생성시_신청_자동_승인_실패해도_등록_자체는_성공() throws Exception {
+        given(festivalService.createFestival(any())).willReturn(10L);
+        willThrow(new IllegalArgumentException("이미 처리된 페스티벌 신청입니다."))
+                .given(festivalSuggestionAdminService).approve(anyLong(), anyLong());
+
+        mockMvc.perform(post("/admin/festivals/new")
+                        .param("title", "테스트 페스티벌")
+                        .param("description", "설명")
+                        .param("location", "서울")
+                        .param("startDate", "2026-08-01")
+                        .param("endDate", "2026-08-02")
+                        .param("region", "SEOUL")
+                        .param("suggestionId", "7"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/festivals/10"))
+                .andExpect(flash().attribute("successMessage", "'테스트 페스티벌' 페스티벌이 등록되었습니다."));
     }
 
     @Test

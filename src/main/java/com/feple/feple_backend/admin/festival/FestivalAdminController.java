@@ -15,6 +15,7 @@ import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
+import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
 import com.feple.feple_backend.global.MusicGenre;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -48,11 +49,19 @@ public class FestivalAdminController {
     private final ArtistFestivalService artistFestivalService;
     private final FestivalDetailAggregationService festivalDetailAggregationService;
     private final FestivalChecklistService festivalChecklistService;
+    private final FestivalSuggestionAdminService festivalSuggestionAdminService;
     private final AdminLogService adminLogService;
 
     @GetMapping("/new")
-    public String showCreateForm(Model model) {
-        model.addAttribute("festival", new FestivalRequestDto());
+    public String showCreateForm(@RequestParam(required = false) String name,
+                                 @RequestParam(required = false) Long suggestionId,
+                                 Model model) {
+        FestivalRequestDto dto = new FestivalRequestDto();
+        if (name != null && !name.isBlank()) {
+            dto.setTitle(name.trim());
+        }
+        model.addAttribute("festival", dto);
+        model.addAttribute("suggestionId", suggestionId);
         populateFestivalFormModel(model);
         return "admin/festival/create";
     }
@@ -62,35 +71,50 @@ public class FestivalAdminController {
                                  BindingResult bindingResult,
                                  @RequestParam(value = "posterFile", required = false) MultipartFile posterFile,
                                  @RequestParam(value = "artistIds", required = false) List<Long> artistIds,
+                                 @RequestParam(required = false) Long suggestionId,
                                  Model model,
                                  RedirectAttributes ra) {
 
         applyPosterFile(posterFile, dto, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return renderCreateFormWithError(bindingResult, model);
+            return renderCreateFormWithError(bindingResult, suggestionId, model);
         }
 
         try {
-            return createFestivalAndLinkArtists(dto, artistIds, ra);
+            return createFestivalAndLinkArtists(dto, artistIds, suggestionId, ra);
         } catch (IllegalArgumentException e) {
             rejectEndDateError(bindingResult, e);
-            return renderCreateFormWithError(bindingResult, model);
+            return renderCreateFormWithError(bindingResult, suggestionId, model);
         } catch (Exception e) {
             log.error("페스티벌 생성 실패. title={}", dto.getTitle(), e);
             bindingResult.reject("error.create", "생성 중 오류가 발생했습니다.");
-            return renderCreateFormWithError(bindingResult, model);
+            return renderCreateFormWithError(bindingResult, suggestionId, model);
         }
     }
 
-    private String createFestivalAndLinkArtists(FestivalRequestDto dto, List<Long> artistIds, RedirectAttributes ra) {
+    private String createFestivalAndLinkArtists(FestivalRequestDto dto, List<Long> artistIds, Long suggestionId, RedirectAttributes ra) {
         Long festivalId = festivalService.createFestival(dto);
         adminLogService.log(AdminAction.FESTIVAL_CREATE, "FESTIVAL", festivalId, dto.getTitle());
+        resolveSourceSuggestion(suggestionId, festivalId);
         if (!linkArtists(festivalId, artistIds, ra)) {
             return "redirect:/admin/festivals/" + festivalId;
         }
         ra.addFlashAttribute("successMessage", "'" + dto.getTitle() + "' 페스티벌이 등록되었습니다.");
         return "redirect:/admin/festivals/" + festivalId;
+    }
+
+    // 페스티벌 신청 목록의 "페스티벌 등록" 링크로 이 폼에 들어온 경우, 생성 성공 시 해당 신청을
+    // 자동으로 승인 처리한다 — 관리자가 승인 모달에 ID를 다시 입력하지 않아도 되게 하기 위함.
+    // 페스티벌은 이미 생성됐으므로 해소 실패는 경고만 남기고 넘어간다.
+    private void resolveSourceSuggestion(Long suggestionId, Long festivalId) {
+        if (suggestionId == null) return;
+        try {
+            festivalSuggestionAdminService.approve(suggestionId, festivalId);
+            adminLogService.log(AdminAction.FESTIVAL_SUGGESTION_APPROVE, "FESTIVAL_SUGGESTION", suggestionId, null);
+        } catch (Exception e) {
+            log.warn("페스티벌 신청 자동 승인 실패: suggestionId={}, festivalId={}", suggestionId, festivalId, e);
+        }
     }
 
     /** 아티스트 연결 성공 여부를 반환한다. 실패해도 페스티벌 자체는 이미 생성된 상태이므로 경고만 남기고 계속 진행한다. */
@@ -110,8 +134,9 @@ public class FestivalAdminController {
         bindingResult.rejectValue("endDate", "error.endDate", e.getMessage());
     }
 
-    private String renderCreateFormWithError(BindingResult bindingResult, Model model) {
+    private String renderCreateFormWithError(BindingResult bindingResult, Long suggestionId, Model model) {
         model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+        model.addAttribute("suggestionId", suggestionId);
         populateFestivalFormModel(model);
         return "admin/festival/create";
     }

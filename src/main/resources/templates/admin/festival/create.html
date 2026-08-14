@@ -19,6 +19,8 @@
                       method="post"
                       enctype="multipart/form-data">
 
+                    <input type="hidden" name="suggestionId" th:if="${suggestionId != null}" th:value="${suggestionId}"/>
+
                     <div class="form-grid">
                         <div class="form-group">
                             <label>제목 (한국어) <span class="required-star">*</span></label>
