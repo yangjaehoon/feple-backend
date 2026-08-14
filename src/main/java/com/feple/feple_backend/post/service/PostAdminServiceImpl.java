@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.QueryResultMapper;
@@ -27,14 +28,17 @@ public class PostAdminServiceImpl implements PostAdminService {
     private final PostRepository postRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Map<String, PostRelationFilterStrategy> relationFilterStrategies;
+    private final FileStorageService fileStorageService;
 
     public PostAdminServiceImpl(PostRepository postRepository,
                                 ApplicationEventPublisher eventPublisher,
-                                List<PostRelationFilterStrategy> relationFilterStrategies) {
+                                List<PostRelationFilterStrategy> relationFilterStrategies,
+                                FileStorageService fileStorageService) {
         this.postRepository = postRepository;
         this.eventPublisher = eventPublisher;
         this.relationFilterStrategies = relationFilterStrategies.stream()
                 .collect(Collectors.toMap(PostRelationFilterStrategy::filterKey, s -> s));
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -51,7 +55,7 @@ public class PostAdminServiceImpl implements PostAdminService {
                         ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(boardType, kw, pageable)
                         : postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, pageable))
                 .orElseGet(() -> resolveRelationFilter(params, kw, pageable))
-                .map(PostResponseDto::from);
+                .map(post -> PostResponseDto.from(post, fileStorageService));
     }
 
     private Page<Post> resolveRelationFilter(PostAdminFilterDto params, String kw, PageRequest pageable) {
@@ -80,7 +84,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Cacheable(value = "adminDashboardStats", key = "'adminHotPosts_' + #limit")
     public List<PostResponseDto> getAdminHotPosts(int limit) {
         return postRepository.findPopularPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, limit))
-                .stream().map(PostResponseDto::from).toList();
+                .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
     }
 
     @Override
@@ -118,7 +122,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Transactional(readOnly = true)
     public List<PostResponseDto> getDeletedPosts(int limit) {
         return postRepository.findSoftDeleted(limit).stream()
-                .map(PostResponseDto::from)
+                .map(post -> PostResponseDto.from(post, fileStorageService))
                 .toList();
     }
 
@@ -132,7 +136,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Transactional(readOnly = true)
     public List<PostResponseDto> getRecentPostsByUser(Long userId, int limit) {
         return postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, limit))
-                .stream().map(PostResponseDto::from).toList();
+                .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
     }
 
     @Override
@@ -147,14 +151,14 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional(readOnly = true)
     public PostResponseDto getPostForAdmin(Long postId) {
-        return PostResponseDto.from(EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글"));
+        return PostResponseDto.from(EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글"), fileStorageService);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getBlindedPosts(int limit) {
         return postRepository.findBlinded(limit).stream()
-                .map(PostResponseDto::from)
+                .map(post -> PostResponseDto.from(post, fileStorageService))
                 .toList();
     }
 }

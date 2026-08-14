@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
@@ -31,6 +32,7 @@ class PostActivityServiceImplTest {
     @Mock PostRepository postRepository;
     @Mock PostLikeRepository postLikeRepository;
     @Mock UserRepository userRepository;
+    @Mock FileStorageService fileStorageService;
 
     @InjectMocks UserPostHistoryServiceImpl postActivityService;
 

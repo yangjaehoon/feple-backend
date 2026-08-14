@@ -1,5 +1,6 @@
 package com.feple.feple_backend.userblock.dto;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.userblock.entity.UserBlock;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -18,12 +19,12 @@ public class BlockedUserDto {
         this.blockedAt = blockedAt;
     }
 
-    public static BlockedUserDto from(UserBlock block) {
+    public static BlockedUserDto from(UserBlock block, FileStorageService fileStorageService) {
         var blocked = block.getBlocked();
         return new BlockedUserDto(
                 block.getBlockedId(),
                 blocked.getNickname(),
-                blocked.getProfileImageUrl(),
+                fileStorageService.resolveProfileImageUrl(blocked.getProfileImageUrl()),
                 block.getCreatedAt()
         );
     }

@@ -11,6 +11,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -52,6 +53,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
     private final FestivalRepository festivalRepository;
     private final ArtistRepository artistRepository;
     private final SearchLogRepository searchLogRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Cacheable(value = "adminDashboardStats", key = "'totalUsers'")
@@ -63,7 +65,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
     @Cacheable(value = "adminDashboardStats", key = "'recentUsers'")
     public List<UserSummaryDto> getRecentUsers() {
         return userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc()
-                .stream().map(UserSummaryDto::from).toList();
+                .stream().map(u -> UserSummaryDto.from(u, fileStorageService)).toList();
     }
 
     // adminDashboardStats는 CacheConfig에서 5분 TTL로 설정되어 있어 날짜가 바뀌어도 최대 5분 내 자연 갱신된다.

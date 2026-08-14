@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.FullTextSearchValidator;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageSize;
@@ -21,6 +22,7 @@ public class PostSearchServiceImpl implements PostSearchService {
 
     private final PostRepository postRepository;
     private final BlockedContentFilter blockedContentFilter;
+    private final FileStorageService fileStorageService;
 
     @Override
     public List<PostResponseDto> searchPosts(String keyword, String boardType, Long viewerId) {
@@ -40,18 +42,18 @@ public class PostSearchServiceImpl implements PostSearchService {
     private List<PostResponseDto> searchByTitleFullText(Optional<BoardType> type, String kw, PageRequest pageable) {
         return type.isPresent()
                 ? postRepository.searchPostsByBoardTypeAndTitleFullText(type.get(), kw, pageable)
-                        .stream().map(PostResponseDto::from).toList()
+                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList()
                 : postRepository.searchPostsByTitleFullText(kw, pageable)
-                        .stream().map(PostResponseDto::from).toList();
+                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
     }
 
     private List<PostResponseDto> searchByTitleLike(Optional<BoardType> type, String kw, PageRequest pageable) {
         String escaped = JpqlLikeEscaper.escape(kw);
         return type.isPresent()
                 ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(type.get(), escaped, pageable)
-                        .stream().map(PostResponseDto::from).toList()
+                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList()
                 : postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(escaped, pageable)
-                        .stream().map(PostResponseDto::from).toList();
+                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
     }
 
     private Optional<BoardType> parseBoardType(String filter) {

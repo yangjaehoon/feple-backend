@@ -1,6 +1,7 @@
 package com.feple.feple_backend.comment.dto;
 
 import com.feple.feple_backend.comment.entity.Comment;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.user.entity.UserRole;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -27,7 +28,7 @@ public class CommentResponseDto {
     private Long mentionedUserId;
     private String mentionedNickname;
 
-    public static CommentResponseDto from(Comment comment, boolean certified, boolean liked) {
+    public static CommentResponseDto from(Comment comment, boolean certified, boolean liked, FileStorageService fileStorageService) {
         boolean anon = comment.isAnonymous();
         return CommentResponseDto.builder()
                 .id(comment.getId())
@@ -42,7 +43,7 @@ public class CommentResponseDto {
                 .parentId(comment.getParentId())
                 .likeCount(comment.getLikeCount())
                 .liked(liked)
-                .profileImageUrl(anon ? null : comment.getUserProfileImageUrl())
+                .profileImageUrl(anon ? null : fileStorageService.resolveProfileImageUrl(comment.getUserProfileImageUrl()))
                 .anonymous(anon)
                 .blinded(comment.isBlinded())
                 .mentionedUserId(comment.getMentionedUserId())

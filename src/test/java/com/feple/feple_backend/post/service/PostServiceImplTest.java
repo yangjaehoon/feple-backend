@@ -18,6 +18,7 @@ import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.CursorPageRequest;
@@ -71,6 +72,7 @@ class PostServiceImplTest {
     UserBlockService userBlockService = mock(UserBlockService.class);
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(userBlockService);
 
+    @Mock FileStorageService fileStorageService;
     @InjectMocks PostServiceImpl postService;
 
     // ── createPost ──────────────────────────────────────────────────

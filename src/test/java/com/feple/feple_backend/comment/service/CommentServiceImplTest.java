@@ -22,6 +22,7 @@ import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.BadWordException;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -63,6 +64,7 @@ class CommentServiceImplTest {
     @Mock UserBlockService userBlockService;
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
+    @Mock FileStorageService fileStorageService;
     @InjectMocks CommentServiceImpl commentService;
 
     private Comment comment(Long id, Post post, User author) {

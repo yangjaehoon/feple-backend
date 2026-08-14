@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -26,6 +27,7 @@ class PopularPostCacheTest {
 
     @Mock PostRepository postRepository;
 
+    @Mock FileStorageService fileStorageService;
     @InjectMocks PopularPostCache cache;
 
     @Test

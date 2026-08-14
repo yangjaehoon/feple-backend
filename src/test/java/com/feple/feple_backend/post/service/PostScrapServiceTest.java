@@ -11,6 +11,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostScrap;
@@ -35,6 +36,7 @@ class PostScrapServiceTest {
     @Mock PostRepository postRepository;
     @Mock UserRepository userRepository;
 
+    @Mock FileStorageService fileStorageService;
     @InjectMocks PostScrapService postScrapService;
 
     // ── isScrapedByUser ──────────────────────────────────────────────

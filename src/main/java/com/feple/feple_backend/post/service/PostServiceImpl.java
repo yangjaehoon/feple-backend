@@ -7,6 +7,7 @@ import com.feple.feple_backend.certification.service.FestivalCertificationServic
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.S3PathConstants;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.OwnershipValidator;
@@ -61,6 +62,7 @@ public class PostServiceImpl implements PostService {
     private final PopularPostCache popularPostCache;
     private final BlockedContentFilter blockedContentFilter;
     private final S3ObjectVerificationService s3ObjectVerificationService;
+    private final FileStorageService fileStorageService;
 
     private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
 
@@ -76,7 +78,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponseDto getPost(Long postId) {
         Post post = EntityLoader.getOrThrow(postRepository::findWithAssociationsById, postId, "게시글");
-        return PostResponseDto.from(post);
+        return PostResponseDto.from(post, fileStorageService);
     }
 
     @Override
@@ -93,7 +95,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(boardType, limit),
                 limit -> postRepository.findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(boardType, cursor, limit),
                 () -> postRepository.findByBoardTypeAndPinnedTrueOrderByCreatedAtDesc(boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                PostResponseDto::from);
+                post -> PostResponseDto.from(post, fileStorageService));
     }
 
     @Override
@@ -104,7 +106,7 @@ public class PostServiceImpl implements PostService {
         Page<Post> result = postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDescIdDesc(
                 boardType, PageRequest.of(page, pageRequest.size()));
         List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
-                result.map(PostResponseDto::from).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
+                result.map(post -> PostResponseDto.from(post, fileStorageService)).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
         return CursorPage.of(result, content, cursor);
     }
 
@@ -143,7 +145,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByArtistOrderByIdDesc(artist, limit),
                 limit -> postRepository.findByArtistAndIdLessThanOrderByIdDesc(artist, cursor, limit),
                 () -> postRepository.findByArtistAndPinnedTrueOrderByCreatedAtDesc(artist, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                PostResponseDto::from);
+                post -> PostResponseDto.from(post, fileStorageService));
     }
 
     @Override
@@ -158,7 +160,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postTagRepository.findByTagAndPostIdLessThanOrderByPostIdDesc(normalized, cursor, limit).stream()
                         .map(PostTag::getPost).filter(Objects::nonNull).toList(),
                 List::of,
-                PostResponseDto::from);
+                post -> PostResponseDto.from(post, fileStorageService));
     }
 
     @Override
@@ -180,7 +182,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findGeneralFestivalPostsOrderByIdDesc(festival, limit),
                 limit -> postRepository.findGeneralFestivalPostsAndIdLessThanOrderByIdDesc(festival, cursor, limit),
                 () -> postRepository.findGeneralFestivalPinnedPostsOrderByCreatedAtDesc(festival, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())));
+                post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId()), fileStorageService));
     }
 
     @Override
@@ -202,7 +204,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByFestivalAndBoardTypeOrderByIdDesc(festival, boardType, limit),
                 limit -> postRepository.findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(festival, boardType, cursor, limit),
                 () -> postRepository.findByFestivalAndBoardTypeAndPinnedTrueOrderByCreatedAtDesc(festival, boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())));
+                post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId()), fileStorageService));
     }
 
     @Override
@@ -220,7 +222,7 @@ public class PostServiceImpl implements PostService {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         List<PostResponseDto> posts = postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
-                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId())))
+                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId()), fileStorageService))
                 .toList();
         return blockedContentFilter.excludeBlocked(posts, viewerId, PostResponseDto::getUserId);
     }

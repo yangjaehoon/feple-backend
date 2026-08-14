@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 class PopularPostCache {
 
     private final PostRepository postRepository;
+    private final FileStorageService fileStorageService;
 
     // 최종 노출 개수(POPULAR_POSTS)가 아니라 넉넉한 풀(POPULAR_POSTS_POOL)을 캐싱한다 —
     // 조회자별 차단 필터링은 이 캐시 이후에 적용되므로, 딱 4개만 캐싱하면 그중 일부가
@@ -28,7 +30,7 @@ class PopularPostCache {
     List<PostResponseDto> getPopularPosts() {
         return postRepository.findPopularPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, PageSize.POPULAR_POSTS_POOL))
                 .stream()
-                .map(PostResponseDto::from)
+                .map(post -> PostResponseDto.from(post, fileStorageService))
                 .toList();
     }
 }

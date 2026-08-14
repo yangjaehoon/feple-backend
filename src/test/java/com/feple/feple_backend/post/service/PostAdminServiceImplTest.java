@@ -10,6 +10,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -34,13 +35,15 @@ class PostAdminServiceImplTest {
 
     @Mock PostRepository postRepository;
     @Mock ApplicationEventPublisher eventPublisher;
+    @Mock FileStorageService fileStorageService;
 
     PostAdminServiceImpl postAdminService;
 
     @BeforeEach
     void setUp() {
         postAdminService = new PostAdminServiceImpl(postRepository, eventPublisher,
-                List.of(new ArtistPostFilterStrategy(postRepository), new FestivalPostFilterStrategy(postRepository)));
+                List.of(new ArtistPostFilterStrategy(postRepository), new FestivalPostFilterStrategy(postRepository)),
+                fileStorageService);
     }
 
     // ── deletePost ───────────────────────────────────────────────────

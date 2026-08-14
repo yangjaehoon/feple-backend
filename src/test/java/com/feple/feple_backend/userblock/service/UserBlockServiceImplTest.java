@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -29,6 +30,7 @@ class UserBlockServiceImplTest {
     @Mock UserBlockRepository blockRepository;
     @Mock UserRepository userRepository;
 
+    @Mock FileStorageService fileStorageService;
     @InjectMocks UserBlockServiceImpl service;
 
     private User user(Long id, String nickname) {

@@ -1,5 +1,6 @@
 package com.feple.feple_backend.userblock.service;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
@@ -19,6 +20,7 @@ public class UserBlockServiceImpl implements UserBlockService {
 
     private final UserBlockRepository blockRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -52,7 +54,7 @@ public class UserBlockServiceImpl implements UserBlockService {
     public List<BlockedUserDto> getBlockedUsers(Long blockerId) {
         return blockRepository.findByBlockerIdOrderByCreatedAtDesc(blockerId)
                 .stream()
-                .map(BlockedUserDto::from)
+                .map(b -> BlockedUserDto.from(b, fileStorageService))
                 .toList();
     }
 

@@ -11,6 +11,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -35,6 +36,7 @@ class PostSearchServiceImplTest {
     @Mock PostRepository postRepository;
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
 
+    @Mock FileStorageService fileStorageService;
     @InjectMocks PostSearchServiceImpl postSearchService;
 
     @Test

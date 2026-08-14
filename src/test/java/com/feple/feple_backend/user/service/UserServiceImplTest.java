@@ -168,47 +168,29 @@ class UserServiceImplTest {
                 .hasMessageContaining("99");
     }
 
-    // ── resolveProfileImageUrl (getUser를 통해 검증) ──────────────────
-
+    // null/기본로고/http통과/상대경로 판정 로직 자체는 FileStorageService.resolveProfileImageUrl로
+    // 옮겨져 FileStorageServiceTest에서 검증한다 — 여기서는 getUser가 그 결과를 그대로
+    // dto에 위임하는지만 확인한다 (getUser를 통해 검증).
     @Test
-    void 프로필이미지_null이면_dto에_null_반환() {
-        given(userRepository.findById(1L)).willReturn(Optional.of(userWithImage(1L, null)));
-
-        UserResponseDto dto = userService.getUser(1L);
-
-        assertThat(dto.getProfileImageUrl()).isNull();
-    }
-
-    @Test
-    void 프로필이미지_기본로고_url이면_null_반환() {
-        given(userRepository.findById(1L))
-                .willReturn(Optional.of(userWithImage(1L, "https://cdn.example.com/img/feple_logo.png")));
-
-        UserResponseDto dto = userService.getUser(1L);
-
-        assertThat(dto.getProfileImageUrl()).isNull();
-    }
-
-    @Test
-    void 프로필이미지_http_url이면_그대로_반환() {
-        given(userRepository.findById(1L))
-                .willReturn(Optional.of(userWithImage(1L, "https://kakao.com/avatar.jpg")));
-
-        UserResponseDto dto = userService.getUser(1L);
-
-        assertThat(dto.getProfileImageUrl()).isEqualTo("https://kakao.com/avatar.jpg");
-    }
-
-    @Test
-    void 프로필이미지_S3키면_빌드된_url_반환() {
+    void 프로필이미지는_fileStorageService_resolveProfileImageUrl_결과를_그대로_사용() {
         given(userRepository.findById(1L))
                 .willReturn(Optional.of(userWithImage(1L, "uploads/user-1.jpg")));
-        given(fileStorageService.buildUrl("uploads/user-1.jpg"))
+        given(fileStorageService.resolveProfileImageUrl("uploads/user-1.jpg"))
                 .willReturn("https://s3.example.com/uploads/user-1.jpg");
 
         UserResponseDto dto = userService.getUser(1L);
 
         assertThat(dto.getProfileImageUrl()).isEqualTo("https://s3.example.com/uploads/user-1.jpg");
+    }
+
+    @Test
+    void 프로필이미지가_resolveProfileImageUrl에서_null이면_dto에_null_반환() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(userWithImage(1L, null)));
+        given(fileStorageService.resolveProfileImageUrl(null)).willReturn(null);
+
+        UserResponseDto dto = userService.getUser(1L);
+
+        assertThat(dto.getProfileImageUrl()).isNull();
     }
 
     // ── updateNickname ────────────────────────────────────────────────

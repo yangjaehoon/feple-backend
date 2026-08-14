@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.PageSize;
@@ -24,6 +25,7 @@ public class PostScrapService {
     private final PostScrapRepository postScrapRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     /** 특정 게시글 스크랩 여부 확인 */
     public boolean isScrapedByUser(Long postId, Long userId) {
@@ -54,7 +56,7 @@ public class PostScrapService {
     public List<PostResponseDto> getMyScraps(Long userId) {
         return postScrapRepository.findByUserIdOrderByIdDesc(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream()
-                .map(scrap -> PostResponseDto.from(scrap.getPost()))
+                .map(scrap -> PostResponseDto.from(scrap.getPost(), fileStorageService))
                 .toList();
     }
 }

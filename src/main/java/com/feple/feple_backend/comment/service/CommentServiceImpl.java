@@ -12,6 +12,7 @@ import com.feple.feple_backend.comment.entity.CommentLike;
 import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.OwnershipValidator;
@@ -50,6 +51,7 @@ public class CommentServiceImpl implements CommentService {
     private final BadWordValidator badWordValidator;
     private final UserBlockService userBlockService;
     private final BlockedContentFilter blockedContentFilter;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -71,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
         boolean certified = post.getFestivalId() != null &&
                 certificationService.existsApprovedCertification(post.getFestivalId(), userId);
 
-        return CommentResponseDto.from(saved, certified, false);
+        return CommentResponseDto.from(saved, certified, false, fileStorageService);
     }
 
     // storageParent: 실제 저장될 부모(depth 1단계로 평탄화된 최상위 댓글, 최상위 댓글이면 null).
@@ -128,7 +130,8 @@ public class CommentServiceImpl implements CommentService {
                 .map(c -> CommentResponseDto.from(
                         c,
                         certifiedUserIds.contains(c.getUserId()),
-                        likedCommentIds.contains(c.getId())))
+                        likedCommentIds.contains(c.getId()),
+                        fileStorageService))
                 .toList();
         return blockedContentFilter.excludeBlocked(result, userId, CommentResponseDto::getUserId);
     }
@@ -138,7 +141,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit) {
         // 관리자는 블라인드된 댓글도 검토할 수 있어야 하므로 @SQLRestriction을 우회한다.
         return commentRepository.findByPostIdIgnoringBlindOrderByCreatedAtAsc(postId, limit).stream()
-                .map(c -> CommentResponseDto.from(c, false, false))
+                .map(c -> CommentResponseDto.from(c, false, false, fileStorageService))
                 .toList();
     }
 

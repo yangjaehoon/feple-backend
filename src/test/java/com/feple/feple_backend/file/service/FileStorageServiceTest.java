@@ -69,6 +69,37 @@ class FileStorageServiceTest {
                 .isEqualTo("https://my-bucket.s3.ap-northeast-2.amazonaws.com/posters/a.jpg");
     }
 
+    // ── resolveProfileImageUrl ───────────────────────────────────────────────
+
+    @Test
+    void resolveProfileImageUrl_null이면_null() {
+        assertThat(service.resolveProfileImageUrl(null)).isNull();
+    }
+
+    @Test
+    void resolveProfileImageUrl_공백이면_null() {
+        assertThat(service.resolveProfileImageUrl("  ")).isNull();
+    }
+
+    @Test
+    void resolveProfileImageUrl_기본로고_경로면_null() {
+        assertThat(service.resolveProfileImageUrl("https://cdn.example.com/img/feple_logo.png")).isNull();
+    }
+
+    @Test
+    void resolveProfileImageUrl_이미_http_URL이면_그대로_반환() {
+        assertThat(service.resolveProfileImageUrl("https://cdn.example.com/profile.jpg"))
+                .isEqualTo("https://cdn.example.com/profile.jpg");
+    }
+
+    @Test
+    void resolveProfileImageUrl_상대경로면_buildUrl_적용() {
+        setBucketAndCdn("my-bucket", "");
+
+        assertThat(service.resolveProfileImageUrl("user-profiles/1/a.jpg"))
+                .isEqualTo("https://my-bucket.s3.ap-northeast-2.amazonaws.com/user-profiles/1/a.jpg");
+    }
+
     // ── storeFestivalPoster ───────────────────────────────────────────────
 
     @Test

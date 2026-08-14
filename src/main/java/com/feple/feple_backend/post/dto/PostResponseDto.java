@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.dto;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -41,11 +42,11 @@ public class PostResponseDto {
     private LocalDateTime deletedAt;
     private String authorLevel;
 
-    public static PostResponseDto from(Post post) {
-        return from(post, false);
+    public static PostResponseDto from(Post post, FileStorageService fileStorageService) {
+        return from(post, false, fileStorageService);
     }
 
-    public static PostResponseDto from(Post post, boolean certified) {
+    public static PostResponseDto from(Post post, boolean certified, FileStorageService fileStorageService) {
         boolean anon = post.isAnonymous();
         return PostResponseDto.builder()
                 .id(post.getId())
@@ -58,7 +59,7 @@ public class PostResponseDto {
                 .commentCount(post.getCommentCount())
                 .viewCount(post.getViewCount())
                 .nickname(anon ? "익명" : post.getAuthorNickname())
-                .profileImageUrl(anon ? null : post.getAuthorProfileImageUrl())
+                .profileImageUrl(anon ? null : fileStorageService.resolveProfileImageUrl(post.getAuthorProfileImageUrl()))
                 .artistId(post.getArtistId())
                 .festivalId(post.getFestivalId())
                 .boardDisplayName(post.getBoardDisplayName())

@@ -35,41 +35,28 @@ class UserResponseMapperTest {
         assertThat(dto.getBio()).isEqualTo("소개");
     }
 
+    // 절대 URL 통과/기본 로고 제외/상대경로 buildUrl 위임 로직 자체는
+    // FileStorageService.resolveProfileImageUrl로 옮겨져 FileStorageServiceTest에서 검증한다 —
+    // 여기서는 매퍼가 그 결과를 그대로 필드에 위임하는지만 확인한다.
     @Test
-    void toUserDto_프로필이미지_null이면_null() {
-        User user = baseUser().profileImageUrl(null).build();
-
-        UserResponseDto dto = UserResponseMapper.toUserDto(user, fileStorageService);
-
-        assertThat(dto.getProfileImageUrl()).isNull();
-    }
-
-    @Test
-    void toUserDto_프로필이미지_기본로고면_null() {
-        User user = baseUser().profileImageUrl("https://cdn.example.com/img/feple_logo.png").build();
-
-        UserResponseDto dto = UserResponseMapper.toUserDto(user, fileStorageService);
-
-        assertThat(dto.getProfileImageUrl()).isNull();
-    }
-
-    @Test
-    void toUserDto_프로필이미지_http로_시작하면_그대로_반환() {
-        User user = baseUser().profileImageUrl("https://cdn.example.com/profile.jpg").build();
-
-        UserResponseDto dto = UserResponseMapper.toUserDto(user, fileStorageService);
-
-        assertThat(dto.getProfileImageUrl()).isEqualTo("https://cdn.example.com/profile.jpg");
-    }
-
-    @Test
-    void toUserDto_프로필이미지_상대경로면_fileStorageService_위임() {
+    void toUserDto_프로필이미지는_fileStorageService_resolveProfileImageUrl_결과를_그대로_사용() {
         User user = baseUser().profileImageUrl("user-profiles/1/a.jpg").build();
-        given(fileStorageService.buildUrl("user-profiles/1/a.jpg")).willReturn("https://cdn.example.com/user-profiles/1/a.jpg");
+        given(fileStorageService.resolveProfileImageUrl("user-profiles/1/a.jpg"))
+                .willReturn("https://cdn.example.com/user-profiles/1/a.jpg");
 
         UserResponseDto dto = UserResponseMapper.toUserDto(user, fileStorageService);
 
         assertThat(dto.getProfileImageUrl()).isEqualTo("https://cdn.example.com/user-profiles/1/a.jpg");
+    }
+
+    @Test
+    void toUserDto_프로필이미지가_resolveProfileImageUrl에서_null이면_null() {
+        User user = baseUser().profileImageUrl(null).build();
+        given(fileStorageService.resolveProfileImageUrl(null)).willReturn(null);
+
+        UserResponseDto dto = UserResponseMapper.toUserDto(user, fileStorageService);
+
+        assertThat(dto.getProfileImageUrl()).isNull();
     }
 
     @Test

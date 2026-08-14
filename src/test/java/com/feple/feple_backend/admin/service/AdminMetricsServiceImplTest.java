@@ -16,6 +16,7 @@ import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
@@ -46,6 +47,7 @@ class AdminMetricsServiceImplTest {
     @Mock ArtistRepository artistRepository;
     @Mock SearchLogRepository searchLogRepository;
 
+    @Mock FileStorageService fileStorageService;
     @InjectMocks AdminMetricsServiceImpl adminMetricsService;
 
     private void stubEmptyStats() {

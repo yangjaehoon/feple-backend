@@ -25,6 +25,9 @@ public class FileStorageService {
     private static final int FESTIVAL_POSTER_RESIZE_PX = 720;
     private static final int BOOTH_IMAGE_RESIZE_PX = 300;
 
+    // 기본(미설정) 프로필 이미지 — 이 경로가 저장돼 있으면 실제 업로드된 이미지가 아니므로 null 처리한다
+    private static final String DEFAULT_PROFILE_IMAGE_PATH = "/img/feple_logo.png";
+
     private final S3Template s3Template;
     private final ImageResizeService imageResizeService;
 
@@ -42,6 +45,13 @@ public class FileStorageService {
             return base + "/" + key;
         }
         return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
+    }
+
+    /** 프로필 이미지 key/URL을 화면에 표시할 절대 URL로 변환한다. 기본(미설정) 이미지 경로가
+     * 저장돼 있으면 실제 업로드된 이미지가 아니므로 null을 반환한다. */
+    public String resolveProfileImageUrl(String raw) {
+        if (raw == null || raw.isBlank() || raw.contains(DEFAULT_PROFILE_IMAGE_PATH)) return null;
+        return buildUrl(raw);
     }
 
     public String storeFestivalPoster(MultipartFile file, LocalDate festivalStartDate) throws IOException {
