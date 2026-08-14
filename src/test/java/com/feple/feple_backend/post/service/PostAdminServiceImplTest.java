@@ -60,6 +60,20 @@ class PostAdminServiceImplTest {
         verify(postRepository).softDeleteByIds(List.of(10L));
     }
 
+    // ── getPostForAdmin ────────────────────────────────────────────────
+
+    @Test
+    void 관리자_게시글_단건_조회시_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        PostResponseDto result = postAdminService.getPostForAdmin(10L);
+
+        assertThat(result.getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
     // ── bulkDeletePosts ──────────────────────────────────────────────
 
     @Test

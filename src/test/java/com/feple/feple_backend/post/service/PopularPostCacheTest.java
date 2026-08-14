@@ -42,6 +42,18 @@ class PopularPostCacheTest {
     }
 
     @Test
+    void 인기글_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User author = user(1L);
+        given(postRepository.findPopularPosts(any(LocalDateTime.class), any()))
+                .willReturn(List.of(freePost(1L, author)));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        List<PostResponseDto> result = cache.getPopularPosts();
+
+        assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
     void 인기글_저장소_조회시_노출개수보다_넉넉한_풀을_요청() {
         // 최종 노출 개수(4)만 캐싱하면, 조회자별 차단 필터링 이후 노출 개수가 줄어들 수 있다 —
         // 캐시는 항상 POPULAR_POSTS_POOL만큼 넉넉히 가져와야 한다

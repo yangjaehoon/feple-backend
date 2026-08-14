@@ -177,6 +177,18 @@ class PostServiceImplTest {
     }
 
     @Test
+    void 게시글_조회시_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        given(postRepository.findWithAssociationsById(10L)).willReturn(Optional.of(post));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        PostResponseDto result = postService.getPost(10L);
+
+        assertThat(result.getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
     void 익명_게시글_조회시_nickname이_익명_반환() {
         User author = user(1L);
         Post post = Post.builder()

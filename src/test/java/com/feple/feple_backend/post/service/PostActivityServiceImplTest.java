@@ -51,6 +51,19 @@ class PostActivityServiceImplTest {
     }
 
     @Test
+    void 내_게시글_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User author = user(1L);
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(postRepository.findByUserOrderByCreatedAtDesc(eq(author), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        List<PostResponseDto> result = postActivityService.getMyPosts(1L);
+
+        assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
     void 존재하지_않는_사용자의_내_게시글_조회시_예외() {
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 

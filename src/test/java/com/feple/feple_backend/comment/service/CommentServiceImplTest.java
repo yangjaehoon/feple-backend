@@ -100,6 +100,29 @@ class CommentServiceImplTest {
     }
 
     @Test
+    void 댓글_생성시_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User postAuthor = user(1L);
+        User commenter = user(2L);
+        Post post = freePost(10L, postAuthor);
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("댓글내용");
+        given(dto.getParentId()).willReturn(null);
+
+        Comment saved = comment(100L, post, commenter);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
+        given(commentRepository.save(any(Comment.class))).willReturn(saved);
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        CommentResponseDto result = commentService.createComment(dto, 2L);
+
+        assertThat(result.getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
     void 게시글_작성자가_차단한_사용자는_댓글_작성_불가() {
         User postAuthor = user(1L);
         Post post = freePost(10L, postAuthor);

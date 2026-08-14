@@ -150,6 +150,19 @@ class PostScrapServiceTest {
     }
 
     @Test
+    void 스크랩_목록_조회시_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User user = user(1L);
+        Post post = freePost(10L, user);
+        PostScrap scrap = new PostScrap(user, post);
+        given(postScrapRepository.findByUserIdOrderByIdDesc(eq(1L), any(Pageable.class))).willReturn(List.of(scrap));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        List<PostResponseDto> result = postScrapService.getMyScraps(1L);
+
+        assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
     void 스크랩_없으면_빈_목록_반환() {
         given(postScrapRepository.findByUserIdOrderByIdDesc(eq(1L), any(Pageable.class))).willReturn(List.of());
 

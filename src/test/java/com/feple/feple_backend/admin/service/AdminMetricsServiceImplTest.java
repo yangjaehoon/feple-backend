@@ -88,6 +88,16 @@ class AdminMetricsServiceImplTest {
     }
 
     @Test
+    void 최근_가입자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        given(userRepository.findTop5ByDeletedAtIsNullOrderByIdDesc()).willReturn(List.of(mock(User.class)));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        List<UserSummaryDto> result = adminMetricsService.getRecentUsers();
+
+        assertThat(result.get(0).profileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
     void 일별통계가_7개_반환됨() {
         stubEmptyStats();
 

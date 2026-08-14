@@ -52,6 +52,18 @@ class PostSearchServiceImplTest {
     }
 
     @Test
+    void 검색결과_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User author = user(1L);
+        given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(freePost(1L, author))));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        List<PostResponseDto> result = postSearchService.searchPosts("제목검색", null, null);
+
+        assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
     void 게시판타입_없이_전체_검색() {
         User author = user(1L);
         given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))

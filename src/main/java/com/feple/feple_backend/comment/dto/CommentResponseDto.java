@@ -28,7 +28,11 @@ public class CommentResponseDto {
     private Long mentionedUserId;
     private String mentionedNickname;
 
-    public static CommentResponseDto from(Comment comment, boolean certified, boolean liked, FileStorageService fileStorageService) {
+    // 조회자 관점에 따라 달라지는 값(본인 인증 뱃지 표시 여부, 좋아요 여부)을 묶어
+    // from()의 파라미터를 3개 이하로 유지한다.
+    public record ViewerContext(boolean certified, boolean liked) {}
+
+    public static CommentResponseDto from(Comment comment, ViewerContext viewer, FileStorageService fileStorageService) {
         boolean anon = comment.isAnonymous();
         return CommentResponseDto.builder()
                 .id(comment.getId())
@@ -38,11 +42,11 @@ public class CommentResponseDto {
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
-                .certified(anon ? false : certified)
+                .certified(anon ? false : viewer.certified())
                 .userRole(anon ? null : comment.getUserRole())
                 .parentId(comment.getParentId())
                 .likeCount(comment.getLikeCount())
-                .liked(liked)
+                .liked(viewer.liked())
                 .profileImageUrl(anon ? null : fileStorageService.resolveProfileImageUrl(comment.getUserProfileImageUrl()))
                 .anonymous(anon)
                 .blinded(comment.isBlinded())

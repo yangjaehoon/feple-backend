@@ -2,6 +2,7 @@ package com.feple.feple_backend.userblock.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
@@ -134,6 +135,19 @@ class UserBlockServiceImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getUserId()).isEqualTo(2L);
         assertThat(result.get(0).getNickname()).isEqualTo("피차단자");
+    }
+
+    @Test
+    void 차단_목록의_프로필_이미지는_fileStorageService로_해소된_URL() {
+        User blocker = user(1L, "차단자");
+        User blocked = user(2L, "피차단자");
+        UserBlock block = UserBlock.of(blocker, blocked);
+        given(blockRepository.findByBlockerIdOrderByCreatedAtDesc(1L)).willReturn(List.of(block));
+        given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
+
+        List<BlockedUserDto> result = service.getBlockedUsers(1L);
+
+        assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
     }
 
     // ── isBlocked ─────────────────────────────────────────────────────────

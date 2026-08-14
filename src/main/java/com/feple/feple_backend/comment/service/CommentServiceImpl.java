@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
         boolean certified = post.getFestivalId() != null &&
                 certificationService.existsApprovedCertification(post.getFestivalId(), userId);
 
-        return CommentResponseDto.from(saved, certified, false, fileStorageService);
+        return CommentResponseDto.from(saved, new CommentResponseDto.ViewerContext(certified, false), fileStorageService);
     }
 
     // storageParent: 실제 저장될 부모(depth 1단계로 평탄화된 최상위 댓글, 최상위 댓글이면 null).
@@ -129,8 +129,7 @@ public class CommentServiceImpl implements CommentService {
         List<CommentResponseDto> result = comments.stream()
                 .map(c -> CommentResponseDto.from(
                         c,
-                        certifiedUserIds.contains(c.getUserId()),
-                        likedCommentIds.contains(c.getId()),
+                        new CommentResponseDto.ViewerContext(certifiedUserIds.contains(c.getUserId()), likedCommentIds.contains(c.getId())),
                         fileStorageService))
                 .toList();
         return blockedContentFilter.excludeBlocked(result, userId, CommentResponseDto::getUserId);
@@ -141,7 +140,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit) {
         // 관리자는 블라인드된 댓글도 검토할 수 있어야 하므로 @SQLRestriction을 우회한다.
         return commentRepository.findByPostIdIgnoringBlindOrderByCreatedAtAsc(postId, limit).stream()
-                .map(c -> CommentResponseDto.from(c, false, false, fileStorageService))
+                .map(c -> CommentResponseDto.from(c, new CommentResponseDto.ViewerContext(false, false), fileStorageService))
                 .toList();
     }
 
