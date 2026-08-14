@@ -40,6 +40,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -120,6 +121,35 @@ class CommentServiceImplTest {
         CommentResponseDto result = commentService.createComment(dto, 2L);
 
         assertThat(result.getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    // postService.incrementCommentCount()는 @Modifying(clearAutomatically = true)라 호출 직후
+    // 영속성 컨텍스트를 통째로 비운다. DTO 변환보다 먼저 호출되면 saved의 지연 로딩 연관관계
+    // (mentionedUser 등)에 접근할 때 LazyInitializationException이 난다 — DTO 변환 이후에
+    // 호출되는 순서를 고정한다.
+    @Test
+    void 댓글_생성시_댓글수_증가는_DTO_변환_이후에_호출된다() {
+        User postAuthor = user(1L);
+        User commenter = user(2L);
+        Post post = freePost(10L, postAuthor);
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("댓글내용");
+        given(dto.getParentId()).willReturn(null);
+
+        Comment saved = comment(100L, post, commenter);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
+        given(commentRepository.save(any(Comment.class))).willReturn(saved);
+
+        commentService.createComment(dto, 2L);
+
+        InOrder order = inOrder(commentRepository, fileStorageService, postService);
+        order.verify(commentRepository).save(any(Comment.class));
+        order.verify(fileStorageService).resolveProfileImageUrl(any());
+        order.verify(postService).incrementCommentCount(10L);
     }
 
     @Test

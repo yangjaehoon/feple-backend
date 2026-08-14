@@ -72,8 +72,14 @@ public class CommentServiceImpl implements CommentService {
 
         boolean certified = post.getFestivalId() != null &&
                 certificationService.existsApprovedCertification(post.getFestivalId(), userId);
+        CommentResponseDto response = CommentResponseDto.from(saved, new CommentResponseDto.ViewerContext(certified, false), fileStorageService);
 
-        return CommentResponseDto.from(saved, new CommentResponseDto.ViewerContext(certified, false), fileStorageService);
+        // incrementCommentCount는 @Modifying(clearAutomatically = true)라 영속성 컨텍스트를
+        // 통째로 비운다 — saved의 지연 로딩 연관관계(mentionedUser 등)를 DTO로 다 옮긴 뒤
+        // 가장 마지막에 호출해야, 답글에 멘션이 있을 때 LazyInitializationException이 나지 않는다.
+        postService.incrementCommentCount(post.getId());
+
+        return response;
     }
 
     // storageParent: 실제 저장될 부모(depth 1단계로 평탄화된 최상위 댓글, 최상위 댓글이면 null).
@@ -96,9 +102,7 @@ public class CommentServiceImpl implements CommentService {
         User mentionedUser = parentResolution.mentionTarget() != null ? parentResolution.mentionTarget().getUser() : null;
         Comment comment = new Comment(dto.getContent(), post, user,
                 parentResolution.storageParent(), mentionedUser, dto.isAnonymous());
-        Comment saved = commentRepository.save(comment);
-        postService.incrementCommentCount(post.getId());
-        return saved;
+        return commentRepository.save(comment);
     }
 
     private void publishCommentCreatedEvent(CreateCommentDto dto, Post post, User user,
