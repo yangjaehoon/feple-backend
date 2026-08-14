@@ -11,6 +11,7 @@ import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.diary.service.FestivalDiaryService;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionService;
@@ -46,6 +47,7 @@ class UserCascadeDeleteServiceTest {
     @Mock NotificationPreferenceService notificationPreferenceService;
     @Mock FestivalCertificationService certificationService;
     @Mock FestivalReviewService reviewService;
+    @Mock FestivalDiaryService festivalDiaryService;
     @Mock SongRequestService songRequestService;
     @Mock ArtistSuggestionService artistSuggestionService;
     @Mock FestivalSuggestionService festivalSuggestionService;
@@ -82,6 +84,7 @@ class UserCascadeDeleteServiceTest {
         verify(userDeviceTokenRepository).deleteByUserId(1L);
         verify(reviewService).removeReviewLikesByUser(1L);
         verify(certificationService).removeAllByUser(1L);
+        verify(festivalDiaryService).removeAllByUser(1L);
         verify(songRequestService).removeAllByUser(1L);
         verify(artistSuggestionService).removeAllByUser(1L);
     }

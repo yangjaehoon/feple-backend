@@ -8,6 +8,7 @@ import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.diary.service.FestivalDiaryService;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
 import com.feple.feple_backend.festival.service.FestivalLikeService;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionService;
@@ -44,6 +45,7 @@ public class UserCascadeDeleteService {
     private final NotificationPreferenceService notificationPreferenceService;
     private final FestivalCertificationService certificationService;
     private final FestivalReviewService reviewService;
+    private final FestivalDiaryService festivalDiaryService;
     private final SongRequestService songRequestService;
     private final ArtistSuggestionService artistSuggestionService;
     private final FestivalSuggestionService festivalSuggestionService;
@@ -71,6 +73,7 @@ public class UserCascadeDeleteService {
         notificationPreferenceService.removeAllByUser(id);
         reviewService.removeReviewLikesByUser(id);
         certificationService.removeAllByUser(id);
+        festivalDiaryService.removeAllByUser(id);
         songRequestService.removeAllByUser(id);
         artistSuggestionService.removeAllByUser(id);
         festivalSuggestionService.removeAllByUser(id);

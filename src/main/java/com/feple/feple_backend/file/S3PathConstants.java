@@ -20,6 +20,10 @@ public final class S3PathConstants {
         return "posts/" + userId + "/";
     }
 
+    public static String diaryPhotoPrefix(Long userId) {
+        return "diary-photos/" + userId + "/";
+    }
+
     /** 클라이언트가 제출한 오브젝트 키가 서버가 발급한 presign prefix 범위 안인지 검증 */
     public static void requireWithinPrefix(String objectKey, String prefix) {
         if (objectKey == null || !objectKey.startsWith(prefix)) {
