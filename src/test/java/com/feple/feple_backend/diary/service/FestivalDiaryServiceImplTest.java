@@ -246,7 +246,6 @@ class FestivalDiaryServiceImplTest {
     @Test
     void 공개_피드는_차단유저_제외() {
         FestivalDiary diary = mock(FestivalDiary.class);
-        given(diary.getId()).willReturn(DIARY_ID);
         Page<FestivalDiary> page = new PageImpl<>(List.of(diary), PageRequest.of(0, 10), 1);
         given(diaryRepository.findByFestivalIdAndVisibilityOrderByCreatedAtDesc(FESTIVAL_ID, DiaryVisibility.PUBLIC, PageRequest.of(0, 10)))
                 .willReturn(page);
