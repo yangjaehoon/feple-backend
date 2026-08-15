@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -47,9 +46,7 @@ public class ArtistLineupOcrService {
         // (매 비교마다 정규식을 다시 돌리지 않도록).
         String normalizedName = raw.name() != null ? normalize(raw.name()).toLowerCase() : null;
 
-        // 이름(한글/영문)으로 먼저 찾고, 이름으로 못 찾을 때만 별명을 대조한다.
-        Optional<Artist> matched = findByName(normalizedName, allArtists)
-                .or(() -> findByAlias(normalizedName, allArtists));
+        Optional<Artist> matched = resolveMatch(normalizedName, allArtists);
         if (matched.isPresent()) {
             Artist artist = matched.get();
             return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), raw.date(), conf);
@@ -57,21 +54,26 @@ public class ArtistLineupOcrService {
         return new ArtistLineupOcrResult(raw.name(), null, null, raw.date(), conf);
     }
 
-    private static Optional<Artist> findByName(String normalizedName, List<Artist> allArtists) {
-        return uniqueMatch(allArtists, a -> matchesNameExact(a, normalizedName))
-                .or(() -> uniqueMatch(allArtists, a -> matchesNamePartial(a, normalizedName)));
+    // 이름(한글/영문)을 별명보다, 정확 일치를 부분 일치보다 먼저 확인한다. 앞 단계에서 후보가
+    // 하나라도 나오면(유일하게 좁혀지든 여러 명과 겹쳐 애매하든) 그 결과가 최종이고 다음 단계로
+    // 넘어가지 않는다. 그렇지 않으면 이름 쪽에서 여러 아티스트와 애매하게 겹친 OCR 텍스트가
+    // 별명 쪽에서 우연히 하나로만 좁혀졌다는 이유로 조용히 엉뚱한 아티스트로 확정될 수 있다.
+    private static Optional<Artist> resolveMatch(String normalizedName, List<Artist> allArtists) {
+        List<Artist> nameExact = allArtists.stream().filter(a -> matchesNameExact(a, normalizedName)).toList();
+        if (!nameExact.isEmpty()) return uniqueOrEmpty(nameExact);
+
+        List<Artist> namePartial = allArtists.stream().filter(a -> matchesNamePartial(a, normalizedName)).toList();
+        if (!namePartial.isEmpty()) return uniqueOrEmpty(namePartial);
+
+        List<Artist> aliasExact = allArtists.stream().filter(a -> matchesAliasExact(a, normalizedName)).toList();
+        if (!aliasExact.isEmpty()) return uniqueOrEmpty(aliasExact);
+
+        List<Artist> aliasPartial = allArtists.stream().filter(a -> matchesAliasPartial(a, normalizedName)).toList();
+        return uniqueOrEmpty(aliasPartial);
     }
 
-    private static Optional<Artist> findByAlias(String normalizedName, List<Artist> allArtists) {
-        return uniqueMatch(allArtists, a -> matchesAliasExact(a, normalizedName))
-                .or(() -> uniqueMatch(allArtists, a -> matchesAliasPartial(a, normalizedName)));
-    }
-
-    // 정규화 후 두 명 이상의 아티스트가 동시에 일치하면(예: 서로 다른 아티스트의 이름이 공백
-    // 차이로만 구분되던 경우) 아무나 하나를 고르지 않고 다음 단계로 넘겨 관리자가 직접 확인하게 한다.
-    private static Optional<Artist> uniqueMatch(List<Artist> allArtists, Predicate<Artist> predicate) {
-        List<Artist> matches = allArtists.stream().filter(predicate).toList();
-        return matches.size() == 1 ? Optional.of(matches.get(0)) : Optional.empty();
+    private static Optional<Artist> uniqueOrEmpty(List<Artist> candidates) {
+        return candidates.size() == 1 ? Optional.of(candidates.get(0)) : Optional.empty();
     }
 
     private static boolean matchesNameExact(Artist artist, String normalizedName) {

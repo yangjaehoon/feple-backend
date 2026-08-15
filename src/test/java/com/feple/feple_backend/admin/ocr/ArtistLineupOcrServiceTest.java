@@ -111,6 +111,23 @@ class ArtistLineupOcrServiceTest {
     }
 
     @Test
+    void parseArtistLineup_이름에서_애매하면_별명에서_우연히_유일해도_미매칭_처리() throws Exception {
+        // 이름 쪽에서 두 아티스트와 애매하게 겹치면, 별명 쪽에서 우연히 한 명으로만 좁혀지더라도
+        // 그걸 정답으로 채택하면 안 된다 — 이름 단계의 "여러 명과 겹침" 자체가 이미 불확실하다는
+        // 신호이므로 별명으로 넘어가지 않고 그대로 미매칭 처리해야 한다
+        Artist byNameA = mockArtist(60L, "올스타", null);
+        Artist byNameB = mockArtist(61L, "럭키스타", null);
+        Artist byAliasOnly = mockArtist(62L, "다른아티스트", null, List.of("프로스타"));
+        given(geminiOcrClient.parseLineup(any(), any()))
+                .willReturn(new OcrParseResult<>(List.of(new LineupRawResult("스타", 80, null)), false));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(byNameA, byNameB, byAliasOnly));
+
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null, null).entries();
+
+        assertThat(results.get(0).artistId()).isNull();
+    }
+
+    @Test
     void parseArtistLineup_부분_매칭이_복수면_artistId_null_반환() throws Exception {
         Artist a1 = mockArtist(1L, "아이유", "IU (아이유)");
         Artist a2 = mockArtist(2L, "IU Fan Club", null);
