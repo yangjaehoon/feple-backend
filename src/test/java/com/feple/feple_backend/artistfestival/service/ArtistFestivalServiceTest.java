@@ -244,6 +244,26 @@ class ArtistFestivalServiceTest {
         assertThat(captor.getValue()).hasSize(1);
     }
 
+    @Test
+    void 아티스트_일괄연결_날짜맵에_있는_아티스트만_performanceDate_설정() {
+        // 라인업 OCR처럼 아티스트별 출연일을 함께 등록하는 3-파라미터 오버로드 —
+        // 맵에 없는 아티스트는 날짜 없이 등록되고(이후 타임테이블 등록 시 보충), 있는 아티스트만 반영돼야 한다
+        Festival festival = festival(100L, null);
+        given(festivalRepository.findById(100L)).willReturn(Optional.of(festival));
+        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(100L)).willReturn(List.of());
+        given(artistRepository.findAllById(List.of(1L, 2L)))
+                .willReturn(List.of(artist(1L, "아이유"), artist(2L, "뉴진스")));
+
+        service.linkArtistsToFestival(100L, List.of(1L, 2L), Map.of(1L, LocalDate.of(2026, 8, 1)));
+
+        ArgumentCaptor<List<ArtistFestival>> captor = ArgumentCaptor.forClass(List.class);
+        then(artistFestivalRepository).should().saveAll(captor.capture());
+        Map<Long, LocalDate> savedDates = captor.getValue().stream()
+                .collect(java.util.stream.Collectors.toMap(ArtistFestival::getArtistId, ArtistFestival::getPerformanceDate));
+        assertThat(savedDates.get(1L)).isEqualTo(LocalDate.of(2026, 8, 1));
+        assertThat(savedDates.get(2L)).isNull();
+    }
+
     // ── updateArtistFestival ──────────────────────────────────────────────
 
     @Test
