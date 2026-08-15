@@ -74,7 +74,7 @@ dependencies {
 	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.7.0'
 	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0'
 
-	implementation 'org.jsoup:jsoup:1.22.2'
+	implementation 'org.jsoup:jsoup:1.23.1'
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
 
 	implementation 'com.drewnoakes:metadata-extractor:2.21.0' // 이미지 리사이즈 시 EXIF Orientation 태그 반영용
