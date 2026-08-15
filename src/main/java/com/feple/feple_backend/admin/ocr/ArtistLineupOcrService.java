@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,40 +47,47 @@ public class ArtistLineupOcrService {
         // (매 비교마다 정규식을 다시 돌리지 않도록).
         String normalizedName = raw.name() != null ? normalize(raw.name()).toLowerCase() : null;
 
-        Optional<Artist> exact = findExact(normalizedName, allArtists);
-        if (exact.isPresent()) {
-            Artist artist = exact.get();
-            return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), raw.date(), conf);
-        }
-        List<Artist> partial = findPartial(normalizedName, allArtists);
-        if (partial.size() == 1) {
-            Artist artist = partial.get(0);
+        // 이름(한글/영문)으로 먼저 찾고, 이름으로 못 찾을 때만 별명을 대조한다.
+        Optional<Artist> matched = findByName(normalizedName, allArtists)
+                .or(() -> findByAlias(normalizedName, allArtists));
+        if (matched.isPresent()) {
+            Artist artist = matched.get();
             return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), raw.date(), conf);
         }
         return new ArtistLineupOcrResult(raw.name(), null, null, raw.date(), conf);
     }
 
-    // 정규화 후 두 명 이상의 아티스트와 동시에 "정확히" 일치하면(예: 서로 다른 아티스트의 이름이
-    // 공백 차이로만 구분되던 경우) 아무나 하나를 고르지 않고 미매칭으로 남겨 관리자가 직접 확인하게 한다.
-    private static Optional<Artist> findExact(String normalizedName, List<Artist> allArtists) {
-        List<Artist> matches = allArtists.stream().filter(a -> matchesExact(a, normalizedName)).toList();
+    private static Optional<Artist> findByName(String normalizedName, List<Artist> allArtists) {
+        return uniqueMatch(allArtists, a -> matchesNameExact(a, normalizedName))
+                .or(() -> uniqueMatch(allArtists, a -> matchesNamePartial(a, normalizedName)));
+    }
+
+    private static Optional<Artist> findByAlias(String normalizedName, List<Artist> allArtists) {
+        return uniqueMatch(allArtists, a -> matchesAliasExact(a, normalizedName))
+                .or(() -> uniqueMatch(allArtists, a -> matchesAliasPartial(a, normalizedName)));
+    }
+
+    // 정규화 후 두 명 이상의 아티스트가 동시에 일치하면(예: 서로 다른 아티스트의 이름이 공백
+    // 차이로만 구분되던 경우) 아무나 하나를 고르지 않고 다음 단계로 넘겨 관리자가 직접 확인하게 한다.
+    private static Optional<Artist> uniqueMatch(List<Artist> allArtists, Predicate<Artist> predicate) {
+        List<Artist> matches = allArtists.stream().filter(predicate).toList();
         return matches.size() == 1 ? Optional.of(matches.get(0)) : Optional.empty();
     }
 
-    private static List<Artist> findPartial(String normalizedName, List<Artist> allArtists) {
-        return allArtists.stream().filter(a -> matchesPartial(a, normalizedName)).toList();
+    private static boolean matchesNameExact(Artist artist, String normalizedName) {
+        return equalsNormalized(artist.getName(), normalizedName) || equalsNormalized(artist.getNameEn(), normalizedName);
     }
 
-    private static boolean matchesExact(Artist artist, String normalizedName) {
-        return equalsNormalized(artist.getName(), normalizedName)
-                || equalsNormalized(artist.getNameEn(), normalizedName)
-                || artist.getAliases().stream().anyMatch(alias -> equalsNormalized(alias, normalizedName));
+    private static boolean matchesNamePartial(Artist artist, String normalizedName) {
+        return containsNormalized(artist.getName(), normalizedName) || containsNormalized(artist.getNameEn(), normalizedName);
     }
 
-    private static boolean matchesPartial(Artist artist, String normalizedName) {
-        return containsNormalized(artist.getName(), normalizedName)
-                || containsNormalized(artist.getNameEn(), normalizedName)
-                || artist.getAliases().stream().anyMatch(alias -> containsNormalized(alias, normalizedName));
+    private static boolean matchesAliasExact(Artist artist, String normalizedName) {
+        return artist.getAliases().stream().anyMatch(alias -> equalsNormalized(alias, normalizedName));
+    }
+
+    private static boolean matchesAliasPartial(Artist artist, String normalizedName) {
+        return artist.getAliases().stream().anyMatch(alias -> containsNormalized(alias, normalizedName));
     }
 
     private static boolean equalsNormalized(String candidate, String normalizedName) {

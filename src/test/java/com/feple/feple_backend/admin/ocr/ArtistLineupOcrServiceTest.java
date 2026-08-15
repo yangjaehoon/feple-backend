@@ -33,11 +33,15 @@ class ArtistLineupOcrServiceTest {
 
     // 인메모리 매칭이 이름 하나에서 조기 성립하면 nameEn/aliases stub이 안 쓰일 수 있어 lenient 처리
     private static Artist mockArtist(Long id, String name, String nameEn) {
+        return mockArtist(id, name, nameEn, List.of());
+    }
+
+    private static Artist mockArtist(Long id, String name, String nameEn, List<String> aliases) {
         Artist artist = mock(Artist.class);
         lenient().when(artist.getId()).thenReturn(id);
         lenient().when(artist.getName()).thenReturn(name);
         lenient().when(artist.getNameEn()).thenReturn(nameEn);
-        lenient().when(artist.getAliases()).thenReturn(List.of());
+        lenient().when(artist.getAliases()).thenReturn(aliases);
         return artist;
     }
 
@@ -77,6 +81,33 @@ class ArtistLineupOcrServiceTest {
         List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null, null).entries();
 
         assertThat(results.get(0).artistId()).isEqualTo(30L);
+    }
+
+    @Test
+    void parseArtistLineup_이름으로_못찾으면_별명으로_매칭() throws Exception {
+        Artist artist = mockArtist(40L, "다른이름", "OtherName", List.of("로꼬"));
+        given(geminiOcrClient.parseLineup(any(), any()))
+                .willReturn(new OcrParseResult<>(List.of(new LineupRawResult("로꼬", 90, null)), false));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(artist));
+
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null, null).entries();
+
+        assertThat(results.get(0).artistId()).isEqualTo(40L);
+    }
+
+    @Test
+    void parseArtistLineup_이름_부분일치가_별명_정확일치보다_우선() throws Exception {
+        // 이름(한글/영문)을 별명보다 먼저 확인하므로, 이름은 부분일치일 뿐이어도
+        // 다른 아티스트의 별명이 정확히 일치하는 것보다 우선해야 한다
+        Artist matchedByName = mockArtist(50L, "에이스타", null);
+        Artist matchedByAlias = mockArtist(51L, "다른아티스트", null, List.of("스타"));
+        given(geminiOcrClient.parseLineup(any(), any()))
+                .willReturn(new OcrParseResult<>(List.of(new LineupRawResult("스타", 80, null)), false));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(matchedByName, matchedByAlias));
+
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null, null).entries();
+
+        assertThat(results.get(0).artistId()).isEqualTo(50L);
     }
 
     @Test
