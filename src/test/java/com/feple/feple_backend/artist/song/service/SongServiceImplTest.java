@@ -253,8 +253,9 @@ class SongServiceImplTest {
         given(artistFestivalSongRepository.findByFestivalIdWithDetails(1L)).willReturn(List.of());
 
         Artist artist = artist(1L);
-        given(songRepository.findByArtistIdOrderByIdDesc(1L)).willReturn(List.of(song(10L, "평소곡", artist)));
-        given(artistFestivalSongRepository.countGroupedBySongForArtist(1L)).willReturn(List.of());
+        given(songRepository.findByArtistIdInOrderByIdDesc(List.of(1L)))
+                .willReturn(List.of(song(10L, "평소곡", artist)));
+        given(artistFestivalSongRepository.countGroupedBySongForArtists(List.of(1L))).willReturn(List.of());
 
         List<FestivalSetlistEntryDto> result = service.getFestivalSetlist(1L);
 
@@ -264,13 +265,39 @@ class SongServiceImplTest {
     }
 
     @Test
+    void 페스티벌_셋리스트_미등록_아티스트가_여러명이면_배치로_한번에_조회() {
+        ArtistFestival af1 = mock(ArtistFestival.class);
+        given(af1.getId()).willReturn(5L);
+        given(af1.getArtistId()).willReturn(1L);
+        ArtistFestival af2 = mock(ArtistFestival.class);
+        given(af2.getId()).willReturn(6L);
+        given(af2.getArtistId()).willReturn(2L);
+        given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(1L)).willReturn(List.of(af1, af2));
+        given(artistFestivalSongRepository.findByFestivalIdWithDetails(1L)).willReturn(List.of());
+
+        given(songRepository.findByArtistIdInOrderByIdDesc(List.of(1L, 2L))).willReturn(List.of(
+                song(10L, "아티스트1곡", artist(1L)),
+                song(20L, "아티스트2곡", artist(2L))));
+        given(artistFestivalSongRepository.countGroupedBySongForArtists(List.of(1L, 2L))).willReturn(List.of());
+
+        List<FestivalSetlistEntryDto> result = service.getFestivalSetlist(1L);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getSongs()).extracting(SongResponseDto::getTitle).containsExactly("아티스트1곡");
+        assertThat(result.get(1).getSongs()).extracting(SongResponseDto::getTitle).containsExactly("아티스트2곡");
+        // 아티스트별 배치 쿼리가 한 번씩만 호출됐는지 확인 — N+1 회귀 방지
+        then(songRepository).should().findByArtistIdInOrderByIdDesc(List.of(1L, 2L));
+        then(songRepository).should(never()).findByArtistIdOrderByIdDesc(any());
+    }
+
+    @Test
     void 페스티벌_셋리스트_미등록이고_아티스트_곡도_없으면_빈리스트에_predicted_false() {
         ArtistFestival af = mock(ArtistFestival.class);
         given(af.getId()).willReturn(5L);
         given(af.getArtistId()).willReturn(1L);
         given(artistFestivalRepository.findByFestivalIdOrderByLineupOrderAsc(1L)).willReturn(List.of(af));
         given(artistFestivalSongRepository.findByFestivalIdWithDetails(1L)).willReturn(List.of());
-        given(songRepository.findByArtistIdOrderByIdDesc(1L)).willReturn(List.of());
+        given(songRepository.findByArtistIdInOrderByIdDesc(List.of(1L))).willReturn(List.of());
 
         List<FestivalSetlistEntryDto> result = service.getFestivalSetlist(1L);
 

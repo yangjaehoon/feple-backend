@@ -19,10 +19,12 @@ import com.feple.feple_backend.global.QueryResultMapper;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,10 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
         Map<Long, Long> countMap = QueryResultMapper.toLongMap(
                 artistFestivalSongRepository.countGroupedBySongForArtist(artistId));
 
+        return toSortedSongDtos(songs, countMap);
+    }
+
+    private List<SongResponseDto> toSortedSongDtos(List<Song> songs, Map<Long, Long> countMap) {
         return songs.stream()
                 .map(song -> {
                     int count = countMap.getOrDefault(song.getId(), 0L).intValue();
@@ -129,17 +135,51 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
 
         Map<Long, List<SongResponseDto>> songsByAfId = groupSongsByArtistFestivalId(
                 artistFestivalSongRepository.findByFestivalIdWithDetails(festivalId));
+        Map<Long, List<SongResponseDto>> predictedSongsByArtistId =
+                fetchPredictedSongsByArtist(artistFestivals, songsByAfId);
 
         return artistFestivals.stream()
-                .map(af -> buildSetlistEntry(af, songsByAfId.get(af.getId())))
+                .map(af -> buildSetlistEntry(af, songsByAfId.get(af.getId()), predictedSongsByArtistId))
                 .toList();
+    }
+
+    // 관리자가 실제 셋리스트를 등록하지 않은 아티스트들의 "평소 곡"을 한 번에 배치
+    // 조회한다 — 아티스트별로 개별 쿼리를 날리면 라인업 규모만큼 N+1이 발생한다.
+    private Map<Long, List<SongResponseDto>> fetchPredictedSongsByArtist(
+            List<ArtistFestival> artistFestivals, Map<Long, List<SongResponseDto>> songsByAfId) {
+        List<Long> predictedArtistIds = artistFestivals.stream()
+                .filter(af -> isEmpty(songsByAfId.get(af.getId())))
+                .map(ArtistFestival::getArtistId)
+                .distinct()
+                .toList();
+        if (predictedArtistIds.isEmpty()) return Map.of();
+
+        List<Song> songs = songRepository.findByArtistIdInOrderByIdDesc(predictedArtistIds);
+        if (songs.isEmpty()) return Map.of();
+
+        Map<Long, Long> countMap = QueryResultMapper.toLongMap(
+                artistFestivalSongRepository.countGroupedBySongForArtists(predictedArtistIds));
+
+        Map<Long, List<Song>> songsByArtistId = songs.stream()
+                .collect(Collectors.groupingBy(Song::getArtistId, LinkedHashMap::new, Collectors.toList()));
+        Map<Long, List<SongResponseDto>> result = new HashMap<>();
+        songsByArtistId.forEach((artistId, artistSongs) ->
+                result.put(artistId, toSortedSongDtos(artistSongs, countMap)));
+        return result;
+    }
+
+    private boolean isEmpty(List<SongResponseDto> songs) {
+        return songs == null || songs.isEmpty();
     }
 
     // 관리자가 이 공연의 실제 셋리스트를 등록하지 않았으면, 아티스트가 평소 부르는
     // 곡(공연 횟수 많은 순)으로 대체해 보여준다 — 화면이 항상 비어 보이지 않도록.
-    private FestivalSetlistEntryDto buildSetlistEntry(ArtistFestival af, List<SongResponseDto> actualSongs) {
-        boolean hasActualSetlist = actualSongs != null && !actualSongs.isEmpty();
-        List<SongResponseDto> songs = hasActualSetlist ? actualSongs : getSongsByArtistId(af.getArtistId());
+    private FestivalSetlistEntryDto buildSetlistEntry(
+            ArtistFestival af, List<SongResponseDto> actualSongs, Map<Long, List<SongResponseDto>> predictedSongsByArtistId) {
+        boolean hasActualSetlist = !isEmpty(actualSongs);
+        List<SongResponseDto> songs = hasActualSetlist
+                ? actualSongs
+                : predictedSongsByArtistId.getOrDefault(af.getArtistId(), List.of());
         return FestivalSetlistEntryDto.builder()
                 .artistFestivalId(af.getId())
                 .artistId(af.getArtistId())

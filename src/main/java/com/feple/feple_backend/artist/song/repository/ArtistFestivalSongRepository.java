@@ -16,6 +16,9 @@ public interface ArtistFestivalSongRepository extends JpaRepository<ArtistFestiv
     @Query("SELECT afs.song.id, COUNT(afs) FROM ArtistFestivalSong afs WHERE afs.song.artist.id = :artistId GROUP BY afs.song.id")
     List<Object[]> countGroupedBySongForArtist(@Param("artistId") Long artistId);
 
+    @Query("SELECT afs.song.id, COUNT(afs) FROM ArtistFestivalSong afs WHERE afs.song.artist.id IN :artistIds GROUP BY afs.song.id")
+    List<Object[]> countGroupedBySongForArtists(@Param("artistIds") List<Long> artistIds);
+
     @Query("SELECT afs FROM ArtistFestivalSong afs JOIN FETCH afs.artistFestival af JOIN FETCH af.festival WHERE afs.song.id = :songId")
     List<ArtistFestivalSong> findBySongIdWithFestival(@Param("songId") Long songId);
 

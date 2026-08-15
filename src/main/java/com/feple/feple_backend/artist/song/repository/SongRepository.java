@@ -12,6 +12,9 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     @Query("SELECT s FROM Song s WHERE s.artist.id = :artistId ORDER BY s.id DESC")
     List<Song> findByArtistIdOrderByIdDesc(@Param("artistId") Long artistId);
 
+    @Query("SELECT s FROM Song s WHERE s.artist.id IN :artistIds ORDER BY s.id DESC")
+    List<Song> findByArtistIdInOrderByIdDesc(@Param("artistIds") List<Long> artistIds);
+
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END FROM Song s WHERE s.youtubeVideoId = :youtubeVideoId AND s.artist.id = :artistId")
     boolean existsByYoutubeVideoIdAndArtistId(@Param("youtubeVideoId") String youtubeVideoId, @Param("artistId") Long artistId);
 
