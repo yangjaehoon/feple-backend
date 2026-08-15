@@ -43,18 +43,20 @@ public class FestivalBoothAdminController {
             ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
             return AdminFestivalRedirects.booths(festivalId);
         }
+        String imageKey = null;
         if (boothImageFile != null && !boothImageFile.isEmpty()) {
             try {
-                dto.setImageKey(boothService.uploadBoothImage(boothImageFile));
+                imageKey = boothService.uploadBoothImage(boothImageFile);
             } catch (Exception e) {
                 log.error("부스 이미지 업로드 실패 festivalId={}", festivalId, e);
                 ra.addFlashAttribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요.");
                 return AdminFestivalRedirects.booths(festivalId);
             }
         }
+        String finalImageKey = imageKey;
         AdminActionUtils.tryAction(
                 () -> {
-                    boothService.createBooth(festivalId, dto);
+                    boothService.createBooth(festivalId, dto, finalImageKey);
                     adminLogService.log(AdminAction.FESTIVAL_BOOTH_ADD, "FESTIVAL", festivalId, dto.getName());
                 },
                 "부스가 추가되었습니다.",

@@ -68,6 +68,21 @@ class FestivalBoothAdminControllerTest {
     }
 
     @Test
+    void 부스_생성_시_폼에없는_imageKey_파라미터는_무시된다() throws Exception {
+        // BoothRequestDto에는 imageKey 필드가 없어 mass assignment로 주입될 수 없음을 확인
+        mockMvc.perform(multipart("/admin/festivals/1/booths")
+                        .file("boothImageFile", new byte[0])
+                        .param("name", "푸드 부스")
+                        .param("boothType", "FOOD")
+                        .param("latitude", "37.5")
+                        .param("longitude", "127.0")
+                        .param("imageKey", "http://evil.example/x.jpg"))
+                .andExpect(redirectedUrl("/admin/festivals/1#booths"));
+
+        then(boothService).should().createBooth(eq(1L), any(), isNull());
+    }
+
+    @Test
     void 부스_생성_이미지_업로드_실패시_errorMessage_설정() throws Exception {
         willThrow(new RuntimeException("S3 오류")).given(boothService).uploadBoothImage(any());
 
@@ -80,12 +95,12 @@ class FestivalBoothAdminControllerTest {
                 .andExpect(redirectedUrl("/admin/festivals/1#booths"))
                 .andExpect(flash().attribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요."));
 
-        then(boothService).should(never()).createBooth(anyLong(), any());
+        then(boothService).should(never()).createBooth(anyLong(), any(), any());
     }
 
     @Test
     void 부스_생성_서비스_예외_errorMessage_설정() throws Exception {
-        willThrow(new RuntimeException("오류")).given(boothService).createBooth(anyLong(), any());
+        willThrow(new RuntimeException("오류")).given(boothService).createBooth(anyLong(), any(), any());
 
         mockMvc.perform(multipart("/admin/festivals/1/booths")
                         .file("boothImageFile", new byte[0])

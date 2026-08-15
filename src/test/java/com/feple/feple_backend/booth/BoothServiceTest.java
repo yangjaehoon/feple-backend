@@ -43,7 +43,7 @@ class BoothServiceTest {
                 .longitude(127.0)
                 .build();
 
-        assertThatThrownBy(() -> boothService.createBooth(1L, dto))
+        assertThatThrownBy(() -> boothService.createBooth(1L, dto, null))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -63,9 +63,10 @@ class BoothServiceTest {
                 .longitude(127.0)
                 .build();
 
-        Long result = boothService.createBooth(1L, dto);
+        Long result = boothService.createBooth(1L, dto, "booths/new.jpg");
 
         assertThat(result).isEqualTo(5L);
+        then(fileStorageService).should().deleteFileOnRollback("booths/new.jpg");
     }
 
     @Test

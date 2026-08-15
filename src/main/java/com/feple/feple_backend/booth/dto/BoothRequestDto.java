@@ -27,5 +27,4 @@ public class BoothRequestDto {
     private Double longitude;
     @Size(max = 255, message = "부스 설명은 255자 이하로 입력해주세요.")
     private String description;
-    private String imageKey;
 }
