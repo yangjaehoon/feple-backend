@@ -131,15 +131,24 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
                 artistFestivalSongRepository.findByFestivalIdWithDetails(festivalId));
 
         return artistFestivals.stream()
-                .map(af -> FestivalSetlistEntryDto.builder()
-                        .artistFestivalId(af.getId())
-                        .artistId(af.getArtistId())
-                        .artistName(af.getArtistName())
-                        .artistNameEn(af.getArtistNameEn())
-                        .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
-                        .songs(songsByAfId.getOrDefault(af.getId(), List.of()))
-                        .build())
+                .map(af -> buildSetlistEntry(af, songsByAfId.get(af.getId())))
                 .toList();
+    }
+
+    // 관리자가 이 공연의 실제 셋리스트를 등록하지 않았으면, 아티스트가 평소 부르는
+    // 곡(공연 횟수 많은 순)으로 대체해 보여준다 — 화면이 항상 비어 보이지 않도록.
+    private FestivalSetlistEntryDto buildSetlistEntry(ArtistFestival af, List<SongResponseDto> actualSongs) {
+        boolean hasActualSetlist = actualSongs != null && !actualSongs.isEmpty();
+        List<SongResponseDto> songs = hasActualSetlist ? actualSongs : getSongsByArtistId(af.getArtistId());
+        return FestivalSetlistEntryDto.builder()
+                .artistFestivalId(af.getId())
+                .artistId(af.getArtistId())
+                .artistName(af.getArtistName())
+                .artistNameEn(af.getArtistNameEn())
+                .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
+                .songs(songs)
+                .predicted(!hasActualSetlist && !songs.isEmpty())
+                .build();
     }
 
     private Map<Long, List<SongResponseDto>> groupSongsByArtistFestivalId(List<ArtistFestivalSong> afSongs) {
