@@ -23,5 +23,7 @@ public interface FestivalDiaryService {
 
     Page<FestivalDiaryResponseDto> getPublicFeed(Long festivalId, int page, Long viewerId);
 
+    Page<FestivalDiaryResponseDto> getUserPublicDiaries(Long targetUserId, int page, Long viewerId);
+
     void removeAllByUser(Long userId);
 }

@@ -23,6 +23,10 @@ public interface FestivalDiaryRepository extends JpaRepository<FestivalDiary, Lo
     Page<FestivalDiary> findByFestivalIdAndVisibilityOrderByCreatedAtDesc(
             @Param("festivalId") Long festivalId, @Param("visibility") DiaryVisibility visibility, Pageable pageable);
 
+    @Query("SELECT d FROM FestivalDiary d JOIN FETCH d.festival WHERE d.user.id = :userId AND d.visibility = :visibility ORDER BY d.createdAt DESC")
+    Page<FestivalDiary> findByUserIdAndVisibilityOrderByCreatedAtDesc(
+            @Param("userId") Long userId, @Param("visibility") DiaryVisibility visibility, Pageable pageable);
+
     @Query("SELECT d FROM FestivalDiary d JOIN FETCH d.festival WHERE d.user.id = :userId")
     List<FestivalDiary> findByUserId(@Param("userId") Long userId);
 

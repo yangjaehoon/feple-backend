@@ -139,6 +139,19 @@ public class FestivalDiaryServiceImpl implements FestivalDiaryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<FestivalDiaryResponseDto> getUserPublicDiaries(Long targetUserId, int page, Long viewerId) {
+        Page<FestivalDiary> diaryPage = diaryRepository.findByUserIdAndVisibilityOrderByCreatedAtDesc(
+                targetUserId, DiaryVisibility.PUBLIC, PageRequest.of(page, PUBLIC_FEED_PAGE_SIZE));
+        boolean isOwner = targetUserId.equals(viewerId);
+        List<FestivalDiary> visible = isOwner
+                ? diaryPage.getContent()
+                : blockedContentFilter.excludeBlocked(diaryPage.getContent(), viewerId, FestivalDiary::getUserId);
+        List<FestivalDiaryResponseDto> content = toDtos(visible, isOwner, false);
+        return new PageImpl<>(content, diaryPage.getPageable(), diaryPage.getTotalElements());
+    }
+
+    @Override
     @Transactional
     public void removeAllByUser(Long userId) {
         List<FestivalDiary> diaries = diaryRepository.findByUserId(userId);

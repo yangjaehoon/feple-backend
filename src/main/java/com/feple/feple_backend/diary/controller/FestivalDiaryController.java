@@ -88,6 +88,16 @@ public class FestivalDiaryController {
         return diaryService.getPublicFeed(festivalId, page, viewerId);
     }
 
+    @GetMapping("/user/{userId}/public")
+    public Page<FestivalDiaryResponseDto> getUserPublicDiaries(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            Authentication authentication
+    ) {
+        Long viewerId = (authentication != null) ? (Long) authentication.getPrincipal() : null;
+        return diaryService.getUserPublicDiaries(userId, page, viewerId);
+    }
+
     public record PresignRequest(
             @NotBlank(message = "Content-Type은 필수입니다.") String contentType,
             @NotBlank(message = "파일 확장자는 필수입니다.") String extension
