@@ -129,8 +129,8 @@ public class ArtistFestivalService {
         Map<Long, Artist> artistsById = artistRepository.findAllById(artistIds).stream()
                 .collect(Collectors.toMap(Artist::getId, a -> a));
 
-        ArtistLinkBatch batch = classifyArtistsToLink(
-                festivalId, artistIds, artistsById, existingArtistIds, festival, performanceDatesByArtistId);
+        ArtistLinkBatch batch = classifyArtistsToLink(artistIds,
+                new ArtistLinkContext(artistsById, existingArtistIds, festival, performanceDatesByArtistId));
         artistFestivalRepository.saveAll(batch.toSave());
 
         // 트랜잭션 커밋 후에만 알림 발송 — 아직 시작 전인 페스티벌에만 발송
@@ -143,25 +143,28 @@ public class ArtistFestivalService {
     private record ArtistLinkBatch(List<ArtistFestival> toSave, List<Artist> addedArtists,
                                     int duplicates, int errors) {}
 
-    private ArtistLinkBatch classifyArtistsToLink(Long festivalId, List<Long> artistIds, Map<Long, Artist> artistsById,
-                                                   Set<Long> existingArtistIds, Festival festival,
-                                                   Map<Long, LocalDate> performanceDatesByArtistId) {
+    // classifyArtistsToLink가 파라미터 4개 이상을 받지 않도록 묶은 배치 처리 컨텍스트
+    private record ArtistLinkContext(Map<Long, Artist> artistsById, Set<Long> existingArtistIds,
+                                      Festival festival, Map<Long, LocalDate> performanceDatesByArtistId) {}
+
+    private ArtistLinkBatch classifyArtistsToLink(List<Long> artistIds, ArtistLinkContext context) {
         int duplicates = 0, errors = 0;
         List<ArtistFestival> toSave = new ArrayList<>();
         List<Artist> addedArtists = new ArrayList<>();
         for (Long artistId : artistIds) {
-            Artist artist = artistsById.get(artistId);
+            Artist artist = context.artistsById().get(artistId);
             if (artist == null) {
-                log.debug("[ArtistFestival] 존재하지 않는 아티스트라 건너뜀 festivalId={}, artistId={}", festivalId, artistId);
+                log.debug("[ArtistFestival] 존재하지 않는 아티스트라 건너뜀 festivalId={}, artistId={}",
+                        context.festival().getId(), artistId);
                 errors++;
                 continue;
             }
-            if (!existingArtistIds.add(artistId)) {
+            if (!context.existingArtistIds().add(artistId)) {
                 duplicates++;
                 continue;
             }
-            toSave.add(ArtistFestival.builder().festival(festival).artist(artist)
-                    .performanceDate(performanceDatesByArtistId.get(artistId))
+            toSave.add(ArtistFestival.builder().festival(context.festival()).artist(artist)
+                    .performanceDate(context.performanceDatesByArtistId().get(artistId))
                     .build());
             addedArtists.add(artist);
         }

@@ -151,6 +151,21 @@ class ArtistLineupOcrServiceTest {
     }
 
     @Test
+    void parseArtistLineup_정규화후_정확_매칭이_복수면_임의로_고르지_않고_미매칭_처리() throws Exception {
+        // 공백 정규화 때문에 서로 다른 두 아티스트가 우연히 같은 정규화 결과를 갖게 되는 경우
+        // findFirst()로 아무나 골라 잘못 연결하지 않고 미매칭으로 남겨 관리자가 확인하게 해야 한다
+        Artist a1 = mockArtist(1L, "다이나믹 듀오", null);
+        Artist a2 = mockArtist(2L, "다이나믹듀오", null);
+        given(geminiOcrClient.parseLineup(any(), any()))
+                .willReturn(new OcrParseResult<>(List.of(new LineupRawResult("다이나믹듀오", 90, null)), false));
+        given(artistRepository.findAllWithAliases()).willReturn(List.of(a1, a2));
+
+        List<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(null, null).entries();
+
+        assertThat(results.get(0).artistId()).isNull();
+    }
+
+    @Test
     void parseArtistLineup_year파라미터가_geminiOcrClient에_그대로_전달() throws Exception {
         given(geminiOcrClient.parseLineup(any(), eq(2026)))
                 .willReturn(new OcrParseResult<>(List.of(), false));
@@ -187,6 +202,20 @@ class ArtistLineupOcrServiceTest {
 
         verify(artistFestivalService).linkArtistsToFestival(
                 eq(1L), eq(List.of(10L, 20L)), eq(Map.of(10L, LocalDate.of(2026, 8, 1))));
+    }
+
+    @Test
+    void applyArtistLineup_같은_아티스트가_여러_행에_매칭되면_먼저_나온_행의_날짜를_유지() {
+        // DAY1/DAY2 포스터 구역에 같은 아티스트가 매칭되면 실제로 저장되는 첫 번째 행(중복 판정
+        // 기준과 동일)의 날짜가 남아야 한다 — 나중 값으로 덮어써 엉뚱한 날짜가 저장되면 안 됨
+        given(artistFestivalService.linkArtistsToFestival(eq(1L), any(), any()))
+                .willReturn(new ArtistFestivalService.LinkArtistsResult(1, 1, 0));
+
+        ocrService.applyArtistLineup(new LineupOcrApplyRequestDto(1L,
+                List.of(new LineupOcrArtistEntry(10L, "2026-08-01"), new LineupOcrArtistEntry(10L, "2026-08-02")), null));
+
+        verify(artistFestivalService).linkArtistsToFestival(
+                eq(1L), eq(List.of(10L, 10L)), eq(Map.of(10L, LocalDate.of(2026, 8, 1))));
     }
 
     @Test

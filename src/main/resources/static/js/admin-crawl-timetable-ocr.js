@@ -270,9 +270,7 @@
         tr.dataset.rowIndex = idx;
         tr.dataset.type = isOps ? 'OPS' : 'PERFORMANCE';
         if (isOps) tr.style.background = 'rgba(251,191,36,0.08)';
-        var dateAttrs = '';
-        if (festivalStartDate) dateAttrs += ' min="' + festivalStartDate + '"';
-        if (festivalEndDate)   dateAttrs += ' max="' + festivalEndDate   + '"';
+        var dateAttrs = window.AdminCrawl.dateBoundsAttrs(festivalStartDate, festivalEndDate);
 
         var artistCell, stageCell;
         if (isOps) {

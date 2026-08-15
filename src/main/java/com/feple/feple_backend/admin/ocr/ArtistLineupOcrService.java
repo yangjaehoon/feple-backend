@@ -42,12 +42,16 @@ public class ArtistLineupOcrService {
 
     private ArtistLineupOcrResult matchArtist(LineupRawResult raw, List<Artist> allArtists) {
         int conf = raw.confidence() != null ? raw.confidence() : 0;
-        Optional<Artist> exact = findExact(raw.name(), allArtists);
+        // 아티스트 수만큼 반복 비교되는 값이라 OCR 이름은 한 번만 정규화해 재사용한다
+        // (매 비교마다 정규식을 다시 돌리지 않도록).
+        String normalizedName = raw.name() != null ? normalize(raw.name()).toLowerCase() : null;
+
+        Optional<Artist> exact = findExact(normalizedName, allArtists);
         if (exact.isPresent()) {
             Artist artist = exact.get();
             return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), raw.date(), conf);
         }
-        List<Artist> partial = findPartial(raw.name(), allArtists);
+        List<Artist> partial = findPartial(normalizedName, allArtists);
         if (partial.size() == 1) {
             Artist artist = partial.get(0);
             return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), raw.date(), conf);
@@ -55,36 +59,39 @@ public class ArtistLineupOcrService {
         return new ArtistLineupOcrResult(raw.name(), null, null, raw.date(), conf);
     }
 
-    private static Optional<Artist> findExact(String name, List<Artist> allArtists) {
-        return allArtists.stream().filter(a -> matchesExact(a, name)).findFirst();
+    // 정규화 후 두 명 이상의 아티스트와 동시에 "정확히" 일치하면(예: 서로 다른 아티스트의 이름이
+    // 공백 차이로만 구분되던 경우) 아무나 하나를 고르지 않고 미매칭으로 남겨 관리자가 직접 확인하게 한다.
+    private static Optional<Artist> findExact(String normalizedName, List<Artist> allArtists) {
+        List<Artist> matches = allArtists.stream().filter(a -> matchesExact(a, normalizedName)).toList();
+        return matches.size() == 1 ? Optional.of(matches.get(0)) : Optional.empty();
     }
 
-    private static List<Artist> findPartial(String name, List<Artist> allArtists) {
-        return allArtists.stream().filter(a -> matchesPartial(a, name)).toList();
+    private static List<Artist> findPartial(String normalizedName, List<Artist> allArtists) {
+        return allArtists.stream().filter(a -> matchesPartial(a, normalizedName)).toList();
     }
 
-    private static boolean matchesExact(Artist artist, String name) {
-        return equalsIgnoreCase(artist.getName(), name)
-                || equalsIgnoreCase(artist.getNameEn(), name)
-                || artist.getAliases().stream().anyMatch(alias -> equalsIgnoreCase(alias, name));
+    private static boolean matchesExact(Artist artist, String normalizedName) {
+        return equalsNormalized(artist.getName(), normalizedName)
+                || equalsNormalized(artist.getNameEn(), normalizedName)
+                || artist.getAliases().stream().anyMatch(alias -> equalsNormalized(alias, normalizedName));
     }
 
-    private static boolean matchesPartial(Artist artist, String name) {
-        return containsIgnoreCase(artist.getName(), name)
-                || containsIgnoreCase(artist.getNameEn(), name)
-                || artist.getAliases().stream().anyMatch(alias -> containsIgnoreCase(alias, name));
+    private static boolean matchesPartial(Artist artist, String normalizedName) {
+        return containsNormalized(artist.getName(), normalizedName)
+                || containsNormalized(artist.getNameEn(), normalizedName)
+                || artist.getAliases().stream().anyMatch(alias -> containsNormalized(alias, normalizedName));
     }
 
-    private static boolean equalsIgnoreCase(String candidate, String name) {
-        return candidate != null && name != null && normalize(candidate).equalsIgnoreCase(normalize(name));
+    private static boolean equalsNormalized(String candidate, String normalizedName) {
+        return candidate != null && normalizedName != null
+                && normalize(candidate).toLowerCase().equals(normalizedName);
     }
 
     // OCR이 "LOCO (로꼬)"처럼 영문/한글을 함께 반환하는 경우 DB에 저장된 단일 이름이
     // OCR 원문보다 짧아 한쪽 방향 포함 검사만으로는 매칭되지 않으므로 양방향으로 확인한다.
-    private static boolean containsIgnoreCase(String candidate, String name) {
-        if (candidate == null || name == null) return false;
+    private static boolean containsNormalized(String candidate, String normalizedName) {
+        if (candidate == null || normalizedName == null) return false;
         String normalizedCandidate = normalize(candidate).toLowerCase();
-        String normalizedName = normalize(name).toLowerCase();
         return normalizedCandidate.contains(normalizedName) || normalizedName.contains(normalizedCandidate);
     }
 
@@ -111,13 +118,15 @@ public class ArtistLineupOcrService {
     }
 
     // 날짜는 OCR 추출/관리자 수정 값이라 형식이 틀어질 수 있어, 개별 항목 파싱 실패로
-    // 전체 등록이 막히지 않도록 유효한 값만 골라 담는다.
+    // 전체 등록이 막히지 않도록 유효한 값만 골라 담는다. 같은 아티스트가 여러 행(예: DAY1/DAY2에
+    // 중복 매칭)에 걸쳐 있으면 실제로 저장되는 쪽(=목록에서 먼저 나온 행, classifyArtistsToLink의
+    // 중복 판정과 동일한 기준)의 날짜를 남기도록 첫 값만 채택한다.
     private Map<Long, LocalDate> parseArtistDates(List<LineupOcrArtistEntry> artists) {
         Map<Long, LocalDate> dates = new HashMap<>();
         for (LineupOcrArtistEntry entry : artists) {
             if (entry.date() == null || entry.date().isBlank()) continue;
             try {
-                dates.put(entry.artistId(), LocalDate.parse(entry.date()));
+                dates.putIfAbsent(entry.artistId(), LocalDate.parse(entry.date()));
             } catch (DateTimeParseException e) {
                 log.warn("라인업 OCR 날짜 파싱 실패, 무시하고 진행. artistId={}, date={}", entry.artistId(), entry.date());
             }

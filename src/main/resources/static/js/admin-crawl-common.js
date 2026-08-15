@@ -6,6 +6,19 @@
 
     var festivalMap = {}; // id → {title, startDate, endDate}
 
+    // 타임테이블/라인업 OCR 탭이 공통으로 쓰는 날짜 범위 조회 + <input type="date"> min/max 속성 빌더
+    function getFestivalDateRange(fid) {
+        var f = festivalMap[fid];
+        return { startDate: (f && f.startDate) || '', endDate: (f && f.endDate) || '' };
+    }
+
+    function dateBoundsAttrs(minDate, maxDate) {
+        var attrs = '';
+        if (minDate) attrs += ' min="' + minDate + '"';
+        if (maxDate) attrs += ' max="' + maxDate + '"';
+        return attrs;
+    }
+
     // ── 검색 가능 페스티벌 콤보박스 ────────────────────────────
     function FestivalCombobox(elId) {
         var root = document.getElementById(elId);
@@ -191,6 +204,8 @@
         ocrSelect:          ocrSelect,
         lineupSelect:       lineupSelect,
         festivalMap:        festivalMap,
+        getFestivalDateRange: getFestivalDateRange,
+        dateBoundsAttrs:    dateBoundsAttrs,
         loadQuota:          loadQuota,
         showApplyResult:    showApplyResult,
         hideToast:          hideToast,
