@@ -261,6 +261,39 @@ class FestivalDiaryServiceImplTest {
         assertThat(result.getTotalElements()).isEqualTo(1);
     }
 
+    // ── getUserPublicDiaries ─────────────────────────────────────────
+
+    @Test
+    void 유저_공개일기_타인조회시_차단유저_제외() {
+        FestivalDiary diary = mock(FestivalDiary.class);
+        Page<FestivalDiary> page = new PageImpl<>(List.of(diary), PageRequest.of(0, 10), 1);
+        lenient().when(diaryRepository.findByUserIdAndVisibilityOrderByCreatedAtDesc(USER_ID, DiaryVisibility.PUBLIC, PageRequest.of(0, 10)))
+                .thenReturn(page);
+        given(blockedContentFilter.excludeBlocked(any(), any(), any())).willReturn(List.of());
+
+        Page<FestivalDiaryResponseDto> result = diaryService.getUserPublicDiaries(USER_ID, 0, OTHER_USER_ID);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        then(blockedContentFilter).should().excludeBlocked(any(), any(), any());
+    }
+
+    @Test
+    void 유저_공개일기_본인조회시_차단필터_생략() {
+        FestivalDiary diary = mock(FestivalDiary.class);
+        given(diary.getId()).willReturn(DIARY_ID);
+        Page<FestivalDiary> page = new PageImpl<>(List.of(diary), PageRequest.of(0, 10), 1);
+        given(diaryRepository.findByUserIdAndVisibilityOrderByCreatedAtDesc(USER_ID, DiaryVisibility.PUBLIC, PageRequest.of(0, 10)))
+                .willReturn(page);
+        given(photoRepository.findByDiaryIdIn(List.of(DIARY_ID))).willReturn(List.of());
+
+        Page<FestivalDiaryResponseDto> result = diaryService.getUserPublicDiaries(USER_ID, 0, USER_ID);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).isOwner()).isTrue();
+        then(blockedContentFilter).should(never()).excludeBlocked(any(), any(), any());
+    }
+
     // ── removeAllByUser ──────────────────────────────────────────────
 
     @Test
