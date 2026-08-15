@@ -5,6 +5,14 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# 짧은 간격으로 여러 커밋이 push되면 배포 job이 동시에 실행되어 같은 EC2의
+# feple.jar/systemd 서비스를 두고 경합(다운타임, jar 손상)이 발생할 수 있어
+# 브랜치당 하나씩만 순차 실행되도록 제한한다. 뒤에 새 배포가 대기 중이면 어차피
+# 그 결과가 최신 상태를 반영하므로 진행 중인 이전 배포는 취소해도 무방하다.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
