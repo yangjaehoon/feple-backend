@@ -65,7 +65,8 @@ class ArtistLineupOcrAdminControllerTest {
         given(ocrService.applyArtistLineup(any(LineupOcrApplyRequestDto.class)))
                 .willReturn(new LineupApplyResult(2, 2, 0, 0));
 
-        LineupOcrApplyRequestDto req = new LineupOcrApplyRequestDto(1L, List.of(10L, 11L), List.of());
+        LineupOcrApplyRequestDto req = new LineupOcrApplyRequestDto(1L,
+                List.of(new LineupOcrArtistEntry(10L, null), new LineupOcrArtistEntry(11L, null)), List.of());
 
         mockMvc.perform(post("/admin/crawl/ocr/lineup/apply")
                         .contentType(MediaType.APPLICATION_JSON)

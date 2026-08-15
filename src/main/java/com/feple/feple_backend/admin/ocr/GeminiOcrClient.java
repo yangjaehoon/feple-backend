@@ -23,10 +23,12 @@ public class GeminiOcrClient {
     private static final String LINEUP_PROMPT = """
             이 이미지는 음악 페스티벌 라인업 포스터입니다.
             이미지에 나타난 모든 출연 아티스트 이름을 추출하여 JSON 배열 형식으로만 반환하세요.
-            각 항목 형식: {"name": "아티스트명", "confidence": 확신도(0~100)}
+            각 항목 형식: {"name": "아티스트명", "date": "출연일(yyyy-MM-dd) 또는 null", "confidence": 확신도(0~100)}
             규칙:
-            - 페스티벌 이름, 날짜, 장소, 스폰서, 주최사 등 아티스트가 아닌 텍스트는 제외하세요.
+            - 페스티벌 이름, 장소, 스폰서, 주최사 등 아티스트가 아닌 텍스트는 제외하세요.
             - 동일 아티스트가 여러 번 표시되면 한 번만 포함하세요.
+            - 포스터가 "DAY 1"/"DAY 2"나 날짜별 구역으로 아티스트를 나누어 표시하면, 각 아티스트가 속한 구역의 날짜를 date에 반영하세요.
+            - 날짜 구분 없이 전체 아티스트가 한 목록으로만 표시되어 있으면 date는 null로 설정하세요.
             - 인식이 불확실한 이름은 confidence를 낮게 설정하세요 (0~100).
             - JSON 배열만 반환하고 설명 텍스트나 마크다운 코드블록을 절대 포함하지 마세요.
             """;
@@ -72,14 +74,21 @@ public class GeminiOcrClient {
     }
 
     private String buildPromptWithYear(int year) {
-        return PROMPT + "\n- 이미지에 연도가 명시되지 않은 날짜(예: \"8월 1일\", \"8/1\", \"Aug 1\", \"Day 1\", \"Day 2\")는 "
+        return PROMPT + dateHintSuffix(year);
+    }
+
+    // 이미지에 연도가 명시되지 않은 날짜(예: "8월 1일", "8/1", "Aug 1", "Day 1", "Day 2")를
+    // 해석할 때 기준으로 삼을 연도 힌트 — 타임테이블/라인업 OCR 프롬프트가 공통으로 사용한다.
+    private static String dateHintSuffix(int year) {
+        return "\n- 이미지에 연도가 명시되지 않은 날짜(예: \"8월 1일\", \"8/1\", \"Aug 1\", \"Day 1\", \"Day 2\")는 "
                 + year + "년으로 간주하여 " + year + "-MM-dd 형식으로 변환하세요.";
     }
 
-    public OcrParseResult<LineupRawResult> parseLineup(MultipartFile image) throws IOException {
+    public OcrParseResult<LineupRawResult> parseLineup(MultipartFile image, Integer year) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
-        Map<?, ?> response = callGeminiApi(buildGeminiRequest(LINEUP_PROMPT, base64, mimeType));
+        String prompt = year != null ? LINEUP_PROMPT + dateHintSuffix(year) : LINEUP_PROMPT;
+        Map<?, ?> response = callGeminiApi(buildGeminiRequest(prompt, base64, mimeType));
         String content = geminiApiClient.extractText(response);
         log.debug("Gemini Lineup OCR raw response: {}", content);
         return new OcrParseResult<>(parseLineupJsonArray(content), geminiApiClient.isTruncated(response));

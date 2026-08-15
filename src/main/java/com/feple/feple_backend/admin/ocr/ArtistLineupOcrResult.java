@@ -4,6 +4,7 @@ public record ArtistLineupOcrResult(
         String parsedName,
         Long artistId,
         String matchedName,
+        String date,
         int confidence
 ) {
 }

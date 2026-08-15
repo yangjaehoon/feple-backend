@@ -36,12 +36,13 @@ public class ArtistLineupOcrAdminController {
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity<?> parseLineupOcr(@RequestParam("image") MultipartFile image) {
+    public ResponseEntity<?> parseLineupOcr(@RequestParam("image") MultipartFile image,
+                                             @RequestParam(value = "year", required = false) Integer year) {
         if (image.isEmpty()) return AdminErrorResponses.badRequest("이미지를 업로드해주세요.");
         if (AdminErrorResponses.isNotImage(image)) return AdminErrorResponses.badRequest("이미지 파일만 업로드할 수 있습니다.");
         if (!ocrService.isConfigured()) return AdminErrorResponses.geminiNotConfigured();
         try {
-            OcrParseResult<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image);
+            OcrParseResult<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image, year);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             log.error("라인업 OCR 파싱 실패", e);
@@ -52,8 +53,8 @@ public class ArtistLineupOcrAdminController {
     @PostMapping("/apply")
     @ResponseBody
     public ResponseEntity<?> applyLineupOcr(@RequestBody LineupOcrApplyRequestDto request) {
-        if (request.festivalId() == null)                            return AdminErrorResponses.badRequest("페스티벌을 선택해주세요.");
-        if (request.artistIds() == null || request.artistIds().isEmpty()) return AdminErrorResponses.badRequest("등록할 아티스트가 없습니다.");
+        if (request.festivalId() == null)                          return AdminErrorResponses.badRequest("페스티벌을 선택해주세요.");
+        if (request.artists() == null || request.artists().isEmpty()) return AdminErrorResponses.badRequest("등록할 아티스트가 없습니다.");
         try {
             LineupApplyResult result = ocrService.applyArtistLineup(request);
             adminLogService.log(AdminAction.LINEUP_OCR_APPLY, "FESTIVAL", request.festivalId(),

@@ -113,6 +113,14 @@ public class ArtistFestivalService {
     // (OCR 라인업 일괄 등록·관리자 페이지 아티스트 일괄 추가에서 공통으로 사용).
     @Transactional
     public LinkArtistsResult linkArtistsToFestival(Long festivalId, List<Long> artistIds) {
+        return linkArtistsToFestival(festivalId, artistIds, Map.of());
+    }
+
+    // 라인업 OCR처럼 아티스트별 출연일을 함께 등록해야 하는 경우 사용 (performanceDatesByArtistId에
+    // 없는 아티스트는 날짜 없이 등록되며, 이후 타임테이블 등록 시 자동으로 보충된다).
+    @Transactional
+    public LinkArtistsResult linkArtistsToFestival(Long festivalId, List<Long> artistIds,
+                                                     Map<Long, LocalDate> performanceDatesByArtistId) {
         if (artistIds == null || artistIds.isEmpty()) return new LinkArtistsResult(0, 0, 0);
 
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
@@ -121,7 +129,8 @@ public class ArtistFestivalService {
         Map<Long, Artist> artistsById = artistRepository.findAllById(artistIds).stream()
                 .collect(Collectors.toMap(Artist::getId, a -> a));
 
-        ArtistLinkBatch batch = classifyArtistsToLink(festivalId, artistIds, artistsById, existingArtistIds, festival);
+        ArtistLinkBatch batch = classifyArtistsToLink(
+                festivalId, artistIds, artistsById, existingArtistIds, festival, performanceDatesByArtistId);
         artistFestivalRepository.saveAll(batch.toSave());
 
         // 트랜잭션 커밋 후에만 알림 발송 — 아직 시작 전인 페스티벌에만 발송
@@ -135,7 +144,8 @@ public class ArtistFestivalService {
                                     int duplicates, int errors) {}
 
     private ArtistLinkBatch classifyArtistsToLink(Long festivalId, List<Long> artistIds, Map<Long, Artist> artistsById,
-                                                   Set<Long> existingArtistIds, Festival festival) {
+                                                   Set<Long> existingArtistIds, Festival festival,
+                                                   Map<Long, LocalDate> performanceDatesByArtistId) {
         int duplicates = 0, errors = 0;
         List<ArtistFestival> toSave = new ArrayList<>();
         List<Artist> addedArtists = new ArrayList<>();
@@ -150,7 +160,9 @@ public class ArtistFestivalService {
                 duplicates++;
                 continue;
             }
-            toSave.add(ArtistFestival.builder().festival(festival).artist(artist).build());
+            toSave.add(ArtistFestival.builder().festival(festival).artist(artist)
+                    .performanceDate(performanceDatesByArtistId.get(artistId))
+                    .build());
             addedArtists.add(artist);
         }
         return new ArtistLinkBatch(toSave, addedArtists, duplicates, errors);

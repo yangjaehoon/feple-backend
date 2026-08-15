@@ -95,10 +95,28 @@ class GeminiOcrClientTest {
                 "[{\"name\":\"아이유\",\"confidence\":90},{\"name\":\"NewJeans\",\"confidence\":85}]");
         given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
 
-        OcrParseResult<LineupRawResult> result = client.parseLineup(image());
+        OcrParseResult<LineupRawResult> result = client.parseLineup(image(), null);
 
         assertThat(result.entries()).extracting(LineupRawResult::name)
                 .containsExactly("아이유", "NewJeans");
+    }
+
+    @Test
+    void parseLineup_연도가_주어지면_연도가_반영된_프롬프트로_요청한다() throws Exception {
+        willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
+        given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("[]");
+        given(geminiApiClient.isTruncated(DUMMY_RESPONSE)).willReturn(false);
+
+        client.parseLineup(image(), 2026);
+
+        org.mockito.ArgumentCaptor<GeminiApiRequest> captor = org.mockito.ArgumentCaptor.forClass(GeminiApiRequest.class);
+        org.mockito.Mockito.verify(geminiApiClient).call(captor.capture());
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> contents = (List<Map<String, Object>>) captor.getValue().body().get("contents");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> parts = (List<Map<String, Object>>) contents.get(0).get("parts");
+        String promptText = (String) parts.get(0).get("text");
+        assertThat(promptText).contains("2026년으로 간주");
     }
 
     @Test

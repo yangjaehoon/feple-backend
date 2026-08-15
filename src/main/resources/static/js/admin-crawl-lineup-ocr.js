@@ -5,6 +5,8 @@
 
     var lineupSelect = window.AdminCrawl.lineupSelect;
     var lineupPendingFile = null; // 파싱 대기 중인 파일
+    var lineupFestivalStartDate = '';
+    var lineupFestivalEndDate   = '';
 
     /* ── 파일 업로드 ── */
     var lineupDropZone  = document.getElementById('lineupDropZone');
@@ -57,6 +59,9 @@
 
         var formData = new FormData();
         formData.append('image', file);
+        if (lineupFestivalStartDate) {
+            formData.append('year', lineupFestivalStartDate.substring(0, 4));
+        }
 
         fetch(CrawlUrls.lineupOcr, { method: 'POST', headers: window.AdminUtils.getCsrfHeaders(), body: formData })
             .then(function (r) {
@@ -88,6 +93,9 @@
 
     lineupSelect.addEventListener('change', function () {
         if (this.value) setLineupFestivalError('');
+        var f = window.AdminCrawl.festivalMap[this.value];
+        lineupFestivalStartDate = (f && f.startDate) || '';
+        lineupFestivalEndDate   = (f && f.endDate) || '';
     });
 
     document.getElementById('btnStartLineup').addEventListener('click', function () {
@@ -129,11 +137,16 @@
                 ? '<span style="color:var(--success); font-weight:600;">✅ ' + window.AdminUtils.escapeHtml(row.matchedName) + '</span>'
                 : '<span style="color:var(--danger);">❌ 미매칭</span>';
 
+            var dateAttrs = '';
+            if (lineupFestivalStartDate) dateAttrs += ' min="' + lineupFestivalStartDate + '"';
+            if (lineupFestivalEndDate)   dateAttrs += ' max="' + lineupFestivalEndDate + '"';
+
             tr.innerHTML =
                 '<td><input type="checkbox" class="lineup-chk" data-artist-id="' + (row.artistId || '') + '"' +
                 (matched ? ' checked' : ' disabled') + '></td>' +
                 '<td>' + window.AdminUtils.escapeHtml(row.parsedName) + '</td>' +
                 '<td>' + matchedHtml + '</td>' +
+                '<td><input type="date" class="lineup-date-input" value="' + (row.date || '') + '"' + dateAttrs + '></td>' +
                 '<td>' + confBadgeHtml + '</td>';
             body.appendChild(tr);
         });
@@ -165,12 +178,14 @@
         var fid = lineupSelect.value;
         if (!fid) { window.AdminCrawl.showApplyResult('error', '페스티벌을 선택해주세요.'); return; }
 
-        var artistIds = [];
+        var artists = [];
         document.querySelectorAll('.lineup-chk:checked:not([disabled])').forEach(function (chk) {
             var id = parseInt(chk.getAttribute('data-artist-id'));
-            if (id) artistIds.push(id);
+            if (!id) return;
+            var dateInput = chk.closest('tr').querySelector('.lineup-date-input');
+            artists.push({ artistId: id, date: dateInput && dateInput.value ? dateInput.value : null });
         });
-        if (artistIds.length === 0) { window.AdminCrawl.showApplyResult('error', '등록할 아티스트를 선택해주세요.'); return; }
+        if (artists.length === 0) { window.AdminCrawl.showApplyResult('error', '등록할 아티스트를 선택해주세요.'); return; }
 
         /* 미매칭 이름 수집 (체크박스 disabled = 미매칭 행) */
         var unmatchedNames = [];
@@ -191,7 +206,7 @@
         window.AdminUtils.requestJson(CrawlUrls.lineupOcrApply, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify({ festivalId: parseInt(fid), artistIds: artistIds, unmatchedNames: unmatchedNames })
+            body: JSON.stringify({ festivalId: parseInt(fid), artists: artists, unmatchedNames: unmatchedNames })
         }, '등록 실패')
         .then(function (result) {
             btn.disabled = false;

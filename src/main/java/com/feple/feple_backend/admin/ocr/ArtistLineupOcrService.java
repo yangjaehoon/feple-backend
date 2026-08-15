@@ -4,12 +4,18 @@ import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ArtistLineupOcrService {
@@ -23,8 +29,8 @@ public class ArtistLineupOcrService {
         return geminiOcrClient.isConfigured();
     }
 
-    public OcrParseResult<ArtistLineupOcrResult> parseArtistLineup(MultipartFile image) throws IOException {
-        OcrParseResult<LineupRawResult> raw = geminiOcrClient.parseLineup(image);
+    public OcrParseResult<ArtistLineupOcrResult> parseArtistLineup(MultipartFile image, Integer year) throws IOException {
+        OcrParseResult<LineupRawResult> raw = geminiOcrClient.parseLineup(image, year);
         // 이름마다 개별 조회하면 포스터 한 장(아티스트 20~60명)에 최대 60회 쿼리가 발생하므로
         // 전체 아티스트를 한 번만 조회해 메모리에서 매칭한다.
         List<Artist> allArtists = artistRepository.findAllWithAliases();
@@ -39,14 +45,14 @@ public class ArtistLineupOcrService {
         Optional<Artist> exact = findExact(raw.name(), allArtists);
         if (exact.isPresent()) {
             Artist artist = exact.get();
-            return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), conf);
+            return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), raw.date(), conf);
         }
         List<Artist> partial = findPartial(raw.name(), allArtists);
         if (partial.size() == 1) {
             Artist artist = partial.get(0);
-            return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), conf);
+            return new ArtistLineupOcrResult(raw.name(), artist.getId(), artist.getName(), raw.date(), conf);
         }
-        return new ArtistLineupOcrResult(raw.name(), null, null, conf);
+        return new ArtistLineupOcrResult(raw.name(), null, null, raw.date(), conf);
     }
 
     private static Optional<Artist> findExact(String name, List<Artist> allArtists) {
@@ -92,14 +98,31 @@ public class ArtistLineupOcrService {
     // 최대 수백 회 쿼리가 발생하므로, festival/artist/기존 참여 여부를 한 번씩만 조회하는
     // linkArtistsToFestival로 일괄 처리한다.
     public LineupApplyResult applyArtistLineup(LineupOcrApplyRequestDto request) {
-        List<Long> artistIds = request.artistIds();
+        List<LineupOcrArtistEntry> artists = request.artists();
+        List<Long> artistIds = artists.stream().map(LineupOcrArtistEntry::artistId).toList();
+        Map<Long, LocalDate> datesByArtistId = parseArtistDates(artists);
         ArtistFestivalService.LinkArtistsResult result = artistIds.isEmpty()
                 ? new ArtistFestivalService.LinkArtistsResult(0, 0, 0)
-                : artistFestivalService.linkArtistsToFestival(request.festivalId(), artistIds);
+                : artistFestivalService.linkArtistsToFestival(request.festivalId(), artistIds, datesByArtistId);
         if (request.unmatchedNames() != null) {
             suggestionService.saveAll(request.unmatchedNames());
         }
         return new LineupApplyResult(artistIds.size(), result.added(), result.duplicates(), result.errors());
+    }
+
+    // 날짜는 OCR 추출/관리자 수정 값이라 형식이 틀어질 수 있어, 개별 항목 파싱 실패로
+    // 전체 등록이 막히지 않도록 유효한 값만 골라 담는다.
+    private Map<Long, LocalDate> parseArtistDates(List<LineupOcrArtistEntry> artists) {
+        Map<Long, LocalDate> dates = new HashMap<>();
+        for (LineupOcrArtistEntry entry : artists) {
+            if (entry.date() == null || entry.date().isBlank()) continue;
+            try {
+                dates.put(entry.artistId(), LocalDate.parse(entry.date()));
+            } catch (DateTimeParseException e) {
+                log.warn("라인업 OCR 날짜 파싱 실패, 무시하고 진행. artistId={}, date={}", entry.artistId(), entry.date());
+            }
+        }
+        return dates;
     }
 
     public List<UnmatchedArtistSuggestionDto> getSuggestions() {
