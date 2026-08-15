@@ -258,10 +258,11 @@ class ArtistFestivalServiceTest {
 
         ArgumentCaptor<List<ArtistFestival>> captor = ArgumentCaptor.forClass(List.class);
         then(artistFestivalRepository).should().saveAll(captor.capture());
-        Map<Long, LocalDate> savedDates = captor.getValue().stream()
-                .collect(java.util.stream.Collectors.toMap(ArtistFestival::getArtistId, ArtistFestival::getPerformanceDate));
-        assertThat(savedDates.get(1L)).isEqualTo(LocalDate.of(2026, 8, 1));
-        assertThat(savedDates.get(2L)).isNull();
+        List<ArtistFestival> saved = captor.getValue();
+        assertThat(saved.stream().filter(af -> af.getArtistId().equals(1L)).findFirst().orElseThrow().getPerformanceDate())
+                .isEqualTo(LocalDate.of(2026, 8, 1));
+        assertThat(saved.stream().filter(af -> af.getArtistId().equals(2L)).findFirst().orElseThrow().getPerformanceDate())
+                .isNull();
     }
 
     // ── updateArtistFestival ──────────────────────────────────────────────
