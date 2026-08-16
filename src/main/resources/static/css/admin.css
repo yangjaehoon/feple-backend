@@ -1720,6 +1720,15 @@ input[type=date]   { cursor: pointer; }
     min-width: 32px; min-height: 32px;
     display: inline-flex; align-items: center; justify-content: center;
   }
+
+  /* 13. 노래 요청 승인/거절 폼 — 고정폭 인풋+버튼이 카드 밖으로 잘리므로(overflow:hidden)
+        세로 스택으로 전환하고 인풋은 가변폭으로 바꾼다 */
+  .song-item-row { flex-wrap: wrap; }
+  .request-form  { flex: 1 1 100%; }
+  .request-url-input, .request-reason-input { flex: 1; min-width: 0; width: auto; }
+
+  /* 14. 아티스트 등록 이미지 업로드 행 — 파일 인풋 폭이 브라우저마다 달라 좁은 화면에서 넘칠 수 있음 */
+  .img-upload-row { flex-wrap: wrap; }
 }
 
 /* ============================================================
