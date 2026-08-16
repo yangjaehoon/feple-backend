@@ -20,13 +20,14 @@
                 <div id="approveIds"></div>
                 <button type="submit" class="btn btn-success btn-sm">일괄 승인</button>
             </form>
-            <form id="formBulkReject" th:action="@{/admin/certifications/bulk-reject}" method="post" style="display:inline;">
+            <form id="formBulkReject" th:action="@{/admin/certifications/bulk-reject}" method="post" class="inline-form">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <input type="hidden" name="status" th:value="${status}"/>
                 <input type="hidden" name="page" th:value="${page}"/>
                 <input type="hidden" name="keyword" th:value="${keyword}"/>
                 <div id="rejectIds"></div>
-                <input type="text" name="rejectionMessage" placeholder="거절 사유 (선택)" class="form-control form-control-sm" style="width:200px; display:inline-block;"/>
+                <input type="text" name="rejectionMessage" placeholder="거절 사유 (선택)"
+                       class="form-control form-control-sm inline-input" style="width:200px; max-width:100%;"/>
                 <button type="submit" class="btn btn-danger btn-sm">일괄 거절</button>
             </form>
         </div>
@@ -67,7 +68,7 @@
                     <thead>
                     <tr>
                         <th class="col-w36">
-                            <input type="checkbox" id="checkAll" title="전체 선택" onchange="toggleAll(this)"/>
+                            <input type="checkbox" id="checkAll" class="cb-input" title="전체 선택" onchange="toggleAll(this)"/>
                         </th>
                         <th class="col-w48">ID</th>
                         <th>신청자</th>
@@ -81,7 +82,7 @@
                     <tbody>
                     <tr th:each="cert : ${certifications.content}">
                         <td>
-                            <input th:if="${cert.pending}" type="checkbox" class="cert-check"
+                            <input th:if="${cert.pending}" type="checkbox" class="cert-check cb-input"
                                    th:value="${cert.id}" onchange="updateBulkToolbar()"/>
                             <span th:unless="${cert.pending}"></span>
                         </td>
