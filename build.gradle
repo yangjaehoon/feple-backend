@@ -38,7 +38,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	// Spring Boot 3.4.4 BOM이 관리하는 기본 버전(9.1.0)은 CVE-2025-30706(높음, 원격 취약점)에
 	// 취약해 명시적으로 고정 오버라이드한다.
-	runtimeOnly 'com.mysql:mysql-connector-j:9.4.0'
+	runtimeOnly 'com.mysql:mysql-connector-j:26.7.0'
 	implementation 'org.flywaydb:flyway-mysql'
 	testRuntimeOnly 'com.h2database:h2'
 	annotationProcessor 'org.projectlombok:lombok'
