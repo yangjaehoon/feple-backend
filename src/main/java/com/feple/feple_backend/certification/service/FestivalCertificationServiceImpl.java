@@ -47,7 +47,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
 
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        requireNotAlreadyCertified(userId, festivalId);
+        replacePreviousRejectionIfAny(userId, festivalId);
 
         FestivalCertification cert = saveCertification(user, festival, photoKey);
         return toDto(cert);
@@ -60,11 +60,16 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
         s3ObjectVerificationService.verifyImageObject(photoKey);
     }
 
-    private void requireNotAlreadyCertified(Long userId, Long festivalId) {
-        certificationRepository.findByUserIdAndFestivalId(userId, festivalId)
-                .ifPresent(existing -> {
-                    throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
-                });
+    // 거절된 인증은 재신청이 가능해야 한다 — (user_id, festival_id) 유니크 제약 때문에 기존
+    // REJECTED 레코드를 지우지 않으면 재제출이 항상 409로 막힌다. PENDING/APPROVED는 계속 차단.
+    private void replacePreviousRejectionIfAny(Long userId, Long festivalId) {
+        certificationRepository.findByUserIdAndFestivalId(userId, festivalId).ifPresent(existing -> {
+            if (existing.getStatus() != CertificationStatus.REJECTED) {
+                throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
+            }
+            certificationRepository.delete(existing);
+            fileStorageService.deleteFileAfterCommit(existing.getPhotoKey());
+        });
     }
 
     private FestivalCertification saveCertification(User user, Festival festival, String photoKey) {

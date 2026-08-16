@@ -83,6 +83,33 @@ class FestivalCertificationServiceImplTest {
     }
 
     @Test
+    void submit_거절된_인증은_삭제_후_재신청_허용() {
+        User user = mock(User.class);
+        Festival festival = mock(Festival.class);
+        given(festival.getId()).willReturn(FESTIVAL_ID);
+        given(festival.getTitle()).willReturn("페스티벌명");
+        given(festival.getPosterKey()).willReturn(null);
+
+        FestivalCertification rejected = mock(FestivalCertification.class);
+        given(rejected.getStatus()).willReturn(CertificationStatus.REJECTED);
+        given(rejected.getPhotoKey()).willReturn("certifications/1/old.jpg");
+
+        given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
+        given(festivalRepository.findById(FESTIVAL_ID)).willReturn(Optional.of(festival));
+        given(certificationRepository.findByUserIdAndFestivalId(USER_ID, FESTIVAL_ID))
+                .willReturn(Optional.of(rejected));
+        given(s3PresignService.presignGetUrl(VALID_PHOTO_KEY)).willReturn("https://s3.example.com/photo.jpg");
+
+        CertificationResponseDto result =
+                certificationService.submit(USER_ID, FESTIVAL_ID, VALID_PHOTO_KEY);
+
+        then(certificationRepository).should().delete(rejected);
+        then(fileStorageService).should().deleteFileAfterCommit("certifications/1/old.jpg");
+        then(certificationRepository).should().saveAndFlush(any(FestivalCertification.class));
+        assertThat(result.status()).isEqualTo(CertificationStatus.PENDING);
+    }
+
+    @Test
     void submit_성공() {
         User user = mock(User.class);
         Festival festival = mock(Festival.class);
