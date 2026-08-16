@@ -8,6 +8,7 @@ import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,10 @@ public class TimetableSyncService {
     private final TimetableRepository timetableRepository;
     private final StageRepository stageRepository;
 
+    // TimetableService의 다른 변경 메서드와 동일하게 "timetable" 캐시(30분 TTL, key=festivalId)를
+    // 비운다 — 여기서 빠뜨리면 라인업 그리드에서 바꾼 스테이지/날짜가 캐시 만료 전까지 반영 안 된다.
     @Transactional
+    @CacheEvict(value = "timetable", key = "#festivalId")
     public void syncStage(Long festivalId, String artistName, String newStage, String oldStage) {
         if (newStage == null || newStage.equals(oldStage)) return;
         Stage stage = EntityLoader.getOrThrow(
@@ -34,6 +38,7 @@ public class TimetableSyncService {
     }
 
     @Transactional
+    @CacheEvict(value = "timetable", key = "#festivalId")
     public void syncDate(Long festivalId, String artistName, LocalDate newDate, LocalDate oldDate) {
         if (newDate == null || newDate.equals(oldDate)) return;
         List<TimetableEntry> entries = timetableRepository.findByFestivalIdAndArtistName(festivalId, artistName);

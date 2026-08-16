@@ -22,11 +22,6 @@ public interface TimetableRepository extends JpaRepository<TimetableEntry, Long>
 
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("UPDATE TimetableEntry t SET t.artist = null WHERE t.artist.id = :artistId")
-    void nullifyArtistId(@Param("artistId") Long artistId);
-
-    @Modifying(clearAutomatically = true)
-    @Transactional
     @Query("UPDATE TimetableEntry t SET t.stage = null WHERE t.stage.id = :stageId")
     void nullifyStageId(@Param("stageId") Long stageId);
 }

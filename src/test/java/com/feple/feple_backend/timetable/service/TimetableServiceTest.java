@@ -148,6 +148,31 @@ class TimetableServiceTest {
     }
 
     @Test
+    void 저녁_이른시각_시작하는_심야공연도_허용() {
+        // 임계값(정오)만 넘으면 심야 공연으로 인정 — 18시 이전 시작이라고 거부하지 않는다
+        Festival f = festival(1L);
+        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
+        TimetableEntryRequestDto dto = requestDto("아이유", "메인", LocalTime.of(17, 59), LocalTime.of(0, 30));
+        given(timetableRepository.save(any(TimetableEntry.class))).willAnswer(inv -> inv.getArgument(0));
+
+        TimetableEntryResponseDto result = timetableService.createEntry(1L, dto);
+
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void 정오_이전_시작에_종료가_이른시각이면_역전으로_거부() {
+        // 오전 공연에서 시작/종료를 실수로 바꿔 입력한 경우까지 심야 공연으로 오인하지 않는다
+        Festival f = festival(1L);
+        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
+        TimetableEntryRequestDto dto = requestDto("아이유", "메인", LocalTime.of(11, 0), LocalTime.of(10, 0));
+
+        assertThatThrownBy(() -> timetableService.createEntry(1L, dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("종료 시간은 시작 시간보다 늦어야 합니다.");
+    }
+
+    @Test
     void 스테이지명_있으면_해당_스테이지_조회후_연결() {
         Festival f = festival(1L);
         Stage stage = Stage.builder().id(5L).name("메인스테이지").build();
@@ -258,15 +283,6 @@ class TimetableServiceTest {
         assertThatThrownBy(() -> timetableService.updateEntry(1L, 100L, dto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("종료 시간은 시작 시간보다 늦어야 합니다.");
-    }
-
-    // ── nullifyArtistId ───────────────────────────────────────────────
-
-    @Test
-    void 아티스트ID_null화시_repository에_위임() {
-        timetableService.nullifyArtistId(5L);
-
-        verify(timetableRepository).nullifyArtistId(5L);
     }
 
     // ── deleteEntry ───────────────────────────────────────────────────

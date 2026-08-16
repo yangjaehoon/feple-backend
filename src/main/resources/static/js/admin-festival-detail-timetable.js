@@ -1,4 +1,10 @@
 (function () {
+    // 백엔드 TimetableService.isOvernight()과 동일한 판단 기준 — "HH:MM" 문자열은
+    // 24시간제 2자리 zero-pad 포맷이라 사전순 비교가 곧 시간 순서 비교와 같다.
+    function isOvernight(start, end) {
+        return start >= '12:00' && end <= '06:00';
+    }
+
     function validateTimetable(form) {
         var hiddenName = document.getElementById('artistNameHidden');
         if (hiddenName && !hiddenName.value.trim()) {
@@ -24,7 +30,7 @@
         }
         var start = form.querySelector('#startTime').value;
         var end = form.querySelector('#endTime').value;
-        if (start && end && start >= end) {
+        if (start && end && start >= end && !isOvernight(start, end)) {
             var err = document.getElementById('timeError');
             err.style.display = 'block';
             document.getElementById('startTime').style.borderColor = 'var(--danger)';
@@ -38,7 +44,7 @@
     function validateCustomTimetable(form) {
         var start = form.querySelector('[name="startTime"]').value;
         var end = form.querySelector('[name="endTime"]').value;
-        if (start && end && start >= end) {
+        if (start && end && start >= end && !isOvernight(start, end)) {
             var err = document.getElementById('timeError');
             if (err) err.style.display = 'block';
             return false;
@@ -262,7 +268,7 @@
     document.getElementById('tt-edit-form').addEventListener('submit', function (e) {
         var start = document.getElementById('tt-edit-start').value;
         var end   = document.getElementById('tt-edit-end').value;
-        if (start && end && start >= end) {
+        if (start && end && start >= end && !isOvernight(start, end)) {
             document.getElementById('tt-edit-time-error').style.display = 'block';
             e.preventDefault();
         }

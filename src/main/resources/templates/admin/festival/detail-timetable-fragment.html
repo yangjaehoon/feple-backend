@@ -265,6 +265,7 @@
                         <label class="form-label-sm">스테이지</label>
                         <select name="stageName" id="tt-edit-stageName" class="compact-input" style="width:100%">
                             <option value="">스테이지 없음</option>
+                            <option th:value="${announcementStageName}">📢 운영/공지</option>
                             <option th:each="s : ${stages}" th:value="${s.name}" th:text="${s.name}"></option>
                         </select>
                     </div>

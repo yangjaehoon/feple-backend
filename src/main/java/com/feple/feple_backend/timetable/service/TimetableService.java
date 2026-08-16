@@ -34,8 +34,9 @@ public class TimetableService {
 
     // 이 시간대에 걸친 start→end는 자정을 넘기는 심야 공연으로 간주해 허용한다
     // (예: 23:30 시작 → 00:30 종료). TimetableEntry는 종료일 필드가 없어 festivalDate 하루 안에서
-    // wall-clock 시간만으로 심야 여부를 판단한다.
-    private static final LocalTime OVERNIGHT_START_THRESHOLD = LocalTime.of(18, 0);
+    // wall-clock 시간만으로 심야 여부를 판단한다. 정오 이전에 시작해서 자정을 넘기는 공연은
+    // 사실상 없다고 보고, 이보다 이른 시각의 start/end 역전은 입력 실수로 간주해 그대로 거부한다.
+    private static final LocalTime OVERNIGHT_START_THRESHOLD = LocalTime.of(12, 0);
     private static final LocalTime OVERNIGHT_END_THRESHOLD = LocalTime.of(6, 0);
 
     private final TimetableRepository timetableRepository;
@@ -208,11 +209,6 @@ public class TimetableService {
                         .build())
                 .toList();
         entry.replaceMembers(members);
-    }
-
-    @Transactional
-    public void nullifyArtistId(Long artistId) {
-        timetableRepository.nullifyArtistId(artistId);
     }
 
     @Transactional
