@@ -44,34 +44,39 @@
         document.getElementById('lngInput').value = lng;
     }
 
-    function searchAddress() {
-        if (!kakaoAvailable) return;
-        var keyword = document.getElementById('addrSearch').value.trim();
-        if (!keyword) return;
+    // keyword로 장소/주소를 찾아 지도에 좌표를 찍는다.
+    // updateLocationField가 true면 검색으로 찾은 정식 명칭으로 "장소" 필드도 덮어쓴다
+    // (주소 검색창 사용 시) — false면 좌표만 채우고 사용자가 쓴 원문은 그대로 둔다
+    // ("장소" 필드에서 자동 보완할 때).
+    function geocodeKeyword(keyword, updateLocationField) {
+        if (!kakaoAvailable || !keyword) return;
         var ps = new kakao.maps.services.Places();
         var addrErr = document.getElementById('addr-search-error');
         ps.keywordSearch(keyword, function (data, status) {
             if (status === kakao.maps.services.Status.OK) {
                 var place = data[0];
-                var lat = parseFloat(place.y);
-                var lng = parseFloat(place.x);
-                placeMarker(lat, lng);
-                document.getElementById('locationInput').value = place.place_name;
+                placeMarker(parseFloat(place.y), parseFloat(place.x));
+                if (updateLocationField) document.getElementById('locationInput').value = place.place_name;
                 if (addrErr) addrErr.style.display = 'none';
             } else {
                 geocoder.addressSearch(keyword, function (result, status) {
                     if (status === kakao.maps.services.Status.OK) {
-                        var lat = parseFloat(result[0].y);
-                        var lng = parseFloat(result[0].x);
-                        placeMarker(lat, lng);
-                        document.getElementById('locationInput').value = result[0].address_name;
+                        placeMarker(parseFloat(result[0].y), parseFloat(result[0].x));
+                        if (updateLocationField) document.getElementById('locationInput').value = result[0].address_name;
                         if (addrErr) addrErr.style.display = 'none';
-                    } else {
-                        if (addrErr) addrErr.style.display = 'block';
+                    } else if (updateLocationField && addrErr) {
+                        // "장소" 필드 자동 보완 실패는 조용히 넘어간다 — 자유 텍스트라
+                        // 검색 실패가 흔한데 매번 에러를 띄우면 오히려 방해된다
+                        addrErr.style.display = 'block';
                     }
                 });
             }
         });
+    }
+
+    function searchAddress() {
+        var keyword = document.getElementById('addrSearch').value.trim();
+        if (keyword) geocodeKeyword(keyword, true);
     }
 
     document.getElementById('addrSearch').addEventListener('keydown', function (e) {
@@ -79,6 +84,16 @@
     });
 
     document.getElementById('addr-search-btn').addEventListener('click', searchAddress);
+
+    // 장소 필드에 직접 입력한 텍스트로도 자동으로 좌표를 채운다 — 이미 지도
+    // 클릭/주소 검색으로 좌표가 채워져 있으면 덮어쓰지 않는다
+    var locationInput = document.getElementById('locationInput');
+    if (locationInput) {
+        locationInput.addEventListener('blur', function () {
+            if (document.getElementById('latInput').value) return;
+            geocodeKeyword(this.value.trim(), false);
+        });
+    }
 
     function filterArtists(query) {
         var q = query.toLowerCase();
