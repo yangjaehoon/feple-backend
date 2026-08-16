@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ public class ArtistGalleryPhotoService {
     private final BlockedContentFilter blockedContentFilter;
 
     public S3PresignedUrlResult generateUploadUrl(Long artistId, String extension, String contentType) {
+        EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         String objectKey = S3PathConstants.artistPhotoPrefix(artistId) + UUID.randomUUID() + "." + extension;
         return s3PresignService.presignPut(objectKey, contentType);
     }
@@ -70,9 +72,12 @@ public class ArtistGalleryPhotoService {
         return ArtistGalleryPhotoResponseDto.from(saved, url, false, userId);
     }
 
+    // limit이 있으면(예: 캐러셀 미리보기) 상위 N개만 조회해 불필요한 presign 서명 비용을 줄인다
     @Transactional(readOnly = true)
-    public List<ArtistGalleryPhotoResponseDto> list(Long artistId, Long currentUserId) {
-        List<ArtistGalleryPhoto> photos = artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(artistId);
+    public List<ArtistGalleryPhotoResponseDto> list(Long artistId, Long currentUserId, Integer limit) {
+        List<ArtistGalleryPhoto> photos = (limit != null)
+                ? artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(artistId, PageRequest.of(0, limit))
+                : artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(artistId);
         // 익명 업로드라도 실제 uploaderId 기준으로 차단을 적용해야 하므로 DTO 변환 전(uploaderUserId가
         // null로 마스킹되기 전) 엔티티 단계에서 필터링한다
         List<ArtistGalleryPhoto> visiblePhotos =

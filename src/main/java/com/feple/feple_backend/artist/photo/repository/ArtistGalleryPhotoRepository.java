@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist.photo.repository;
 
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,10 @@ public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGaller
 
     @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.likeCount DESC, p.createdAt DESC")
     List<ArtistGalleryPhoto> findByArtist_IdOrderByLikeCountDescCreatedAtDesc(@Param("artistId") Long artistId);
+
+    // 캐러셀 미리보기 등 상위 N개만 필요한 호출용 — pageable의 size로 LIMIT을 적용한다
+    @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.likeCount DESC, p.createdAt DESC")
+    List<ArtistGalleryPhoto> findByArtist_IdOrderByLikeCountDescCreatedAtDesc(@Param("artistId") Long artistId, Pageable pageable);
 
     @Modifying(clearAutomatically = true)
     @Transactional

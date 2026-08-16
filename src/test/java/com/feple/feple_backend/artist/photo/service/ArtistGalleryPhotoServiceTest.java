@@ -77,6 +77,7 @@ class ArtistGalleryPhotoServiceTest {
 
     @Test
     void 업로드_URL_생성시_아티스트_prefix_포함된_키_생성() {
+        given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L)));
         ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
         S3PresignedUrlResult expected = new S3PresignedUrlResult("https://upload-url", "key");
         given(s3PresignService.presignPut(keyCaptor.capture(), eq("image/jpeg"))).willReturn(expected);
@@ -85,6 +86,14 @@ class ArtistGalleryPhotoServiceTest {
 
         assertThat(result).isEqualTo(expected);
         assertThat(keyCaptor.getValue()).startsWith("artist-photos/1/").endsWith(".jpg");
+    }
+
+    @Test
+    void 업로드_URL_생성시_존재하지_않는_아티스트면_예외() {
+        given(artistRepository.findById(1L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.generateUploadUrl(1L, "jpg", "image/jpeg"))
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     // ── register ─────────────────────────────────────────────────────────
@@ -164,7 +173,7 @@ class ArtistGalleryPhotoServiceTest {
                 .willReturn(Set.of(1L));
         given(s3PresignService.presignGetUrl(any())).willReturn("https://url");
 
-        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, 99L);
+        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, 99L, null);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).isLiked()).isTrue();
@@ -184,7 +193,7 @@ class ArtistGalleryPhotoServiceTest {
         given(artistGalleryPhotoLikeRepository.findLikedPhotoIds(99L, List.of(2L))).willReturn(Set.of());
         given(s3PresignService.presignGetUrl(any())).willReturn("https://url");
 
-        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, 99L);
+        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, 99L, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).photoId()).isEqualTo(2L);
@@ -198,10 +207,25 @@ class ArtistGalleryPhotoServiceTest {
                 .willReturn(List.of(photo(1L, artist, uploader)));
         given(s3PresignService.presignGetUrl(any())).willReturn("https://url");
 
-        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, null);
+        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, null, null);
 
         assertThat(result.get(0).isLiked()).isFalse();
         verify(artistGalleryPhotoLikeRepository, never()).findLikedPhotoIds(any(), any());
+    }
+
+    @Test
+    void 목록_조회시_limit_있으면_상위_N개_쿼리_사용() {
+        Artist artist = artist(1L);
+        User uploader = user(10L);
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                        eq(1L), any(org.springframework.data.domain.Pageable.class)))
+                .willReturn(List.of(photo(1L, artist, uploader)));
+        given(s3PresignService.presignGetUrl(any())).willReturn("https://url");
+
+        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, null, 10);
+
+        assertThat(result).hasSize(1);
+        verify(artistGalleryPhotoRepository, never()).findByArtist_IdOrderByLikeCountDescCreatedAtDesc(any());
     }
 
     // ── delete ───────────────────────────────────────────────────────────

@@ -47,13 +47,17 @@ public class ArtistGalleryPhotoController {
         return artistGalleryPhotoService.register(artistId, req, userId);
     }
 
-    /** 비인증 사용자도 사진 목록 조회 가능 (좋아요 여부는 false로 반환) */
+    /**
+     * 비인증 사용자도 사진 목록 조회 가능 (좋아요 여부는 false로 반환)
+     * @param limit 지정 시 인기순 상위 N개만 반환 (캐러셀 미리보기 등)
+     */
     @GetMapping
     public List<ArtistGalleryPhotoResponseDto> list(
             @PathVariable Long artistId,
+            @RequestParam(required = false) Integer limit,
             @AuthenticationPrincipal Long userId
     ) {
-        return artistGalleryPhotoService.list(artistId, userId);
+        return artistGalleryPhotoService.list(artistId, userId, limit);
     }
 
     public record PresignRequest(

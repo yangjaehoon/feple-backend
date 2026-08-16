@@ -91,9 +91,18 @@ class ArtistGalleryPhotoControllerTest {
 
     @Test
     void 사진_목록_조회() throws Exception {
-        given(artistGalleryPhotoService.list(1L, 1L)).willReturn(List.of());
+        given(artistGalleryPhotoService.list(1L, 1L, null)).willReturn(List.of());
 
         mockMvc.perform(get("/artists/1/photos")
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 사진_목록_조회_limit_파라미터_전달() throws Exception {
+        given(artistGalleryPhotoService.list(1L, 1L, 10)).willReturn(List.of());
+
+        mockMvc.perform(get("/artists/1/photos").param("limit", "10")
                         .with(AuthTestHelper.userAuth(1L)))
                 .andExpect(status().isOk());
     }
