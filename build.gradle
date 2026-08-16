@@ -80,7 +80,7 @@ dependencies {
 	implementation 'com.drewnoakes:metadata-extractor:2.21.0' // 이미지 리사이즈 시 EXIF Orientation 태그 반영용
 	implementation 'org.sejda.imageio:webp-imageio:0.1.6' // javax.imageio는 webp를 기본 지원하지 않아 프로필 이미지 업로드에서 webp가 거부되던 문제 해결용
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.0'
 
 	// sentry.dsn 미설정 시 경고만 남기고 비활성 상태로 정상 기동 — SENTRY_DSN 없어도 안전
 	implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.52.0'
