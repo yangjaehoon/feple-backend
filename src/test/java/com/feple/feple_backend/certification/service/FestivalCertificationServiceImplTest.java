@@ -87,6 +87,7 @@ class FestivalCertificationServiceImplTest {
     void submit_중복_신청_예외() {
         User user = mock(User.class);
         Festival festival = mock(Festival.class);
+        given(festival.getId()).willReturn(FESTIVAL_ID);
 
         given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
         given(festivalRepository.findById(FESTIVAL_ID)).willReturn(Optional.of(festival));
