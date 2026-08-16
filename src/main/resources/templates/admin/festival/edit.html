@@ -107,7 +107,7 @@
                                 <label th:each="g : ${allGenres}" class="genre-check-label">
                                     <input type="checkbox" name="genres" th:value="${g}"
                                            th:checked="${festival.genres != null and festival.genres.contains(g)}"
-                                           class="song-check"/>
+                                           class="cb-input"/>
                                     <span th:text="${g.displayName}"></span>
                                 </label>
                             </div>

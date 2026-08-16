@@ -1729,6 +1729,17 @@ input[type=date]   { cursor: pointer; }
 
   /* 14. 아티스트 등록 이미지 업로드 행 — 파일 인풋 폭이 브라우저마다 달라 좁은 화면에서 넘칠 수 있음 */
   .img-upload-row { flex-wrap: wrap; }
+
+  /* 15. 타임테이블 스테이지 추가 행 — 고정폭(180px) 인풋이 카드 밖으로 밀려나므로 가변폭으로 전환 */
+  .stage-add-inline       { flex-wrap: wrap; }
+  .stage-add-inline input { flex: 1; min-width: 0; width: auto; }
+
+  /* 16. 스테이지 순서변경/삭제 버튼 — 터치 타겟 확대 */
+  .stage-btn { min-width: 32px; min-height: 32px; padding: 6px 10px; }
+
+  /* 17. 타임테이블 시작/종료 시간 2열 그리드 — 5열 그리드가 이미 2열로 줄어든 상태에서 중첩되면
+        너무 좁아지므로 1열로 전환 */
+  .form-grid-2col { grid-template-columns: 1fr; }
 }
 
 /* ============================================================
