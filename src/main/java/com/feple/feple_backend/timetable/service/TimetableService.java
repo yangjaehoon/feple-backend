@@ -1,6 +1,5 @@
 package com.feple.feple_backend.timetable.service;
 
-import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfestival.entity.LineupUpdate;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -44,6 +42,7 @@ public class TimetableService {
     private final StageService stageService;
     private final ArtistFestivalService artistFestivalService;
     private final ArtistRepository artistRepository;
+    private final TimetableEntryBatchPersister entryBatchPersister;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "timetable", key = "#festivalId")
@@ -116,19 +115,10 @@ public class TimetableService {
                 String stageName = (req.getStageName() == null || req.getStageName().isBlank())
                         ? "" : req.getStageName().trim();
                 Stage stage = stageName.isEmpty() ? null : stagesByName.get(stageName);
-                String color = (req.getColor() != null && !req.getColor().isBlank()) ? req.getColor().trim() : null;
-                TimetableEntry entry = TimetableEntry.builder()
-                        .festival(festival)
-                        .stage(stage)
-                        .stageName(stageName)
-                        .artistName(req.getArtistName() != null ? req.getArtistName().trim() : "")
-                        .festivalDate(req.getFestivalDate())
-                        .startTime(req.getStartTime())
-                        .endTime(req.getEndTime())
-                        .color(color)
-                        .build();
-                TimetableEntry saved = timetableRepository.save(entry);
-                syncMembers(saved, req.getMemberArtistIds());
+                // 항목마다 독립 트랜잭션으로 저장 — 하나가 DB 제약 위반 등으로 실패해도
+                // 영속성 컨텍스트 오염이 다른 항목에 전파되지 않는다 (자세한 이유는
+                // TimetableEntryBatchPersister 클래스 주석 참고)
+                TimetableEntry saved = entryBatchPersister.saveIsolated(festival, stage, stageName, req);
 
                 LineupUpdate lineup = new LineupUpdate(saved.getStageName(), saved.getFestivalDate());
                 lineupUpdates.add(new ArtistFestivalService.ArtistNameLineup(saved.getArtistName(), lineup));
@@ -193,22 +183,7 @@ public class TimetableService {
     }
 
     private void syncMembers(TimetableEntry entry, List<Long> memberArtistIds) {
-        if (memberArtistIds == null || memberArtistIds.isEmpty()) {
-            entry.replaceMembers(List.of());
-            return;
-        }
-        Map<Long, Artist> artistsById = artistRepository.findAllById(memberArtistIds).stream()
-                .collect(Collectors.toMap(Artist::getId, artist -> artist));
-        List<TimetableEntryMember> members = memberArtistIds.stream()
-                .map(artistsById::get)
-                .filter(Objects::nonNull)
-                .map(artist -> TimetableEntryMember.builder()
-                        .entry(entry)
-                        .artist(artist)
-                        .artistName(artist.getName())
-                        .build())
-                .toList();
-        entry.replaceMembers(members);
+        TimetableMemberSync.sync(artistRepository, entry, memberArtistIds);
     }
 
     @Transactional

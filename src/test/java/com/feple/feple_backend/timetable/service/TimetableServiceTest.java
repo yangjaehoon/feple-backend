@@ -37,6 +37,7 @@ class TimetableServiceTest {
     @Mock StageService stageService;
     @Mock ArtistFestivalService artistFestivalService;
     @Mock ArtistRepository artistRepository;
+    @Mock TimetableEntryBatchPersister entryBatchPersister;
 
     @InjectMocks TimetableService timetableService;
 
@@ -236,6 +237,66 @@ class TimetableServiceTest {
         timetableService.createEntry(1L, dto);
 
         verify(artistFestivalService).syncFromTimetableEntry(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.eq("아이유"), any());
+    }
+
+    // ── createEntriesBatch ───────────────────────────────────────────────
+
+    @Test
+    void 배치_생성시_항목마다_격리된_트랜잭션으로_저장() {
+        Festival f = festival(1L);
+        TimetableEntryRequestDto dto1 = requestDto("아이유", "메인", LocalTime.of(19, 0), LocalTime.of(20, 0));
+        TimetableEntryRequestDto dto2 = requestDto("뉴진스", "메인", LocalTime.of(20, 0), LocalTime.of(21, 0));
+        given(stageService.getStages(1L)).willReturn(List.of());
+        TimetableEntry saved1 = entry(10L, f, "아이유", "메인");
+        TimetableEntry saved2 = entry(11L, f, "뉴진스", "메인");
+        given(entryBatchPersister.saveIsolated(f, null, "메인", dto1)).willReturn(saved1);
+        given(entryBatchPersister.saveIsolated(f, null, "메인", dto2)).willReturn(saved2);
+
+        List<TimetableService.BatchCreateResult> results =
+                timetableService.createEntriesBatch(f, List.of(dto1, dto2));
+
+        assertThat(results).hasSize(2);
+        assertThat(results).extracting(TimetableService.BatchCreateResult::entry)
+                .containsExactly(saved1, saved2);
+        verify(entryBatchPersister).saveIsolated(f, null, "메인", dto1);
+        verify(entryBatchPersister).saveIsolated(f, null, "메인", dto2);
+    }
+
+    @Test
+    void 배치_생성시_한_항목_저장실패해도_나머지는_계속_처리() {
+        // entryBatchPersister가 항목마다 독립 트랜잭션이라, 한 건이 예외를 던져도
+        // 이후 항목의 저장 자체가 영향받지 않아야 한다 (세션 오염 격리 회귀 테스트)
+        Festival f = festival(1L);
+        TimetableEntryRequestDto dto1 = requestDto("실패아티스트", "메인", LocalTime.of(19, 0), LocalTime.of(20, 0));
+        TimetableEntryRequestDto dto2 = requestDto("성공아티스트", "메인", LocalTime.of(20, 0), LocalTime.of(21, 0));
+        given(stageService.getStages(1L)).willReturn(List.of());
+        RuntimeException dbError = new RuntimeException("제약 위반");
+        given(entryBatchPersister.saveIsolated(f, null, "메인", dto1)).willThrow(dbError);
+        TimetableEntry saved2 = entry(11L, f, "성공아티스트", "메인");
+        given(entryBatchPersister.saveIsolated(f, null, "메인", dto2)).willReturn(saved2);
+
+        List<TimetableService.BatchCreateResult> results =
+                timetableService.createEntriesBatch(f, List.of(dto1, dto2));
+
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).entry()).isNull();
+        assertThat(results.get(0).error()).isEqualTo(dbError);
+        assertThat(results.get(1).entry()).isEqualTo(saved2);
+        assertThat(results.get(1).error()).isNull();
+    }
+
+    @Test
+    void 배치_생성시_시간역전_검증실패는_저장시도조차_안함() {
+        Festival f = festival(1L);
+        TimetableEntryRequestDto invalidDto = requestDto("아이유", "메인", LocalTime.of(20, 0), LocalTime.of(19, 0));
+        given(stageService.getStages(1L)).willReturn(List.of());
+
+        List<TimetableService.BatchCreateResult> results =
+                timetableService.createEntriesBatch(f, List.of(invalidDto));
+
+        assertThat(results.get(0).entry()).isNull();
+        assertThat(results.get(0).error()).isInstanceOf(IllegalArgumentException.class);
+        verify(entryBatchPersister, never()).saveIsolated(any(), any(), any(), any());
     }
 
     // ── updateEntry ───────────────────────────────────────────────────
