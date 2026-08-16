@@ -59,9 +59,8 @@
             <div id="approve-festival-name" class="admin-modal-subtitle"></div>
         </div>
         <div class="admin-modal-section">
-            <div class="admin-modal-label">연결할 페스티벌 ID <span class="required-star">*</span></div>
-            <input type="number" id="approve-festival-id" class="admin-modal-textarea"
-                   placeholder="페스티벌 ID를 입력하세요" min="1"/>
+            <div class="admin-modal-label">연결할 페스티벌 <span class="required-star">*</span></div>
+            <div id="approve-festival-combobox"></div>
             <div class="admin-modal-hint">이미 다른 이름으로 등록된 페스티벌일 때만 사용하세요. 새로 등록하려면 "페스티벌 등록" 버튼을 이용하세요.</div>
         </div>
         <form id="approve-form" method="post">
@@ -107,16 +106,89 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
 window.FestivalSuggestionUrls = { base: /*[[@{/admin/festival-suggestions}]]*/ '' };
+window.AllFestivalsForConnect = /*[[${allFestivals}]]*/ [];
 /*]]>*/
 </script>
 <script>
 (function () {
     const base = window.FestivalSuggestionUrls.base;
 
+    // 이름/영문명으로 검색되는 단일 선택 콤보박스. 아티스트 신청 페이지의 '기존 아티스트와
+    // 연결' 콤보박스와 같은 구조라 CSS(fest-cb-*)를 그대로 쓴다.
+    function SearchCombobox(elId, searchText, renderLabel, placeholder) {
+        const root = document.getElementById(elId);
+        root.classList.add('fest-combobox');
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'fest-cb-input';
+        input.placeholder = placeholder;
+        input.autocomplete = 'off';
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'fest-cb-dropdown';
+
+        root.appendChild(input);
+        root.appendChild(dropdown);
+
+        this._input = input;
+        this._dropdown = dropdown;
+        this._items = [];
+        this._value = '';
+        this._changeHandlers = [];
+
+        const self = this;
+        function renderList(items) {
+            dropdown.innerHTML = '';
+            if (items.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'fest-cb-empty';
+                empty.textContent = '검색 결과가 없습니다.';
+                dropdown.appendChild(empty);
+                return;
+            }
+            items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'fest-cb-item';
+                el.textContent = renderLabel(item);
+                el.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    self._value = String(item.id);
+                    input.value = renderLabel(item);
+                    dropdown.classList.remove('open');
+                    root.classList.remove('select-error');
+                    self._changeHandlers.forEach(fn => fn());
+                });
+                dropdown.appendChild(el);
+            });
+        }
+        function filterAndOpen() {
+            const q = input.value.trim().toLowerCase();
+            const filtered = q ? self._items.filter(item => searchText(item).indexOf(q) !== -1) : self._items;
+            renderList(filtered);
+            dropdown.classList.add('open');
+        }
+        input.addEventListener('input', () => { self._value = ''; filterAndOpen(); });
+        input.addEventListener('focus', filterAndOpen);
+        input.addEventListener('keydown', e => { if (e.key === 'Escape') { dropdown.classList.remove('open'); input.blur(); } });
+        document.addEventListener('mousedown', e => { if (!root.contains(e.target)) dropdown.classList.remove('open'); });
+
+        this.populate = items => { this._items = items; };
+        this.reset = () => { this._value = ''; input.value = ''; dropdown.classList.remove('open'); root.classList.remove('select-error'); };
+        this.setError = hasError => root.classList.toggle('select-error', hasError);
+        this.addEventListener = (type, fn) => { if (type === 'change') this._changeHandlers.push(fn); };
+        Object.defineProperty(this, 'value', { get: () => this._value });
+    }
+
+    const festivalSearchText = f => (f.title + ' ' + (f.titleEn || '')).toLowerCase();
+    const festivalLabel = f => f.title + (f.titleEn ? ' (' + f.titleEn + ')' : '');
+
+    const connectCombobox = new SearchCombobox('approve-festival-combobox', festivalSearchText, festivalLabel, '페스티벌 이름으로 검색...');
+    connectCombobox.populate(window.AllFestivalsForConnect);
+
     // 승인 모달
     const approveModal = document.getElementById('approve-modal');
     const approveForm  = document.getElementById('approve-form');
-    const approveInput = document.getElementById('approve-festival-id');
     const approveHidden = document.getElementById('approve-festival-id-hidden');
     const approveName  = document.getElementById('approve-festival-name');
 
@@ -124,7 +196,7 @@ window.FestivalSuggestionUrls = { base: /*[[@{/admin/festival-suggestions}]]*/ '
         btn.addEventListener('click', () => {
             approveForm.action = base + '/' + btn.dataset.id + '/approve';
             approveName.textContent = btn.dataset.festival;
-            approveInput.value = '';
+            connectCombobox.reset();
             approveHidden.value = '';
             approveModal.style.display = 'flex';
         });
@@ -133,13 +205,13 @@ window.FestivalSuggestionUrls = { base: /*[[@{/admin/festival-suggestions}]]*/ '
         approveModal.style.display = 'none';
     });
     approveForm.addEventListener('submit', e => {
-        const val = approveInput.value.trim();
-        if (!val || isNaN(val) || Number(val) < 1) {
+        if (!connectCombobox.value) {
             e.preventDefault();
-            alert('페스티벌 ID를 올바르게 입력해주세요.');
+            connectCombobox.setError(true);
+            alert('연결할 페스티벌을 검색해서 선택해주세요.');
             return;
         }
-        approveHidden.value = val;
+        approveHidden.value = connectCombobox.value;
     });
 
     // 거절 모달

@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class FestivalSuggestionAdminControllerTest {
 
     @Mock FestivalSuggestionAdminService festivalSuggestionAdminService;
+    @Mock FestivalAdminService festivalAdminService;
     @Mock AdminLogService adminLogService;
 
     @InjectMocks FestivalSuggestionAdminController controller;
@@ -39,11 +41,12 @@ class FestivalSuggestionAdminControllerTest {
     void 목록_조회_뷰와_모델_속성_확인() throws Exception {
         given(festivalSuggestionAdminService.getSuggestionsPage(anyInt(), anyInt()))
                 .willReturn(new PageImpl<>(List.of()));
+        given(festivalAdminService.getAllFestivalsForAdmin()).willReturn(List.of());
 
         mockMvc.perform(get("/admin/festival-suggestions"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/festival/suggestions"))
-                .andExpect(model().attributeExists("suggestions"));
+                .andExpect(model().attributeExists("suggestions", "allFestivals"));
     }
 
     // ── POST /admin/festival-suggestions/{id}/approve ───────────────────────
