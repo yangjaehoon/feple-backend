@@ -33,8 +33,8 @@ class BoothServiceTest {
     @InjectMocks BoothService boothService;
 
     @Test
-    void createBooth_페스티벌_없으면_예외() {
-        given(festivalRepository.findById(1L)).willReturn(Optional.empty());
+    void createBooth_페스티벌_없거나_삭제됐으면_예외() {
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
 
         BoothRequestDto dto = BoothRequestDto.builder()
                 .name("음식 부스")
@@ -50,7 +50,7 @@ class BoothServiceTest {
     @Test
     void createBooth_성공_부스_ID_반환() {
         Festival festival = mock(Festival.class);
-        given(festivalRepository.findById(1L)).willReturn(Optional.of(festival));
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(festival));
 
         Booth savedBooth = mock(Booth.class);
         given(savedBooth.getId()).willReturn(5L);

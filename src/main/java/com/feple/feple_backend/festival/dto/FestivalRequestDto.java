@@ -4,8 +4,8 @@ import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.global.MusicGenre;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
+import com.feple.feple_backend.global.ValidLatitude;
+import com.feple.feple_backend.global.ValidLongitude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -47,11 +47,9 @@ public class FestivalRequestDto {
     private List<MusicGenre> genres;
     private Region region;
     private AgeRestriction ageRestriction;
-    @DecimalMin(value = "-90.0")
-    @DecimalMax(value = "90.0")
+    @ValidLatitude
     private Double latitude;
-    @DecimalMin(value = "-180.0")
-    @DecimalMax(value = "180.0")
+    @ValidLongitude
     private Double longitude;
 
     public static FestivalRequestDto from(FestivalResponseDto src) {

@@ -56,6 +56,21 @@ class FestivalBoothAdminControllerTest {
     }
 
     @Test
+    void 부스_생성_위도범위_초과시_errorMessage_설정() throws Exception {
+        // @ValidLatitude(합성 제약 어노테이션)가 실제로 적용되는지 검증
+        mockMvc.perform(multipart("/admin/festivals/1/booths")
+                        .file("boothImageFile", new byte[0])
+                        .param("name", "푸드 부스")
+                        .param("boothType", "FOOD")
+                        .param("latitude", "999.0")
+                        .param("longitude", "127.0"))
+                .andExpect(redirectedUrl("/admin/festivals/1#booths"))
+                .andExpect(flash().attributeExists("errorMessage"));
+
+        then(boothService).should(never()).createBooth(anyLong(), any(), any());
+    }
+
+    @Test
     void 부스_생성_성공_successMessage_설정() throws Exception {
         mockMvc.perform(multipart("/admin/festivals/1/booths")
                         .file("boothImageFile", new byte[0])

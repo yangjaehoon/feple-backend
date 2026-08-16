@@ -1,8 +1,8 @@
 package com.feple.feple_backend.booth.dto;
 
 import com.feple.feple_backend.booth.entity.BoothType;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
+import com.feple.feple_backend.global.ValidLatitude;
+import com.feple.feple_backend.global.ValidLongitude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -19,11 +19,9 @@ public class BoothRequestDto {
     private String name;
     @NotNull(message = "부스 유형은 필수입니다.")
     private BoothType boothType;
-    @DecimalMin(value = "-90.0")
-    @DecimalMax(value = "90.0")
+    @ValidLatitude
     private Double latitude;
-    @DecimalMin(value = "-180.0")
-    @DecimalMax(value = "180.0")
+    @ValidLongitude
     private Double longitude;
     @Size(max = 255, message = "부스 설명은 255자 이하로 입력해주세요.")
     private String description;

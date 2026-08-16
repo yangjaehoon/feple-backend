@@ -35,7 +35,10 @@ public class BoothService {
     // 업로드에 성공했을 때만 별도 파라미터로 전달한다 (mass assignment 방지)
     @Transactional
     public Long createBooth(Long festivalId, BoothRequestDto dto, String imageKey) {
-        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        // 삭제된(휴지통) 페스티벌에는 새 부스를 만들 수 없다 — 다른 관리자가 방금
+        // 삭제한 페스티벌의 부스 등록 폼이 아직 열려 있는 경우를 막는다
+        Festival festival = EntityLoader.getOrThrow(
+                festivalRepository::findByIdAndDeletedAtIsNull, festivalId, "페스티벌");
         // 이후 저장이 실패해 이 트랜잭션이 롤백되면 이미 업로드된 S3 파일도 함께 정리
         fileStorageService.deleteFileOnRollback(imageKey);
         Booth booth = Booth.builder()
