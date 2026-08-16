@@ -22,7 +22,10 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
     @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.artist a WHERE af.festival.id = :festivalId AND a.deletedAt IS NULL ORDER BY af.lineupOrder ASC")
     List<ArtistFestival> findByFestivalIdOrderByLineupOrderAsc(@Param("festivalId") Long festivalId);
 
-    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival f WHERE af.artist.id = :artistId AND f.deletedAt IS NULL ORDER BY af.festival.startDate ASC")
+    // 정렬 기준을 festival.startDate가 아닌 실제 노출 날짜(performanceDate 우선)로 맞춘다.
+    // ArtistScheduleService가 응답에 performanceDate가 있으면 그 값을 startDate/endDate로 쓰기 때문에,
+    // festival.startDate로만 정렬하면 페스티벌 기간이 겹칠 때 화면에 표시되는 날짜 순서와 어긋난다.
+    @Query("SELECT af FROM ArtistFestival af JOIN FETCH af.festival f WHERE af.artist.id = :artistId AND f.deletedAt IS NULL ORDER BY COALESCE(af.performanceDate, f.startDate) ASC")
     List<ArtistFestival> findByArtistIdOrderByFestivalStartDateAsc(@Param("artistId") Long artistId);
 
     // festival JOIN FETCH — getArtistSchedule()에서 af.getFestival() 접근 시 N+1 방지
