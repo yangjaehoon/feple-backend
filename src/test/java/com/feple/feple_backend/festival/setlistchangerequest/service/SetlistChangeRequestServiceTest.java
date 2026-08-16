@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.setlistchangerequest.entity.SetlistChangeRequest;
@@ -35,6 +36,7 @@ class SetlistChangeRequestServiceTest {
     @Mock UserRepository userRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock ArtistFestivalRepository artistFestivalRepository;
+    @Mock BadWordValidator badWordValidator;
 
     @InjectMocks SetlistChangeRequestService service;
 
@@ -54,6 +56,19 @@ class SetlistChangeRequestServiceTest {
                 .doesNotThrowAnyException();
 
         then(repository).should().save(any());
+    }
+
+    @Test
+    void submit_금칙어가_포함되면_예외() {
+        org.mockito.Mockito.doThrow(new IllegalArgumentException("금칙어가 포함되어 있습니다."))
+                .when(badWordValidator).validate("금칙어 포함 메시지");
+
+        assertThatThrownBy(() -> service.submit(new SetlistChangeRequestCommand(1L, 10L, 100L, "금칙어 포함 메시지")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("금칙어가 포함되어 있습니다.");
+
+        then(userRepository).shouldHaveNoInteractions();
+        then(repository).should(never()).save(any());
     }
 
     @Test

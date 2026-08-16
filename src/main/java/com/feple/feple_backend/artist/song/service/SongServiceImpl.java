@@ -187,7 +187,6 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
                 .artistNameEn(af.getArtistNameEn())
                 .profileImageUrl(fileStorageService.buildUrl(af.getArtistProfileImageKey()))
                 .songs(songs)
-                .predicted(!hasActualSetlist && !songs.isEmpty())
                 .build();
     }
 

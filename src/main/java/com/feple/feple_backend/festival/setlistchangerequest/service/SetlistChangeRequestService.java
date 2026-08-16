@@ -2,6 +2,7 @@ package com.feple.feple_backend.festival.setlistchangerequest.service;
 
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.setlistchangerequest.entity.SetlistChangeRequest;
@@ -26,9 +27,11 @@ public class SetlistChangeRequestService {
     private final UserRepository userRepository;
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
+    private final BadWordValidator badWordValidator;
 
     @Transactional
     public void submit(SetlistChangeRequestCommand command) {
+        badWordValidator.validate(command.message());
         if (repository.existsByUserIdAndArtistFestivalIdAndStatus(
                 command.userId(), command.artistFestivalId(), SetlistChangeRequestStatus.PENDING)) {
             throw new ConflictException("이미 처리 대기 중인 변경 요청이 있습니다.");

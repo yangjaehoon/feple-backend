@@ -240,11 +240,10 @@ class SongServiceImplTest {
         assertThat(result.get(0).getArtistName()).isEqualTo("아이유");
         assertThat(result.get(0).getSongs()).hasSize(1);
         assertThat(result.get(0).getSongs().get(0).getTitle()).isEqualTo("좋은날");
-        assertThat(result.get(0).isPredicted()).isFalse();
     }
 
     @Test
-    void 페스티벌_셋리스트_미등록이면_아티스트_평소곡으로_대체하고_predicted_true() {
+    void 페스티벌_셋리스트_미등록이면_아티스트_평소곡으로_대체() {
         ArtistFestival af = mock(ArtistFestival.class);
         given(af.getId()).willReturn(5L);
         given(af.getArtistId()).willReturn(1L);
@@ -261,7 +260,6 @@ class SongServiceImplTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getSongs()).extracting(SongResponseDto::getTitle).containsExactly("평소곡");
-        assertThat(result.get(0).isPredicted()).isTrue();
     }
 
     @Test
@@ -291,7 +289,7 @@ class SongServiceImplTest {
     }
 
     @Test
-    void 페스티벌_셋리스트_미등록이고_아티스트_곡도_없으면_빈리스트에_predicted_false() {
+    void 페스티벌_셋리스트_미등록이고_아티스트_곡도_없으면_빈리스트() {
         ArtistFestival af = mock(ArtistFestival.class);
         given(af.getId()).willReturn(5L);
         given(af.getArtistId()).willReturn(1L);
@@ -302,7 +300,6 @@ class SongServiceImplTest {
         List<FestivalSetlistEntryDto> result = service.getFestivalSetlist(1L);
 
         assertThat(result.get(0).getSongs()).isEmpty();
-        assertThat(result.get(0).isPredicted()).isFalse();
     }
 
     // ── getSetlistCounts ──────────────────────────────────────────────────
