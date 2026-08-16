@@ -1701,6 +1701,20 @@ input[type=date]   { cursor: pointer; }
   .cb-input { width: 18px; height: 18px; }
 }
 
+/* ============================================================
+   신청 목록 테이블(아티스트/페스티벌 신청) 액션 열 반응형
+   (사이드바 재등장으로 폭이 줄어드는 900px 이하 — d67e278d와 동일한 구간)
+   ============================================================ */
+@media (max-width: 900px) {
+  /* 처리 버튼 3개가 한 줄을 차지해 테이블을 가로로 밀어내던 것을 세로 배치로 바꾸고,
+     확보된 폭은 "추가 정보" 열(고정 폭 없음)이 그대로 흡수하도록 나머지 열만 폭을 고정한다. */
+  .suggestion-list-table { table-layout: fixed; min-width: 0; }
+  .suggestion-list-table .col-suggestion-name { width: 110px; }
+  .suggestion-list-table td.cell-primary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .suggestion-list-table .col-suggestion-actions { width: 160px; }
+  .suggestion-list-table .cell-actions { flex-direction: column; align-items: stretch; }
+}
+
 /* ── 페스티벌 검색 콤보박스 ──────────────────────────────── */
 .fest-combobox {
   position: relative;
