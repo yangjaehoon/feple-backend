@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
@@ -25,11 +26,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class FestivalCertificationServiceImplTest {
@@ -41,12 +46,24 @@ class FestivalCertificationServiceImplTest {
     @Mock S3ObjectVerificationService s3ObjectVerificationService;
     @Mock FileStorageService fileStorageService;
     @Mock CertificationReviewLikeRepository reviewLikeRepository;
+    @Mock TransactionTemplate transactionTemplate;
 
     @InjectMocks FestivalCertificationServiceImpl certificationService;
 
     private static final Long USER_ID = 1L;
     private static final Long FESTIVAL_ID = 2L;
     private static final String VALID_PHOTO_KEY = "certifications/1/photo.jpg";
+
+    // submit()의 saveCertification()이 delete+save를 transactionTemplate으로 묶으므로,
+    // 그 안의 콜백이 실제로 실행되도록 목을 설정해야 리포지토리 호출을 검증할 수 있다
+    @BeforeEach
+    void setUpTransactionTemplate() {
+        lenient().doAnswer(invocation -> {
+            Consumer<TransactionStatus> action = invocation.getArgument(0);
+            action.accept(mock(TransactionStatus.class));
+            return null;
+        }).when(transactionTemplate).executeWithoutResult(any());
+    }
 
     // ── submit ───────────────────────────────────────────────────────
 

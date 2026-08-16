@@ -25,6 +25,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     private final S3ObjectVerificationService s3ObjectVerificationService;
     private final FileStorageService fileStorageService;
     private final CertificationReviewLikeRepository reviewLikeRepository;
+    private final TransactionTemplate transactionTemplate;
 
     // S3 검증(headObject)은 커넥션 점유 없이 수행; 이후 각 리포지토리 호출이
     // 자체 트랜잭션으로 DB에 반영한다 (ArtistGalleryPhotoService.register와 동일 패턴)
@@ -47,9 +49,7 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
 
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        replacePreviousRejectionIfAny(userId, festivalId);
-
-        FestivalCertification cert = saveCertification(user, festival, photoKey);
+        FestivalCertification cert = saveCertification(user, festival, userId, photoKey);
         return toDto(cert);
     }
 
@@ -62,20 +62,25 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
 
     // 거절된 인증은 재신청이 가능해야 한다 — (user_id, festival_id) 유니크 제약 때문에 기존
     // REJECTED 레코드를 지우지 않으면 재제출이 항상 409로 막힌다. PENDING/APPROVED는 계속 차단.
-    private void replacePreviousRejectionIfAny(Long userId, Long festivalId) {
-        certificationRepository.findByUserIdAndFestivalId(userId, festivalId).ifPresent(existing -> {
-            if (existing.getStatus() != CertificationStatus.REJECTED) {
-                throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
-            }
-            certificationRepository.delete(existing);
-            fileStorageService.deleteFileAfterCommit(existing.getPhotoKey());
-        });
-    }
+    // 기존 레코드 삭제와 새 레코드 저장은 하나의 트랜잭션으로 묶어야 한다 — 따로 커밋되면 삭제만
+    // 성공하고 저장이 실패했을 때 거절 이력이 조용히 사라질 수 있다. submit()이 NOT_SUPPORTED라
+    // self-invocation으로는 @Transactional이 걸리지 않으므로 TransactionTemplate을 직접 사용한다.
+    private FestivalCertification saveCertification(User user, Festival festival, Long userId, String photoKey) {
+        FestivalCertification existing =
+                certificationRepository.findByUserIdAndFestivalId(userId, festival.getId()).orElse(null);
+        if (existing != null && existing.getStatus() != CertificationStatus.REJECTED) {
+            throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
+        }
 
-    private FestivalCertification saveCertification(User user, Festival festival, String photoKey) {
         FestivalCertification cert = FestivalCertification.create(user, festival, photoKey);
         try {
-            certificationRepository.saveAndFlush(cert);
+            transactionTemplate.executeWithoutResult(status -> {
+                if (existing != null) {
+                    certificationRepository.delete(existing);
+                    fileStorageService.deleteFileAfterCommit(existing.getPhotoKey());
+                }
+                certificationRepository.saveAndFlush(cert);
+            });
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("이미 해당 페스티벌에 인증 신청을 했습니다.");
         }
