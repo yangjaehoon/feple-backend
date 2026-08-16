@@ -95,4 +95,31 @@ class TimetableSyncServiceTest {
 
         then(timetableRepository).shouldHaveNoInteractions();
     }
+
+    // ── syncArtistName ───────────────────────────────────────────────────
+
+    @Test
+    void 아티스트명_변경시_해당이름_항목_모두_동기화() {
+        TimetableEntry entry = TimetableEntry.builder()
+                .artistName("이전이름").festivalDate(LocalDate.of(2026, 8, 1)).build();
+        given(timetableRepository.findByFestivalIdAndArtistName(100L, "이전이름")).willReturn(List.of(entry));
+
+        service.syncArtistName(100L, "이전이름", "새이름");
+
+        assertThat(entry.getArtistName()).isEqualTo("새이름");
+    }
+
+    @Test
+    void 이전_이름이_없으면_동기화_안함() {
+        service.syncArtistName(100L, null, "새이름");
+
+        then(timetableRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void 이름이_기존값과_같으면_동기화_안함() {
+        service.syncArtistName(100L, "동일이름", "동일이름");
+
+        then(timetableRepository).shouldHaveNoInteractions();
+    }
 }

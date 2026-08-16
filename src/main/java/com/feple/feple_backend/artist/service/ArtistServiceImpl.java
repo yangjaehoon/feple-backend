@@ -18,6 +18,7 @@ import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.cache.EvictArtistCaches;
+import com.feple.feple_backend.timetable.service.TimetableSyncService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     private final FileStorageService fileStorageService;
     private final SongRepository songRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final TimetableSyncService timetableSyncService;
 
     private ArtistResponseDto toDto(Artist artist) {
         return ArtistResponseDto.from(artist, fileStorageService.buildUrl(artist.getProfileImageKey()));
@@ -220,11 +222,24 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @CacheEvict(value = "artistDetail", key = "#id")
     public void updateArtist(Long id, ArtistRequestDto dto) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, id, "아티스트");
+        String oldName = artist.getName();
         artist.update(new ArtistUpdateFields(dto.getName(), dto.getNameEn(), dto.getGenres(), parseAndValidateAliases(dto.getAliases())));
         if (dto.getProfileImageKey() != null) {
             replaceProfileImage(artist, dto.getProfileImageKey());
         }
+        syncArtistNameToTimetables(id, oldName, dto.getName());
         eventPublisher.publishEvent(new ArtistDirectoryChangedEvent());
+    }
+
+    // 타임테이블 항목은 artist(FK) 연결 없이 이름을 문자열로만 저장하는 경우가 있어,
+    // 개명해도 자동 반영되지 않는다 (자세한 이유는 TimetableSyncService.syncArtistName 참고).
+    // 이 아티스트가 참여 중인 모든 페스티벌의 타임테이블에 새 이름을 동기화한다.
+    private void syncArtistNameToTimetables(Long artistId, String oldName, String newName) {
+        if (oldName.equals(newName)) return;
+        artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(artistId).stream()
+                .map(ArtistFestival::getFestivalId)
+                .distinct()
+                .forEach(festivalId -> timetableSyncService.syncArtistName(festivalId, oldName, newName));
     }
 
     // 기존 프로필 이미지를 새 이미지로 교체하고, 교체 전 이미지가 있었다면 커밋 후 삭제한다.

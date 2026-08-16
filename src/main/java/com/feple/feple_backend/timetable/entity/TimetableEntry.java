@@ -98,6 +98,13 @@ public class TimetableEntry {
         this.festivalDate = newDate;
     }
 
+    // artist(FK)가 연결되지 않은 항목은 이름을 저장된 문자열로만 들고 있어, 아티스트가
+    // 개명해도 자동 반영되지 않는다 — TimetableSyncService가 개명 시 이 문자열을
+    // 직접 갱신하기 위한 메서드.
+    public void renameArtist(String newName) {
+        this.artistName = newName;
+    }
+
     public void update(TimetableEntryFields fields) {
         this.artistName   = fields.artistName();
         this.stageName    = fields.stageName();

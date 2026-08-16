@@ -13,8 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * ArtistFestival(아티스트 참여 정보)의 스테이지·날짜 변경을 타임테이블에 반영하는, 타임테이블 도메인 측 API.
- * ArtistFestivalService가 TimetableRepository/StageRepository를 직접 건드리지 않고 이 클래스를 통하도록 한다.
+ * ArtistFestival(아티스트 참여 정보)의 스테이지·날짜·아티스트명 변경을 타임테이블에 반영하는,
+ * 타임테이블 도메인 측 API. ArtistFestivalService/ArtistServiceImpl이 TimetableRepository/
+ * StageRepository를 직접 건드리지 않고 이 클래스를 통하도록 한다.
  * TimetableService에 두지 않은 이유: TimetableService가 이미 ArtistFestivalService를 의존하고 있어
  * (반대 방향 동기화 — broadcastLineupUpdate) 여기 메서드를 TimetableService에 추가하면 순환 의존이 생긴다.
  */
@@ -49,5 +50,17 @@ public class TimetableSyncService {
         } else {
             entries.forEach(e -> e.updateDate(newDate));
         }
+    }
+
+    // 타임테이블 항목은 artist(FK)가 연결돼 있지 않으면 아티스트명을 저장 시점 문자열로만
+    // 갖고 있어, 관리자가 아티스트 이름을 바꿔도 자동 반영되지 않는다 — 참여 아티스트 카드가
+    // ArtistFestival(항상 최신 이름)과 타임테이블(문자열 매칭)을 이름으로 매칭하는 과정에서
+    // 참여일자가 조용히 사라지는 문제로 이어진다. 개명 시 festivalId별로 이 문자열을 갱신한다.
+    @Transactional
+    @CacheEvict(value = "timetable", key = "#festivalId")
+    public void syncArtistName(Long festivalId, String oldName, String newName) {
+        if (oldName == null || oldName.equals(newName)) return;
+        timetableRepository.findByFestivalIdAndArtistName(festivalId, oldName)
+                .forEach(entry -> entry.renameArtist(newName));
     }
 }

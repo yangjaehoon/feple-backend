@@ -23,6 +23,7 @@ import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.timetable.service.TimetableSyncService;
 import com.feple.feple_backend.user.entity.User;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -49,6 +50,7 @@ class ArtistServiceImplTest {
     @Mock FileStorageService fileStorageService;
     @Mock SongRepository songRepository;
     @Mock ApplicationEventPublisher eventPublisher;
+    @Mock TimetableSyncService timetableSyncService;
 
     @InjectMocks ArtistServiceImpl service;
 
@@ -275,6 +277,33 @@ class ArtistServiceImplTest {
         assertThat(a.getName()).isEqualTo("변경됨");
         verify(fileStorageService, never()).deleteFileAfterCommit(any());
         verify(eventPublisher).publishEvent(any(ArtistDirectoryChangedEvent.class));
+    }
+
+    @Test
+    void 이름_변경시_참여중인_모든_페스티벌_타임테이블에_동기화() {
+        Artist a = artist(1L, "이전이름");
+        given(artistRepository.findById(1L)).willReturn(Optional.of(a));
+        List<ArtistFestival> participations = List.of(
+                artistFestival(a, festival(10L)),
+                artistFestival(a, festival(20L)));
+        given(artistFestivalRepository.findByArtistIdOrderByFestivalStartDateAsc(1L)).willReturn(participations);
+        ArtistRequestDto dto = ArtistRequestDto.builder().name("새이름").genres(List.of(MusicGenre.IDOL)).build();
+
+        service.updateArtist(1L, dto);
+
+        verify(timetableSyncService).syncArtistName(10L, "이전이름", "새이름");
+        verify(timetableSyncService).syncArtistName(20L, "이전이름", "새이름");
+    }
+
+    @Test
+    void 이름_변경없으면_타임테이블_동기화_생략() {
+        Artist a = artist(1L, "동일이름");
+        given(artistRepository.findById(1L)).willReturn(Optional.of(a));
+        ArtistRequestDto dto = ArtistRequestDto.builder().name("동일이름").genres(List.of(MusicGenre.IDOL)).build();
+
+        service.updateArtist(1L, dto);
+
+        verify(artistFestivalRepository, never()).findByArtistIdOrderByFestivalStartDateAsc(any());
     }
 
     @Test
