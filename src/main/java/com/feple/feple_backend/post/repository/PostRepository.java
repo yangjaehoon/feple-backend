@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -181,11 +182,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllWithAssociationsByIdIn(@Param("ids") List<Long> ids);
 
     default Page<Post> searchPostsByTitleFullText(String kw, Pageable pageable) {
-        return reorderByFullTextMatch(searchTitleIds(kw, pageable), pageable);
+        return reorderByFullTextMatch(searchTitleIds(kw, stripSort(pageable)), pageable);
     }
 
     default Page<Post> searchPostsByBoardTypeAndTitleFullText(BoardType boardType, String kw, Pageable pageable) {
-        return reorderByFullTextMatch(searchTitleIdsByBoardType(boardType.name(), kw, pageable), pageable);
+        return reorderByFullTextMatch(searchTitleIdsByBoardType(boardType.name(), kw, stripSort(pageable)), pageable);
+    }
+
+    // native 쿼리(searchTitleIds/searchTitleIdsByBoardType)는 정렬이 이미 SQL의
+    // ORDER BY created_at DESC로 고정돼 있다. Pageable에 property 기반 Sort가 실려
+    // 그대로 전달되면 Spring이 이를 컬럼명으로 오인해 붙이면서 "Unknown column" SQL
+    // 에러가 날 수 있다(관리자 아티스트 목록 findByGenre에서 실제로 발생했던 버그와 동일
+    // 패턴) — 페이지 번호/크기만 남기고 Sort는 native 쿼리에 도달하기 전에 제거한다.
+    private static Pageable stripSort(Pageable pageable) {
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
     }
 
     private Page<Post> reorderByFullTextMatch(Page<Long> idsPage, Pageable pageable) {

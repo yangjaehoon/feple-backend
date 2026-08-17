@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -113,6 +114,20 @@ class FullTextSearchIntegrationTest {
         var result = postRepository.searchTitleIdsByBoardType("FREE", "여름밤페스티벌", PageRequest.of(0, 10));
 
         assertThat(result.getContent()).contains(post.getId());
+    }
+
+    // property 기반 Sort가 실린 Pageable로 호출해도 native 쿼리에 그대로 전달되지
+    // 않아야 한다 — 그대로 전달되면 관리자 아티스트 목록에서 났던 것과 같은
+    // "Unknown column" SQL 에러가 난다.
+    @Test
+    void 정렬조건이_실린_Pageable로_풀텍스트_검색해도_에러없이_동작한다() {
+        var pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "likeCount"));
+
+        var byTitle = postRepository.searchPostsByTitleFullText("여름밤페스티벌", pageable);
+        var byBoardType = postRepository.searchPostsByBoardTypeAndTitleFullText(BoardType.FREE, "여름밤페스티벌", pageable);
+
+        assertThat(byTitle.getContent()).extracting(Post::getId).contains(post.getId());
+        assertThat(byBoardType.getContent()).extracting(Post::getId).contains(post.getId());
     }
 
     @Test
