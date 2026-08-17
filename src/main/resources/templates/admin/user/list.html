@@ -67,7 +67,6 @@
                             <input type="checkbox" id="select-all" title="전체 선택" class="cb-input"/>
                         </th>
                         <th>회원</th>
-                        <th class="col-w55 td-center">역할</th>
                         <th class="col-w70 td-center">게시글</th>
                         <th class="col-w60 td-center">댓글</th>
                         <th class="col-w70 td-center">신고</th>
@@ -99,11 +98,6 @@
                                     <div class="cell-secondary" th:text="${user.email}"></div>
                                 </div>
                             </div>
-                        </td>
-                        <!-- 역할 -->
-                        <td class="td-center">
-                            <span th:if="${user.admin}"  class="badge badge-admin">관리자</span>
-                            <span th:if="${user.artist}" class="badge badge-artist">아티스트</span>
                         </td>
                         <!-- 게시글 수 -->
                         <td class="td-center td-sub"
@@ -144,7 +138,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr th:if="${users.totalElements == 0}" th:replace="~{admin/fragments :: emptyRowSearch(${filter == 'banned' ? 10 : 9}, ${keyword}, '가입한 회원이 없습니다.')}"></tr>
+                    <tr th:if="${users.totalElements == 0}" th:replace="~{admin/fragments :: emptyRowSearch(${filter == 'banned' ? 9 : 8}, ${keyword}, '가입한 회원이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>
