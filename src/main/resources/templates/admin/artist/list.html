@@ -141,7 +141,7 @@
                 <table>
                     <thead>
                     <tr>
-                        <th>
+                        <th class="col-w220">
                             아티스트
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'name' ? 'name_desc' : 'name'}, genre=${genre != null ? genre.name() : null})}"
                                th:text="${sort == 'name'} ? '↑' : (${sort == 'name_desc'} ? '↓' : '↕')"
