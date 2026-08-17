@@ -240,7 +240,7 @@ tbody tr:hover { background: var(--primary-lt); }
 tbody td { padding: 15px 20px; vertical-align: middle; color: var(--text-2); }
 tbody td a { color: var(--primary-dk); text-decoration: none; font-weight: 600; }
 tbody td a:hover { text-decoration: underline; color: var(--primary); }
-.td-id { font-size: 12px; color: var(--muted); font-family: 'SF Mono','Fira Code',monospace; }
+.td-id { font-size: 12px; color: var(--muted); font-family: 'SF Mono','Fira Code',monospace; padding-left: 10px; padding-right: 10px; }
 .empty-row td {
   text-align: center; color: var(--muted);
   padding: 52px; font-size: 14px; background: var(--bg-2);
@@ -1194,6 +1194,10 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .cell-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* 체크박스/ID처럼 내용이 짧은 열은 기본 좌우 20px 패딩이 불필요하게 넓어
+   모바일에서 다른 열을 밀어낸다 — 절반 이하로 축소 */
+.cell-tight { padding-left: 10px; padding-right: 10px; }
 
 /* ── 테이블 컬럼 너비 ── */
 .col-w48  { width: 48px; }

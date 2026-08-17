@@ -63,7 +63,7 @@
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w36">
+                        <th class="col-w36 cell-tight">
                             <input type="checkbox" id="select-all" title="전체 선택" class="cb-input"/>
                         </th>
                         <th>회원</th>
@@ -78,7 +78,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="user : ${users.content}">
-                        <td>
+                        <td class="cell-tight">
                             <input type="checkbox" name="ids" th:value="${user.id}"
                                    form="bulk-form" class="row-check cb-input"/>
                         </td>

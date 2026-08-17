@@ -67,11 +67,11 @@
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w36">
+                        <th class="col-w36 cell-tight">
                             <input th:if="${status == 'PENDING' or (status == '' or status == null)}"
                                    type="checkbox" id="checkAll" class="cb-input" title="전체 선택" onchange="toggleAll(this)"/>
                         </th>
-                        <th class="col-w48">ID</th>
+                        <th class="col-w48 cell-tight">ID</th>
                         <th>신청자</th>
                         <th class="col-w200">페스티벌</th>
                         <th class="col-w80">상태</th>
@@ -82,7 +82,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="cert : ${certifications.content}">
-                        <td>
+                        <td class="cell-tight">
                             <input th:if="${cert.pending}" type="checkbox" class="cert-check cb-input"
                                    th:value="${cert.id}" onchange="updateBulkToolbar()"/>
                             <span th:unless="${cert.pending}"></span>

@@ -110,10 +110,10 @@
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w36">
+                        <th class="col-w36 cell-tight">
                             <input type="checkbox" id="select-all" title="전체 선택" class="cb-input"/>
                         </th>
-                        <th class="col-w48">ID</th>
+                        <th class="col-w48 cell-tight">ID</th>
                         <th>게시글</th>
                         <th class="col-w140">게시판</th>
                         <th class="col-w80">반응</th>
@@ -122,7 +122,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="post : ${posts.content}">
-                        <td>
+                        <td class="cell-tight">
                             <input type="checkbox" name="ids" th:value="${post.id}"
                                    form="bulk-form" class="row-check cb-input"/>
                         </td>

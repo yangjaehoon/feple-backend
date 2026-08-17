@@ -70,8 +70,8 @@
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w48"><input type="checkbox" id="select-all" class="cb-input"/></th>
-                        <th class="col-w48">ID</th>
+                        <th class="col-w48 cell-tight"><input type="checkbox" id="select-all" class="cb-input"/></th>
+                        <th class="col-w48 cell-tight">ID</th>
                         <th>신고된 게시글</th>
                         <th class="col-w90">신고 사유</th>
                         <th class="col-w100">신고자</th>
@@ -82,7 +82,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
-                        <td><input th:if="${report.pending}" type="checkbox" class="row-check cb-input" th:value="${report.id}"/></td>
+                        <td class="cell-tight"><input th:if="${report.pending}" type="checkbox" class="row-check cb-input" th:value="${report.id}"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <a th:href="@{/admin/posts/{id}(id=${report.postId})}"
@@ -119,8 +119,8 @@
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w48"><input type="checkbox" id="select-all" class="cb-input"/></th>
-                        <th class="col-w48">ID</th>
+                        <th class="col-w48 cell-tight"><input type="checkbox" id="select-all" class="cb-input"/></th>
+                        <th class="col-w48 cell-tight">ID</th>
                         <th>신고된 댓글</th>
                         <th class="col-w90">신고 사유</th>
                         <th class="col-w100">신고자</th>
@@ -131,7 +131,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
-                        <td><input th:if="${report.pending}" type="checkbox" class="row-check cb-input" th:value="${report.id}"/></td>
+                        <td class="cell-tight"><input th:if="${report.pending}" type="checkbox" class="row-check cb-input" th:value="${report.id}"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <div class="report-content-cell" th:text="${report.commentContent}"></div>
@@ -170,8 +170,8 @@
                 <table>
                     <thead>
                     <tr>
-                        <th class="col-w48"><input type="checkbox" id="select-all" class="cb-input"/></th>
-                        <th class="col-w48">ID</th>
+                        <th class="col-w48 cell-tight"><input type="checkbox" id="select-all" class="cb-input"/></th>
+                        <th class="col-w48 cell-tight">ID</th>
                         <th>신고된 사진</th>
                         <th class="col-w90">신고 사유</th>
                         <th class="col-w100">신고자</th>
@@ -182,7 +182,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="report : ${reports.content}">
-                        <td><input th:if="${report.pending}" type="checkbox" class="row-check cb-input" th:value="${report.id}"/></td>
+                        <td class="cell-tight"><input th:if="${report.pending}" type="checkbox" class="row-check cb-input" th:value="${report.id}"/></td>
                         <td class="td-id" th:text="${report.id}"></td>
                         <td>
                             <div class="report-photo-preview-wrap">
