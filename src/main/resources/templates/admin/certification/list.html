@@ -68,7 +68,8 @@
                     <thead>
                     <tr>
                         <th class="col-w36">
-                            <input type="checkbox" id="checkAll" class="cb-input" title="전체 선택" onchange="toggleAll(this)"/>
+                            <input th:if="${status == 'PENDING' or (status == '' or status == null)}"
+                                   type="checkbox" id="checkAll" class="cb-input" title="전체 선택" onchange="toggleAll(this)"/>
                         </th>
                         <th class="col-w48">ID</th>
                         <th>신청자</th>
