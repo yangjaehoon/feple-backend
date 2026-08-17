@@ -226,9 +226,9 @@ class ArtistServiceImplTest {
     }
 
     @Test
-    void 관리자_목록_기본_장르지정시_findByGenreName_사용() {
+    void 관리자_목록_기본_장르지정시_findByGenre_사용() {
         Page<Artist> page = new PageImpl<>(List.of(artist(1L, "A")));
-        given(artistRepository.findByGenreName(eq("IDOL"), any(Pageable.class))).willReturn(page);
+        given(artistRepository.findByGenre(eq(MusicGenre.IDOL), any(Pageable.class))).willReturn(page);
         given(songRepository.countGroupedByArtistIds(anyList())).willReturn(List.of());
 
         Page<ArtistResponseDto> result = service.getAdminArtistList(new ArtistAdminListQuery(null, null, MusicGenre.IDOL, 0));

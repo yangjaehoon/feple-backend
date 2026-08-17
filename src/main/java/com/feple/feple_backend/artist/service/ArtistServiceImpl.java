@@ -171,7 +171,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     private Page<ArtistResponseDto> getAdminArtistListFromDb(ArtistAdminListQuery query) {
         PageRequest pageable = PageRequest.of(query.page(), ADMIN_PAGE_SIZE, AdminArtistSort.from(query.sort()).dbSort());
         Page<Artist> artistPage = (query.genre() != null)
-                ? artistRepository.findByGenreName(query.genre().name(), pageable)
+                ? artistRepository.findByGenre(query.genre(), pageable)
                 : artistRepository.findAllByDeletedAtIsNull(pageable);
         List<Long> artistIds = artistPage.getContent().stream().map(Artist::getId).toList();
         Map<Long, Integer> songCountMap = buildSongCountMapForIds(artistIds);

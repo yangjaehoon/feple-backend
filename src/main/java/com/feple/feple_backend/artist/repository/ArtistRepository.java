@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.repository;
 
 import com.feple.feple_backend.artist.entity.Artist;
+import com.feple.feple_backend.global.MusicGenre;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,10 +40,11 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     @Query(value = "UPDATE artist SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementFollowerCount(@Param("id") Long id);
 
-    @Query(value = "SELECT DISTINCT a.* FROM artist a JOIN artist_genres ag ON ag.artist_id = a.id WHERE ag.genres = :genreName AND a.deleted_at IS NULL",
-           countQuery = "SELECT COUNT(DISTINCT a.id) FROM artist a JOIN artist_genres ag ON ag.artist_id = a.id WHERE ag.genres = :genreName AND a.deleted_at IS NULL",
-           nativeQuery = true)
-    Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
+    // 네이티브 쿼리로 두면 Pageable의 Sort 속성명(followerCount, weeklyScore)이 그대로
+    // ORDER BY 컬럼명으로 붙어 "Unknown column" 에러가 난다 (실제 컬럼은 snake_case).
+    // JPQL로 두면 Sort가 엔티티 속성명으로 해석되므로 관리자 목록의 모든 정렬 옵션과 호환된다.
+    @Query("SELECT DISTINCT a FROM Artist a JOIN a.genres g WHERE g = :genre AND a.deletedAt IS NULL")
+    Page<Artist> findByGenre(@Param("genre") MusicGenre genre, Pageable pageable);
 
     // 아티스트 이름/영문명/별명 검색 (일반 검색 + 관리자 목록 검색 + OCR 자동매칭)
     // 접두사 일치(예: "han" → "Han Yohan")를 중간 일치(예: "han" → "Nochang" 안의 "han")보다
