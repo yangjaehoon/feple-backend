@@ -148,7 +148,7 @@
                                class="sort-btn"
                                th:classappend="${sort == 'name' or sort == 'name_desc'} ? ' active'"></a>
                         </th>
-                        <th class="col-w200">영어 이름</th>
+                        <th class="col-w140">영어 이름</th>
                         <th class="col-w80">
                             팔로워
                             <a th:href="@{/admin/artists(keyword=${keyword}, sort=${sort == 'followers' ? 'followers_asc' : 'followers'}, genre=${genre != null ? genre.name() : null})}"

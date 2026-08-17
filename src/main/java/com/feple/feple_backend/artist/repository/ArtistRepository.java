@@ -45,12 +45,17 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     Page<Artist> findByGenreName(@Param("genreName") String genreName, Pageable pageable);
 
     // 아티스트 이름/영문명/별명 검색 (일반 검색 + 관리자 목록 검색 + OCR 자동매칭)
+    // 접두사 일치(예: "han" → "Han Yohan")를 중간 일치(예: "han" → "Nochang" 안의 "han")보다
+    // 우선 정렬 — 안 그러면 관련 없는 중간 일치가 가나다순 정렬에서 앞서 나와, 검색/자동완성의
+    // limit(MAX_RESULTS/MAX_SUGGESTIONS)에 정작 찾던 접두사 일치 결과가 잘려나갈 수 있다.
     @Query("SELECT DISTINCT a FROM Artist a LEFT JOIN a.aliases alias " +
            "WHERE a.deletedAt IS NULL AND (" +
            "LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
            "OR LOWER(a.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!' " +
            "OR LOWER(alias) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!') " +
-           "ORDER BY a.name ASC")
+           "ORDER BY CASE WHEN LOWER(a.name) LIKE LOWER(CONCAT(:keyword, '%')) ESCAPE '!' " +
+           "OR LOWER(a.nameEn) LIKE LOWER(CONCAT(:keyword, '%')) ESCAPE '!' " +
+           "THEN 0 ELSE 1 END, a.name ASC")
     java.util.List<Artist> findByNameOrNameEnContainingIgnoreCase(@Param("keyword") String keyword);
 
     // 라인업 OCR 자동매칭 배치 조회용 — 이름 하나마다 개별 쿼리하는 N+1을 피하기 위해
