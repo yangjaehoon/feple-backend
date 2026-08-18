@@ -38,5 +38,8 @@ public interface UserReportRepository extends BaseReportRepository<UserReport> {
     @Query("SELECT ur.target.id, COUNT(ur) FROM UserReport ur WHERE ur.target.id IN :userIds GROUP BY ur.target.id")
     List<Object[]> countByTargetIds(@Param("userIds") Collection<Long> userIds);
 
-    List<UserReport> findByTargetId(Long targetId);
+    // target이 @ManyToOne이라 파생 쿼리(findByTargetId)는 Hibernate 6에서 시작 시
+    // PathElementException 발생 — @Query로 명시해야 함(CLAUDE.md 문서화된 패턴).
+    @Query("SELECT ur FROM UserReport ur WHERE ur.target.id = :targetId")
+    List<UserReport> findByTargetId(@Param("targetId") Long targetId);
 }

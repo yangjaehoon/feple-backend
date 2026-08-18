@@ -146,14 +146,18 @@ class UserControllerTest {
     @Test
     void 사용자_삭제_성공() throws Exception {
         mockMvc.perform(delete("/users/1")
-                        .with(AuthTestHelper.userAuth(1L)))
+                        .with(AuthTestHelper.userAuth(1L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"RARELY_USED\"}"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void 사용자_삭제_본인_아니면_403() throws Exception {
         mockMvcWithGlobalHandler.perform(delete("/users/1")
-                        .with(AuthTestHelper.userAuth(2L)))
+                        .with(AuthTestHelper.userAuth(2L))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"RARELY_USED\"}"))
                 .andExpect(status().isForbidden());
     }
 
