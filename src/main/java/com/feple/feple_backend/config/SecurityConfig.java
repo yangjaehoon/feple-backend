@@ -172,7 +172,7 @@ public class SecurityConfig {
                 // /posts/my/** 전체 및 presigned URL은 인증 필수
                 .requestMatchers(HttpMethod.GET, "/posts/my/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
-                    "/posts/**", "/comments/**").permitAll()
+                    "/posts/**", "/comments/**", "/notices/**").permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/certifications/festival/*/rating",
                     "/certifications/festival/*/reviews").permitAll()

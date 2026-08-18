@@ -52,6 +52,11 @@ public enum AdminAction {
 
     COMMENT_DELETE("댓글 삭제"),
 
+    NOTICE_CREATE("공지사항 등록"),
+    NOTICE_UPDATE("공지사항 수정"),
+    NOTICE_DELETE("공지사항 삭제"),
+    NOTICE_PIN_TOGGLE("공지사항 고정 토글"),
+
     REPORT_DISMISS("신고 기각"),
     REPORT_DELETE("신고 콘텐츠 삭제"),
     REPORT_BULK_DISMISS("일괄 신고 기각"),

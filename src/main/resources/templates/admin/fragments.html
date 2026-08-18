@@ -69,6 +69,11 @@
            th:classappend="${active == 'posts'} ? ' active'">
             <span class="sb-icon">📝</span> 게시글
         </a>
+        <a sec:authorize="hasAuthority('PERM_NOTICES')"
+           th:href="@{/admin/notices}" class="sb-link"
+           th:classappend="${active == 'notices'} ? ' active'">
+            <span class="sb-icon">📢</span> 공지사항
+        </a>
         <a sec:authorize="hasAuthority('PERM_CRAWL')"
            th:href="@{/admin/crawl}" class="sb-link"
            th:classappend="${active == 'crawl'} ? ' active'">

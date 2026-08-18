@@ -11,6 +11,7 @@ public enum AdminPermission {
     FESTIVALS("페스티벌"),
     ARTISTS("아티스트"),
     POSTS("게시글"),
+    NOTICES("공지사항"),
     USERS("회원 관리"),
     CERTIFICATIONS("인증 관리"),
     REPORTS("신고 관리"),

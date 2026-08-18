@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('공지사항 관리')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('notices')}"></div>
+<div class="main-content">
+    <div class="page-header">
+        <div th:replace="~{admin/fragments :: pageHeaderInner('공지사항 관리', '공지사항')}"></div>
+        <div class="page-actions">
+            <a class="btn btn-primary" th:href="@{/admin/notices/new}">+ 공지사항 작성</a>
+        </div>
+    </div>
+    <div class="content-area">
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48 cell-tight">ID</th>
+                        <th class="col-w80">고정</th>
+                        <th>제목</th>
+                        <th class="col-w140">작성일</th>
+                        <th class="col-w160">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="notice : ${notices.content}">
+                        <td class="td-id" th:text="${notice.id}"></td>
+                        <td class="cell-tight">
+                            <form th:action="@{/admin/notices/{id}/pin(id=${notice.id})}" method="post">
+                                <input type="hidden" name="page" th:value="${notices.number}"/>
+                                <button type="submit"
+                                        th:class="${notice.pinned} ? 'btn btn-warning btn-sm' : 'btn btn-secondary btn-sm'"
+                                        th:text="${notice.pinned} ? '📌 고정됨' : '고정'"></button>
+                            </form>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/notices/{id}/edit(id=${notice.id}, page=${notices.number})}"
+                               th:text="${notice.title}"
+                               class="table-title-link"></a>
+                        </td>
+                        <td class="cell-secondary" th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                        <td>
+                            <a th:href="@{/admin/notices/{id}/edit(id=${notice.id}, page=${notices.number})}"
+                               class="btn btn-secondary btn-sm">수정</a>
+                            <form th:action="@{/admin/notices/{id}/delete(id=${notice.id})}" method="post"
+                                  class="form-inline">
+                                <input type="hidden" name="page" th:value="${notices.number}"/>
+                                <button type="submit"
+                                        class="btn btn-ghost-danger btn-sm"
+                                        data-confirm="이 공지사항을 삭제할까요?">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${notices.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(5, '등록된 공지사항이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:insert="~{admin/fragments :: pagination(${notices}, '/admin/notices', null)}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
