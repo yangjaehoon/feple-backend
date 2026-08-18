@@ -39,6 +39,12 @@
                     사진 신고
                     <span th:if="${photoPendingCount > 0}" class="card-count" th:text="${photoPendingCount}"></span>
                 </a>
+                <a th:href="@{/admin/reports(type='user', status=${status}, page=0)}"
+                   th:classappend="${type == 'user'} ? ' active' : ''"
+                   class="type-tab">
+                    사용자 신고
+                    <span th:if="${userPendingCount > 0}" class="card-count" th:text="${userPendingCount}"></span>
+                </a>
             </div>
 
             <!-- 상태 탭 + CSV 내보내기 -->
@@ -216,6 +222,50 @@
                         <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '사진 삭제', '사진을 삭제하고 신고를 처리할까요?')}"></td>
                     </tr>
                     <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '사진 신고 내역이 없습니다.')}"></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <!-- 사용자 신고 테이블 -->
+            <div th:if="${type == 'user'}">
+                <form th:replace="~{admin/fragments :: reportBulkForm(${type}, ${reports.number}, ${status}, ${keyword})}"></form>
+                <div th:replace="~{admin/fragments :: reportBulkToolbar('일괄 회원 탈퇴 처리', '사용자')}"></div>
+                <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-w48 cell-tight"><input type="checkbox" id="select-all" class="cb-input"/></th>
+                        <th class="col-w48 cell-tight">ID</th>
+                        <th>신고된 사용자</th>
+                        <th class="col-w90">신고 사유</th>
+                        <th class="col-w100">신고자</th>
+                        <th class="col-w90">일시</th>
+                        <th class="col-w80">상태</th>
+                        <th class="col-w200">처리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td class="cell-tight"><input th:if="${report.pending}" type="checkbox" class="row-check cb-input" th:value="${report.id}"/></td>
+                        <td class="td-id" th:text="${report.id}"></td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${report.targetId})}"
+                               th:text="${report.targetNickname}"
+                               class="td-link"></a>
+                            <span th:replace="~{admin/fragments :: reportCountBadge(${authorReportCounts}, ${report.targetId})}"></span>
+                            <div th:if="${report.detail != null and !#strings.isEmpty(report.detail)}"
+                                 class="report-detail"
+                                 th:text="${report.detail}"></div>
+                        </td>
+                        <td><span th:replace="~{admin/fragments :: reportReasonBadge(${report.reason})}"></span></td>
+                        <td class="cell-secondary" th:text="${report.reporterNickname}"></td>
+                        <td class="cell-secondary"
+                            th:text="${#temporals.format(report.createdAt, 'MM-dd HH:mm')}"></td>
+                        <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
+                        <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '회원 탈퇴 처리', '이 사용자를 탈퇴 처리하고 신고를 처리할까요?')}"></td>
+                    </tr>
+                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '사용자 신고 내역이 없습니다.')}"></tr>
                     </tbody>
                 </table>
                 </div>
