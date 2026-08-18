@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -96,16 +98,32 @@ public class UserReportService implements ReportAdminService<UserReport> {
     // "삭제" 액션 = 신고된 유저 계정을 관리자 권한으로 탈퇴 처리(기존 UserAdminService
     // 재사용 — 별도 정지 기간을 새로 발명하지 않음). 같은 유저를 대상으로 한 다른
     // 대기 신고도 함께 처리 완료로 갱신한다.
+    //
+    // 이미 처리된(비대기) 신고면 여기서 멈춘다 — 같은 유저를 대상으로 한 신고 여러
+    // 건을 한꺼번에 벌크 삭제하면, 첫 건 처리 때 이미 나머지 신고들도 USER_DELETED로
+    // 정리되므로, 가드가 없으면 이후 항목들이 adminDeleteUser를 다시 호출해 이미
+    // 탈퇴 처리된 유저를 또 처리하게 된다(User는 Post/Comment와 달리 소프트 삭제된
+    // 행도 findById로 그대로 조회되어 예외 없이 조용히 재실행됨 — deletedAt이
+    // 재처리 시각으로 덮어써짐).
     @Override
     @EvictAdminReportCaches
     @Transactional
     public void deleteContentAndResolve(Long reportId) {
         UserReport report = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고");
+        if (!report.isPending()) {
+            log.info("[UserReport] 이미 처리된 신고라 건너뜀 reportId={}", reportId);
+            return;
+        }
         Long targetId = report.getTargetId();
         userAdminService.adminDeleteUser(targetId);
-        reportRepository.findByTargetId(targetId).stream()
+        List<UserReport> resolved = reportRepository.findByTargetId(targetId).stream()
                 .filter(UserReport::isPending)
-                .forEach(r -> r.resolve(ReportStatus.USER_DELETED));
+                .toList();
+        resolved.forEach(r -> r.resolve(ReportStatus.USER_DELETED));
+        if (resolved.size() > 1) {
+            log.info("[UserReport] 유저 탈퇴 처리로 신고 {}건 함께 정리됨 targetId={} triggeredBy={}",
+                    resolved.size(), targetId, reportId);
+        }
     }
 
     @EvictAdminReportCaches

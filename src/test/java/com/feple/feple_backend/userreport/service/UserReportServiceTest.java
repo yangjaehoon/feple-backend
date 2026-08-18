@@ -176,6 +176,26 @@ class UserReportServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
+    // 같은 유저를 대상으로 한 신고 2건을 벌크 삭제(순차 deleteContentAndResolve 호출)하면
+    // 첫 건 처리 때 두 신고 모두 USER_DELETED로 정리되므로, 두 번째 처리 시점엔 이미
+    // isPending()이 false라 adminDeleteUser가 다시 호출되면 안 된다.
+    @Test
+    void 같은_유저_대상_신고_두건_순차처리시_탈퇴처리는_한번만_실행() {
+        User target = user(10L);
+        UserReport r1 = report(1L, target, user(20L));
+        UserReport r2 = report(2L, target, user(21L));
+        given(reportRepository.findById(1L)).willReturn(Optional.of(r1));
+        given(reportRepository.findById(2L)).willReturn(Optional.of(r2));
+        given(reportRepository.findByTargetId(10L)).willReturn(List.of(r1, r2));
+
+        service.deleteContentAndResolve(1L);
+        service.deleteContentAndResolve(2L);
+
+        verify(userAdminService).adminDeleteUser(10L);
+        assertThat(r1.isPending()).isFalse();
+        assertThat(r2.isPending()).isFalse();
+    }
+
     // ── dismissReport / bulkDismiss ──────────────────────────────────────
 
     @Test
