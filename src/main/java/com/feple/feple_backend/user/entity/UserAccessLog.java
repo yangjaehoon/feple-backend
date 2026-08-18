@@ -35,11 +35,4 @@ public class UserAccessLog {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    public static UserAccessLog of(Long userId, LocalDate accessDate) {
-        UserAccessLog entry = new UserAccessLog();
-        entry.userId = userId;
-        entry.accessDate = accessDate;
-        return entry;
-    }
 }
