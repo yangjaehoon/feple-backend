@@ -10,6 +10,7 @@ import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -108,9 +109,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(@NonNull Long id) {
+    public void deleteUser(@NonNull Long id, WithdrawalReason reason, String detail) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
-        cascadeDeleteService.delete(user);
+        cascadeDeleteService.delete(user, reason, detail);
     }
 
     @Override

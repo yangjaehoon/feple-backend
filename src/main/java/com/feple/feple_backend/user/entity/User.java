@@ -74,6 +74,13 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "withdrawal_reason", length = 30)
+    private WithdrawalReason withdrawalReason;
+
+    @Column(name = "withdrawal_detail", length = 300)
+    private String withdrawalDetail;
+
     @Column(nullable = false)
     @Builder.Default
     private int point = 0;
@@ -134,13 +141,15 @@ public class User {
         return UserLevel.of(this.point);
     }
 
-    public void softDelete() {
+    public void softDelete(WithdrawalReason reason, String detail) {
         this.deletedAt = LocalDateTime.now();
         this.nickname = "(탈퇴한 사용자)";
         // oauthId는 유지 — 동일 계정으로 재가입 시 차단하기 위함
         this.email = null;
         this.bio = null;
         this.profileImageUrl = null;
+        this.withdrawalReason = reason;
+        this.withdrawalDetail = (detail != null && !detail.isBlank()) ? detail.strip() : null;
     }
 
 }

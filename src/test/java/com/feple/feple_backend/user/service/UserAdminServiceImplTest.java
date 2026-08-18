@@ -128,7 +128,7 @@ class UserAdminServiceImplTest {
         String nickname = userAdminService.adminDeleteUser(1L);
 
         assertThat(nickname).isEqualTo("삭제유저");
-        verify(cascadeDeleteService).delete(user);
+        verify(cascadeDeleteService).delete(user, null, null);
     }
 
     @Test
@@ -139,8 +139,8 @@ class UserAdminServiceImplTest {
 
         userAdminService.bulkDeleteUsers(List.of(1L, 2L));
 
-        verify(cascadeDeleteService).delete(u1);
-        verify(cascadeDeleteService).delete(u2);
+        verify(cascadeDeleteService).delete(u1, null, null);
+        verify(cascadeDeleteService).delete(u2, null, null);
     }
 
     @Test
@@ -150,7 +150,7 @@ class UserAdminServiceImplTest {
 
         userAdminService.bulkDeleteUsers(List.of(1L, 999L));
 
-        verify(cascadeDeleteService).delete(u1);
+        verify(cascadeDeleteService).delete(u1, null, null);
     }
 
     // ── updateUserRole ────────────────────────────────────────────────

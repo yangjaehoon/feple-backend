@@ -18,6 +18,10 @@ public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long
     @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
     List<FestivalLike> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
+    /** 페스티벌별 찜한 유저 일괄 조회용: [festivalId, userId] — FestivalReminderScheduler에서 사용 */
+    @Query("SELECT fl.festival.id, fl.user.id FROM FestivalLike fl WHERE fl.festival.id IN :festivalIds")
+    List<Object[]> findFestivalIdAndUserIdByFestivalIdIn(@Param("festivalIds") List<Long> festivalIds);
+
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "UPDATE festival SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT festival_id FROM festival_like WHERE user_id = :userId)", nativeQuery = true)

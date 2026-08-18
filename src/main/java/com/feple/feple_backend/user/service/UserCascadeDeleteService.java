@@ -17,6 +17,7 @@ import com.feple.feple_backend.notification.service.NotificationPreferenceServic
 import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
@@ -53,7 +54,7 @@ public class UserCascadeDeleteService {
     private final UserBlockService userBlockService;
     private final FileStorageService fileStorageService;
 
-    public void delete(User user) {
+    public void delete(User user, WithdrawalReason reason, String detail) {
         Long id = user.getId();
         String profileImageKey = user.getProfileImageUrl();
 
@@ -83,7 +84,7 @@ public class UserCascadeDeleteService {
         // 위의 각 removeAllByUser 호출이 카운터 감소용 @Modifying(clearAutomatically = true) 쿼리를
         // 실행하면서 영속성 컨텍스트를 비워 user가 detached 상태가 된다 — dirty checking에 의존하지 않고
         // save()로 명시적으로 병합·flush해야 softDelete()가 실제로 반영된다.
-        user.softDelete();
+        user.softDelete(reason, detail);
         userRepository.save(user);
 
         fileStorageService.deleteFileAfterCommit(profileImageKey);

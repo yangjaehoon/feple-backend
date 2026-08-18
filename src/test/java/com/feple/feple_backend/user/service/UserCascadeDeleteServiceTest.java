@@ -20,6 +20,7 @@ import com.feple.feple_backend.notification.service.NotificationPreferenceServic
 import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
@@ -67,7 +68,7 @@ class UserCascadeDeleteServiceTest {
     void 사용자_삭제시_팔로우_페스티벌좋아요_알림_삭제됨() {
         User user = userWithImage(1L);
 
-        userCascadeDeleteService.delete(user);
+        userCascadeDeleteService.delete(user, WithdrawalReason.RARELY_USED, "테스트 사유");
 
         verify(festivalLikeService).removeAllByUser(1L);
         verify(artistFollowService).removeAllByUser(1L);
@@ -79,7 +80,7 @@ class UserCascadeDeleteServiceTest {
     void 사용자_삭제시_기기토큰_인증_이미지좋아요_업로더참조_정리됨() {
         User user = userWithImage(1L);
 
-        userCascadeDeleteService.delete(user);
+        userCascadeDeleteService.delete(user, WithdrawalReason.RARELY_USED, "테스트 사유");
 
         verify(userDeviceTokenRepository).deleteByUserId(1L);
         verify(reviewService).removeReviewLikesByUser(1L);
@@ -93,20 +94,22 @@ class UserCascadeDeleteServiceTest {
     void 사용자_삭제시_리프레시토큰_무효화_및_소프트삭제됨() {
         User user = userWithImage(1L);
 
-        userCascadeDeleteService.delete(user);
+        userCascadeDeleteService.delete(user, WithdrawalReason.RARELY_USED, "테스트 사유");
 
         verify(refreshTokenService).revokeAll(1L);
         verify(fileStorageService).deleteFileAfterCommit("profile/user-1.jpg");
         verify(userRepository).save(user);
         assertThat(user.isDeleted()).isTrue();
         assertThat(user.getNickname()).isEqualTo("(탈퇴한 사용자)");
+        assertThat(user.getWithdrawalReason()).isEqualTo(WithdrawalReason.RARELY_USED);
+        assertThat(user.getWithdrawalDetail()).isEqualTo("테스트 사유");
     }
 
     @Test
     void 게시글과_댓글은_익명화_유지하며_삭제하지_않음() {
         User user = userWithImage(1L);
 
-        userCascadeDeleteService.delete(user);
+        userCascadeDeleteService.delete(user, WithdrawalReason.RARELY_USED, "테스트 사유");
 
         // 게시글/댓글 행 삭제 없이 소프트딜리트(익명화)만 수행
         verify(postCascadeService).removePostActivityByUser(1L);
@@ -117,7 +120,7 @@ class UserCascadeDeleteServiceTest {
     void 사용자_삭제시_카운터_감소_포함_서비스_위임_호출됨() {
         User user = userWithImage(1L);
 
-        userCascadeDeleteService.delete(user);
+        userCascadeDeleteService.delete(user, WithdrawalReason.RARELY_USED, "테스트 사유");
 
         verify(festivalLikeService).removeAllByUser(1L);
         verify(festivalAttendanceService).removeAllByUser(1L);
@@ -131,7 +134,7 @@ class UserCascadeDeleteServiceTest {
     void 프로필_이미지_없는_사용자도_정상_삭제됨() {
         User user = User.builder().id(2L).oauthId("o2").nickname("noimage").build();
 
-        userCascadeDeleteService.delete(user);
+        userCascadeDeleteService.delete(user, WithdrawalReason.RARELY_USED, "테스트 사유");
 
         verify(fileStorageService).deleteFileAfterCommit(null);
         assertThat(user.isDeleted()).isTrue();

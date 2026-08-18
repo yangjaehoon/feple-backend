@@ -18,6 +18,7 @@ import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
+import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -305,9 +306,9 @@ class UserServiceImplTest {
         User user = user(1L, "user1");
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
-        userService.deleteUser(1L);
+        userService.deleteUser(1L, WithdrawalReason.RARELY_USED, "그냥요");
 
-        verify(cascadeDeleteService).delete(user);
+        verify(cascadeDeleteService).delete(user, WithdrawalReason.RARELY_USED, "그냥요");
     }
 
     // ── currentUserId ─────────────────────────────────────────────────

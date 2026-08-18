@@ -79,7 +79,9 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional
     public void bulkDeleteUsers(List<Long> ids) {
-        userRepository.findAllById(ids).forEach(cascadeDeleteService::delete);
+        // 관리자에 의한 삭제라 자진 탈퇴 사유(withdrawalReason)는 없음 — null로 남겨
+        // PM이 탈퇴 사유 통계를 볼 때 사용자가 직접 응답한 것만 집계되게 함.
+        userRepository.findAllById(ids).forEach(user -> cascadeDeleteService.delete(user, null, null));
     }
 
     // 삭제 대상 User는 어차피 cascadeDeleteService.delete()를 위해 로드해야 하므로,
@@ -88,7 +90,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     public String adminDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
         String nickname = user.getNickname();
-        cascadeDeleteService.delete(user);
+        cascadeDeleteService.delete(user, null, null);
         return nickname;
     }
 

@@ -11,6 +11,7 @@ import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.user.NicknameValidator;
+import com.feple.feple_backend.user.dto.DeleteAccountRequest;
 import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UpdateBioDto;
 import com.feple.feple_backend.user.dto.UpdateNicknameDto;
@@ -161,9 +162,10 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id,
+            @Valid @RequestBody DeleteAccountRequest body,
             @AuthenticationPrincipal Long userId) {
         requireSelf(id, userId);
-        userService.deleteUser(id);
+        userService.deleteUser(id, body.reason(), body.detail());
         return ResponseEntity.noContent().build();
     }
 

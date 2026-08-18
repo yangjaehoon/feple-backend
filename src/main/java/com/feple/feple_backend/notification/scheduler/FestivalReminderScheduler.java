@@ -4,6 +4,7 @@ import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.notification.service.NotificationService;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -25,6 +27,7 @@ public class FestivalReminderScheduler {
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFollowRepository artistFollowRepository;
+    private final FestivalLikeRepository festivalLikeRepository;
     private final NotificationService notificationService;
 
     /** 매일 오전 9시(KST) 실행 */
@@ -58,12 +61,14 @@ public class FestivalReminderScheduler {
                 .flatMap(List::stream)
                 .distinct()
                 .toList();
-        if (allArtistIds.isEmpty()) return;
-
-        Map<Long, List<Long>> userIdsByArtistId = buildUserIdsByArtist(allArtistIds);
+        // 아티스트 라인업이 없는 축제라도 페스티벌 자체를 찜한 유저는 리마인더 대상이라
+        // 여기서 전체 리턴하면 안 됨 — userIdsByArtistId만 비워두고 계속 진행.
+        Map<Long, List<Long>> userIdsByArtistId =
+                allArtistIds.isEmpty() ? Map.of() : buildUserIdsByArtist(allArtistIds);
+        Map<Long, List<Long>> likedUserIdsByFestivalId = buildLikedUserIdsByFestival(festivalIds);
 
         for (Festival festival : festivals) {
-            dispatchReminder(festival, dDay, artistIdsByFestivalId, userIdsByArtistId);
+            dispatchReminder(festival, dDay, artistIdsByFestivalId, userIdsByArtistId, likedUserIdsByFestivalId);
         }
     }
 
@@ -83,16 +88,25 @@ public class FestivalReminderScheduler {
                         Collectors.mapping(row -> (Long) row[1], Collectors.toList())));
     }
 
+    // 아티스트 팔로우 없이 페스티벌 자체만 찜한 유저도 리마인더 대상에 포함시키기 위함
+    private Map<Long, List<Long>> buildLikedUserIdsByFestival(List<Long> festivalIds) {
+        return festivalLikeRepository
+                .findFestivalIdAndUserIdByFestivalIdIn(festivalIds)
+                .stream()
+                .collect(Collectors.groupingBy(row -> (Long) row[0],
+                        Collectors.mapping(row -> (Long) row[1], Collectors.toList())));
+    }
+
     private void dispatchReminder(Festival festival, int dDay,
                                    Map<Long, List<Long>> artistIdsByFestivalId,
-                                   Map<Long, List<Long>> userIdsByArtistId) {
+                                   Map<Long, List<Long>> userIdsByArtistId,
+                                   Map<Long, List<Long>> likedUserIdsByFestivalId) {
         List<Long> artistIds = artistIdsByFestivalId.getOrDefault(festival.getId(), List.of());
-        if (artistIds.isEmpty()) return;
+        Stream<Long> followerUserIds = artistIds.stream()
+                .flatMap(artistId -> userIdsByArtistId.getOrDefault(artistId, List.of()).stream());
+        Stream<Long> likedUserIds = likedUserIdsByFestivalId.getOrDefault(festival.getId(), List.of()).stream();
 
-        List<Long> userIds = artistIds.stream()
-                .flatMap(artistId -> userIdsByArtistId.getOrDefault(artistId, List.of()).stream())
-                .distinct()
-                .toList();
+        List<Long> userIds = Stream.concat(followerUserIds, likedUserIds).distinct().toList();
         if (userIds.isEmpty()) return;
 
         // 한 페스티벌에서 예외가 나도 나머지 페스티벌의 리마인더는 계속 발송돼야 함
