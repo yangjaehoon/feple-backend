@@ -22,6 +22,7 @@ import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.repository.UserAccessLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AdminMetricsServiceImplTest {
 
     @Mock UserRepository userRepository;
+    @Mock UserAccessLogRepository userAccessLogRepository;
     @Mock PostRepository postRepository;
     @Mock CommentRepository commentRepository;
     @Mock PostReportRepository reportRepository;

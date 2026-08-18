@@ -8,6 +8,7 @@ import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.user.service.UserAccessTrackingService;
 import jakarta.servlet.FilterChain;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -26,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 class JwtAuthenticationFilterTest {
 
     @Mock UserRepository userRepository;
+    @Mock UserAccessTrackingService accessTrackingService;
     @Mock FilterChain filterChain;
 
     private JwtProvider jwtProvider;
@@ -47,6 +49,16 @@ class JwtAuthenticationFilterTest {
             @Override
             public UserRepository getObject(Object... args) {
                 return userRepository;
+            }
+        }, new ObjectProvider<UserAccessTrackingService>() {
+            @Override
+            public UserAccessTrackingService getObject() {
+                return accessTrackingService;
+            }
+
+            @Override
+            public UserAccessTrackingService getObject(Object... args) {
+                return accessTrackingService;
             }
         });
     }

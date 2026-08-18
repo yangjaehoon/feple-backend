@@ -6,5 +6,8 @@ public record UserActivityStatsDto(
         long mau,
         long signupsToday,
         long signupsThisWeek,
-        long signupsThisMonth
+        long signupsThisMonth,
+        long visitorsToday,
+        long visitorsThisWeek,
+        long visitorsThisMonth
 ) {}

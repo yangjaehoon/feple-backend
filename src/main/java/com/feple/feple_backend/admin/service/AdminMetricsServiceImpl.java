@@ -16,6 +16,7 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
+import com.feple.feple_backend.user.repository.UserAccessLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -47,6 +48,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
     private static final DateTimeFormatter STAT_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d");
 
     private final UserRepository userRepository;
+    private final UserAccessLogRepository userAccessLogRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PostReportRepository reportRepository;
@@ -103,8 +105,17 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
                 Objects.requireNonNullElse(userRepository.countActiveUsersBetween(monthStart, dayEnd), 0L),
                 userRepository.countByCreatedAtBetween(dayStart, dayEnd),
                 userRepository.countByCreatedAtBetween(weekStart, dayEnd),
-                userRepository.countByCreatedAtBetween(monthStart, dayEnd)
+                userRepository.countByCreatedAtBetween(monthStart, dayEnd),
+                userAccessLogRepository.countByAccessDate(today),
+                countDistinctVisitors(today.minusDays(6), today),
+                countDistinctVisitors(today.minusDays(29), today)
         );
+    }
+
+    // 실제 접속(로그인 이벤트가 아닌 인증된 요청) 기준 순 방문자 수. countActiveUsersBetween과 동일하게
+    // 네이티브 COUNT 집계라 대상 행이 없을 때 null 반환 가능성에 대비해 requireNonNullElse로 방어한다.
+    private long countDistinctVisitors(LocalDate from, LocalDate to) {
+        return Objects.requireNonNullElse(userAccessLogRepository.countDistinctUsersBetween(from, to), 0L);
     }
 
     // 고정 캐시 키를 쓰는 이유는 getDailyStats()와 동일 (위 getUserActivityStats() 참고).

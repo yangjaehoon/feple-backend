@@ -3,6 +3,7 @@ package com.feple.feple_backend.auth.jwt;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.user.service.UserAccessTrackingService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -36,10 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 필터 빈 생성 시점(FilterRegistrationBean 처리 중 — JPA EntityManagerFactory보다 먼저
     // 일어날 수 있음)이 아니라 실제 요청 처리 시점에만 조회하기 위해 ObjectProvider로 지연시킨다.
     private final ObjectProvider<UserRepository> userRepositoryProvider;
+    private final ObjectProvider<UserAccessTrackingService> accessTrackingServiceProvider;
 
-    public JwtAuthenticationFilter(JwtProvider jwtProvider, ObjectProvider<UserRepository> userRepositoryProvider) {
+    public JwtAuthenticationFilter(
+            JwtProvider jwtProvider,
+            ObjectProvider<UserRepository> userRepositoryProvider,
+            ObjectProvider<UserAccessTrackingService> accessTrackingServiceProvider
+    ) {
         this.jwtProvider = jwtProvider;
         this.userRepositoryProvider = userRepositoryProvider;
+        this.accessTrackingServiceProvider = accessTrackingServiceProvider;
     }
 
     @Override
@@ -111,6 +118,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 List.of(new SimpleGrantedAuthority(role))
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        accessTrackingServiceProvider.getObject().recordAccess(userId);
         return Optional.empty();
     }
 }

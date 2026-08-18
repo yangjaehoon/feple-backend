@@ -39,6 +39,26 @@
                 </div>
             </div>
 
+            <!-- 실접속자 KPI -->
+            <div class="section-title">실접속자 (앱 접속 기준)</div>
+            <div class="kpi-grid">
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-label">오늘</div>
+                    <div class="kpi-value" th:text="${activityStats.visitorsToday()}">0</div>
+                    <div class="kpi-sub">오늘 접속한 순 사용자</div>
+                </div>
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-label">최근 7일</div>
+                    <div class="kpi-value" th:text="${activityStats.visitorsThisWeek()}">0</div>
+                    <div class="kpi-sub">최근 7일 접속한 순 사용자</div>
+                </div>
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-label">최근 30일</div>
+                    <div class="kpi-value" th:text="${activityStats.visitorsThisMonth()}">0</div>
+                    <div class="kpi-sub">최근 30일 접속한 순 사용자</div>
+                </div>
+            </div>
+
             <!-- 신규 가입자 KPI -->
             <div class="section-title">신규 가입자</div>
             <div class="kpi-grid">

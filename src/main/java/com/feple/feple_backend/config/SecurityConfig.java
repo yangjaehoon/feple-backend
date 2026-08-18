@@ -9,6 +9,7 @@ import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.user.repository.UserRepository;
+import com.feple.feple_backend.user.service.UserAccessTrackingService;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,9 @@ public class SecurityConfig {
     // 호출해도 FilterRegistrationBean 처리 자체가 이르게 일어나 소용없었다 — ObjectProvider를
     // JwtAuthenticationFilter까지 그대로 넘겨 실제 요청 처리 시점에만 resolve하도록 미룬다.
     private final ObjectProvider<UserRepository> userRepositoryProvider;
+    // 위 userRepositoryProvider와 동일한 이유(JPA 리포지토리를 사용하는 빈이라 기동 순서 문제 회피)로
+    // ObjectProvider로 지연 주입한다.
+    private final ObjectProvider<UserAccessTrackingService> accessTrackingServiceProvider;
     private final ObjectMapper objectMapper;
 
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
@@ -137,7 +141,7 @@ public class SecurityConfig {
     // ── 2. API용 FilterChain (JWT Stateless) ──
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtProvider, userRepositoryProvider);
+        return new JwtAuthenticationFilter(jwtProvider, userRepositoryProvider, accessTrackingServiceProvider);
     }
 
     // Spring Boot가 Filter Bean을 서블릿 체인에 자동 등록하지 않도록 비활성화

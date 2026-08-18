@@ -29,7 +29,7 @@ class StatsAdminControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-        given(adminStatsMetrics.getUserActivityStats()).willReturn(new UserActivityStatsDto(0,0,0,0,0,0));
+        given(adminStatsMetrics.getUserActivityStats()).willReturn(new UserActivityStatsDto(0,0,0,0,0,0,0,0,0));
         given(adminStatsMetrics.getRangeStats(any(), any())).willReturn(List.of());
         given(adminStatsMetrics.getContentTrend()).willReturn(mock(ContentTrendDto.class));
     }
