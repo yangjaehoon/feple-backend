@@ -1,10 +1,11 @@
 package com.feple.feple_backend.notice.service;
 
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.notice.dto.NoticeRequestDto;
 import com.feple.feple_backend.notice.dto.NoticeResponseDto;
+import com.feple.feple_backend.notice.dto.NoticeSummaryDto;
 import com.feple.feple_backend.notice.entity.Notice;
 import com.feple.feple_backend.notice.repository.NoticeRepository;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,9 +20,9 @@ public class NoticeServiceImpl implements NoticeService, NoticeAdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<NoticeResponseDto> getNotices(Pageable pageable) {
+    public Page<NoticeSummaryDto> getNotices(Pageable pageable) {
         return noticeRepository.findAllByOrderByPinnedDescCreatedAtDesc(pageable)
-                .map(NoticeResponseDto::from);
+                .map(NoticeSummaryDto::from);
     }
 
     @Override
@@ -30,17 +31,19 @@ public class NoticeServiceImpl implements NoticeService, NoticeAdminService {
         return NoticeResponseDto.from(findById(id));
     }
 
+    // 관리자 목록도 공개 목록과 동일한 조회·매핑 로직을 쓴다 — 별도 구현을 두면 나중에
+    // 한쪽만 고치고 다른 쪽을 잊어 admin/공개 화면이 조용히 갈라지는 문제가 생긴다.
     @Override
     @Transactional(readOnly = true)
-    public Page<NoticeResponseDto> getAdminNotices(Pageable pageable) {
-        return noticeRepository.findAllByOrderByPinnedDescCreatedAtDesc(pageable)
-                .map(NoticeResponseDto::from);
+    public Page<NoticeSummaryDto> getAdminNotices(Pageable pageable) {
+        return getNotices(pageable);
     }
 
+    // 관리자 수정 폼도 공개 상세와 동일하게 content를 포함한 전체 DTO가 필요하다.
     @Override
     @Transactional(readOnly = true)
     public NoticeResponseDto getNoticeForEdit(Long id) {
-        return NoticeResponseDto.from(findById(id));
+        return getNotice(id);
     }
 
     @Override
@@ -63,10 +66,7 @@ public class NoticeServiceImpl implements NoticeService, NoticeAdminService {
     @Override
     @Transactional
     public void deleteNotice(Long id) {
-        if (!noticeRepository.existsById(id)) {
-            throw new NoSuchElementException("존재하지 않는 공지사항입니다.");
-        }
-        noticeRepository.deleteById(id);
+        noticeRepository.delete(findById(id));
     }
 
     @Override
@@ -76,7 +76,6 @@ public class NoticeServiceImpl implements NoticeService, NoticeAdminService {
     }
 
     private Notice findById(Long id) {
-        return noticeRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 공지사항입니다."));
+        return EntityLoader.getOrThrow(noticeRepository::findById, id, "공지사항");
     }
 }

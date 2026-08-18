@@ -1,6 +1,7 @@
 package com.feple.feple_backend.notice.controller;
 
 import com.feple.feple_backend.notice.dto.NoticeResponseDto;
+import com.feple.feple_backend.notice.dto.NoticeSummaryDto;
 import com.feple.feple_backend.notice.service.NoticeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
@@ -25,7 +26,7 @@ public class NoticeController {
     private final NoticeService noticeService;
 
     @GetMapping
-    public Page<NoticeResponseDto> getNotices(
+    public Page<NoticeSummaryDto> getNotices(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return noticeService.getNotices(PageRequest.of(page, size));

@@ -8,7 +8,7 @@ import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.notice.dto.NoticeRequestDto;
-import com.feple.feple_backend.notice.dto.NoticeResponseDto;
+import com.feple.feple_backend.notice.dto.NoticeSummaryDto;
 import com.feple.feple_backend.notice.service.NoticeAdminService;
 import jakarta.validation.Valid;
 import java.util.NoSuchElementException;
@@ -41,7 +41,7 @@ public class NoticeAdminController {
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page, Model model) {
-        Page<NoticeResponseDto> notices = noticeAdminService.getAdminNotices(
+        Page<NoticeSummaryDto> notices = noticeAdminService.getAdminNotices(
                 PageRequest.of(page, AdminConstants.LIST_PAGE_SIZE));
         model.addAttribute("notices", notices);
         return "admin/notice/list";
@@ -62,9 +62,16 @@ public class NoticeAdminController {
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
             return "admin/notice/create";
         }
-        Long noticeId = noticeAdminService.createNotice(dto);
-        adminLogService.log(AdminAction.NOTICE_CREATE, "NOTICE", noticeId, dto.getTitle());
-        ra.addFlashAttribute("successMessage", "공지사항이 등록되었습니다.");
+        AdminActionUtils.tryActionWithResult(
+                () -> {
+                    Long noticeId = noticeAdminService.createNotice(dto);
+                    adminLogService.log(AdminAction.NOTICE_CREATE, "NOTICE", noticeId, dto.getTitle());
+                    return noticeId;
+                },
+                noticeId -> "공지사항이 등록되었습니다.",
+                e -> log.error("공지사항 등록 실패 title={}", dto.getTitle(), e),
+                "등록 중 오류가 발생했습니다.",
+                ra);
         return "redirect:/admin/notices";
     }
 
@@ -105,7 +112,7 @@ public class NoticeAdminController {
                 e -> log.error("공지사항 수정 실패 id={}", id, e),
                 "수정 중 오류가 발생했습니다.",
                 ra);
-        return "redirect:/admin/notices?page=" + page;
+        return noticesRedirect(page);
     }
 
     @PostMapping("/{id}/pin")
@@ -121,7 +128,7 @@ public class NoticeAdminController {
                 e -> log.error("공지사항 고정 토글 실패 id={}", id, e),
                 "처리 중 오류가 발생했습니다.",
                 ra);
-        return "redirect:/admin/notices?page=" + page;
+        return noticesRedirect(page);
     }
 
     @PostMapping("/{id}/delete")
@@ -137,6 +144,10 @@ public class NoticeAdminController {
                 e -> log.error("공지사항 삭제 실패 id={}", id, e),
                 AdminConstants.MSG_DELETE_ERROR,
                 ra);
+        return noticesRedirect(page);
+    }
+
+    private static String noticesRedirect(int page) {
         return "redirect:/admin/notices?page=" + page;
     }
 }
