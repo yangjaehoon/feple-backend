@@ -105,8 +105,17 @@ public class NoticeAdminController {
         }
     }
 
+    // 잘라낼 길이가 넉넉할 때(최대 길이의 절반 이전)만 마지막 공백 기준으로 맞춘다 —
+    // 공백이 너무 앞쪽에만 있으면(또는 아예 없으면) 단어 경계를 맞추려다 내용을 과도하게
+    // 잘라내는 역효과가 나서, 그럴 땐 그냥 글자 수 기준으로 자른다.
     private static String truncate(String text, int maxLength) {
-        return text.length() <= maxLength ? text : text.substring(0, maxLength - 1) + "…";
+        if (text.length() <= maxLength) return text;
+        String cut = text.substring(0, maxLength - 1);
+        int lastSpace = cut.lastIndexOf(' ');
+        if (lastSpace > maxLength / 2) {
+            cut = cut.substring(0, lastSpace);
+        }
+        return cut + "…";
     }
 
     private boolean isSuperAdmin() {

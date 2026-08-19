@@ -15,7 +15,8 @@
                 <div class="card-title">새 공지사항</div>
             </div>
             <div class="card-body">
-                <form th:action="@{/admin/notices/new}"
+                <form id="notice-create-form"
+                      th:action="@{/admin/notices/new}"
                       th:object="${notice}"
                       method="post">
 
@@ -58,6 +59,16 @@
         </div>
     </div>
 </div>
-<script>AdminUtils.initDirtyGuard();</script>
+<script>
+    AdminUtils.initDirtyGuard();
+
+    document.getElementById('notice-create-form').addEventListener('submit', function (e) {
+        var pushCheckbox = this.querySelector('input[name="sendNotification"]');
+        if (pushCheckbox && pushCheckbox.checked
+                && !confirm('등록과 동시에 전체 사용자에게 푸시 알림이 발송됩니다. 되돌릴 수 없습니다. 계속하시겠습니까?')) {
+            e.preventDefault();
+        }
+    });
+</script>
 </body>
 </html>
