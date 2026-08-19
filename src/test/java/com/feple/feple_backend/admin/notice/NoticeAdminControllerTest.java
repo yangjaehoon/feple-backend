@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.push.AdminPushService;
-import com.feple.feple_backend.notice.dto.NoticeRequestDto;
 import com.feple.feple_backend.notice.service.NoticeAdminService;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
