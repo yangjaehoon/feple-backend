@@ -24,4 +24,6 @@ public class NoticeRequestDto {
     private String content;
 
     private boolean pinned;
+
+    private boolean sendNotification;
 }

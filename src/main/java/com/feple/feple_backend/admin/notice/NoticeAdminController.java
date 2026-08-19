@@ -7,6 +7,7 @@ import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.admin.push.AdminPushService;
 import com.feple.feple_backend.notice.dto.NoticeRequestDto;
 import com.feple.feple_backend.notice.dto.NoticeSummaryDto;
 import com.feple.feple_backend.notice.service.NoticeAdminService;
@@ -17,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -38,6 +42,7 @@ public class NoticeAdminController {
 
     private final NoticeAdminService noticeAdminService;
     private final AdminLogService adminLogService;
+    private final AdminPushService adminPushService;
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page, Model model) {
@@ -66,13 +71,47 @@ public class NoticeAdminController {
                 () -> {
                     Long noticeId = noticeAdminService.createNotice(dto);
                     adminLogService.log(AdminAction.NOTICE_CREATE, "NOTICE", noticeId, dto.getTitle());
-                    return noticeId;
+                    return pushFailed(noticeId, dto);
                 },
-                noticeId -> "공지사항이 등록되었습니다.",
+                pushFailed -> pushFailed
+                        ? "공지사항이 등록되었습니다. (알림 발송에는 실패했습니다)"
+                        : "공지사항이 등록되었습니다.",
                 e -> log.error("공지사항 등록 실패 title={}", dto.getTitle(), e),
                 "등록 중 오류가 발생했습니다.",
                 ra);
         return "redirect:/admin/notices";
+    }
+
+    // 전체 발송(AdminPushService.sendToAll)은 기존에 SUPER_ADMIN 전용 화면(/admin/push)에서만
+    // 쓸 수 있던 기능이라, NOTICES 권한만 있는 관리자가 공지 등록으로 우회해 전체 푸시를 보내지
+    // 못하도록 여기서도 SUPER_ADMIN 여부를 다시 검사한다(화면에서 체크박스를 숨겨도 폼 위조로
+    // 우회될 수 있음). 발송에 실패해도 공지 등록 자체는 이미 커밋된 별도 트랜잭션이라 실패로
+    // 처리하지 않고, 실패 여부만 성공 메시지에 반영한다.
+    private boolean pushFailed(Long noticeId, NoticeRequestDto dto) {
+        if (!dto.isSendNotification()) return false;
+        if (!isSuperAdmin()) {
+            log.warn("[NoticeAdmin] SUPER_ADMIN이 아닌 관리자가 알림 발송을 요청해 무시함 noticeId={}", noticeId);
+            return false;
+        }
+        try {
+            adminPushService.sendToAll(
+                    truncate(dto.getTitle(), AdminConstants.PUSH_TITLE_MAX_LENGTH),
+                    truncate(dto.getContent(), AdminConstants.PUSH_BODY_MAX_LENGTH));
+            adminLogService.log(AdminAction.NOTICE_PUSH, "NOTICE", noticeId, dto.getTitle());
+            return false;
+        } catch (Exception e) {
+            log.error("공지사항 알림 발송 실패 noticeId={}", noticeId, e);
+            return true;
+        }
+    }
+
+    private static String truncate(String text, int maxLength) {
+        return text.length() <= maxLength ? text : text.substring(0, maxLength - 1) + "…";
+    }
+
+    private boolean isSuperAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
     }
 
     @GetMapping("/{id}/edit")

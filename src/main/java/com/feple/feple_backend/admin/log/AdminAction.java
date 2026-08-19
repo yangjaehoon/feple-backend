@@ -56,6 +56,7 @@ public enum AdminAction {
     NOTICE_UPDATE("공지사항 수정"),
     NOTICE_DELETE("공지사항 삭제"),
     NOTICE_PIN_TOGGLE("공지사항 고정 토글"),
+    NOTICE_PUSH("공지사항 알림 발송"),
 
     REPORT_DISMISS("신고 기각"),
     REPORT_DELETE("신고 콘텐츠 삭제"),

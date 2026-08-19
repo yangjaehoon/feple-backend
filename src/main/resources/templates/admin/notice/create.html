@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head th:replace="~{admin/fragments :: head('공지사항 작성')}"></head>
 <body>
 <div th:insert="~{admin/fragments :: navbar('notices')}"></div>
@@ -37,6 +38,14 @@
                                 상단에 고정 노출
                             </label>
                             <span class="field-hint">체크하면 목록 최상단에 항상 노출됩니다.</span>
+                        </div>
+
+                        <div class="form-group" sec:authorize="hasRole('SUPER_ADMIN')">
+                            <label class="form-check-label">
+                                <input type="checkbox" th:field="*{sendNotification}" class="cb-input"/>
+                                전체 사용자에게 알림 발송
+                            </label>
+                            <span class="field-hint">체크하면 등록과 동시에 전체 사용자에게 푸시 알림이 발송됩니다. 되돌릴 수 없으니 신중히 선택하세요.</span>
                         </div>
                     </div>
 
