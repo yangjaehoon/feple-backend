@@ -62,7 +62,9 @@ function saveMemo(festivalId, memo) {
 }
 
 function updateProgress(row) {
-    var checks = row.querySelectorAll('.cl-check');
+    // .cl-check-auto(타임테이블)는 수동 클릭 대상이 아니지만 진행률 계산에는 포함해야
+    // 다른 항목 토글 시에도 분모/분자가 서버 렌더링 값(x/5)과 어긋나지 않는다.
+    var checks = row.querySelectorAll('.cl-check, .cl-check-auto');
     var total  = checks.length;
     var done   = Array.from(checks).filter(function(c) { return c.checked; }).length;
     var badge  = row.querySelector('.status-done, .status-pend');

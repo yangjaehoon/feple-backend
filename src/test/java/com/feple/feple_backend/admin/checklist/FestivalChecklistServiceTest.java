@@ -102,10 +102,10 @@ class FestivalChecklistServiceTest {
     @Test
     void isChecked_항목이_true이면_true_반환() {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
-        checklist.toggle("timetable");
+        checklist.toggle("boothMap");
         given(checklistRepository.findByFestivalId(1L)).willReturn(Optional.of(checklist));
 
-        assertThat(service.isChecked(1L, "timetable")).isTrue();
+        assertThat(service.isChecked(1L, "boothMap")).isTrue();
     }
 
     @Test

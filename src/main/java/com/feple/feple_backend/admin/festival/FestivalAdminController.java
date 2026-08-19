@@ -148,11 +148,13 @@ public class FestivalAdminController {
         Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, AdminConstants.FESTIVAL_LIST_PAGE_SIZE);
 
         List<FestivalResponseDto> activeFestivals = festivalService.getAllActiveFestivalsForAdmin();
+        List<Long> activeFestivalIds = activeFestivals.stream().map(FestivalResponseDto::getId).toList();
 
         model.addAttribute("festivalsPage", festivalsPage);
         model.addAttribute("festivals", activeFestivals);
         model.addAttribute("keyword", keyword);
         model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap());
+        model.addAttribute("timetableAutoCompleteMap", artistFestivalService.computeTimetableCompleteMap(activeFestivalIds));
         model.addAttribute("activeFestivalCount", (long) activeFestivals.size());
         return "admin/festival/list";
     }

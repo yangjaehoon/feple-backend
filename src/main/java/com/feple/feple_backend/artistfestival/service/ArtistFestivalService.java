@@ -21,6 +21,7 @@ import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import com.feple.feple_backend.timetable.service.TimetableSyncService;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -272,6 +273,37 @@ public class ArtistFestivalService {
     // 빈 문자열("미지정" 선택)은 null로 정규화
     private String resolveStage(String stageName) {
         return (stageName != null && !stageName.isBlank()) ? stageName : null;
+    }
+
+    // festivalId별로 "참여 아티스트 전원이 참여날짜+공연시간을 모두 등록했는지" 계산한다.
+    // 관리자 목록 화면의 "타임테이블" 체크박스를 수동 토글 대신 실데이터 기준으로 자동 표시하기 위함
+    // (festivalId → 완료 여부).
+    public Map<Long, Boolean> computeTimetableCompleteMap(List<Long> festivalIds) {
+        if (festivalIds.isEmpty()) return Map.of();
+
+        Map<Long, List<ArtistFestival>> artistFestivalsByFestivalId = artistFestivalRepository
+                .findByFestivalIdInWithArtist(festivalIds).stream()
+                .collect(Collectors.groupingBy(ArtistFestival::getFestivalId));
+
+        Map<Long, Set<String>> timetabledArtistNamesByFestivalId = timetableRepository
+                .findByFestivalIdInWithArtist(festivalIds).stream()
+                .collect(Collectors.groupingBy(TimetableEntry::getFestivalId,
+                        Collectors.mapping(TimetableEntry::getArtistName, Collectors.toSet())));
+
+        Map<Long, Boolean> result = new HashMap<>();
+        for (Long festivalId : festivalIds) {
+            result.put(festivalId, isTimetableComplete(
+                    artistFestivalsByFestivalId.getOrDefault(festivalId, List.of()),
+                    timetabledArtistNamesByFestivalId.getOrDefault(festivalId, Set.of())));
+        }
+        return result;
+    }
+
+    // 참여 아티스트가 한 명도 없으면 "등록 완료"로 보지 않는다(빈 목록에 대한 공허한 참 방지).
+    private boolean isTimetableComplete(List<ArtistFestival> artistFestivals, Set<String> timetabledArtistNames) {
+        if (artistFestivals.isEmpty()) return false;
+        return artistFestivals.stream().allMatch(af ->
+                af.getPerformanceDate() != null && timetabledArtistNames.contains(af.getArtistName()));
     }
 
     public List<ArtistNameOption> getArtistFestivalsWithEnName(Long festivalId) {

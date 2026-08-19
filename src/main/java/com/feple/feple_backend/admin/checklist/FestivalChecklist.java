@@ -47,18 +47,23 @@ public class FestivalChecklist {
         items.put(key, !items.getOrDefault(key, false));
     }
 
+    // 수동 항목(ChecklistField) + 자동 계산 항목("타임테이블" 1개)을 합친 전체 개수.
     public int getFieldCount() {
-        return ChecklistField.values().length;
+        return ChecklistField.values().length + 1;
     }
 
-    public int getCompletedCount() {
-        return (int) Arrays.stream(ChecklistField.values())
+    // 타임테이블은 실데이터로 자동 계산되어 items 맵에 저장되지 않으므로 호출부(관리자 목록 화면)가
+    // 계산한 값을 파라미터로 받는다.
+    public int getCompletedCount(boolean timetableAutoComplete) {
+        int manualCompleted = (int) Arrays.stream(ChecklistField.values())
                 .filter(f -> Boolean.TRUE.equals(items.get(f.getKey()))).count();
+        return manualCompleted + (timetableAutoComplete ? 1 : 0);
     }
 
-    public boolean isAllCompleted() {
-        return Arrays.stream(ChecklistField.values())
+    public boolean isAllCompleted(boolean timetableAutoComplete) {
+        boolean allManualCompleted = Arrays.stream(ChecklistField.values())
                 .allMatch(f -> Boolean.TRUE.equals(items.get(f.getKey())));
+        return allManualCompleted && timetableAutoComplete;
     }
 
     public void updateMemo(String memo) {

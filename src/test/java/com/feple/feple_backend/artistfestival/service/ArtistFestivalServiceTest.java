@@ -95,6 +95,98 @@ class ArtistFestivalServiceTest {
         assertThat(result.get(0).getStageName()).isEqualTo("메인스테이지");
     }
 
+    // ── computeTimetableCompleteMap ──────────────────────────────────────────
+
+    @Test
+    void festivalIds_비어있으면_빈_맵_반환() {
+        Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of());
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void 참여_아티스트_전원이_날짜와_공연시간_모두_등록하면_true() {
+        Artist iu = artist(1L, "아이유");
+        Artist psy = artist(2L, "싸이");
+        Festival festival = festival(100L, null);
+        ArtistFestival af1 = ArtistFestival.builder().artist(iu).festival(festival)
+                .performanceDate(LocalDate.of(2026, 8, 1)).build();
+        ArtistFestival af2 = ArtistFestival.builder().artist(psy).festival(festival)
+                .performanceDate(LocalDate.of(2026, 8, 2)).build();
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L)))
+                .willReturn(List.of(af1, af2));
+        given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(List.of(
+                TimetableEntry.builder().festival(festival).artistName("아이유").build(),
+                TimetableEntry.builder().festival(festival).artistName("싸이").build()));
+
+        Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L));
+
+        assertThat(result).containsEntry(100L, true);
+    }
+
+    @Test
+    void 참여_아티스트_중_한_명이라도_참여날짜_없으면_false() {
+        Artist iu = artist(1L, "아이유");
+        Festival festival = festival(100L, null);
+        ArtistFestival afWithoutDate = ArtistFestival.builder().artist(iu).festival(festival).build();
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L)))
+                .willReturn(List.of(afWithoutDate));
+        given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(List.of(
+                TimetableEntry.builder().festival(festival).artistName("아이유").build()));
+
+        Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L));
+
+        assertThat(result).containsEntry(100L, false);
+    }
+
+    @Test
+    void 참여_아티스트_중_한_명이라도_타임테이블_항목_없으면_false() {
+        Artist iu = artist(1L, "아이유");
+        Artist psy = artist(2L, "싸이");
+        Festival festival = festival(100L, null);
+        ArtistFestival af1 = ArtistFestival.builder().artist(iu).festival(festival)
+                .performanceDate(LocalDate.of(2026, 8, 1)).build();
+        ArtistFestival af2 = ArtistFestival.builder().artist(psy).festival(festival)
+                .performanceDate(LocalDate.of(2026, 8, 2)).build();
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L)))
+                .willReturn(List.of(af1, af2));
+        // 싸이는 타임테이블 항목이 없음
+        given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(List.of(
+                TimetableEntry.builder().festival(festival).artistName("아이유").build()));
+
+        Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L));
+
+        assertThat(result).containsEntry(100L, false);
+    }
+
+    @Test
+    void 참여_아티스트가_없으면_false() {
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(List.of());
+        given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(List.of());
+
+        Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L));
+
+        assertThat(result).containsEntry(100L, false);
+    }
+
+    @Test
+    void 여러_페스티벌을_한번에_계산해도_서로_섞이지_않음() {
+        Artist iu = artist(1L, "아이유");
+        Festival festival100 = festival(100L, null);
+        Festival festival200 = festival(200L, null);
+        ArtistFestival completeAf = ArtistFestival.builder().artist(iu).festival(festival100)
+                .performanceDate(LocalDate.of(2026, 8, 1)).build();
+        ArtistFestival incompleteAf = ArtistFestival.builder().artist(iu).festival(festival200).build();
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L, 200L)))
+                .willReturn(List.of(completeAf, incompleteAf));
+        given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L, 200L))).willReturn(List.of(
+                TimetableEntry.builder().festival(festival100).artistName("아이유").build()));
+
+        Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L, 200L));
+
+        assertThat(result).containsEntry(100L, true).containsEntry(200L, false);
+    }
+
     // ── addArtistToFestival ───────────────────────────────────────────────
 
     @Test

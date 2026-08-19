@@ -6,8 +6,7 @@ public enum ChecklistField {
     LINEUP_1("lineup1"),
     LINEUP_2("lineup2"),
     LINEUP_3("lineup3"),
-    BOOTH_MAP("boothMap"),
-    TIMETABLE("timetable");
+    BOOTH_MAP("boothMap");
 
     private final String key;
 

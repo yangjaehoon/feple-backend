@@ -16,14 +16,15 @@ class FestivalChecklistTest {
         FestivalChecklist checklist = FestivalChecklist.of(42L);
 
         assertThat(checklist.getFestivalId()).isEqualTo(42L);
-        assertThat(checklist.isAllCompleted()).isFalse();
-        assertThat(checklist.getCompletedCount()).isZero();
+        assertThat(checklist.isAllCompleted(false)).isFalse();
+        assertThat(checklist.isAllCompleted(true)).isFalse();
+        assertThat(checklist.getCompletedCount(false)).isZero();
     }
 
     // ── toggle ────────────────────────────────────────────────────────────────
 
     @ParameterizedTest(name = "{0} 토글 → true")
-    @ValueSource(strings = {"lineup1", "lineup2", "lineup3", "boothMap", "timetable"})
+    @ValueSource(strings = {"lineup1", "lineup2", "lineup3", "boothMap"})
     void 알려진_항목_토글시_false에서_true로(String field) {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
 
@@ -51,6 +52,16 @@ class FestivalChecklistTest {
                 .hasMessageContaining("알 수 없는 항목");
     }
 
+    // 타임테이블은 실데이터 기반으로 자동 계산되어 더 이상 수동 토글 대상이 아니다.
+    @Test
+    void timetable은_더이상_수동_토글_대상_아님() {
+        FestivalChecklist checklist = FestivalChecklist.of(1L);
+
+        assertThatThrownBy(() -> checklist.toggle("timetable"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("알 수 없는 항목");
+    }
+
     // ── isChecked ───────────────────────────────────────────────────────────────
 
     @Test
@@ -72,36 +83,59 @@ class FestivalChecklistTest {
 
     @Test
     void 아무것도_토글_안_하면_completedCount_0() {
-        assertThat(FestivalChecklist.of(1L).getCompletedCount()).isZero();
+        assertThat(FestivalChecklist.of(1L).getCompletedCount(false)).isZero();
     }
 
     @Test
     void 두_항목_토글하면_completedCount_2() {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
         checklist.toggle("lineup1");
-        checklist.toggle("timetable");
+        checklist.toggle("boothMap");
 
-        assertThat(checklist.getCompletedCount()).isEqualTo(2);
+        assertThat(checklist.getCompletedCount(false)).isEqualTo(2);
     }
 
     @Test
-    void 모든_항목_토글하면_completedCount_5이고_isAllCompleted_true() {
+    void timetableAutoComplete_true면_completedCount에_1_추가() {
+        FestivalChecklist checklist = FestivalChecklist.of(1L);
+        checklist.toggle("lineup1");
+
+        assertThat(checklist.getCompletedCount(true)).isEqualTo(2);
+    }
+
+    @Test
+    void 모든_수동_항목_토글하고_timetableAutoComplete_true면_completedCount_5이고_isAllCompleted_true() {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
         for (ChecklistField f : ChecklistField.values()) {
             checklist.toggle(f.getKey());
         }
 
-        assertThat(checklist.getCompletedCount()).isEqualTo(5);
-        assertThat(checklist.isAllCompleted()).isTrue();
+        assertThat(checklist.getCompletedCount(true)).isEqualTo(5);
+        assertThat(checklist.isAllCompleted(true)).isTrue();
     }
 
     @Test
-    void 일부만_토글되면_isAllCompleted_false() {
+    void 모든_수동_항목_토글해도_timetableAutoComplete_false면_isAllCompleted_false() {
+        FestivalChecklist checklist = FestivalChecklist.of(1L);
+        for (ChecklistField f : ChecklistField.values()) {
+            checklist.toggle(f.getKey());
+        }
+
+        assertThat(checklist.isAllCompleted(false)).isFalse();
+    }
+
+    @Test
+    void 일부만_토글되면_timetableAutoComplete_true여도_isAllCompleted_false() {
         FestivalChecklist checklist = FestivalChecklist.of(1L);
         checklist.toggle("lineup1");
         checklist.toggle("lineup2");
 
-        assertThat(checklist.isAllCompleted()).isFalse();
+        assertThat(checklist.isAllCompleted(true)).isFalse();
+    }
+
+    @Test
+    void getFieldCount은_수동_4개_자동_1개_합쳐_5() {
+        assertThat(FestivalChecklist.of(1L).getFieldCount()).isEqualTo(5);
     }
 
     // ── updateMemo ────────────────────────────────────────────────────────────

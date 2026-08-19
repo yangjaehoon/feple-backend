@@ -15,6 +15,10 @@ public interface TimetableRepository extends JpaRepository<TimetableEntry, Long>
     @Query("SELECT t FROM TimetableEntry t WHERE t.festival.id = :festivalId AND t.artistName = :artistName")
     List<TimetableEntry> findByFestivalIdAndArtistName(@Param("festivalId") Long festivalId, @Param("artistName") String artistName);
 
+    // artist JOIN FETCH — getArtistName()에서 artist FK 접근 시 N+1 방지
+    @Query("SELECT DISTINCT t FROM TimetableEntry t LEFT JOIN FETCH t.artist WHERE t.festival.id IN :festivalIds")
+    List<TimetableEntry> findByFestivalIdInWithArtist(@Param("festivalIds") List<Long> festivalIds);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM TimetableEntry t WHERE t.festival.id = :festivalId")
