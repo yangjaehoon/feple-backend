@@ -281,29 +281,36 @@ public class ArtistFestivalService {
     public Map<Long, Boolean> computeTimetableCompleteMap(List<Long> festivalIds) {
         if (festivalIds.isEmpty()) return Map.of();
 
-        Map<Long, List<ArtistFestival>> artistFestivalsByFestivalId = artistFestivalRepository
-                .findByFestivalIdInWithArtist(festivalIds).stream()
-                .collect(Collectors.groupingBy(ArtistFestival::getFestivalId));
+        Map<Long, List<ArtistFestival>> artistFestivalsByFestivalId =
+                artistFestivalRepository.findByFestivalIdInGroupedByFestivalId(festivalIds);
 
-        Map<Long, Set<String>> timetabledArtistNamesByFestivalId = timetableRepository
+        // artistName → 그 아티스트의 타임테이블 항목들이 실제로 걸린 날짜 집합. 이름만으로 매칭하면
+        // 참여날짜(performanceDate)와 다른 날짜에 잘못 등록된 타임테이블도 "등록 완료"로 오판하므로,
+        // 아래 isTimetableComplete()에서 날짜까지 정확히 일치하는지 확인한다.
+        Map<Long, Map<String, Set<LocalDate>>> timetableDatesByFestivalAndArtist = timetableRepository
                 .findByFestivalIdInWithArtist(festivalIds).stream()
                 .collect(Collectors.groupingBy(TimetableEntry::getFestivalId,
-                        Collectors.mapping(TimetableEntry::getArtistName, Collectors.toSet())));
+                        Collectors.groupingBy(TimetableEntry::getArtistName,
+                                Collectors.mapping(TimetableEntry::getFestivalDate, Collectors.toSet()))));
 
         Map<Long, Boolean> result = new HashMap<>();
         for (Long festivalId : festivalIds) {
             result.put(festivalId, isTimetableComplete(
                     artistFestivalsByFestivalId.getOrDefault(festivalId, List.of()),
-                    timetabledArtistNamesByFestivalId.getOrDefault(festivalId, Set.of())));
+                    timetableDatesByFestivalAndArtist.getOrDefault(festivalId, Map.of())));
         }
         return result;
     }
 
     // 참여 아티스트가 한 명도 없으면 "등록 완료"로 보지 않는다(빈 목록에 대한 공허한 참 방지).
-    private boolean isTimetableComplete(List<ArtistFestival> artistFestivals, Set<String> timetabledArtistNames) {
+    // 참여날짜와 타임테이블 항목의 날짜가 정확히 일치해야 완료로 인정한다.
+    private boolean isTimetableComplete(List<ArtistFestival> artistFestivals,
+                                         Map<String, Set<LocalDate>> timetableDatesByArtist) {
         if (artistFestivals.isEmpty()) return false;
         return artistFestivals.stream().allMatch(af ->
-                af.getPerformanceDate() != null && timetabledArtistNames.contains(af.getArtistName()));
+                af.getPerformanceDate() != null
+                        && timetableDatesByArtist.getOrDefault(af.getArtistName(), Set.of())
+                                .contains(af.getPerformanceDate()));
     }
 
     public List<ArtistNameOption> getArtistFestivalsWithEnName(Long festivalId) {

@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -43,7 +44,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class ArtistFestivalServiceTest {
 
-    @Mock ArtistFestivalRepository artistFestivalRepository;
+    // CALLS_REAL_METHODS — ArtistFestivalRepository의 default 메서드(findByFestivalIdInGroupedByFestivalId)가
+    // 실제 본문을 실행하도록 함(그래야 아래에서 findByFestivalIdInWithArtist만 스텁해도 그룹핑 결과가 나옴).
+    // 나머지 추상 메서드는 기존처럼 스텁 안 하면 null/기본값 반환이라 동작에 영향 없음.
+    @Mock(answer = Answers.CALLS_REAL_METHODS) ArtistFestivalRepository artistFestivalRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock ArtistRepository artistRepository;
     @Mock FileStorageService fileStorageService;
@@ -116,12 +120,32 @@ class ArtistFestivalServiceTest {
         given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L)))
                 .willReturn(List.of(af1, af2));
         given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(List.of(
-                TimetableEntry.builder().festival(festival).artistName("아이유").build(),
-                TimetableEntry.builder().festival(festival).artistName("싸이").build()));
+                TimetableEntry.builder().festival(festival).artistName("아이유")
+                        .festivalDate(LocalDate.of(2026, 8, 1)).build(),
+                TimetableEntry.builder().festival(festival).artistName("싸이")
+                        .festivalDate(LocalDate.of(2026, 8, 2)).build()));
 
         Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L));
 
         assertThat(result).containsEntry(100L, true);
+    }
+
+    @Test
+    void 참여날짜와_타임테이블_날짜가_다르면_false() {
+        Artist iu = artist(1L, "아이유");
+        Festival festival = festival(100L, null);
+        ArtistFestival af = ArtistFestival.builder().artist(iu).festival(festival)
+                .performanceDate(LocalDate.of(2026, 8, 1)).build();
+        given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L)))
+                .willReturn(List.of(af));
+        // 참여날짜는 8/1인데 타임테이블 항목은 8/2에 등록된 경우
+        given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L))).willReturn(List.of(
+                TimetableEntry.builder().festival(festival).artistName("아이유")
+                        .festivalDate(LocalDate.of(2026, 8, 2)).build()));
+
+        Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L));
+
+        assertThat(result).containsEntry(100L, false);
     }
 
     @Test
@@ -180,7 +204,8 @@ class ArtistFestivalServiceTest {
         given(artistFestivalRepository.findByFestivalIdInWithArtist(List.of(100L, 200L)))
                 .willReturn(List.of(completeAf, incompleteAf));
         given(timetableRepository.findByFestivalIdInWithArtist(List.of(100L, 200L))).willReturn(List.of(
-                TimetableEntry.builder().festival(festival100).artistName("아이유").build()));
+                TimetableEntry.builder().festival(festival100).artistName("아이유")
+                        .festivalDate(LocalDate.of(2026, 8, 1)).build()));
 
         Map<Long, Boolean> result = service.computeTimetableCompleteMap(List.of(100L, 200L));
 

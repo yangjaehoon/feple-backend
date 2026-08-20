@@ -7,7 +7,6 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +30,7 @@ public class ArtistScheduleService {
 
         Map<Long, List<ArtistFestival>> coArtistMap = festivalIds.isEmpty()
                 ? Map.of()
-                : artistFestivalRepository.findByFestivalIdInWithArtist(festivalIds)
-                        .stream()
-                        .collect(Collectors.groupingBy(ArtistFestival::getFestivalId));
+                : artistFestivalRepository.findByFestivalIdInGroupedByFestivalId(festivalIds);
 
         return myFestivals.stream()
                 .map(af -> buildResponse(af, artistId, coArtistMap))

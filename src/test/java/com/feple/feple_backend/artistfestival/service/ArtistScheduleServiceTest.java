@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,7 +25,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ArtistScheduleServiceTest {
 
-    @Mock ArtistFestivalRepository artistFestivalRepository;
+    // CALLS_REAL_METHODS — ArtistFestivalRepository의 default 메서드(findByFestivalIdInGroupedByFestivalId)가
+    // 실제 본문을 실행하도록 함(그래야 아래에서 findByFestivalIdInWithArtist만 스텁해도 coArtistMap이 채워짐).
+    @Mock(answer = Answers.CALLS_REAL_METHODS) ArtistFestivalRepository artistFestivalRepository;
     @Mock FileStorageService fileStorageService;
 
     @InjectMocks ArtistScheduleService service;

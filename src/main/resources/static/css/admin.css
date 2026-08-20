@@ -922,6 +922,7 @@ select.stage-select { padding: 5px 8px; border: 1px solid var(--border); border-
 .cl-table td.left { text-align: left; }
 .cl-table tr:hover { background: var(--bg-2); }
 .cl-check { width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary); }
+.cl-check-auto { width: 20px; height: 20px; cursor: not-allowed; accent-color: var(--primary); opacity: 0.7; }
 .cl-table tr.all-done td { opacity: .6; }
 .status-done { color: #166534; background: #DCFCE7; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
 .status-pend { color: var(--warning-text); background: #FEF3C7; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
