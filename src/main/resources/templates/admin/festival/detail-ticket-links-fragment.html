@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ── 예매 링크 관리 ── -->
+<div th:fragment="ticketLinkCard" id="ticket-links" class="card">
+    <div class="card-header">
+        <div class="card-title">
+            🎫 예매 링크 관리
+            <span class="card-count" th:text="${#lists.size(ticketLinks)}"></span>
+        </div>
+    </div>
+    <div class="card-body">
+        <p class="card-hint">여기서 등록한 링크가 앱 상세 화면의 '티켓' 버튼을 눌렀을 때 목록으로 노출됩니다.</p>
+
+        <!-- 링크 추가 폼 -->
+        <form th:action="@{/admin/festivals/{id}/ticket-links(id=${festival.id})}" method="post"
+              class="form-grid-5col">
+            <div>
+                <label class="form-label-sm">링크 이름 (선택)</label>
+                <input type="text" name="label" placeholder="예: 인터파크"
+                       class="compact-input"/>
+            </div>
+            <div>
+                <label class="form-label-sm">예매 URL</label>
+                <input type="url" name="url" placeholder="https://..." required
+                       class="compact-input"/>
+            </div>
+            <button type="submit" class="btn btn-primary btn-nowrap">+ 추가</button>
+        </form>
+
+        <!-- 링크 목록 -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>URL</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="link : ${ticketLinks}">
+                    <td class="td-bold" th:text="${link.label ?: '-'}"></td>
+                    <td class="td-sub td-muted" th:text="${link.url}"></td>
+                    <td>
+                        <form th:action="@{/admin/festivals/{fId}/ticket-links/{lId}/delete(fId=${festival.id},lId=${link.id})}" method="post">
+                            <button type="submit" class="btn btn-ghost-danger btn-sm" data-confirm="예매 링크를 삭제하시겠습니까?">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${ticketLinks.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(3, '등록된 예매 링크가 없습니다.')}"></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

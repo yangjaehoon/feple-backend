@@ -15,6 +15,7 @@
             <a href="#artists"   class="detail-nav-link">참여 아티스트</a>
             <a href="#timetable" class="detail-nav-link">타임테이블</a>
             <a href="#booths"    class="detail-nav-link">부스</a>
+            <a href="#ticket-links" class="detail-nav-link">예매 링크</a>
             <a href="#setlist"   class="detail-nav-link">셋리스트</a>
         </nav>
 
@@ -22,6 +23,7 @@
         <div th:replace="~{admin/festival/detail-artists-fragment :: artistsCard}"></div>
         <div th:replace="~{admin/festival/detail-timetable-fragment :: timetableCard}"></div>
         <div th:replace="~{admin/festival/detail-booths-fragment :: boothCard}"></div>
+        <div th:replace="~{admin/festival/detail-ticket-links-fragment :: ticketLinkCard}"></div>
         <div th:replace="~{admin/festival/detail-setlist-fragment :: setlistCard}"></div>
 
     </div>

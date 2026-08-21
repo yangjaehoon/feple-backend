@@ -5,6 +5,7 @@ import com.feple.feple_backend.booth.dto.BoothResponseDto;
 import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.stage.entity.Stage;
+import com.feple.feple_backend.ticketlink.dto.TicketLinkResponseDto;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public record FestivalDetailDto(
         List<Stage> stages,
         List<BoothResponseDto> booths,
         BoothType[] allBoothTypes,
+        List<TicketLinkResponseDto> ticketLinks,
         String googleMapsKey,
         Map<Long, Integer> setlistCounts,
         String announcementStageName,

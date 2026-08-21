@@ -18,6 +18,7 @@ import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.stage.service.StageService;
+import com.feple.feple_backend.ticketlink.service.FestivalTicketLinkService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.util.List;
@@ -37,6 +38,7 @@ class FestivalDetailAggregationServiceTest {
     @Mock TimetableService timetableService;
     @Mock StageService stageService;
     @Mock BoothService boothService;
+    @Mock FestivalTicketLinkService ticketLinkService;
     @Mock SetlistAdminService setlistAdminService;
     @Mock FestivalReviewService reviewService;
 
@@ -52,6 +54,7 @@ class FestivalDetailAggregationServiceTest {
         given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(festivalId), any(), any())).willReturn(artists);
         given(stageService.getStages(festivalId)).willReturn(List.of());
         given(boothService.getBooths(festivalId)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(festivalId)).willReturn(List.of());
         given(reviewService.getAverageRating(festivalId)).willReturn(0.0);
         given(reviewService.getRatingCount(festivalId)).willReturn(0);
     }

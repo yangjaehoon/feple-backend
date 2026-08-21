@@ -14,6 +14,7 @@ import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.stage.service.StageService;
+import com.feple.feple_backend.ticketlink.service.FestivalTicketLinkService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
@@ -34,6 +35,7 @@ class FestivalDetailAggregationServiceTest {
     @Mock TimetableService timetableService;
     @Mock StageService stageService;
     @Mock BoothService boothService;
+    @Mock FestivalTicketLinkService ticketLinkService;
     @Mock SetlistAdminService setlistAdminService;
     @Mock FestivalReviewService reviewService;
 
@@ -58,6 +60,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
 
@@ -75,6 +78,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingDistribution(1L)).willReturn(Map.of(5, 8L, 4, 2L));
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
 
@@ -93,6 +97,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         aggregationService.getDetail(1L);
 
@@ -113,6 +118,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
 
@@ -128,6 +134,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
 
@@ -144,6 +151,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
 
@@ -161,6 +169,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
         given(setlistAdminService.getSetlistCounts(List.of(1L))).willReturn(Map.of(1L, 5));
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
@@ -176,6 +185,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
 
@@ -192,6 +202,7 @@ class FestivalDetailAggregationServiceTest {
         given(reviewService.getRatingCount(1L)).willReturn(0);
         given(stageService.getStages(1L)).willReturn(List.of());
         given(boothService.getBooths(1L)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailDto result = aggregationService.getDetail(1L);
 

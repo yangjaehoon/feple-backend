@@ -4,6 +4,7 @@ import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.ticketlink.dto.TicketLinkResponseDto;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -31,8 +32,9 @@ public class FestivalDetailResponseDto {
     private AgeRestriction ageRestriction;
     private List<ArtistResponseDto> artists;
     private int attendingCount;
+    private List<TicketLinkResponseDto> ticketLinks;
 
-    public static FestivalDetailResponseDto from(Festival festival, String posterUrl) {
+    public static FestivalDetailResponseDto from(Festival festival, String posterUrl, List<TicketLinkResponseDto> ticketLinks) {
         FestivalCoreFields.Values core = FestivalCoreFields.of(festival, posterUrl);
         return FestivalDetailResponseDto.builder()
                 .id(core.id())
@@ -48,6 +50,7 @@ public class FestivalDetailResponseDto {
                 .genres(core.genres())
                 .ageRestriction(core.ageRestriction())
                 .attendingCount(core.attendingCount())
+                .ticketLinks(ticketLinks)
                 .build();
     }
 

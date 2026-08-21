@@ -14,6 +14,8 @@ public enum AdminAction {
     FESTIVAL_ARTIST_UPDATE("페스티벌 라인업 수정"),
     FESTIVAL_BOOTH_ADD("부스 추가"),
     FESTIVAL_BOOTH_DELETE("부스 삭제"),
+    FESTIVAL_TICKET_LINK_ADD("예매 링크 추가"),
+    FESTIVAL_TICKET_LINK_DELETE("예매 링크 삭제"),
     FESTIVAL_STAGE_ADD("스테이지 추가"),
     FESTIVAL_STAGE_DELETE("스테이지 삭제"),
     FESTIVAL_TIMETABLE_ADD("타임테이블 추가"),

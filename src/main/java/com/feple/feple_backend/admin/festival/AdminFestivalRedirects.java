@@ -13,4 +13,5 @@ public final class AdminFestivalRedirects {
     public static String timetable(Long festivalId){ return BASE + festivalId + "#timetable"; }
     public static String booths(Long festivalId)   { return BASE + festivalId + "#booths"; }
     public static String setlist(Long festivalId)  { return BASE + festivalId + "#setlist"; }
+    public static String ticketLinks(Long festivalId) { return BASE + festivalId + "#ticket-links"; }
 }

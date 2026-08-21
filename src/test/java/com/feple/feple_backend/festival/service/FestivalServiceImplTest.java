@@ -22,6 +22,7 @@ import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.support.TestEntityFactory;
+import com.feple.feple_backend.ticketlink.service.FestivalTicketLinkService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -42,6 +43,7 @@ class FestivalServiceImplTest {
     @Mock FestivalRepository festivalRepository;
     @Mock FestivalLikeRepository festivalLikeRepository;
     @Mock FileStorageService fileStorageService;
+    @Mock FestivalTicketLinkService ticketLinkService;
 
     @InjectMocks FestivalServiceImpl festivalService;
 
@@ -75,6 +77,7 @@ class FestivalServiceImplTest {
         Festival f = festival(1L, "락페", "posters/1.jpg");
         given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(f));
         given(fileStorageService.buildUrl("posters/1.jpg")).willReturn("https://cdn.example.com/posters/1.jpg");
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
         FestivalDetailResponseDto result = festivalService.getFestivalDetail(1L);
 

@@ -93,7 +93,7 @@ class FestivalAdminControllerTest {
     void 상세_조회_성공() throws Exception {
         FestivalDetailDto detail = new FestivalDetailDto(
                 mock(FestivalResponseDto.class), List.of(), List.of(), List.of(),
-                Map.of(), List.of(), List.of(), BoothType.values(),
+                Map.of(), List.of(), List.of(), BoothType.values(), List.of(),
                 "google-key", Map.of(), "", FestivalRatingStatsDto.EMPTY);
         given(festivalDetailAggregationService.getDetail(1L)).willReturn(detail);
 
@@ -101,7 +101,7 @@ class FestivalAdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/festival/detail"))
                 .andExpect(model().attributeExists("festival", "participatingArtists",
-                        "timetableEntries", "stages", "booths"));
+                        "timetableEntries", "stages", "booths", "ticketLinks"));
     }
 
     @Test

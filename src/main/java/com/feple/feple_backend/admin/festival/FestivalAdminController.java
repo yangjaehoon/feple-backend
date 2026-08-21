@@ -295,6 +295,7 @@ public class FestivalAdminController {
                     model.addAttribute("stages",                     detail.stages());
                     model.addAttribute("booths",                     detail.booths());
                     model.addAttribute("allBoothTypes",              detail.allBoothTypes());
+                    model.addAttribute("ticketLinks",                detail.ticketLinks());
                     model.addAttribute("googleMapsKey",              detail.googleMapsKey());
                     model.addAttribute("setlistCounts",              detail.setlistCounts());
                     model.addAttribute("announcementStageName",          detail.announcementStageName());

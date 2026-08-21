@@ -9,6 +9,7 @@ import com.feple.feple_backend.certification.service.FestivalReviewService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.stage.service.StageService;
+import com.feple.feple_backend.ticketlink.service.FestivalTicketLinkService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
@@ -36,6 +37,7 @@ public class FestivalDetailAggregationService {
     private final TimetableService timetableService;
     private final StageService stageService;
     private final BoothService boothService;
+    private final FestivalTicketLinkService ticketLinkService;
     private final SetlistAdminService setlistAdminService;
     private final FestivalReviewService reviewService;
 
@@ -70,6 +72,7 @@ public class FestivalDetailAggregationService {
                 stageService.getStages(festivalId),
                 boothService.getBooths(festivalId),
                 BoothType.values(),
+                ticketLinkService.getTicketLinks(festivalId),
                 googleMapsKey,
                 buildSetlistCounts(artists),
                 TimetableEntry.ANNOUNCEMENT_SENTINEL,
