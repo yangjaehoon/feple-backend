@@ -20,7 +20,6 @@ import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictFestivalCaches;
-import com.feple.feple_backend.ticketlink.service.FestivalTicketLinkService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -46,7 +45,6 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     private final FestivalRepository festivalRepository;
     private final FestivalLikeRepository festivalLikeRepository;
     private final FileStorageService fileStorageService;
-    private final FestivalTicketLinkService ticketLinkService;
 
     private FestivalResponseDto toDto(Festival festival) {
         return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
@@ -164,8 +162,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Transactional(readOnly = true)
     public FestivalDetailResponseDto getFestivalDetail(Long id) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findByIdAndDeletedAtIsNull, id, "페스티벌");
-        return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()),
-                ticketLinkService.getTicketLinks(id));
+        return FestivalDetailResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
     }
 
     @Override

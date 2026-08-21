@@ -19,6 +19,7 @@ import com.feple.feple_backend.festival.service.FestivalService;
 import com.feple.feple_backend.festival.service.WeatherService;
 import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
 import com.feple.feple_backend.support.AuthTestHelper;
+import com.feple.feple_backend.ticketlink.service.FestivalTicketLinkService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +47,7 @@ class FestivalControllerTest {
     @Mock SongService songService;
     @Mock SongAdminService songAdminService;
     @Mock SetlistChangeRequestService setlistChangeRequestService;
+    @Mock FestivalTicketLinkService ticketLinkService;
 
     @InjectMocks FestivalController controller;
 
@@ -143,6 +145,14 @@ class FestivalControllerTest {
         given(songService.getFestivalSetlist(1L)).willReturn(List.of());
 
         mockMvc.perform(get("/festivals/1/setlist"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 예매_링크_조회() throws Exception {
+        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
+
+        mockMvc.perform(get("/festivals/1/ticket-links"))
                 .andExpect(status().isOk());
     }
 

@@ -15,6 +15,8 @@ import com.feple.feple_backend.festival.service.WeatherService;
 import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestCommand;
 import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.ticketlink.dto.TicketLinkResponseDto;
+import com.feple.feple_backend.ticketlink.service.FestivalTicketLinkService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -45,6 +47,7 @@ public class FestivalController {
     private final WeatherService weatherService;
     private final SongService songService;
     private final SetlistChangeRequestService setlistChangeRequestService;
+    private final FestivalTicketLinkService ticketLinkService;
 
     @GetMapping
     public List<FestivalResponseDto> getAllFestivals(
@@ -118,6 +121,11 @@ public class FestivalController {
     @GetMapping("/{id}/setlist")
     public List<FestivalSetlistEntryDto> getSetlist(@PathVariable Long id) {
         return songService.getFestivalSetlist(id);
+    }
+
+    @GetMapping("/{id}/ticket-links")
+    public List<TicketLinkResponseDto> getTicketLinks(@PathVariable Long id) {
+        return ticketLinkService.getTicketLinks(id);
     }
 
     record SetlistChangeRequestBody(
