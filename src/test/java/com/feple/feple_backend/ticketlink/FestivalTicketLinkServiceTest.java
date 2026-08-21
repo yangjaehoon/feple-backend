@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -60,6 +61,45 @@ class FestivalTicketLinkServiceTest {
         Long result = ticketLinkService.createTicketLink(1L, dto);
 
         assertThat(result).isEqualTo(5L);
+    }
+
+    @Test
+    void createTicketLink_URL_앞뒤공백_제거후_저장() {
+        Festival festival = mock(Festival.class);
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(festival));
+        given(ticketLinkRepository.save(any(FestivalTicketLink.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        TicketLinkRequestDto dto = TicketLinkRequestDto.builder()
+                .label("  인터파크  ")
+                .url("  https://tickets.interpark.com/example  ")
+                .build();
+
+        ticketLinkService.createTicketLink(1L, dto);
+
+        ArgumentCaptor<FestivalTicketLink> captor = ArgumentCaptor.forClass(FestivalTicketLink.class);
+        then(ticketLinkRepository).should().save(captor.capture());
+        assertThat(captor.getValue().getLabel()).isEqualTo("인터파크");
+        assertThat(captor.getValue().getUrl()).isEqualTo("https://tickets.interpark.com/example");
+    }
+
+    @Test
+    void createTicketLink_공백만_있는_label은_null로_저장() {
+        Festival festival = mock(Festival.class);
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(festival));
+        given(ticketLinkRepository.save(any(FestivalTicketLink.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        TicketLinkRequestDto dto = TicketLinkRequestDto.builder()
+                .label("   ")
+                .url("https://tickets.interpark.com/example")
+                .build();
+
+        ticketLinkService.createTicketLink(1L, dto);
+
+        ArgumentCaptor<FestivalTicketLink> captor = ArgumentCaptor.forClass(FestivalTicketLink.class);
+        then(ticketLinkRepository).should().save(captor.capture());
+        assertThat(captor.getValue().getLabel()).isNull();
     }
 
     @Test

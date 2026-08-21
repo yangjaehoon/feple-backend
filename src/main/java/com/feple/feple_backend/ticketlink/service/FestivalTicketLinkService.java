@@ -34,10 +34,18 @@ public class FestivalTicketLinkService {
                 festivalRepository::findByIdAndDeletedAtIsNull, festivalId, "페스티벌");
         FestivalTicketLink link = FestivalTicketLink.builder()
                 .festival(festival)
-                .label(dto.getLabel())
-                .url(dto.getUrl())
+                .label(trimToNull(dto.getLabel()))
+                .url(dto.getUrl().trim())
                 .build();
         return ticketLinkRepository.save(link).getId();
+    }
+
+    // 링크 이름을 비워두고 제출하면 폼은 null이 아니라 빈 문자열을 보낸다 — null로
+    // 정규화해둬야 관리자 화면/앱 양쪽에서 "이름 없음" 처리(?: '-' 등)가 일관되게 동작한다.
+    private String trimToNull(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     @Transactional
