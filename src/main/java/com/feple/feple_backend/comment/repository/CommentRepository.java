@@ -44,12 +44,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
            "WHERE c.createdAt >= :from AND c.createdAt < :to GROUP BY FUNCTION('DATE', c.createdAt)")
     List<Object[]> countPerDate(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    /** 벌크 랭킹용: [artistId, commentCount] */
-    @Query("SELECT c.post.artist.id, COUNT(c) " +
-           "FROM Comment c WHERE c.post.artist IS NOT NULL AND c.createdAt >= :since " +
-           "GROUP BY c.post.artist.id")
-    List<Object[]> countByArtistSince(@Param("since") LocalDateTime since);
-
     @Query("SELECT COUNT(c) FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :word, '%')) ESCAPE '!'")
     long countByContentContaining(@Param("word") String word);
 
