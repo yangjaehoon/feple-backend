@@ -36,7 +36,7 @@ public class AsyncConfig implements AsyncConfigurer {
     }
 
     // 관리자 대시보드 집계용 전용 풀. @Async 알림 발송 풀과 분리해 서로 경합하지 않게 하고,
-    // HikariCP 최대 커넥션 수(10)를 넘지 않는 선에서 동시 DB 호출 수를 제한한다.
+    // 이 풀 하나가 HikariCP 최대 커넥션 수(application.yml, 현재 15)를 다 쓰지 않도록 6으로 제한한다.
     @Bean
     public Executor dashboardExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
