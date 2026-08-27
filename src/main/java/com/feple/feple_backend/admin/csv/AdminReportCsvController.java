@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
-@RequiresAdminPermission(AdminPermission.REPORTS)
+@RequiresAdminPermission(value = AdminPermission.REPORTS, writeOnly = true)
 @Controller
 @RequestMapping("/admin/export")
 public class AdminReportCsvController {

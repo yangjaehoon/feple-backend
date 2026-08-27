@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,7 +36,10 @@ import org.springframework.web.servlet.ModelAndView;
  * JSON 응답을 기대하므로 전역 핸들러와 동일한 {@link ErrorResponse} 형태로 응답한다.
  *
  * <p>{@code @Order(HIGHEST_PRECEDENCE)}: 같은 예외에 대해 전역 핸들러보다 이 advice가 먼저
- * 선택되도록 우선순위를 높인다.
+ * 선택되도록 우선순위를 높인다. 그 결과 관리자 컨트롤러에서 발생한 예외는 전역
+ * {@code GlobalExceptionHandler}의 타입별 핸들러(409/429 등)를 거치지 않고 여기서 끝난다 —
+ * 관리자 {@code @ResponseBody} 엔드포인트가 특정 상태 코드를 내려야 한다면 컨트롤러에서
+ * 직접 {@code ResponseEntity}로 처리할 것(예상 밖 예외는 전부 500으로 매핑된다).
  */
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -48,6 +52,14 @@ public class AdminExceptionAdvice {
     @ExceptionHandler(ClientAbortException.class)
     public void handleClientAbort(ClientAbortException ex) {
         log.debug("관리자 응답 전송 중 클라이언트 연결 종료: {}", ex.getMessage());
+    }
+
+    // 메서드 레벨 @PreAuthorize 등에서 올라온 접근 거부는 catch-all(500)로 흘려보내지 않고
+    // 인터셉터의 거부와 동일하게 접근 거부 화면으로 보낸다.
+    @ExceptionHandler(AccessDeniedException.class)
+    public String handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        log.debug("관리자 페이지 접근 거부: {} {}", request.getMethod(), request.getRequestURI());
+        return "redirect:/admin/access-denied";
     }
 
     @ExceptionHandler(NoSuchElementException.class)

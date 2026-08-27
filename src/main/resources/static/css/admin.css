@@ -419,6 +419,14 @@ tbody td a:hover { text-decoration: underline; color: var(--primary); }
   display: flex; flex-direction: column; gap: 6px;
   padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
 }
+.admin-error-page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px; background: var(--bg);
+}
+.admin-error-box  { max-width: 420px; text-align: center; }
+.admin-error-icon { font-size: 40px; margin-bottom: 12px; }
+.admin-error-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.admin-error-desc  { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
 .perm-card-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .perm-levels { display: flex; gap: 6px; }
 .perm-levels .perm-check { flex: 1; padding: 5px 8px; font-size: 12px; justify-content: center; }

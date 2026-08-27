@@ -1,21 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{admin/fragments :: head('오류')}"></head>
 <body>
-<div th:insert="~{admin/fragments :: navbar('none')}"></div>
-<div class="main-content">
-    <div class="content-area access-denied-wrap">
-        <div class="access-denied-box">
-            <div class="access-denied-icon">⚠️</div>
-            <h2 class="access-denied-title"
-                th:text="${statusCode != null ? statusCode + ' ' + statusText : '오류가 발생했습니다'}">오류가 발생했습니다</h2>
-            <p class="access-denied-desc"
-               th:text="${errorMessage != null ? errorMessage : '요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'}">
-                요청을 처리하는 중 오류가 발생했습니다.
-            </p>
-            <a th:href="@{/admin}" class="btn btn-primary">대시보드로 돌아가기</a>
-        </div>
+<!-- 예외 처리 경로에서 렌더링되므로 사이드바(@ModelAttribute로 채워지는 카운트)에 의존하지 않는
+     독립 레이아웃을 쓴다. -->
+<div class="admin-error-page">
+    <div class="admin-error-box">
+        <div class="admin-error-icon">⚠️</div>
+        <h1 class="admin-error-title"
+            th:text="${statusCode != null ? statusCode + ' ' + statusText : '오류가 발생했습니다'}">오류가 발생했습니다</h1>
+        <p class="admin-error-desc"
+           th:text="${errorMessage != null ? errorMessage : '요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'}">
+            요청을 처리하는 중 오류가 발생했습니다.
+        </p>
+        <a th:href="@{/admin}" class="btn btn-primary">대시보드로 돌아가기</a>
     </div>
 </div>
 </body>

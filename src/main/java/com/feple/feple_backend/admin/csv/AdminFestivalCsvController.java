@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @PreAuthorize("hasRole('ADMIN')")
-@RequiresAdminPermission(AdminPermission.FESTIVALS)
+@RequiresAdminPermission(value = AdminPermission.FESTIVALS, writeOnly = true)
 @Controller
 @RequestMapping("/admin/export")
 @RequiredArgsConstructor

@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -62,6 +63,14 @@ class AdminExceptionAdviceTest {
                 .andExpect(jsonPath("$.code").value("SERVER_ERROR"));
     }
 
+    @Test
+    void 접근_거부는_500이_아니라_접근거부_화면으로_리다이렉트() throws Exception {
+        mockMvc.perform(get("/admin/test/denied"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .redirectedUrl("/admin/access-denied"));
+    }
+
     @Controller
     @RequestMapping("/admin/test")
     static class HtmlController {
@@ -78,6 +87,11 @@ class AdminExceptionAdviceTest {
         @GetMapping("/bad")
         String bad() {
             throw new IllegalArgumentException("잘못된 파라미터");
+        }
+
+        @GetMapping("/denied")
+        String denied() {
+            throw new AccessDeniedException("권한 없음");
         }
     }
 

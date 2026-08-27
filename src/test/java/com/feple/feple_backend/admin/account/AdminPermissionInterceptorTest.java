@@ -23,6 +23,11 @@ class AdminPermissionInterceptorTest {
         public void handle() {}
     }
 
+    @RequiresAdminPermission(value = AdminPermission.USERS, writeOnly = true)
+    static class UsersExportController {
+        public void handle() {}
+    }
+
     @RequiresSuperAdmin
     static class SuperAdminController {
         public void handle() {}
@@ -121,6 +126,31 @@ class AdminPermissionInterceptorTest {
 
         boolean result = interceptor.preHandle(
                 request("/admin/users", "POST"), response, handlerMethod(UsersController.class));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void writeOnly_컨트롤러는_GET이어도_READ_권한만_있으면_거부() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_READ"))));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean result = interceptor.preHandle(
+                request("/admin/export/users.csv", "GET"), response, handlerMethod(UsersExportController.class));
+
+        assertThat(result).isFalse();
+        assertThat(response.getRedirectedUrl()).isEqualTo("/admin/access-denied");
+    }
+
+    @Test
+    void writeOnly_컨트롤러는_GET이어도_WRITE_권한이_있으면_통과() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_WRITE"))));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean result = interceptor.preHandle(
+                request("/admin/export/users.csv", "GET"), response, handlerMethod(UsersExportController.class));
 
         assertThat(result).isTrue();
     }

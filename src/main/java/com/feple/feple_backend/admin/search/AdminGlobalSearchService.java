@@ -18,8 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 // 관리자 전역 검색 — 각 도메인의 기존 관리자 검색 로직(UserAdminService 등)을 그대로 재사용해
-// 결과를 미리보기 개수로만 잘라 모은다. 권한이 없는 도메인은 조회 자체를 건너뛴다(AdminPermissionInterceptor와
-// 동일하게 PERM_* 권한 기준).
+// 결과를 미리보기 개수로만 잘라 모은다. 조회 전용이므로 호출자가 해당 도메인의 READ 권한
+// (PERM_<도메인>_READ, 쓰기 보유자도 함께 받음)을 가진 경우에만 검색하고, 없으면 건너뛴다.
 @Service
 @RequiredArgsConstructor
 public class AdminGlobalSearchService {
