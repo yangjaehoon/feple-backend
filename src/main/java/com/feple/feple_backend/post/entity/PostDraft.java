@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -39,27 +38,23 @@ public class PostDraft {
 
     private LocalDateTime updatedAt;
 
-    @Builder
-    public PostDraft(Long userId, String title, String content, BoardType boardType, boolean anonymous,
-                      Long artistId, Long festivalId, String imageKeysCsv) {
+    public PostDraft(Long userId, PostDraftContent draft) {
         this.userId = userId;
-        applyContent(title, content, boardType, anonymous, artistId, festivalId, imageKeysCsv);
+        applyContent(draft);
     }
 
-    public void update(String title, String content, BoardType boardType, boolean anonymous,
-                        Long artistId, Long festivalId, String imageKeysCsv) {
-        applyContent(title, content, boardType, anonymous, artistId, festivalId, imageKeysCsv);
+    public void update(PostDraftContent draft) {
+        applyContent(draft);
     }
 
-    private void applyContent(String title, String content, BoardType boardType, boolean anonymous,
-                               Long artistId, Long festivalId, String imageKeysCsv) {
-        this.title = title;
-        this.content = content;
-        this.boardType = boardType;
-        this.anonymous = anonymous;
-        this.artistId = artistId;
-        this.festivalId = festivalId;
-        this.imageKeysCsv = imageKeysCsv;
+    private void applyContent(PostDraftContent draft) {
+        this.title = draft.title();
+        this.content = draft.content();
+        this.boardType = draft.boardType();
+        this.anonymous = draft.anonymous();
+        this.artistId = draft.artistId();
+        this.festivalId = draft.festivalId();
+        this.imageKeysCsv = draft.imageKeysCsv();
         this.updatedAt = LocalDateTime.now();
     }
 

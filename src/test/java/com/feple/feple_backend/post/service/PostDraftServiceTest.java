@@ -10,6 +10,7 @@ import com.feple.feple_backend.post.dto.PostDraftRequestDto;
 import com.feple.feple_backend.post.dto.PostDraftResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.PostDraft;
+import com.feple.feple_backend.post.entity.PostDraftContent;
 import com.feple.feple_backend.post.repository.PostDraftRepository;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ class PostDraftServiceTest {
 
     @Test
     void 기존_임시저장_있으면_덮어씀() {
-        PostDraft existing = PostDraft.builder().userId(1L).title("이전 제목").build();
+        PostDraft existing = new PostDraft(1L, new PostDraftContent("이전 제목", null, null, false, null, null, null));
         given(postDraftRepository.findById(1L)).willReturn(Optional.of(existing));
         PostDraftRequestDto dto = PostDraftRequestDto.builder()
                 .title("새 제목").content("새 내용").boardType(BoardType.MATE).build();
@@ -66,8 +67,8 @@ class PostDraftServiceTest {
 
     @Test
     void 임시저장_있으면_이미지키_리스트로_변환() {
-        PostDraft draft = PostDraft.builder()
-                .userId(1L).title("제목").imageKeysCsv("posts/1/a.jpg,posts/1/b.jpg").build();
+        PostDraft draft = new PostDraft(1L,
+                new PostDraftContent("제목", null, null, false, null, null, "posts/1/a.jpg,posts/1/b.jpg"));
         given(postDraftRepository.findById(1L)).willReturn(Optional.of(draft));
 
         Optional<PostDraftResponseDto> result = postDraftService.getDraft(1L);

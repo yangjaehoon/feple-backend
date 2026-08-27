@@ -3,6 +3,7 @@ package com.feple.feple_backend.post.service;
 import com.feple.feple_backend.post.dto.PostDraftRequestDto;
 import com.feple.feple_backend.post.dto.PostDraftResponseDto;
 import com.feple.feple_backend.post.entity.PostDraft;
+import com.feple.feple_backend.post.entity.PostDraftContent;
 import com.feple.feple_backend.post.repository.PostDraftRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +19,12 @@ public class PostDraftService {
 
     @Transactional
     public void saveDraft(Long userId, PostDraftRequestDto dto) {
-        String imageKeysCsv = PostDraft.toImageKeysCsv(dto.getImageUrls());
+        PostDraftContent content = new PostDraftContent(
+                dto.getTitle(), dto.getContent(), dto.getBoardType(), dto.isAnonymous(),
+                dto.getArtistId(), dto.getFestivalId(), PostDraft.toImageKeysCsv(dto.getImageUrls()));
         postDraftRepository.findById(userId).ifPresentOrElse(
-                draft -> draft.update(dto.getTitle(), dto.getContent(), dto.getBoardType(), dto.isAnonymous(),
-                        dto.getArtistId(), dto.getFestivalId(), imageKeysCsv),
-                () -> postDraftRepository.save(PostDraft.builder()
-                        .userId(userId)
-                        .title(dto.getTitle())
-                        .content(dto.getContent())
-                        .boardType(dto.getBoardType())
-                        .anonymous(dto.isAnonymous())
-                        .artistId(dto.getArtistId())
-                        .festivalId(dto.getFestivalId())
-                        .imageKeysCsv(imageKeysCsv)
-                        .build()));
+                draft -> draft.update(content),
+                () -> postDraftRepository.save(new PostDraft(userId, content)));
     }
 
     public Optional<PostDraftResponseDto> getDraft(Long userId) {
