@@ -78,7 +78,10 @@ dependencies {
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
 
 	implementation 'com.drewnoakes:metadata-extractor:2.21.0' // 이미지 리사이즈 시 EXIF Orientation 태그 반영용
-	implementation 'org.sejda.imageio:webp-imageio:0.1.6' // javax.imageio는 webp를 기본 지원하지 않아 프로필 이미지 업로드에서 webp가 거부되던 문제 해결용
+	// javax.imageio는 webp를 기본 지원하지 않아 프로필 이미지 업로드에서 webp가 거부되던 문제 해결용.
+	// sejda 포크(0.1.6, 2015)는 x86_64 네이티브만 번들해 Apple Silicon 로컬에서 UnsatisfiedLinkError가
+	// 났다 — usefulness 포크는 패키지·SPI가 동일하면서 mac-aarch64/linux-aarch64 네이티브까지 포함한다.
+	implementation 'com.github.usefulness:webp-imageio:0.11.0'
 
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.0'
 
