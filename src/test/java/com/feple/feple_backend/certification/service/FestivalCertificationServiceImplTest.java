@@ -3,10 +3,12 @@ package com.feple.feple_backend.certification.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 
 import com.feple.feple_backend.certification.dto.CertificationResponseDto;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
@@ -251,6 +253,21 @@ class FestivalCertificationServiceImplTest {
                 .willReturn(Set.of(USER_ID));
 
         assertThat(certificationService.findApprovedUserIdsByFestivalId(FESTIVAL_ID)).containsExactly(USER_ID);
+    }
+
+    @Test
+    void 페스티벌_승인_사용자ID_범위한정_조회() {
+        given(certificationRepository.findApprovedUserIdsByFestivalIdAndUserIdIn(FESTIVAL_ID, List.of(USER_ID, 999L)))
+                .willReturn(Set.of(USER_ID));
+
+        assertThat(certificationService.findApprovedUserIdsByFestivalId(FESTIVAL_ID, List.of(USER_ID, 999L)))
+                .containsExactly(USER_ID);
+    }
+
+    @Test
+    void 페스티벌_승인_사용자ID_범위한정_후보가_비면_쿼리없이_빈결과() {
+        assertThat(certificationService.findApprovedUserIdsByFestivalId(FESTIVAL_ID, List.of())).isEmpty();
+        then(certificationRepository).should(never()).findApprovedUserIdsByFestivalIdAndUserIdIn(anyLong(), any());
     }
 
     @Test

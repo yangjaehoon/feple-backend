@@ -488,7 +488,7 @@ class PostServiceImplTest {
                 .build();
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(eq(5L), any())).willReturn(Set.of(1L));
         given(postRepository.findGeneralFestivalPostsOrderByIdDesc(eq(festival), any(Pageable.class)))
                 .willReturn(List.of(post));
 
@@ -510,7 +510,7 @@ class PostServiceImplTest {
                 .build();
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(eq(5L), any())).willReturn(Set.of(1L));
         given(postRepository.findGeneralFestivalPostsOrderByIdDesc(eq(festival), any(Pageable.class)))
                 .willReturn(List.of(post));
 
@@ -618,7 +618,7 @@ class PostServiceImplTest {
                 .build();
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(eq(5L), any())).willReturn(Set.of(1L));
         given(postRepository.findByFestivalAndBoardTypeOrderByIdDesc(eq(festival), eq(BoardType.MATE), any(Pageable.class)))
                 .willReturn(List.of(post));
 
@@ -636,7 +636,7 @@ class PostServiceImplTest {
         List<Post> posts = List.of(freePost(3L, author), freePost(2L, author), freePost(1L, author));
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of());
+        given(certificationService.findApprovedUserIdsByFestivalId(eq(5L), any())).willReturn(Set.of());
         given(postRepository.findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(
                         eq(festival), eq(BoardType.FREE), eq(5L), any(Pageable.class)))
                 .willReturn(posts);
@@ -680,7 +680,7 @@ class PostServiceImplTest {
                 .build();
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(eq(5L), any())).willReturn(Set.of(1L));
         given(postRepository.findByFestivalOrderByLikeCountDesc(eq(festival), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(post)));
 

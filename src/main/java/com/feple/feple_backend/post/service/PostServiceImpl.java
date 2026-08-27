@@ -85,7 +85,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(boardType, limit),
                 limit -> postRepository.findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(boardType, cursor, limit),
                 () -> postRepository.findByBoardTypeAndPinnedTrueOrderByCreatedAtDesc(boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                post -> PostResponseDto.from(post, fileStorageService));
+                this::toDtos);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByArtistOrderByIdDesc(artist, limit),
                 limit -> postRepository.findByArtistAndIdLessThanOrderByIdDesc(artist, cursor, limit),
                 () -> postRepository.findByArtistAndPinnedTrueOrderByCreatedAtDesc(artist, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                post -> PostResponseDto.from(post, fileStorageService));
+                this::toDtos);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postTagRepository.findByTagAndPostIdLessThanOrderByPostIdDesc(normalized, cursor, limit).stream()
                         .map(PostTag::getPost).filter(Objects::nonNull).toList(),
                 List::of,
-                post -> PostResponseDto.from(post, fileStorageService));
+                this::toDtos);
     }
 
     @Override
@@ -160,13 +160,12 @@ public class PostServiceImpl implements PostService {
     @Override
     public CursorPage<PostResponseDto> getPostsByFestivalIdPaged(Long festivalId, CursorPageRequest pageRequest) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         Long cursor = pageRequest.cursor();
         return buildCursorPage(pageRequest,
                 limit -> postRepository.findGeneralFestivalPostsOrderByIdDesc(festival, limit),
                 limit -> postRepository.findGeneralFestivalPostsAndIdLessThanOrderByIdDesc(festival, cursor, limit),
                 () -> postRepository.findGeneralFestivalPinnedPostsOrderByCreatedAtDesc(festival, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId()), fileStorageService));
+                posts -> toFestivalDtos(festivalId, posts));
     }
 
     @Override
@@ -180,13 +179,12 @@ public class PostServiceImpl implements PostService {
     @Override
     public CursorPage<PostResponseDto> getPostsByFestivalIdAndBoardTypePaged(Long festivalId, BoardType boardType, CursorPageRequest pageRequest) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
         Long cursor = pageRequest.cursor();
         return buildCursorPage(pageRequest,
                 limit -> postRepository.findByFestivalAndBoardTypeOrderByIdDesc(festival, boardType, limit),
                 limit -> postRepository.findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(festival, boardType, cursor, limit),
                 () -> postRepository.findByFestivalAndBoardTypeAndPinnedTrueOrderByCreatedAtDesc(festival, boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId()), fileStorageService));
+                posts -> toFestivalDtos(festivalId, posts));
     }
 
     @Override
@@ -200,11 +198,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostResponseDto> getPopularFestivalPosts(Long festivalId, Long viewerId) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-        Set<Long> certifiedUserIds = certificationService.findApprovedUserIdsByFestivalId(festivalId);
-        List<PostResponseDto> posts = postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS))
-                .map(post -> PostResponseDto.from(post, certifiedUserIds.contains(post.getUserId()), fileStorageService))
-                .toList();
-        return blockedContentFilter.excludeBlocked(posts, viewerId, PostResponseDto::getUserId);
+        List<Post> posts = postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS)).getContent();
+        return blockedContentFilter.excludeBlocked(
+                toFestivalDtos(festivalId, posts), viewerId, PostResponseDto::getUserId);
     }
 
     @Override
@@ -234,20 +230,35 @@ public class PostServiceImpl implements PostService {
     // fetchFirst/fetchAfterCursor는 cursor==null 여부에 따라 호출부에서 다른 리포지토리 메서드를 넘긴다.
     // 고정글(fetchPinned)은 첫 페이지(cursor==null)에만 상단에 붙인다 — 매 페이지마다 붙이면
     // 커서 페이지네이션 특성상 넘길 때마다 같은 고정글이 반복 노출된다.
+    // pageMapper는 한 페이지분 Post 전체를 받는다 — 인증 뱃지처럼 "이 페이지 작성자들"에 대해서만
+    // 조회하면 되는 부가 정보를 페이지 단위 쿼리 1회로 해결하기 위함(페스티벌 전체 인증자 로드 방지).
     private CursorPage<PostResponseDto> buildCursorPage(CursorPageRequest pageRequest,
                                                           Function<PageRequest, List<Post>> fetchFirst,
                                                           Function<PageRequest, List<Post>> fetchAfterCursor,
                                                           Supplier<List<Post>> fetchPinned,
-                                                          Function<Post, PostResponseDto> mapper) {
+                                                          Function<List<Post>, List<PostResponseDto>> pageMapper) {
         return CursorPageAssembler.assemble(pageRequest.cursor(), pageRequest.size(), fetchFirst, fetchAfterCursor,
                 pageItems -> {
                     List<Post> combined = pageRequest.cursor() == null
                             ? Stream.concat(fetchPinned.get().stream(), pageItems.stream()).toList()
                             : pageItems;
                     return blockedContentFilter.excludeBlocked(
-                            combined.stream().map(mapper).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
+                            pageMapper.apply(combined), pageRequest.viewerId(), PostResponseDto::getUserId);
                 },
                 Post::getId);
+    }
+
+    private List<PostResponseDto> toDtos(List<Post> posts) {
+        return posts.stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
+    }
+
+    // 페스티벌 게시글 목록: 인증 뱃지를 "이 목록에 등장하는 작성자"에 한해 한 번에 조회한다.
+    private List<PostResponseDto> toFestivalDtos(Long festivalId, List<Post> posts) {
+        List<Long> authorIds = posts.stream().map(Post::getUserId).distinct().toList();
+        Set<Long> certified = certificationService.findApprovedUserIdsByFestivalId(festivalId, authorIds);
+        return posts.stream()
+                .map(post -> PostResponseDto.from(post, certified.contains(post.getUserId()), fileStorageService))
+                .toList();
     }
 
     // 트랜잭션 밖(NOT_SUPPORTED)에서 실행된다 — 검증(외부 I/O 포함)을 끝낸 뒤 DB 저장은

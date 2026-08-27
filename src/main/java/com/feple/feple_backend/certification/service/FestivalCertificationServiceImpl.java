@@ -16,6 +16,7 @@ import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,6 +153,15 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
     @Transactional(readOnly = true)
     public Set<Long> findApprovedUserIdsByFestivalId(Long festivalId) {
         return certificationRepository.findApprovedUserIdsByFestivalId(festivalId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<Long> findApprovedUserIdsByFestivalId(Long festivalId, Collection<Long> candidateUserIds) {
+        if (candidateUserIds.isEmpty()) {
+            return Set.of();
+        }
+        return certificationRepository.findApprovedUserIdsByFestivalIdAndUserIdIn(festivalId, candidateUserIds);
     }
 
     @Override
