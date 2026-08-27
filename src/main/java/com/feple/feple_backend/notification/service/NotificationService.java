@@ -59,6 +59,9 @@ public class NotificationService {
     /** 댓글/좋아요를 제외한 자동 알림은 00:00~09:00(KST)에 발생하면 즉시 보내지 않고 대기열에 쌓았다가 오전 9시에 발송 */
     private static final LocalTime MORNING_DELIVERY_TIME = LocalTime.of(9, 0);
 
+    /** 대량 팬아웃 알림을 한 번에 처리하는 사용자 수 상한 (FCM multicast 상한과 동일) */
+    private static final int FAN_OUT_CHUNK_SIZE = 500;
+
     private final NotificationRepository notificationRepository;
     private final PendingPushRepository pendingPushRepository;
     private final ArtistFollowRepository artistFollowRepository;
@@ -110,12 +113,11 @@ public class NotificationService {
         String bodyEn = NotificationMessages.newFestivalBodyEn(event.festivalTitleEn());
 
         List<Long> userIds = follows.stream().map(ArtistFollow::getUserId).toList();
-        List<User> users = userRepository.findAllById(userIds);
 
         NotificationMessage message = new NotificationMessage(
                 NotificationType.NEW_FESTIVAL, title, body, titleEn, bodyEn, String.valueOf(event.festivalId()));
-        saveAndPush(users, message, festival);
-        log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})", users.size(), event.artistId(), event.festivalId());
+        fanOut(userIds, message, festival);
+        log.info("[Notification] 인앱 알림 {}건 저장 (artistId={}, festivalId={})", userIds.size(), event.artistId(), event.festivalId());
     }
 
     /** 인증 승인 알림 — 커밋 후에만 발송 */
@@ -346,11 +348,19 @@ public class NotificationService {
         String bodyEn = NotificationMessages.festivalReminderBodyEn(festivalTitleEn, dDay);
 
         Festival festival = festivalRepository.findById(festivalId).orElse(null);
-        List<User> users = userRepository.findAllById(userIds);
         NotificationMessage message = new NotificationMessage(
                 NotificationType.FESTIVAL_REMINDER, title, body, titleEn, bodyEn, String.valueOf(festivalId));
-        saveAndPush(users, message, festival);
-        log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, users.size(), festivalId);
+        fanOut(userIds, message, festival);
+        log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, userIds.size(), festivalId);
+    }
+
+    // 팔로워/참석자 대량 알림은 청크로 나눠 저장·발송한다 — findAllById·saveAll·IN 쿼리가
+    // 한 번에 수만 건을 다루지 않도록.
+    private void fanOut(List<Long> userIds, NotificationMessage message, Festival festival) {
+        for (int i = 0; i < userIds.size(); i += FAN_OUT_CHUNK_SIZE) {
+            List<Long> chunk = userIds.subList(i, Math.min(i + FAN_OUT_CHUNK_SIZE, userIds.size()));
+            saveAndPush(userRepository.findAllById(chunk), message, festival);
+        }
     }
 
     private void saveAndPushSingle(Notification notification, Long userId, NotificationMessage message) {
