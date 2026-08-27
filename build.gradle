@@ -121,7 +121,7 @@ spotbugs {
 // strictly로 직접 선언해야 한다 — 단, 그러면 플러그인이 자동 주입하던 spotbugs 엔진 자체
 // (defaultDependencies)가 빠지므로 엔진 좌표도 같이 명시해야 함
 dependencies {
-	spotbugs "com.github.spotbugs:spotbugs:4.10.3"
+	spotbugs "com.github.spotbugs:spotbugs:4.10.4"
 	spotbugs('org.apache.commons:commons-lang3') {
 		version { strictly '3.20.0' }
 	}
