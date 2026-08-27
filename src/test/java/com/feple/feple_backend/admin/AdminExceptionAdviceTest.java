@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -67,8 +68,7 @@ class AdminExceptionAdviceTest {
     void 접근_거부는_500이_아니라_접근거부_화면으로_리다이렉트() throws Exception {
         mockMvc.perform(get("/admin/test/denied"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
-                        .redirectedUrl("/admin/access-denied"));
+                .andExpect(redirectedUrl("/admin/access-denied"));
     }
 
     @Controller

@@ -2,8 +2,10 @@ package com.feple.feple_backend.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.LongStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
@@ -226,7 +228,7 @@ class AdminActionUtilsTest {
         RedirectAttributesModelMap ra = ra();
 
         String result = AdminActionUtils.requireValidSelection(
-                java.util.List.of(1L, 2L, 3L), "redirect:/admin/users", ra);
+                List.of(1L, 2L, 3L), "redirect:/admin/users", ra);
 
         assertThat(result).isNull();
         assertThat(ra.getFlashAttributes()).isEmpty();
@@ -247,7 +249,7 @@ class AdminActionUtilsTest {
         RedirectAttributesModelMap ra = ra();
 
         String result = AdminActionUtils.requireValidSelection(
-                java.util.List.of(), "redirect:/admin/users", ra);
+                List.of(), "redirect:/admin/users", ra);
 
         assertThat(result).isEqualTo("redirect:/admin/users");
         assertThat(flash(ra, "errorMessage")).isEqualTo(AdminConstants.MSG_EMPTY_SELECTION);
@@ -256,7 +258,7 @@ class AdminActionUtilsTest {
     @Test
     void requireValidSelection_상한_이하면_통과() {
         RedirectAttributesModelMap ra = ra();
-        java.util.List<Long> ids = java.util.stream.LongStream
+        List<Long> ids = LongStream
                 .rangeClosed(1, AdminConstants.BULK_ACTION_MAX_IDS).boxed().toList();
 
         String result = AdminActionUtils.requireValidSelection(ids, "redirect:/admin/users", ra);
@@ -267,7 +269,7 @@ class AdminActionUtilsTest {
     @Test
     void requireValidSelection_상한_초과하면_안내_메시지_후_redirect() {
         RedirectAttributesModelMap ra = ra();
-        java.util.List<Long> ids = java.util.stream.LongStream
+        List<Long> ids = LongStream
                 .rangeClosed(1, AdminConstants.BULK_ACTION_MAX_IDS + 1).boxed().toList();
 
         String result = AdminActionUtils.requireValidSelection(ids, "redirect:/admin/users", ra);
@@ -278,7 +280,7 @@ class AdminActionUtilsTest {
 
     @Test
     void describeIds_건수와_id_목록_문자열() {
-        assertThat(AdminActionUtils.describeIds(java.util.List.of(12L, 45L, 78L)))
+        assertThat(AdminActionUtils.describeIds(List.of(12L, 45L, 78L)))
                 .isEqualTo("3건 [12, 45, 78]");
     }
 }

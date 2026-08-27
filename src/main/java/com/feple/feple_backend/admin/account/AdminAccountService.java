@@ -51,6 +51,9 @@ public class AdminAccountService {
     /** @return 생성된 계정 — 컨트롤러가 감사 로그(id, username) 기록에 사용 */
     public AdminAccount create(AdminAccountCreateRequestDto req) {
         validateNewAccount(req.username(), req.password());
+        Map<AdminPermission, AdminPermissionLevel> permissions =
+                resolvePermissions(req.role(), req.readPermissions(), req.writePermissions());
+        validateManagerHasPermission(req.role(), permissions);
         String profileImageUrl = uploadProfileIfPresent(req.profileImage(), req.username());
         // DB 저장 실패로 트랜잭션이 롤백되면 이미 올라간 S3 파일이 orphan으로 남지 않도록 정리
         fileStorageService.deleteFileOnRollback(profileImageUrl);
@@ -64,7 +67,7 @@ public class AdminAccountService {
                     .password(passwordEncoder.encode(req.password()))
                     .displayName(req.displayName())
                     .role(req.role())
-                    .permissions(resolvePermissions(req.role(), req.readPermissions(), req.writePermissions()))
+                    .permissions(permissions)
                     .profileImageUrl(profileImageUrl)
                     .build());
         } catch (DataIntegrityViolationException e) {
@@ -75,8 +78,10 @@ public class AdminAccountService {
     public void update(Long id, AdminAccountUpdateRequestDto req) {
         AdminAccount account = findById(id);
         validateRoleChange(account, req.role());
-        account.updateProfile(req.displayName(), req.role(),
-                resolvePermissions(req.role(), req.readPermissions(), req.writePermissions()));
+        Map<AdminPermission, AdminPermissionLevel> permissions =
+                resolvePermissions(req.role(), req.readPermissions(), req.writePermissions());
+        validateManagerHasPermission(req.role(), permissions);
+        account.updateProfile(req.displayName(), req.role(), permissions);
         if (req.password() != null && !req.password().isBlank()) {
             validatePasswordComplexity(req.password());
             account.updatePassword(passwordEncoder.encode(req.password()));
@@ -204,9 +209,19 @@ public class AdminAccountService {
         }
     }
 
+    // 일반 관리자는 접근 권한이 하나도 없으면 로그인해도 아무 페이지에 못 들어가므로(대시보드·전역
+    // 검색만 열림) 저장 자체를 막는다. SUPER_ADMIN은 전 권한이 동적 부여되므로 예외.
+    private static void validateManagerHasPermission(AdminRole role,
+                                                    Map<AdminPermission, AdminPermissionLevel> permissions) {
+        if (role == AdminRole.MANAGER && permissions.isEmpty()) {
+            throw new IllegalArgumentException("일반 관리자는 최소 1개 이상의 접근 권한이 필요합니다.");
+        }
+    }
+
     // SUPER_ADMIN은 권한 맵을 비워둔다(로그인 시 전 권한 동적 부여). MANAGER는 읽기/쓰기 체크박스를
     // 병합하되, 같은 항목에 둘 다 체크됐거나 쓰기만 체크됐으면 WRITE로 승격한다(WRITE ⊇ READ).
-    private static Map<AdminPermission, AdminPermissionLevel> resolvePermissions(
+    // 감사 로그의 "변경 후" 표현에도 재사용하려고 패키지 공개로 둔다.
+    static Map<AdminPermission, AdminPermissionLevel> resolvePermissions(
             AdminRole role, Set<AdminPermission> readPermissions, Set<AdminPermission> writePermissions) {
         Map<AdminPermission, AdminPermissionLevel> resolved = new EnumMap<>(AdminPermission.class);
         if (role == AdminRole.SUPER_ADMIN) {

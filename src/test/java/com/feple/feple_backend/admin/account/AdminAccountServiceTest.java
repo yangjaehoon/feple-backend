@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.account;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -122,8 +123,8 @@ class AdminAccountServiceTest {
         verify(accountRepository).save(captor.capture());
         assertThat(captor.getValue().getPermissions())
                 .containsOnly(
-                        org.assertj.core.api.Assertions.entry(AdminPermission.POSTS, AdminPermissionLevel.READ),
-                        org.assertj.core.api.Assertions.entry(AdminPermission.USERS, AdminPermissionLevel.WRITE));
+                        entry(AdminPermission.POSTS, AdminPermissionLevel.READ),
+                        entry(AdminPermission.USERS, AdminPermissionLevel.WRITE));
     }
 
     @Test
@@ -141,7 +142,19 @@ class AdminAccountServiceTest {
         ArgumentCaptor<AdminAccount> captor = ArgumentCaptor.forClass(AdminAccount.class);
         verify(accountRepository).save(captor.capture());
         assertThat(captor.getValue().getPermissions())
-                .containsExactly(org.assertj.core.api.Assertions.entry(AdminPermission.POSTS, AdminPermissionLevel.WRITE));
+                .containsExactly(entry(AdminPermission.POSTS, AdminPermissionLevel.WRITE));
+    }
+
+    @Test
+    void MANAGER_권한이_하나도_없으면_생성_거부() {
+        given(accountRepository.existsByUsername("manager3")).willReturn(false);
+        AdminAccountCreateRequestDto req = new AdminAccountCreateRequestDto(
+                "manager3", "Pass1234!", "표시이름", AdminRole.MANAGER, Set.of(), Set.of(), null);
+
+        assertThatThrownBy(() -> service.create(req))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("일반 관리자는 최소 1개 이상의 접근 권한이 필요합니다.");
+        verify(accountRepository, never()).save(any());
     }
 
     // ── create: 아이디 검증 ──────────────────────────────────────────────────
@@ -324,7 +337,7 @@ class AdminAccountServiceTest {
         given(accountRepository.findByRoleForUpdate(AdminRole.SUPER_ADMIN)).willReturn(List.of(account));
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, false);
+                "새이름", AdminRole.MANAGER, Set.of(AdminPermission.POSTS), Set.of(), null, null, false);
 
         assertThatThrownBy(() -> service.update(1L, req))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -338,7 +351,7 @@ class AdminAccountServiceTest {
         given(passwordEncoder.encode("NewPass1!")).willReturn("newEncoded");
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), "NewPass1!", null, false);
+                "새이름", AdminRole.MANAGER, Set.of(AdminPermission.POSTS), Set.of(), "NewPass1!", null, false);
 
         service.update(1L, req);
 
@@ -351,7 +364,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, account);
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, false);
+                "새이름", AdminRole.MANAGER, Set.of(AdminPermission.POSTS), Set.of(), null, null, false);
 
         service.update(1L, req);
 
@@ -365,7 +378,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, account);
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, true);
+                "새이름", AdminRole.MANAGER, Set.of(AdminPermission.POSTS), Set.of(), null, null, true);
 
         service.update(1L, req);
 
@@ -378,7 +391,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, account);
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, true);
+                "새이름", AdminRole.MANAGER, Set.of(AdminPermission.POSTS), Set.of(), null, null, true);
 
         service.update(1L, req);
 
