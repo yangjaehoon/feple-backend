@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:replace="~{admin/fragments :: head('오류')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('none')}"></div>
+<div class="main-content">
+    <div class="content-area access-denied-wrap">
+        <div class="access-denied-box">
+            <div class="access-denied-icon">⚠️</div>
+            <h2 class="access-denied-title"
+                th:text="${statusCode != null ? statusCode + ' ' + statusText : '오류가 발생했습니다'}">오류가 발생했습니다</h2>
+            <p class="access-denied-desc"
+               th:text="${errorMessage != null ? errorMessage : '요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'}">
+                요청을 처리하는 중 오류가 발생했습니다.
+            </p>
+            <a th:href="@{/admin}" class="btn btn-primary">대시보드로 돌아가기</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
