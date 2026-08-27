@@ -19,6 +19,8 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -76,6 +78,7 @@ public class WeatherService {
      * 외부 API 호출(fetchFromApi)이 커넥션을 물고 있지 않도록 트랜잭션은 DB 저장
      * (FestivalWeatherStore.saveOrUpdate, 별도 빈)에만 건다.
      */
+    @CacheEvict(value = "festivalWeather", key = "#festival.id")
     public boolean collectWeather(Festival festival) {
         LocalDate today = KoreaClock.today();
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
@@ -104,13 +107,17 @@ public class WeatherService {
      * 컨트롤러 전용: WeatherCollectionScheduler가 매일 수집해 둔 DB 캐시만 반환한다.
      * 요청 스레드에서 기상청 API를 실시간 호출하면 외부 API 지연 시 Tomcat 스레드가
      * 그대로 묶이므로(무응답 시 스레드 풀 고갈) 수집은 스케줄러에만 맡긴다.
+     * 결과는 festivalWeather 캐시에 담아 findById + findByFestivalId 2쿼리를 재사용 없이
+     * 반복하지 않는다 — 수집/삭제 시 evict.
      */
+    @Cacheable(value = "festivalWeather", key = "#festivalId")
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
         EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
     }
 
     @Transactional
+    @CacheEvict(value = "festivalWeather", key = "#festivalId")
     public void removeAllByFestival(Long festivalId) {
         weatherRepository.deleteByFestivalId(festivalId);
     }

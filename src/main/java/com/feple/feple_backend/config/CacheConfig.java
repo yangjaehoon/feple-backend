@@ -71,7 +71,12 @@ public class CacheConfig {
             new CacheSpec("artistDetail", Duration.ofMinutes(10), 300),
 
             // 타임테이블(festivalId별): 관리자 수정 전까지 불변 — 30분 TTL, create/update/delete 시 해당 키 evict
-            new CacheSpec("timetable", Duration.ofMinutes(30), 100)
+            new CacheSpec("timetable", Duration.ofMinutes(30), 100),
+
+            // 페스티벌 날씨(festivalId별): WeatherCollectionScheduler가 하루 1회만 갱신 —
+            // 조회 요청마다 findById + findByFestivalId 2쿼리 방지. 30분 TTL,
+            // collectWeather(수집)·removeAllByFestival(페스티벌 삭제) 시 해당 키 evict
+            new CacheSpec("festivalWeather", Duration.ofMinutes(30), 500)
     );
 
     @Bean
