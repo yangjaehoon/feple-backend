@@ -62,7 +62,13 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
                 .toList();
 
         if (!toCreate.isEmpty()) {
-            preferenceRepository.saveAll(toCreate).forEach(p -> map.put(p.getUserId(), p));
+            try {
+                preferenceRepository.saveAll(toCreate).forEach(p -> map.put(p.getUserId(), p));
+            } catch (DataIntegrityViolationException e) {
+                // 동시 요청이 같은 유저의 기본 설정을 먼저 insert한 경우 — 다시 조회해 채운다 (getOrCreate와 동일 패턴)
+                List<Long> missing = toCreate.stream().map(NotificationPreference::getUserId).toList();
+                preferenceRepository.findAllByUserIdIn(missing).forEach(p -> map.put(p.getUserId(), p));
+            }
         }
         return map;
     }

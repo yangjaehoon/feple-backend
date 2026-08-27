@@ -140,6 +140,18 @@ class NotificationPreferenceServiceImplTest {
         verify(preferenceRepository, never()).saveAll(any());
     }
 
+    @Test
+    void getOrCreateBatch_동시_insert_충돌시_재조회로_채운다() {
+        given(preferenceRepository.findAllByUserIdIn(List.of(1L)))
+                .willReturn(List.of())
+                .willReturn(List.of(NotificationPreference.defaultFor(1L)));
+        given(preferenceRepository.saveAll(any())).willThrow(new DataIntegrityViolationException("dup"));
+
+        Map<Long, NotificationPreference> result = service.getOrCreateBatch(List.of(1L));
+
+        assertThat(result).containsKey(1L);
+    }
+
     // ── removeAllByUser ──────────────────────────────────────────────────
 
     @Test

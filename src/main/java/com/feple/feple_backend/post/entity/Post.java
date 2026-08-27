@@ -1,7 +1,6 @@
 package com.feple.feple_backend.post.entity;
 
 import com.feple.feple_backend.artist.entity.Artist;
-import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -112,10 +111,6 @@ public class Post {
     private int commentCount = 0;
 
     public int getCommentCount() { return commentCount; }
-
-    @Builder.Default
-    @OneToMany(mappedBy = "post")
-    private List<Comment> comments = new ArrayList<>();
 
     // 목록 조회 시 게시글마다 별도 쿼리가 나가지 않도록 BatchSize로 묶어 조회한다
     // (JOIN FETCH는 페이지네이션과 함께 쓰면 결과가 뒤틀리므로 사용하지 않음).
