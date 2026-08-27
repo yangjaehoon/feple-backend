@@ -6,15 +6,11 @@ import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.notification.dto.NotificationDto;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationType;
-import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
-import com.feple.feple_backend.user.repository.UserRepository;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationQueryService {
 
     private static final int MAX_PERSONAL = 200;
-    private static final int MAX_BROADCAST = 50;
 
     private static final Set<NotificationType> CERT_TYPES = EnumSet.of(
             NotificationType.CERT_APPROVED, NotificationType.CERT_REJECTED);
@@ -44,8 +39,6 @@ public class NotificationQueryService {
             NotificationType.ARTIST_SUGGESTION_PROCESSED, NotificationType.FESTIVAL_SUGGESTION_PROCESSED);
 
     private final NotificationRepository notificationRepository;
-    private final BroadcastNotificationRepository broadcastNotificationRepository;
-    private final UserRepository userRepository;
     private final S3PresignService s3PresignService;
 
     public Page<NotificationDto> getMyNotifications(Long userId, Pageable pageable, String typeGroup) {
@@ -54,8 +47,8 @@ public class NotificationQueryService {
         return paginate(all, pageable);
     }
 
-    // presign은 최종 페이지에 실제로 노출되는 항목에 대해서만 수행해야 한다 — merge 단계에서
-    // 최대 250건(개인 200+공지 50) 전부에 대해 미리 presign하면 대부분 버려지는 낭비 작업이 된다.
+    // presign은 최종 페이지에 실제로 노출되는 항목에 대해서만 수행해야 한다 — 조회 단계에서
+    // 최대 200건 전부에 대해 미리 presign하면 대부분 버려지는 낭비 작업이 된다.
     private record MergedNotification(NotificationDto dto, String imageKey) {}
 
     private List<MergedNotification> fetchMergedNotifications(Long userId, Set<NotificationType> typeFilter) {
@@ -70,21 +63,10 @@ public class NotificationQueryService {
                     .toList();
         }
 
-        List<MergedNotification> personal = notificationRepository
+        return notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, MAX_PERSONAL))
                 .stream()
                 .map(this::toMergedPersonal)
-                .toList();
-        // 가입 이전에 발송된 전체 공지는 신규 유저에게 새 알림처럼 보이면 안 되므로 가입일 이후 것만 병합한다.
-        LocalDateTime joinedAt = userRepository.findCreatedAtById(userId).orElse(LocalDateTime.MIN);
-        List<MergedNotification> broadcasts = broadcastNotificationRepository
-                .findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(joinedAt, PageRequest.of(0, MAX_BROADCAST))
-                .stream()
-                .map(b -> new MergedNotification(NotificationDto.forBroadcast(b), null))
-                .toList();
-
-        return Stream.concat(personal.stream(), broadcasts.stream())
-                .sorted(Comparator.comparing(m -> m.dto().createdAt(), Comparator.reverseOrder()))
                 .toList();
     }
 

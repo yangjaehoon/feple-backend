@@ -12,6 +12,7 @@ import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.notification.service.PushNotificationClient;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
+import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class AdminPushService {
 
     private final UserDeviceTokenRepository deviceTokenRepository;
+    private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final PushNotificationClient fcmPushService;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
@@ -106,13 +108,17 @@ public class AdminPushService {
         if (tokens.isEmpty()) {
             throw new IllegalArgumentException("등록된 디바이스 토큰이 없습니다.");
         }
-        // 전체 발송은 BroadcastNotification 단일 레코드만 저장한다.
-        // 개별 Notification을 유저 수만큼 INSERT하면 대규모 DB 부하가 생기고,
-        // 앱은 BroadcastNotification 타임라인을 별도로 조회해 알림 목록에 노출한다.
-        // 특정 대상 발송(sendToArtistFollowers, sendToFestivalCertified)은 실제 Notification을 저장해
-        // 개인 알림 목록에도 표시되게 한다.
+        // 특정 대상 발송(sendToArtistFollowers, sendToFestivalCertified)과 동일하게 유저별 Notification을
+        // 저장해 개인 알림 목록에서 읽음/삭제가 가능하게 한다. 이렇게 해야 발송 시점에 존재하지 않던(=아직
+        // 가입 전인) 유저에게는 애초에 row가 생기지 않아, 나중에 가입한 유저가 예전 공지를 새 알림처럼
+        // 보는 문제가 구조적으로 발생하지 않는다.
+        // BroadcastNotification은 관리자 발송 이력 조회(getBroadcastHistory) 전용으로만 남기고,
+        // 개인 알림 목록에는 더 이상 노출하지 않는다.
+        List<Long> userIds = userRepository.findAllActiveIds();
+        notificationService.saveAdminBroadcastNotifications(userIds, title, body);
         broadcastNotificationRepository.save(BroadcastNotification.of(title, body));
-        logAndSend(tokens, title, body, "[AdminPush] 전체 푸시 발송 시작 — 토큰 {}개, 제목: {}", tokens.size(), title);
+        logAndSend(tokens, title, body, "[AdminPush] 전체 푸시 발송 시작 — 대상 {}명, 토큰 {}개, 제목: {}",
+                userIds.size(), tokens.size(), title);
     }
 
     /**

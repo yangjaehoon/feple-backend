@@ -18,6 +18,7 @@ import com.feple.feple_backend.notification.service.NotificationService;
 import com.feple.feple_backend.notification.service.PushNotificationClient;
 import com.feple.feple_backend.user.entity.UserDeviceToken;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
+import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +33,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 class AdminPushServiceTest {
 
     @Mock UserDeviceTokenRepository deviceTokenRepository;
+    @Mock UserRepository userRepository;
     @Mock NotificationService notificationService;
     @Mock PushNotificationClient fcmPushService;
     @Mock BroadcastNotificationRepository broadcastNotificationRepository;
@@ -155,9 +157,11 @@ class AdminPushServiceTest {
     @Test
     void 전체_발송_정상() {
         given(deviceTokenRepository.findAllTokens()).willReturn(List.of("t1", "t2"));
+        given(userRepository.findAllActiveIds()).willReturn(List.of(1L, 2L));
 
         service.sendToAll("제목", "내용");
 
+        verify(notificationService).saveAdminBroadcastNotifications(List.of(1L, 2L), "제목", "내용");
         verify(broadcastNotificationRepository).save(any(BroadcastNotification.class));
         verify(fcmPushService).sendBroadcast(List.of("t1", "t2"), "제목", "내용");
     }
@@ -169,6 +173,7 @@ class AdminPushServiceTest {
         assertThatThrownBy(() -> service.sendToAll("제목", "내용"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("등록된 디바이스 토큰이 없습니다");
+        verify(notificationService, never()).saveAdminBroadcastNotifications(any(), any(), any());
         verify(broadcastNotificationRepository, never()).save(any());
     }
 
