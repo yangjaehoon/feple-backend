@@ -10,11 +10,17 @@ import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
+    // 외부 API(기상청 등) 호출용 공용 RestTemplate 타임아웃 — 미설정 시 무한 대기라
+    // 상대 서버가 응답을 지연시키면 요청 스레드가 계속 묶인다
+    private static final Duration REST_CONNECT_TIMEOUT = Duration.ofSeconds(3);
+    private static final Duration REST_READ_TIMEOUT = Duration.ofSeconds(5);
 
     private record CacheSpec(String name, Duration ttl, long maxSize) {}
 
@@ -70,7 +76,10 @@ public class CacheConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(REST_CONNECT_TIMEOUT);
+        requestFactory.setReadTimeout(REST_READ_TIMEOUT);
+        return new RestTemplate(requestFactory);
     }
 
     @Bean

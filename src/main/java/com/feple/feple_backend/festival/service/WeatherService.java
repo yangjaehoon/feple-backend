@@ -100,21 +100,13 @@ public class WeatherService {
         return true;
     }
 
-    /** 컨트롤러 전용: API 실패 시 캐시 데이터로 폴백. */
+    /**
+     * 컨트롤러 전용: WeatherCollectionScheduler가 매일 수집해 둔 DB 캐시만 반환한다.
+     * 요청 스레드에서 기상청 API를 실시간 호출하면 외부 API 지연 시 Tomcat 스레드가
+     * 그대로 묶이므로(무응답 시 스레드 풀 고갈) 수집은 스케줄러에만 맡긴다.
+     */
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
-        Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
-
-        LocalDate today = KoreaClock.today();
-        LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
-        if (end != null && end.isBefore(today)) {
-            return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
-        }
-
-        try {
-            collectWeather(festival);
-        } catch (Exception e) {
-            log.error("기상청 API 호출 실패: festivalId={}", festivalId, e);
-        }
+        EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
     }
 

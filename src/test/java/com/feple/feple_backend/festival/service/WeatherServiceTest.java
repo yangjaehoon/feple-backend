@@ -204,7 +204,7 @@ class WeatherServiceTest {
     }
 
     @Test
-    void 종료된_페스티벌은_캐시된_날씨만_반환() {
+    void 캐시된_날씨가_있으면_API_호출없이_반환() {
         Festival f = festival(1L, today().minusDays(10), today().minusDays(1));
         given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
         FestivalWeather cached = FestivalWeather.of(f, new WeatherDto("20260101", 1, 2, 3, SkyCode.SUNNY, PtyCode.NONE));
@@ -217,31 +217,16 @@ class WeatherServiceTest {
     }
 
     @Test
-    void 진행중_페스티벌은_수집시도후_캐시반환() throws Exception {
+    void 진행중_페스티벌도_실시간_수집없이_캐시만_반환() {
         Festival f = festival(1L, today(), today().plusDays(1));
         given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
-        String date = today().format(KMA_DATE);
-        String itemsJson = "[" + item("TMN", date, "0600", "5.0") + "," + item("TMX", date, "1500", "15.0") + "]";
-        given(restTemplate.getForObject(any(URI.class), eq(JsonNode.class))).willReturn(successBody(itemsJson));
-        given(weatherRepository.findByFestivalId(1L)).willReturn(Optional.empty(),
-                Optional.of(FestivalWeather.of(f, new WeatherDto(date, 5, 15, 0, SkyCode.SUNNY, PtyCode.NONE))));
-
-        Optional<WeatherDto> result = weatherService.getByFestivalId(1L);
-
-        assertThat(result).isPresent();
-        verify(weatherRepository).save(any(FestivalWeather.class));
-    }
-
-    @Test
-    void 수집중_API응답없어도_로그만_남기고_캐시반환() {
-        Festival f = festival(1L, today(), today().plusDays(1));
-        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
-        given(restTemplate.getForObject(any(URI.class), eq(JsonNode.class))).willReturn(null);
         given(weatherRepository.findByFestivalId(1L)).willReturn(Optional.empty());
 
         Optional<WeatherDto> result = weatherService.getByFestivalId(1L);
 
         assertThat(result).isEmpty();
+        verify(restTemplate, never()).getForObject(any(URI.class), any());
+        verify(weatherRepository, never()).save(any(FestivalWeather.class));
     }
 
     // ── removeAllByFestival ──────────────────────────────────────────────
