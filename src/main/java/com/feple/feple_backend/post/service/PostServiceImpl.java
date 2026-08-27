@@ -18,18 +18,12 @@ import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
-import com.feple.feple_backend.post.entity.PostImage;
 import com.feple.feple_backend.post.entity.PostTag;
-import com.feple.feple_backend.post.event.PostCreatedEvent;
-import com.feple.feple_backend.post.repository.PostDraftRepository;
-import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.repository.PostTagRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -38,10 +32,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -50,29 +44,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-    private final PostImageRepository postImageRepository;
     private final PostTagRepository postTagRepository;
-    private final PostDraftRepository postDraftRepository;
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
     private final FestivalRepository festivalRepository;
     private final FestivalCertificationService certificationService;
     private final BadWordValidator badWordFilter;
-    private final ApplicationEventPublisher eventPublisher;
     private final PopularPostCache popularPostCache;
     private final BlockedContentFilter blockedContentFilter;
     private final S3ObjectVerificationService s3ObjectVerificationService;
     private final FileStorageService fileStorageService;
-
-    private record PostContext(BoardType boardType, Artist artist, Festival festival) {}
+    // DB 영속 로직은 별도 트랜잭션 경계(PostWriter)에 위임한다 — 아래 create/update 진입점은
+    // 트랜잭션 밖에서 검증(S3 오브젝트 확인 등 외부 I/O 포함)을 끝내고 이 빈을 호출한다.
+    private final PostWriter postWriter;
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Long createPost(PostRequestDto dto, Long userId) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = savePost(dto, user, new PostContext(dto.getBoardType(), null, null));
-        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
-        return postId;
+        return savePost(dto, user, new PostContext(dto.getBoardType(), null, null));
     }
 
     @Override
@@ -111,18 +101,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void updateOwnPost(Long postId, PostRequestDto dto, Long requestUserId) {
         // 블라인드된 자기 글도 수정할 수 있어야 하므로 조회는 제약을 우회한다.
         Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글", "수정");
         validatePostContent(dto);
         validateImageUrls(dto.getImageUrls(), requestUserId);
-        post.update(dto.getTitle(), dto.getContent());
-        postImageRepository.deleteByPostId(postId);
-        saveImages(post, dto.getImageUrls());
-        postTagRepository.deleteByPostId(postId);
-        saveTags(post, dto.getTags());
+        postWriter.update(postId, dto);
     }
 
     @Override
@@ -150,7 +136,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public CursorPage<PostResponseDto> getPostsByTagPaged(String tag, CursorPageRequest pageRequest) {
-        String normalized = normalizeTag(tag);
+        String normalized = PostTags.normalize(tag);
         Long cursor = pageRequest.cursor();
         // 게시글이 삭제/블라인드되면 PostTag는 남아있어도 post 연관관계는 @SQLRestriction에 의해
         // null로 채워지므로, 매핑 전에 걸러내지 않으면 이후 PostResponseDto::from에서 NPE가 난다.
@@ -164,13 +150,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Long createArtistPost(Long artistId, PostRequestDto dto, Long userId) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = savePost(dto, user, new PostContext(null, artist, null));
-        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
-        return postId;
+        return savePost(dto, user, new PostContext(null, artist, null));
     }
 
     @Override
@@ -186,13 +170,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Long createFestivalPost(Long festivalId, PostRequestDto dto, Long userId) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = savePost(dto, user, new PostContext(null, null, festival));
-        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
-        return postId;
+        return savePost(dto, user, new PostContext(null, null, festival));
     }
 
     @Override
@@ -208,13 +190,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Long createFestivalTypedPost(Long festivalId, PostRequestDto dto, Long userId, BoardType boardType) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Long postId = savePost(dto, user, new PostContext(boardType, null, festival));
-        eventPublisher.publishEvent(new PostCreatedEvent(userId, postId));
-        return postId;
+        return savePost(dto, user, new PostContext(boardType, null, festival));
     }
 
     @Override
@@ -270,56 +250,12 @@ public class PostServiceImpl implements PostService {
                 Post::getId);
     }
 
+    // 트랜잭션 밖(NOT_SUPPORTED)에서 실행된다 — 검증(외부 I/O 포함)을 끝낸 뒤 DB 저장은
+    // PostWriter의 트랜잭션 경계에 위임한다.
     private Long savePost(PostRequestDto dto, User user, PostContext ctx) {
         validatePostContent(dto);
         validateImageUrls(dto.getImageUrls(), user.getId());
-        Post saved = postRepository.save(buildPost(dto, user, ctx));
-        saveImages(saved, dto.getImageUrls());
-        saveTags(saved, dto.getTags());
-        // 게시글이 실제로 등록됐으니 남아있던 임시저장은 정리한다 (없어도 no-op).
-        postDraftRepository.deleteByUserId(user.getId());
-        return saved.getId();
-    }
-
-    private Post buildPost(PostRequestDto dto, User user, PostContext ctx) {
-        return Post.builder()
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .boardType(ctx.boardType())
-                .likeCount(0)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .user(user)
-                .artist(ctx.artist())
-                .festival(ctx.festival())
-                .anonymous(dto.isAnonymous())
-                .build();
-    }
-
-    private void saveImages(Post post, List<String> imageUrls) {
-        if (imageUrls == null || imageUrls.isEmpty()) return;
-        List<PostImage> images = new ArrayList<>();
-        for (int i = 0; i < imageUrls.size(); i++) {
-            images.add(PostImage.builder().post(post).imageKey(imageUrls.get(i)).sortOrder(i).build());
-        }
-        postImageRepository.saveAll(images);
-    }
-
-    // 대소문자·앞뒤 공백만 다른 태그가 중복 저장되지 않도록 정규화 후 중복을 제거한다.
-    private void saveTags(Post post, List<String> tags) {
-        if (tags == null || tags.isEmpty()) return;
-        List<PostTag> postTags = tags.stream()
-                .map(this::normalizeTag)
-                .filter(tag -> !tag.isBlank())
-                .distinct()
-                .map(tag -> PostTag.builder().post(post).tag(tag).build())
-                .toList();
-        postTagRepository.saveAll(postTags);
-    }
-
-    private String normalizeTag(String tag) {
-        String trimmed = tag == null ? "" : tag.trim().toLowerCase();
-        return trimmed.startsWith("#") ? trimmed.substring(1) : trimmed;
+        return postWriter.save(dto, user, ctx);
     }
 
     private void validatePostContent(PostRequestDto dto) {

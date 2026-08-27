@@ -27,9 +27,6 @@ import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostTag;
-import com.feple.feple_backend.post.event.PostCreatedEvent;
-import com.feple.feple_backend.post.repository.PostDraftRepository;
-import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.repository.PostTagRepository;
 import com.feple.feple_backend.user.entity.User;
@@ -43,12 +40,10 @@ import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -58,15 +53,13 @@ import org.springframework.security.access.AccessDeniedException;
 class PostServiceImplTest {
 
     @Mock PostRepository postRepository;
-    @Mock PostImageRepository postImageRepository;
     @Mock PostTagRepository postTagRepository;
-    @Mock PostDraftRepository postDraftRepository;
+    @Mock PostWriter postWriter;
     @Mock UserRepository userRepository;
     @Mock ArtistRepository artistRepository;
     @Mock FestivalRepository festivalRepository;
     @Mock FestivalCertificationService certificationService;
     @Mock BadWordValidator badWordFilter;
-    @Mock ApplicationEventPublisher eventPublisher;
     @Mock PopularPostCache popularPostCache;
     @Mock S3ObjectVerificationService s3ObjectVerificationService;
     UserBlockService userBlockService = mock(UserBlockService.class);
@@ -82,15 +75,14 @@ class PostServiceImplTest {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
                 .boardType(BoardType.FREE).build();
-        Post saved = freePost(10L, author);
 
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.save(any(Post.class))).willReturn(saved);
+        given(postWriter.save(any(), eq(author), any())).willReturn(10L);
 
         Long id = postService.createPost(dto, 1L);
 
         assertThat(id).isEqualTo(10L);
-        verify(postRepository).save(any(Post.class));
+        verify(postWriter).save(any(), eq(author), any());
     }
 
     @Test
@@ -104,7 +96,7 @@ class PostServiceImplTest {
 
         assertThatThrownBy(() -> postService.createPost(dto, 1L))
                 .isInstanceOf(IllegalArgumentException.class);
-        verify(postRepository, never()).save(any());
+        verify(postWriter, never()).save(any(), any(), any());
     }
 
     @Test
@@ -128,7 +120,7 @@ class PostServiceImplTest {
         assertThatThrownBy(() -> postService.createPost(dto, 1L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("잘못된 오브젝트 키입니다.");
-        verify(postRepository, never()).save(any());
+        verify(postWriter, never()).save(any(), any(), any());
     }
 
     @Test
@@ -136,30 +128,14 @@ class PostServiceImplTest {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
                 .boardType(BoardType.FREE).imageUrls(List.of("posts/1/photo.jpg")).build();
-        Post saved = freePost(10L, author);
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.save(any(Post.class))).willReturn(saved);
+        given(postWriter.save(any(), eq(author), any())).willReturn(10L);
 
         Long id = postService.createPost(dto, 1L);
 
         assertThat(id).isEqualTo(10L);
+        // S3 오브젝트 검증은 트랜잭션(PostWriter) 진입 전에 수행돼야 한다
         verify(s3ObjectVerificationService).verifyImageObject("posts/1/photo.jpg");
-    }
-
-    @Test
-    void 태그는_정규화되고_중복이_제거되어_저장된다() {
-        User author = user(1L);
-        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).tags(List.of("#Rock", " rock ", "festival")).build();
-        Post saved = freePost(10L, author);
-        given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.save(any(Post.class))).willReturn(saved);
-
-        postService.createPost(dto, 1L);
-
-        ArgumentCaptor<List<PostTag>> captor = ArgumentCaptor.forClass(List.class);
-        verify(postTagRepository).saveAll(captor.capture());
-        assertThat(captor.getValue()).extracting(PostTag::getTag).containsExactly("rock", "festival");
     }
 
     // ── getPost ──────────────────────────────────────────────────────
@@ -244,7 +220,7 @@ class PostServiceImplTest {
     // ── updateOwnPost ────────────────────────────────────────────────
 
     @Test
-    void 본인_게시글_수정_성공() {
+    void 본인_게시글_수정시_검증후_PostWriter에_위임() {
         User author = user(1L);
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("수정된 제목").content("수정된 내용")
@@ -253,8 +229,7 @@ class PostServiceImplTest {
 
         postService.updateOwnPost(10L, dto, 1L);
 
-        assertThat(post.getTitle()).isEqualTo("수정된 제목");
-        assertThat(post.getContent()).isEqualTo("수정된 내용");
+        verify(postWriter).update(10L, dto);
     }
 
     @Test
@@ -267,6 +242,7 @@ class PostServiceImplTest {
 
         assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 2L))
                 .isInstanceOf(AccessDeniedException.class);
+        verify(postWriter, never()).update(any(), any());
     }
 
     @Test
@@ -581,16 +557,15 @@ class PostServiceImplTest {
         User author = user(1L);
         Artist artist = Artist.builder().id(3L).name("아이유").build();
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
-        Post saved = freePost(20L, author);
 
         given(artistRepository.findById(3L)).willReturn(Optional.of(artist));
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.save(any(Post.class))).willReturn(saved);
+        given(postWriter.save(any(), eq(author), any())).willReturn(20L);
 
         Long id = postService.createArtistPost(3L, dto, 1L);
 
         assertThat(id).isEqualTo(20L);
-        verify(eventPublisher).publishEvent(any(PostCreatedEvent.class));
+        verify(postWriter).save(any(), eq(author), any());
     }
 
     @Test
@@ -600,7 +575,7 @@ class PostServiceImplTest {
 
         assertThatThrownBy(() -> postService.createArtistPost(99L, dto, 1L))
                 .isInstanceOf(NoSuchElementException.class);
-        verify(postRepository, never()).save(any());
+        verify(postWriter, never()).save(any(), any(), any());
     }
 
     // ── createFestivalPost ───────────────────────────────────────────
@@ -610,16 +585,15 @@ class PostServiceImplTest {
         User author = user(1L);
         Festival festival = Festival.builder().id(5L).title("락 페스티벌").build();
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
-        Post saved = freePost(30L, author);
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.save(any(Post.class))).willReturn(saved);
+        given(postWriter.save(any(), eq(author), any())).willReturn(30L);
 
         Long id = postService.createFestivalPost(5L, dto, 1L);
 
         assertThat(id).isEqualTo(30L);
-        verify(eventPublisher).publishEvent(any(PostCreatedEvent.class));
+        verify(postWriter).save(any(), eq(author), any());
     }
 
     @Test
@@ -629,7 +603,7 @@ class PostServiceImplTest {
 
         assertThatThrownBy(() -> postService.createFestivalPost(99L, dto, 1L))
                 .isInstanceOf(NoSuchElementException.class);
-        verify(postRepository, never()).save(any());
+        verify(postWriter, never()).save(any(), any(), any());
     }
 
     // ── getPostsByFestivalIdAndBoardTypePaged ─────────────────────────
@@ -683,16 +657,15 @@ class PostServiceImplTest {
         User author = user(1L);
         Festival festival = Festival.builder().id(5L).title("락 페스티벌").build();
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
-        Post saved = freePost(40L, author);
 
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
-        given(postRepository.save(any(Post.class))).willReturn(saved);
+        given(postWriter.save(any(), eq(author), any())).willReturn(40L);
 
         Long id = postService.createFestivalTypedPost(5L, dto, 1L, BoardType.MATE);
 
         assertThat(id).isEqualTo(40L);
-        verify(eventPublisher).publishEvent(any(PostCreatedEvent.class));
+        verify(postWriter).save(any(), eq(author), any());
     }
 
     // ── getPopularFestivalPosts ────────────────────────────────────────
