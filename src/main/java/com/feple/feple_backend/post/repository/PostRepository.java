@@ -290,10 +290,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     void decrementCommentCount(@Param("postId") Long postId);
 
     // ── 조회수 카운트 ─────────────────────────────────────────────────────────
+    // 적중 행 수를 반환해 호출부가 별도 존재 확인 SELECT 없이 404를 판단한다.
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
-    void incrementViewCount(@Param("postId") Long postId);
+    int incrementViewCount(@Param("postId") Long postId);
 
     // ── Soft delete 관리자용 ──────────────────────────────────────────────────
     @Modifying(clearAutomatically = true)

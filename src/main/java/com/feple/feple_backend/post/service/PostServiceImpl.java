@@ -210,10 +210,10 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void incrementViewCount(Long postId) {
-        if (!postRepository.existsById(postId)) {
+        // 존재 확인용 SELECT 없이 UPDATE 적중 행 수로 404 판단 (1회 쿼리)
+        if (postRepository.incrementViewCount(postId) == 0) {
             throw new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId);
         }
-        postRepository.incrementViewCount(postId);
     }
 
     // 클래스 기본값(readOnly=true)을 오버라이드하지 않으면, 이 메서드가 트랜잭션을 여는

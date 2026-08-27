@@ -276,7 +276,7 @@ class PostServiceImplTest {
 
     @Test
     void 조회수_증가_성공() {
-        given(postRepository.existsById(10L)).willReturn(true);
+        given(postRepository.incrementViewCount(10L)).willReturn(1);
 
         postService.incrementViewCount(10L);
 
@@ -285,12 +285,10 @@ class PostServiceImplTest {
 
     @Test
     void 존재하지_않는_게시글_조회수_증가시_예외() {
-        given(postRepository.existsById(999L)).willReturn(false);
+        given(postRepository.incrementViewCount(999L)).willReturn(0);
 
         assertThatThrownBy(() -> postService.incrementViewCount(999L))
                 .isInstanceOf(NoSuchElementException.class);
-
-        verify(postRepository, never()).incrementViewCount(999L);
     }
 
     // ── getPopularPosts ──────────────────────────────────────────────────
