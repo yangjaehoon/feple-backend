@@ -91,7 +91,8 @@ public class AdminAccountController {
     private String buildUpdateLogDetail(AdminAccount before, AdminAccountUpdateRequestDto req) {
         return before.getUsername()
                 + " | role: " + before.getRole() + " → " + req.role()
-                + " | permissions: " + before.getPermissions() + " → " + req.permissions();
+                + " | permissions: " + before.getPermissions()
+                + " → read=" + req.readPermissions() + ", write=" + req.writePermissions();
     }
 
     @PostMapping("/{id}/delete")

@@ -55,7 +55,11 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
             requiredAuthority = "ROLE_SUPER_ADMIN";
         } else if (controllerClass.isAnnotationPresent(RequiresAdminPermission.class)) {
             AdminPermission required = controllerClass.getAnnotation(RequiresAdminPermission.class).value();
-            requiredAuthority = "PERM_" + required.name();
+            // 조회(GET/HEAD)는 READ, 그 외 변경 요청(POST/PUT/PATCH/DELETE)은 WRITE 권한을 요구한다.
+            // WRITE 보유자는 로그인 시 READ 권한도 함께 받으므로 조회도 통과한다.
+            AdminPermissionLevel requiredLevel = isReadOnly(request.getMethod())
+                    ? AdminPermissionLevel.READ : AdminPermissionLevel.WRITE;
+            requiredAuthority = required.authority(requiredLevel);
         } else {
             // 정상 배포라면 AdminPermissionAnnotationValidator가 기동 시점에 먼저 앱을 실패시켜야
             // 도달하지 않는 경로다. 그래도 방어적으로 차단한다(fail-closed).
@@ -67,6 +71,10 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         }
 
         return true;
+    }
+
+    private static boolean isReadOnly(String httpMethod) {
+        return "GET".equalsIgnoreCase(httpMethod) || "HEAD".equalsIgnoreCase(httpMethod);
     }
 
     private static boolean denyAccess(HttpServletResponse response) throws IOException {

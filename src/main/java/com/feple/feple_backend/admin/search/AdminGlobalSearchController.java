@@ -40,8 +40,9 @@ public class AdminGlobalSearchController {
         Set<String> authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
+        // 전역 검색은 조회 전용이므로 READ 권한(쓰기 보유자도 함께 받음)만 있으면 해당 도메인을 검색한다.
         return Arrays.stream(AdminPermission.values())
-                .filter(permission -> authorities.contains("PERM_" + permission.name()))
+                .filter(permission -> authorities.contains(permission.readAuthority()))
                 .collect(Collectors.toSet());
     }
 }

@@ -127,7 +127,7 @@ class AdminAccountControllerTest {
         AdminAccount before = mock(AdminAccount.class);
         given(before.getUsername()).willReturn("target");
         given(before.getRole()).willReturn(AdminRole.MANAGER);
-        given(before.getPermissions()).willReturn(java.util.Set.of());
+        given(before.getPermissions()).willReturn(java.util.Map.of());
         given(accountService.findById(1L)).willReturn(before);
 
         mockMvc.perform(multipart("/admin/accounts/1/update")
@@ -145,7 +145,7 @@ class AdminAccountControllerTest {
         AdminAccount before = mock(AdminAccount.class);
         given(before.getUsername()).willReturn("target");
         given(before.getRole()).willReturn(AdminRole.MANAGER);
-        given(before.getPermissions()).willReturn(java.util.Set.of());
+        given(before.getPermissions()).willReturn(java.util.Map.of());
         given(accountService.findById(1L)).willReturn(before);
         willThrow(new RuntimeException("오류")).given(accountService).update(anyLong(), any());
 

@@ -27,15 +27,20 @@ public class AdminUserDetailsService implements UserDetailsService {
 
         if (account.getRole() == AdminRole.SUPER_ADMIN) {
             authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
-            // SUPER_ADMIN 권한은 DB에 저장하지 않고 로그인 시점에 AdminPermission.values() 전체를 동적 부여.
+            // SUPER_ADMIN 권한은 DB에 저장하지 않고 로그인 시점에 전 권한(READ+WRITE)을 동적 부여.
             // AdminPermission enum에 새 항목을 추가하면 SUPER_ADMIN은 별도 조치 없이 자동으로 접근 가능.
             for (AdminPermission permission : AdminPermission.values()) {
-                authorities.add(new SimpleGrantedAuthority("PERM_" + permission.name()));
+                authorities.add(new SimpleGrantedAuthority(permission.readAuthority()));
+                authorities.add(new SimpleGrantedAuthority(permission.writeAuthority()));
             }
         } else {
-            for (AdminPermission permission : account.getPermissions()) {
-                authorities.add(new SimpleGrantedAuthority("PERM_" + permission.name()));
-            }
+            // WRITE 보유 시 READ도 함께 부여한다(WRITE ⊇ READ) — 인터셉터는 GET에 READ, 변경 요청에 WRITE를 요구.
+            account.getPermissions().forEach((permission, level) -> {
+                authorities.add(new SimpleGrantedAuthority(permission.readAuthority()));
+                if (level == AdminPermissionLevel.WRITE) {
+                    authorities.add(new SimpleGrantedAuthority(permission.writeAuthority()));
+                }
+            });
         }
 
         return new User(

@@ -40,7 +40,7 @@ class AdminHomeControllerTest {
 
     private static UsernamePasswordAuthenticationToken authWithLogsPermission() {
         return new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("PERM_LOGS")));
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_LOGS_READ")));
     }
 
     @Test

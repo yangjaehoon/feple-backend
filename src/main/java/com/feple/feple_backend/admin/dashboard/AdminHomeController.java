@@ -37,7 +37,7 @@ public class AdminHomeController {
     }
 
     private boolean hasLogsPermission(Authentication authentication) {
-        String requiredAuthority = "PERM_" + AdminPermission.LOGS.name();
+        String requiredAuthority = AdminPermission.LOGS.readAuthority();
         return authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals(requiredAuthority));
     }

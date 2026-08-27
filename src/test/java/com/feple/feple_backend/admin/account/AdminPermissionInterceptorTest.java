@@ -38,8 +38,13 @@ class AdminPermissionInterceptorTest {
     }
 
     private MockHttpServletRequest request(String uri) {
+        return request(uri, "GET");
+    }
+
+    private MockHttpServletRequest request(String uri, String method) {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI(uri);
+        request.setMethod(method);
         return request;
     }
 
@@ -75,7 +80,7 @@ class AdminPermissionInterceptorTest {
     @Test
     void 필요한_권한이_있으면_통과() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_READ"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         boolean result = interceptor.preHandle(request("/admin/users"), response, handlerMethod(UsersController.class));
@@ -86,7 +91,7 @@ class AdminPermissionInterceptorTest {
     @Test
     void 필요한_권한이_없으면_접근_거부() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("PERM_POSTS"))));
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_POSTS_READ"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         boolean result = interceptor.preHandle(request("/admin/users"), response, handlerMethod(UsersController.class));
@@ -96,9 +101,34 @@ class AdminPermissionInterceptorTest {
     }
 
     @Test
+    void POST_요청은_WRITE_권한이_없으면_거부() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_READ"))));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean result = interceptor.preHandle(
+                request("/admin/users", "POST"), response, handlerMethod(UsersController.class));
+
+        assertThat(result).isFalse();
+        assertThat(response.getRedirectedUrl()).isEqualTo("/admin/access-denied");
+    }
+
+    @Test
+    void POST_요청은_WRITE_권한이_있으면_통과() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_WRITE"))));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean result = interceptor.preHandle(
+                request("/admin/users", "POST"), response, handlerMethod(UsersController.class));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
     void SUPER_ADMIN_컨트롤러는_ROLE_SUPER_ADMIN_없으면_접근_거부() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_READ"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         boolean result = interceptor.preHandle(request("/admin/accounts"), response, handlerMethod(SuperAdminController.class));
@@ -123,7 +153,7 @@ class AdminPermissionInterceptorTest {
     @Test
     void 권한_어노테이션이_없는_컨트롤러는_접근_거부() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_READ"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         boolean result = interceptor.preHandle(request("/admin/unregistered-feature"), response, handlerMethod(UnannotatedController.class));
@@ -135,7 +165,7 @@ class AdminPermissionInterceptorTest {
     @Test
     void 대시보드_루트는_어노테이션_없어도_통과() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_READ"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         boolean result = interceptor.preHandle(request("/admin"), response, handlerMethod(UnannotatedController.class));
@@ -146,7 +176,7 @@ class AdminPermissionInterceptorTest {
     @Test
     void HandlerMethod가_아니면_접근_거부() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS"))));
+                "admin", null, List.of(new SimpleGrantedAuthority("PERM_USERS_READ"))));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         boolean result = interceptor.preHandle(request("/admin/users"), response, new Object());

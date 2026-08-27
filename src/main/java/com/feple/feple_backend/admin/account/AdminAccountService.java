@@ -3,8 +3,9 @@ package com.feple.feple_backend.admin.account;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,7 @@ public class AdminAccountService {
                     .password(passwordEncoder.encode(req.password()))
                     .displayName(req.displayName())
                     .role(req.role())
-                    .permissions(resolvePermissions(req.role(), req.permissions()))
+                    .permissions(resolvePermissions(req.role(), req.readPermissions(), req.writePermissions()))
                     .profileImageUrl(profileImageUrl)
                     .build());
         } catch (DataIntegrityViolationException e) {
@@ -74,7 +75,8 @@ public class AdminAccountService {
     public void update(Long id, AdminAccountUpdateRequestDto req) {
         AdminAccount account = findById(id);
         validateRoleChange(account, req.role());
-        account.updateProfile(req.displayName(), req.role(), resolvePermissions(req.role(), req.permissions()));
+        account.updateProfile(req.displayName(), req.role(),
+                resolvePermissions(req.role(), req.readPermissions(), req.writePermissions()));
         if (req.password() != null && !req.password().isBlank()) {
             validatePasswordComplexity(req.password());
             account.updatePassword(passwordEncoder.encode(req.password()));
@@ -202,7 +204,20 @@ public class AdminAccountService {
         }
     }
 
-    private static Set<AdminPermission> resolvePermissions(AdminRole role, Set<AdminPermission> permissions) {
-        return role == AdminRole.SUPER_ADMIN ? new HashSet<>() : new HashSet<>(permissions);
+    // SUPER_ADMIN은 권한 맵을 비워둔다(로그인 시 전 권한 동적 부여). MANAGER는 읽기/쓰기 체크박스를
+    // 병합하되, 같은 항목에 둘 다 체크됐거나 쓰기만 체크됐으면 WRITE로 승격한다(WRITE ⊇ READ).
+    private static Map<AdminPermission, AdminPermissionLevel> resolvePermissions(
+            AdminRole role, Set<AdminPermission> readPermissions, Set<AdminPermission> writePermissions) {
+        Map<AdminPermission, AdminPermissionLevel> resolved = new EnumMap<>(AdminPermission.class);
+        if (role == AdminRole.SUPER_ADMIN) {
+            return resolved;
+        }
+        for (AdminPermission permission : readPermissions) {
+            resolved.put(permission, AdminPermissionLevel.READ);
+        }
+        for (AdminPermission permission : writePermissions) {
+            resolved.put(permission, AdminPermissionLevel.WRITE);
+        }
+        return resolved;
     }
 }

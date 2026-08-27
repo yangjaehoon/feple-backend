@@ -21,4 +21,17 @@ public enum AdminPermission {
     LOGS("감사 로그");
 
     private final String displayName;
+
+    /** Spring Security 권한 문자열. 예) USERS + READ → "PERM_USERS_READ" */
+    public String authority(AdminPermissionLevel level) {
+        return "PERM_" + name() + "_" + level.name();
+    }
+
+    public String readAuthority() {
+        return authority(AdminPermissionLevel.READ);
+    }
+
+    public String writeAuthority() {
+        return authority(AdminPermissionLevel.WRITE);
+    }
 }

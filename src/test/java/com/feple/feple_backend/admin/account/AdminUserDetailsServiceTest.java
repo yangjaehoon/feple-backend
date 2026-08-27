@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ class AdminUserDetailsServiceTest {
 
         assertThat(authorities).contains("ROLE_ADMIN", "ROLE_SUPER_ADMIN");
         for (AdminPermission permission : AdminPermission.values()) {
-            assertThat(authorities).contains("PERM_" + permission.name());
+            assertThat(authorities).contains(permission.readAuthority(), permission.writeAuthority());
         }
     }
 
@@ -59,7 +60,9 @@ class AdminUserDetailsServiceTest {
                 .username("manager")
                 .password("hashed")
                 .role(AdminRole.MANAGER)
-                .permissions(Set.of(AdminPermission.POSTS, AdminPermission.REPORTS))
+                .permissions(Map.of(
+                        AdminPermission.POSTS, AdminPermissionLevel.READ,
+                        AdminPermission.REPORTS, AdminPermissionLevel.WRITE))
                 .build();
         given(repository.findByUsername("manager")).willReturn(Optional.of(account));
 
@@ -69,8 +72,11 @@ class AdminUserDetailsServiceTest {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
 
-        assertThat(authorities).contains("ROLE_ADMIN", "PERM_POSTS", "PERM_REPORTS");
-        assertThat(authorities).doesNotContain("ROLE_SUPER_ADMIN", "PERM_USERS");
+        // READ 권한은 READ authority만, WRITE 권한은 READ+WRITE authority를 함께 받는다.
+        assertThat(authorities).contains("ROLE_ADMIN",
+                "PERM_POSTS_READ", "PERM_REPORTS_READ", "PERM_REPORTS_WRITE");
+        assertThat(authorities).doesNotContain("ROLE_SUPER_ADMIN",
+                "PERM_POSTS_WRITE", "PERM_USERS_READ", "PERM_USERS_WRITE");
     }
 
     @Test

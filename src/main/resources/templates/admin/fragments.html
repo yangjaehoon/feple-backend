@@ -47,55 +47,55 @@
            th:classappend="${active == 'home'} ? ' active'">
             <span class="sb-icon">📊</span> 대시보드
         </a>
-        <a sec:authorize="hasAuthority('PERM_STATS')"
+        <a sec:authorize="hasAuthority('PERM_STATS_READ')"
            th:href="@{/admin/stats}" class="sb-link"
            th:classappend="${active == 'stats'} ? ' active'">
             <span class="sb-icon">📈</span> 통계
         </a>
 
         <div class="sb-section-label">콘텐츠</div>
-        <a sec:authorize="hasAuthority('PERM_FESTIVALS')"
+        <a sec:authorize="hasAuthority('PERM_FESTIVALS_READ')"
            th:href="@{/admin/festivals}" class="sb-link"
            th:classappend="${active == 'festivals'} ? ' active'">
             <span class="sb-icon">🎪</span> 페스티벌
         </a>
-        <a sec:authorize="hasAuthority('PERM_ARTISTS')"
+        <a sec:authorize="hasAuthority('PERM_ARTISTS_READ')"
            th:href="@{/admin/artists}" class="sb-link"
            th:classappend="${active == 'artists'} ? ' active'">
             <span class="sb-icon">🎤</span> 아티스트
         </a>
-        <a sec:authorize="hasAuthority('PERM_POSTS')"
+        <a sec:authorize="hasAuthority('PERM_POSTS_READ')"
            th:href="@{/admin/posts}" class="sb-link"
            th:classappend="${active == 'posts'} ? ' active'">
             <span class="sb-icon">📝</span> 게시글
         </a>
-        <a sec:authorize="hasAuthority('PERM_NOTICES')"
+        <a sec:authorize="hasAuthority('PERM_NOTICES_READ')"
            th:href="@{/admin/notices}" class="sb-link"
            th:classappend="${active == 'notices'} ? ' active'">
             <span class="sb-icon">📢</span> 공지사항
         </a>
-        <a sec:authorize="hasAuthority('PERM_CRAWL')"
+        <a sec:authorize="hasAuthority('PERM_CRAWL_READ')"
            th:href="@{/admin/crawl}" class="sb-link"
            th:classappend="${active == 'crawl'} ? ' active'">
             <span class="sb-icon">🕸️</span> 크롤링
         </a>
 
         <div class="sb-section-label">사용자 요청</div>
-        <a sec:authorize="hasAuthority('PERM_ARTISTS')"
+        <a sec:authorize="hasAuthority('PERM_ARTISTS_READ')"
            th:href="@{/admin/artist-suggestions}" class="sb-link"
            th:classappend="${active == 'artist-suggestions'} ? ' active'">
             <span class="sb-icon">💡</span> 아티스트 신청
             <span th:if="${sidebarArtistSuggestionCount != null and sidebarArtistSuggestionCount > 0}"
                   class="sb-badge sb-badge-red" th:text="${sidebarArtistSuggestionCount}"></span>
         </a>
-        <a sec:authorize="hasAuthority('PERM_FESTIVALS')"
+        <a sec:authorize="hasAuthority('PERM_FESTIVALS_READ')"
            th:href="@{/admin/festival-suggestions}" class="sb-link"
            th:classappend="${active == 'festival-suggestions'} ? ' active'">
             <span class="sb-icon">🎪</span> 페스티벌 신청
             <span th:if="${sidebarFestivalSuggestionCount != null and sidebarFestivalSuggestionCount > 0}"
                   class="sb-badge sb-badge-red" th:text="${sidebarFestivalSuggestionCount}"></span>
         </a>
-        <a sec:authorize="hasAuthority('PERM_SONG_REQUESTS')"
+        <a sec:authorize="hasAuthority('PERM_SONG_REQUESTS_READ')"
            th:href="@{/admin/song-requests}" class="sb-link"
            th:classappend="${active == 'song-requests'} ? ' active'">
             <span class="sb-icon">🎵</span> 노래 요청
@@ -109,14 +109,14 @@
             <span th:if="${sidebarSetlistRequestCount != null and sidebarSetlistRequestCount > 0}"
                   class="sb-badge sb-badge-red" th:text="${sidebarSetlistRequestCount}"></span>
         </a>
-        <a sec:authorize="hasAuthority('PERM_CERTIFICATIONS')"
+        <a sec:authorize="hasAuthority('PERM_CERTIFICATIONS_READ')"
            th:href="@{/admin/certifications}" class="sb-link"
            th:classappend="${active == 'certifications'} ? ' active'">
             <span class="sb-icon">🏅</span> 인증 관리
             <span th:if="${sidebarCertCount != null and sidebarCertCount > 0}"
                   class="sb-badge sb-badge-red" th:text="${sidebarCertCount}"></span>
         </a>
-        <a sec:authorize="hasAuthority('PERM_REPORTS')"
+        <a sec:authorize="hasAuthority('PERM_REPORTS_READ')"
            th:href="@{/admin/reports}" class="sb-link"
            th:classappend="${active == 'reports'} ? ' active'">
             <span class="sb-icon">🚨</span> 신고 관리
@@ -125,22 +125,22 @@
         </a>
 
         <div class="sb-section-label">회원 · 운영</div>
-        <a sec:authorize="hasAuthority('PERM_USERS')"
+        <a sec:authorize="hasAuthority('PERM_USERS_READ')"
            th:href="@{/admin/users}" class="sb-link"
            th:classappend="${active == 'users'} ? ' active'">
             <span class="sb-icon">👤</span> 회원 관리
         </a>
-        <a sec:authorize="hasAuthority('PERM_USERS')"
+        <a sec:authorize="hasAuthority('PERM_USERS_READ')"
            th:href="@{/admin/points}" class="sb-link"
            th:classappend="${active == 'points'} ? ' active'">
             <span class="sb-icon">🪙</span> 포인트 내역
         </a>
-        <a sec:authorize="hasAuthority('PERM_BAD_WORDS')"
+        <a sec:authorize="hasAuthority('PERM_BAD_WORDS_READ')"
            th:href="@{/admin/bad-words}" class="sb-link"
            th:classappend="${active == 'bad-words'} ? ' active'">
             <span class="sb-icon">🚫</span> 금칙어
         </a>
-        <a sec:authorize="hasAuthority('PERM_BAD_WORDS')"
+        <a sec:authorize="hasAuthority('PERM_BAD_WORDS_READ')"
            th:href="@{/admin/nickname-restrictions}" class="sb-link"
            th:classappend="${active == 'nickname-restrictions'} ? ' active'">
             <span class="sb-icon">🔤</span> 닉네임 제한
@@ -152,7 +152,7 @@
            th:classappend="${active == 'push'} ? ' active'">
             <span class="sb-icon">📣</span> 푸시 발송
         </a>
-        <a sec:authorize="hasAuthority('PERM_LOGS')"
+        <a sec:authorize="hasAuthority('PERM_LOGS_READ')"
            th:href="@{/admin/logs}" class="sb-link"
            th:classappend="${active == 'logs'} ? ' active'">
             <span class="sb-icon">📋</span> 감사 로그

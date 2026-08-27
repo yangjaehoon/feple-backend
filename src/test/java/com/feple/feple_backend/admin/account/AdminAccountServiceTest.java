@@ -34,7 +34,8 @@ class AdminAccountServiceTest {
     // ── 헬퍼 ─────────────────────────────────────────────────────────────────
 
     private static AdminAccountCreateRequestDto createReq(String username, String password, AdminRole role) {
-        return new AdminAccountCreateRequestDto(username, password, "표시이름", role, Set.of(AdminPermission.POSTS), null);
+        return new AdminAccountCreateRequestDto(username, password, "표시이름", role,
+                Set.of(), Set.of(AdminPermission.POSTS), null);
     }
 
     private static AdminAccount buildAccount(Long id, String username, AdminRole role, boolean enabled) {
@@ -106,10 +107,10 @@ class AdminAccountServiceTest {
     }
 
     @Test
-    void MANAGER_생성시_권한목록_요청값_그대로_저장() throws IOException {
+    void MANAGER_생성시_읽기_쓰기_권한_병합해_저장() throws IOException {
         AdminAccountCreateRequestDto req = new AdminAccountCreateRequestDto(
-                "manager1", "Pass1234!", "표시이름",
-                AdminRole.MANAGER, Set.of(AdminPermission.POSTS, AdminPermission.USERS), null);
+                "manager1", "Pass1234!", "표시이름", AdminRole.MANAGER,
+                Set.of(AdminPermission.POSTS), Set.of(AdminPermission.USERS), null);
         AdminAccount saved = buildAccount(3L, "manager1", AdminRole.MANAGER, true);
         given(accountRepository.existsByUsername("manager1")).willReturn(false);
         given(passwordEncoder.encode(any())).willReturn("encoded");
@@ -119,7 +120,28 @@ class AdminAccountServiceTest {
 
         ArgumentCaptor<AdminAccount> captor = ArgumentCaptor.forClass(AdminAccount.class);
         verify(accountRepository).save(captor.capture());
-        assertThat(captor.getValue().getPermissions()).containsExactlyInAnyOrder(AdminPermission.POSTS, AdminPermission.USERS);
+        assertThat(captor.getValue().getPermissions())
+                .containsOnly(
+                        org.assertj.core.api.Assertions.entry(AdminPermission.POSTS, AdminPermissionLevel.READ),
+                        org.assertj.core.api.Assertions.entry(AdminPermission.USERS, AdminPermissionLevel.WRITE));
+    }
+
+    @Test
+    void MANAGER_생성시_같은_항목에_읽기_쓰기_모두_체크되면_WRITE로_승격() throws IOException {
+        AdminAccountCreateRequestDto req = new AdminAccountCreateRequestDto(
+                "manager2", "Pass1234!", "표시이름", AdminRole.MANAGER,
+                Set.of(AdminPermission.POSTS), Set.of(AdminPermission.POSTS), null);
+        AdminAccount saved = buildAccount(4L, "manager2", AdminRole.MANAGER, true);
+        given(accountRepository.existsByUsername("manager2")).willReturn(false);
+        given(passwordEncoder.encode(any())).willReturn("encoded");
+        given(accountRepository.save(any())).willReturn(saved);
+
+        service.create(req);
+
+        ArgumentCaptor<AdminAccount> captor = ArgumentCaptor.forClass(AdminAccount.class);
+        verify(accountRepository).save(captor.capture());
+        assertThat(captor.getValue().getPermissions())
+                .containsExactly(org.assertj.core.api.Assertions.entry(AdminPermission.POSTS, AdminPermissionLevel.WRITE));
     }
 
     // ── create: 아이디 검증 ──────────────────────────────────────────────────
@@ -302,7 +324,7 @@ class AdminAccountServiceTest {
         given(accountRepository.findByRoleForUpdate(AdminRole.SUPER_ADMIN)).willReturn(List.of(account));
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), null, null, false);
+                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, false);
 
         assertThatThrownBy(() -> service.update(1L, req))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -316,7 +338,7 @@ class AdminAccountServiceTest {
         given(passwordEncoder.encode("NewPass1!")).willReturn("newEncoded");
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), "NewPass1!", null, false);
+                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), "NewPass1!", null, false);
 
         service.update(1L, req);
 
@@ -329,7 +351,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, account);
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), null, null, false);
+                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, false);
 
         service.update(1L, req);
 
@@ -343,7 +365,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, account);
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), null, null, true);
+                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, true);
 
         service.update(1L, req);
 
@@ -356,7 +378,7 @@ class AdminAccountServiceTest {
         stubFindById(1L, account);
 
         AdminAccountUpdateRequestDto req = new AdminAccountUpdateRequestDto(
-                "새이름", AdminRole.MANAGER, Set.of(), null, null, true);
+                "새이름", AdminRole.MANAGER, Set.of(), Set.of(), null, null, true);
 
         service.update(1L, req);
 

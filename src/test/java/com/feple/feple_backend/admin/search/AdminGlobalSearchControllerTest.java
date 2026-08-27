@@ -40,7 +40,7 @@ class AdminGlobalSearchControllerTest {
 
     private static UsernamePasswordAuthenticationToken adminWith(AdminPermission... permissions) {
         List<SimpleGrantedAuthority> authorities = List.of(permissions).stream()
-                .map(p -> new SimpleGrantedAuthority("PERM_" + p.name()))
+                .map(p -> new SimpleGrantedAuthority(p.readAuthority()))
                 .toList();
         return new UsernamePasswordAuthenticationToken("admin", null, authorities);
     }

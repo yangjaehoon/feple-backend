@@ -415,6 +415,13 @@ tbody td a:hover { text-decoration: underline; color: var(--primary); }
 }
 .perm-check:has(input:checked) { border-color: var(--primary); background: var(--primary-lt); }
 .perm-check input { margin: 0; cursor: pointer; }
+.perm-card {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+}
+.perm-card-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.perm-levels { display: flex; gap: 6px; }
+.perm-levels .perm-check { flex: 1; padding: 5px 8px; font-size: 12px; justify-content: center; }
 label { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
 input[type="text"],
 input[type="date"],
