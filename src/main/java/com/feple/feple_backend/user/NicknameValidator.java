@@ -19,7 +19,8 @@ public final class NicknameValidator {
         }
         String trimmed = nickname.trim();
         if (trimmed.length() < MIN_NICKNAME_LENGTH || trimmed.length() > MAX_NICKNAME_LENGTH) {
-            throw new InvalidRequestException("닉네임은 2자 이상 8자 이하로 입력해주세요.");
+            throw new InvalidRequestException(
+                    "닉네임은 " + MIN_NICKNAME_LENGTH + "자 이상 " + MAX_NICKNAME_LENGTH + "자 이하로 입력해주세요.");
         }
         if (!NICKNAME_PATTERN.matcher(trimmed).matches()) {
             throw new InvalidRequestException("닉네임은 한글, 영문, 숫자, 밑줄(_)만 사용할 수 있습니다.");

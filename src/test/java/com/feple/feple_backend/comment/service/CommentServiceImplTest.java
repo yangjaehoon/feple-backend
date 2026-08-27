@@ -428,7 +428,7 @@ class CommentServiceImplTest {
         Comment c = comment(100L, post, author);
 
         given(postRepository.findById(10L)).willReturn(Optional.of(post));
-        given(certificationService.findApprovedUserIdsByFestivalId(5L)).willReturn(Set.of(1L));
+        given(certificationService.findApprovedUserIdsByFestivalId(eq(5L), any())).willReturn(Set.of(1L));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(c)));
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))

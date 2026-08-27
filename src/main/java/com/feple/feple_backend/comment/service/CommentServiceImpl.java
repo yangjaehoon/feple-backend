@@ -126,8 +126,9 @@ public class CommentServiceImpl implements CommentService {
             comments = CommentSorter.sortByBest(comments);
         }
         List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+        List<Long> authorIds = comments.stream().map(Comment::getUserId).distinct().toList();
 
-        Set<Long> certifiedUserIds = getCertifiedUserIds(post);
+        Set<Long> certifiedUserIds = getCertifiedUserIds(post, authorIds);
         Set<Long> likedCommentIds = getLikedCommentIds(userId, commentIds);
 
         List<CommentResponseDto> result = comments.stream()
@@ -171,7 +172,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void deleteComment(Long commentId){
+    public void deleteComment(Long commentId) {
         // soft delete: 신고 기록(CommentReport) 보존, 행이 남아 FK 무결성 유지.
         // 관리자 전용 경로라 블라인드된 댓글도 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
         deleteAndDecrement(EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글"));
@@ -221,9 +222,10 @@ public class CommentServiceImpl implements CommentService {
         comment.update(content);
     }
 
-    private Set<Long> getCertifiedUserIds(Post post) {
-        if (post.getFestivalId() == null) return Set.of();
-        return certificationService.findApprovedUserIdsByFestivalId(post.getFestivalId());
+    // 인증 뱃지 확인은 이 목록에 등장하는 작성자로만 범위를 좁힌다 (페스티벌 전체 인증자 로드 방지)
+    private Set<Long> getCertifiedUserIds(Post post, List<Long> authorIds) {
+        if (post.getFestivalId() == null || authorIds.isEmpty()) return Set.of();
+        return certificationService.findApprovedUserIdsByFestivalId(post.getFestivalId(), authorIds);
     }
 
     @Override
