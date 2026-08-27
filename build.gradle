@@ -71,8 +71,8 @@ dependencies {
 		exclude group: 'com.fasterxml.jackson.dataformat', module: 'jackson-dataformat-xml'
 	}
 
-	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.7.0'
-	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.9.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.9.0'
 
 	implementation 'org.jsoup:jsoup:1.23.1'
 	implementation 'org.apache.httpcomponents.client5:httpclient5'
