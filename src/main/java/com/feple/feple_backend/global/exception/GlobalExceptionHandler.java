@@ -6,6 +6,7 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -111,13 +112,22 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.CONFLICT, ex.getMessage(), ErrorCode.CONFLICT);
     }
 
+    // unique/PK 중복만 여기로 (Spring이 MySQL 1062 등을 이 타입으로 변환). 좋아요/팔로우 등
+    // check-then-act 토글의 동시 요청 경합도 포함 — 정상 트래픽이라 warn.
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateKey(DuplicateKeyException ex) {
+        log.warn("Duplicate key (동시 요청 경합 또는 서비스 레이어 ConflictException 변환 누락 가능): {}",
+                ex.getMostSpecificCause().getClass().getSimpleName());
+        return body(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다.", ErrorCode.CONFLICT);
+    }
+
+    // NOT NULL·FK·길이 초과 등 unique 외의 무결성 위반 — 대부분 서버 측 결함이므로 500으로 노출해
+    // 409로 위장돼 모니터링에서 묻히지 않게 한다.
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        // 좋아요/팔로우 등 check-then-act 토글의 동시 요청 경합(unique 제약 위반)도 여기로 들어옴 — 정상 트래픽이므로 warn
-        log.warn("DataIntegrityViolationException reached handler (동시 요청 경합 또는 서비스 레이어 ConflictException 변환 누락 가능): {}",
-                ex.getMostSpecificCause().getClass().getSimpleName());
-        log.debug("Data integrity violation detail", ex.getMostSpecificCause());
-        return body(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다.", ErrorCode.CONFLICT);
+        log.error("Data integrity violation: {}", ex.getMostSpecificCause().getClass().getSimpleName(), ex.getMostSpecificCause());
+        return body(HttpStatus.INTERNAL_SERVER_ERROR,
+                "데이터 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", ErrorCode.SERVER_ERROR);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
