@@ -16,6 +16,7 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.KoreaClock;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationContent;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
@@ -321,7 +322,7 @@ public class NotificationService {
     /** 관리자 테스트 발송용 개별 알림 저장 (AdminPushService에서 호출) */
     public void saveAdminBroadcastNotification(Long userId, String title, String body) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (userId=" + userId + ")"));
+                .orElseThrow(() -> new InvalidRequestException("사용자를 찾을 수 없습니다. (userId=" + userId + ")"));
         notificationRepository.save(Notification.of(
                 user, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null)));
     }

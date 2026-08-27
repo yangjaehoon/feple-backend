@@ -1,6 +1,7 @@
 package com.feple.feple_backend.auth.service;
 
 import com.feple.feple_backend.auth.firebase.FirebaseTokenVerifier;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
@@ -34,14 +35,14 @@ public class FirebaseAuthService implements OAuthLoginService {
             FirebaseToken decoded = firebaseTokenVerifier.verify(idToken);
             Boolean emailVerified = (Boolean) decoded.getClaims().get("email_verified");
             if (emailVerified == null || !emailVerified) {
-                throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
+                throw new InvalidRequestException("이메일 인증이 완료되지 않았습니다.");
             }
             return registerOrFind(decoded.getUid(), decoded.getEmail(), decoded.getName());
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
             log.warn("[Firebase Auth] idToken 검증 실패: {} - {}", e.getClass().getSimpleName(), e.getMessage());
-            throw new IllegalArgumentException("인증에 실패했습니다. 다시 로그인해주세요.");
+            throw new InvalidRequestException("인증에 실패했습니다. 다시 로그인해주세요.");
         }
     }
 

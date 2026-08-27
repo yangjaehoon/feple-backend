@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.scraper;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.time.LocalDate;
 
 public final class ScrapedFestivalMapper {
@@ -22,7 +23,7 @@ public final class ScrapedFestivalMapper {
             try {
                 dto.setRegion(Region.valueOf(req.region()));
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("유효하지 않은 지역 값입니다: " + req.region());
+                throw new InvalidRequestException("유효하지 않은 지역 값입니다: " + req.region());
             }
         }
         if (req.genres() != null && !req.genres().isEmpty()) {
@@ -31,7 +32,7 @@ public final class ScrapedFestivalMapper {
                 .map(g -> {
                     try { return MusicGenre.valueOf(g); }
                     catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException("유효하지 않은 장르 값입니다: " + g);
+                        throw new InvalidRequestException("유효하지 않은 장르 값입니다: " + g);
                     }
                 })
                 .toList());

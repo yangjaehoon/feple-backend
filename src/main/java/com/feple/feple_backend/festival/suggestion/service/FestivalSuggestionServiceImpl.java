@@ -10,6 +10,7 @@ import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -128,7 +129,7 @@ public class FestivalSuggestionServiceImpl implements FestivalSuggestionService,
     // 이중 클릭·요청 재시도로 동일 신청이 두 번 승인/반려되며 알림이 중복 발송되는 것을 방지
     private void requirePending(FestivalSuggestion suggestion) {
         if (!suggestion.isPending()) {
-            throw new IllegalArgumentException("이미 처리된 페스티벌 신청입니다.");
+            throw new InvalidRequestException("이미 처리된 페스티벌 신청입니다.");
         }
     }
 }

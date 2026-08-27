@@ -38,7 +38,8 @@ GitHub Actions `deploy.yml` — push to main 시 자동 배포.
 - 크로스 도메인 삭제 위임: `*CascadeDeleteService`는 다른 도메인 Repository 직접 주입 금지 → 해당 도메인 Service 인터페이스로 위임 (예: `PostService.deletePostsByArtist()`)
 - 동일 인터페이스 빈이 여러 개일 때 `@Qualifier` 불필요: 필드명을 빈 이름과 일치시키면 Spring이 이름으로 disambiguate (`OAuthLoginService kakaoAuthService` → `KakaoAuthService` 빈 자동 주입)
 - Admin 컨트롤러는 Repository 직접 주입 금지 → 통계/목록은 `AdminStatsService` 경유
-- Admin 컨트롤러 예외 처리: `catch (IllegalArgumentException e)` → `e.getMessage()` 사용자 노출 가능 (서비스 레벨 검증 메시지) / `catch (Exception e)` → `log.error("...", id, e)` + 일반 메시지 (내부 예외 절대 노출 금지)
+- 사용자에게 보여줄 검증·비즈니스 규칙 위반은 `InvalidRequestException`(=`global.exception`, `IllegalArgumentException` 하위)을 던진다. 전역 핸들러는 이 타입의 메시지만 응답에 노출하고, 순수 `IllegalArgumentException`(JDK·라이브러리 발)은 일반 메시지로 대체한다 → `new IllegalArgumentException("한국어 메시지")` 금지
+- Admin 컨트롤러 예외 처리: `catch (IllegalArgumentException e)` → `e.getMessage()` 사용자 노출 가능 (`InvalidRequestException` 포함, 서비스 레벨 검증 메시지) / `catch (Exception e)` → `log.error("...", id, e)` + 일반 메시지 (내부 예외 절대 노출 금지)
 - Admin 컨트롤러의 파일 업로드도 서비스 경유: `FestivalService.uploadPosterFile()`, `ArtistService.uploadProfile()`, `BoothService.uploadBoothImage()` — FileStorageService 직접 주입 금지
 - S3 presigned URL 결과 타입: `file/dto/PresignResult` (독립 레코드, S3PresignService 중첩 타입 아님)
 - 신고 타입 확장: `ReportAdminController`의 `list()` GET은 `Map<String, ReportAdminService>` 디스패치 — 신규 신고 유형 추가 시 ① `ReportAdminService` 구현체 추가, ② 컨트롤러에 명시적 필드 + POST 액션 엔드포인트 추가 필요
@@ -48,7 +49,7 @@ GitHub Actions `deploy.yml` — push to main 시 자동 배포.
 - TDA + CQS 조합: 엔티티 update 메서드는 `void` 반환 — 상태 변경과 값 반환을 동시에 하지 않음. 서비스에서 old value가 필요하면 `String old = entity.getX(); entity.updateX(newVal);` 순서로 분리 (예: `Artist.updateProfileImage`, `Festival.updatePoster`)
 - Admin 서브컨트롤러에서 동일 redirect 문자열 반복 시 `private String *Redirect(Long festivalId)` 헬퍼로 추출 (예: `boothsRedirect`, `artistsRedirect`, `timetableRedirect`)
 - Thymeleaf 알림 메시지: `class="alert alert-success"` / `class="alert alert-danger"` 사용 — inline `style=` 속성으로 직접 색상 지정 금지 (admin.css에 정의됨)
-- 예외 타입 HTTP 매핑: `NoSuchElementException`→404, `IllegalArgumentException`→400, `ConflictException`→409(중복 리소스), `IllegalStateException`→500(예상 불가 서버 오류 전용) — 신규 409 케이스는 반드시 `ConflictException` 사용
+- 예외 타입 HTTP 매핑: `NoSuchElementException`→404, `InvalidRequestException`/`IllegalArgumentException`→400(전자는 메시지 노출, 후자는 일반 메시지), `ConflictException`→409(중복 리소스), `IllegalStateException`→500(예상 불가 서버 오류 전용) — 신규 409 케이스는 반드시 `ConflictException` 사용
 - Hibernate 6 derived query 주의: `@ManyToOne` 필드만 있을 때 `findByUserIdAndFestivalId()`, `existsByFestivalIdAndArtistId()`, `deleteByUserIdAndToken()` 등 파생 쿼리는 startup 시 `PathElementException` 발생 → `existsBy`는 `@Query("SELECT CASE WHEN COUNT(...)>0 THEN TRUE ELSE FALSE END FROM ... WHERE e.user.id=:userId")`, `findBy`/`deleteBy`도 `@Query` 명시 필요. Repository 메서드 작성 시 `@ManyToOne` 연관 ID 접근은 항상 `@Query`로 명시할 것
 - `Post`/`Comment`는 `@SQLRestriction("deleted_at IS NULL AND blinded = false")`가 걸려 있어, 일반 `findById`/`deleteById`/`existsById`는 블라인드된 행을 "존재하지 않음"으로 취급한다. 관리자·신고 처리·본인 글/댓글 수정·삭제 등 블라인드된 행도 다뤄야 하는 모든 새 코드 경로는 반드시 우회 조회 메서드(`PostRepository`/`CommentRepository`의 `findByIdIgnoringRestrictions`)와 우회 삭제 메서드(`softDeleteById`/`softDeleteByIds`)를 사용할 것 — 일반 `findById`/`deleteById`를 쓰면 블라인드된 행에서 404/NPE가 난다. 단, 공개 조회·좋아요/스크랩처럼 블라인드된 콘텐츠에 접근할 필요가 없는 경로는 기존 제약(`findById`)을 그대로 사용해도 된다.
 - `PostReport`/`CommentReport`가 참조하는 `post`/`comment` 연관관계는 대상이 블라인드되면 `@SQLRestriction` 때문에 `null`로 채워진다(EntityGraph LEFT JOIN이라 행 자체는 남음) — 이 연관관계에서 파생되는 게터는 항상 null-safe하게 작성할 것 (예: `PostReport.getPostTitle()`처럼 null이면 대체 문자열/`null` 반환)

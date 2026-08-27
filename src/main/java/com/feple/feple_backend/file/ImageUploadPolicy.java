@@ -1,5 +1,7 @@
 package com.feple.feple_backend.file;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+
 import java.util.Map;
 
 /** 업로드 허용 이미지 확장자 ↔ Content-Type 매핑 (확장자·MIME 불일치 업로드 차단용) */
@@ -29,7 +31,7 @@ public final class ImageUploadPolicy {
     public static String assertAllowed(String extension, String contentType) {
         String normalized = extension == null ? "" : extension.toLowerCase();
         if (!isAllowed(normalized, contentType)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (" + ALLOWED_EXTENSIONS_DISPLAY + " 만 가능)");
+            throw new InvalidRequestException("허용되지 않는 파일 형식입니다. (" + ALLOWED_EXTENSIONS_DISPLAY + " 만 가능)");
         }
         return normalized;
     }

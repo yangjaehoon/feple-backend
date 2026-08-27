@@ -5,6 +5,7 @@ import com.feple.feple_backend.badword.event.BadWordChangedEvent;
 import com.feple.feple_backend.badword.repository.BadWordRepository;
 import com.feple.feple_backend.global.BaseWordListValidator;
 import com.feple.feple_backend.global.exception.BadWordException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -28,7 +29,7 @@ public class BadWordValidator extends BaseWordListValidator<BadWord> {
     public void validate(String... texts) {
         for (String text : texts) {
             if (text != null && contains(text)) {
-                throw new IllegalArgumentException("금칙어가 포함되어 있습니다.");
+                throw new InvalidRequestException("금칙어가 포함되어 있습니다.");
             }
         }
     }

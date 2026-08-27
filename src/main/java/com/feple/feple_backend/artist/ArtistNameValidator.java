@@ -2,6 +2,7 @@ package com.feple.feple_backend.artist;
 
 import com.feple.feple_backend.artist.event.ArtistDirectoryChangedEvent;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import jakarta.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class ArtistNameValidator {
         String normalized = normalize(nickname);
         for (String artistName : snapshot) {
             if (normalized.contains(artistName)) {
-                throw new IllegalArgumentException("아티스트 이름은 닉네임으로 사용할 수 없습니다.");
+                throw new InvalidRequestException("아티스트 이름은 닉네임으로 사용할 수 없습니다.");
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.feple.feple_backend.file.service;
 
 import com.feple.feple_backend.file.ImageUploadPolicy;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,16 +31,16 @@ public class S3ObjectVerificationService {
         try {
             head = s3Client.headObject(r -> r.bucket(bucket).key(objectKey));
         } catch (NoSuchKeyException e) {
-            throw new IllegalArgumentException("업로드된 파일을 찾을 수 없습니다.");
+            throw new InvalidRequestException("업로드된 파일을 찾을 수 없습니다.");
         }
         String ct = head.contentType();
         String baseType = (ct == null) ? "" : ct.split(";")[0].trim();
         if (!ALLOWED_IMAGE_CONTENT_TYPES.contains(baseType)) {
-            throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. 이미지 파일만 등록할 수 있습니다.");
+            throw new InvalidRequestException("허용되지 않는 파일 형식입니다. 이미지 파일만 등록할 수 있습니다.");
         }
         if (head.contentLength() != null && head.contentLength() > ImageUploadPolicy.MAX_IMAGE_UPLOAD_BYTES) {
             deleteOversizedObject(objectKey);
-            throw new IllegalArgumentException("파일 크기가 너무 큽니다.");
+            throw new InvalidRequestException("파일 크기가 너무 큽니다.");
         }
     }
 

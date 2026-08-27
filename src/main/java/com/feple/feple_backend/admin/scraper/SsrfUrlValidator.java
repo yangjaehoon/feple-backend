@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.scraper;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -16,24 +18,24 @@ final class SsrfUrlValidator {
         try {
             uri = URI.create(url);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("유효하지 않은 URL입니다.");
+            throw new InvalidRequestException("유효하지 않은 URL입니다.");
         }
         String scheme = uri.getScheme();
         if (!"https".equalsIgnoreCase(scheme) && !"http".equalsIgnoreCase(scheme)) {
-            throw new IllegalArgumentException("http/https URL만 허용됩니다.");
+            throw new InvalidRequestException("http/https URL만 허용됩니다.");
         }
         String host = uri.getHost();
         if (host == null || host.isBlank()) {
-            throw new IllegalArgumentException("URL에 호스트가 없습니다.");
+            throw new InvalidRequestException("URL에 호스트가 없습니다.");
         }
         InetAddress addr;
         try {
             addr = InetAddress.getByName(host);
         } catch (UnknownHostException e) {
-            throw new IllegalArgumentException("호스트를 찾을 수 없습니다: " + host);
+            throw new InvalidRequestException("호스트를 찾을 수 없습니다: " + host);
         }
         if (isUnsafeAddress(addr)) {
-            throw new IllegalArgumentException("내부 네트워크 주소는 허용되지 않습니다.");
+            throw new InvalidRequestException("내부 네트워크 주소는 허용되지 않습니다.");
         }
     }
 

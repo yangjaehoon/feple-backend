@@ -2,6 +2,7 @@ package com.feple.feple_backend.global;
 
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.entity.ResolvableReport;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.List;
 import org.springframework.data.repository.ListCrudRepository;
 
@@ -17,7 +18,7 @@ public class ReportRejectionService {
         // bulkDismiss()와 동일하게 이미 처리된 신고의 재처리를 막는다 (일관성 + 이후 resolve()에
         // 부수효과가 추가되더라도 이중 클릭·요청 재시도로부터 안전하도록 방어)
         if (!report.isPending()) {
-            throw new IllegalArgumentException("이미 처리된 신고입니다.");
+            throw new InvalidRequestException("이미 처리된 신고입니다.");
         }
         report.resolve(ReportStatus.REJECTED);
         return report;

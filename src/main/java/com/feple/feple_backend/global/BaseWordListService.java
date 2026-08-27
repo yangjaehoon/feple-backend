@@ -1,5 +1,7 @@
 package com.feple.feple_backend.global;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+
 import com.feple.feple_backend.global.repository.BaseWordListRepository;
 import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,13 +35,13 @@ public abstract class BaseWordListService<T> {
     public void add(String word) {
         String trimmed = word.trim().toLowerCase();
         if (trimmed.isEmpty()) {
-            throw new IllegalArgumentException(label() + "를 입력해 주세요.");
+            throw new InvalidRequestException(label() + "를 입력해 주세요.");
         }
         if (trimmed.length() > MAX_WORD_LENGTH) {
-            throw new IllegalArgumentException(label() + "는 " + MAX_WORD_LENGTH + "자 이하여야 합니다.");
+            throw new InvalidRequestException(label() + "는 " + MAX_WORD_LENGTH + "자 이하여야 합니다.");
         }
         if (repository.existsByWord(trimmed)) {
-            throw new IllegalArgumentException("이미 등록된 " + label() + "입니다: " + trimmed);
+            throw new InvalidRequestException("이미 등록된 " + label() + "입니다: " + trimmed);
         }
         // existsByWord 체크 후 save() 사이의 TOCTOU 레이스(동시 등록)는 유니크 제약이 최종 방어선이다 —
         // 위 사전 검증과 동일한 메시지로 변환해준다(AdminActionUtils.tryAction은 IllegalArgumentException의
@@ -47,7 +49,7 @@ public abstract class BaseWordListService<T> {
         try {
             repository.save(newEntity(trimmed));
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("이미 등록된 " + label() + "입니다: " + trimmed);
+            throw new InvalidRequestException("이미 등록된 " + label() + "입니다: " + trimmed);
         }
         eventPublisher.publishEvent(changedEvent());
     }

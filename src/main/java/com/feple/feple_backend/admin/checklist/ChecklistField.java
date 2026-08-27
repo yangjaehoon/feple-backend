@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin.checklist;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+
 import java.util.Arrays;
 
 public enum ChecklistField {
@@ -22,6 +24,6 @@ public enum ChecklistField {
         return Arrays.stream(values())
                 .filter(f -> f.key.equals(key))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("알 수 없는 항목: " + key));
+                .orElseThrow(() -> new InvalidRequestException("알 수 없는 항목: " + key));
     }
 }

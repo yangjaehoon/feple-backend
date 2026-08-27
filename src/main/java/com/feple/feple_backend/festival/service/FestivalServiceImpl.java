@@ -20,6 +20,7 @@ import com.feple.feple_backend.global.MusicGenre;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictFestivalCaches;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -196,7 +197,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     private void validateDateRange(FestivalRequestDto dto) {
         if (dto.getEndDate() != null && dto.getStartDate() != null
                 && dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new IllegalArgumentException(ERR_END_BEFORE_START);
+            throw new InvalidRequestException(ERR_END_BEFORE_START);
         }
     }
 

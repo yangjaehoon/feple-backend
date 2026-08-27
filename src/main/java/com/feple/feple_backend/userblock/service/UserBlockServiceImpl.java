@@ -3,6 +3,7 @@ package com.feple.feple_backend.userblock.service;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.dto.BlockedUserDto;
@@ -26,7 +27,7 @@ public class UserBlockServiceImpl implements UserBlockService {
     @Transactional
     public void block(Long blockerId, Long targetId) {
         if (blockerId.equals(targetId)) {
-            throw new IllegalArgumentException("자기 자신을 차단할 수 없습니다.");
+            throw new InvalidRequestException("자기 자신을 차단할 수 없습니다.");
         }
         if (blockRepository.existsByBlockerIdAndBlockedId(blockerId, targetId)) {
             throw new ConflictException("이미 차단한 사용자입니다.");

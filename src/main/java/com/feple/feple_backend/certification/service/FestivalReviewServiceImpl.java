@@ -9,6 +9,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.OwnershipValidator;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -35,7 +36,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
         FestivalCertification cert = EntityLoader.getOrThrow(certificationRepository::findById, certId, "인증");
         OwnershipValidator.checkOwner(cert.getUserId(), userId, "인증", "평점 등록");
         if (!cert.isApproved()) {
-            throw new IllegalArgumentException("승인된 인증에만 평점을 남길 수 있습니다.");
+            throw new InvalidRequestException("승인된 인증에만 평점을 남길 수 있습니다.");
         }
         cert.rate(req.rating(), req.review());
     }
@@ -101,7 +102,7 @@ public class FestivalReviewServiceImpl implements FestivalReviewService {
     public boolean toggleReviewLike(Long userId, Long certId) {
         FestivalCertification cert = EntityLoader.getOrThrow(certificationRepository::findById, certId, "리뷰");
         if (!cert.isApproved() || cert.getRating() == null) {
-            throw new IllegalArgumentException("존재하지 않는 리뷰입니다.");
+            throw new InvalidRequestException("존재하지 않는 리뷰입니다.");
         }
         return LikeToggler.toggle(
                 () -> reviewLikeRepository.deleteByUserIdAndCertificationId(userId, certId),

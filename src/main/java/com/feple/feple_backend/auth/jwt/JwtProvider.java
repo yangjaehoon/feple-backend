@@ -1,5 +1,7 @@
 package com.feple.feple_backend.auth.jwt;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -64,7 +66,7 @@ public final class JwtProvider {
 
         String type = payload.get(JwtConstants.CLAIM_TYPE, String.class);
         if (!JwtConstants.TOKEN_TYPE_ACCESS.equals(type)) {
-            throw new IllegalArgumentException("액세스 토큰이 아닙니다.");
+            throw new InvalidRequestException("액세스 토큰이 아닙니다.");
         }
 
         return Long.valueOf(payload.getSubject());

@@ -16,6 +16,7 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -92,7 +93,7 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
     public SongResponseDto saveSong(Long artistId, SaveSongDto dto) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
-            throw new IllegalArgumentException("이미 등록된 곡입니다.");
+            throw new InvalidRequestException("이미 등록된 곡입니다.");
         }
         return SongResponseDto.from(songRepository.save(buildSong(artist, dto)));
     }
@@ -121,7 +122,7 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
     public void deleteSong(Long artistId, Long songId) {
         Song song = EntityLoader.getOrThrow(songRepository::findById, songId, "곡");
         if (!song.getArtistId().equals(artistId)) {
-            throw new IllegalArgumentException("해당 아티스트의 곡이 아닙니다.");
+            throw new InvalidRequestException("해당 아티스트의 곡이 아닙니다.");
         }
         songRepository.delete(song);
     }
@@ -219,7 +220,7 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
         ArtistFestival artistFestival = EntityLoader.getOrThrow(
                 artistFestivalRepository::findById, artistFestivalId, "아티스트 페스티벌");
         if (!artistFestival.getFestivalId().equals(festivalId)) {
-            throw new IllegalArgumentException("해당 아티스트는 이 페스티벌에 참여하지 않습니다.");
+            throw new InvalidRequestException("해당 아티스트는 이 페스티벌에 참여하지 않습니다.");
         }
         doSaveSetlist(artistFestival, songIds);
     }

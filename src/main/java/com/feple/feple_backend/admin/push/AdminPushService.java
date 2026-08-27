@@ -6,6 +6,7 @@ import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.service.FestivalService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.notification.entity.BroadcastNotification;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.service.NotificationService;
@@ -63,7 +64,7 @@ public class AdminPushService {
                 .map(UserDeviceToken::getToken)
                 .toList();
         if (tokens.isEmpty()) {
-            throw new IllegalArgumentException("해당 사용자에게 등록된 디바이스 토큰이 없습니다. (userId=" + targetUserId + ")");
+            throw new InvalidRequestException("해당 사용자에게 등록된 디바이스 토큰이 없습니다. (userId=" + targetUserId + ")");
         }
         notificationService.saveAdminBroadcastNotification(targetUserId, title, body);
         logAndSend(tokens, title, body, "[AdminPush] 테스트 발송 — userId={}, 토큰 {}개, 제목: {}", targetUserId, tokens.size(), title);
@@ -93,11 +94,11 @@ public class AdminPushService {
      */
     private List<String> resolveTargetTokens(List<Long> userIds, String noTargetMessage, String targetLabel) {
         if (userIds.isEmpty()) {
-            throw new IllegalArgumentException(noTargetMessage);
+            throw new InvalidRequestException(noTargetMessage);
         }
         List<String> tokens = deviceTokenRepository.findTokensByUserIds(userIds);
         if (tokens.isEmpty()) {
-            throw new IllegalArgumentException("발송 대상 기기가 없습니다. (" + targetLabel + " " + userIds.size() + "명 모두 알림 비활성)");
+            throw new InvalidRequestException("발송 대상 기기가 없습니다. (" + targetLabel + " " + userIds.size() + "명 모두 알림 비활성)");
         }
         return tokens;
     }
@@ -106,7 +107,7 @@ public class AdminPushService {
     public void sendToAll(String title, String body) {
         List<String> tokens = deviceTokenRepository.findAllTokens();
         if (tokens.isEmpty()) {
-            throw new IllegalArgumentException("등록된 디바이스 토큰이 없습니다.");
+            throw new InvalidRequestException("등록된 디바이스 토큰이 없습니다.");
         }
         // 특정 대상 발송(sendToArtistFollowers, sendToFestivalCertified)과 동일하게 유저별 Notification을
         // 저장해 개인 알림 목록에서 읽음/삭제가 가능하게 한다. 이렇게 해야 발송 시점에 존재하지 않던(=아직

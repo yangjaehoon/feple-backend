@@ -18,6 +18,7 @@ import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.cache.EvictArtistCaches;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.timetable.service.TimetableSyncService;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -356,7 +357,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
                 .filter(s -> !s.isEmpty())
                 .toList();
         aliases.stream().filter(alias -> alias.length() > ALIAS_MAX_LENGTH).findFirst().ifPresent(alias -> {
-            throw new IllegalArgumentException("별명은 각 항목당 " + ALIAS_MAX_LENGTH + "자 이하여야 합니다.");
+            throw new InvalidRequestException("별명은 각 항목당 " + ALIAS_MAX_LENGTH + "자 이하여야 합니다.");
         });
         return aliases;
     }

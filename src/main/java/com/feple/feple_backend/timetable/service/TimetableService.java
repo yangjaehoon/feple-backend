@@ -6,6 +6,7 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.stage.entity.Stage;
 import com.feple.feple_backend.stage.service.StageService;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
@@ -166,7 +167,7 @@ public class TimetableService {
         LocalTime end = req.getEndTime();
         if (isOvernight(start, end)) return;
         if (!start.isBefore(end)) {
-            throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 합니다.");
+            throw new InvalidRequestException("종료 시간은 시작 시간보다 늦어야 합니다.");
         }
     }
 

@@ -72,10 +72,20 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.withField(HttpStatus.BAD_REQUEST, ex.getMessage(), ErrorCode.BAD_WORD, ex.getField()));
     }
 
+    // 의도적으로 작성한 검증 메시지 — 그대로 노출한다. (InvalidRequestException은
+    // IllegalArgumentException의 하위 타입이라 Spring이 이 핸들러를 먼저 선택한다)
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRequest(InvalidRequestException ex) {
+        log.debug("Invalid request: {}", ex.getMessage());
+        return body(HttpStatus.BAD_REQUEST, ex.getMessage(), ErrorCode.ILLEGAL_ARGUMENT);
+    }
+
+    // 순수 IllegalArgumentException(JDK·라이브러리 발) — 메시지에 enum 상수명·클래스 경로 등
+    // 내부 구현이 노출될 수 있어 일반 메시지로 응답한다. 사용자용 검증 메시지는 InvalidRequestException.
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         log.debug("Bad request: {}", ex.getMessage());
-        return body(HttpStatus.BAD_REQUEST, ex.getMessage(), ErrorCode.ILLEGAL_ARGUMENT);
+        return body(HttpStatus.BAD_REQUEST, "요청이 올바르지 않습니다.", ErrorCode.ILLEGAL_ARGUMENT);
     }
 
     @ExceptionHandler(AccessDeniedException.class)

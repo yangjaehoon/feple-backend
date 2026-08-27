@@ -1,6 +1,5 @@
 package com.feple.feple_backend.comment.service;
 
-
 import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.comment.dto.CommentLikeResult;
@@ -18,6 +17,7 @@ import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.service.PostService;
@@ -92,7 +92,7 @@ public class CommentServiceImpl implements CommentService {
         if (parentId == null) return new ParentResolution(null, null);
         Comment requestedParent = EntityLoader.getOrThrow(commentRepository::findById, parentId, "부모 댓글");
         if (!requestedParent.getPostId().equals(post.getId())) {
-            throw new IllegalArgumentException("부모 댓글이 해당 게시글에 속하지 않습니다.");
+            throw new InvalidRequestException("부모 댓글이 해당 게시글에 속하지 않습니다.");
         }
         Comment storageParent = requestedParent.getParentId() != null ? requestedParent.getParent() : requestedParent;
         return new ParentResolution(storageParent, requestedParent);

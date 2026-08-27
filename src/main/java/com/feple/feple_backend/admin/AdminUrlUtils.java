@@ -1,5 +1,7 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+
 import org.springframework.web.util.UriComponentsBuilder;
 
 public final class AdminUrlUtils {
@@ -15,7 +17,7 @@ public final class AdminUrlUtils {
      */
     public static String buildQueryString(Object... keyValuePairs) {
         if (keyValuePairs.length % 2 != 0) {
-            throw new IllegalArgumentException("key-value 쌍의 개수가 맞지 않습니다.");
+            throw new InvalidRequestException("key-value 쌍의 개수가 맞지 않습니다.");
         }
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
         for (int i = 0; i < keyValuePairs.length; i += 2) {

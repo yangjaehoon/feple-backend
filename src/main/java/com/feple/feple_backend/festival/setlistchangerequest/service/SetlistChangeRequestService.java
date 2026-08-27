@@ -11,6 +11,7 @@ import com.feple.feple_backend.festival.setlistchangerequest.repository.SetlistC
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ public class SetlistChangeRequestService {
         ArtistFestival artistFestival = EntityLoader.getOrThrow(
                 artistFestivalRepository::findById, command.artistFestivalId(), "아티스트 참여 정보");
         if (!command.festivalId().equals(artistFestival.getFestivalId())) {
-            throw new IllegalArgumentException("해당 페스티벌의 참여 정보가 아닙니다.");
+            throw new InvalidRequestException("해당 페스티벌의 참여 정보가 아닙니다.");
         }
         repository.save(SetlistChangeRequest.of(user, command.festivalId(), command.artistFestivalId(),
                 artistFestival.getArtistName(), festival.getTitle(), command.message()));

@@ -6,6 +6,7 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.feple.feple_backend.file.ImageUploadPolicy;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -30,25 +31,25 @@ public class ImageResizeService {
 
     public void validateFile(MultipartFile file) {
         if (file.isEmpty())
-            throw new IllegalArgumentException("파일이 비어있습니다.");
+            throw new InvalidRequestException("파일이 비어있습니다.");
 
         if (file.getSize() > ImageUploadPolicy.MAX_IMAGE_UPLOAD_BYTES)
-            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
+            throw new InvalidRequestException("파일 크기는 10MB를 초과할 수 없습니다.");
 
         String original = file.getOriginalFilename();
         if (original == null || original.isBlank())
-            throw new IllegalArgumentException("파일 이름이 없습니다.");
+            throw new InvalidRequestException("파일 이름이 없습니다.");
 
         // 더블 확장자 공격 방지 (.jpg.exe 등)
         String nameWithoutExt = original.contains(".")
                 ? original.substring(0, original.lastIndexOf("."))
                 : original;
         if (nameWithoutExt.contains("."))
-            throw new IllegalArgumentException("다중 확장자 파일은 업로드할 수 없습니다.");
+            throw new InvalidRequestException("다중 확장자 파일은 업로드할 수 없습니다.");
 
         String ext = original.substring(original.lastIndexOf(".")).toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(ext))
-            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. jpg, jpeg, png, gif, webp 파일만 업로드할 수 있습니다.");
+            throw new InvalidRequestException("지원하지 않는 파일 형식입니다. jpg, jpeg, png, gif, webp 파일만 업로드할 수 있습니다.");
     }
 
     /** 이미지를 targetPx × targetPx 이하로 축소하여 JPEG 바이트 배열로 반환 (비율 유지) */
@@ -61,7 +62,7 @@ public class ImageResizeService {
         // 디코딩 단계에서 서브샘플링해 애초에 큰 버퍼를 만들지 않는다.
         BufferedImage src = decodeSubsampled(bytes, originalDims[0], originalDims[1], targetPx);
         if (src == null)
-            throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+            throw new InvalidRequestException("이미지를 읽을 수 없습니다.");
 
         // ImageIO는 EXIF Orientation을 반영하지 않고 센서 방향 그대로 픽셀을 디코딩한다.
         // 세로로 촬영한 사진(특히 iPhone)이 가로로 저장되고 태그로만 회전 방향을 표시하는 경우가
@@ -81,7 +82,7 @@ public class ImageResizeService {
 
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
             Iterator<ImageReader> it = ImageIO.getImageReaders(iis);
-            if (!it.hasNext()) throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+            if (!it.hasNext()) throw new InvalidRequestException("이미지를 읽을 수 없습니다.");
             ImageReader reader = it.next();
             try {
                 reader.setInput(iis, true, true);
@@ -161,14 +162,14 @@ public class ImageResizeService {
     private int[] readImageDimensions(byte[] bytes) throws IOException {
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
             Iterator<ImageReader> it = ImageIO.getImageReaders(iis);
-            if (!it.hasNext()) throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
+            if (!it.hasNext()) throw new InvalidRequestException("이미지를 읽을 수 없습니다.");
             ImageReader reader = it.next();
             try {
                 reader.setInput(iis, true, true);
                 int width = reader.getWidth(0);
                 int height = reader.getHeight(0);
                 if (width > MAX_DIMENSION_PX || height > MAX_DIMENSION_PX)
-                    throw new IllegalArgumentException(
+                    throw new InvalidRequestException(
                         "이미지 크기가 너무 큽니다. 최대 " + MAX_DIMENSION_PX + "×" + MAX_DIMENSION_PX + " 픽셀까지 허용됩니다.");
                 return new int[]{width, height};
             } finally {

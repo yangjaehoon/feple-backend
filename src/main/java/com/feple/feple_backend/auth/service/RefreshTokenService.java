@@ -3,6 +3,7 @@ package com.feple.feple_backend.auth.service;
 import com.feple.feple_backend.auth.entity.RefreshToken;
 import com.feple.feple_backend.auth.jwt.JwtProperties;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
@@ -55,18 +56,18 @@ public class RefreshTokenService {
     public Long validateAndConsume(String rawToken) {
         String tokenHash = hash(rawToken);
         RefreshToken stored = refreshTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
+                .orElseThrow(() -> new InvalidRequestException("유효하지 않은 리프레시 토큰입니다."));
 
         if (stored.isExpired()) {
             refreshTokenRepository.deleteByTokenHash(tokenHash);
-            throw new IllegalArgumentException("만료된 리프레시 토큰입니다. 다시 로그인해주세요.");
+            throw new InvalidRequestException("만료된 리프레시 토큰입니다. 다시 로그인해주세요.");
         }
 
         Long userId = stored.getUserId();
         // 직접 DELETE 쿼리로 삭제: 동시 요청이 같은 토큰을 소비하려 할 때 0이 반환됨
         int deleted = refreshTokenRepository.deleteByTokenHash(tokenHash);
         if (deleted == 0) {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+            throw new InvalidRequestException("유효하지 않은 리프레시 토큰입니다.");
         }
         return userId;
     }

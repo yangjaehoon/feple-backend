@@ -8,6 +8,7 @@ import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -42,7 +43,7 @@ public class UserReportService implements ReportAdminService<UserReport> {
     @EvictAdminReportCaches
     public void submitReport(Long targetId, Long reporterId, ReportSubmitRequest command) {
         if (targetId.equals(reporterId)) {
-            throw new IllegalArgumentException("자기 자신을 신고할 수 없습니다.");
+            throw new InvalidRequestException("자기 자신을 신고할 수 없습니다.");
         }
         if (reportRepository.existsByReporterIdAndTargetId(reporterId, targetId)) {
             throw new ConflictException("이미 신고한 사용자입니다.");

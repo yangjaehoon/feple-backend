@@ -5,6 +5,7 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.user.NicknameValidator;
 import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
@@ -76,7 +77,7 @@ public class UserServiceImpl implements UserService {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
         if (!user.canChangeNickname()) {
             long daysLeft = ChronoUnit.DAYS.between(LocalDateTime.now(), user.nextNicknameChangeAt()) + 1;
-            throw new IllegalArgumentException(
+            throw new InvalidRequestException(
                     "닉네임은 " + User.NICKNAME_COOLDOWN_DAYS + "일에 한 번만 변경할 수 있습니다. " + daysLeft + "일 후에 변경 가능합니다.");
         }
         user.changeNickname(nickname.trim());

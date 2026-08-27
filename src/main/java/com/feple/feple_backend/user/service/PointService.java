@@ -4,6 +4,7 @@ import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageableFactory;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
@@ -110,13 +111,13 @@ public class PointService {
     @Transactional
     public void grantByAdmin(Long userId, int amount, String reason) {
         if (amount == 0) {
-            throw new IllegalArgumentException("지급할 포인트는 0이 될 수 없습니다.");
+            throw new InvalidRequestException("지급할 포인트는 0이 될 수 없습니다.");
         }
         if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException("지급 사유를 입력해주세요.");
+            throw new InvalidRequestException("지급 사유를 입력해주세요.");
         }
         if (reason.length() > MAX_ADMIN_REASON_LENGTH) {
-            throw new IllegalArgumentException("지급 사유는 " + MAX_ADMIN_REASON_LENGTH + "자 이내로 입력해주세요.");
+            throw new InvalidRequestException("지급 사유는 " + MAX_ADMIN_REASON_LENGTH + "자 이내로 입력해주세요.");
         }
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         userRepository.addPointAtomically(userId, amount);

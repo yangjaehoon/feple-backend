@@ -11,6 +11,7 @@ import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.service.PointService;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +84,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     // (bulkApprove/bulkReject는 filter(isPending)로 이미 동일하게 보호됨)
     private void requirePending(FestivalCertification cert) {
         if (!cert.isPending()) {
-            throw new IllegalArgumentException("이미 처리된 인증 신청입니다.");
+            throw new InvalidRequestException("이미 처리된 인증 신청입니다.");
         }
     }
 

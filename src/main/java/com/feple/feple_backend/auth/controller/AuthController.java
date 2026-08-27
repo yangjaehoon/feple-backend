@@ -8,6 +8,7 @@ import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.service.UserService;
@@ -68,7 +69,7 @@ public class AuthController {
                                                    HttpServletRequest httpRequest) {
         loginRateLimiter.check(getClientIp(httpRequest));
         if (!jwtProvider.isRefreshToken(req.getRefreshToken())) {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+            throw new InvalidRequestException("유효하지 않은 리프레시 토큰입니다.");
         }
 
         RefreshTokenService.RotationResult rotation = refreshTokenService.rotate(

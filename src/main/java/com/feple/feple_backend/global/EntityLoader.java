@@ -1,5 +1,7 @@
 package com.feple.feple_backend.global;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
@@ -18,7 +20,7 @@ public final class EntityLoader {
     public static void requireBelongsToFestival(Long expectedFestivalId, Long actualFestivalId,
                                                   String entityDescriptionWithParticle) {
         if (!expectedFestivalId.equals(actualFestivalId)) {
-            throw new IllegalArgumentException("해당 페스티벌의 " + entityDescriptionWithParticle + " 아닙니다.");
+            throw new InvalidRequestException("해당 페스티벌의 " + entityDescriptionWithParticle + " 아닙니다.");
         }
     }
 }

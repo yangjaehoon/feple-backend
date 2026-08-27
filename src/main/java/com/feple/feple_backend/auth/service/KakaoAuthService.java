@@ -2,6 +2,7 @@ package com.feple.feple_backend.auth.service;
 
 import com.feple.feple_backend.auth.dto.KakaoUserResponseDto;
 import com.feple.feple_backend.auth.kakao.KakaoApiClient;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
@@ -25,10 +26,10 @@ public class KakaoAuthService implements OAuthLoginService {
 
     private User registerOrFind(KakaoUserResponseDto kakaoUser) {
         var account = Optional.ofNullable(kakaoUser.getKakaoAccount())
-                .orElseThrow(() -> new IllegalArgumentException("카카오 계정 정보가 없습니다."));
+                .orElseThrow(() -> new InvalidRequestException("카카오 계정 정보가 없습니다."));
 
         Long kakaoId = kakaoUser.getId();
-        if (kakaoId == null) throw new IllegalArgumentException("카카오 사용자 ID를 받을 수 없습니다.");
+        if (kakaoId == null) throw new InvalidRequestException("카카오 사용자 ID를 받을 수 없습니다.");
         String oauthId = kakaoId.toString();
         String email = account.getEmail();
 

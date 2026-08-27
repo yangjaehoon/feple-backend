@@ -16,6 +16,7 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
 import com.feple.feple_backend.timetable.service.TimetableSyncService;
@@ -200,7 +201,7 @@ public class ArtistFestivalService {
 
     private static void assertBelongsToFestival(ArtistFestival af, Long festivalId) {
         if (!belongsToFestival(af, festivalId)) {
-            throw new IllegalArgumentException("잘못된 페스티벌입니다.");
+            throw new InvalidRequestException("잘못된 페스티벌입니다.");
         }
     }
 
@@ -330,7 +331,7 @@ public class ArtistFestivalService {
 
     public ArtistFestival getArtistFestivalByIdAndArtistId(Long artistFestivalId, Long artistId) {
         if (!artistFestivalRepository.existsByIdAndArtistId(artistFestivalId, artistId)) {
-            throw new IllegalArgumentException("해당 아티스트의 셋리스트가 아닙니다.");
+            throw new InvalidRequestException("해당 아티스트의 셋리스트가 아닙니다.");
         }
         return EntityLoader.getOrThrow(artistFestivalRepository::findByIdWithFestival, artistFestivalId, "아티스트 페스티벌");
     }

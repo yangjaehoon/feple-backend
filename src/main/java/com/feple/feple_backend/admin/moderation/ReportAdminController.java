@@ -9,6 +9,7 @@ import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.service.PhotoPresignedUrlProvider;
 import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.admin.service.ReportSearchParams;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -144,7 +145,7 @@ public class ReportAdminController {
     private ReportAdminService<?> resolveHandler(String type) {
         ReportAdminService<?> handler = handlers.get(type);
         if (handler == null) {
-            throw new IllegalArgumentException("지원하지 않는 신고 유형입니다: " + type);
+            throw new InvalidRequestException("지원하지 않는 신고 유형입니다: " + type);
         }
         return handler;
     }

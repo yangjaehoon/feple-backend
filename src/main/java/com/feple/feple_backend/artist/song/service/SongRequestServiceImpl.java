@@ -16,6 +16,7 @@ import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -199,7 +200,7 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     // 이중 클릭·요청 재시도로 동일 요청이 두 번 승인/반려되며 알림이 중복 발송되는 것을 방지
     private void requirePending(SongRequest request) {
         if (!request.isPending()) {
-            throw new IllegalArgumentException("이미 처리된 노래 요청입니다.");
+            throw new InvalidRequestException("이미 처리된 노래 요청입니다.");
         }
     }
 }

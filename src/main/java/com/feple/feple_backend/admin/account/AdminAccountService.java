@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.account;
 
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.List;
@@ -71,7 +72,7 @@ public class AdminAccountService {
                     .profileImageUrl(profileImageUrl)
                     .build());
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + req.username());
+            throw new InvalidRequestException("이미 사용 중인 아이디입니다: " + req.username());
         }
     }
 
@@ -97,7 +98,7 @@ public class AdminAccountService {
         AdminAccount account = findById(id);
 
         if (account.getUsername().equals(currentUsername)) {
-            throw new IllegalArgumentException("자신의 계정은 삭제할 수 없습니다.");
+            throw new InvalidRequestException("자신의 계정은 삭제할 수 없습니다.");
         }
 
         if (account.getRole() == AdminRole.SUPER_ADMIN) {
@@ -116,7 +117,7 @@ public class AdminAccountService {
         AdminAccount account = findById(id);
 
         if (account.getUsername().equals(currentUsername) && account.isEnabled()) {
-            throw new IllegalArgumentException("자신의 계정을 비활성화할 수 없습니다.");
+            throw new InvalidRequestException("자신의 계정을 비활성화할 수 없습니다.");
         }
 
         if (account.isEnabled() && account.getRole() == AdminRole.SUPER_ADMIN) {
@@ -144,24 +145,24 @@ public class AdminAccountService {
 
     private void validateNewAccount(String username, String password) {
         if (username == null || username.isBlank())
-            throw new IllegalArgumentException("아이디를 입력해주세요.");
+            throw new InvalidRequestException("아이디를 입력해주세요.");
         if (username.length() > USERNAME_MAX_LENGTH)
-            throw new IllegalArgumentException("아이디는 " + USERNAME_MAX_LENGTH + "자 이하여야 합니다.");
+            throw new InvalidRequestException("아이디는 " + USERNAME_MAX_LENGTH + "자 이하여야 합니다.");
         validatePasswordComplexity(password);
         if (accountRepository.existsByUsername(username))
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + username);
+            throw new InvalidRequestException("이미 사용 중인 아이디입니다: " + username);
     }
 
     static void validatePasswordComplexity(String password) {
         if (password == null || password.length() < PASSWORD_MIN_LENGTH)
-            throw new IllegalArgumentException("비밀번호는 " + PASSWORD_MIN_LENGTH + "자 이상이어야 합니다.");
+            throw new InvalidRequestException("비밀번호는 " + PASSWORD_MIN_LENGTH + "자 이상이어야 합니다.");
         if (password.length() > PASSWORD_MAX_LENGTH)
-            throw new IllegalArgumentException("비밀번호는 " + PASSWORD_MAX_LENGTH + "자 이하여야 합니다.");
+            throw new InvalidRequestException("비밀번호는 " + PASSWORD_MAX_LENGTH + "자 이하여야 합니다.");
         boolean hasLetter  = password.chars().anyMatch(Character::isLetter);
         boolean hasDigit   = password.chars().anyMatch(Character::isDigit);
         boolean hasSpecial = password.chars().anyMatch(c -> !Character.isLetterOrDigit(c));
         if (!hasLetter || !hasDigit || !hasSpecial)
-            throw new IllegalArgumentException("비밀번호는 영문자, 숫자, 특수문자를 각각 1자 이상 포함해야 합니다.");
+            throw new InvalidRequestException("비밀번호는 영문자, 숫자, 특수문자를 각각 1자 이상 포함해야 합니다.");
     }
 
     // IOException을 RuntimeException으로 감싸 서비스 시그니처에서 체크드 예외를 제거한다.
@@ -185,7 +186,7 @@ public class AdminAccountService {
     /** 현재 SUPER_ADMIN 수(currentSuperAdmins, PESSIMISTIC_WRITE로 잠긴 목록)가 1명 이하면 보호 규칙 위반으로 거부한다. */
     private static void ensureNotLastSuperAdmin(List<AdminAccount> currentSuperAdmins, String errorMessage) {
         if (currentSuperAdmins.size() <= 1) {
-            throw new IllegalArgumentException(errorMessage);
+            throw new InvalidRequestException(errorMessage);
         }
     }
 
@@ -214,7 +215,7 @@ public class AdminAccountService {
     private static void validateManagerHasPermission(AdminRole role,
                                                     Map<AdminPermission, AdminPermissionLevel> permissions) {
         if (role == AdminRole.MANAGER && permissions.isEmpty()) {
-            throw new IllegalArgumentException("일반 관리자는 최소 1개 이상의 접근 권한이 필요합니다.");
+            throw new InvalidRequestException("일반 관리자는 최소 1개 이상의 접근 권한이 필요합니다.");
         }
     }
 
