@@ -142,7 +142,7 @@ class ImageResizeServiceTest {
 
     @Test
     void resizeToJpeg_이미지가_아니면_예외() {
-        byte[] notAnImage = "이건 이미지가 아닙니다".getBytes();
+        byte[] notAnImage = "이건 이미지가 아닙니다".getBytes(StandardCharsets.UTF_8);
 
         assertThatThrownBy(() -> service.resizeToJpeg(new ByteArrayInputStream(notAnImage), 100))
                 .isInstanceOf(IllegalArgumentException.class);

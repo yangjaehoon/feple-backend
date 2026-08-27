@@ -69,7 +69,7 @@ jobs:
           sed -i '/^  flyway:$/{N; /\n    enabled: false/d}' src/main/resources/application-local.yaml
 
       - name: Test with Gradle
-        run: ./gradlew cleanTest test
+        run: ./gradlew cleanTest test jacocoTestCoverageVerification
 
       - name: Run SpotBugs
         run: ./gradlew spotbugsMain spotbugsTest

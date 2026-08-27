@@ -106,10 +106,11 @@ spotless {
 	}
 }
 
-// 기존 코드베이스를 아직 트리아지하지 않아서 ignoreFailures로 시작한다 — 리포트만 쌓고,
-// 발견된 항목들을 검토해 정리한 뒤 점진적으로 강제(false)로 전환할 예정
+// 트리아지 완료 — spotbugsMain은 현재 0건, spotbugsTest의 오탐(Mockito @Mock 미read,
+// 의도적 null 전달)은 config/spotbugs/exclude.xml에서 테스트 소스 한정으로 제외했다.
+// 이제 새 findings가 생기면 CI가 실패하도록 강제한다. 노이즈 규칙 제외는 exclude.xml에서 관리.
 spotbugs {
-	ignoreFailures = true
+	ignoreFailures = false
 	showStackTraces = false
 	excludeFilter = file('config/spotbugs/exclude.xml')
 }
@@ -135,6 +136,17 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
 	}
 }
 
+// 리포트·검증에서 공통으로 제외하는 클래스 — 로직이 거의 없는 계층(dto/entity/config/event)과
+// 프레임워크 부트스트랩/예외 클래스는 커버리지 측정 대상에서 뺀다.
+def coverageExclusions = [
+	'**/dto/**',
+	'**/entity/**',
+	'**/config/**',
+	'**/event/**',
+	'**/*Application*',
+	'**/*Exception*',
+]
+
 jacocoTestReport {
 	dependsOn test
 	reports {
@@ -143,16 +155,38 @@ jacocoTestReport {
 	}
 	afterEvaluate {
 		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, exclude: [
-				'**/dto/**',
-				'**/entity/**',
-				'**/config/**',
-				'**/event/**',
-				'**/*Application*',
-				'**/*Exception*',
-			])
+			fileTree(dir: it, exclude: coverageExclusions)
 		}))
 	}
+}
+
+// 커버리지 회귀 방지 게이트 — 현재 instruction 94% / branch 81% 수준이며, 일시적 변동을
+// 감안해 그보다 낮은 하한선만 강제한다. 여유가 줄면 minimum 값을 올려 조인다.
+jacocoTestCoverageVerification {
+	dependsOn jacocoTestReport
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: coverageExclusions)
+		}))
+	}
+	violationRules {
+		rule {
+			limit {
+				counter = 'INSTRUCTION'
+				value = 'COVEREDRATIO'
+				minimum = 0.90
+			}
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.75
+			}
+		}
+	}
+}
+
+tasks.named('check') {
+	dependsOn jacocoTestCoverageVerification
 }
 
 tasks.named('test') {

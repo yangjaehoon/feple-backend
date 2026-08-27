@@ -30,4 +30,15 @@
         <Class name="db.migration.V16__add_festival_performance_indexes"/>
         <Bug pattern="SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"/>
     </Match>
+
+    <!-- 테스트 소스 한정 제외:
+         - URF_UNREAD_FIELD: Mockito @Mock 필드는 @InjectMocks 생성자 주입을 위해 선언하지만,
+           특정 테스트가 그 협력자를 직접 호출하지 않으면 SpotBugs가 리플렉션 주입을 못 봐서
+           "미사용 필드"로 오탐한다.
+         - NP_NONNULL_PARAM_VIOLATION: 방어 로직(null 입력 시 예외) 검증을 위해 고의로 null을
+           넘기는 테스트에서 발생 — 의도된 패턴이다. -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+        <Bug pattern="URF_UNREAD_FIELD,NP_NONNULL_PARAM_VIOLATION"/>
+    </Match>
 </FindBugsFilter>

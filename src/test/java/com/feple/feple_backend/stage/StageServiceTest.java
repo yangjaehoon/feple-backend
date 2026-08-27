@@ -68,6 +68,7 @@ class StageServiceTest {
         then(stageRepository).should().save(captor.capture());
         assertThat(captor.getValue().getDisplayOrder()).isEqualTo(1);
         assertThat(captor.getValue().getName()).isEqualTo("MAIN STAGE");
+        assertThat(result).isSameAs(savedStage);
     }
 
     @Test

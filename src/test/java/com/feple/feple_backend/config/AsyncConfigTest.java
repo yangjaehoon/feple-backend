@@ -18,6 +18,7 @@ class AsyncConfigTest {
         MDC.put("requestId", "abc123");
         try {
             Executor executor = config.getAsyncExecutor();
+            assertThat(executor).isNotNull();
             AtomicReference<String> captured = new AtomicReference<>();
             CountDownLatch latch = new CountDownLatch(1);
 
@@ -38,6 +39,7 @@ class AsyncConfigTest {
         MDC.put("requestId", "dash456");
         try {
             Executor executor = config.dashboardExecutor();
+            assertThat(executor).isNotNull();
             AtomicReference<String> captured = new AtomicReference<>();
             CountDownLatch latch = new CountDownLatch(1);
 
