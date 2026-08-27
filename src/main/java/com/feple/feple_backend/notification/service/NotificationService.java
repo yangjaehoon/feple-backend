@@ -43,7 +43,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -413,10 +412,14 @@ public class NotificationService {
                 .build());
     }
 
-    /** 매일 오전 9시(KST) PendingPushScheduler가 호출 — 밤사이 쌓인 대기열을 발송한다 */
-    @Transactional
+    /**
+     * 매일 오전 9시(KST) PendingPushScheduler가 호출 — 밤사이 쌓인 대기열을 발송한다.
+     * 전체를 하나의 트랜잭션으로 묶지 않는다: 항목마다 외부 FCM 호출이 있어, 묶으면 배치 전체
+     * 소요 시간 동안 DB 커넥션을 점유한다. 조회는 한 번에(수신자까지 fetch), 발송은 트랜잭션
+     * 없이, 삭제는 항목별 독립 트랜잭션으로 처리한다.
+     */
     public void flushPendingPushes() {
-        List<PendingPush> pending = pendingPushRepository.findAll();
+        List<PendingPush> pending = pendingPushRepository.findAllWithRecipients();
         for (PendingPush p : pending) {
             try {
                 dispatchPendingPush(p);

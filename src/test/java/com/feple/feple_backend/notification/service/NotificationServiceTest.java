@@ -540,7 +540,7 @@ class NotificationServiceTest {
         PendingPush fail = PendingPush.builder()
                 .type(NotificationType.NEW_FESTIVAL).title("t2").body("b2").userIds(List.of(2L)).build();
         TokenLanguageProjection koToken = token("tok1", "ko");
-        given(pendingPushRepository.findAll()).willReturn(List.of(ok, fail));
+        given(pendingPushRepository.findAllWithRecipients()).willReturn(List.of(ok, fail));
         given(deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(1L))).willReturn(List.of(koToken));
         given(deviceTokenRepository.findTokensWithLanguageByUserIds(List.of(2L)))
                 .willThrow(new RuntimeException("device token 조회 실패"));
