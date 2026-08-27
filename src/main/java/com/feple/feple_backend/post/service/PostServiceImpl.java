@@ -60,9 +60,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public Long createPost(PostRequestDto dto, Long userId) {
+    public Long createPost(PostRequestDto dto, Long userId, BoardType boardType) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        return savePost(dto, user, new PostContext(dto.getBoardType(), null, null));
+        return savePost(dto, user, new PostContext(boardType, null, null));
     }
 
     @Override

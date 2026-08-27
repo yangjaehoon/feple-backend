@@ -88,7 +88,7 @@ class PostControllerTest {
 
     @Test
     void 게시글_작성_성공() throws Exception {
-        given(postService.createPost(any(), eq(1L))).willReturn(42L);
+        given(postService.createPost(any(), eq(1L), any())).willReturn(42L);
 
         mockMvc.perform(post("/posts/free")
                         .with(AuthTestHelper.userAuth(1L))
@@ -163,7 +163,7 @@ class PostControllerTest {
 
     @Test
     void 동행_게시글_작성_성공() throws Exception {
-        given(postService.createPost(any(), eq(1L))).willReturn(42L);
+        given(postService.createPost(any(), eq(1L), any())).willReturn(42L);
 
         mockMvc.perform(post("/posts/mate")
                         .with(AuthTestHelper.userAuth(1L))

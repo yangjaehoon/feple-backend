@@ -74,12 +74,12 @@ class PostServiceImplTest {
     void 게시글_생성_성공() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).build();
+                .build();
 
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
         given(postWriter.save(any(), eq(author), any())).willReturn(10L);
 
-        Long id = postService.createPost(dto, 1L);
+        Long id = postService.createPost(dto, 1L, BoardType.FREE);
 
         assertThat(id).isEqualTo(10L);
         verify(postWriter).save(any(), eq(author), any());
@@ -89,12 +89,12 @@ class PostServiceImplTest {
     void 금칙어_포함_게시글_생성시_예외() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("욕설포함제목").content("내용")
-                .boardType(BoardType.FREE).build();
+                .build();
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
         willThrow(new IllegalArgumentException("금칙어가 포함되어 있습니다."))
                 .given(badWordFilter).validateField(eq("title"), any());
 
-        assertThatThrownBy(() -> postService.createPost(dto, 1L))
+        assertThatThrownBy(() -> postService.createPost(dto, 1L, BoardType.FREE))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(postWriter, never()).save(any(), any(), any());
     }
@@ -102,10 +102,10 @@ class PostServiceImplTest {
     @Test
     void 존재하지_않는_사용자로_게시글_생성시_예외() {
         PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
-                .boardType(BoardType.FREE).build();
+                .build();
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> postService.createPost(dto, 99L))
+        assertThatThrownBy(() -> postService.createPost(dto, 99L, BoardType.FREE))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessageContaining("99");
     }
@@ -114,10 +114,10 @@ class PostServiceImplTest {
     void 본인_프리픽스_밖의_이미지URL이면_게시글_생성_예외() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).imageUrls(List.of("posts/2/other-user.jpg")).build();
+                .imageUrls(List.of("posts/2/other-user.jpg")).build();
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
 
-        assertThatThrownBy(() -> postService.createPost(dto, 1L))
+        assertThatThrownBy(() -> postService.createPost(dto, 1L, BoardType.FREE))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("잘못된 오브젝트 키입니다.");
         verify(postWriter, never()).save(any(), any(), any());
@@ -127,11 +127,11 @@ class PostServiceImplTest {
     void 본인_프리픽스_이미지URL이면_S3_존재검증후_게시글_생성() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).imageUrls(List.of("posts/1/photo.jpg")).build();
+                .imageUrls(List.of("posts/1/photo.jpg")).build();
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
         given(postWriter.save(any(), eq(author), any())).willReturn(10L);
 
-        Long id = postService.createPost(dto, 1L);
+        Long id = postService.createPost(dto, 1L, BoardType.FREE);
 
         assertThat(id).isEqualTo(10L);
         // S3 오브젝트 검증은 트랜잭션(PostWriter) 진입 전에 수행돼야 한다
@@ -224,7 +224,7 @@ class PostServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("수정된 제목").content("수정된 내용")
-                .boardType(BoardType.FREE).build();
+                .build();
         given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
 
         postService.updateOwnPost(10L, dto, 1L);
@@ -237,7 +237,7 @@ class PostServiceImplTest {
         User owner = user(1L);
         Post post = freePost(10L, owner);
         PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
-                .boardType(BoardType.FREE).build();
+                .build();
         given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 2L))
@@ -250,7 +250,7 @@ class PostServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("욕설포함제목").content("내용")
-                .boardType(BoardType.FREE).build();
+                .build();
         given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
         willThrow(new IllegalArgumentException("금칙어가 포함되어 있습니다."))
                 .given(badWordFilter).validateField(eq("title"), any());
@@ -264,7 +264,7 @@ class PostServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
-                .boardType(BoardType.FREE).imageUrls(List.of("posts/2/other-user.jpg")).build();
+                .imageUrls(List.of("posts/2/other-user.jpg")).build();
         given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 1L))

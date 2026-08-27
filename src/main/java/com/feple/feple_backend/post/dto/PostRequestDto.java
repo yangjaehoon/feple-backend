@@ -1,10 +1,12 @@
 package com.feple.feple_backend.post.dto;
 
-import com.feple.feple_backend.post.entity.BoardType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
@@ -18,11 +20,10 @@ public class PostRequestDto {
     @NotBlank(message = "제목을 입력해주세요.")
     @Size(max = 100, message = "제목은 100자 이내로 입력해주세요.")
     private String title;
+
     @NotBlank(message = "내용을 입력해주세요.")
     @Size(max = 5000, message = "내용은 5000자 이내로 입력해주세요.")
     private String content;
-    @Setter
-    private BoardType boardType;
 
     private boolean anonymous;
 
@@ -33,5 +34,4 @@ public class PostRequestDto {
     @Size(max = MAX_TAGS, message = "태그는 최대 " + MAX_TAGS + "개까지 입력할 수 있습니다.")
     @Builder.Default
     private List<@Size(max = 30, message = "태그는 30자 이내로 입력해주세요.") String> tags = List.of();
-
 }

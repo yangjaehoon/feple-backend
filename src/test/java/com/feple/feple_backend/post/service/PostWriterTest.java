@@ -45,7 +45,7 @@ class PostWriterTest {
     void 저장시_임시저장_삭제하고_생성_이벤트를_발행() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).build();
+                .build();
         given(postRepository.save(any(Post.class))).willReturn(freePost(10L, author));
 
         Long id = postWriter.save(dto, author, freeBoard());
@@ -59,7 +59,7 @@ class PostWriterTest {
     void 태그는_정규화되고_중복이_제거되어_저장된다() {
         User author = user(1L);
         PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용")
-                .boardType(BoardType.FREE).tags(List.of("#Rock", " rock ", "festival")).build();
+                .tags(List.of("#Rock", " rock ", "festival")).build();
         given(postRepository.save(any(Post.class))).willReturn(freePost(10L, author));
 
         postWriter.save(dto, author, freeBoard());
@@ -74,7 +74,7 @@ class PostWriterTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("수정된 제목").content("수정된 내용")
-                .boardType(BoardType.FREE).build();
+                .build();
         given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
 
         postWriter.update(10L, dto);

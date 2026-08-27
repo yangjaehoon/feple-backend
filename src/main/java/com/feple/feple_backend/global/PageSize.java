@@ -4,6 +4,8 @@ public final class PageSize {
     private PageSize() {}
 
     public static final int MAX_PAGE_SIZE = 50;
+    /** 커서 페이지네이션 목록 기본 크기 (클라이언트가 size를 안 보낼 때) */
+    public static final int DEFAULT_PAGE_SIZE = 20;
     public static final int POPULAR_POSTS = 4;
     // 인기글 캐시(PopularPostCache)는 조회자와 무관한 공통 캐시라 차단 필터링을 캐시 내부에서
     // 할 수 없다 — 캐시된 풀이 정확히 POPULAR_POSTS(4)개뿐이면, 그중 일부만 차단 작성자여도

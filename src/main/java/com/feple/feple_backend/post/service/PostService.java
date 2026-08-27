@@ -9,7 +9,7 @@ import com.feple.feple_backend.post.entity.BoardType;
 import java.util.List;
 
 public interface PostService {
-    Long createPost(PostRequestDto dto, Long userId);
+    Long createPost(PostRequestDto dto, Long userId, BoardType boardType);
     PostResponseDto getPost(Long postId);
     List<PostResponseDto> getPopularPosts(Long viewerId);
     CursorPage<PostResponseDto> getPostsByBoardTypeLatest(BoardType boardType, CursorPageRequest pageRequest);
