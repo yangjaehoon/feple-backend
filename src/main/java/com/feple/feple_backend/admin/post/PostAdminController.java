@@ -80,12 +80,13 @@ public class PostAdminController {
                                   @ModelAttribute PostListParams params,
                                   RedirectAttributes ra) {
         String redirectUrl = "redirect:/admin/posts?" + params.toRedirectParams();
-        String emptySelection = AdminActionUtils.requireNonEmptySelection(ids, redirectUrl, ra);
-        if (emptySelection != null) return emptySelection;
+        String invalidSelection = AdminActionUtils.requireValidSelection(ids, redirectUrl, ra);
+        if (invalidSelection != null) return invalidSelection;
         AdminActionUtils.tryAction(
                 () -> {
                     postAdminService.bulkDeletePosts(ids);
-                    adminLogService.log(AdminAction.POST_BULK_DELETE, "POST", null, "총 " + ids.size() + "개");
+                    adminLogService.log(AdminAction.POST_BULK_DELETE, "POST", null,
+                            "삭제 " + AdminActionUtils.describeIds(ids));
                 },
                 ids.size() + "개 게시글이 삭제되었습니다.",
                 e -> log.error("게시글 일괄 삭제 실패 ids={}", ids, e),

@@ -102,12 +102,13 @@ public class ReportAdminController {
     public String bulkDismiss(@RequestParam(required = false) List<Long> ids,
                               @ModelAttribute ReportFilter filter,
                               RedirectAttributes ra) {
-        String emptySelection = AdminActionUtils.requireNonEmptySelection(ids, redirectReports(filter), ra);
-        if (emptySelection != null) return emptySelection;
+        String invalidSelection = AdminActionUtils.requireValidSelection(ids, redirectReports(filter), ra);
+        if (invalidSelection != null) return invalidSelection;
         AdminActionUtils.tryAction(
                 () -> {
                     resolveHandler(filter.type()).bulkDismiss(ids);
-                    adminLogService.log(AdminAction.REPORT_BULK_DISMISS, "REPORT", null, filter.type() + " " + ids.size() + "건");
+                    adminLogService.log(AdminAction.REPORT_BULK_DISMISS, "REPORT", null,
+                            filter.type() + " 기각 " + AdminActionUtils.describeIds(ids));
                 },
                 ids.size() + "건을 일괄 기각했습니다.",
                 e -> log.error("신고 일괄 기각 실패 type={} ids={}", filter.type(), ids, e),
@@ -120,13 +121,13 @@ public class ReportAdminController {
     public String bulkDelete(@RequestParam(required = false) List<Long> ids,
                              @ModelAttribute ReportFilter filter,
                              RedirectAttributes ra) {
-        String emptySelection = AdminActionUtils.requireNonEmptySelection(ids, redirectReports(filter), ra);
-        if (emptySelection != null) return emptySelection;
+        String invalidSelection = AdminActionUtils.requireValidSelection(ids, redirectReports(filter), ra);
+        if (invalidSelection != null) return invalidSelection;
         AdminActionUtils.tryActionWithResult(
                 () -> {
                     int done = resolveHandler(filter.type()).bulkDeleteContent(ids);
                     adminLogService.log(AdminAction.REPORT_BULK_DELETE, "REPORT", null,
-                            filter.type() + " " + done + "/" + ids.size() + "건");
+                            filter.type() + " 삭제 " + done + "/" + AdminActionUtils.describeIds(ids));
                     return done;
                 },
                 done -> done == ids.size()

@@ -127,14 +127,14 @@ public class CertificationAdminController {
                               @ModelAttribute CertificationFilter filter,
                               Authentication auth,
                               RedirectAttributes ra) {
-        String emptySelection = AdminActionUtils.requireNonEmptySelection(
+        String invalidSelection = AdminActionUtils.requireValidSelection(
                 ids, AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword()), ra);
-        if (emptySelection != null) return emptySelection;
+        if (invalidSelection != null) return invalidSelection;
         AdminActionUtils.tryAction(
                 () -> {
                     certificationService.bulkApprove(ids, auth.getName());
                     adminLogService.log(AdminAction.CERTIFICATION_BULK_APPROVE, "CERTIFICATION", null,
-                            ids.size() + "건 일괄 승인");
+                            "승인 " + AdminActionUtils.describeIds(ids));
                 },
                 ids.size() + "건이 승인되었습니다.",
                 e -> log.error("인증 일괄 승인 실패 ids={}", ids, e),
@@ -149,14 +149,15 @@ public class CertificationAdminController {
                              @ModelAttribute CertificationFilter filter,
                              Authentication auth,
                              RedirectAttributes ra) {
-        String emptySelection = AdminActionUtils.requireNonEmptySelection(
+        String invalidSelection = AdminActionUtils.requireValidSelection(
                 ids, AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword()), ra);
-        if (emptySelection != null) return emptySelection;
+        if (invalidSelection != null) return invalidSelection;
         AdminActionUtils.tryAction(
                 () -> {
                     certificationService.bulkReject(ids, rejectionMessage, auth.getName());
                     adminLogService.log(AdminAction.CERTIFICATION_BULK_REJECT, "CERTIFICATION", null,
-                            ids.size() + "건 일괄 거절");
+                            "거절 " + AdminActionUtils.describeIds(ids)
+                                    + (rejectionMessage.isBlank() ? "" : " / " + rejectionMessage));
                 },
                 ids.size() + "건이 거절되었습니다.",
                 e -> log.error("인증 일괄 거절 실패 ids={}", ids, e),

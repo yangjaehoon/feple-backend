@@ -218,4 +218,67 @@ class AdminActionUtilsTest {
 
         assertThat(result).isEqualTo("redirect:/admin/reports?status&page=0");
     }
+
+    // ── requireValidSelection ────────────────────────────────────────────────
+
+    @Test
+    void requireValidSelection_정상_선택이면_null_반환() {
+        RedirectAttributesModelMap ra = ra();
+
+        String result = AdminActionUtils.requireValidSelection(
+                java.util.List.of(1L, 2L, 3L), "redirect:/admin/users", ra);
+
+        assertThat(result).isNull();
+        assertThat(ra.getFlashAttributes()).isEmpty();
+    }
+
+    @Test
+    void requireValidSelection_ids_null이면_선택없음_메시지_후_redirect() {
+        RedirectAttributesModelMap ra = ra();
+
+        String result = AdminActionUtils.requireValidSelection(null, "redirect:/admin/users", ra);
+
+        assertThat(result).isEqualTo("redirect:/admin/users");
+        assertThat(flash(ra, "errorMessage")).isEqualTo(AdminConstants.MSG_EMPTY_SELECTION);
+    }
+
+    @Test
+    void requireValidSelection_ids_비어있으면_선택없음_메시지_후_redirect() {
+        RedirectAttributesModelMap ra = ra();
+
+        String result = AdminActionUtils.requireValidSelection(
+                java.util.List.of(), "redirect:/admin/users", ra);
+
+        assertThat(result).isEqualTo("redirect:/admin/users");
+        assertThat(flash(ra, "errorMessage")).isEqualTo(AdminConstants.MSG_EMPTY_SELECTION);
+    }
+
+    @Test
+    void requireValidSelection_상한_이하면_통과() {
+        RedirectAttributesModelMap ra = ra();
+        java.util.List<Long> ids = java.util.stream.LongStream
+                .rangeClosed(1, AdminConstants.BULK_ACTION_MAX_IDS).boxed().toList();
+
+        String result = AdminActionUtils.requireValidSelection(ids, "redirect:/admin/users", ra);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void requireValidSelection_상한_초과하면_안내_메시지_후_redirect() {
+        RedirectAttributesModelMap ra = ra();
+        java.util.List<Long> ids = java.util.stream.LongStream
+                .rangeClosed(1, AdminConstants.BULK_ACTION_MAX_IDS + 1).boxed().toList();
+
+        String result = AdminActionUtils.requireValidSelection(ids, "redirect:/admin/users", ra);
+
+        assertThat(result).isEqualTo("redirect:/admin/users");
+        assertThat(flash(ra, "errorMessage")).isEqualTo(AdminConstants.MSG_BULK_TOO_MANY);
+    }
+
+    @Test
+    void describeIds_건수와_id_목록_문자열() {
+        assertThat(AdminActionUtils.describeIds(java.util.List.of(12L, 45L, 78L)))
+                .isEqualTo("3건 [12, 45, 78]");
+    }
 }

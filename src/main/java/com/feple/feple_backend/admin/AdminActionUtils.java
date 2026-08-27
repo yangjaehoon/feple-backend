@@ -77,13 +77,29 @@ public final class AdminActionUtils {
 
     /**
      * 일괄 작업(bulk action) 컨트롤러 메서드 시작부의 표준 가드 클로즈:
-     * 선택된 id가 없으면 errorMessage flash attribute를 설정하고 redirectUrl로 이동한다.
-     * 선택된 id가 있으면 null을 반환하므로, 호출부는 `if (result != null) return result;` 형태로 사용한다.
+     * - 선택된 id가 없으면 "선택된 항목이 없습니다." errorMessage 설정 후 redirectUrl 반환
+     * - 선택된 id가 {@link AdminConstants#BULK_ACTION_MAX_IDS}개를 초과하면 안내 메시지 설정 후 redirectUrl 반환
+     * 정상 선택이면 null을 반환하므로, 호출부는 `if (result != null) return result;` 형태로 사용한다.
      */
-    public static String requireNonEmptySelection(List<Long> ids, String redirectUrl, RedirectAttributes ra) {
-        if (ids != null && !ids.isEmpty()) return null;
-        ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
-        return redirectUrl;
+    public static String requireValidSelection(List<Long> ids, String redirectUrl, RedirectAttributes ra) {
+        if (ids == null || ids.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_EMPTY_SELECTION);
+            return redirectUrl;
+        }
+        if (ids.size() > AdminConstants.BULK_ACTION_MAX_IDS) {
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_BULK_TOO_MANY);
+            return redirectUrl;
+        }
+        return null;
+    }
+
+    /**
+     * 일괄 작업 감사 로그의 detail 문자열에 넣을 "선택 건수 + id 목록" 표현.
+     * 예) describeIds(List.of(12L, 45L, 78L)) → "3건 [12, 45, 78]"
+     * 선택 상한(BULK_ACTION_MAX_IDS)이 걸려 있어 id 목록을 그대로 남겨도 로그 컬럼 길이에 여유가 있다.
+     */
+    public static String describeIds(List<Long> ids) {
+        return ids.size() + "건 " + ids;
     }
 
     /**

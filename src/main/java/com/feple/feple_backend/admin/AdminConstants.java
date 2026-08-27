@@ -21,6 +21,12 @@ public final class AdminConstants {
     // 신고가 이 건수(대기 상태) 이상 쌓이면 관리자 검토 전이라도 자동으로 블라인드 처리한다.
     public static final int AUTO_BLIND_REPORT_THRESHOLD = 5;
 
+    // 일괄 작업(회원/게시글/신고/인증)에서 한 번에 처리할 수 있는 최대 항목 수.
+    // 목록 페이지 크기(최대 30)를 크게 웃도는 값이라 정상 업무에는 제약이 없고, URL/폼 조작으로
+    // 수천 건이 단일 트랜잭션에 묶여 장시간 락을 잡는 상황을 차단한다. 감사 로그 detail에
+    // 선택 id를 그대로 남겨도 컬럼 길이(2000자)에 여유가 있도록 잡은 상한이기도 하다.
+    public static final int BULK_ACTION_MAX_IDS = 50;
+
     public static final String REPORT_TYPE_POST    = "post";
     public static final String REPORT_TYPE_COMMENT = "comment";
     public static final String REPORT_TYPE_PHOTO   = "photo";
@@ -29,6 +35,8 @@ public final class AdminConstants {
     public static final String STATUS_ALL          = "ALL";
 
     public static final String MSG_EMPTY_SELECTION = "선택된 항목이 없습니다.";
+    public static final String MSG_BULK_TOO_MANY =
+            "한 번에 최대 " + BULK_ACTION_MAX_IDS + "건까지 처리할 수 있습니다. 선택을 줄여 다시 시도해주세요.";
     public static final String MSG_BULK_DELETE_ERROR = "일괄 삭제 처리 중 오류가 발생했습니다.";
     public static final String MSG_DELETE_ERROR = "삭제 중 오류가 발생했습니다.";
 }
