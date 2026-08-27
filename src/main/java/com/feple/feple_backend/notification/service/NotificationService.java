@@ -44,8 +44,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Slf4j
 @Service
@@ -97,7 +101,11 @@ public class NotificationService {
         return userRepository.findById(userId).orElse(null);
     }
 
-    /** 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송 — 커밋 후에만 발송 */
+    /**
+     * 아티스트가 페스티벌에 추가될 때 팔로워들에게 알림 발송 — 커밋 후에만 발송.
+     * 팔로워가 수만 명일 수 있어 메서드 전체를 한 트랜잭션으로 묶지 않는다(fanOut이 청크별로
+     * 독립 저장). 청크 저장은 saveAll의 기본 트랜잭션에 맡긴다.
+     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onArtistAddedToFestival(ArtistAddedToFestivalEvent event) {
@@ -123,6 +131,7 @@ public class NotificationService {
     /** 인증 승인 알림 — 커밋 후에만 발송 */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCertificationApproved(CertificationApprovedEvent event) {
         User user = findUserOrNull(event.userId());
         if (user == null) return;
@@ -139,6 +148,7 @@ public class NotificationService {
     /** 인증 거절 알림 — 커밋 후에만 발송 */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCertificationRejected(CertificationRejectedEvent event) {
         User user = findUserOrNull(event.userId());
         if (user == null) return;
@@ -154,6 +164,7 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestApproved(SongRequestApprovedEvent event) {
         User user = findUserOrNull(event.userId());
         if (user == null) return;
@@ -169,6 +180,7 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onSongRequestRejected(SongRequestRejectedEvent event) {
         User user = findUserOrNull(event.userId());
         if (user == null) return;
@@ -184,6 +196,7 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onArtistSuggestionProcessed(ArtistSuggestionProcessedEvent event) {
         User user = findUserOrNull(event.userId());
         if (user == null) return;
@@ -202,6 +215,7 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onFestivalSuggestionProcessed(FestivalSuggestionProcessedEvent event) {
         User user = findUserOrNull(event.userId());
         if (user == null) return;
@@ -220,6 +234,7 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCommentCreated(CommentCreatedEvent event) {
         if (event.postAuthorId() != null && !userBlockService.isBlocked(event.postAuthorId(), event.commenterId())) {
             notifyNewComment(event.postAuthorId(), event);
@@ -231,6 +246,7 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostLiked(PostLikedEvent event) {
         if (userBlockService.isBlocked(event.postAuthorId(), event.likerId())) return;
         User author = findUserOrNull(event.postAuthorId());
@@ -247,6 +263,7 @@ public class NotificationService {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostDeletedByAdmin(PostDeletedByAdminEvent event) {
         User author = findUserOrNull(event.postAuthorId());
         if (author == null) return;
@@ -262,6 +279,7 @@ public class NotificationService {
     /** 관리자 수동 포인트 지급 알림 — 커밋 후에만 발송 */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onAdminPointGranted(AdminPointGrantedEvent event) {
         User user = findUserOrNull(event.userId());
         if (user == null) return;
@@ -449,7 +467,24 @@ public class NotificationService {
         sendByLanguage(tokens, message);
     }
 
+    /**
+     * FCM 발송은 DB 커넥션을 물고 있으면 안 되므로, 리스너의 트랜잭션 안에서 호출된 경우
+     * 커밋 이후로 미룬다(트랜잭션이 없으면 즉시 발송). FileStorageService.deleteFileAfterCommit와 동일한 패턴.
+     */
     private void sendByLanguage(List<TokenLanguageProjection> tokens, NotificationMessage message) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    doSendByLanguage(tokens, message);
+                }
+            });
+        } else {
+            doSendByLanguage(tokens, message);
+        }
+    }
+
+    private void doSendByLanguage(List<TokenLanguageProjection> tokens, NotificationMessage message) {
         Map<String, List<String>> byLang = tokens.stream()
                 .collect(Collectors.groupingBy(
                         t -> "en".equals(t.getLanguage()) ? "en" : "ko",
