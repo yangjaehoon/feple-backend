@@ -21,7 +21,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 public class AdminLogService {
 
-    private static final int DETAIL_MAX_LENGTH = 500;
+    private static final int DETAIL_MAX_LENGTH = 2000;
+    private static final String TRUNCATION_MARKER = "…(생략)";
 
     private final AdminLogRepository repository;
     private final CurrentAdminProvider currentAdminProvider;
@@ -46,12 +47,14 @@ public class AdminLogService {
         }
     }
 
-    // detail은 DB 컬럼이 500자 제한이라 그대로 저장하면 예외로 감사로그 자체가 조용히 유실된다
-    // (아래 catch가 fail-safe로 삼키므로) — 초과분은 잘라서라도 기록을 남긴다.
+    // detail은 DB 컬럼 길이 제한(2000자)이 있어 그대로 저장하면 예외로 감사로그 자체가 조용히
+    // 유실된다(아래 catch가 fail-safe로 삼키므로) — 초과분은 잘라내되, 잘렸다는 사실이 드러나도록
+    // 말미에 생략 표식을 붙인다.
     private static String truncate(String detail) {
-        return (detail != null && detail.length() > DETAIL_MAX_LENGTH)
-                ? detail.substring(0, DETAIL_MAX_LENGTH)
-                : detail;
+        if (detail == null || detail.length() <= DETAIL_MAX_LENGTH) {
+            return detail;
+        }
+        return detail.substring(0, DETAIL_MAX_LENGTH - TRUNCATION_MARKER.length()) + TRUNCATION_MARKER;
     }
 
     private String extractClientIp() {

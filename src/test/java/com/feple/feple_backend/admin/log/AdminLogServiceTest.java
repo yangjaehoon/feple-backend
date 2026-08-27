@@ -64,15 +64,28 @@ class AdminLogServiceTest {
     }
 
     @Test
-    void detail이_500자_초과하면_잘려서_저장() {
-        String longDetail = "가".repeat(600);
+    void detail이_2000자_이하면_그대로_저장() {
+        String detail = "가".repeat(600);
+
+        adminLogService.log(AdminAction.POST_DELETE, "POST", 1L, detail);
+
+        ArgumentCaptor<AdminLog> captor = ArgumentCaptor.forClass(AdminLog.class);
+        org.mockito.Mockito.verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getDetail()).isEqualTo(detail);
+    }
+
+    @Test
+    void detail이_2000자_초과하면_잘리고_생략_표식_추가() {
+        String longDetail = "가".repeat(2500);
 
         adminLogService.log(AdminAction.POST_DELETE, "POST", 1L, longDetail);
 
         ArgumentCaptor<AdminLog> captor = ArgumentCaptor.forClass(AdminLog.class);
         org.mockito.Mockito.verify(repository).save(captor.capture());
-        assertThat(captor.getValue().getDetail()).hasSize(500);
-        assertThat(captor.getValue().getDetail()).isEqualTo("가".repeat(500));
+        String saved = captor.getValue().getDetail();
+        assertThat(saved).hasSize(2000);
+        assertThat(saved).endsWith("…(생략)");
+        assertThat(saved).startsWith("가".repeat(1995));
     }
 
     @Test

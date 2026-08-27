@@ -9,7 +9,8 @@ import lombok.*;
 @Entity
 @Table(name = "admin_logs", indexes = {
         @Index(name = "idx_admin_logs_created_at", columnList = "created_at"),
-        @Index(name = "idx_admin_logs_target_type", columnList = "target_type")
+        @Index(name = "idx_admin_logs_target_type", columnList = "target_type"),
+        @Index(name = "idx_admin_logs_admin_username", columnList = "admin_username")
 })
 @Getter
 @Builder
@@ -34,7 +35,7 @@ public class AdminLog extends BaseTimeEntity {
     @Column(name = "target_id")
     private Long targetId;
 
-    @Column(length = 500)
+    @Column(length = 2000)
     private String detail;
 
     @Column(name = "ip_address", length = 45)

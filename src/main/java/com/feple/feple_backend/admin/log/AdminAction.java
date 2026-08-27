@@ -1,7 +1,9 @@
 package com.feple.feple_backend.admin.log;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public enum AdminAction {
@@ -118,16 +120,39 @@ public enum AdminAction {
     /** 관리자 활동 화면(logs.html, dashboard/home.html)에서 배지 색상을 정하는 데 쓰는 위험도 — 판정 기준을 여기 한 곳에 둔다. */
     public enum Severity { DANGER, SUCCESS, INFO }
 
+    // 이름 부분 문자열 매칭(예전 방식)은 UNBAN이 BAN에 걸리는 식의 오판이 반복돼(죽은 분기 버그 이력),
+    // 액션별로 명시 분류한다. 분류 결과는 기존 휴리스틱과 동일하게 유지했고, 여기에 없는 새 액션은
+    // INFO로 취급되므로 위험/성공 성격이면 아래 집합에 추가할 것.
+    private static final Set<AdminAction> DANGER_ACTIONS = EnumSet.of(
+            FESTIVAL_DELETE, FESTIVAL_BOOTH_DELETE, FESTIVAL_TICKET_LINK_DELETE,
+            FESTIVAL_STAGE_DELETE, FESTIVAL_TIMETABLE_DELETE, UNMATCHED_SUGGESTION_DELETE,
+            ARTIST_DELETE, ARTIST_SONG_DELETE,
+            USER_BAN, USER_DELETE, USER_BULK_DELETE,
+            POST_DELETE, POST_BULK_DELETE, COMMENT_DELETE,
+            NOTICE_DELETE,
+            REPORT_DELETE, REPORT_BULK_DELETE,
+            BAD_WORD_DELETE, NICKNAME_RESTRICTION_DELETE,
+            CERTIFICATION_REJECT, CERTIFICATION_BULK_REJECT,
+            SONG_REQUEST_REJECT,
+            ADMIN_ACCOUNT_DELETE,
+            LOGIN_FAILURE);
+
+    private static final Set<AdminAction> SUCCESS_ACTIONS = EnumSet.of(
+            FESTIVAL_CREATE, FESTIVAL_ARTIST_ADD, FESTIVAL_BOOTH_ADD, FESTIVAL_TICKET_LINK_ADD,
+            FESTIVAL_STAGE_ADD, FESTIVAL_TIMETABLE_ADD, FESTIVAL_SCRAPE_CREATE, FESTIVAL_SUGGESTION_APPROVE,
+            ARTIST_CREATE, ARTIST_SUGGESTION_APPROVE, ARTIST_SONG_CREATE,
+            USER_UNBAN,
+            NOTICE_CREATE,
+            BAD_WORD_ADD, NICKNAME_RESTRICTION_ADD,
+            CERTIFICATION_APPROVE, CERTIFICATION_BULK_APPROVE,
+            SONG_REQUEST_APPROVE,
+            ADMIN_ACCOUNT_CREATE);
+
     public Severity severity() {
-        // USER_UNBAN은 "UNBAN"이 "BAN"을 부분 문자열로 포함해 아래 DANGER 판정에 먼저 걸리므로
-        // 특수 케이스로 먼저 처리한다 (기존 Thymeleaf 템플릿 두 곳 모두 동일한 순서 버그로
-        // 이 분기가 죽은 코드였음 — 여기로 통합하며 함께 수정).
-        if (this == USER_UNBAN) return Severity.SUCCESS;
-        String n = name();
-        if (n.contains("DELETE") || n.contains("BAN") || n.contains("REJECT") || n.contains("FAILURE")) {
+        if (DANGER_ACTIONS.contains(this)) {
             return Severity.DANGER;
         }
-        if (n.contains("CREATE") || n.contains("ADD") || n.contains("APPROVE")) {
+        if (SUCCESS_ACTIONS.contains(this)) {
             return Severity.SUCCESS;
         }
         return Severity.INFO;
