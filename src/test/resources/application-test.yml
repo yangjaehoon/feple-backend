@@ -42,3 +42,6 @@ app:
   s3:
     bucket: test-bucket
     presign-minutes: 10
+  admin:
+    username: test-admin
+    password: test-admin-password
