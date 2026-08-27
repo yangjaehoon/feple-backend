@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,10 +50,20 @@ class AdminExceptionAdviceTest {
     }
 
     @Test
-    void 뷰_컨트롤러_잘못된_파라미터는_HTML_에러_페이지_400() throws Exception {
+    void 뷰_컨트롤러_순수_IllegalArgument는_400_일반_메시지로_마스킹() throws Exception {
         mockMvc.perform(get("/admin/test/bad"))
                 .andExpect(status().isBadRequest())
-                .andExpect(view().name(AdminExceptionAdvice.ERROR_VIEW));
+                .andExpect(view().name(AdminExceptionAdvice.ERROR_VIEW))
+                .andExpect(model().attribute("errorMessage",
+                        "요청 값이 올바르지 않습니다. 입력을 확인하고 다시 시도해주세요."));
+    }
+
+    @Test
+    void 뷰_컨트롤러_InvalidRequestException은_400_메시지_그대로_노출() throws Exception {
+        mockMvc.perform(get("/admin/test/invalid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(view().name(AdminExceptionAdvice.ERROR_VIEW))
+                .andExpect(model().attribute("errorMessage", "이미 사용 중인 아이디입니다: admin"));
     }
 
     @Test
@@ -86,7 +97,12 @@ class AdminExceptionAdviceTest {
 
         @GetMapping("/bad")
         String bad() {
-            throw new IllegalArgumentException("잘못된 파라미터");
+            throw new IllegalArgumentException("No enum constant Foo.BAR");
+        }
+
+        @GetMapping("/invalid")
+        String invalid() {
+            throw new InvalidRequestException("이미 사용 중인 아이디입니다: admin");
         }
 
         @GetMapping("/denied")

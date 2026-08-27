@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin;
 
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,16 @@ public class AdminExceptionAdvice {
         return respond(request, handlerMethod, HttpStatus.NOT_FOUND, message, ErrorCode.RESOURCE_NOT_FOUND);
     }
 
+    // 의도적으로 작성한 검증 메시지는 그대로 노출한다 (GlobalExceptionHandler와 동일 규칙).
+    // InvalidRequestException은 IllegalArgumentException의 하위 타입이라 Spring이 이 핸들러를 먼저 선택한다.
+    @ExceptionHandler(InvalidRequestException.class)
+    public Object handleInvalidRequest(InvalidRequestException ex, HttpServletRequest request, HandlerMethod handlerMethod) {
+        log.debug("관리자 페이지 검증 실패: {} {} — {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        return respond(request, handlerMethod, HttpStatus.BAD_REQUEST, ex.getMessage(), ErrorCode.ILLEGAL_ARGUMENT);
+    }
+
+    // 순수 IllegalArgumentException(JDK·라이브러리 발) 및 파라미터 바인딩 실패 — 내부 구현이 새지 않도록
+    // 일반 메시지로 응답한다. 사용자용 검증 메시지는 InvalidRequestException으로 던질 것.
     @ExceptionHandler({
             MethodArgumentTypeMismatchException.class,
             MissingServletRequestParameterException.class,
