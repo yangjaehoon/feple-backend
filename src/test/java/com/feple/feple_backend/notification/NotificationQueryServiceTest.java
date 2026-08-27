@@ -16,6 +16,7 @@ import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
 import com.feple.feple_backend.notification.service.NotificationQueryService;
+import com.feple.feple_backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -35,6 +36,7 @@ class NotificationQueryServiceTest {
 
     @Mock NotificationRepository notificationRepository;
     @Mock BroadcastNotificationRepository broadcastNotificationRepository;
+    @Mock UserRepository userRepository;
     @Mock S3PresignService s3PresignService;
 
     @InjectMocks NotificationQueryService notificationQueryService;
@@ -72,9 +74,10 @@ class NotificationQueryServiceTest {
         given(b.getBody()).willReturn("공지 내용");
         given(b.getCreatedAt()).willReturn(older);
 
+        given(userRepository.findCreatedAtById(1L)).willReturn(Optional.of(older.minusDays(1)));
         given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
                 .willReturn(List.of(n));
-        given(broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(any(PageRequest.class)))
+        given(broadcastNotificationRepository.findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(any(), any(PageRequest.class)))
                 .willReturn(List.of(b));
 
         Pageable pageable = PageRequest.of(0, 10);
@@ -83,6 +86,23 @@ class NotificationQueryServiceTest {
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).id()).isEqualTo(1L);
         assertThat(result.getContent().get(0).createdAt()).isEqualTo(newer);
+    }
+
+    @Test
+    void getMyNotifications_가입일_이전_전체공지는_제외() {
+        LocalDateTime joinedAt = LocalDateTime.of(2026, 1, 1, 0, 0);
+
+        given(userRepository.findCreatedAtById(1L)).willReturn(Optional.of(joinedAt));
+        given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
+                .willReturn(List.of());
+        given(broadcastNotificationRepository.findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(eq(joinedAt), any(PageRequest.class)))
+                .willReturn(List.of());
+
+        Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, PageRequest.of(0, 10), null);
+
+        assertThat(result.getContent()).isEmpty();
+        then(broadcastNotificationRepository).should()
+                .findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(eq(joinedAt), any(PageRequest.class));
     }
 
     @Test
@@ -95,7 +115,7 @@ class NotificationQueryServiceTest {
 
         given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
                 .willReturn(List.of(n1, n2));
-        given(broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(any(PageRequest.class)))
+        given(broadcastNotificationRepository.findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(any(), any(PageRequest.class)))
                 .willReturn(List.of());
 
         // 2개 존재, page=1 size=10 → offset=10 > 2
@@ -162,7 +182,8 @@ class NotificationQueryServiceTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).type()).isEqualTo(NotificationType.CERT_APPROVED);
         then(notificationRepository).should(org.mockito.Mockito.never()).findByUserIdOrderByCreatedAtDesc(any(), any());
-        then(broadcastNotificationRepository).should(org.mockito.Mockito.never()).findAllByOrderByCreatedAtDesc(any());
+        then(broadcastNotificationRepository).should(org.mockito.Mockito.never())
+                .findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(any(), any());
     }
 
     @Test
@@ -172,7 +193,7 @@ class NotificationQueryServiceTest {
 
         given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
                 .willReturn(List.of(n));
-        given(broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(any(PageRequest.class)))
+        given(broadcastNotificationRepository.findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(any(), any(PageRequest.class)))
                 .willReturn(List.of());
 
         Page<NotificationDto> result = notificationQueryService.getMyNotifications(1L, PageRequest.of(0, 10), "unknown");
@@ -190,7 +211,7 @@ class NotificationQueryServiceTest {
 
         given(notificationRepository.findByUserIdOrderByCreatedAtDesc(eq(1L), any(PageRequest.class)))
                 .willReturn(List.of(n));
-        given(broadcastNotificationRepository.findAllByOrderByCreatedAtDesc(any(PageRequest.class)))
+        given(broadcastNotificationRepository.findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(any(), any(PageRequest.class)))
                 .willReturn(List.of());
         given(s3PresignService.presignGetUrl("festivals/poster.jpg")).willReturn("https://cdn.example.com/festivals/poster.jpg");
 

@@ -8,6 +8,8 @@ import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.repository.BroadcastNotificationRepository;
 import com.feple.feple_backend.notification.repository.NotificationRepository;
+import com.feple.feple_backend.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -43,6 +45,7 @@ public class NotificationQueryService {
 
     private final NotificationRepository notificationRepository;
     private final BroadcastNotificationRepository broadcastNotificationRepository;
+    private final UserRepository userRepository;
     private final S3PresignService s3PresignService;
 
     public Page<NotificationDto> getMyNotifications(Long userId, Pageable pageable, String typeGroup) {
@@ -72,8 +75,10 @@ public class NotificationQueryService {
                 .stream()
                 .map(this::toMergedPersonal)
                 .toList();
+        // 가입 이전에 발송된 전체 공지는 신규 유저에게 새 알림처럼 보이면 안 되므로 가입일 이후 것만 병합한다.
+        LocalDateTime joinedAt = userRepository.findCreatedAtById(userId).orElse(LocalDateTime.MIN);
         List<MergedNotification> broadcasts = broadcastNotificationRepository
-                .findAllByOrderByCreatedAtDesc(PageRequest.of(0, MAX_BROADCAST))
+                .findByCreatedAtGreaterThanEqualOrderByCreatedAtDesc(joinedAt, PageRequest.of(0, MAX_BROADCAST))
                 .stream()
                 .map(b -> new MergedNotification(NotificationDto.forBroadcast(b), null))
                 .toList();

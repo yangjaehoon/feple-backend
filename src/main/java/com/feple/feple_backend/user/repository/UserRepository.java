@@ -55,6 +55,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByDeletedAtIsNull();
 
+    @Query("SELECT u.createdAt FROM User u WHERE u.id = :id")
+    Optional<LocalDateTime> findCreatedAtById(@Param("id") Long id);
+
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT FUNCTION('DATE', u.createdAt), COUNT(u) FROM User u " +
