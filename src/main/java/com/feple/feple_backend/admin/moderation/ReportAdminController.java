@@ -56,10 +56,20 @@ public class ReportAdminController {
 
     private void populateListModel(ReportFilter filter, Model model) {
         ReportAdminService<?> handler = resolveHandler(filter.type());
-        Page<?> reports = handler.searchReportsForAdmin(new ReportSearchParams(filter.page(), AdminConstants.LIST_PAGE_SIZE, filter.status(), filter.keyword()));
-        // 타입별 pendingCount를 한 번씩만 조회해 재사용 — 현재 타입 카운트를 handler.getPendingCount()로 또 조회하지 않는다.
-        Map<String, Long> pendingCounts = handlers.entrySet().stream()
+        Page<?> reports = handler.searchReportsForAdmin(
+                new ReportSearchParams(filter.page(), AdminConstants.LIST_PAGE_SIZE, filter.status(), filter.keyword()));
+        addReportListModel(model, filter, handler, reports, pendingCountByType());
+    }
+
+    // 타입별 pendingCount를 한 번씩만 조회해 map으로 만든다 — 현재 타입 카운트도 여기서 꺼내 쓰므로
+    // handler.getPendingCount()를 또 호출하지 않는다.
+    private Map<String, Long> pendingCountByType() {
+        return handlers.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getPendingCount()));
+    }
+
+    private static void addReportListModel(Model model, ReportFilter filter, ReportAdminService<?> handler,
+                                           Page<?> reports, Map<String, Long> pendingCounts) {
         model.addAttribute("reports", reports);
         model.addAttribute("pendingCount", pendingCounts.get(handler.getReportType()));
         model.addAttribute("totalCount", handler.getTotalCount());
@@ -69,7 +79,8 @@ public class ReportAdminController {
         model.addAttribute("authorReportCounts", reports.isEmpty() ? Map.of() : buildCounts(handler, reports));
         model.addAttribute("photoUrls", handler instanceof PhotoPresignedUrlProvider provider
                 ? provider.buildPhotoPresignedUrls(reports) : Map.of());
-        pendingCounts.forEach((t, count) -> model.addAttribute(t + "PendingCount", count));
+        // 각 타입 대기 건수를 사이드바 배지용으로 개별 노출 (postPendingCount, commentPendingCount, ...)
+        pendingCounts.forEach((type, count) -> model.addAttribute(type + "PendingCount", count));
     }
 
     @PostMapping("/{id}/delete")
