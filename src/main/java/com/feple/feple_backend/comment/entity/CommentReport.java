@@ -47,12 +47,11 @@ public class CommentReport extends BaseTimeEntity implements ResolvableReport {
     @Column
     private String detail;
 
-    // comment는 @ManyToOne(comment_id NOT NULL)이라 항상 존재해야 하지만, Comment의 @SQLRestriction이
-    // blinded=true를 제외하면서 관리자 신고 목록 조회(EntityGraph LEFT JOIN)에서는 블라인드된
-    // 댓글에 대해 comment가 null로 채워진다 — 신고 자체(CommentReport)는 그대로 남아있으므로 여기서
-    // NPE 없이 안전한 값을 반환해야 관리자가 블라인드된 댓글의 신고도 목록에서 확인할 수 있다.
+    // comment는 @ManyToOne(comment_id NOT NULL)이지만, 대상 댓글이 하드 삭제(post 캐스케이드)되면
+    // 관리자 신고 목록 조회(EntityGraph LEFT JOIN)에서 comment가 null로 채워질 수 있다 —
+    // 신고 자체(CommentReport)는 남으므로 여기서 NPE 없이 안전한 값을 반환한다.
     public Long getCommentId() { return comment != null ? comment.getId() : null; }
-    public String getCommentContent() { return comment != null ? comment.getContent() : "(블라인드된 댓글)"; }
+    public String getCommentContent() { return comment != null ? comment.getContent() : "(삭제된 댓글)"; }
     public Long getCommentPostId() { return comment != null ? comment.getPostId() : null; }
     public String getCommentPostTitle() { return comment != null ? comment.getPostTitle() : null; }
     public String getCommentUserNickname() { return comment != null ? comment.getUserNickname() : null; }

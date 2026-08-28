@@ -140,8 +140,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit) {
-        // 관리자는 블라인드된 댓글도 검토할 수 있어야 하므로 @SQLRestriction을 우회한다.
-        return commentRepository.findByPostIdIgnoringBlindOrderByCreatedAtAsc(postId, limit).stream()
+        return commentRepository.findAdminByPostIdOrderByCreatedAtAsc(postId, limit).stream()
                 .map(c -> CommentResponseDto.from(c, new CommentResponseDto.ViewerContext(false, false), fileStorageService))
                 .toList();
     }
@@ -171,15 +170,13 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(Long commentId) {
         // soft delete: 신고 기록(CommentReport) 보존, 행이 남아 FK 무결성 유지.
-        // 관리자 전용 경로라 블라인드된 댓글도 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
-        deleteAndDecrement(EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글"));
+        deleteAndDecrement(EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글"));
     }
 
     @Override
     @Transactional
     public void deleteOwnComment(Long commentId, Long requestUserId) {
-        // 블라인드된 자기 댓글도 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글");
         deleteAndDecrement(comment);
     }
@@ -192,7 +189,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void deleteAndDecrement(Comment comment) {
-        commentRepository.softDeleteById(comment.getId());
+        // @SQLDelete가 걸려 있어 remove가 deleted_at 세팅(소프트 삭제)로 동작한다
+        commentRepository.delete(comment);
         postService.decrementCommentCount(comment.getPostId());
     }
 
@@ -212,8 +210,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void updateOwnComment(Long commentId, Long requestUserId, String content) {
-        // 블라인드된 자기 댓글도 수정할 수 있어야 하므로 조회는 제약을 우회한다.
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         OwnershipValidator.checkOwner(comment.getUserId(), requestUserId, "댓글", "수정");
         badWordValidator.validateField("content", content);
         comment.update(content);

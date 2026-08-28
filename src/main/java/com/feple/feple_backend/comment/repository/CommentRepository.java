@@ -13,44 +13,60 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 공개 조회 메서드는 삭제(deleted_at)·블라인드(blinded) 행을 명시적으로 제외한다.
+ * 관리자·본인·신고·캐스케이드 경로는 기본 {@code findById}/{@code deleteById}로 모든 행을 다룬다.
+ */
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
+    // ── 공개 조회 (삭제·블라인드 제외) ────────────────────────────────────────
     @EntityGraph(attributePaths = {"user", "mentionedUser"})
-    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt ASC")
+    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId "
+            + "AND c.deletedAt IS NULL AND c.blinded = false ORDER BY c.createdAt ASC")
     Page<Comment> findByPostIdOrderByCreatedAtAsc(@Param("postId") Long postId, Pageable pageable);
 
-    // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 댓글도 관리자는 검토할 수 있어야 함
-    @Query(value = "SELECT * FROM comment WHERE post_id = :postId AND deleted_at IS NULL ORDER BY created_at ASC LIMIT :limit",
-           nativeQuery = true)
-    List<Comment> findByPostIdIgnoringBlindOrderByCreatedAtAsc(@Param("postId") Long postId, @Param("limit") int limit);
+    // 관리자 댓글 검토용 — 블라인드는 포함, 삭제만 제외
+    @Query(value = "SELECT * FROM comment WHERE post_id = :postId AND deleted_at IS NULL "
+            + "ORDER BY created_at ASC LIMIT :limit", nativeQuery = true)
+    List<Comment> findAdminByPostIdOrderByCreatedAtAsc(@Param("postId") Long postId, @Param("limit") int limit);
 
-    // 마이페이지 표시용 — 최신순 정렬, 상한선 적용 (Pageable)
+    // 마이페이지 — 삭제·블라인드 제외
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
-    Page<Comment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    @Query(value = "SELECT c FROM Comment c WHERE c.user = :user "
+            + "AND c.deletedAt IS NULL AND c.blinded = false ORDER BY c.createdAt DESC",
+           countQuery = "SELECT COUNT(c) FROM Comment c WHERE c.user = :user "
+            + "AND c.deletedAt IS NULL AND c.blinded = false")
+    Page<Comment> findByUserOrderByCreatedAtDesc(@Param("user") User user, Pageable pageable);
 
-    // 관리자 상세 — userId 직접 사용 (User 엔티티 사전 조회 불필요)
+    // 관리자 상세 — userId 직접 사용, 삭제·블라인드 제외 (현재 가시성 유지)
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
-    @Query(value = "SELECT c FROM Comment c WHERE c.user.id = :userId ORDER BY c.createdAt DESC",
-           countQuery = "SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId")
+    @Query(value = "SELECT c FROM Comment c WHERE c.user.id = :userId "
+            + "AND c.deletedAt IS NULL AND c.blinded = false ORDER BY c.createdAt DESC",
+           countQuery = "SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId "
+            + "AND c.deletedAt IS NULL AND c.blinded = false")
     Page<Comment> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId AND c.deletedAt IS NULL AND c.blinded = false")
     long countByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.createdAt >= :start AND c.createdAt < :end AND c.deletedAt IS NULL")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.createdAt >= :start AND c.createdAt < :end "
+            + "AND c.deletedAt IS NULL AND c.blinded = false")
     long countByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    @Query("SELECT FUNCTION('DATE', c.createdAt), COUNT(c) FROM Comment c " +
-           "WHERE c.createdAt >= :from AND c.createdAt < :to GROUP BY FUNCTION('DATE', c.createdAt)")
+    @Query("SELECT FUNCTION('DATE', c.createdAt), COUNT(c) FROM Comment c "
+            + "WHERE c.createdAt >= :from AND c.createdAt < :to AND c.deletedAt IS NULL AND c.blinded = false "
+            + "GROUP BY FUNCTION('DATE', c.createdAt)")
     List<Object[]> countPerDate(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    @Query("SELECT COUNT(c) FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :word, '%')) ESCAPE '!'")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :word, '%')) ESCAPE '!' "
+            + "AND c.deletedAt IS NULL AND c.blinded = false")
     long countByContentContaining(@Param("word") String word);
 
-    @Query("SELECT c.user.id, COUNT(c) FROM Comment c WHERE c.user.id IN :userIds GROUP BY c.user.id")
+    @Query("SELECT c.user.id, COUNT(c) FROM Comment c WHERE c.user.id IN :userIds "
+            + "AND c.deletedAt IS NULL AND c.blinded = false GROUP BY c.user.id")
     List<Object[]> countGroupByUserId(@Param("userIds") List<Long> userIds);
 
-    // 벌크 DELETE는 @SQLDelete를 우회한 하드 삭제 — post 캐스케이드 전용
+    // 벌크 DELETE는 @SQLDelete를 우회한 하드 삭제 — post 캐스케이드 전용 (삭제·블라인드 무관 전부 제거)
     @Modifying
     @Transactional
     @Query("DELETE FROM Comment c WHERE c.post.id IN :postIds")
@@ -72,21 +88,4 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     /** 카운터 증감 직후 최신 좋아요 수만 스칼라로 다시 읽는다. */
     @Query("SELECT c.likeCount FROM Comment c WHERE c.id = :id")
     Integer findLikeCountById(@Param("id") Long id);
-
-    // ── 블라인드 관리자용 ──────────────────────────────────────────────────────
-    // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 댓글도 신고 접수·관리자 삭제는 가능해야 함
-    @Query(value = "SELECT * FROM comment WHERE id = :id", nativeQuery = true)
-    java.util.Optional<Comment> findByIdIgnoringRestrictions(@Param("id") Long id);
-
-    // findByIdIgnoringRestrictions의 배치 버전 — 신고 일괄 반려처럼 여러 건의 블라인드 해제 대상을
-    // 한 번에 조회해야 할 때 id마다 반복 호출하지 않도록 한다.
-    @Query(value = "SELECT * FROM comment WHERE id IN (:ids)", nativeQuery = true)
-    List<Comment> findAllByIdInIgnoringRestrictions(@Param("ids") java.util.Collection<Long> ids);
-
-    // deleteById()는 findById()로 먼저 존재를 확인하는데 blinded=true면 @SQLRestriction에 걸려
-    // 못 찾으므로, 블라인드 여부와 무관하게 소프트 삭제(@SQLDelete와 동일한 SQL)하는 벌크 쿼리로 우회한다.
-    @Modifying
-    @Transactional
-    @Query(value = "UPDATE comment SET deleted_at = NOW() WHERE id = :id", nativeQuery = true)
-    void softDeleteById(@Param("id") Long id);
 }

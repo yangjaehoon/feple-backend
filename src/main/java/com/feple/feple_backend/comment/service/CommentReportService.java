@@ -48,8 +48,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         if (reportRepository.existsByReporterIdAndCommentId(reporterId, commentId)) {
             throw new ConflictException(ALREADY_REPORTED_MESSAGE);
         }
-        // 이미 블라인드된 댓글도 추가 신고를 받을 수 있어야 하므로 조회는 제약을 우회한다.
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         // existsBy 체크 후 save() 사이의 TOCTOU 레이스(동시 중복 신고)는 유니크 제약(reporter_id, comment_id)이
@@ -114,8 +113,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     public void deleteContentAndResolve(Long reportId) {
         CommentReport report = EntityLoader.getOrThrow(reportRepository::findById, reportId, "신고");
         Long commentId = report.getCommentId();
-        // 블라인드된 댓글도 관리자는 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
-        Comment comment = EntityLoader.getOrThrow(commentRepository::findByIdIgnoringRestrictions, commentId, "댓글");
+        Comment comment = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글");
         commentDeleter.deleteSingle(commentId);
         postService.decrementCommentCount(comment.getPostId());
     }
@@ -142,7 +140,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     private void unblindIfBelowThreshold(Long commentId) {
         long pendingCount = reportRepository.countByCommentIdAndStatus(commentId, ReportStatus.PENDING);
         if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
-            commentRepository.findByIdIgnoringRestrictions(commentId).ifPresent(Comment::unblind);
+            commentRepository.findById(commentId).ifPresent(Comment::unblind);
         }
     }
 
@@ -157,7 +155,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
                 .filter(commentId -> pendingCountsByCommentId.getOrDefault(commentId, 0L) < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD)
                 .toList();
         if (toUnblind.isEmpty()) return;
-        commentRepository.findAllByIdInIgnoringRestrictions(toUnblind).forEach(Comment::unblind);
+        commentRepository.findAllById(toUnblind).forEach(Comment::unblind);
     }
 
     @Override

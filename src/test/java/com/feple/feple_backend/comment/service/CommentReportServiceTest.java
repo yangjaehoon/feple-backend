@@ -70,7 +70,7 @@ class CommentReportServiceTest {
     @Test
     void 존재하지_않는_댓글_신고시_예외() {
         given(reportRepository.existsByReporterIdAndCommentId(1L, 99L)).willReturn(false);
-        given(commentRepository.findByIdIgnoringRestrictions(99L)).willReturn(Optional.empty());
+        given(commentRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentReportService.submitReport(
                 99L, 1L, new ReportSubmitRequest(ReportReason.SPAM, null)))
@@ -81,7 +81,7 @@ class CommentReportServiceTest {
     void 존재하지_않는_사용자가_신고시_예외() {
         Comment comment = mockComment();
         given(reportRepository.existsByReporterIdAndCommentId(99L, 10L)).willReturn(false);
-        given(commentRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(comment));
+        given(commentRepository.findById(10L)).willReturn(Optional.of(comment));
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentReportService.submitReport(
@@ -94,7 +94,7 @@ class CommentReportServiceTest {
         Comment comment = mockComment();
         User reporter = user(1L);
         given(reportRepository.existsByReporterIdAndCommentId(1L, 10L)).willReturn(false);
-        given(commentRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(comment));
+        given(commentRepository.findById(10L)).willReturn(Optional.of(comment));
         given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
 
         commentReportService.submitReport(10L, 1L,
@@ -108,7 +108,7 @@ class CommentReportServiceTest {
         Comment comment = mockComment();
         User reporter = user(1L);
         given(reportRepository.existsByReporterIdAndCommentId(1L, 10L)).willReturn(false);
-        given(commentRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(comment));
+        given(commentRepository.findById(10L)).willReturn(Optional.of(comment));
         given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
         given(reportRepository.save(any(CommentReport.class)))
                 .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
@@ -128,7 +128,7 @@ class CommentReportServiceTest {
         User reporter = user(1L);
         CommentReport report = pendingReport(1L, comment, reporter);
         given(reportRepository.findById(1L)).willReturn(Optional.of(report));
-        given(commentRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(comment));
+        given(commentRepository.findById(10L)).willReturn(Optional.of(comment));
 
         commentReportService.deleteContentAndResolve(1L);
 
