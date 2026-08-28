@@ -65,8 +65,8 @@ public class UserAdminController {
                     addDetailModel(model, userDetailAggregationService.getDetail(id));
                     UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.fromPath("/admin/users"), listFilter)
                             .queryParam("page", listFilter.page());
-                    AdminUrlUtils.appendIfPresent(builder, "keyword", listFilter.keyword());
-                    model.addAttribute("returnUrl", AdminUrlUtils.encoded(builder));
+                    AdminUrlUtils.appendIfHasText(builder, "keyword", listFilter.keyword());
+                    model.addAttribute("returnUrl", AdminUrlUtils.toEncodedString(builder));
                     model.addAttribute("listFilter", listFilter);
                 },
                 "admin/user/detail",
@@ -208,8 +208,8 @@ public class UserAdminController {
 
     private static String buildListParams(UserListFilter listFilter) {
         UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.newInstance(), listFilter);
-        AdminUrlUtils.appendIfPresent(builder, "keyword", listFilter.keyword());
-        return AdminUrlUtils.queryStringOf(builder);
+        AdminUrlUtils.appendIfHasText(builder, "keyword", listFilter.keyword());
+        return AdminUrlUtils.toQueryString(builder);
     }
 
     // filter/sort는 목록·상세·리다이렉트 URL 조립에서 공통으로 쓰이는 값 (FILTER_BANNED일 때 sort 생략)

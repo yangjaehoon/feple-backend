@@ -132,8 +132,8 @@ public final class AdminActionUtils {
     }
 
     public static String toRedirect(UriComponentsBuilder builder, String keyword) {
-        AdminUrlUtils.appendIfPresent(builder, "keyword", keyword);
-        return "redirect:" + AdminUrlUtils.encoded(builder);
+        AdminUrlUtils.appendIfHasText(builder, "keyword", keyword);
+        return "redirect:" + AdminUrlUtils.toEncodedString(builder);
     }
 
     /**

@@ -19,7 +19,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -70,11 +69,8 @@ public class CertificationAdminController {
                     model.addAttribute("returnPage", filter.page());
                     model.addAttribute("returnKeyword", filter.keyword());
                     model.addAttribute("nextCertId", certificationService.findNextPendingId(id).orElse(null));
-                    UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications")
-                            .queryParam("status", filter.status())
-                            .queryParam("page", filter.page());
-                    AdminUrlUtils.appendIfPresent(builder, "keyword", filter.keyword());
-                    model.addAttribute("returnUrl", AdminUrlUtils.encoded(builder));
+                    model.addAttribute("returnUrl", AdminUrlUtils.listUrl("/admin/certifications",
+                            "status", filter.status(), "page", filter.page(), "keyword", filter.keyword()));
                 },
                 "admin/certification/detail",
                 e -> log.error("인증 상세 조회 실패 id={}", id, e),
@@ -168,10 +164,7 @@ public class CertificationAdminController {
     }
 
     private String triageRedirect(Long nextCertId, CertificationFilter filter) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications/" + nextCertId)
-                .queryParam("status", filter.status())
-                .queryParam("page", filter.page());
-        AdminUrlUtils.appendIfPresent(builder, "keyword", filter.keyword());
-        return "redirect:" + AdminUrlUtils.encoded(builder);
+        return AdminActionUtils.listRedirect("/admin/certifications/" + nextCertId,
+                filter.status(), filter.page(), filter.keyword());
     }
 }

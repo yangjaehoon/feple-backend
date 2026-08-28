@@ -32,7 +32,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
@@ -301,10 +300,8 @@ public class FestivalAdminController {
                     model.addAttribute("setlistCounts",              detail.setlistCounts());
                     model.addAttribute("announcementStageName",          detail.announcementStageName());
                     model.addAttribute("ratingStats",                detail.ratingStats());
-                    UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/festivals")
-                            .queryParam("page", page);
-                    AdminUrlUtils.appendIfPresent(builder, "keyword", keyword);
-                    model.addAttribute("returnUrl", AdminUrlUtils.encoded(builder));
+                    model.addAttribute("returnUrl",
+                            AdminUrlUtils.listUrl("/admin/festivals", "page", page, "keyword", keyword));
                 },
                 "admin/festival/detail",
                 e -> log.error("페스티벌 상세 조회 실패. id={}", id, e),

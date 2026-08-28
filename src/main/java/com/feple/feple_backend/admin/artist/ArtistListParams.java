@@ -14,8 +14,8 @@ record ArtistListParams(Integer page, String keyword, String sort) {
 
     String toRedirectUrl() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/artists").queryParam("page", page);
-        AdminUrlUtils.appendIfPresent(builder, "keyword", keyword);
-        AdminUrlUtils.appendIfPresent(builder, "sort", sort);
-        return AdminUrlUtils.encoded(builder);
+        AdminUrlUtils.appendIfHasText(builder, "keyword", keyword);
+        AdminUrlUtils.appendIfHasText(builder, "sort", sort);
+        return AdminUrlUtils.toEncodedString(builder);
     }
 }
