@@ -14,7 +14,6 @@ import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,13 +137,27 @@ public class FestivalArtistAdminController {
             ra.addFlashAttribute("errorMessage", "행 개수가 일치하지 않습니다. 새로고침 후 다시 시도해 주세요.");
             return AdminFestivalRedirects.artists(festivalId);
         }
-        List<LineupBatchItem> items = toLineupBatchItems(afIds, performanceDates, stageNames);
-        Map<Long, LineupUpdate> updates = items.stream()
-                .collect(Collectors.toMap(LineupBatchItem::afId, LineupBatchItem::update, (a, b) -> b, LinkedHashMap::new));
-        ArtistFestivalService.BatchUpdateResult batchResult =
-                artistFestivalService.updateArtistFestivalsBatch(festivalId, updates);
-        int errorCount = batchResult.errors();
-        int successCount = batchResult.success();
+        Map<Long, LineupUpdate> updates = toLineupUpdates(afIds, performanceDates, stageNames);
+        AdminActionUtils.tryAction(
+                () -> {
+                    ArtistFestivalService.BatchUpdateResult batchResult =
+                            artistFestivalService.updateArtistFestivalsBatch(festivalId, updates);
+                    applyBatchFlash(batchResult, ra);
+                    if (batchResult.success() > 0) {
+                        adminLogService.log(AdminAction.FESTIVAL_ARTIST_UPDATE, "FESTIVAL", festivalId,
+                                batchResult.success() + "건 일괄 수정");
+                    }
+                },
+                null,
+                e -> log.error("라인업 일괄 수정 실패: festivalId={}", festivalId, e),
+                "라인업 일괄 수정 중 오류가 발생했습니다.",
+                ra);
+        return AdminFestivalRedirects.artists(festivalId);
+    }
+
+    private void applyBatchFlash(ArtistFestivalService.BatchUpdateResult result, RedirectAttributes ra) {
+        int errorCount = result.errors();
+        int successCount = result.success();
         if (errorCount > 0 && successCount > 0) {
             ra.addFlashAttribute("errorMessage",
                     successCount + "건 수정 완료, " + errorCount + "건 실패. 항목을 확인해 주세요.");
@@ -153,18 +166,15 @@ public class FestivalArtistAdminController {
         } else {
             ra.addFlashAttribute("successMessage", "라인업이 일괄 수정되었습니다.");
         }
-        if (successCount > 0) {
-            adminLogService.log(AdminAction.FESTIVAL_ARTIST_UPDATE, "FESTIVAL", festivalId, successCount + "건 일괄 수정");
-        }
-        return AdminFestivalRedirects.artists(festivalId);
     }
 
-    private static List<LineupBatchItem> toLineupBatchItems(List<Long> afIds, List<String> performanceDates, List<String> stageNames) {
-        List<LineupBatchItem> items = new ArrayList<>(afIds.size());
+    // 같은 afId가 중복 전달돼도(폼 위조 등) 뒤 값이 이기도록 LinkedHashMap에 순서대로 덮어쓴다.
+    private static Map<Long, LineupUpdate> toLineupUpdates(List<Long> afIds, List<String> performanceDates, List<String> stageNames) {
+        Map<Long, LineupUpdate> updates = new LinkedHashMap<>();
         for (int i = 0; i < afIds.size(); i++) {
-            items.add(new LineupBatchItem(afIds.get(i), new LineupUpdate(stageNames.get(i), parseDate(performanceDates.get(i)))));
+            updates.put(afIds.get(i), new LineupUpdate(stageNames.get(i), parseDate(performanceDates.get(i))));
         }
-        return items;
+        return updates;
     }
 
     private static LocalDate parseDate(String dateStr) {
