@@ -5,6 +5,7 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.ExternalStorageException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.user.NicknameValidator;
@@ -13,6 +14,7 @@ import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import lombok.NonNull;
@@ -104,8 +106,8 @@ public class UserServiceImpl implements UserService {
             String url = fileStorageService.storeUserProfile(file, user.getNickname());
             user.changeProfileImage(url);
             userRepository.save(user);
-        } catch (java.io.IOException e) {
-            throw new IllegalStateException("프로필 이미지 저장에 실패했습니다.", e);
+        } catch (IOException e) {
+            throw new ExternalStorageException("프로필 이미지 저장에 실패했습니다.", e);
         }
     }
 

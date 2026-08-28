@@ -13,6 +13,7 @@ import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
 import com.feple.feple_backend.global.exception.ConflictException;
+import com.feple.feple_backend.global.exception.ExternalStorageException;
 import com.feple.feple_backend.user.NicknameContentValidator;
 import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UserResponseDto;
@@ -294,7 +295,7 @@ class UserServiceImplTest {
         given(fileStorageService.storeUserProfile(file, "닉네임")).willThrow(new IOException("업로드 실패"));
 
         assertThatThrownBy(() -> userService.updateProfileImage(1L, file))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ExternalStorageException.class)
                 .hasMessageContaining("프로필 이미지 저장에 실패했습니다.");
         verify(userRepository, never()).save(any());
     }

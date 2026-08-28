@@ -184,6 +184,14 @@ public class GlobalExceptionHandler {
                 "외부 서비스 연동 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", ErrorCode.SERVICE_UNAVAILABLE);
     }
 
+    // S3 등 외부 스토리지 장애 — 외부 API와 동일하게 502로 구분한다(내부 500 아님).
+    @ExceptionHandler(ExternalStorageException.class)
+    public ResponseEntity<ErrorResponse> handleExternalStorageFailure(ExternalStorageException ex) {
+        log.warn("External storage call failed: {}", ex.getMessage(), ex);
+        return body(HttpStatus.BAD_GATEWAY,
+                "파일 저장소 연동 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", ErrorCode.SERVICE_UNAVAILABLE);
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
         return body(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다.", ErrorCode.RESOURCE_NOT_FOUND);

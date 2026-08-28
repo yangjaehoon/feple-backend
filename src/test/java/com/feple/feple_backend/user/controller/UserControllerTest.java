@@ -186,6 +186,20 @@ class UserControllerTest {
     }
 
     @Test
+    void 프로필_이미지_수정_스토리지_장애면_502() throws Exception {
+        org.mockito.BDDMockito.willThrow(
+                        new com.feple.feple_backend.global.exception.ExternalStorageException("업로드 실패", new RuntimeException()))
+                .given(userService).updateProfileImage(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.any());
+        org.springframework.mock.web.MockMultipartFile file =
+                new org.springframework.mock.web.MockMultipartFile("file", "p.jpg", "image/jpeg", new byte[]{1});
+
+        mockMvcWithGlobalHandler.perform(multipart("/users/1/profile-image")
+                        .file(file)
+                        .with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isBadGateway());
+    }
+
+    @Test
     void 내정보_조회() throws Exception {
         UserResponseDto dto = mock(UserResponseDto.class);
         given(userService.currentUserId()).willReturn(1L);

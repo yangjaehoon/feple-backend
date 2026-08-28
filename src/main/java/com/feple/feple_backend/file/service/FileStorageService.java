@@ -3,6 +3,7 @@ package com.feple.feple_backend.file.service;
 import com.feple.feple_backend.file.CdnProperties;
 import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.S3Properties;
+import com.feple.feple_backend.global.exception.ExternalStorageException;
 import io.awspring.cloud.s3.S3Template;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -97,9 +98,13 @@ public class FileStorageService {
         try (InputStream in = file.getInputStream()) {
             resized = imageResizeService.resizeToJpeg(in, maxPx);
         }
+        // S3 SDK는 업로드 실패를 unchecked(SdkException 등)로 던진다 — 외부 스토리지 장애이므로
+        // 502로 매핑되도록 ExternalStorageException으로 변환한다(내부 500과 구분).
         try (InputStream is = new ByteArrayInputStream(resized)) {
             s3Template.upload(s3Properties.bucket(), key, is);
             return key;
+        } catch (RuntimeException e) {
+            throw new ExternalStorageException("파일 저장소에 업로드하지 못했습니다.", e);
         }
     }
 
