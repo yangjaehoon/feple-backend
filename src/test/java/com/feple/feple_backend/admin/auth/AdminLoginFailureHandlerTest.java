@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 
@@ -26,14 +25,10 @@ class AdminLoginFailureHandlerTest {
     private HttpSession session;
     private AdminLogService adminLogService;
 
-    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
         adminLogService = mock(AdminLogService.class);
-        ObjectProvider<AdminLogService> adminLogServiceProvider = mock(ObjectProvider.class);
-        given(adminLogServiceProvider.getObject()).willReturn(adminLogService);
-
-        handler = new AdminLoginFailureHandler(adminLogServiceProvider);
+        handler = new AdminLoginFailureHandler(adminLogService);
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);

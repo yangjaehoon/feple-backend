@@ -12,12 +12,11 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.user.service.UserAccessTrackingService;
 import java.util.Arrays;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -39,25 +38,37 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final AdminLoginFailureHandler adminLoginFailureHandler;
     private final AdminLoginSuccessHandler adminLoginSuccessHandler;
     private final AdminLogoutSuccessHandler adminLogoutSuccessHandler;
-    // JPA 리포지토리를 @Configuration 빈 생성자에서 즉시(eager) 주입하면, EnableJpaRepositories가
-    // jpaSharedEM_entityManagerFactory 등록을 마치기 전에 SecurityConfig(나아가 FilterRegistrationBean
-    // 처리 중인 jwtAuthenticationFilter 빈)가 먼저 처리될 경우 "Cannot resolve reference to bean
-    // 'jpaSharedEM_entityManagerFactory'"로 기동이 실패할 수 있다 (2026-07-29, 2026-08-01 세 차례 관측).
-    // 필드의 @Lazy는 Lombok이 생성자 파라미터로 복사해주지 않아 효과 없었고, 여기서 getObject()를
-    // 호출해도 FilterRegistrationBean 처리 자체가 이르게 일어나 소용없었다 — ObjectProvider를
-    // JwtAuthenticationFilter까지 그대로 넘겨 실제 요청 처리 시점에만 resolve하도록 미룬다.
-    private final ObjectProvider<UserRepository> userRepositoryProvider;
-    // 위 userRepositoryProvider와 동일한 이유(JPA 리포지토리를 사용하는 빈이라 기동 순서 문제 회피)로
-    // ObjectProvider로 지연 주입한다.
-    private final ObjectProvider<UserAccessTrackingService> accessTrackingServiceProvider;
+    // JPA 리포지토리/JPA 의존 서비스를 이 @Configuration 생성자에서 즉시(eager) 주입하면,
+    // EnableJpaRepositories가 jpaSharedEM_entityManagerFactory 등록을 마치기 전에
+    // (SecurityFilterChain·필터 빈 처리 중) 먼저 해석돼 "Cannot resolve reference to bean
+    // 'jpaSharedEM_entityManagerFactory'"로 기동이 실패할 수 있다 (2026-07-29, 08-01 세 차례 관측).
+    // 생성자 파라미터의 @Lazy 프록시로 실제 해석을 첫 요청 시점까지 미룬다 — 필드에 @Lazy를 달면
+    // @RequiredArgsConstructor가 생성자 파라미터로 복사하지 않아 무효였다.
+    private final UserRepository userRepository;
+    private final UserAccessTrackingService userAccessTrackingService;
     private final ObjectMapper objectMapper;
+
+    public SecurityConfig(JwtProvider jwtProvider,
+                          AdminLoginFailureHandler adminLoginFailureHandler,
+                          AdminLoginSuccessHandler adminLoginSuccessHandler,
+                          AdminLogoutSuccessHandler adminLogoutSuccessHandler,
+                          @Lazy UserRepository userRepository,
+                          @Lazy UserAccessTrackingService userAccessTrackingService,
+                          ObjectMapper objectMapper) {
+        this.jwtProvider = jwtProvider;
+        this.adminLoginFailureHandler = adminLoginFailureHandler;
+        this.adminLoginSuccessHandler = adminLoginSuccessHandler;
+        this.adminLogoutSuccessHandler = adminLogoutSuccessHandler;
+        this.userRepository = userRepository;
+        this.userAccessTrackingService = userAccessTrackingService;
+        this.objectMapper = objectMapper;
+    }
 
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
@@ -141,7 +152,7 @@ public class SecurityConfig {
     // ── 2. API용 FilterChain (JWT Stateless) ──
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtProvider, userRepositoryProvider, accessTrackingServiceProvider);
+        return new JwtAuthenticationFilter(jwtProvider, userRepository, userAccessTrackingService);
     }
 
     // Spring Boot가 Filter Bean을 서블릿 체인에 자동 등록하지 않도록 비활성화

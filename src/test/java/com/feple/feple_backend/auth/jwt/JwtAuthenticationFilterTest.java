@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -40,27 +39,7 @@ class JwtAuthenticationFilterTest {
                 1000 * 60 * 15,
                 1000 * 60 * 60 * 24 * 14);
         jwtProvider = new JwtProvider(props);
-        filter = new JwtAuthenticationFilter(jwtProvider, new ObjectProvider<UserRepository>() {
-            @Override
-            public UserRepository getObject() {
-                return userRepository;
-            }
-
-            @Override
-            public UserRepository getObject(Object... args) {
-                return userRepository;
-            }
-        }, new ObjectProvider<UserAccessTrackingService>() {
-            @Override
-            public UserAccessTrackingService getObject() {
-                return accessTrackingService;
-            }
-
-            @Override
-            public UserAccessTrackingService getObject(Object... args) {
-                return accessTrackingService;
-            }
-        });
+        filter = new JwtAuthenticationFilter(jwtProvider, userRepository, accessTrackingService);
     }
 
     @AfterEach

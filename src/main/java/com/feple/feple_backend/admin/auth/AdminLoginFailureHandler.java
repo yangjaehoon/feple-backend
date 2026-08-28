@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
  * 리버스 프록시 없이 JVM이 직접 트래픽을 받으므로 remoteAddr이 곧 실제 클라이언트 IP —
  * X-Forwarded-For는 신뢰하지 않는다(조작 시 이 제한이 우회될 수 있음).
  * 10분 동안 최대 5회 실패 허용, 초과 시 429 응답.
- * AdminLogService는 JPA 리포지토리에 의존하므로, SecurityConfig가 이 빈을 생성자에서 즉시
- * 주입받을 때 entityManagerFactory보다 먼저 초기화되지 않도록 ObjectProvider로 해석을 요청 시점까지 미룬다.
+ * AdminLogService는 JPA 리포지토리에 의존하고 이 핸들러는 SecurityFilterChain 처리 중에
+ * 생성되므로, 생성자 파라미터의 {@code @Lazy}로 해석을 첫 요청 시점까지 미룬다.
  */
 @Component
 public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
@@ -40,10 +40,10 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
             .maximumSize(CACHE_MAX_SIZE)
             .build();
 
-    private final ObjectProvider<AdminLogService> adminLogServiceProvider;
+    private final AdminLogService adminLogService;
 
-    public AdminLoginFailureHandler(ObjectProvider<AdminLogService> adminLogServiceProvider) {
-        this.adminLogServiceProvider = adminLogServiceProvider;
+    public AdminLoginFailureHandler(@Lazy AdminLogService adminLogService) {
+        this.adminLogService = adminLogService;
     }
 
     @Override
@@ -78,6 +78,6 @@ public class AdminLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
     private void logFailure(String attemptedUsername, String reason) {
         String detail = (attemptedUsername != null && !attemptedUsername.isBlank() ? attemptedUsername : "(미입력)")
                 + " — " + reason;
-        adminLogServiceProvider.getObject().log(AdminAction.LOGIN_FAILURE, "ADMIN_ACCOUNT", null, detail);
+        adminLogService.log(AdminAction.LOGIN_FAILURE, "ADMIN_ACCOUNT", null, detail);
     }
 }
