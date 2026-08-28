@@ -74,9 +74,6 @@ public class CommentServiceImpl implements CommentService {
                 certificationService.existsApprovedCertification(post.getFestivalId(), userId);
         CommentResponseDto response = CommentResponseDto.from(saved, new CommentResponseDto.ViewerContext(certified, false), fileStorageService);
 
-        // incrementCommentCount는 @Modifying(clearAutomatically = true)라 영속성 컨텍스트를
-        // 통째로 비운다 — saved의 지연 로딩 연관관계(mentionedUser 등)를 DTO로 다 옮긴 뒤
-        // 가장 마지막에 호출해야, 답글에 멘션이 있을 때 LazyInitializationException이 나지 않는다.
         postService.incrementCommentCount(post.getId());
 
         return response;
@@ -254,8 +251,9 @@ public class CommentServiceImpl implements CommentService {
                 });
         // 원자적 UPDATE 이후 값을 다시 읽어야 정확하다 — 토글 직전 로드해둔 comment.getLikeCount()로
         // 계산하면 동시에 처리된 다른 사용자의 좋아요가 반영되지 않아 응답 값이 실제 DB 값과 어긋날 수 있다.
-        int newLikeCount = EntityLoader.getOrThrow(commentRepository::findById, commentId, "댓글").getLikeCount();
-        return new CommentLikeResult(liked, newLikeCount);
+        // 엔티티 전체가 아니라 카운터만 스칼라로 다시 읽는다.
+        Integer fresh = commentRepository.findLikeCountById(commentId);
+        return new CommentLikeResult(liked, fresh != null ? fresh : 0);
     }
 
     @Override

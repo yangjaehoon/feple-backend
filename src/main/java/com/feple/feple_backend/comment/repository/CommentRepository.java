@@ -57,15 +57,21 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
     // ── 좋아요 카운터 (원자적 증감 — race condition 방지) ─────────────────────
-    @Modifying(clearAutomatically = true)
+    // clearAutomatically는 쓰지 않는다(영속성 컨텍스트 전체 clear의 부작용). 증감 직후 최신 값이
+    // 필요하면 findLikeCountById로 스칼라 조회한다.
+    @Modifying
     @Transactional
     @Query("UPDATE Comment c SET c.likeCount = c.likeCount + 1 WHERE c.id = :id")
     void incrementLikeCount(@Param("id") Long id);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query(value = "UPDATE comment SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementLikeCount(@Param("id") Long id);
+
+    /** 카운터 증감 직후 최신 좋아요 수만 스칼라로 다시 읽는다. */
+    @Query("SELECT c.likeCount FROM Comment c WHERE c.id = :id")
+    Integer findLikeCountById(@Param("id") Long id);
 
     // ── 블라인드 관리자용 ──────────────────────────────────────────────────────
     // @SQLRestriction을 우회하는 네이티브 쿼리 — 블라인드된 댓글도 신고 접수·관리자 삭제는 가능해야 함

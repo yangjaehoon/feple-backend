@@ -20,12 +20,12 @@ public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGaller
     @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.likeCount DESC, p.createdAt DESC")
     List<ArtistGalleryPhoto> findByArtist_IdOrderByLikeCountDescCreatedAtDesc(@Param("artistId") Long artistId, Pageable pageable);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount + 1 WHERE p.id = :photoId")
     void incrementLikeCount(@Param("photoId") Long photoId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount - 1 WHERE p.id = :photoId AND p.likeCount > 0")
     void decrementLikeCount(@Param("photoId") Long photoId);

@@ -10,6 +10,7 @@ import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -51,12 +52,19 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
             try {
                 artistFollowRepository.saveAndFlush(ArtistFollow.of(user, artist));
                 artistRepository.incrementFollowerCount(artistId);
-                artist = artistRepository.findById(artistId).orElse(artist);
             } catch (DataIntegrityViolationException ignored) {
                 // 동시 요청으로 이미 팔로우됨 — 카운터 그대로
             }
         }
-        return new FollowResponseDto(true, artist.getFollowerCount());
+        return new FollowResponseDto(true, currentFollowerCount(artistId));
+    }
+
+    private int currentFollowerCount(Long artistId) {
+        Integer count = artistRepository.findFollowerCountById(artistId);
+        if (count == null) {
+            throw new NoSuchElementException("아티스트을(를) 찾을 수 없습니다: " + artistId);
+        }
+        return count;
     }
 
     @Override
@@ -67,8 +75,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
         if (deleted > 0) {
             artistRepository.decrementFollowerCount(artistId);
         }
-        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        return new FollowResponseDto(false, artist.getFollowerCount());
+        return new FollowResponseDto(false, currentFollowerCount(artistId));
     }
 
     @Override

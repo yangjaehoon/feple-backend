@@ -79,10 +79,10 @@ class ArtistFollowServiceTest {
     @Test
     void 팔로우_성공시_save와_followerCount_증가하고_followed_true_반환() {
         User user = user(1L);
-        Artist artist = artist(10L, 1);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
+        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 0)));
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
+        given(artistRepository.findFollowerCountById(10L)).willReturn(1);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 
@@ -95,15 +95,15 @@ class ArtistFollowServiceTest {
     @Test
     void 이미_팔로우_중이면_save_생략하고_멱등성_보장() {
         User user = user(1L);
-        Artist artist = artist(10L, 5);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
+        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 5)));
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(true);
+        given(artistRepository.findFollowerCountById(10L)).willReturn(5);
 
         FollowResponseDto result = artistFollowService.follow(1L, 10L);
 
         assertThat(result.followed()).isTrue();
-        assertThat(artist.getFollowerCount()).isEqualTo(5); // 중복이므로 증가하지 않음
+        assertThat(result.followerCount()).isEqualTo(5); // 중복이므로 증가하지 않음
         verify(artistFollowRepository, never()).save(any());
     }
 
@@ -120,9 +120,8 @@ class ArtistFollowServiceTest {
 
     @Test
     void 언팔로우_성공시_delete와_followerCount_감소하고_followed_false_반환() {
-        Artist artist = artist(10L, 0);
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
         given(artistFollowRepository.deleteByUserIdAndArtistId(1L, 10L)).willReturn(1);
+        given(artistRepository.findFollowerCountById(10L)).willReturn(0);
 
         FollowResponseDto result = artistFollowService.unfollow(1L, 10L);
 
@@ -134,20 +133,20 @@ class ArtistFollowServiceTest {
 
     @Test
     void 팔로우_안_했을_때_언팔로우시_followerCount_변경없이_멱등성_보장() {
-        Artist artist = artist(10L, 0);
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
         given(artistFollowRepository.deleteByUserIdAndArtistId(1L, 10L)).willReturn(0);
+        given(artistRepository.findFollowerCountById(10L)).willReturn(0);
 
         FollowResponseDto result = artistFollowService.unfollow(1L, 10L);
 
         assertThat(result.followed()).isFalse();
+        assertThat(result.followerCount()).isEqualTo(0); // 감소 없음
         verify(artistFollowRepository).deleteByUserIdAndArtistId(1L, 10L);
-        assertThat(artist.getFollowerCount()).isEqualTo(0); // 감소 없음
     }
 
     @Test
     void 존재하지_않는_아티스트_언팔로우시_예외() {
-        given(artistRepository.findById(99L)).willReturn(Optional.empty());
+        // 아티스트가 없으면 스칼라 조회가 null → NoSuchElementException
+        given(artistRepository.findFollowerCountById(99L)).willReturn(null);
 
         assertThatThrownBy(() -> artistFollowService.unfollow(1L, 99L))
                 .isInstanceOf(NoSuchElementException.class);

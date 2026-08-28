@@ -30,15 +30,21 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     void restoreById(@Param("id") Long id);
 
     // ── 팔로워 카운터 (원자적 증감 — race condition 방지) ────────────────────
-    @Modifying(clearAutomatically = true)
+    // clearAutomatically를 쓰지 않는다(영속성 컨텍스트 전체를 비워 다른 작업을 detach시키는 부작용).
+    // 갱신 직후의 최신 값이 필요하면 findFollowerCountById로 스칼라 조회한다.
+    @Modifying
     @Transactional
     @Query("UPDATE Artist a SET a.followerCount = a.followerCount + 1 WHERE a.id = :id")
     void incrementFollowerCount(@Param("id") Long id);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query(value = "UPDATE artist SET follower_count = GREATEST(follower_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementFollowerCount(@Param("id") Long id);
+
+    /** 카운터 증감 직후 최신 팔로워 수만 스칼라로 다시 읽는다 (엔티티 재조회·컨텍스트 clear 불필요). */
+    @Query("SELECT a.followerCount FROM Artist a WHERE a.id = :id")
+    Integer findFollowerCountById(@Param("id") Long id);
 
     // 네이티브 쿼리로 두면 Pageable의 Sort 속성명(followerCount, weeklyScore)이 그대로
     // ORDER BY 컬럼명으로 붙어 "Unknown column" 에러가 난다 (실제 컬럼은 snake_case).

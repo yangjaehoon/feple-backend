@@ -27,23 +27,23 @@ import org.springframework.transaction.annotation.Transactional;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     // ── 좋아요 카운터 (원자적 증감 — race condition 방지) ─────────────────────
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query("UPDATE Post p SET p.likeCount = p.likeCount + 1 WHERE p.id = :id")
     void incrementLikeCount(@Param("id") Long id);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query(value = "UPDATE post SET like_count = GREATEST(like_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementLikeCount(@Param("id") Long id);
 
     // ── 스크랩 카운터 (원자적 증감 — race condition 방지) ─────────────────────
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query("UPDATE Post p SET p.scrapCount = p.scrapCount + 1 WHERE p.id = :id")
     void incrementScrapCount(@Param("id") Long id);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query(value = "UPDATE post SET scrap_count = GREATEST(scrap_count - 1, 0) WHERE id = :id", nativeQuery = true)
     void decrementScrapCount(@Param("id") Long id);
@@ -279,19 +279,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Object[]> countAndSumByArtistSince(@Param("since") LocalDateTime since);
 
     // ── 댓글 카운트 (원자적 증감 — race condition 방지) ───────────────────────
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query("UPDATE Post p SET p.commentCount = p.commentCount + 1 WHERE p.id = :postId")
     void incrementCommentCount(@Param("postId") Long postId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query("UPDATE Post p SET p.commentCount = p.commentCount - 1 WHERE p.id = :postId AND p.commentCount > 0")
     void decrementCommentCount(@Param("postId") Long postId);
 
     // ── 조회수 카운트 ─────────────────────────────────────────────────────────
     // 적중 행 수를 반환해 호출부가 별도 존재 확인 SELECT 없이 404를 판단한다.
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Transactional
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
     int incrementViewCount(@Param("postId") Long postId);

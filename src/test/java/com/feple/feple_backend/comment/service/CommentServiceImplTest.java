@@ -477,17 +477,12 @@ class CommentServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         Comment before = comment(100L, post, author);
-        Comment after = Comment.builder()
-                .id(100L).content("댓글내용").post(post).user(author)
-                .likeCount(1)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
-                .build();
 
-        // 원자적 UPDATE 이후 재조회하는 값이 실제로 반영된 카운트인지 검증하기 위해
-        // findById를 토글 전(before)/후(after) 값을 순서대로 반환하도록 스텁한다
-        given(commentRepository.findById(100L)).willReturn(Optional.of(before), Optional.of(after));
+        given(commentRepository.findById(100L)).willReturn(Optional.of(before));
         given(userRepository.findById(2L)).willReturn(Optional.of(liker));
         given(commentLikeRepository.deleteByUserIdAndCommentId(2L, 100L)).willReturn(0);
+        // 원자적 UPDATE 직후의 최신 카운트를 스칼라로 재조회
+        given(commentRepository.findLikeCountById(100L)).willReturn(1);
 
         CommentLikeResult result = commentService.toggleLike(100L, 2L);
 
@@ -502,20 +497,12 @@ class CommentServiceImplTest {
         User liker = user(2L);
         User author = user(1L);
         Post post = freePost(10L, author);
-        Comment before = Comment.builder()
-                .id(100L).content("댓글내용").post(post).user(author)
-                .likeCount(1)
-                .createdAt(java.time.LocalDateTime.now()).updatedAt(java.time.LocalDateTime.now())
-                .build();
-        Comment after = Comment.builder()
-                .id(100L).content("댓글내용").post(post).user(author)
-                .likeCount(0)
-                .createdAt(java.time.LocalDateTime.now()).updatedAt(java.time.LocalDateTime.now())
-                .build();
+        Comment before = comment(100L, post, author);
 
-        given(commentRepository.findById(100L)).willReturn(Optional.of(before), Optional.of(after));
+        given(commentRepository.findById(100L)).willReturn(Optional.of(before));
         given(userRepository.findById(2L)).willReturn(Optional.of(liker));
         given(commentLikeRepository.deleteByUserIdAndCommentId(2L, 100L)).willReturn(1);
+        given(commentRepository.findLikeCountById(100L)).willReturn(0);
 
         CommentLikeResult result = commentService.toggleLike(100L, 2L);
 
