@@ -6,9 +6,11 @@ import com.feple.feple_backend.user.entity.UserRole;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -35,7 +37,11 @@ public class Comment {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
@@ -78,13 +84,11 @@ public class Comment {
         this.parent = parent;
         this.mentionedUser = mentionedUser;
         this.anonymous = anonymous;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        // createdAt/updatedAt은 @CreationTimestamp/@UpdateTimestamp가 flush 시점에 채운다
     }
 
     public void update(String content) {
         this.content = content;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void blind() {

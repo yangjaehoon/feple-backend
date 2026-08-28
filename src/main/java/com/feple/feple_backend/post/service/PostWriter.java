@@ -11,7 +11,6 @@ import com.feple.feple_backend.post.repository.PostImageRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.repository.PostTagRepository;
 import com.feple.feple_backend.user.entity.User;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -69,8 +68,6 @@ class PostWriter {
                 .content(dto.getContent())
                 .boardType(ctx.boardType())
                 .likeCount(0)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .user(user)
                 .artist(ctx.artist())
                 .festival(ctx.festival())

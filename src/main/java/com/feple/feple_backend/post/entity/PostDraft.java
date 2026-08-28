@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /** 유저당 1개만 유지하는 게시글 임시저장 — 새로 저장하면 기존 내용을 덮어쓴다. */
 @Entity
@@ -36,6 +37,7 @@ public class PostDraft {
     @Column(name = "image_keys", columnDefinition = "TEXT")
     private String imageKeysCsv;
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     public PostDraft(Long userId, PostDraftContent draft) {
@@ -55,7 +57,7 @@ public class PostDraft {
         this.artistId = draft.artistId();
         this.festivalId = draft.festivalId();
         this.imageKeysCsv = draft.imageKeysCsv();
-        this.updatedAt = LocalDateTime.now();
+        // updatedAt은 @UpdateTimestamp가 insert/update flush 시점에 채운다
     }
 
     public List<String> getImageKeys() {

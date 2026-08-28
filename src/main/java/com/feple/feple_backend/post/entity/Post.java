@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -53,9 +55,11 @@ public class Post {
 
     private int scrapCount;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -92,7 +96,7 @@ public class Post {
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
-        this.updatedAt = LocalDateTime.now();
+        // updatedAt은 @UpdateTimestamp가 flush 시점에 채운다
     }
 
     public void togglePinned() {

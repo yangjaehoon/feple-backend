@@ -61,10 +61,14 @@ class PostRepositoryIntegrationTest {
         Post recent = postRepository.save(freePost(5));
         Post old = postRepository.save(Post.builder()
                 .title("오래된").content("X").user(user).boardType(BoardType.FREE)
-                .createdAt(LocalDateTime.now().minusDays(3))
-                .updatedAt(LocalDateTime.now().minusDays(3))
                 .build());
-        em.flush(); em.clear();
+        em.flush();
+        // created_at은 @CreationTimestamp가 채우므로, 과거로 만들려면 저장 후 직접 되돌린다
+        em.createNativeQuery("UPDATE post SET created_at = :ts WHERE id = :id")
+                .setParameter("ts", LocalDateTime.now().minusDays(3))
+                .setParameter("id", old.getId())
+                .executeUpdate();
+        em.clear();
 
         List<Post> result = postRepository.findPopularPosts(
                 LocalDateTime.now().minusHours(1), PageRequest.of(0, 10));
