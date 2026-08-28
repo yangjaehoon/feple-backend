@@ -9,7 +9,6 @@ public final class AdminConstants {
     public static final int DASHBOARD_PREVIEW_SIZE  = 5;
     public static final int SUGGESTION_PREVIEW_SIZE = 50;
     public static final int STATS_RECENT_DAYS       = 7;
-    public static final int MAX_EXPORT_ROWS         = 50_000;
     public static final int DELETED_POSTS_LIMIT     = 200;
     public static final int BLINDED_POSTS_LIMIT     = 200;
     public static final int TREND_TOP_LIMIT         = 10;
@@ -21,9 +20,6 @@ public final class AdminConstants {
     public static final int POST_DETAIL_COMMENT_LIMIT = 100;
     public static final int PUSH_TITLE_MAX_LENGTH = 100;
     public static final int PUSH_BODY_MAX_LENGTH  = 500;
-    public static final int NICKNAME_SEARCH_RESULT_LIMIT = 20;
-    // 신고가 이 건수(대기 상태) 이상 쌓이면 관리자 검토 전이라도 자동으로 블라인드 처리한다.
-    public static final int AUTO_BLIND_REPORT_THRESHOLD = 5;
 
     // 일괄 작업(회원/게시글/신고/인증)에서 한 번에 처리할 수 있는 최대 항목 수.
     // 목록 페이지 크기(최대 30)를 크게 웃도는 값이라 정상 업무에는 제약이 없고, URL/폼 조작으로

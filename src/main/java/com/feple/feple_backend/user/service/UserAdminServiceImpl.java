@@ -1,10 +1,10 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.admin.CurrentAdminProvider;
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
@@ -26,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserAdminServiceImpl implements UserAdminService {
 
+    /** 관리자 푸시 대상 닉네임 검색 결과 노출 상한 (자동완성용이라 넉넉하지 않아도 됨) */
+    private static final int NICKNAME_SEARCH_RESULT_LIMIT = 20;
+
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final UserCascadeDeleteService cascadeDeleteService;
@@ -43,7 +46,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     public List<UserResponseDto> searchByNickname(String nickname) {
         String keyword = JpqlLikeEscaper.escapeOrEmpty(nickname);
         if (keyword.isEmpty()) return List.of();
-        Pageable pageable = PageableFactory.orderByLatestId(0, AdminConstants.NICKNAME_SEARCH_RESULT_LIMIT);
+        Pageable pageable = PageableFactory.orderByLatestId(0, NICKNAME_SEARCH_RESULT_LIMIT);
         return userRepository.searchByNicknameContaining(keyword, pageable).stream()
                 .map(this::toAdminUserDto)
                 .toList();
@@ -128,7 +131,7 @@ public class UserAdminServiceImpl implements UserAdminService {
             batch = userRepository.findAllByDeletedAtIsNull(
                     PageableFactory.orderByLatestId(page++, batchSize));
             batch.forEach(u -> result.add(toAdminUserDto(u)));
-        } while (batch.hasNext() && result.size() < AdminConstants.MAX_EXPORT_ROWS);
+        } while (batch.hasNext() && result.size() < PageSize.MAX_EXPORT_ROWS);
         return result;
     }
 

@@ -10,6 +10,7 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportR
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
@@ -148,6 +149,6 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistGaller
     }
 
     public List<ArtistGalleryPhotoReport> getAllPhotoReportsForExport() {
-        return reportRepository.findAllForExport(PageRequest.of(0, AdminConstants.MAX_EXPORT_ROWS));
+        return reportRepository.findAllForExport(PageRequest.of(0, PageSize.MAX_EXPORT_ROWS));
     }
 }

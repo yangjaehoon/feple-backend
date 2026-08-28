@@ -1,6 +1,5 @@
 package com.feple.feple_backend.certification.service;
 
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.event.CertificationApprovedEvent;
@@ -9,6 +8,7 @@ import com.feple.feple_backend.certification.repository.FestivalCertificationRep
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
@@ -42,7 +42,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalCertification> getByStatus(CertificationStatus status, int page) {
-        Pageable pageable = PageableFactory.orderByLatestFirst(page, AdminConstants.LIST_PAGE_SIZE);
+        Pageable pageable = PageableFactory.orderByLatestFirst(page, PageSize.DEFAULT_PAGE_SIZE);
         if (status == null) {
             return certificationRepository.findAllWithUserAndFestival(pageable);
         }
@@ -52,7 +52,7 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
-        Pageable pageable = PageableFactory.orderByLatestFirst(page, AdminConstants.LIST_PAGE_SIZE);
+        Pageable pageable = PageableFactory.orderByLatestFirst(page, PageSize.DEFAULT_PAGE_SIZE);
         return certificationRepository.searchByKeyword(JpqlLikeEscaper.escape(keyword.trim()), status, pageable);
     }
 

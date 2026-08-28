@@ -1,9 +1,10 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.ReportPolicy;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import com.feple.feple_backend.global.entity.ReportStatus;
@@ -67,7 +68,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     private void autoBlindIfThresholdReached(Post post) {
         if (post.isBlinded()) return;
         long pendingCount = reportRepository.countByPostIdAndStatus(post.getId(), ReportStatus.PENDING);
-        if (pendingCount >= AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+        if (pendingCount >= ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD) {
             post.blind();
         }
     }
@@ -134,7 +135,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.
     private void unblindIfBelowThreshold(Long postId) {
         long pendingCount = reportRepository.countByPostIdAndStatus(postId, ReportStatus.PENDING);
-        if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+        if (pendingCount < ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD) {
             postRepository.findById(postId).ifPresent(Post::unblind);
         }
     }
@@ -147,7 +148,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
         Map<Long, Long> pendingCountsByPostId =
                 QueryResultMapper.toLongMap(reportRepository.countByPostIdInAndStatus(postIds, ReportStatus.PENDING));
         List<Long> toUnblind = postIds.stream()
-                .filter(postId -> pendingCountsByPostId.getOrDefault(postId, 0L) < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD)
+                .filter(postId -> pendingCountsByPostId.getOrDefault(postId, 0L) < ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD)
                 .toList();
         if (toUnblind.isEmpty()) return;
         postRepository.findAllById(toUnblind).forEach(Post::unblind);
@@ -163,7 +164,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     public List<PostReport> getAllPostReportsForExport() {
-        return reportRepository.findAllForExport(PageRequest.of(0, AdminConstants.MAX_EXPORT_ROWS));
+        return reportRepository.findAllForExport(PageRequest.of(0, PageSize.MAX_EXPORT_ROWS));
     }
 
     public long getReportCountForUser(Long userId) {

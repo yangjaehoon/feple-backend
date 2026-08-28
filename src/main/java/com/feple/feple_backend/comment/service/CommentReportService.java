@@ -1,13 +1,14 @@
 package com.feple.feple_backend.comment.service;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.ReportPolicy;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import com.feple.feple_backend.global.entity.ReportStatus;
@@ -71,7 +72,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     private void autoBlindIfThresholdReached(Comment comment) {
         if (comment.isBlinded()) return;
         long pendingCount = reportRepository.countByCommentIdAndStatus(comment.getId(), ReportStatus.PENDING);
-        if (pendingCount >= AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+        if (pendingCount >= ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD) {
             comment.blind();
         }
     }
@@ -139,7 +140,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.
     private void unblindIfBelowThreshold(Long commentId) {
         long pendingCount = reportRepository.countByCommentIdAndStatus(commentId, ReportStatus.PENDING);
-        if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
+        if (pendingCount < ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD) {
             commentRepository.findById(commentId).ifPresent(Comment::unblind);
         }
     }
@@ -152,7 +153,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
         Map<Long, Long> pendingCountsByCommentId = QueryResultMapper.toLongMap(
                 reportRepository.countByCommentIdInAndStatus(commentIds, ReportStatus.PENDING));
         List<Long> toUnblind = commentIds.stream()
-                .filter(commentId -> pendingCountsByCommentId.getOrDefault(commentId, 0L) < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD)
+                .filter(commentId -> pendingCountsByCommentId.getOrDefault(commentId, 0L) < ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD)
                 .toList();
         if (toUnblind.isEmpty()) return;
         commentRepository.findAllById(toUnblind).forEach(Comment::unblind);
@@ -168,7 +169,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     }
 
     public List<CommentReport> getAllCommentReportsForExport() {
-        return reportRepository.findAllForExport(PageRequest.of(0, AdminConstants.MAX_EXPORT_ROWS));
+        return reportRepository.findAllForExport(PageRequest.of(0, PageSize.MAX_EXPORT_ROWS));
     }
 
     public long getReportCountForUser(Long userId) {
