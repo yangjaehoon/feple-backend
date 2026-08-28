@@ -197,6 +197,25 @@ class AdminActionUtilsTest {
         assertThat(result).isEqualTo("redirect:/admin/festivals?keyword=feple");
     }
 
+    // ── listUrl ───────────────────────────────────────────────────────────────
+
+    @Test
+    void listUrl_listRedirect와_동일한_쿼리스트링을_redirect_접두사_없이_만든다() {
+        String url = AdminActionUtils.listUrl("/admin/certifications", "PENDING", 2, null);
+        String redirect = AdminActionUtils.listRedirect("/admin/certifications", "PENDING", 2, null);
+
+        assertThat(url).isEqualTo("/admin/certifications?status=PENDING&page=2");
+        assertThat(redirect).isEqualTo("redirect:" + url);
+    }
+
+    @Test
+    void listUrl_status가_빈_문자열이어도_파라미터를_유지한다() {
+        assertThat(AdminActionUtils.listUrl("/admin/certifications", "", 0, "홍길동"))
+                .startsWith("/admin/certifications?status=&page=0&keyword=");
+        assertThat(AdminActionUtils.listUrl("/admin/certifications", "", 0, "홍길동"))
+                .doesNotContain("홍길동");
+    }
+
     // ── listRedirect ──────────────────────────────────────────────────────────
 
     @Test

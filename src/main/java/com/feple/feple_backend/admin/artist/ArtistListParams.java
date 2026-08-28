@@ -2,7 +2,6 @@ package com.feple.feple_backend.admin.artist;
 
 import com.feple.feple_backend.admin.AdminParamDefaults;
 import com.feple.feple_backend.admin.AdminUrlUtils;
-import org.springframework.web.util.UriComponentsBuilder;
 
 record ArtistListParams(Integer page, String keyword, String sort) {
 
@@ -13,9 +12,6 @@ record ArtistListParams(Integer page, String keyword, String sort) {
     }
 
     String toRedirectUrl() {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/artists").queryParam("page", page);
-        AdminUrlUtils.appendIfHasText(builder, "keyword", keyword);
-        AdminUrlUtils.appendIfHasText(builder, "sort", sort);
-        return AdminUrlUtils.toEncodedString(builder);
+        return AdminUrlUtils.listUrl("/admin/artists", "page", page, "keyword", keyword, "sort", sort);
     }
 }

@@ -1,7 +1,6 @@
 package com.feple.feple_backend.admin.certification;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
-import com.feple.feple_backend.admin.AdminUrlUtils;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -69,8 +68,8 @@ public class CertificationAdminController {
                     model.addAttribute("returnPage", filter.page());
                     model.addAttribute("returnKeyword", filter.keyword());
                     model.addAttribute("nextCertId", certificationService.findNextPendingId(id).orElse(null));
-                    model.addAttribute("returnUrl", AdminUrlUtils.listUrl("/admin/certifications",
-                            "status", filter.status(), "page", filter.page(), "keyword", filter.keyword()));
+                    model.addAttribute("returnUrl", AdminActionUtils.listUrl("/admin/certifications",
+                            filter.status(), filter.page(), filter.keyword()));
                 },
                 "admin/certification/detail",
                 e -> log.error("인증 상세 조회 실패 id={}", id, e),

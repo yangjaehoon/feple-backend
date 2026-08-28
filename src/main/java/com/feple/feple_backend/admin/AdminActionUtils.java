@@ -137,14 +137,25 @@ public final class AdminActionUtils {
     }
 
     /**
+     * status + page (+ 선택적 keyword) 조합의 목록 페이지 URL. redirect: 접두사가 없는 형태로,
+     * 상세 화면의 "돌아가기" 링크(returnUrl)에 쓴다.
+     * status 값이 없어도(null/빈 문자열) 파라미터를 유지한다 — {@link #listRedirect}와 동일 규칙이라
+     * 같은 화면의 redirect와 returnUrl이 항상 같은 쿼리스트링을 만든다.
+     * 임의 키의 목록 URL이 필요하면 {@link AdminUrlUtils#listUrl(String, Object...)}를 쓴다(빈 값은 생략).
+     */
+    public static String listUrl(String basePath, Object status, int page, String keyword) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath(basePath)
+                .queryParam("status", status)
+                .queryParam("page", page);
+        AdminUrlUtils.appendIfHasText(builder, "keyword", keyword);
+        return AdminUrlUtils.toEncodedString(builder);
+    }
+
+    /**
      * status + page + keyword 조합의 목록 페이지 redirect URL을 생성한다.
      * status 파라미터 값이 없는 경우(null/빈 문자열)도 그대로 전달된다.
      */
     public static String listRedirect(String basePath, Object status, int page, String keyword) {
-        return toRedirect(
-                UriComponentsBuilder.fromPath(basePath)
-                        .queryParam("status", status)
-                        .queryParam("page", page),
-                keyword);
+        return "redirect:" + listUrl(basePath, status, page, keyword);
     }
 }
