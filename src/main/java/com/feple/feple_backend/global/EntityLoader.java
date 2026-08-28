@@ -1,8 +1,7 @@
 package com.feple.feple_backend.global;
 
 import com.feple.feple_backend.global.exception.InvalidRequestException;
-
-import java.util.NoSuchElementException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -11,7 +10,7 @@ public final class EntityLoader {
 
     public static <T, ID> T getOrThrow(Function<ID, Optional<T>> finder, ID id, String entityName) {
         return finder.apply(id)
-                .orElseThrow(() -> new NoSuchElementException(entityName + "을(를) 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> ResourceNotFoundException.of(entityName, id));
     }
 
     /**

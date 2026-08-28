@@ -17,9 +17,9 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -191,7 +191,7 @@ public class FestivalAdminController {
         String currentPosterUrl;
         try {
             currentPosterUrl = festivalService.getFestival(id).getPosterUrl();
-        } catch (NoSuchElementException e) {
+        } catch (ResourceNotFoundException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/admin/festivals";
         }

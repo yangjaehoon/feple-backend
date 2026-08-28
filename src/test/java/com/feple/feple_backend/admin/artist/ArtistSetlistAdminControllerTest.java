@@ -13,8 +13,9 @@ import com.feple.feple_backend.artist.song.service.SetlistAdminService;
 import com.feple.feple_backend.artist.song.service.SongService;
 import com.feple.feple_backend.artistfestival.entity.ArtistFestival;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +58,7 @@ class ArtistSetlistAdminControllerTest {
 
     @Test
     void 셋리스트_목록_조회_NoSuchElement_목록으로_리다이렉트() throws Exception {
-        given(artistService.getArtistById(99L)).willThrow(new NoSuchElementException("없는 아티스트"));
+        given(artistService.getArtistById(99L)).willThrow(new ResourceNotFoundException("없는 아티스트"));
 
         mockMvc.perform(get("/admin/artists/99/setlist"))
                 .andExpect(redirectedUrl("/admin/artists"))
@@ -93,7 +94,7 @@ class ArtistSetlistAdminControllerTest {
     void 셋리스트_편집_조회_IllegalArgument_셋리스트_목록으로_리다이렉트() throws Exception {
         given(artistService.getArtistById(1L)).willReturn(mock(ArtistResponseDto.class));
         given(artistFestivalService.getArtistFestivalByIdAndArtistId(2L, 1L))
-                .willThrow(new IllegalArgumentException("잘못된 접근"));
+                .willThrow(new InvalidRequestException("잘못된 접근"));
 
         mockMvc.perform(get("/admin/artists/1/setlist/2"))
                 .andExpect(redirectedUrl("/admin/artists"))
@@ -102,7 +103,7 @@ class ArtistSetlistAdminControllerTest {
 
     @Test
     void 셋리스트_편집_조회_NoSuchElement_목록으로_리다이렉트() throws Exception {
-        given(artistService.getArtistById(1L)).willThrow(new NoSuchElementException("없는 아티스트"));
+        given(artistService.getArtistById(1L)).willThrow(new ResourceNotFoundException("없는 아티스트"));
 
         mockMvc.perform(get("/admin/artists/1/setlist/2"))
                 .andExpect(redirectedUrl("/admin/artists"));

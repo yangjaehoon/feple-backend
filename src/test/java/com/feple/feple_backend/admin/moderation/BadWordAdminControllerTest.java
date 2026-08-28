@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.badword.service.BadWordService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.post.service.PostAdminService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,7 @@ class BadWordAdminControllerTest {
 
     @Test
     void 금칙어_추가_실패_errorMessage_설정() throws Exception {
-        willThrow(new IllegalArgumentException("이미 등록된 단어입니다.")).given(badWordService).add(anyString());
+        willThrow(new InvalidRequestException("이미 등록된 단어입니다.")).given(badWordService).add(anyString());
 
         mockMvc.perform(post("/admin/bad-words/add").param("word", "욕설"))
                 .andExpect(flash().attribute("errorMessage", "이미 등록된 단어입니다."));

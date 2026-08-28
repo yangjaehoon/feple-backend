@@ -7,10 +7,10 @@ import com.feple.feple_backend.artistfollow.dto.FollowStatusDto;
 import com.feple.feple_backend.artistfollow.entity.ArtistFollow;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -62,7 +62,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     private int currentFollowerCount(Long artistId) {
         Integer count = artistRepository.findFollowerCountById(artistId);
         if (count == null) {
-            throw new NoSuchElementException("아티스트을(를) 찾을 수 없습니다: " + artistId);
+            throw ResourceNotFoundException.of("아티스트", artistId);
         }
         return count;
     }

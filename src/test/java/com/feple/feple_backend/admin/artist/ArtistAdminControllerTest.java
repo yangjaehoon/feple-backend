@@ -14,8 +14,8 @@ import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -114,7 +114,7 @@ class ArtistAdminControllerTest {
 
     @Test
     void 편집_폼_조회_없는_아티스트_목록으로_리다이렉트() throws Exception {
-        given(artistAdminService.getArtistForEdit(99L)).willThrow(new NoSuchElementException("없는 아티스트"));
+        given(artistAdminService.getArtistForEdit(99L)).willThrow(new ResourceNotFoundException("없는 아티스트"));
 
         mockMvc.perform(get("/admin/artists/99/edit"))
                 .andExpect(status().is3xxRedirection())
@@ -162,7 +162,7 @@ class ArtistAdminControllerTest {
 
     @Test
     void 아티스트_수정_NoSuchElementException_errorMessage_설정() throws Exception {
-        willThrow(new NoSuchElementException("없는 아티스트")).given(artistAdminService).updateArtist(anyLong(), any());
+        willThrow(new ResourceNotFoundException("없는 아티스트")).given(artistAdminService).updateArtist(anyLong(), any());
 
         mockMvc.perform(multipart("/admin/artists/1/edit")
                         .file("profileImageFile", new byte[0])

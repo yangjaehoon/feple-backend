@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
@@ -63,11 +64,19 @@ public class AdminExceptionAdvice {
         return "redirect:/admin/access-denied";
     }
 
+    // 의도적으로 작성한 "찾을 수 없음" 메시지는 그대로 노출한다 (GlobalExceptionHandler와 동일 규칙).
+    // ResourceNotFoundException은 NoSuchElementException의 하위 타입이라 Spring이 이 핸들러를 먼저 선택한다.
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public Object handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request, HandlerMethod handlerMethod) {
+        return respond(request, handlerMethod, HttpStatus.NOT_FOUND, ex.getMessage(), ErrorCode.RESOURCE_NOT_FOUND);
+    }
+
+    // 순수 NoSuchElementException(JDK·라이브러리 발) — 내부 구현이 새지 않도록 일반 메시지로 응답한다.
+    // 사용자용 "찾을 수 없음"은 ResourceNotFoundException으로 던질 것.
     @ExceptionHandler(NoSuchElementException.class)
     public Object handleNotFound(NoSuchElementException ex, HttpServletRequest request, HandlerMethod handlerMethod) {
-        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
-                ? ex.getMessage() : "요청한 항목을 찾을 수 없습니다.";
-        return respond(request, handlerMethod, HttpStatus.NOT_FOUND, message, ErrorCode.RESOURCE_NOT_FOUND);
+        log.warn("관리자 페이지 예상 못한 NoSuchElementException: {} {}", request.getMethod(), request.getRequestURI());
+        return respond(request, handlerMethod, HttpStatus.NOT_FOUND, "요청한 항목을 찾을 수 없습니다.", ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     // 의도적으로 작성한 검증 메시지는 그대로 노출한다 (GlobalExceptionHandler와 동일 규칙).

@@ -9,10 +9,10 @@ import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.filter.FilterDropdownProvider;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.service.PostAdminService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -98,7 +98,7 @@ class PostAdminControllerTest {
 
     @Test
     void 상세_조회_NoSuchElementException_목록으로_리다이렉트() throws Exception {
-        given(postAdminService.getPostForAdmin(99L)).willThrow(new NoSuchElementException("존재하지 않는 게시글"));
+        given(postAdminService.getPostForAdmin(99L)).willThrow(new ResourceNotFoundException("존재하지 않는 게시글"));
 
         mockMvc.perform(get("/admin/posts/99"))
                 .andExpect(status().is3xxRedirection())

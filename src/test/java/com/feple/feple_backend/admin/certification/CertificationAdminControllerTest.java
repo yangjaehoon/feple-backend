@@ -11,8 +11,8 @@ import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.certification.entity.CertificationStatus;
 import com.feple.feple_backend.certification.entity.FestivalCertification;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,7 +104,7 @@ class CertificationAdminControllerTest {
 
     @Test
     void 상세_조회_예외_목록으로_리다이렉트() throws Exception {
-        given(certificationService.getById(99L)).willThrow(new NoSuchElementException("없는 인증"));
+        given(certificationService.getById(99L)).willThrow(new ResourceNotFoundException("없는 인증"));
 
         mockMvc.perform(get("/admin/certifications/99"))
                 .andExpect(status().is3xxRedirection())

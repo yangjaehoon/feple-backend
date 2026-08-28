@@ -20,10 +20,10 @@ import com.feple.feple_backend.admin.CurrentAdminProvider;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.push.AdminPushService;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.notice.dto.NoticeResponseDto;
 import com.feple.feple_backend.notice.service.NoticeAdminService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -215,7 +215,7 @@ class NoticeAdminControllerTest {
 
     @Test
     void 수정_폼_화면_대상_공지가_없으면_목록으로_리다이렉트하고_에러메시지를_남긴다() throws Exception {
-        willThrow(new NoSuchElementException("공지사항을 찾을 수 없습니다."))
+        willThrow(new ResourceNotFoundException("공지사항을 찾을 수 없습니다."))
                 .given(noticeAdminService).getNoticeForEdit(99L);
 
         mockMvc.perform(get("/admin/notices/99/edit"))

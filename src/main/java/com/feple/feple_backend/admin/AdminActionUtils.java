@@ -1,7 +1,9 @@
 package com.feple.feple_backend.admin;
 
+import com.feple.feple_backend.global.exception.BadWordException;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -28,7 +30,7 @@ public final class AdminActionUtils {
     /**
      * 관리자 컨트롤러의 표준 POST try-catch 패턴:
      * - 성공 시 successMessage flash attribute 설정 (successMsg가 null이면 생략)
-     * - IllegalArgumentException | NoSuchElementException: e.getMessage()를 errorMessage로 노출
+     * - InvalidRequestException | BadWordException | ResourceNotFoundException: e.getMessage()를 errorMessage로 노출 (안전한 도메인 메시지)
      * - OptimisticLockingFailureException(@Version 충돌): 고정 안내 메시지 노출 (raw 메시지 미노출)
      * - 그 외 Exception: onError 콜백(log.error)을 호출하고 failMsg를 errorMessage로 노출
      */
@@ -40,7 +42,7 @@ public final class AdminActionUtils {
         try {
             action.run();
             if (successMsg != null) ra.addFlashAttribute("successMessage", successMsg);
-        } catch (IllegalArgumentException | NoSuchElementException e) {
+        } catch (InvalidRequestException | BadWordException | ResourceNotFoundException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (OptimisticLockingFailureException e) {
             ra.addFlashAttribute("errorMessage", OPTIMISTIC_LOCK_MESSAGE);
@@ -65,7 +67,7 @@ public final class AdminActionUtils {
             T result = action.run();
             String successMsg = successMsgFn.apply(result);
             if (successMsg != null) ra.addFlashAttribute("successMessage", successMsg);
-        } catch (IllegalArgumentException | NoSuchElementException e) {
+        } catch (InvalidRequestException | BadWordException | ResourceNotFoundException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (OptimisticLockingFailureException e) {
             ra.addFlashAttribute("errorMessage", OPTIMISTIC_LOCK_MESSAGE);
@@ -105,7 +107,7 @@ public final class AdminActionUtils {
     /**
      * 관리자 컨트롤러의 표준 GET try-catch 패턴 (model 채우고 뷰 반환):
      * - 성공 시 viewName 반환
-     * - IllegalArgumentException | NoSuchElementException: e.getMessage()를 errorMessage로 설정 후 fallbackRedirect 반환
+     * - InvalidRequestException | BadWordException | ResourceNotFoundException: e.getMessage()를 errorMessage로 설정 후 fallbackRedirect 반환
      * - OptimisticLockingFailureException(@Version 충돌): 고정 안내 메시지 설정 후 fallbackRedirect 반환
      * - 그 외 Exception: onError 콜백 호출 후 failMsg를 errorMessage로 설정, fallbackRedirect 반환
      */
@@ -118,7 +120,7 @@ public final class AdminActionUtils {
         try {
             action.run();
             return viewName;
-        } catch (IllegalArgumentException | NoSuchElementException e) {
+        } catch (InvalidRequestException | BadWordException | ResourceNotFoundException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return fallbackRedirect;
         } catch (OptimisticLockingFailureException e) {

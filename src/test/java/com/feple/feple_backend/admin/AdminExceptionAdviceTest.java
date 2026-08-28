@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +42,20 @@ class AdminExceptionAdviceTest {
     }
 
     @Test
-    void 뷰_컨트롤러_NoSuchElement는_HTML_에러_페이지_404_메시지_노출() throws Exception {
+    void 뷰_컨트롤러_ResourceNotFoundException은_404_메시지_그대로_노출() throws Exception {
         mockMvc.perform(get("/admin/test/missing"))
                 .andExpect(status().isNotFound())
                 .andExpect(view().name(AdminExceptionAdvice.ERROR_VIEW))
                 .andExpect(model().attribute("errorMessage", "그런 항목 없음"))
                 .andExpect(model().attribute("statusCode", 404));
+    }
+
+    @Test
+    void 뷰_컨트롤러_순수_NoSuchElement는_404_일반_메시지로_마스킹() throws Exception {
+        mockMvc.perform(get("/admin/test/missing-raw"))
+                .andExpect(status().isNotFound())
+                .andExpect(view().name(AdminExceptionAdvice.ERROR_VIEW))
+                .andExpect(model().attribute("errorMessage", "요청한 항목을 찾을 수 없습니다."));
     }
 
     @Test
@@ -92,7 +101,12 @@ class AdminExceptionAdviceTest {
 
         @GetMapping("/missing")
         String missing() {
-            throw new NoSuchElementException("그런 항목 없음");
+            throw new ResourceNotFoundException("그런 항목 없음");
+        }
+
+        @GetMapping("/missing-raw")
+        String missingRaw() {
+            throw new NoSuchElementException("No value present");
         }
 
         @GetMapping("/bad")

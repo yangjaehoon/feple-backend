@@ -28,13 +28,20 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(NoSuchElementException ex) {
+    // 의도적으로 작성한 "찾을 수 없음" 메시지 — 그대로 노출한다.
+    // (ResourceNotFoundException은 NoSuchElementException의 하위 타입이라 Spring이 이 핸들러를 먼저 선택한다)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         log.info("Resource not found: {}", ex.getMessage());
-        String msg = (ex.getMessage() != null && !ex.getMessage().isBlank())
-                ? ex.getMessage()
-                : "리소스를 찾을 수 없습니다.";
-        return body(HttpStatus.NOT_FOUND, msg, ErrorCode.RESOURCE_NOT_FOUND);
+        return body(HttpStatus.NOT_FOUND, ex.getMessage(), ErrorCode.RESOURCE_NOT_FOUND);
+    }
+
+    // 순수 NoSuchElementException(JDK의 Optional.get()·Iterator.next() 등) — 메시지에 "No value present" 같은
+    // 내부 구현이 노출될 수 있어 일반 메시지로 응답한다. 사용자용 "찾을 수 없음"은 ResourceNotFoundException.
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ErrorResponse> handleNoSuchElement(NoSuchElementException ex) {
+        log.warn("Unexpected NoSuchElementException (앱 코드는 ResourceNotFoundException을 던져야 함): {}", ex.getMessage());
+        return body(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다.", ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

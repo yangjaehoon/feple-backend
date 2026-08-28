@@ -10,8 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.festival.setlistchangerequest.entity.SetlistChangeRequestStatus;
 import com.feple.feple_backend.festival.setlistchangerequest.service.SetlistChangeRequestService;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -127,7 +127,7 @@ class SetlistChangeRequestAdminControllerTest {
 
     @Test
     void 처리_실패_NoSuchElement_메시지_노출() throws Exception {
-        willThrow(new NoSuchElementException("존재하지 않는 요청")).given(service).resolve(anyLong());
+        willThrow(new ResourceNotFoundException("존재하지 않는 요청")).given(service).resolve(anyLong());
         given(service.countByStatus(any())).willReturn(0L);
 
         mockMvc.perform(post("/admin/setlist-requests/99/resolve")

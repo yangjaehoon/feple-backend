@@ -2,6 +2,8 @@ package com.feple.feple_backend.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,11 +45,11 @@ class AdminActionUtilsTest {
     }
 
     @Test
-    void tryAction_IllegalArgumentException은_errorMessage에_메시지_노출() {
+    void tryAction_InvalidRequestException은_errorMessage에_메시지_노출() {
         RedirectAttributesModelMap ra = ra();
 
         AdminActionUtils.tryAction(
-                () -> { throw new IllegalArgumentException("잘못된 입력입니다."); },
+                () -> { throw new InvalidRequestException("잘못된 입력입니다."); },
                 "성공", e -> {}, "실패", ra);
 
         assertThat(flash(ra, "errorMessage")).isEqualTo("잘못된 입력입니다.");
@@ -55,14 +57,40 @@ class AdminActionUtilsTest {
     }
 
     @Test
-    void tryAction_NoSuchElementException은_errorMessage에_메시지_노출() {
+    void tryAction_ResourceNotFoundException은_errorMessage에_메시지_노출() {
         RedirectAttributesModelMap ra = ra();
 
         AdminActionUtils.tryAction(
-                () -> { throw new NoSuchElementException("항목을 찾을 수 없습니다."); },
+                () -> { throw new ResourceNotFoundException("항목을 찾을 수 없습니다."); },
                 "성공", e -> {}, "실패", ra);
 
         assertThat(flash(ra, "errorMessage")).isEqualTo("항목을 찾을 수 없습니다.");
+    }
+
+    // 순수 JDK 예외는 내부 구현("No value present", enum 상수명 등)이 샐 수 있어 메시지를 노출하지 않고
+    // failMsg로 마스킹한다. 사용자용 메시지는 InvalidRequestException / ResourceNotFoundException.
+    @Test
+    void tryAction_순수_IllegalArgumentException은_failMsg로_마스킹() {
+        RedirectAttributesModelMap ra = ra();
+        AtomicReference<Exception> captured = new AtomicReference<>();
+
+        AdminActionUtils.tryAction(
+                () -> { throw new IllegalArgumentException("No enum constant Foo.BAR"); },
+                "성공", captured::set, "처리 중 오류가 발생했습니다.", ra);
+
+        assertThat(captured.get()).isInstanceOf(IllegalArgumentException.class);
+        assertThat(flash(ra, "errorMessage")).isEqualTo("처리 중 오류가 발생했습니다.");
+    }
+
+    @Test
+    void tryAction_순수_NoSuchElementException은_failMsg로_마스킹() {
+        RedirectAttributesModelMap ra = ra();
+
+        AdminActionUtils.tryAction(
+                () -> { throw new NoSuchElementException("No value present"); },
+                "성공", e -> {}, "처리 중 오류가 발생했습니다.", ra);
+
+        assertThat(flash(ra, "errorMessage")).isEqualTo("처리 중 오류가 발생했습니다.");
     }
 
     @Test
@@ -116,11 +144,11 @@ class AdminActionUtilsTest {
     }
 
     @Test
-    void tryRender_IllegalArgumentException은_fallback_반환_및_errorMessage_설정() {
+    void tryRender_InvalidRequestException은_fallback_반환_및_errorMessage_설정() {
         RedirectAttributesModelMap ra = ra();
 
         String result = AdminActionUtils.tryRender(
-                () -> { throw new IllegalArgumentException("존재하지 않는 페스티벌"); },
+                () -> { throw new InvalidRequestException("존재하지 않는 페스티벌"); },
                 "admin/festival/detail",
                 e -> {}, "실패", "redirect:/admin/festivals", ra);
 
@@ -129,16 +157,29 @@ class AdminActionUtilsTest {
     }
 
     @Test
-    void tryRender_NoSuchElementException은_fallback_반환() {
+    void tryRender_ResourceNotFoundException은_fallback_반환() {
         RedirectAttributesModelMap ra = ra();
 
         String result = AdminActionUtils.tryRender(
-                () -> { throw new NoSuchElementException("없음"); },
+                () -> { throw new ResourceNotFoundException("없음"); },
                 "admin/festival/detail",
                 e -> {}, "실패", "redirect:/admin/festivals", ra);
 
         assertThat(result).isEqualTo("redirect:/admin/festivals");
         assertThat(flash(ra, "errorMessage")).isEqualTo("없음");
+    }
+
+    @Test
+    void tryRender_순수_NoSuchElementException은_failMsg로_마스킹() {
+        RedirectAttributesModelMap ra = ra();
+
+        String result = AdminActionUtils.tryRender(
+                () -> { throw new NoSuchElementException("No value present"); },
+                "admin/festival/detail",
+                e -> {}, "정보를 불러오는 중 오류가 발생했습니다.", "redirect:/admin/festivals", ra);
+
+        assertThat(result).isEqualTo("redirect:/admin/festivals");
+        assertThat(flash(ra, "errorMessage")).isEqualTo("정보를 불러오는 중 오류가 발생했습니다.");
     }
 
     @Test

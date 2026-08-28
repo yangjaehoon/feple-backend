@@ -7,10 +7,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.service.UserAdminService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -107,7 +107,7 @@ class AdminPushControllerTest {
     @Test
     void 사용자_검색_없으면_404_반환() throws Exception {
         given(userAdminService.findByNickname("unknown"))
-                .willThrow(new NoSuchElementException("없음"));
+                .willThrow(new ResourceNotFoundException("없음"));
 
         mockMvc.perform(get("/admin/push/search-user").param("nickname", "unknown"))
                 .andExpect(status().isNotFound());

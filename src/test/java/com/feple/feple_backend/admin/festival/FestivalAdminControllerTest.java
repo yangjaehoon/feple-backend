@@ -14,9 +14,9 @@ import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -107,7 +107,7 @@ class FestivalAdminControllerTest {
     @Test
     void 상세_조회_예외_목록으로_리다이렉트() throws Exception {
         given(festivalDetailAggregationService.getDetail(99L))
-                .willThrow(new NoSuchElementException("없는 페스티벌"));
+                .willThrow(new ResourceNotFoundException("없는 페스티벌"));
 
         mockMvc.perform(get("/admin/festivals/99"))
                 .andExpect(status().is3xxRedirection())
@@ -144,7 +144,7 @@ class FestivalAdminControllerTest {
     @Test
     void 편집_폼_조회_예외_목록으로_리다이렉트() throws Exception {
         given(festivalService.getFestival(99L))
-                .willThrow(new NoSuchElementException("없는 페스티벌"));
+                .willThrow(new ResourceNotFoundException("없는 페스티벌"));
 
         mockMvc.perform(get("/admin/festivals/99/edit"))
                 .andExpect(status().is3xxRedirection())
@@ -367,7 +367,7 @@ class FestivalAdminControllerTest {
 
     @Test
     void 수정시_페스티벌_없으면_목록으로_리다이렉트() throws Exception {
-        given(festivalService.getFestival(99L)).willThrow(new NoSuchElementException("없는 페스티벌"));
+        given(festivalService.getFestival(99L)).willThrow(new ResourceNotFoundException("없는 페스티벌"));
 
         mockMvc.perform(post("/admin/festivals/99/edit")
                         .param("title", "수정")

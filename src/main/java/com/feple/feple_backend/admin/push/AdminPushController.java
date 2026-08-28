@@ -7,9 +7,9 @@ import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.user.service.UserAdminService;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -72,7 +72,7 @@ public class AdminPushController {
         try {
             var user = userAdminService.findByNickname(nickname);
             return ResponseEntity.ok(Map.of("id", user.getId(), "nickname", user.getNickname()));
-        } catch (NoSuchElementException e) {
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ErrorResponse.of(HttpStatus.NOT_FOUND, "해당 닉네임의 사용자를 찾을 수 없습니다.", ErrorCode.RESOURCE_NOT_FOUND));
         }

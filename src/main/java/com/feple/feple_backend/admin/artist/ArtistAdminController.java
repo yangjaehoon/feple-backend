@@ -15,9 +15,9 @@ import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.service.ArtistService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionAdminService;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -224,7 +224,7 @@ public class ArtistAdminController {
             artistAdminService.updateArtist(id, dto);
             adminLogService.log(AdminAction.ARTIST_UPDATE, "ARTIST", id, dto.getName());
             ra.addFlashAttribute("successMessage", "아티스트 정보가 수정되었습니다.");
-        } catch (NoSuchElementException e) {
+        } catch (ResourceNotFoundException e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("아티스트 수정 실패 id={}", id, e);

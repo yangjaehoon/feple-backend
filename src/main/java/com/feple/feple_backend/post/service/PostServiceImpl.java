@@ -12,6 +12,7 @@ import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.global.PageSize;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.CursorPageRequest;
 import com.feple.feple_backend.post.dto.PostRequestDto;
@@ -25,7 +26,6 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -203,7 +203,7 @@ public class PostServiceImpl implements PostService {
     public void incrementViewCount(Long postId) {
         // 존재 확인용 SELECT 없이 UPDATE 적중 행 수로 404 판단 (1회 쿼리)
         if (postRepository.incrementViewCount(postId) == 0) {
-            throw new NoSuchElementException("게시글을 찾을 수 없습니다: " + postId);
+            throw ResourceNotFoundException.of("게시글", postId);
         }
     }
 

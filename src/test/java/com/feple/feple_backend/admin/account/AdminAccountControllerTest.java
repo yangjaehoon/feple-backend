@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,7 +114,7 @@ class AdminAccountControllerTest {
 
     @Test
     void 편집_폼_조회시_존재하지_않는_계정이면_목록으로_리다이렉트() throws Exception {
-        given(accountService.findById(999L)).willThrow(new java.util.NoSuchElementException("관리자 계정을 찾을 수 없습니다: 999"));
+        given(accountService.findById(999L)).willThrow(new ResourceNotFoundException("관리자 계정을 찾을 수 없습니다: 999"));
 
         mockMvc.perform(get("/admin/accounts/999/edit"))
                 .andExpect(redirectedUrl("/admin/accounts"))
@@ -174,7 +176,7 @@ class AdminAccountControllerTest {
 
     @Test
     void 계정_삭제_실패_errorMessage_설정() throws Exception {
-        willThrow(new IllegalArgumentException("자신의 계정 삭제 불가"))
+        willThrow(new InvalidRequestException("자신의 계정 삭제 불가"))
                 .given(accountService).delete(anyLong(), anyString());
 
         mockMvc.perform(post("/admin/accounts/1/delete")
@@ -201,7 +203,7 @@ class AdminAccountControllerTest {
 
     @Test
     void 활성화_토글_실패_errorMessage_설정() throws Exception {
-        willThrow(new IllegalArgumentException("마지막 SUPER_ADMIN 비활성화 불가"))
+        willThrow(new InvalidRequestException("마지막 SUPER_ADMIN 비활성화 불가"))
                 .given(accountService).toggleEnabled(anyLong(), anyString());
 
         mockMvc.perform(post("/admin/accounts/1/toggle-enabled")

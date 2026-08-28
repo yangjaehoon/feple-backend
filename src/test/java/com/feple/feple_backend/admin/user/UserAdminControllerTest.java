@@ -6,13 +6,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -107,7 +108,7 @@ class UserAdminControllerTest {
     @Test
     void 상세_조회_NoSuchElementException_목록으로_리다이렉트() throws Exception {
         given(userDetailAggregationService.getDetail(99L))
-                .willThrow(new NoSuchElementException("존재하지 않는 회원"));
+                .willThrow(new ResourceNotFoundException("존재하지 않는 회원"));
 
         mockMvc.perform(get("/admin/users/99"))
                 .andExpect(status().is3xxRedirection())
@@ -266,7 +267,7 @@ class UserAdminControllerTest {
 
     @Test
     void 포인트_지급_실패_errorMessage_설정() throws Exception {
-        willThrow(new IllegalArgumentException("지급 사유를 입력해주세요."))
+        willThrow(new InvalidRequestException("지급 사유를 입력해주세요."))
                 .given(pointService).grantByAdmin(1L, 100, "");
 
         mockMvc.perform(post("/admin/users/1/points/grant")
