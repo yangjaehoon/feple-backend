@@ -1,7 +1,5 @@
 package com.feple.feple_backend.admin;
 
-import com.feple.feple_backend.global.exception.InvalidRequestException;
-
 import org.springframework.web.util.UriComponentsBuilder;
 
 public final class AdminUrlUtils {
@@ -53,13 +51,15 @@ public final class AdminUrlUtils {
         }
     }
 
+    // 아래 두 가드는 요청 값 검증이 아니라 호출부(관리자 컨트롤러)의 인자 실수를 조기에 드러내는
+    // 개발 단계용 assert다 — 정상 경로에서는 전부 문자열 리터럴 key/value 쌍이라 발생하지 않는다.
     private static UriComponentsBuilder applyParams(UriComponentsBuilder builder, Object... keyValuePairs) {
         if (keyValuePairs.length % 2 != 0) {
-            throw new InvalidRequestException("key-value 쌍의 개수가 맞지 않습니다.");
+            throw new IllegalStateException("key-value 쌍의 개수가 맞지 않습니다.");
         }
         for (int i = 0; i < keyValuePairs.length; i += 2) {
             if (!(keyValuePairs[i] instanceof String key)) {
-                throw new InvalidRequestException("쿼리 파라미터 key는 String이어야 합니다: " + keyValuePairs[i]);
+                throw new IllegalStateException("쿼리 파라미터 key는 String이어야 합니다: " + keyValuePairs[i]);
             }
             Object value = keyValuePairs[i + 1];
             if (value == null) continue;

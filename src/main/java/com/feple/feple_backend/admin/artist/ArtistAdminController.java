@@ -48,13 +48,12 @@ public class ArtistAdminController {
                                  @RequestParam(required = false) Long suggestionId,
                                  @RequestParam(required = false) Long unmatchedSuggestionId,
                                  Model model) {
-        SuggestionRefs refs = new SuggestionRefs(suggestionId, unmatchedSuggestionId);
         ArtistRequestDto dto = new ArtistRequestDto();
         if (name != null && !name.isBlank()) {
             dto.setName(name.trim());
         }
         model.addAttribute("artist", dto);
-        addSuggestionRefs(model, refs);
+        addSuggestionRefs(model, new SuggestionRefs(suggestionId, unmatchedSuggestionId));
         addGenreOptions(model);
         return "admin/artist/create";
     }

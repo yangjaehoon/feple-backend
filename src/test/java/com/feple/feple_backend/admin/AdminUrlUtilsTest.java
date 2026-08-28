@@ -3,7 +3,6 @@ package com.feple.feple_backend.admin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
@@ -31,15 +30,15 @@ class AdminUrlUtilsTest {
     }
 
     @Test
-    void buildQueryString_key_value_개수가_홀수면_예외() {
+    void buildQueryString_key_value_개수가_홀수면_호출부_실수로_IllegalStateException() {
         assertThatThrownBy(() -> AdminUrlUtils.buildQueryString("type", "USER", "page"))
-                .isInstanceOf(InvalidRequestException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void buildQueryString_key가_String이_아니면_예외() {
+    void buildQueryString_key가_String이_아니면_호출부_실수로_IllegalStateException() {
         assertThatThrownBy(() -> AdminUrlUtils.buildQueryString(42, "USER"))
-                .isInstanceOf(InvalidRequestException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 
     // ── listUrl ───────────────────────────────────────────────────────────────
@@ -48,6 +47,14 @@ class AdminUrlUtilsTest {
     void listUrl_basePath에_파라미터를_붙이고_null이나_공백값은_생략() {
         assertThat(AdminUrlUtils.listUrl("/admin/festivals", "page", 0, "sort", null, "keyword", ""))
                 .isEqualTo("/admin/festivals?page=0");
+    }
+
+    @Test
+    void listUrl도_홀수_개수나_비String_key면_IllegalStateException() {
+        assertThatThrownBy(() -> AdminUrlUtils.listUrl("/admin/x", "page"))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> AdminUrlUtils.listUrl("/admin/x", 1, "v"))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
