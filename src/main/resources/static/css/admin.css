@@ -1542,6 +1542,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .target-label        { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
 .select-flex         { flex: 1; min-width: 200px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
 .search-result       { margin-top: 8px; font-size: 13px; display: none; }
+.search-result-item  { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .note-card-body      { padding: 20px; font-size: 13.5px; line-height: 1.8; color: var(--text-2); }
 .note-list           { margin: 0; padding-left: 18px; }
 .col-w220            { width: 220px; }

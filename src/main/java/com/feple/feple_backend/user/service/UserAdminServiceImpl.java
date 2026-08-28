@@ -17,6 +17,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,9 +40,13 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponseDto findByNickname(String nickname) {
-        User user = EntityLoader.getOrThrow(userRepository::findByNicknameAndNotDeleted, nickname.trim(), "사용자");
-        return toAdminUserDto(user);
+    public List<UserResponseDto> searchByNickname(String nickname) {
+        String keyword = JpqlLikeEscaper.escapeOrEmpty(nickname);
+        if (keyword.isEmpty()) return List.of();
+        Pageable pageable = PageableFactory.orderByLatestId(0, AdminConstants.NICKNAME_SEARCH_RESULT_LIMIT);
+        return userRepository.searchByNicknameContaining(keyword, pageable).stream()
+                .map(this::toAdminUserDto)
+                .toList();
     }
 
     @Override

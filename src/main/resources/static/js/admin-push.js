@@ -16,19 +16,24 @@
         el.textContent   = '검색 중...';
     }
 
-    function renderSearchSuccess(el, data) {
+    function renderSearchSuccess(el, users) {
         setSearchState(el, 'text-primary');
         el.textContent = '';
-        var nicknameEl = document.createElement('strong');
-        nicknameEl.textContent = data.nickname;
-        var btn = document.createElement('button');
-        btn.type        = 'button';
-        btn.className   = 'btn btn-secondary btn-sm';
-        btn.textContent = '이 ID로 설정';
-        btn.addEventListener('click', function () { fillUserId(data.id); });
-        el.appendChild(nicknameEl);
-        el.appendChild(document.createTextNode(' (ID: ' + data.id + ')  '));
-        el.appendChild(btn);
+        users.forEach(function (user) {
+            var item = document.createElement('div');
+            item.className = 'search-result-item';
+            var nicknameEl = document.createElement('strong');
+            nicknameEl.textContent = user.nickname;
+            var btn = document.createElement('button');
+            btn.type        = 'button';
+            btn.className   = 'btn btn-secondary btn-sm';
+            btn.textContent = '이 ID로 설정';
+            btn.addEventListener('click', function () { fillUserId(user.id); });
+            item.appendChild(nicknameEl);
+            item.appendChild(document.createTextNode('(ID: ' + user.id + ')'));
+            item.appendChild(btn);
+            el.appendChild(item);
+        });
     }
 
     function renderSearchError(el, msg) {

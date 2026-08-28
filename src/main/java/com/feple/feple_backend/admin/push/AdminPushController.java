@@ -7,8 +7,8 @@ import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
-import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.user.service.UserAdminService;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,13 +69,14 @@ public class AdminPushController {
     @GetMapping("/search-user")
     @ResponseBody
     public ResponseEntity<?> searchUser(@RequestParam String nickname) {
-        try {
-            var user = userAdminService.findByNickname(nickname);
-            return ResponseEntity.ok(Map.of("id", user.getId(), "nickname", user.getNickname()));
-        } catch (ResourceNotFoundException e) {
+        List<Map<String, Object>> users = userAdminService.searchByNickname(nickname).stream()
+                .map(u -> Map.<String, Object>of("id", u.getId(), "nickname", u.getNickname()))
+                .toList();
+        if (users.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ErrorResponse.of(HttpStatus.NOT_FOUND, "해당 닉네임의 사용자를 찾을 수 없습니다.", ErrorCode.RESOURCE_NOT_FOUND));
+                    .body(ErrorResponse.of(HttpStatus.NOT_FOUND, "해당 닉네임을 포함하는 사용자를 찾을 수 없습니다.", ErrorCode.RESOURCE_NOT_FOUND));
         }
+        return ResponseEntity.ok(users);
     }
 
     @PostMapping("/artist-followers")

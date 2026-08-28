@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 
 public interface UserAdminService {
     UserResponseDto getAdminUser(Long id);
-    UserResponseDto findByNickname(String nickname);
+    List<UserResponseDto> searchByNickname(String nickname);
     Page<UserResponseDto> getUsersPage(int page, int size, String keyword);
     Page<UserResponseDto> getUsersPageSortedByReports(int page, int size, String keyword);
     Page<UserResponseDto> getBannedUsersPage(int page, int size, String keyword);

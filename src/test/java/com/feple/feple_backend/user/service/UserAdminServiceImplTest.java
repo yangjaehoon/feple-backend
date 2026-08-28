@@ -47,7 +47,7 @@ class UserAdminServiceImplTest {
                 .role(UserRole.USER).build();
     }
 
-    // ── getAdminUser / findByNickname ────────────────────────────────
+    // ── getAdminUser / searchByNickname ────────────────────────────────
 
     @Test
     void 관리자용_사용자_조회() {
@@ -59,12 +59,21 @@ class UserAdminServiceImplTest {
     }
 
     @Test
-    void 닉네임으로_사용자_조회() {
-        given(userRepository.findByNicknameAndNotDeleted("유저1")).willReturn(Optional.of(user(1L, "유저1")));
+    void 닉네임_부분_일치로_사용자_검색() {
+        given(userRepository.searchByNicknameContaining(eq("유저"), any(Pageable.class)))
+                .willReturn(List.of(user(1L, "유저1"), user(2L, "유저2")));
 
-        UserResponseDto result = userAdminService.findByNickname("유저1");
+        List<UserResponseDto> result = userAdminService.searchByNickname("유저");
 
-        assertThat(result.getNickname()).isEqualTo("유저1");
+        assertThat(result).extracting(UserResponseDto::getNickname)
+                .containsExactly("유저1", "유저2");
+    }
+
+    @Test
+    void 검색어가_공백이면_빈_목록_반환() {
+        List<UserResponseDto> result = userAdminService.searchByNickname("   ");
+
+        assertThat(result).isEmpty();
     }
 
     // ── getUsersPage / getUsersPageSortedByReports / getBannedUsersPage ──

@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.service.UserAdminService;
 import java.util.List;
@@ -96,18 +95,17 @@ class AdminPushControllerTest {
         UserResponseDto user = mock(UserResponseDto.class);
         given(user.getId()).willReturn(1L);
         given(user.getNickname()).willReturn("tester");
-        given(userAdminService.findByNickname("tester")).willReturn(user);
+        given(userAdminService.searchByNickname("test")).willReturn(List.of(user));
 
-        mockMvc.perform(get("/admin/push/search-user").param("nickname", "tester"))
+        mockMvc.perform(get("/admin/push/search-user").param("nickname", "test"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.nickname").value("tester"));
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].nickname").value("tester"));
     }
 
     @Test
     void 사용자_검색_없으면_404_반환() throws Exception {
-        given(userAdminService.findByNickname("unknown"))
-                .willThrow(new ResourceNotFoundException("없음"));
+        given(userAdminService.searchByNickname("unknown")).willReturn(List.of());
 
         mockMvc.perform(get("/admin/push/search-user").param("nickname", "unknown"))
                 .andExpect(status().isNotFound());
