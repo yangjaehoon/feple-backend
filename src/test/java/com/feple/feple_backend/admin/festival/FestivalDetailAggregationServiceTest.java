@@ -2,9 +2,11 @@ package com.feple.feple_backend.admin.festival;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.artist.song.service.SetlistAdminService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
@@ -23,6 +25,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -38,37 +41,74 @@ class FestivalDetailAggregationServiceTest {
     @Mock SetlistAdminService setlistAdminService;
     @Mock FestivalReviewService reviewService;
 
-    private FestivalDetailAggregationService aggregationService;
+    private FestivalDetailAggregationService service;
 
     @BeforeEach
     void setUp() {
-        aggregationService = new FestivalDetailAggregationService(
+        service = new FestivalDetailAggregationService(
                 festivalService, artistFestivalService, timetableService, stageService, boothService,
                 ticketLinkService, setlistAdminService, reviewService, new GoogleMapsProperties(""));
     }
 
-    private TimetableEntryResponseDto entry(String artistName, String stageName, String date) {
+    // ── 헬퍼 ─────────────────────────────────────────────────────────────────
+
+    /** 아티스트 목록이 비어있을 때 — setlistAdminService 호출 없음 */
+    private void stubBase(Long festivalId, List<TimetableEntryResponseDto> entries,
+                          List<ArtistFestivalResponseDto> artists) {
+        given(festivalService.getFestival(festivalId)).willReturn(mock(FestivalResponseDto.class));
+        given(timetableService.getEntries(festivalId)).willReturn(entries);
+        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(festivalId), any(), any())).willReturn(artists);
+        given(stageService.getStages(festivalId)).willReturn(List.of());
+        given(boothService.getBooths(festivalId)).willReturn(List.of());
+        given(ticketLinkService.getTicketLinks(festivalId)).willReturn(List.of());
+        given(reviewService.getAverageRating(festivalId)).willReturn(0.0);
+        given(reviewService.getRatingCount(festivalId)).willReturn(0);
+    }
+
+    /** 아티스트가 있을 때 — setlistAdminService 스텁 포함 */
+    private void stubBaseWithArtists(Long festivalId, List<TimetableEntryResponseDto> entries,
+                                     List<ArtistFestivalResponseDto> artists) {
+        stubBase(festivalId, entries, artists);
+        given(setlistAdminService.getSetlistCounts(any())).willReturn(Map.of());
+    }
+
+    private static TimetableEntryResponseDto entry(String artistName, String stageName, String date) {
         return TimetableEntryResponseDto.builder()
-                .id(1L).artistName(artistName).stageName(stageName).festivalDate(date)
+                .artistName(artistName)
+                .stageName(stageName)
+                .festivalDate(date)
                 .build();
     }
 
-    private ArtistFestivalResponseDto artistFestival(Long id, String name) {
+    private static ArtistFestivalResponseDto artist(Long afId, String name) {
         return ArtistFestivalResponseDto.builder()
-                .artistFestivalId(id).artistName(name).build();
+                .artistFestivalId(afId)
+                .artistName(name)
+                .build();
     }
+
+    // ── 서비스 위임 검증 ──────────────────────────────────────────────────────
+
+    @Test
+    void getDetail_모든_서비스에_festivalId_전달() {
+        Long festivalId = 1L;
+        stubBase(festivalId, List.of(), List.of());
+
+        service.getDetail(festivalId);
+
+        verify(festivalService).getFestival(festivalId);
+        verify(timetableService).getEntries(festivalId);
+        verify(stageService).getStages(festivalId);
+        verify(boothService).getBooths(festivalId);
+    }
+
+    // ── 평점 통계 ────────────────────────────────────────────────────────────
 
     @Test
     void 평점없으면_빈_통계_반환() {
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
+        stubBase(1L, List.of(), List.of());
 
-        FestivalDetailDto result = aggregationService.getDetail(1L);
+        FestivalDetailDto result = service.getDetail(1L);
 
         assertThat(result.ratingStats()).isEqualTo(FestivalRatingStatsDto.EMPTY);
         assertThat(result.setlistCounts()).isEmpty();
@@ -76,140 +116,196 @@ class FestivalDetailAggregationServiceTest {
 
     @Test
     void 평점있으면_통계_상세_포함() {
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
+        stubBase(1L, List.of(), List.of());
         given(reviewService.getAverageRating(1L)).willReturn(4.5);
         given(reviewService.getRatingCount(1L)).willReturn(10);
         given(reviewService.getRatingDistribution(1L)).willReturn(Map.of(5, 8L, 4, 2L));
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
 
-        FestivalDetailDto result = aggregationService.getDetail(1L);
+        FestivalDetailDto result = service.getDetail(1L);
 
         assertThat(result.ratingStats().averageRating()).isEqualTo(4.5);
         assertThat(result.ratingStats().ratingCount()).isEqualTo(10);
         assertThat(result.ratingStats().distribution()).containsEntry(5, 8L);
     }
 
+    // ── buildDatesByArtistName ───────────────────────────────────────────────
+
     @Test
-    void 타임테이블_기반_아티스트별_날짜_스테이지_매핑후_전달() {
-        TimetableEntryResponseDto e1 = entry("아이유", "메인스테이지", "2026-08-01");
-        TimetableEntryResponseDto e2 = entry("아이유", "메인스테이지", "2026-08-02");
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of(e1, e2));
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
+    void 아티스트명_null_항목은_날짜맵에서_제외() {
+        Long festivalId = 1L;
+        stubBase(festivalId, List.of(
+                entry(null, "Main", "2025-06-22"),
+                entry("Artist1", "Main", "2025-06-22")
+        ), List.of());
 
-        aggregationService.getDetail(1L);
+        service.getDetail(festivalId);
 
-        var datesCaptor = org.mockito.ArgumentCaptor.forClass(Map.class);
-        var stageCaptor = org.mockito.ArgumentCaptor.forClass(Map.class);
-        org.mockito.Mockito.verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(1L), datesCaptor.capture(), stageCaptor.capture());
-        assertThat((List<String>) datesCaptor.getValue().get("아이유")).containsExactly("2026-08-01", "2026-08-02");
-        assertThat(stageCaptor.getValue().get("아이유")).isEqualTo("메인스테이지");
+        ArgumentCaptor<Map<String, List<String>>> datesCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), datesCaptor.capture(), any());
+        assertThat(datesCaptor.getValue())
+                .containsKey("Artist1")
+                .doesNotContainKey(null);
     }
 
     @Test
-    void 이름없는_타임테이블_항목은_매핑에서_제외() {
-        TimetableEntryResponseDto blank = entry("", "메인스테이지", "2026-08-01");
-        TimetableEntryResponseDto nullName = entry(null, "메인스테이지", "2026-08-01");
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of(blank, nullName));
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
+    void 같은_아티스트의_여러_날짜가_모두_수집됨() {
+        Long festivalId = 1L;
+        stubBase(festivalId, List.of(
+                entry("Artist1", "Main", "2025-06-21"),
+                entry("Artist1", "Main", "2025-06-22")
+        ), List.of());
 
-        FestivalDetailDto result = aggregationService.getDetail(1L);
+        service.getDetail(festivalId);
 
-        assertThat(result.timetableByArtist()).isEmpty();
+        ArgumentCaptor<Map<String, List<String>>> datesCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), datesCaptor.capture(), any());
+        assertThat(datesCaptor.getValue().get("Artist1"))
+                .containsExactlyInAnyOrder("2025-06-21", "2025-06-22");
+    }
+
+    // ── buildStageByArtistName ───────────────────────────────────────────────
+
+    @Test
+    void 스테이지명_null_항목은_스테이지맵에서_제외() {
+        Long festivalId = 1L;
+        stubBase(festivalId, List.of(
+                entry("Artist1", null, "2025-06-22"),
+                entry("Artist2", "Sub", "2025-06-22")
+        ), List.of());
+
+        service.getDetail(festivalId);
+
+        ArgumentCaptor<Map<String, String>> stageCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), any(), stageCaptor.capture());
+        assertThat(stageCaptor.getValue())
+                .containsEntry("Artist2", "Sub")
+                .doesNotContainKey("Artist1");
     }
 
     @Test
-    void 공지사항_스테이지_항목은_타임테이블별_아티스트_맵에서_제외() {
-        TimetableEntryResponseDto announcement = entry("공지", TimetableEntry.ANNOUNCEMENT_SENTINEL, "2026-08-01");
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of(announcement));
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
+    void 중복_아티스트의_스테이지는_첫번째_항목이_유지됨() {
+        Long festivalId = 1L;
+        stubBase(festivalId, List.of(
+                entry("Artist1", "Main", "2025-06-21"),
+                entry("Artist1", "Sub", "2025-06-22")
+        ), List.of());
 
-        FestivalDetailDto result = aggregationService.getDetail(1L);
+        service.getDetail(festivalId);
+
+        ArgumentCaptor<Map<String, String>> stageCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(artistFestivalService).getArtistFestivalsWithStageFallback(eq(festivalId), any(), stageCaptor.capture());
+        assertThat(stageCaptor.getValue().get("Artist1")).isEqualTo("Main");
+    }
+
+    // ── buildTimetableByArtist ───────────────────────────────────────────────
+
+    @Test
+    void 공지사항_스테이지_항목은_타임테이블맵에서_제외되고_참여아티스트면_빈목록() {
+        Long festivalId = 1L;
+        ArtistFestivalResponseDto artist1 = artist(10L, "Artist1");
+        stubBaseWithArtists(festivalId, List.of(
+                entry("Artist1", TimetableEntry.ANNOUNCEMENT_SENTINEL, "2025-06-22")
+        ), List.of(artist1));
+
+        FestivalDetailDto model = service.getDetail(festivalId);
+
+        assertThat(model.timetableByArtist().get("Artist1")).isEmpty();
+    }
+
+    @Test
+    void 공지사항_스테이지만_있는_비참여_이름은_타임테이블맵에_키가_없음() {
+        stubBase(1L, List.of(
+                entry("공지", TimetableEntry.ANNOUNCEMENT_SENTINEL, "2026-08-01")
+        ), List.of());
+
+        FestivalDetailDto result = service.getDetail(1L);
 
         assertThat(result.timetableByArtist()).doesNotContainKey("공지");
     }
 
     @Test
-    void 아티스트는_이름_대소문자_무시하고_정렬됨() {
-        ArtistFestivalResponseDto b = artistFestival(1L, "banana");
-        ArtistFestivalResponseDto A = artistFestival(2L, "Apple");
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of(b, A));
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
+    void 이름없는_타임테이블_항목은_매핑에서_제외() {
+        stubBase(1L, List.of(
+                entry("", "메인스테이지", "2026-08-01"),
+                entry(null, "메인스테이지", "2026-08-01")
+        ), List.of());
 
-        FestivalDetailDto result = aggregationService.getDetail(1L);
+        FestivalDetailDto result = service.getDetail(1L);
 
-        assertThat(result.participatingArtistsByName())
+        assertThat(result.timetableByArtist()).isEmpty();
+    }
+
+    @Test
+    void 타임테이블_없는_아티스트에게_빈목록_추가() {
+        Long festivalId = 1L;
+        stubBaseWithArtists(festivalId, List.of(), List.of(artist(10L, "Artist1")));
+
+        FestivalDetailDto model = service.getDetail(festivalId);
+
+        assertThat(model.timetableByArtist()).containsKey("Artist1");
+        assertThat(model.timetableByArtist().get("Artist1")).isEmpty();
+    }
+
+    @Test
+    void 아티스트의_타임테이블_항목이_맵에_포함됨() {
+        Long festivalId = 1L;
+        TimetableEntryResponseDto e = entry("Artist1", "Main", "2025-06-22");
+        stubBaseWithArtists(festivalId, List.of(e), List.of(artist(10L, "Artist1")));
+
+        FestivalDetailDto model = service.getDetail(festivalId);
+
+        assertThat(model.timetableByArtist().get("Artist1")).containsExactly(e);
+    }
+
+    // ── sortArtistsByName ────────────────────────────────────────────────────
+
+    @Test
+    void 아티스트_이름_기준_대소문자_무관_정렬() {
+        Long festivalId = 1L;
+        stubBaseWithArtists(festivalId, List.of(), List.of(
+                artist(3L, "zeppelin"),
+                artist(1L, "Arctic Monkeys"),
+                artist(2L, "blur")
+        ));
+
+        FestivalDetailDto model = service.getDetail(festivalId);
+
+        assertThat(model.participatingArtistsByName())
                 .extracting(ArtistFestivalResponseDto::getArtistName)
-                .containsExactly("Apple", "banana");
+                .containsExactly("Arctic Monkeys", "blur", "zeppelin");
+    }
+
+    // ── buildSetlistCounts ───────────────────────────────────────────────────
+
+    @Test
+    void 아티스트_없으면_셋리스트_조회_안함() {
+        Long festivalId = 1L;
+        stubBase(festivalId, List.of(), List.of());
+
+        service.getDetail(festivalId);
+
+        verify(setlistAdminService, never()).getSetlistCounts(any());
     }
 
     @Test
-    void 참여아티스트_있으면_셋리스트_카운트_조회() {
-        ArtistFestivalResponseDto artist = artistFestival(1L, "아이유");
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of(artist));
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
-        given(setlistAdminService.getSetlistCounts(List.of(1L))).willReturn(Map.of(1L, 5));
+    void 아티스트_있으면_artistFestivalId_목록으로_셋리스트_조회하고_결과를_담는다() {
+        Long festivalId = 1L;
+        stubBase(festivalId, List.of(), List.of(artist(10L, "A"), artist(20L, "B")));
+        given(setlistAdminService.getSetlistCounts(List.of(10L, 20L))).willReturn(Map.of(10L, 3, 20L, 1));
 
-        FestivalDetailDto result = aggregationService.getDetail(1L);
+        FestivalDetailDto result = service.getDetail(festivalId);
 
-        assertThat(result.setlistCounts()).containsEntry(1L, 5);
+        verify(setlistAdminService).getSetlistCounts(List.of(10L, 20L));
+        assertThat(result.setlistCounts()).containsEntry(10L, 3).containsEntry(20L, 1);
     }
 
-    @Test
-    void 참여아티스트_없으면_셋리스트_조회_스킵() {
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
-
-        FestivalDetailDto result = aggregationService.getDetail(1L);
-
-        assertThat(result.setlistCounts()).isEmpty();
-        org.mockito.Mockito.verify(setlistAdminService, org.mockito.Mockito.never()).getSetlistCounts(any());
-    }
+    // ── Google Maps 키 ──────────────────────────────────────────────────────
 
     @Test
     void 구글맵키_없으면_경고로그만_남기고_정상_동작() {
-        given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
-        given(timetableService.getEntries(1L)).willReturn(List.of());
-        given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());
-        given(reviewService.getRatingCount(1L)).willReturn(0);
-        given(stageService.getStages(1L)).willReturn(List.of());
-        given(boothService.getBooths(1L)).willReturn(List.of());
-        given(ticketLinkService.getTicketLinks(1L)).willReturn(List.of());
+        stubBase(1L, List.of(), List.of());
 
-        FestivalDetailDto result = aggregationService.getDetail(1L);
+        FestivalDetailDto result = service.getDetail(1L);
 
         assertThat(result.googleMapsKey()).isEmpty();
     }
