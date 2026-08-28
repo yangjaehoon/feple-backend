@@ -6,7 +6,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.feple.feple_backend.auth.jwt.JwtProvider;
@@ -14,6 +16,7 @@ import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.service.UserService;
@@ -22,10 +25,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
@@ -132,5 +137,30 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"idToken\":\"firebase-id-token-xxx\"}"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void 카카오_토큰이_무효면_400() throws Exception {
+        given(kakaoAuthService.authenticate("bad-token"))
+                .willReturn(Mono.error(new InvalidRequestException("카카오 로그인에 실패했습니다. 다시 시도해주세요.")));
+
+        var mvcResult = mockMvc.perform(post("/auth/kakao").header("Authorization", "Bearer bad-token"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 카카오_API가_5xx면_502() throws Exception {
+        WebClientResponseException upstream = WebClientResponseException.create(
+                HttpStatus.BAD_GATEWAY.value(), "Bad Gateway", null, null, null);
+        given(kakaoAuthService.authenticate("token")).willReturn(Mono.error(upstream));
+
+        var mvcResult = mockMvc.perform(post("/auth/kakao").header("Authorization", "Bearer token"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isBadGateway());
     }
 }

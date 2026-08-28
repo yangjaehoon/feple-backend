@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.feple.feple_backend.auth.dto.KakaoUserResponseDto;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -55,7 +56,7 @@ class KakaoApiClientTest {
     }
 
     @Test
-    void getMe_401_응답이면_예외_전파() {
+    void getMe_4xx_응답이면_InvalidRequestException으로_변환() {
         ExchangeFunction exchangeFunction = request -> Mono.just(ClientResponse.create(HttpStatus.UNAUTHORIZED)
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .body("{\"msg\":\"invalid token\"}")
@@ -63,6 +64,19 @@ class KakaoApiClientTest {
         KakaoApiClient client = clientWith(exchangeFunction);
 
         assertThatThrownBy(() -> client.getMe("bad-token").block())
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("카카오 로그인에 실패");
+    }
+
+    @Test
+    void getMe_5xx_응답이면_WebClientResponseException_전파() {
+        ExchangeFunction exchangeFunction = request -> Mono.just(ClientResponse.create(HttpStatus.BAD_GATEWAY)
+                .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                .body("{\"msg\":\"upstream error\"}")
+                .build());
+        KakaoApiClient client = clientWith(exchangeFunction);
+
+        assertThatThrownBy(() -> client.getMe("token").block())
                 .isInstanceOf(WebClientResponseException.class);
     }
 }

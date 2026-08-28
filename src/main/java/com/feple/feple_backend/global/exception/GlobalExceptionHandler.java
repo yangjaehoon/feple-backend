@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
@@ -165,6 +166,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIOException(IOException ex) {
         log.error("I/O error: {}", ex.getMessage(), ex);
         return body(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다.", ErrorCode.IO_ERROR);
+    }
+
+    // 카카오 등 외부 API의 5xx 응답·연결 실패·타임아웃 — 우리 서버 결함이 아니므로 502로 구분해
+    // 모니터링에서 내부 500과 섞이지 않게 한다. (4xx는 호출부에서 InvalidRequestException으로 변환)
+    @ExceptionHandler(WebClientException.class)
+    public ResponseEntity<ErrorResponse> handleUpstreamFailure(WebClientException ex) {
+        log.warn("Upstream service call failed: {}", ex.getClass().getSimpleName());
+        return body(HttpStatus.BAD_GATEWAY,
+                "외부 서비스 연동 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", ErrorCode.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
