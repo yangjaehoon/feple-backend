@@ -219,6 +219,16 @@ class NoticeAdminControllerTest {
                 .andExpect(flash().attribute("errorMessage", "공지사항을 찾을 수 없습니다."));
     }
 
+    @Test
+    void 수정_폼_화면_조회_중_일반_예외가_나면_목록으로_리다이렉트하고_일반_메시지를_남긴다() throws Exception {
+        willThrow(new RuntimeException("boom")).given(noticeAdminService).getNoticeForEdit(9L);
+
+        mockMvc.perform(get("/admin/notices/9/edit"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/notices"))
+                .andExpect(flash().attribute("errorMessage", "공지사항 정보를 불러오는 중 오류가 발생했습니다."));
+    }
+
     // ── POST 검증 실패 시 폼 재표시 ─────────────────────────────────────
 
     @Test

@@ -122,6 +122,16 @@ class ArtistAdminControllerTest {
                 .andExpect(flash().attribute("errorMessage", "없는 아티스트"));
     }
 
+    @Test
+    void 편집_폼_조회_중_일반_예외가_나면_목록으로_리다이렉트하고_일반_메시지() throws Exception {
+        given(artistAdminService.getArtistForEdit(1L)).willThrow(new RuntimeException("DB 오류"));
+
+        mockMvc.perform(get("/admin/artists/1/edit"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/artists"))
+                .andExpect(flash().attribute("errorMessage", "아티스트 정보를 불러오는 중 오류가 발생했습니다."));
+    }
+
     // ── POST /admin/artists/{id}/edit ─────────────────────────────────────────
 
     @Test

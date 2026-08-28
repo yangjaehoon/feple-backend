@@ -53,7 +53,7 @@ public class ArtistAdminController {
             dto.setName(name.trim());
         }
         model.addAttribute("artist", dto);
-        addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
+        addSuggestionRefs(model, new SuggestionRefs(suggestionId, unmatchedSuggestionId));
         addGenreOptions(model);
         return "admin/artist/create";
     }
@@ -66,32 +66,31 @@ public class ArtistAdminController {
                                @RequestParam(required = false) Long unmatchedSuggestionId,
                                Model model,
                                RedirectAttributes ra) {
+        SuggestionRefs refs = new SuggestionRefs(suggestionId, unmatchedSuggestionId);
 
         if (profileImageFile == null || profileImageFile.isEmpty()) {
             bindingResult.rejectValue("profileImageKey", "profileImageFile.required", "프로필 이미지는 필수입니다.");
         }
         if (bindingResult.hasErrors()) {
-            return renderCreateForm(BindingResultUtils.extractErrorMessages(bindingResult),
-                    suggestionId, unmatchedSuggestionId, model);
+            return renderCreateFormWithError(BindingResultUtils.extractErrorMessages(bindingResult), refs, model);
         }
 
         try {
             dto.setProfileImageKey(artistAdminService.uploadProfile(profileImageFile, dto.getName()));
             Long artistId = artistAdminService.createArtist(dto);
             adminLogService.log(AdminAction.ARTIST_CREATE, "ARTIST", artistId, dto.getName());
-            resolveSourceSuggestion(suggestionId, unmatchedSuggestionId, artistId);
+            resolveSourceSuggestion(refs, artistId);
             ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 등록 실패 name={}", dto.getName(), e);
-            return renderCreateForm(List.of("등록 중 오류가 발생했습니다. 다시 시도해주세요."),
-                    suggestionId, unmatchedSuggestionId, model);
+            return renderCreateFormWithError(List.of("등록 중 오류가 발생했습니다. 다시 시도해주세요."), refs, model);
         }
         return "redirect:/admin/artists";
     }
 
-    private String renderCreateForm(List<String> errors, Long suggestionId, Long unmatchedSuggestionId, Model model) {
+    private String renderCreateFormWithError(List<String> errors, SuggestionRefs refs, Model model) {
         model.addAttribute("errors", errors);
-        addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
+        addSuggestionRefs(model, refs);
         addGenreOptions(model);
         return "admin/artist/create";
     }
@@ -99,7 +98,8 @@ public class ArtistAdminController {
     // 아티스트 신청/미매칭 제안 목록의 "아티스트 등록" 링크로 이 폼에 들어온 경우, 생성 성공 시
     // 그 출처를 자동으로 해소한다 — 관리자가 승인 모달에 ID를 다시 입력하거나 제안을 수동으로
     // 지우지 않아도 되게 하기 위함. 아티스트는 이미 생성됐으므로 해소 실패는 경고만 남기고 넘어간다.
-    private void resolveSourceSuggestion(Long suggestionId, Long unmatchedSuggestionId, Long artistId) {
+    private void resolveSourceSuggestion(SuggestionRefs refs, Long artistId) {
+        Long suggestionId = refs.suggestionId();
         if (suggestionId != null) {
             try {
                 artistSuggestionAdminService.approve(suggestionId, artistId);
@@ -108,6 +108,7 @@ public class ArtistAdminController {
                 log.warn("아티스트 신청 자동 승인 실패: suggestionId={}, artistId={}", suggestionId, artistId, e);
             }
         }
+        Long unmatchedSuggestionId = refs.unmatchedSuggestionId();
         if (unmatchedSuggestionId != null) {
             try {
                 unmatchedArtistSuggestionService.delete(unmatchedSuggestionId);
@@ -118,9 +119,9 @@ public class ArtistAdminController {
         }
     }
 
-    private static void addSuggestionRefs(Model model, Long suggestionId, Long unmatchedSuggestionId) {
-        model.addAttribute("suggestionId", suggestionId);
-        model.addAttribute("unmatchedSuggestionId", unmatchedSuggestionId);
+    private static void addSuggestionRefs(Model model, SuggestionRefs refs) {
+        model.addAttribute("suggestionId", refs.suggestionId());
+        model.addAttribute("unmatchedSuggestionId", refs.unmatchedSuggestionId());
     }
 
     @GetMapping
@@ -212,9 +213,7 @@ public class ArtistAdminController {
                                Model model,
                                RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            addEditFormModel(model, id, params);
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            return "admin/artist/edit";
+            return renderEditFormWithError(BindingResultUtils.extractErrorMessages(bindingResult), id, params, model);
         }
         try {
             if (profileImageFile != null && !profileImageFile.isEmpty()) {
@@ -242,6 +241,12 @@ public class ArtistAdminController {
         model.addAttribute("keyword", params.keyword());
         model.addAttribute("sort", params.sort());
         addGenreOptions(model);
+    }
+
+    private String renderEditFormWithError(List<String> errors, Long id, ArtistListParams params, Model model) {
+        addEditFormModel(model, id, params);
+        model.addAttribute("errors", errors);
+        return "admin/artist/edit";
     }
 
     @PostMapping("/{id}/delete")
