@@ -62,7 +62,7 @@ class PostReportServiceTest {
     @Test
     void 존재하지_않는_게시글_신고시_예외() {
         given(reportRepository.existsByReporterIdAndPostId(1L, 99L)).willReturn(false);
-        given(postRepository.findByIdIgnoringRestrictions(99L)).willReturn(Optional.empty());
+        given(postRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> postReportService.submitReport(
                 99L, 1L, new ReportSubmitRequest(ReportReason.SPAM, null)))
@@ -75,7 +75,7 @@ class PostReportServiceTest {
         Post post = freePost(10L, author);
         User reporter = user(1L);
         given(reportRepository.existsByReporterIdAndPostId(1L, 10L)).willReturn(false);
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
 
         postReportService.submitReport(10L, 1L,
@@ -90,7 +90,7 @@ class PostReportServiceTest {
         Post post = freePost(10L, author);
         User reporter = user(1L);
         given(reportRepository.existsByReporterIdAndPostId(1L, 10L)).willReturn(false);
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(reporter));
         given(reportRepository.save(any(PostReport.class)))
                 .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));

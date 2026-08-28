@@ -90,12 +90,10 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional
     public void deletePost(Long postId) {
-        // 블라인드된 글도 관리자는 삭제할 수 있어야 하므로 조회는 제약을 우회한다.
-        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         eventPublisher.publishEvent(new PostDeletedByAdminEvent(post.getUserId(), post.getTitle()));
-        // bulkDeletePosts와 동일하게 소프트 삭제 — 휴지통(getDeletedPosts/restorePost)에서
-        // 복구 가능해야 하므로 단건 삭제만 하드 삭제하면 안 됨
-        postRepository.softDeleteByIds(List.of(postId));
+        // @SQLDelete로 소프트 삭제 — 휴지통(getDeletedPosts/restorePost)에서 복구 가능해야 한다.
+        postRepository.delete(post);
     }
 
     @Override
@@ -142,8 +140,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional
     public boolean togglePin(Long postId) {
-        // 블라인드된 글도 관리자는 고정/해제할 수 있어야 하므로 조회는 제약을 우회한다.
-        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         post.togglePinned();
         return post.isPinned();
     }
@@ -151,7 +148,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional(readOnly = true)
     public PostResponseDto getPostForAdmin(Long postId) {
-        return PostResponseDto.from(EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글"), fileStorageService);
+        return PostResponseDto.from(EntityLoader.getOrThrow(postRepository::findById, postId, "게시글"), fileStorageService);
     }
 
     @Override

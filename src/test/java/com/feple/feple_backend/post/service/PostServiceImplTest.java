@@ -197,24 +197,24 @@ class PostServiceImplTest {
     void 본인_게시글_삭제_성공() {
         User author = user(1L);
         Post post = freePost(10L, author);
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         postService.deleteOwnPost(10L, 1L);
 
         // soft delete: post 행이 남아 FK 무결성 유지 → like 사전 삭제 불필요
-        verify(postRepository).softDeleteByIds(List.of(10L));
+        verify(postRepository).delete(any(com.feple.feple_backend.post.entity.Post.class));
     }
 
     @Test
     void 타인이_게시글_삭제시_접근_거부_예외() {
         User owner = user(1L);
         Post post = freePost(10L, owner);
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.deleteOwnPost(10L, 2L))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(postRepository, never()).softDeleteByIds(any());
+        verify(postRepository, never()).delete(any());
     }
 
     // ── updateOwnPost ────────────────────────────────────────────────
@@ -225,7 +225,7 @@ class PostServiceImplTest {
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("수정된 제목").content("수정된 내용")
                 .build();
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         postService.updateOwnPost(10L, dto, 1L);
 
@@ -238,7 +238,7 @@ class PostServiceImplTest {
         Post post = freePost(10L, owner);
         PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
                 .build();
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 2L))
                 .isInstanceOf(AccessDeniedException.class);
@@ -251,7 +251,7 @@ class PostServiceImplTest {
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("욕설포함제목").content("내용")
                 .build();
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
         willThrow(new IllegalArgumentException("금칙어가 포함되어 있습니다."))
                 .given(badWordFilter).validateField(eq("title"), any());
 
@@ -265,7 +265,7 @@ class PostServiceImplTest {
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("t").content("c")
                 .imageUrls(List.of("posts/2/other-user.jpg")).build();
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.updateOwnPost(10L, dto, 1L))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -457,16 +457,14 @@ class PostServiceImplTest {
     // ── getPostsByTagPaged ───────────────────────────────────────────
 
     @Test
-    void 태그로_게시글_목록_조회시_삭제블라인드된_게시글의_태그는_제외() {
+    void 태그로_게시글_목록_조회시_리포지토리가_반환한_게시글을_매핑() {
+        // 삭제·블라인드 제외는 리포지토리 쿼리(JOIN t.post + deleted_at IS NULL AND blinded = false)가
+        // 책임진다 — PostTagRepositoryIntegrationTest 참고. 여기서는 서비스 매핑만 검증한다.
         User author = user(1L);
-        Post post = freePost(20L, author);
-        PostTag liveTag = PostTag.builder().post(post).tag("아이유").build();
-        // 게시글이 삭제/블라인드되면 PostTag 행은 남아있어도 post 연관관계가
-        // @SQLRestriction에 의해 null로 채워진다 — 이 경우를 흉내낸다.
-        PostTag orphanTag = PostTag.builder().post(null).tag("아이유").build();
+        PostTag tag = PostTag.builder().post(freePost(20L, author)).tag("아이유").build();
 
         given(postTagRepository.findByTagOrderByPostIdDesc(eq("아이유"), any(Pageable.class)))
-                .willReturn(List.of(liveTag, orphanTag));
+                .willReturn(List.of(tag));
 
         CursorPage<PostResponseDto> result = postService.getPostsByTagPaged("아이유", new CursorPageRequest(null, 20, null));
 

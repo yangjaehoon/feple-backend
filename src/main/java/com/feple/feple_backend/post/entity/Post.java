@@ -13,7 +13,6 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
@@ -25,8 +24,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 // 트랜잭션이 incrementLikeCount 등으로 원자적으로 갱신한 카운터(likeCount/scrapCount/commentCount/
 // viewCount)를 로드 시점 값으로 덮어쓰는 것을 방지한다.
 @DynamicUpdate
+// 공개 조회 가시성(삭제·블라인드 제외)은 @SQLRestriction 상시 필터 대신 PostRepository의
+// 공개 쿼리에 deleted_at IS NULL AND blinded = false를 명시한다 (Festival/Artist와 동일 방식).
 @SQLDelete(sql = "UPDATE post SET deleted_at = NOW() WHERE id = ?")
-@SQLRestriction("deleted_at IS NULL AND blinded = false")
 @Table(name = "post", indexes = {
     @Index(name = "idx_post_board_type_created_at", columnList = "board_type, created_at DESC"),
     @Index(name = "idx_post_like_count_created_at", columnList = "like_count DESC, created_at DESC"),

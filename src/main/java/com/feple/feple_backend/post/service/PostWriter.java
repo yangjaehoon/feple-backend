@@ -53,8 +53,7 @@ class PostWriter {
     /** 호출부가 소유자·내용·이미지 검증을 마쳤다는 전제로 수정만 수행한다. */
     @Transactional
     void update(Long postId, PostRequestDto dto) {
-        // 블라인드된 자기 글도 수정할 수 있어야 하므로 조회는 제약을 우회한다.
-        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         post.update(dto.getTitle(), dto.getContent());
         postImageRepository.deleteByPostId(postId);
         saveImages(post, dto.getImageUrls());

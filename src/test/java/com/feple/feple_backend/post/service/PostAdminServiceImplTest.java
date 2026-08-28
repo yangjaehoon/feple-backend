@@ -52,12 +52,12 @@ class PostAdminServiceImplTest {
     void 관리자_게시글_삭제시_삭제이벤트_발행() {
         User author = user(1L);
         Post post = freePost(10L, author);
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         postAdminService.deletePost(10L);
 
         verify(eventPublisher).publishEvent(any(PostDeletedByAdminEvent.class));
-        verify(postRepository).softDeleteByIds(List.of(10L));
+        verify(postRepository).delete(any(com.feple.feple_backend.post.entity.Post.class));
     }
 
     // ── getPostForAdmin ────────────────────────────────────────────────
@@ -66,7 +66,7 @@ class PostAdminServiceImplTest {
     void 관리자_게시글_단건_조회시_작성자_프로필_이미지는_fileStorageService로_해소된_URL() {
         User author = user(1L);
         Post post = freePost(10L, author);
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
         given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
 
         PostResponseDto result = postAdminService.getPostForAdmin(10L);
@@ -264,7 +264,7 @@ class PostAdminServiceImplTest {
     void 게시글_고정_토글시_상태가_반전되고_반전된_값을_반환() {
         User author = user(1L);
         Post post = freePost(10L, author);
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         boolean pinned = postAdminService.togglePin(10L);
 
@@ -277,7 +277,7 @@ class PostAdminServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
         post.togglePinned();
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         boolean pinned = postAdminService.togglePin(10L);
 

@@ -11,7 +11,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,17 +95,33 @@ class PostRepositoryIntegrationTest {
                 .doesNotContain(p3.getId());
     }
 
-    // ── 소프트 삭제 (native query) ────────────────────────────────────
+    // ── 소프트 삭제 / 블라인드 가시성 ─────────────────────────────────
 
     @Test
-    void 소프트삭제_후_일반_조회_불가() {
+    void 소프트삭제_후_공개조회_제외_기본findById는_포함() {
         Post post = postRepository.save(freePost(0));
         em.flush();
 
-        postRepository.softDeleteByIds(List.of(post.getId())); // clearAutomatically=true
+        postRepository.softDeleteByIds(List.of(post.getId()));
+        em.clear();
 
-        Optional<Post> found = postRepository.findById(post.getId());
-        assertThat(found).isEmpty(); // @SQLRestriction("deleted_at IS NULL")으로 제외됨
+        // 공개 조회는 명시 필터로 제외
+        assertThat(postRepository.findWithAssociationsById(post.getId())).isEmpty();
+        // 관리자·본인·신고 경로용 기본 findById는 삭제된 행도 조회
+        assertThat(postRepository.findById(post.getId())).isPresent();
+    }
+
+    @Test
+    void 블라인드_후_공개조회_제외_기본findById는_포함() {
+        Post post = postRepository.save(freePost(0));
+        post.blind();
+        em.flush();
+        em.clear();
+
+        assertThat(postRepository.findWithAssociationsById(post.getId())).isEmpty();
+        assertThat(postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(
+                BoardType.FREE, PageRequest.of(0, 10))).isEmpty();
+        assertThat(postRepository.findById(post.getId())).isPresent();
     }
 
     @Test
@@ -121,17 +136,17 @@ class PostRepositoryIntegrationTest {
     }
 
     @Test
-    void 소프트삭제_복구_후_정상_조회() {
+    void 소프트삭제_복구_후_공개조회_정상() {
         Post post = postRepository.save(freePost(0));
         em.flush();
 
         postRepository.softDeleteByIds(List.of(post.getId()));
-        assertThat(postRepository.findById(post.getId())).isEmpty();
+        em.clear();
+        assertThat(postRepository.findWithAssociationsById(post.getId())).isEmpty();
 
-        postRepository.restore(post.getId()); // clearAutomatically=true
-
-        Optional<Post> restored = postRepository.findById(post.getId());
-        assertThat(restored).isPresent();
+        postRepository.restore(post.getId());
+        em.clear();
+        assertThat(postRepository.findWithAssociationsById(post.getId())).isPresent();
     }
 
     // ── 집계 쿼리 ────────────────────────────────────────────────────

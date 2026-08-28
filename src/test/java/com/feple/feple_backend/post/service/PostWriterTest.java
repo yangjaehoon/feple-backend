@@ -75,7 +75,7 @@ class PostWriterTest {
         Post post = freePost(10L, author);
         PostRequestDto dto = PostRequestDto.builder().title("수정된 제목").content("수정된 내용")
                 .build();
-        given(postRepository.findByIdIgnoringRestrictions(10L)).willReturn(Optional.of(post));
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
 
         postWriter.update(10L, dto);
 

@@ -18,11 +18,14 @@ public interface PostTagRepository extends JpaRepository<PostTag, Long> {
     void deleteByPostId(@Param("postId") Long postId);
 
     // 태그로 게시글 검색(최신순 커서 페이징) — post_tag.tag 인덱스를 탄다.
+    // 공개 조회라 삭제·블라인드된 게시글의 태그는 제외한다.
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
-    @Query("SELECT t FROM PostTag t WHERE t.tag = :tag ORDER BY t.post.id DESC")
+    @Query("SELECT t FROM PostTag t JOIN t.post p WHERE t.tag = :tag "
+            + "AND p.deletedAt IS NULL AND p.blinded = false ORDER BY p.id DESC")
     List<PostTag> findByTagOrderByPostIdDesc(@Param("tag") String tag, Pageable pageable);
 
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
-    @Query("SELECT t FROM PostTag t WHERE t.tag = :tag AND t.post.id < :cursor ORDER BY t.post.id DESC")
+    @Query("SELECT t FROM PostTag t JOIN t.post p WHERE t.tag = :tag AND p.id < :cursor "
+            + "AND p.deletedAt IS NULL AND p.blinded = false ORDER BY p.id DESC")
     List<PostTag> findByTagAndPostIdLessThanOrderByPostIdDesc(@Param("tag") String tag, @Param("cursor") Long cursor, Pageable pageable);
 }

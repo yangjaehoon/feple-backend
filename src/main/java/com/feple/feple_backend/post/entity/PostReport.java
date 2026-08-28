@@ -46,12 +46,11 @@ public class PostReport extends BaseTimeEntity implements ResolvableReport {
     @Column
     private String detail; // 기타 사유 상세
 
-    // post는 @ManyToOne(post_id NOT NULL)이라 항상 존재해야 하지만, Post의 @SQLRestriction이
-    // blinded=true를 제외하면서 관리자 신고 목록 조회(EntityGraph LEFT JOIN)에서는 블라인드된
-    // 게시글에 대해 post가 null로 채워진다 — 신고 자체(PostReport)는 그대로 남아있으므로 여기서
-    // NPE 없이 안전한 값을 반환해야 관리자가 블라인드된 글의 신고도 목록에서 확인할 수 있다.
+    // post는 @ManyToOne(post_id NOT NULL)이지만, 대상 글이 하드 삭제되면 관리자 신고 목록
+    // 조회(EntityGraph LEFT JOIN)에서 post가 null로 채워질 수 있다 — 신고 자체(PostReport)는
+    // 남으므로 여기서 NPE 없이 안전한 값을 반환한다.
     public Long getPostId() { return post != null ? post.getId() : null; }
-    public String getPostTitle() { return post != null ? post.getTitle() : "(블라인드된 게시글)"; }
+    public String getPostTitle() { return post != null ? post.getTitle() : "(삭제된 게시글)"; }
     public String getAuthorNickname() { return post != null ? post.getAuthorNickname() : null; }
     public Long getPostAuthorId() { return post != null ? post.getUserId() : null; }
     public String getReporterNickname() { return reporter.getNickname(); }

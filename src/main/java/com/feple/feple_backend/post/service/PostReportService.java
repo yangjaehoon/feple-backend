@@ -44,8 +44,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
             throw new ConflictException("이미 신고한 게시글입니다.");
         }
-        // 이미 블라인드된 글도 추가 신고를 받을 수 있어야 하므로 조회는 제약을 우회한다.
-        Post post = EntityLoader.getOrThrow(postRepository::findByIdIgnoringRestrictions, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         // existsBy 체크 후 save() 사이의 TOCTOU 레이스(동시 중복 신고)는 유니크 제약(reporter_id, post_id)이
@@ -136,7 +135,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     private void unblindIfBelowThreshold(Long postId) {
         long pendingCount = reportRepository.countByPostIdAndStatus(postId, ReportStatus.PENDING);
         if (pendingCount < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD) {
-            postRepository.findByIdIgnoringRestrictions(postId).ifPresent(Post::unblind);
+            postRepository.findById(postId).ifPresent(Post::unblind);
         }
     }
 
@@ -151,7 +150,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
                 .filter(postId -> pendingCountsByPostId.getOrDefault(postId, 0L) < AdminConstants.AUTO_BLIND_REPORT_THRESHOLD)
                 .toList();
         if (toUnblind.isEmpty()) return;
-        postRepository.findAllByIdInIgnoringRestrictions(toUnblind).forEach(Post::unblind);
+        postRepository.findAllById(toUnblind).forEach(Post::unblind);
     }
 
     @Override
