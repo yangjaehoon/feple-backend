@@ -34,6 +34,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ArtistGalleryPhotoService {
 
+    /** 캐러셀 미리보기 limit의 상한 — URL 조작으로 대량 조회·presign을 요청하는 것을 막는다. */
+    private static final int PREVIEW_LIMIT_MAX = 50;
+    /** 차단한 업로더의 사진이 상위권에 섞여도 요청한 개수를 채우도록 더 조회한 뒤 잘라낼 여유분. */
+    private static final int BLOCKED_FILTER_POOL_BUFFER = 10;
+    /** limit 미지정(전체 목록) 시에도 폭주를 막는 안전 상한 — 정상 갤러리 규모에서는 도달하지 않는다. */
+    private static final int FULL_LIST_MAX = 500;
+
     private final ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
     private final S3PresignService s3PresignService;
     private final S3ObjectVerificationService s3ObjectVerificationService;
@@ -75,13 +82,12 @@ public class ArtistGalleryPhotoService {
     // limit이 있으면(예: 캐러셀 미리보기) 상위 N개만 조회해 불필요한 presign 서명 비용을 줄인다
     @Transactional(readOnly = true)
     public List<ArtistGalleryPhotoResponseDto> list(Long artistId, Long currentUserId, Integer limit) {
-        List<ArtistGalleryPhoto> photos = (limit != null)
-                ? artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(artistId, PageRequest.of(0, limit))
-                : artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(artistId);
-        // 익명 업로드라도 실제 uploaderId 기준으로 차단을 적용해야 하므로 DTO 변환 전(uploaderUserId가
-        // null로 마스킹되기 전) 엔티티 단계에서 필터링한다
-        List<ArtistGalleryPhoto> visiblePhotos =
-                blockedContentFilter.excludeBlocked(photos, currentUserId, ArtistGalleryPhoto::getUploaderId);
+        List<ArtistGalleryPhoto> visiblePhotos = (limit != null)
+                ? loadPreview(artistId, currentUserId, clampPreviewLimit(limit))
+                : blockedContentFilter.excludeBlocked(
+                        artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                                artistId, PageRequest.of(0, FULL_LIST_MAX)),
+                        currentUserId, ArtistGalleryPhoto::getUploaderId);
         Set<Long> likedPhotoIds = (currentUserId != null && !visiblePhotos.isEmpty())
                 ? artistGalleryPhotoLikeRepository.findLikedPhotoIds(
                         currentUserId, visiblePhotos.stream().map(ArtistGalleryPhoto::getId).toList())
@@ -93,6 +99,19 @@ public class ArtistGalleryPhotoService {
                         likedPhotoIds.contains(photo.getId()),
                         currentUserId))
                 .toList();
+    }
+
+    private static int clampPreviewLimit(int limit) {
+        return Math.max(1, Math.min(limit, PREVIEW_LIMIT_MAX));
+    }
+
+    // 차단 필터가 상위 N개를 깎아 요청 개수보다 적게 노출되는 것을 막기 위해 여유분을 더 조회한 뒤
+    // 필터링하고 정확히 N개로 자른다 (PostServiceImpl.getPopularPosts의 pool 방식과 동일).
+    private List<ArtistGalleryPhoto> loadPreview(Long artistId, Long currentUserId, int limit) {
+        List<ArtistGalleryPhoto> pool = artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                artistId, PageRequest.of(0, limit + BLOCKED_FILTER_POOL_BUFFER));
+        return blockedContentFilter.excludeBlocked(pool, currentUserId, ArtistGalleryPhoto::getUploaderId)
+                .stream().limit(limit).toList();
     }
 
     @Transactional

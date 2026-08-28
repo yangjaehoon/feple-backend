@@ -167,7 +167,8 @@ class ArtistGalleryPhotoServiceTest {
         User uploader = user(10L);
         ArtistGalleryPhoto p1 = photo(1L, artist, uploader);
         ArtistGalleryPhoto p2 = photo(2L, artist, uploader);
-        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(1L))
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                        eq(1L), any(org.springframework.data.domain.Pageable.class)))
                 .willReturn(List.of(p1, p2));
         given(artistGalleryPhotoLikeRepository.findLikedPhotoIds(99L, List.of(1L, 2L)))
                 .willReturn(Set.of(1L));
@@ -187,7 +188,8 @@ class ArtistGalleryPhotoServiceTest {
         User otherUploader = user(20L);
         ArtistGalleryPhoto blockedPhoto = photo(1L, artist, blockedUploader);
         ArtistGalleryPhoto visiblePhoto = photo(2L, artist, otherUploader);
-        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(1L))
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                        eq(1L), any(org.springframework.data.domain.Pageable.class)))
                 .willReturn(List.of(blockedPhoto, visiblePhoto));
         given(userBlockService.getBlockedIds(99L)).willReturn(List.of(10L));
         given(artistGalleryPhotoLikeRepository.findLikedPhotoIds(99L, List.of(2L))).willReturn(Set.of());
@@ -203,7 +205,8 @@ class ArtistGalleryPhotoServiceTest {
     void 목록_조회시_currentUserId_없으면_좋아요_조회_생략() {
         Artist artist = artist(1L);
         User uploader = user(10L);
-        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(1L))
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                        eq(1L), any(org.springframework.data.domain.Pageable.class)))
                 .willReturn(List.of(photo(1L, artist, uploader)));
         given(s3PresignService.presignGetUrl(any())).willReturn("https://url");
 
@@ -226,6 +229,60 @@ class ArtistGalleryPhotoServiceTest {
 
         assertThat(result).hasSize(1);
         verify(artistGalleryPhotoRepository, never()).findByArtist_IdOrderByLikeCountDescCreatedAtDesc(any());
+    }
+
+    @Test
+    void 목록_조회시_limit이_상한을_넘으면_상한으로_제한된다() {
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                        eq(1L), any(org.springframework.data.domain.Pageable.class)))
+                .willReturn(List.of());
+
+        service.list(1L, null, 9_999);
+
+        ArgumentCaptor<org.springframework.data.domain.Pageable> captor =
+                ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
+        verify(artistGalleryPhotoRepository)
+                .findByArtist_IdOrderByLikeCountDescCreatedAtDesc(eq(1L), captor.capture());
+        // 상한 50 + 차단 필터 여유분 10
+        assertThat(captor.getValue().getPageSize()).isEqualTo(60);
+    }
+
+    @Test
+    void 목록_조회시_limit이_0이하여도_예외없이_최소_1개는_조회한다() {
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                        eq(1L), any(org.springframework.data.domain.Pageable.class)))
+                .willReturn(List.of());
+
+        service.list(1L, null, 0);
+
+        ArgumentCaptor<org.springframework.data.domain.Pageable> captor =
+                ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
+        verify(artistGalleryPhotoRepository)
+                .findByArtist_IdOrderByLikeCountDescCreatedAtDesc(eq(1L), captor.capture());
+        assertThat(captor.getValue().getPageSize()).isEqualTo(11);
+    }
+
+    @Test
+    void 미리보기_차단으로_상위권이_깎여도_요청한_개수를_채운다() {
+        Artist artist = artist(1L);
+        User blocked = user(10L);
+        User visible = user(20L);
+        // limit=3 요청 → pool은 3+10=13개 조회. 상위 2개가 차단 업로더라도 결과는 3개.
+        List<ArtistGalleryPhoto> pool = List.of(
+                photo(1L, artist, blocked), photo(2L, artist, blocked),
+                photo(3L, artist, visible), photo(4L, artist, visible),
+                photo(5L, artist, visible), photo(6L, artist, visible));
+        given(artistGalleryPhotoRepository.findByArtist_IdOrderByLikeCountDescCreatedAtDesc(
+                        eq(1L), any(org.springframework.data.domain.Pageable.class)))
+                .willReturn(pool);
+        given(userBlockService.getBlockedIds(99L)).willReturn(List.of(10L));
+        given(artistGalleryPhotoLikeRepository.findLikedPhotoIds(eq(99L), any())).willReturn(Set.of());
+        given(s3PresignService.presignGetUrl(any())).willReturn("https://url");
+
+        List<ArtistGalleryPhotoResponseDto> result = service.list(1L, 99L, 3);
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(ArtistGalleryPhotoResponseDto::photoId).containsExactly(3L, 4L, 5L);
     }
 
     // ── delete ───────────────────────────────────────────────────────────
