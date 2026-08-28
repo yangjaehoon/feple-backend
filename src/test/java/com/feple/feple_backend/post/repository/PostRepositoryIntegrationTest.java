@@ -125,6 +125,22 @@ class PostRepositoryIntegrationTest {
     }
 
     @Test
+    void 조회수_증가는_삭제블라인드된_게시글에_0행_반환() {
+        Post visible = postRepository.save(freePost(0));
+        Post blinded = postRepository.save(freePost(0));
+        blinded.blind();
+        em.flush();
+        Post deleted = postRepository.save(freePost(0));
+        em.flush();
+        postRepository.softDeleteByIds(List.of(deleted.getId()));
+        em.clear();
+
+        assertThat(postRepository.incrementViewCount(visible.getId())).isEqualTo(1);
+        assertThat(postRepository.incrementViewCount(blinded.getId())).isZero();
+        assertThat(postRepository.incrementViewCount(deleted.getId())).isZero();
+    }
+
+    @Test
     void 소프트삭제된_게시글_관리자_native쿼리_조회() {
         Post post = postRepository.save(freePost(0));
         em.flush();

@@ -297,9 +297,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // ── 조회수 카운트 ──────────────────────────────────────────────────────
     // 적중 행 수를 반환해 호출부가 별도 존재 확인 SELECT 없이 404를 판단한다.
+    // 삭제·블라인드된 글은 "보이지 않음" = 존재하지 않음으로 취급해 0행을 반환한다.
     @Modifying
     @Transactional
-    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
+    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId" + VISIBLE)
     int incrementViewCount(@Param("postId") Long postId);
 
     // ── Soft delete / 휴지통 / 블라인드 목록 (관리자용) ─────────────────────
