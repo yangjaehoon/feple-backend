@@ -45,7 +45,7 @@
                     <td class="td-sub td-muted" th:text="${link.url}"></td>
                     <td>
                         <form th:action="@{/admin/festivals/{fId}/ticket-links/{lId}/delete(fId=${festival.id},lId=${link.id})}" method="post">
-                            <button type="submit" class="btn btn-ghost-danger btn-sm" data-confirm="예매 링크를 삭제하시겠습니까?">삭제</button>
+                            <button type="submit" class="btn btn-ghost-danger btn-sm" th:attr="data-confirm=|'${link.label ?: link.url}' 예매 링크를 삭제할까요?|">삭제</button>
                         </form>
                     </td>
                 </tr>

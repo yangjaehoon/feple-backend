@@ -35,7 +35,7 @@
                     <!-- 삭제 -->
                     <form th:action="@{/admin/festivals/{id}/stages/{sid}/delete(id=${festival.id}, sid=${s.id})}"
                           method="post"
-                          data-confirm="스테이지를 삭제할까요?">
+                          th:attr="data-confirm=|'${s.name}' 스테이지를 삭제할까요?|">
                         <button type="submit" class="stage-btn del" title="삭제">✕</button>
                     </form>
                 </div>
@@ -242,7 +242,7 @@
                             <form th:action="@{/admin/festivals/{fId}/timetable/{eId}/delete(fId=${festival.id},eId=${entry.id})}"
                                   method="post">
                                 <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                        data-confirm="타임테이블 항목을 삭제하시겠습니까?">삭제</button>
+                                        th:attr="data-confirm=|'${entry.artistName}' 타임테이블 항목을 삭제할까요?|">삭제</button>
                             </form>
                         </td>
                     </tr>

@@ -25,7 +25,7 @@
                     <form th:action="@{/admin/posts/{id}/delete(id=${post.id})}" method="post">
                         <button type="submit"
                                 class="btn btn-danger"
-                                data-confirm="이 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.">삭제</button>
+                                th:attr="data-confirm=|'${post.title}' 게시글을 삭제할까요? 댓글도 모두 삭제됩니다.|">삭제</button>
                     </form>
                 </div>
             </div>

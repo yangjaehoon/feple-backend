@@ -44,7 +44,7 @@
                 <a th:href="@{/admin/festivals/{id}/artists/new(id=${festival.id})}" class="btn btn-primary">+ 아티스트 추가</a>
                 <a th:href="${returnUrl}" class="btn btn-secondary">목록</a>
                 <form th:action="@{/admin/festivals/{id}/delete(id=${festival.id})}"
-                      method="post" data-confirm="이 페스티벌을 삭제할까요?">
+                      method="post" th:attr="data-confirm=|'${festival.title}' 페스티벌을 삭제할까요?|">
                     <button type="submit" class="btn btn-danger">삭제</button>
                 </form>
             </div>

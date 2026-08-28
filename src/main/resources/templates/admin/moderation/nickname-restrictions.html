@@ -45,7 +45,7 @@
                             <form th:action="@{/admin/nickname-restrictions/{id}/delete(id=${nr.id})}"
                                   method="post">
                                 <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                        data-confirm="닉네임 제한 단어를 삭제하시겠습니까?">삭제</button>
+                                        th:attr="data-confirm=|닉네임 제한 단어 '${nr.word}'을(를) 삭제할까요?|">삭제</button>
                             </form>
                         </td>
                     </tr>

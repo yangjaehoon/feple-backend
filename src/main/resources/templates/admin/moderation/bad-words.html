@@ -58,7 +58,7 @@
                                         th:data-word="${bw.word}">스캔</button>
                                 <form th:action="@{/admin/bad-words/{id}/delete(id=${bw.id})}" method="post">
                                     <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                            data-confirm="금칙어를 삭제하시겠습니까?">삭제</button>
+                                            th:attr="data-confirm=|금칙어 '${bw.word}'을(를) 삭제할까요?|">삭제</button>
                                 </form>
                             </div>
                             <div class="scan-result bw-scan-result"></div>

@@ -73,7 +73,7 @@
                                     <button type="submit" class="btn btn-sm"
                                             th:class="${acc.enabled} ? 'btn btn-secondary btn-sm' : 'btn btn-primary btn-sm'"
                                             th:text="${acc.enabled} ? '비활성화' : '활성화'"
-                                            th:attr="${acc.enabled} ? 'data-confirm=이 계정을 비활성화하시겠습니까?' : null">
+                                            th:attr="${acc.enabled} ? |data-confirm=관리자 '${acc.username}' 계정을 비활성화할까요?| : null">
                                     </button>
                                 </form>
 
@@ -81,7 +81,7 @@
                                       method="post"
                                       th:if="${acc.username != #authentication.name}">
                                     <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                            data-confirm="이 계정을 삭제하시겠습니까?">삭제</button>
+                                            th:attr="data-confirm=|관리자 '${acc.username}' 계정을 삭제할까요?|">삭제</button>
                                 </form>
 
                                 <span th:if="${acc.username == #authentication.name}"

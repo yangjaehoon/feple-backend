@@ -82,9 +82,8 @@
                     </td>
                     <td>
                         <button type="submit"
-                                th:attr="form='delete-af-' + ${af.artistFestivalId}"
-                                class="btn btn-ghost-danger btn-sm"
-                                data-confirm="참여 아티스트를 삭제하시겠습니까?">삭제</button>
+                                th:attr="form='delete-af-' + ${af.artistFestivalId}, data-confirm=|참여 아티스트 '${af.artistName}'을(를) 제외할까요?|"
+                                class="btn btn-ghost-danger btn-sm">삭제</button>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(participatingArtists)}" th:replace="~{admin/fragments :: emptyRow(6, '참여 아티스트가 없습니다.')}"></tr>
