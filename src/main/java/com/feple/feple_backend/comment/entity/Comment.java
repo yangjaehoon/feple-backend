@@ -90,6 +90,12 @@ public class Comment {
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private boolean blinded = false;
 
+    // 작성자가 내용을 수정한 적이 있는지. @UpdateTimestamp(updatedAt)는 blind/unblind로도
+    // 바뀌므로 시간차 추정 대신 이 플래그로 판단한다.
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    private boolean edited = false;
+
     public Comment(String content, Post post, User user, Comment parent, User mentionedUser, boolean anonymous) {
         this.content = content;
         this.post = post;
@@ -102,6 +108,7 @@ public class Comment {
 
     public void update(String content) {
         this.content = content;
+        this.edited = true;
     }
 
     public void blind() {

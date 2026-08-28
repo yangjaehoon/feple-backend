@@ -648,9 +648,12 @@ class CommentServiceImplTest {
 
         given(commentRepository.findById(100L)).willReturn(Optional.of(c));
 
+        assertThat(c.isEdited()).isFalse();
+
         commentService.updateOwnComment(100L, 1L, "수정된 내용");
 
         assertThat(c.getContent()).isEqualTo("수정된 내용");
+        assertThat(c.isEdited()).isTrue();
         verify(badWordValidator).validateField("content", "수정된 내용");
     }
 

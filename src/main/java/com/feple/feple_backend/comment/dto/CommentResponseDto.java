@@ -25,6 +25,7 @@ public class CommentResponseDto {
     private String profileImageUrl;
     private boolean anonymous;
     private boolean blinded;
+    private boolean edited;
     private Long mentionedUserId;
     private String mentionedNickname;
 
@@ -50,6 +51,7 @@ public class CommentResponseDto {
                 .profileImageUrl(anon ? null : fileStorageService.resolveProfileImageUrl(comment.getUserProfileImageUrl()))
                 .anonymous(anon)
                 .blinded(comment.isBlinded())
+                .edited(comment.isEdited())
                 .mentionedUserId(comment.getMentionedUserId())
                 .mentionedNickname(comment.getMentionedNickname())
                 .build();
