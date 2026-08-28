@@ -6,6 +6,8 @@ import com.feple.feple_backend.admin.auth.AdminLoginSuccessHandler;
 import com.feple.feple_backend.admin.auth.AdminLogoutSuccessHandler;
 import com.feple.feple_backend.auth.jwt.JwtAuthenticationFilter;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
+import com.feple.feple_backend.file.CdnProperties;
+import com.feple.feple_backend.file.S3Properties;
 import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -53,6 +55,8 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final UserAccessTrackingService userAccessTrackingService;
     private final ObjectMapper objectMapper;
+    private final S3Properties s3Properties;
+    private final CdnProperties cdnProperties;
 
     public SecurityConfig(JwtProvider jwtProvider,
                           AdminLoginFailureHandler adminLoginFailureHandler,
@@ -60,7 +64,9 @@ public class SecurityConfig {
                           AdminLogoutSuccessHandler adminLogoutSuccessHandler,
                           @Lazy UserRepository userRepository,
                           @Lazy UserAccessTrackingService userAccessTrackingService,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          S3Properties s3Properties,
+                          CdnProperties cdnProperties) {
         this.jwtProvider = jwtProvider;
         this.adminLoginFailureHandler = adminLoginFailureHandler;
         this.adminLoginSuccessHandler = adminLoginSuccessHandler;
@@ -68,16 +74,12 @@ public class SecurityConfig {
         this.userRepository = userRepository;
         this.userAccessTrackingService = userAccessTrackingService;
         this.objectMapper = objectMapper;
+        this.s3Properties = s3Properties;
+        this.cdnProperties = cdnProperties;
     }
 
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
-
-    @Value("${app.s3.bucket:}")
-    private String s3Bucket;
-
-    @Value("${app.cdn.base-url:}")
-    private String cdnBaseUrl;
 
     // ── 0. Swagger UI 전용 FilterChain (로컬 개발 환경에서만 활성화) ──
     @Bean
@@ -240,6 +242,8 @@ public class SecurityConfig {
     }
 
     private String buildAdminCsp() {
+        String s3Bucket = s3Properties.bucket();
+        String cdnBaseUrl = cdnProperties.baseUrl();
         String s3Origin = (s3Bucket == null || s3Bucket.isBlank())
                 ? "https://*.s3.ap-northeast-2.amazonaws.com"
                 : "https://" + s3Bucket + ".s3.ap-northeast-2.amazonaws.com";

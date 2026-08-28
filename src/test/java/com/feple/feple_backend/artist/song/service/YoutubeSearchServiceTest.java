@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.mock.http.client.MockClientHttpResponse;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
 class YoutubeSearchServiceTest {
@@ -29,9 +28,7 @@ class YoutubeSearchServiceTest {
     }
 
     private YoutubeSearchService serviceWithResponses(String apiKey, Function<String, String> responseByUri) {
-        YoutubeSearchService service = new YoutubeSearchService(
-                RestClient.builder().requestInterceptor(jsonInterceptor(responseByUri)));
-        ReflectionTestUtils.setField(service, "apiKey", apiKey);
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(jsonInterceptor(responseByUri)), new YoutubeProperties(apiKey));
         return service;
     }
 
@@ -42,8 +39,7 @@ class YoutubeSearchServiceTest {
             response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
             return response;
         };
-        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(interceptor));
-        ReflectionTestUtils.setField(service, "apiKey", apiKey);
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(interceptor), new YoutubeProperties(apiKey));
         return service;
     }
 
@@ -51,8 +47,7 @@ class YoutubeSearchServiceTest {
 
     @Test
     void search_API키_없으면_빈목록() {
-        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder());
-        ReflectionTestUtils.setField(service, "apiKey", "");
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder(), new YoutubeProperties(""));
 
         assertThat(service.search("아티스트", "곡명")).isEmpty();
     }
@@ -124,8 +119,7 @@ class YoutubeSearchServiceTest {
         ClientHttpRequestInterceptor interceptor = (request, body, execution) -> {
             throw new IOException("network error");
         };
-        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(interceptor));
-        ReflectionTestUtils.setField(service, "apiKey", "key");
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(interceptor), new YoutubeProperties("key"));
 
         assertThat(service.search("아티스트", "곡명")).isEmpty();
     }
@@ -134,16 +128,14 @@ class YoutubeSearchServiceTest {
 
     @Test
     void fetchVideo_API키_없으면_빈값() {
-        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder());
-        ReflectionTestUtils.setField(service, "apiKey", "");
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder(), new YoutubeProperties(""));
 
         assertThat(service.fetchVideoByUrl("dQw4w9WgXcQ")).isEmpty();
     }
 
     @Test
     void fetchVideo_videoId_추출실패시_빈값() {
-        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder());
-        ReflectionTestUtils.setField(service, "apiKey", "key");
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder(), new YoutubeProperties("key"));
 
         assertThat(service.fetchVideoByUrl("이것은 유효한 URL도 ID도 아님")).isEmpty();
     }
@@ -199,8 +191,7 @@ class YoutubeSearchServiceTest {
         ClientHttpRequestInterceptor interceptor = (request, body, execution) -> {
             throw new IOException("network error");
         };
-        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(interceptor));
-        ReflectionTestUtils.setField(service, "apiKey", "key");
+        YoutubeSearchService service = new YoutubeSearchService(RestClient.builder().requestInterceptor(interceptor), new YoutubeProperties("key"));
 
         assertThat(service.fetchVideoByUrl("dQw4w9WgXcQ")).isEmpty();
     }

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -24,12 +23,11 @@ public class YoutubeSearchService {
     private static final int CONNECT_TIMEOUT_MS = 5_000;
     private static final int READ_TIMEOUT_MS = 10_000;
 
-    @Value("${app.youtube.api-key:}")
-    private String apiKey;
-
+    private final String apiKey;
     private final RestClient restClient;
 
-    public YoutubeSearchService(RestClient.Builder restClientBuilder) {
+    public YoutubeSearchService(RestClient.Builder restClientBuilder, YoutubeProperties youtubeProperties) {
+        this.apiKey = youtubeProperties.apiKey();
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(CONNECT_TIMEOUT_MS);
         requestFactory.setReadTimeout(READ_TIMEOUT_MS);
