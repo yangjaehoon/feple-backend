@@ -69,8 +69,8 @@ public class AdminLogService {
         }
     }
 
-    public Page<AdminLog> getLogs(int page, AdminLogFilter filter) {
-        PageRequest pageable = PageRequest.of(page, AdminConstants.LOG_PAGE_SIZE);
+    public Page<AdminLog> getLogs(AdminLogFilter filter) {
+        PageRequest pageable = PageRequest.of(filter.page(), AdminConstants.LOG_PAGE_SIZE);
         String type     = !filter.targetType().isBlank() ? filter.targetType() : null;
         String username = JpqlLikeEscaper.escapeOrNull(filter.adminUsername());
         LocalDateTime fromDt = filter.from() != null ? filter.from().atStartOfDay() : null;

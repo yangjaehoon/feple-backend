@@ -1,8 +1,6 @@
 package com.feple.feple_backend.admin.log;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,7 +31,7 @@ class AdminLogControllerTest {
 
     @Test
     void 로그_목록_조회_뷰와_모델_속성_확인() throws Exception {
-        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+        given(adminLogService.getLogs(any())).willReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get("/admin/logs"))
                 .andExpect(status().isOk())
@@ -43,17 +41,17 @@ class AdminLogControllerTest {
 
     @Test
     void 음수_page는_0으로_보정() throws Exception {
-        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+        given(adminLogService.getLogs(any())).willReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get("/admin/logs").param("page", "-1"))
                 .andExpect(status().isOk());
 
-        org.mockito.Mockito.verify(adminLogService).getLogs(eq(0), any());
+        org.mockito.Mockito.verify(adminLogService).getLogs(org.mockito.ArgumentMatchers.argThat(f -> f.page() == 0));
     }
 
     @Test
     void 필터_없으면_extraParams_null() throws Exception {
-        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+        given(adminLogService.getLogs(any())).willReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get("/admin/logs"))
                 .andExpect(model().attribute("extraParams", (Object) null));
@@ -61,7 +59,7 @@ class AdminLogControllerTest {
 
     @Test
     void targetType_필터_있으면_extraParams_설정() throws Exception {
-        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+        given(adminLogService.getLogs(any())).willReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get("/admin/logs").param("targetType", "USER"))
                 .andExpect(model().attribute("extraParams", "targetType=USER"));
@@ -69,7 +67,7 @@ class AdminLogControllerTest {
 
     @Test
     void adminUsername_필터_있으면_extraParams_설정() throws Exception {
-        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+        given(adminLogService.getLogs(any())).willReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get("/admin/logs").param("adminUsername", "admin01"))
                 .andExpect(model().attribute("extraParams", "adminUsername=admin01"));
@@ -77,7 +75,7 @@ class AdminLogControllerTest {
 
     @Test
     void from_to_날짜_필터_파싱_및_extraParams_설정() throws Exception {
-        given(adminLogService.getLogs(anyInt(), any())).willReturn(new PageImpl<>(List.of()));
+        given(adminLogService.getLogs(any())).willReturn(new PageImpl<>(List.of()));
 
         mockMvc.perform(get("/admin/logs").param("from", "2026-01-01").param("to", "2026-01-31"))
                 .andExpect(model().attribute("from", java.time.LocalDate.of(2026, 1, 1)))

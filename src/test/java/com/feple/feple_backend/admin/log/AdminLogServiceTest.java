@@ -155,7 +155,7 @@ class AdminLogServiceTest {
         given(repository.findWithFilters(null, null, null, null, PageRequest.of(0, com.feple.feple_backend.admin.AdminConstants.LOG_PAGE_SIZE)))
                 .willReturn(new PageImpl<>(List.of()));
 
-        Page<AdminLog> result = adminLogService.getLogs(0, filter);
+        Page<AdminLog> result = adminLogService.getLogs(filter);
 
         assertThat(result.getContent()).isEmpty();
     }
@@ -171,9 +171,23 @@ class AdminLogServiceTest {
                         any()))
                 .willReturn(new PageImpl<>(List.of()));
 
-        Page<AdminLog> result = adminLogService.getLogs(0, filter);
+        Page<AdminLog> result = adminLogService.getLogs(filter);
 
         assertThat(result.getContent()).isEmpty();
+    }
+
+    @Test
+    void getLogs_adminUsername는_LIKE_와일드카드가_이스케이프된다() {
+        AdminLogFilter filter = new AdminLogFilter("festival", "ad_min", null, null, null);
+
+        adminLogService.getLogs(filter);
+
+        org.mockito.BDDMockito.then(repository).should().findWithFilters(
+                org.mockito.ArgumentMatchers.eq("festival"),
+                org.mockito.ArgumentMatchers.eq("ad!_min"),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
+                any(PageRequest.class));
     }
 
     // ── getRecentLogs ─────────────────────────────────────────────────

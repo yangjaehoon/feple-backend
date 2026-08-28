@@ -23,7 +23,7 @@ public class AdminLogController {
 
     @GetMapping
     public String list(@ModelAttribute AdminLogFilter filter, Model model) {
-        model.addAttribute("logs", adminLogService.getLogs(filter.page(), filter));
+        model.addAttribute("logs", adminLogService.getLogs(filter));
         model.addAttribute("targetType", filter.targetType());
         model.addAttribute("adminUsername", filter.adminUsername());
         model.addAttribute("from", filter.from());
