@@ -6,6 +6,7 @@ import com.feple.feple_backend.comment.dto.CreateCommentDto;
 import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.global.ValidationMessages;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -87,7 +88,7 @@ public class CommentController {
     public static class UpdateCommentRequest {
         @NotNull
         @NotBlank
-        @Size(max = Comment.MAX_CONTENT_LENGTH, message = "댓글은 1000자 이내로 입력해주세요.")
+        @Size(max = Comment.MAX_CONTENT_LENGTH, message = ValidationMessages.COMMENT_MAX_1000)
         private String content;
     }
 }

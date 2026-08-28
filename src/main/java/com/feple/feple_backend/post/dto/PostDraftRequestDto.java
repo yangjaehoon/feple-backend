@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.dto;
 
+import com.feple.feple_backend.global.ValidationMessages;
 import com.feple.feple_backend.post.entity.BoardType;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -15,10 +16,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PostDraftRequestDto {
 
-    @Size(max = 100, message = "제목은 100자 이내로 입력해주세요.")
+    @Size(max = 100, message = ValidationMessages.TITLE_MAX_100)
     private String title;
 
-    @Size(max = 5000, message = "내용은 5000자 이내로 입력해주세요.")
+    @Size(max = 5000, message = ValidationMessages.POST_CONTENT_MAX_5000)
     private String content;
 
     private BoardType boardType;
@@ -27,7 +28,7 @@ public class PostDraftRequestDto {
 
     @Size(max = PostRequestDto.MAX_IMAGES, message = "이미지는 최대 " + PostRequestDto.MAX_IMAGES + "장까지 첨부할 수 있습니다.")
     @Builder.Default
-    private List<@Size(max = 255, message = "이미지 URL이 너무 깁니다.") String> imageUrls = List.of();
+    private List<@Size(max = 255, message = ValidationMessages.IMAGE_URL_TOO_LONG) String> imageUrls = List.of();
 
     private Long artistId;
 

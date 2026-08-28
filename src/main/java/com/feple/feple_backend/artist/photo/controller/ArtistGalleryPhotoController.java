@@ -7,6 +7,7 @@ import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.file.ImageUploadPolicy;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.global.ValidationMessages;
 import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -70,8 +71,8 @@ public class ArtistGalleryPhotoController {
     }
 
     public record PresignRequest(
-            @NotBlank(message = "Content-Type은 필수입니다.") String contentType,
-            @NotBlank(message = "파일 확장자는 필수입니다.") String extension
+            @NotBlank(message = ValidationMessages.CONTENT_TYPE_REQUIRED) String contentType,
+            @NotBlank(message = ValidationMessages.FILE_EXTENSION_REQUIRED) String extension
     ) {}
 
     @DeleteMapping("/{photoId}")

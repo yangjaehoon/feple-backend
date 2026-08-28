@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.song.dto;
 
+import com.feple.feple_backend.global.ValidationMessages;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class SubmitSongRequestDto {
-    @NotBlank(message = "곡 제목을 입력해주세요.")
+    @NotBlank(message = ValidationMessages.SONG_TITLE_REQUIRED)
     @Size(max = 200, message = "곡 제목은 200자 이내로 입력해주세요.")
     private String songTitle;
 

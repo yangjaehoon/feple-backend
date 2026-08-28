@@ -8,6 +8,7 @@ import com.feple.feple_backend.certification.service.FestivalCertificationServic
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.global.PageSize;
+import com.feple.feple_backend.global.ValidationMessages;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.user.NicknameValidator;
@@ -208,7 +209,7 @@ public class UserController {
     }
 
     record RegisterDeviceTokenRequest(
-        @NotBlank(message = "토큰이 필요합니다.") String token,
+        @NotBlank(message = ValidationMessages.TOKEN_REQUIRED) String token,
         String platform,
         String language
     ) {}
@@ -224,7 +225,7 @@ public class UserController {
     }
 
     record UnregisterDeviceTokenRequest(
-        @NotBlank(message = "토큰이 필요합니다.") String token
+        @NotBlank(message = ValidationMessages.TOKEN_REQUIRED) String token
     ) {}
 
     /** FCM 디바이스 토큰 삭제 (로그아웃 시) */

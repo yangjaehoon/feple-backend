@@ -6,6 +6,7 @@ import com.feple.feple_backend.diary.dto.UpdateDiaryRequestDto;
 import com.feple.feple_backend.diary.service.FestivalDiaryService;
 import com.feple.feple_backend.file.ImageUploadPolicy;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
+import com.feple.feple_backend.global.ValidationMessages;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -108,7 +109,7 @@ public class FestivalDiaryController {
     }
 
     public record PresignRequest(
-            @NotBlank(message = "Content-Type은 필수입니다.") String contentType,
-            @NotBlank(message = "파일 확장자는 필수입니다.") String extension
+            @NotBlank(message = ValidationMessages.CONTENT_TYPE_REQUIRED) String contentType,
+            @NotBlank(message = ValidationMessages.FILE_EXTENSION_REQUIRED) String extension
     ) {}
 }
