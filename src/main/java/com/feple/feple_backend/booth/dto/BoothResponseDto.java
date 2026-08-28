@@ -2,7 +2,10 @@ package com.feple.feple_backend.booth.dto;
 
 import com.feple.feple_backend.booth.entity.Booth;
 import com.feple.feple_backend.booth.entity.BoothType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
