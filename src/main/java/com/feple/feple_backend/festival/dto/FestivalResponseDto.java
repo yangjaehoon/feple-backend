@@ -4,7 +4,6 @@ import com.feple.feple_backend.festival.entity.AgeRestriction;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.entity.FestivalPeriod;
 import com.feple.feple_backend.festival.entity.Region;
-import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.MusicGenre;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -36,17 +35,10 @@ public class FestivalResponseDto {
     private Double latitude;
     private Double longitude;
 
-    public boolean isEnded() {
-        return FestivalPeriod.isEnded(endDate, KoreaClock.today());
-    }
-
-    public boolean isOngoing() {
-        return FestivalPeriod.isOngoing(startDate, endDate, KoreaClock.today());
-    }
-
-    public boolean isUpcoming() {
-        return FestivalPeriod.isUpcoming(startDate, KoreaClock.today());
-    }
+    // 개최 상태는 "오늘"에 의존하는 파생값 — DTO가 시계를 직접 참조하지 않도록 from()에서 계산해 담는다
+    private boolean ended;
+    private boolean ongoing;
+    private boolean upcoming;
 
     public String getStartDateIso() { return startDate != null ? startDate.toString() : null; }
     public String getEndDateIso()   { return endDate   != null ? endDate.toString()   : null; }
@@ -59,9 +51,12 @@ public class FestivalResponseDto {
         return startDate.format(full) + " ~ " + endDate.format(DateTimeFormatter.ofPattern("MM.dd"));
     }
 
-    public static FestivalResponseDto from(Festival festival, String posterUrl) {
+    public static FestivalResponseDto from(Festival festival, String posterUrl, LocalDate today) {
         FestivalCoreFields.Values core = FestivalCoreFields.of(festival, posterUrl);
         return FestivalResponseDto.builder()
+                .ended(FestivalPeriod.isEnded(core.endDate(), today))
+                .ongoing(FestivalPeriod.isOngoing(core.startDate(), core.endDate(), today))
+                .upcoming(FestivalPeriod.isUpcoming(core.startDate(), today))
                 .id(core.id())
                 .title(core.title())
                 .titleEn(core.titleEn())

@@ -4,11 +4,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.lenient;
 
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.service.WeatherService;
+import com.feple.feple_backend.global.KoreaClock;
+import java.time.LocalDate;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,8 +24,14 @@ class WeatherCollectionSchedulerTest {
 
     @Mock FestivalRepository festivalRepository;
     @Mock WeatherService weatherService;
+    @Mock KoreaClock koreaClock;
 
     @InjectMocks WeatherCollectionScheduler scheduler;
+
+    @BeforeEach
+    void stubClock() {
+        lenient().when(koreaClock.today()).thenReturn(LocalDate.now(KoreaClock.ZONE));
+    }
 
     private Festival festival(Long id) {
         return Festival.builder().id(id).title("페스티벌" + id).build();

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FestivalReminderScheduler {
 
+    private final KoreaClock koreaClock;
     private final FestivalRepository festivalRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFollowRepository artistFollowRepository;
@@ -48,7 +49,7 @@ public class FestivalReminderScheduler {
     }
 
     private void sendReminderForDDay(int dDay) {
-        LocalDate targetDate = KoreaClock.today().plusDays(dDay);
+        LocalDate targetDate = koreaClock.today().plusDays(dDay);
         List<Festival> festivals = festivalRepository.findByStartDate(targetDate);
 
         if (festivals.isEmpty()) return;

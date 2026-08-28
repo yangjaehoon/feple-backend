@@ -39,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ArtistFestivalService {
 
+    private final KoreaClock koreaClock;
     private final ArtistFestivalRepository artistFestivalRepository;
     private final ArtistFestivalSongRepository artistFestivalSongRepository;
     private final FestivalRepository festivalRepository;
@@ -177,7 +178,7 @@ public class ArtistFestivalService {
 
     private boolean isBeforeFestivalStart(Festival festival) {
         return festival.getStartDate() != null
-                && festival.getStartDate().isAfter(KoreaClock.today());
+                && festival.getStartDate().isAfter(koreaClock.today());
     }
 
     private void publishArtistAddedEvent(Artist artist, Festival festival) {

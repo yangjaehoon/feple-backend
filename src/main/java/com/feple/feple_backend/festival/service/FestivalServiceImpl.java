@@ -43,12 +43,13 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
 
     private static final String ERR_END_BEFORE_START = "종료일은 시작일보다 이전일 수 없습니다.";
 
+    private final KoreaClock koreaClock;
     private final FestivalRepository festivalRepository;
     private final FestivalLikeRepository festivalLikeRepository;
     private final FileStorageService fileStorageService;
 
     private FestivalResponseDto toDto(Festival festival) {
-        return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()));
+        return FestivalResponseDto.from(festival, fileStorageService.buildUrl(festival.getPosterKey()), koreaClock.today());
     }
 
     @Override
@@ -76,7 +77,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getAllFestivals(FestivalFilterCriteria criteria) {
-        LocalDate today = KoreaClock.today();
+        LocalDate today = koreaClock.today();
         // includeEnded=false이면 DB에서 종료된 축제를 미리 제외해 메모리 로드 최소화
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
         List<Festival> all = festivalRepository.findByFilters(
@@ -110,7 +111,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public Page<FestivalResponseDto> getFestivalsPage(FestivalFilterCriteria criteria, Pageable pageable) {
-        LocalDate today = KoreaClock.today();
+        LocalDate today = koreaClock.today();
         LocalDate activeFrom = criteria.includeEnded() ? null : today;
         List<MusicGenre> genreFilter = nullIfEmpty(criteria.genres());
         List<Region> regionFilter = nullIfEmpty(criteria.regions());

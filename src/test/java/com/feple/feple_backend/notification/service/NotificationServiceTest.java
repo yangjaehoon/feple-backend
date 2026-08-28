@@ -8,7 +8,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 
 import com.feple.feple_backend.artist.entity.Artist;
@@ -45,13 +44,11 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,12 +66,11 @@ class NotificationServiceTest {
     @Mock UserBlockService userBlockService;
     @Mock FileStorageService fileStorageService;
     @Mock PendingPushRepository pendingPushRepository;
+    /** 실제 벽시계에 의존하면 새벽 지연 발송 로직 때문에 테스트가 시간대별로 깨진다 —
+     * 기본을 낮 시간으로 고정하고, 새벽 시나리오 테스트에서만 개별 재stub한다. */
+    @Mock KoreaClock koreaClock;
 
     @InjectMocks NotificationService service;
-
-    /** KoreaClock.now()가 실제 벽시계 시각에 의존하면 새벽 지연 발송 로직 때문에 테스트가 시간대별로 깨진다 —
-     * 낮 시간으로 고정하고, 새벽 시나리오를 검증하는 테스트에서만 개별적으로 재stub한다. */
-    private MockedStatic<KoreaClock> koreaClockMock;
 
     private User user(Long id) {
         return User.builder().id(id).oauthId("o" + id).nickname("유저" + id).build();
@@ -94,13 +90,7 @@ class NotificationServiceTest {
     @BeforeEach
     void setUpDefaults() {
         lenient().when(deviceTokenRepository.findTokensWithLanguageByUserIds(anyList())).thenReturn(List.of());
-        koreaClockMock = mockStatic(KoreaClock.class);
-        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(14, 0));
-    }
-
-    @AfterEach
-    void closeClockMock() {
-        koreaClockMock.close();
+        lenient().when(koreaClock.now()).thenReturn(LocalTime.of(14, 0));
     }
 
     // ── onArtistAddedToFestival ───────────────────────────────────────────
@@ -461,7 +451,7 @@ class NotificationServiceTest {
         given(quietHours.isEnabledFor(any())).willReturn(true);
         given(quietHours.isQuietHoursEnabled()).willReturn(true);
         given(preferenceService.getOrCreate(1L)).willReturn(quietHours);
-        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+        lenient().when(koreaClock.now()).thenReturn(LocalTime.of(3, 0));
 
         service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
@@ -486,7 +476,7 @@ class NotificationServiceTest {
     void 심야시간_설정꺼져있으면_새벽에도_정상_푸시() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
         given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
-        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+        lenient().when(koreaClock.now()).thenReturn(LocalTime.of(3, 0));
 
         service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 
@@ -500,7 +490,7 @@ class NotificationServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
         given(festivalRepository.findById(10L)).willReturn(Optional.of(Festival.builder().id(10L).title("펜타포트").build()));
         given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
-        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+        lenient().when(koreaClock.now()).thenReturn(LocalTime.of(3, 0));
 
         service.onCertificationApproved(new CertificationApprovedEvent(1L, "펜타포트", "Pentaport", 10L));
 
@@ -525,7 +515,7 @@ class NotificationServiceTest {
     void 새벽시간_좋아요알림은_예외로_즉시발송() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
         given(preferenceService.getOrCreate(1L)).willReturn(enabledPreference());
-        koreaClockMock.when(KoreaClock::now).thenReturn(LocalTime.of(3, 0));
+        lenient().when(koreaClock.now()).thenReturn(LocalTime.of(3, 0));
 
         service.onPostLiked(new PostLikedEvent(1L, "좋아요러", "제목", 5L, 99L));
 

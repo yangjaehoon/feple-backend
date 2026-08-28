@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -42,15 +43,18 @@ class WeatherServiceTest {
     @Mock RestTemplate restTemplate;
     @Mock FestivalRepository festivalRepository;
     @Mock FestivalWeatherRepository weatherRepository;
+    @Mock com.feple.feple_backend.global.KoreaClock koreaClock;
 
     private WeatherService weatherService;
 
     @BeforeEach
     void setUp() {
-        weatherService = new WeatherService(restTemplate, festivalRepository, weatherRepository,
+        weatherService = new WeatherService(koreaClock, restTemplate, festivalRepository, weatherRepository,
                 new FestivalWeatherStore(weatherRepository));
         ReflectionTestUtils.setField(weatherService, "serviceKey", "test-key");
         ReflectionTestUtils.setField(weatherService, "baseUrl", "https://apis.data.go.kr/kma");
+        lenient().when(koreaClock.today()).thenReturn(today());
+        lenient().when(koreaClock.now()).thenReturn(java.time.LocalTime.now(ZoneId.of("Asia/Seoul")));
     }
 
     private LocalDate today() {

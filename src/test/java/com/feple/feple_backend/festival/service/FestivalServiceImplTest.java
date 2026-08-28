@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -21,11 +22,13 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.repository.FestivalLikeRepository;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.support.TestEntityFactory;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,8 +45,14 @@ class FestivalServiceImplTest {
     @Mock FestivalRepository festivalRepository;
     @Mock FestivalLikeRepository festivalLikeRepository;
     @Mock FileStorageService fileStorageService;
+    @Mock KoreaClock koreaClock;
 
     @InjectMocks FestivalServiceImpl festivalService;
+
+    @BeforeEach
+    void stubClock() {
+        lenient().when(koreaClock.today()).thenReturn(LocalDate.now(KoreaClock.ZONE));
+    }
 
     private Festival festival(Long id, String title, String posterKey) {
         return Festival.builder()

@@ -66,6 +66,7 @@ public class NotificationService {
     /** 대량 팬아웃 알림을 한 번에 처리하는 사용자 수 상한 (FCM multicast 상한과 동일) */
     private static final int FAN_OUT_CHUNK_SIZE = 500;
 
+    private final KoreaClock koreaClock;
     private final NotificationRepository notificationRepository;
     private final PendingPushRepository pendingPushRepository;
     private final ArtistFollowRepository artistFollowRepository;
@@ -408,7 +409,7 @@ public class NotificationService {
 
     private boolean isBlockedByQuietHours(NotificationPreference pref) {
         if (!pref.isQuietHoursEnabled()) return false;
-        LocalTime now = KoreaClock.now();
+        LocalTime now = koreaClock.now();
         return !now.isBefore(QUIET_HOURS_START) && now.isBefore(QUIET_HOURS_END);
     }
 
@@ -425,7 +426,7 @@ public class NotificationService {
 
     /** 댓글/좋아요(PreferenceCategory.COMMENT)는 사용자 상호작용에 대한 즉각적인 반응이라 예외 — 그 외 자동 알림만 새벽에 지연 */
     private boolean shouldDeferToMorning(NotificationType type) {
-        return type.getCategory() != PreferenceCategory.COMMENT && KoreaClock.now().isBefore(MORNING_DELIVERY_TIME);
+        return type.getCategory() != PreferenceCategory.COMMENT && koreaClock.now().isBefore(MORNING_DELIVERY_TIME);
     }
 
     private void enqueuePendingPush(NotificationMessage message, List<Long> userIds) {

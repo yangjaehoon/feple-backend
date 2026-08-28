@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
@@ -20,6 +21,7 @@ import com.feple.feple_backend.artistfestival.repository.ArtistFestivalRepositor
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.repository.TimetableRepository;
@@ -31,6 +33,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -54,8 +57,14 @@ class ArtistFestivalServiceTest {
     @Mock TimetableRepository timetableRepository;
     @Mock TimetableSyncService timetableSyncService;
     @Mock ApplicationEventPublisher eventPublisher;
+    @Mock KoreaClock koreaClock;
 
     @InjectMocks ArtistFestivalService service;
+
+    @BeforeEach
+    void stubClock() {
+        lenient().when(koreaClock.today()).thenReturn(LocalDate.now(KoreaClock.ZONE));
+    }
 
     private Artist artist(Long id, String name) {
         return Artist.builder().id(id).name(name).nameEn(name + "_EN").build();

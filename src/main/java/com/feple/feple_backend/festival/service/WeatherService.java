@@ -66,6 +66,7 @@ public class WeatherService {
     @Value("${kma.base-url}")
     private String baseUrl;
 
+    private final KoreaClock koreaClock;
     private final RestTemplate restTemplate;
     private final FestivalRepository festivalRepository;
     private final FestivalWeatherRepository weatherRepository;
@@ -80,7 +81,7 @@ public class WeatherService {
      */
     @CacheEvict(value = "festivalWeather", key = "#festival.id")
     public boolean collectWeather(Festival festival) {
-        LocalDate today = KoreaClock.today();
+        LocalDate today = koreaClock.today();
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
         if (end != null && end.isBefore(today)) return false;
 
@@ -236,7 +237,7 @@ public class WeatherService {
         }
 
         // 기상청 API는 발표시각 이후 약 10분 뒤 데이터가 올라옴 — 그 전에 조회하면 최신 시간대 누락
-        LocalTime nowKST = KoreaClock.now().minusMinutes(10);
+        LocalTime nowKST = koreaClock.now().minusMinutes(10);
         int currentHour = nowKST.getHour();
         LocalDate apiDate = today;
         int bestHour = 2;

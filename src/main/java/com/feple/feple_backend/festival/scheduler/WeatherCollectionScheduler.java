@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WeatherCollectionScheduler {
 
+    private final KoreaClock koreaClock;
     private final FestivalRepository festivalRepository;
     private final WeatherService weatherService;
 
@@ -24,7 +25,7 @@ public class WeatherCollectionScheduler {
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
     @SchedulerLock(name = "weatherCollectionScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     public void collect() {
-        LocalDate today = KoreaClock.today();
+        LocalDate today = koreaClock.today();
         LocalDate until = today.plusDays(WeatherService.FORECAST_LOOKAHEAD_DAYS);
 
         List<Festival> targets = festivalRepository.findOngoingOrStartingBefore(today, until);
