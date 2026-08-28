@@ -5,6 +5,8 @@ import com.feple.feple_backend.global.exception.InvalidRequestException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
@@ -14,10 +16,12 @@ public final class JwtProvider {
 
     private final JwtProperties props;
     private final SecretKey key;
+    private final Clock clock;
 
-    public JwtProvider(JwtProperties props) {
+    public JwtProvider(JwtProperties props, Clock clock) {
         this.props = props;
         this.key = Keys.hmacShaKeyFor(props.secret().getBytes(StandardCharsets.UTF_8));
+        this.clock = clock;
     }
 
     public String createAccessToken(Long userId) {
@@ -28,6 +32,7 @@ public final class JwtProvider {
         try {
             String type = Jwts.parser()
                     .verifyWith(key)
+                    .clock(jwtClock())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload()
@@ -43,23 +48,24 @@ public final class JwtProvider {
     }
 
     private String issueToken(Long userId, long expirationMs, String tokenType) {
-        Date now = new Date();
-        Date exp = new Date(now.getTime() + expirationMs);
+        Instant now = clock.instant();
+        Date issuedAt = Date.from(now);
+        Date expiration = Date.from(now.plusMillis(expirationMs));
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim(JwtConstants.CLAIM_TYPE, tokenType)
-                .issuedAt(now)
-                .expiration(exp)
+                .issuedAt(issuedAt)
+                .expiration(expiration)
                 .signWith(key)
                 .compact();
     }
-
 
     /** access 토큰인 경우에만 userId 반환, 아니면 예외 */
     public Long parseUserId(String token) {
         var payload = Jwts.parser()
                 .verifyWith(key)
+                .clock(jwtClock())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
@@ -70,5 +76,10 @@ public final class JwtProvider {
         }
 
         return Long.valueOf(payload.getSubject());
+    }
+
+    // jjwt는 만료 검증에 자체 시계(기본 System)를 쓴다 — 주입된 Clock을 넘겨 검증 시각도 제어 가능하게 한다.
+    private io.jsonwebtoken.Clock jwtClock() {
+        return () -> Date.from(clock.instant());
     }
 }

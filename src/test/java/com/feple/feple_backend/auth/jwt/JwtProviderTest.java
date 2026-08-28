@@ -4,19 +4,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class JwtProviderTest {
 
     private static final String SECRET = "test-secret-key-must-be-at-least-32-characters-long-for-hs256";
+    private static final Instant FIXED_NOW = Instant.parse("2026-01-01T00:00:00Z");
+    private static final long ACCESS_EXP_MS = 1000L * 60 * 15;
+    private static final long REFRESH_EXP_MS = 1000L * 60 * 60 * 24 * 14;
 
     private JwtProvider jwtProvider;
 
     @BeforeEach
     void setUp() {
-        JwtProperties props = new JwtProperties(SECRET, 1000 * 60 * 15, 1000 * 60 * 60 * 24 * 14);
-        jwtProvider = new JwtProvider(props);
+        JwtProperties props = new JwtProperties(SECRET, ACCESS_EXP_MS, REFRESH_EXP_MS);
+        jwtProvider = new JwtProvider(props, Clock.fixed(FIXED_NOW, ZoneOffset.UTC));
     }
 
     @Test
@@ -51,11 +57,13 @@ class JwtProviderTest {
 
     @Test
     void 만료된_액세스_토큰_파싱시_예외() {
-        JwtProperties expiredProps = new JwtProperties(SECRET, -1000, 1000 * 60 * 60 * 24 * 14);
-        JwtProvider expiredTokenProvider = new JwtProvider(expiredProps);
-        String expiredToken = expiredTokenProvider.createAccessToken(1L);
+        JwtProperties props = new JwtProperties(SECRET, ACCESS_EXP_MS, REFRESH_EXP_MS);
+        // 발급 시점을 만료 기간보다 더 과거로 고정하면, FIXED_NOW 기준 검증 시 이미 만료다.
+        JwtProvider issuedInPast = new JwtProvider(
+                props, Clock.fixed(FIXED_NOW.minusMillis(ACCESS_EXP_MS * 2), ZoneOffset.UTC));
+        String expiredToken = issuedInPast.createAccessToken(1L);
 
-        assertThatThrownBy(() -> expiredTokenProvider.parseUserId(expiredToken))
+        assertThatThrownBy(() -> jwtProvider.parseUserId(expiredToken))
                 .isInstanceOf(ExpiredJwtException.class);
     }
 
@@ -69,8 +77,8 @@ class JwtProviderTest {
     @Test
     void 다른_비밀키로_서명된_토큰은_파싱시_예외() {
         JwtProperties otherProps = new JwtProperties(
-                "another-secret-key-must-be-at-least-32-characters-long-too", 1000 * 60 * 15, 1000 * 60 * 60 * 24 * 14);
-        JwtProvider otherProvider = new JwtProvider(otherProps);
+                "another-secret-key-must-be-at-least-32-characters-long-too", ACCESS_EXP_MS, REFRESH_EXP_MS);
+        JwtProvider otherProvider = new JwtProvider(otherProps, Clock.fixed(FIXED_NOW, ZoneOffset.UTC));
         String tokenFromOtherKey = otherProvider.createAccessToken(1L);
 
         assertThatThrownBy(() -> jwtProvider.parseUserId(tokenFromOtherKey))

@@ -38,7 +38,7 @@ class JwtAuthenticationFilterTest {
                 "test-secret-key-for-jwt-signing-at-least-32-bytes-long",
                 1000 * 60 * 15,
                 1000 * 60 * 60 * 24 * 14);
-        jwtProvider = new JwtProvider(props);
+        jwtProvider = new JwtProvider(props, java.time.Clock.systemUTC());
         filter = new JwtAuthenticationFilter(jwtProvider, userRepository, accessTrackingService);
     }
 
