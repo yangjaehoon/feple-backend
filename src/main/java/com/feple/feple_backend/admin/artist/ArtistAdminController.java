@@ -48,12 +48,13 @@ public class ArtistAdminController {
                                  @RequestParam(required = false) Long suggestionId,
                                  @RequestParam(required = false) Long unmatchedSuggestionId,
                                  Model model) {
+        SuggestionRefs refs = new SuggestionRefs(suggestionId, unmatchedSuggestionId);
         ArtistRequestDto dto = new ArtistRequestDto();
         if (name != null && !name.isBlank()) {
             dto.setName(name.trim());
         }
         model.addAttribute("artist", dto);
-        addSuggestionRefs(model, new SuggestionRefs(suggestionId, unmatchedSuggestionId));
+        addSuggestionRefs(model, refs);
         addGenreOptions(model);
         return "admin/artist/create";
     }
@@ -88,7 +89,7 @@ public class ArtistAdminController {
         return "redirect:/admin/artists";
     }
 
-    private String renderCreateFormWithError(List<String> errors, SuggestionRefs refs, Model model) {
+    private static String renderCreateFormWithError(List<String> errors, SuggestionRefs refs, Model model) {
         model.addAttribute("errors", errors);
         addSuggestionRefs(model, refs);
         addGenreOptions(model);
@@ -243,7 +244,7 @@ public class ArtistAdminController {
         addGenreOptions(model);
     }
 
-    private String renderEditFormWithError(List<String> errors, Long id, ArtistListParams params, Model model) {
+    private static String renderEditFormWithError(List<String> errors, Long id, ArtistListParams params, Model model) {
         addEditFormModel(model, id, params);
         model.addAttribute("errors", errors);
         return "admin/artist/edit";

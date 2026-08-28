@@ -132,6 +132,17 @@ class ArtistAdminControllerTest {
                 .andExpect(flash().attribute("errorMessage", "아티스트 정보를 불러오는 중 오류가 발생했습니다."));
     }
 
+    @Test
+    void 편집_폼_조회_IllegalArgumentException은_메시지를_그대로_노출() throws Exception {
+        given(artistAdminService.getArtistForEdit(1L))
+                .willThrow(new IllegalArgumentException("잘못된 아티스트 ID 형식"));
+
+        mockMvc.perform(get("/admin/artists/1/edit"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/artists"))
+                .andExpect(flash().attribute("errorMessage", "잘못된 아티스트 ID 형식"));
+    }
+
     // ── POST /admin/artists/{id}/edit ─────────────────────────────────────────
 
     @Test

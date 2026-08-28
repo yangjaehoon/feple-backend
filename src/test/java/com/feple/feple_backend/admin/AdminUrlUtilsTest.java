@@ -36,11 +36,17 @@ class AdminUrlUtilsTest {
                 .isInstanceOf(InvalidRequestException.class);
     }
 
+    @Test
+    void buildQueryString_key가_String이_아니면_예외() {
+        assertThatThrownBy(() -> AdminUrlUtils.buildQueryString(42, "USER"))
+                .isInstanceOf(InvalidRequestException.class);
+    }
+
     // ── listUrl ───────────────────────────────────────────────────────────────
 
     @Test
-    void listUrl_basePath에_파라미터를_붙이고_공백값은_생략() {
-        assertThat(AdminUrlUtils.listUrl("/admin/festivals", "page", 0, "keyword", ""))
+    void listUrl_basePath에_파라미터를_붙이고_null이나_공백값은_생략() {
+        assertThat(AdminUrlUtils.listUrl("/admin/festivals", "page", 0, "sort", null, "keyword", ""))
                 .isEqualTo("/admin/festivals?page=0");
     }
 
@@ -53,18 +59,21 @@ class AdminUrlUtilsTest {
                 .isEqualTo("/admin/festivals?page=0&keyword=축제");
     }
 
-    // ── toQueryString / toEncodedString ───────────────────────────────────────
+    // ── encode / encodeQuery ──────────────────────────────────────────────────
 
     @Test
-    void toQueryString_선행_물음표를_제거() {
+    void encodeQuery_선행_물음표를_제거() {
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance().queryParam("a", "1");
-        assertThat(AdminUrlUtils.toQueryString(builder)).isEqualTo("a=1");
+        assertThat(AdminUrlUtils.encodeQuery(builder)).isEqualTo("a=1");
     }
 
     @Test
-    void toEncodedString_한글_값을_인코딩() {
+    void encode_한글_값을_퍼센트_인코딩한다() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/x").queryParam("q", "한글");
-        assertThat(AdminUrlUtils.toEncodedString(builder)).doesNotContain("한글");
+        String encoded = AdminUrlUtils.encode(builder);
+
+        assertThat(encoded).doesNotContain("한글");
+        assertThat(URLDecoder.decode(encoded, StandardCharsets.UTF_8)).isEqualTo("/x?q=한글");
     }
 
     // ── appendIfHasText ───────────────────────────────────────────────────────

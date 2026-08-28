@@ -133,7 +133,7 @@ public final class AdminActionUtils {
 
     public static String toRedirect(UriComponentsBuilder builder, String keyword) {
         AdminUrlUtils.appendIfHasText(builder, "keyword", keyword);
-        return "redirect:" + AdminUrlUtils.toEncodedString(builder);
+        return "redirect:" + AdminUrlUtils.encode(builder);
     }
 
     /**
@@ -148,7 +148,7 @@ public final class AdminActionUtils {
                 .queryParam("status", status)
                 .queryParam("page", page);
         AdminUrlUtils.appendIfHasText(builder, "keyword", keyword);
-        return AdminUrlUtils.toEncodedString(builder);
+        return AdminUrlUtils.encode(builder);
     }
 
     /**
