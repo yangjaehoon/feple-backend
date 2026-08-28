@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.csv;
 
-import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.point;
 
-import com.feple.feple_backend.admin.AdminParamDefaults;
+import com.feple.feple_backend.admin.support.AdminParamDefaults;
 
 record PointListParams(Integer page, String keyword) {
 

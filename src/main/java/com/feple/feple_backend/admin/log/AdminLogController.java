@@ -1,9 +1,8 @@
 package com.feple.feple_backend.admin.log;
 
-import com.feple.feple_backend.admin.AdminUrlUtils;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
-
+import com.feple.feple_backend.admin.support.AdminUrlUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;

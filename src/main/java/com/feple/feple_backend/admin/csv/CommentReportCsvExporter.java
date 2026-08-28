@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.csv;
 
-import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import lombok.RequiredArgsConstructor;

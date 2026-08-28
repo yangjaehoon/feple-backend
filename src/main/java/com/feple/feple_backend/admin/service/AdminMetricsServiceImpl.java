@@ -1,11 +1,11 @@
 package com.feple.feple_backend.admin.service;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.dashboard.ContentTrendDto;
 import com.feple.feple_backend.admin.dashboard.DailyStatDto;
 import com.feple.feple_backend.admin.dashboard.TopKeywordDto;
 import com.feple.feple_backend.admin.dashboard.UserActivityStatsDto;
 import com.feple.feple_backend.admin.dashboard.UserSummaryDto;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;

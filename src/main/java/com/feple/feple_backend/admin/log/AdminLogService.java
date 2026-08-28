@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.log;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.CurrentAdminProvider;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import java.time.LocalDateTime;
 import java.time.LocalTime;

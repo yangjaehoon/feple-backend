@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.artist;
 
-import com.feple.feple_backend.admin.AdminParamDefaults;
-import com.feple.feple_backend.admin.AdminUrlUtils;
+import com.feple.feple_backend.admin.support.AdminParamDefaults;
+import com.feple.feple_backend.admin.support.AdminUrlUtils;
 import com.feple.feple_backend.global.MusicGenre;
 
 record ArtistListParams(Integer page, String keyword, String sort, MusicGenre genre) {

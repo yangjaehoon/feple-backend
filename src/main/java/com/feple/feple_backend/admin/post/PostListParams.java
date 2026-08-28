@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.post;
 
-import com.feple.feple_backend.admin.AdminParamDefaults;
-import com.feple.feple_backend.admin.AdminUrlUtils;
+import com.feple.feple_backend.admin.support.AdminParamDefaults;
+import com.feple.feple_backend.admin.support.AdminUrlUtils;
 
 record PostListParams(Integer page, String filter, String keyword, Long artistId, Long festivalId) {
 

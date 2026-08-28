@@ -1,4 +1,4 @@
-package com.feple.feple_backend.admin;
+package com.feple.feple_backend.admin.support;
 
 import com.feple.feple_backend.global.exception.BadWordException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;

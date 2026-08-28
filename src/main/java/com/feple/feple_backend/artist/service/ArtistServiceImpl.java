@@ -1,6 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
-import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;

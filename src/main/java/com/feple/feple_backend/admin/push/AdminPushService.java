@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.push;
 
-import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;

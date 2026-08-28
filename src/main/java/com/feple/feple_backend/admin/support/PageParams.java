@@ -1,4 +1,4 @@
-package com.feple.feple_backend.admin;
+package com.feple.feple_backend.admin.support;
 
 /**
  * page 파라미터 하나만 받는 관리자 목록/리다이렉트 화면용 파라미터 객체.

@@ -5,9 +5,9 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.filter.FilterDropdownProvider;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.post.dto.PostResponseDto;

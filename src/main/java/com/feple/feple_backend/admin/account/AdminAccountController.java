@@ -1,8 +1,8 @@
 package com.feple.feple_backend.admin.account;
 
-import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.admin.support.AdminActionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;

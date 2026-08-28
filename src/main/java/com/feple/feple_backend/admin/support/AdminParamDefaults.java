@@ -1,4 +1,4 @@
-package com.feple.feple_backend.admin;
+package com.feple.feple_backend.admin.support;
 
 import java.util.Set;
 

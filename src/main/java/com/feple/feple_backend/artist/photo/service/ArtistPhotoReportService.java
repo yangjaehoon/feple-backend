@@ -1,8 +1,8 @@
 package com.feple.feple_backend.artist.photo.service;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.PhotoPresignedUrlProvider;
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.user;
 
-import com.feple.feple_backend.admin.AdminParamDefaults;
+import com.feple.feple_backend.admin.support.AdminParamDefaults;
 
 record UserListFilter(String filter, String sort, Integer page, String keyword) {
     UserListFilter {

@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.certification;
 
-import com.feple.feple_backend.admin.AdminParamDefaults;
+import com.feple.feple_backend.admin.support.AdminParamDefaults;
 
 record CertificationFilter(String status, Integer page, String keyword) {
     CertificationFilter {

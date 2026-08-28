@@ -1,4 +1,4 @@
-package com.feple.feple_backend.admin;
+package com.feple.feple_backend.admin.support;
 
 public final class AdminConstants {
     private AdminConstants() {}

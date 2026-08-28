@@ -1,7 +1,7 @@
 package com.feple.feple_backend.admin.moderation;
 
-import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.AdminParamDefaults;
+import com.feple.feple_backend.admin.support.AdminConstants;
+import com.feple.feple_backend.admin.support.AdminParamDefaults;
 
 record ReportFilter(String type, String status, Integer page, String keyword) {
     ReportFilter {

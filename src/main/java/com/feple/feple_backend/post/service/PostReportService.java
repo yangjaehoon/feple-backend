@@ -1,7 +1,7 @@
 package com.feple.feple_backend.post.service;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.ReportRejectionService;

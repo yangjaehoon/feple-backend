@@ -1,12 +1,12 @@
 package com.feple.feple_backend.admin.festival;
 
-import com.feple.feple_backend.admin.AdminActionUtils;
-import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.PageParams;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.admin.support.AdminActionUtils;
+import com.feple.feple_backend.admin.support.AdminConstants;
+import com.feple.feple_backend.admin.support.PageParams;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.suggestion.dto.FestivalSuggestionResponseDto;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;

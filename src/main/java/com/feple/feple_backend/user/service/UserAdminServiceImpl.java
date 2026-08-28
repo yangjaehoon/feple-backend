@@ -1,7 +1,7 @@
 package com.feple.feple_backend.user.service;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.CurrentAdminProvider;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;

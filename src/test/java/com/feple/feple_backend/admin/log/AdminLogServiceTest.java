@@ -152,7 +152,7 @@ class AdminLogServiceTest {
     @Test
     void getLogs_필터_없으면_null로_조회() {
         AdminLogFilter filter = new AdminLogFilter(null, null, null, null, null);
-        given(repository.findWithFilters(null, null, null, null, PageRequest.of(0, com.feple.feple_backend.admin.AdminConstants.LOG_PAGE_SIZE)))
+        given(repository.findWithFilters(null, null, null, null, PageRequest.of(0, com.feple.feple_backend.admin.support.AdminConstants.LOG_PAGE_SIZE)))
                 .willReturn(new PageImpl<>(List.of()));
 
         Page<AdminLog> result = adminLogService.getLogs(filter);

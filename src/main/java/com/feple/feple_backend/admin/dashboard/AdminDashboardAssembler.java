@@ -1,10 +1,10 @@
 package com.feple.feple_backend.admin.dashboard;
 
-import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.certification.CertificationSummaryDto;
 import com.feple.feple_backend.admin.moderation.PostReportSummaryDto;
 import com.feple.feple_backend.admin.service.AdminDashboardMetrics;
 import com.feple.feple_backend.admin.service.AdminPendingItemsService;
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.artist.service.ArtistAdminService;
 import com.feple.feple_backend.artist.suggestion.dto.ArtistSuggestionResponseDto;
