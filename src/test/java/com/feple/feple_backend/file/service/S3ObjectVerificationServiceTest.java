@@ -5,14 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.feple.feple_backend.file.S3Properties;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
@@ -22,11 +21,11 @@ class S3ObjectVerificationServiceTest {
 
     @Mock S3Client s3Client;
 
-    @InjectMocks S3ObjectVerificationService service;
+    private S3ObjectVerificationService service;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(service, "bucket", "test-bucket");
+        service = new S3ObjectVerificationService(s3Client, new S3Properties("test-bucket", 10L, 168L));
     }
 
     @SuppressWarnings("unchecked")

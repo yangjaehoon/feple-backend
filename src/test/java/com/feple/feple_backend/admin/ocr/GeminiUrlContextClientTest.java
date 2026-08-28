@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class GeminiUrlContextClientTest {
@@ -31,7 +30,12 @@ class GeminiUrlContextClientTest {
 
     @BeforeEach
     void setUp() {
-        client = new GeminiUrlContextClient(new ObjectMapper(), geminiApiClient, usageTracker);
+        client = clientWithApiKey("test-key");
+    }
+
+    private GeminiUrlContextClient clientWithApiKey(String apiKey) {
+        return new GeminiUrlContextClient(new ObjectMapper(), geminiApiClient, usageTracker,
+                new GeminiProperties(apiKey, 500, 16384, 90, 60, 512));
     }
 
     private void stubCall() {
@@ -45,14 +49,12 @@ class GeminiUrlContextClientTest {
 
     @Test
     void apiKey가_설정되어_있으면_isConfigured는_true() {
-        ReflectionTestUtils.setField(client, "geminiApiKey", "test-key");
-        assertThat(client.isConfigured()).isTrue();
+        assertThat(clientWithApiKey("test-key").isConfigured()).isTrue();
     }
 
     @Test
     void apiKey가_빈값이면_isConfigured는_false() {
-        ReflectionTestUtils.setField(client, "geminiApiKey", "  ");
-        assertThat(client.isConfigured()).isFalse();
+        assertThat(clientWithApiKey("  ").isConfigured()).isFalse();
     }
 
     @Test

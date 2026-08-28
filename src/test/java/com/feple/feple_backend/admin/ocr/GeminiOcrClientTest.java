@@ -27,7 +27,8 @@ class GeminiOcrClientTest {
 
     @BeforeEach
     void setUp() {
-        client = new GeminiOcrClient(new ObjectMapper(), usageTracker, geminiApiClient);
+        client = new GeminiOcrClient(new ObjectMapper(), usageTracker, geminiApiClient,
+                new GeminiProperties("", 500, 16384, 90, 60, 512));
     }
 
     private MockMultipartFile image() {

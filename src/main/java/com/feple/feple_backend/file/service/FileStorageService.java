@@ -1,6 +1,8 @@
 package com.feple.feple_backend.file.service;
 
+import com.feple.feple_backend.file.CdnProperties;
 import com.feple.feple_backend.file.S3PathConstants;
+import com.feple.feple_backend.file.S3Properties;
 import io.awspring.cloud.s3.S3Template;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,7 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -30,21 +31,18 @@ public class FileStorageService {
 
     private final S3Template s3Template;
     private final ImageResizeService imageResizeService;
-
-    @Value("${app.s3.bucket}")
-    private String bucket;
-
-    @Value("${app.cdn.base-url:}")
-    private String cdnBaseUrl;
+    private final S3Properties s3Properties;
+    private final CdnProperties cdnProperties;
 
     public String buildUrl(String key) {
         if (key == null) return null;
         if (key.startsWith("http")) return key;
+        String cdnBaseUrl = cdnProperties.baseUrl();
         if (cdnBaseUrl != null && !cdnBaseUrl.isBlank()) {
             String base = cdnBaseUrl.endsWith("/") ? cdnBaseUrl.substring(0, cdnBaseUrl.length() - 1) : cdnBaseUrl;
             return base + "/" + key;
         }
-        return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
+        return "https://" + s3Properties.bucket() + ".s3.ap-northeast-2.amazonaws.com/" + key;
     }
 
     /** 프로필 이미지 key/URL을 화면에 표시할 절대 URL로 변환한다. 기본(미설정) 이미지 경로가
@@ -100,7 +98,7 @@ public class FileStorageService {
             resized = imageResizeService.resizeToJpeg(in, maxPx);
         }
         try (InputStream is = new ByteArrayInputStream(resized)) {
-            s3Template.upload(bucket, key, is);
+            s3Template.upload(s3Properties.bucket(), key, is);
             return key;
         }
     }
@@ -121,7 +119,7 @@ public class FileStorageService {
         String objectKey = key.startsWith("http") ? stripToObjectKey(key) : key;
         if (objectKey == null) return;
         try {
-            s3Template.deleteObject(bucket, objectKey);
+            s3Template.deleteObject(s3Properties.bucket(), objectKey);
         } catch (Exception e) {
             // S3 DeleteObject는 idempotent해서 key가 이미 없어도 예외 없이 성공한다.
             // 즉 여기 잡히는 예외는 권한 오류·네트워크 문제 등 진짜 삭제 실패이므로 반드시 로그를 남긴다.
@@ -130,7 +128,8 @@ public class FileStorageService {
     }
 
     private String stripToObjectKey(String url) {
-        String defaultS3Prefix = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/";
+        String defaultS3Prefix = "https://" + s3Properties.bucket() + ".s3.ap-northeast-2.amazonaws.com/";
+        String cdnBaseUrl = cdnProperties.baseUrl();
         if (cdnBaseUrl != null && !cdnBaseUrl.isBlank()) {
             String base = cdnBaseUrl.endsWith("/") ? cdnBaseUrl : cdnBaseUrl + "/";
             if (url.startsWith(base)) return url.substring(base.length());

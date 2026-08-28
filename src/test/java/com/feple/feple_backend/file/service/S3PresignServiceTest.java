@@ -7,6 +7,7 @@ import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.file.S3Properties;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import java.net.URL;
 import java.time.Duration;
@@ -14,10 +15,8 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -31,13 +30,11 @@ class S3PresignServiceTest {
 
     @Mock S3Presigner s3Presigner;
 
-    @InjectMocks S3PresignService service;
+    private S3PresignService service;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(service, "bucket", "test-bucket");
-        ReflectionTestUtils.setField(service, "presignMinutes", 10L);
-        ReflectionTestUtils.setField(service, "getPresignHours", 168L);
+        service = new S3PresignService(s3Presigner, new S3Properties("test-bucket", 10L, 168L));
     }
 
     @Test

@@ -31,7 +31,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,9 +49,8 @@ class WeatherServiceTest {
     @BeforeEach
     void setUp() {
         weatherService = new WeatherService(koreaClock, restTemplate, festivalRepository, weatherRepository,
-                new FestivalWeatherStore(weatherRepository));
-        ReflectionTestUtils.setField(weatherService, "serviceKey", "test-key");
-        ReflectionTestUtils.setField(weatherService, "baseUrl", "https://apis.data.go.kr/kma");
+                new FestivalWeatherStore(weatherRepository),
+                new WeatherProperties("test-key", "https://apis.data.go.kr/kma"));
         lenient().when(koreaClock.today()).thenReturn(today());
         lenient().when(koreaClock.now()).thenReturn(java.time.LocalTime.now(ZoneId.of("Asia/Seoul")));
     }
@@ -90,10 +88,11 @@ class WeatherServiceTest {
 
     @Test
     void serviceKey_미설정이면_false() {
-        ReflectionTestUtils.setField(weatherService, "serviceKey", "");
+        WeatherService noKeyService = new WeatherService(koreaClock, restTemplate, festivalRepository, weatherRepository,
+                new FestivalWeatherStore(weatherRepository), new WeatherProperties("", "https://apis.data.go.kr/kma"));
         Festival f = festival(1L, today(), today().plusDays(1));
 
-        assertThat(weatherService.collectWeather(f)).isFalse();
+        assertThat(noKeyService.collectWeather(f)).isFalse();
         verify(restTemplate, never()).getForObject(any(URI.class), any());
     }
 

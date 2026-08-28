@@ -20,12 +20,11 @@ import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class FestivalDetailAggregationServiceTest {
@@ -39,7 +38,14 @@ class FestivalDetailAggregationServiceTest {
     @Mock SetlistAdminService setlistAdminService;
     @Mock FestivalReviewService reviewService;
 
-    @InjectMocks FestivalDetailAggregationService aggregationService;
+    private FestivalDetailAggregationService aggregationService;
+
+    @BeforeEach
+    void setUp() {
+        aggregationService = new FestivalDetailAggregationService(
+                festivalService, artistFestivalService, timetableService, stageService, boothService,
+                ticketLinkService, setlistAdminService, reviewService, new GoogleMapsProperties(""));
+    }
 
     private TimetableEntryResponseDto entry(String artistName, String stageName, String date) {
         return TimetableEntryResponseDto.builder()
@@ -195,7 +201,6 @@ class FestivalDetailAggregationServiceTest {
 
     @Test
     void 구글맵키_없으면_경고로그만_남기고_정상_동작() {
-        ReflectionTestUtils.setField(aggregationService, "googleMapsKey", "");
         given(festivalService.getFestival(1L)).willReturn(FestivalResponseDto.builder().id(1L).title("락페").build());
         given(timetableService.getEntries(1L)).willReturn(List.of());
         given(artistFestivalService.getArtistFestivalsWithStageFallback(eq(1L), anyMap(), anyMap())).willReturn(List.of());

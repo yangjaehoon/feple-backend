@@ -3,7 +3,6 @@ package com.feple.feple_backend.admin.ocr;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +13,8 @@ public class GeminiUsageTracker {
     // Gemini API 일일 쿼터는 태평양 시간 자정 기준으로 리셋됨 (KST 아님)
     private static final ZoneId PACIFIC = ZoneId.of("America/Los_Angeles");
 
-    @Value("${app.gemini.daily-limit:500}")
-    private int dailyLimit;
-
     private final GeminiDailyUsageRepository repository;
+    private final GeminiProperties geminiProperties;
 
     @Transactional
     public void increment() {
@@ -33,6 +30,6 @@ public class GeminiUsageTracker {
     }
 
     public int getDailyLimit() {
-        return dailyLimit;
+        return geminiProperties.dailyLimit();
     }
 }

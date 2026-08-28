@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -60,17 +59,12 @@ public class WeatherService {
     private static final String NOON_FORECAST_TIME = "1200";
     private static final String EARLY_MORNING_BASE_TIME = "0200";
 
-    @Value("${kma.service-key}")
-    private String serviceKey;
-
-    @Value("${kma.base-url}")
-    private String baseUrl;
-
     private final KoreaClock koreaClock;
     private final RestTemplate restTemplate;
     private final FestivalRepository festivalRepository;
     private final FestivalWeatherRepository weatherRepository;
     private final FestivalWeatherStore weatherStore;
+    private final WeatherProperties weatherProperties;
 
     /**
      * 스케줄러 전용: API에서 날씨를 수집해 DB에 저장.
@@ -85,7 +79,7 @@ public class WeatherService {
         LocalDate end = festival.getEndDate() != null ? festival.getEndDate() : festival.getStartDate();
         if (end != null && end.isBefore(today)) return false;
 
-        if (serviceKey == null || serviceKey.isBlank()) {
+        if (weatherProperties.serviceKey() == null || weatherProperties.serviceKey().isBlank()) {
             // collectWeather는 boolean만 반환해 호출부(스케줄러/컨트롤러) 어디서도 예외가
             // 안 뜸 — 로그가 유일한 신호이므로 반드시 남김
             log.warn("[Weather] KMA_SERVICE_KEY가 설정되지 않아 날씨 수집을 건너뜁니다. festivalId={}", festival.getId());
@@ -124,8 +118,8 @@ public class WeatherService {
     }
 
     private WeatherDto fetchFromApi(int[] grid, LocalDate targetDate, String[] baseDatetime) {
-        var uri = UriComponentsBuilder.fromUriString(baseUrl + "/getVilageFcst")
-                .queryParam("serviceKey", serviceKey)
+        var uri = UriComponentsBuilder.fromUriString(weatherProperties.baseUrl() + "/getVilageFcst")
+                .queryParam("serviceKey", weatherProperties.serviceKey())
                 .queryParam("pageNo", 1)
                 .queryParam("numOfRows", 1000)
                 .queryParam("dataType", "JSON")

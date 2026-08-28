@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.festival.FestivalDetailAggregationService;
 import com.feple.feple_backend.admin.festival.FestivalDetailDto;
+import com.feple.feple_backend.admin.festival.GoogleMapsProperties;
 import com.feple.feple_backend.artist.song.service.SetlistAdminService;
 import com.feple.feple_backend.artistfestival.dto.ArtistFestivalResponseDto;
 import com.feple.feple_backend.artistfestival.service.ArtistFestivalService;
@@ -23,10 +24,10 @@ import com.feple.feple_backend.timetable.dto.TimetableEntryResponseDto;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -42,7 +43,14 @@ class FestivalDetailAggregationServiceTest {
     @Mock SetlistAdminService setlistAdminService;
     @Mock FestivalReviewService reviewService;
 
-    @InjectMocks FestivalDetailAggregationService service;
+    private FestivalDetailAggregationService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new FestivalDetailAggregationService(
+                festivalService, artistFestivalService, timetableService, stageService, boothService,
+                ticketLinkService, setlistAdminService, reviewService, new GoogleMapsProperties(""));
+    }
 
     // ── 헬퍼 ─────────────────────────────────────────────────────────────────
 

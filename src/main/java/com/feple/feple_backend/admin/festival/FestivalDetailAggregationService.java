@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,11 +39,10 @@ public class FestivalDetailAggregationService {
     private final FestivalTicketLinkService ticketLinkService;
     private final SetlistAdminService setlistAdminService;
     private final FestivalReviewService reviewService;
-
-    @Value("${app.google.maps.key:}")
-    private String googleMapsKey;
+    private final GoogleMapsProperties googleMapsProperties;
 
     public FestivalDetailDto getDetail(Long festivalId) {
+        String googleMapsKey = googleMapsProperties.key();
         if (googleMapsKey == null || googleMapsKey.isBlank()) {
             // 브라우저 콘솔에만 에러가 남고 서버 로그엔 흔적이 없어 놓치기 쉬움
             log.warn("[Maps] GOOGLE_MAPS_KEY가 설정되지 않아 관리자 페이지 지도가 표시되지 않습니다.");

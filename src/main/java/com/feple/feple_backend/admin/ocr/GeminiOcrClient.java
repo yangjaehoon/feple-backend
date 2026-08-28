@@ -11,7 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,20 +45,13 @@ public class GeminiOcrClient {
             - JSON 배열만 반환하고 설명 텍스트나 마크다운 코드블록을 절대 포함하지 마세요.
             """;
 
-    @Value("${app.gemini.api-key:}")
-    private String apiKey;
-
-    @Value("${app.gemini.ocr-max-output-tokens:16384}")
-    private int maxOutputTokens;
-
-    @Value("${app.gemini.ocr-timeout-seconds:90}")
-    private int timeoutSeconds;
-
     private final ObjectMapper objectMapper;
     private final GeminiUsageTracker usageTracker;
     private final GeminiApiClient geminiApiClient;
+    private final GeminiProperties geminiProperties;
 
     boolean isConfigured() {
+        String apiKey = geminiProperties.apiKey();
         return apiKey != null && !apiKey.isBlank();
     }
 
@@ -109,7 +101,7 @@ public class GeminiOcrClient {
                 // maxOutputTokens을 넉넉히 잡아 대형 포스터에서의 절단 빈도를 낮춘다.
                 // 그래도 잘리는 경우는 isTruncated()로 감지해 호출부에 명시적으로 알린다.
                 "generationConfig", Map.of(
-                        "maxOutputTokens", maxOutputTokens,
+                        "maxOutputTokens", geminiProperties.ocrMaxOutputTokens(),
                         "responseMimeType", "application/json")
         );
     }
@@ -118,7 +110,8 @@ public class GeminiOcrClient {
         usageTracker.increment();
         // 대형 포스터 이미지 처리 시간을 고려해 넉넉히 설정 (app.gemini.ocr-timeout-seconds로 조정 가능)
         return geminiApiClient.call(new GeminiApiRequest(
-                GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, apiKey, request, Duration.ofSeconds(timeoutSeconds)));
+                GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiProperties.apiKey(), request,
+                Duration.ofSeconds(geminiProperties.ocrTimeoutSeconds())));
     }
 
     private List<LineupRawResult> parseLineupJsonArray(String content) {

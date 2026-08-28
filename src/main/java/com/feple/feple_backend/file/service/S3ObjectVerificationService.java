@@ -1,11 +1,11 @@
 package com.feple.feple_backend.file.service;
 
 import com.feple.feple_backend.file.ImageUploadPolicy;
+import com.feple.feple_backend.file.S3Properties;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
@@ -22,14 +22,12 @@ public class S3ObjectVerificationService {
     );
 
     private final S3Client s3Client;
-
-    @Value("${app.s3.bucket}")
-    private String bucket;
+    private final S3Properties s3Properties;
 
     public void verifyImageObject(String objectKey) {
         HeadObjectResponse head;
         try {
-            head = s3Client.headObject(r -> r.bucket(bucket).key(objectKey));
+            head = s3Client.headObject(r -> r.bucket(s3Properties.bucket()).key(objectKey));
         } catch (NoSuchKeyException e) {
             throw new InvalidRequestException("업로드된 파일을 찾을 수 없습니다.");
         }
@@ -47,7 +45,7 @@ public class S3ObjectVerificationService {
     // presigned PUT URL 자체는 Content-Length를 제한할 수 없으므로 업로드 완료 후 삭제
     private void deleteOversizedObject(String objectKey) {
         try {
-            s3Client.deleteObject(r -> r.bucket(bucket).key(objectKey));
+            s3Client.deleteObject(r -> r.bucket(s3Properties.bucket()).key(objectKey));
         } catch (Exception e) {
             log.warn("[S3Verification] 초과 용량 오브젝트 삭제 실패 key={}", objectKey, e);
         }

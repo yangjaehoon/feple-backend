@@ -10,16 +10,17 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 
+import com.feple.feple_backend.file.CdnProperties;
+import com.feple.feple_backend.file.S3Properties;
 import io.awspring.cloud.s3.S3Template;
 import java.time.LocalDate;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,7 +29,12 @@ class FileStorageServiceTest {
     @Mock S3Template s3Template;
     @Mock ImageResizeService imageResizeService;
 
-    @InjectMocks FileStorageService service;
+    private FileStorageService service;
+
+    @BeforeEach
+    void setUp() {
+        setBucketAndCdn(null, "");
+    }
 
     @AfterEach
     void clearTransactionSync() {
@@ -38,8 +44,8 @@ class FileStorageServiceTest {
     }
 
     private void setBucketAndCdn(String bucket, String cdnBaseUrl) {
-        ReflectionTestUtils.setField(service, "bucket", bucket);
-        ReflectionTestUtils.setField(service, "cdnBaseUrl", cdnBaseUrl);
+        service = new FileStorageService(s3Template, imageResizeService,
+                new S3Properties(bucket, 10L, 168L), new CdnProperties(cdnBaseUrl));
     }
 
     // ── buildUrl ──────────────────────────────────────────────────────────
