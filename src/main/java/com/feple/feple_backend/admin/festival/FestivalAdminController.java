@@ -22,7 +22,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -45,9 +44,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/festivals")
 public class FestivalAdminController {
 
-    @Value("${app.kakao.maps.key:}")
-    private String kakaoMapsKey;
-
     private final FestivalAdminService festivalService;
     private final ArtistAdminService artistService;
     private final ArtistFestivalService artistFestivalService;
@@ -55,6 +51,7 @@ public class FestivalAdminController {
     private final FestivalChecklistService festivalChecklistService;
     private final FestivalSuggestionAdminService festivalSuggestionAdminService;
     private final AdminLogService adminLogService;
+    private final KakaoMapsProperties kakaoMapsProperties;
 
     @GetMapping("/new")
     public String showCreateForm(@RequestParam(required = false) String name,
@@ -275,6 +272,7 @@ public class FestivalAdminController {
         model.addAttribute("allRegions", Region.values());
         model.addAttribute("allGenres", MusicGenre.values());
         model.addAttribute("allAgeRestrictions", AgeRestriction.values());
+        String kakaoMapsKey = kakaoMapsProperties.key();
         if (kakaoMapsKey == null || kakaoMapsKey.isBlank()) {
             // 브라우저 콘솔에만 에러가 남고 서버 로그엔 흔적이 없어 놓치기 쉬움
             log.warn("[Maps] KAKAO_MAPS_KEY가 설정되지 않아 관리자 페이지 지도가 표시되지 않습니다.");
