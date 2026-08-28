@@ -23,37 +23,37 @@ class ArtistListParamsTest {
     }
 
     @Test
-    void toRedirectUrl_키워드_정렬_장르_없으면_page만_포함() {
+    void toListUrl_키워드_정렬_장르_없으면_page만_포함() {
         ArtistListParams params = new ArtistListParams(0, null, null, null);
 
-        assertThat(params.toRedirectUrl()).isEqualTo("/admin/artists?page=0");
+        assertThat(params.toListUrl()).isEqualTo("/admin/artists?page=0");
     }
 
     @Test
-    void toRedirectUrl_키워드_있으면_포함() {
+    void toListUrl_키워드_있으면_포함() {
         ArtistListParams params = new ArtistListParams(0, "iu", null, null);
 
-        assertThat(params.toRedirectUrl()).isEqualTo("/admin/artists?page=0&keyword=iu");
+        assertThat(params.toListUrl()).isEqualTo("/admin/artists?page=0&keyword=iu");
     }
 
     @Test
-    void toRedirectUrl_정렬_있으면_포함() {
+    void toListUrl_정렬_있으면_포함() {
         ArtistListParams params = new ArtistListParams(1, null, "name", null);
 
-        assertThat(params.toRedirectUrl()).isEqualTo("/admin/artists?page=1&sort=name");
+        assertThat(params.toListUrl()).isEqualTo("/admin/artists?page=1&sort=name");
     }
 
     @Test
-    void toRedirectUrl_장르_있으면_포함() {
+    void toListUrl_장르_있으면_포함() {
         ArtistListParams params = new ArtistListParams(0, null, null, MusicGenre.INDIE);
 
-        assertThat(params.toRedirectUrl()).isEqualTo("/admin/artists?page=0&genre=INDIE");
+        assertThat(params.toListUrl()).isEqualTo("/admin/artists?page=0&genre=INDIE");
     }
 
     @Test
-    void toRedirectUrl_키워드와_정렬_모두_있으면_모두_포함() {
+    void toListUrl_키워드와_정렬_모두_있으면_모두_포함() {
         ArtistListParams params = new ArtistListParams(2, "아이유", "name", null);
 
-        assertThat(params.toRedirectUrl()).contains("page=2").contains("sort=name");
+        assertThat(params.toListUrl()).contains("page=2").contains("sort=name");
     }
 }

@@ -147,6 +147,18 @@ class ArtistAdminControllerTest {
     }
 
     @Test
+    void 아티스트_수정_성공시_장르_필터가_리다이렉트_URL에_보존됨() throws Exception {
+        mockMvc.perform(multipart("/admin/artists/1/edit")
+                        .file("profileImageFile", new byte[0])
+                        .param("name", "수정된아티스트")
+                        .param("genres", "INDIE")
+                        .param("page", "0")
+                        .param("genre", "INDIE"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/artists?page=0&genre=INDIE"));
+    }
+
+    @Test
     void 아티스트_수정_성공시_리다이렉트_URL의_한글_키워드가_인코딩됨() throws Exception {
         // encode() 없이 build()만 하면 keyword의 한글이 그대로 Location 헤더에 들어가
         // Tomcat이 "invalid header"로 판단해 리다이렉트 자체를 제거해버렸다(빈 화면 원인) — 회귀 테스트

@@ -230,7 +230,7 @@ public class ArtistAdminController {
             log.error("아티스트 수정 실패 id={}", id, e);
             ra.addFlashAttribute("errorMessage", AdminConstants.MSG_UPDATE_ERROR);
         }
-        return "redirect:" + params.toRedirectUrl();
+        return "redirect:" + params.toListUrl();
     }
 
     private static void addGenreOptions(Model model) {
