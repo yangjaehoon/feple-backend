@@ -187,13 +187,21 @@ class AdminTemplateRenderSmokeTest {
         try (Stream<Path> walk = Files.walk(ADMIN_DIR)) {
             return walk.filter(p -> p.toString().endsWith(".html"))
                     // fragment 정의 파일은 단독 렌더 대상이 아님 (페이지가 th:insert 하며 전이적으로 검사됨)
-                    .filter(p -> !p.getFileName().toString().equals("fragments.html"))
-                    .filter(p -> !p.getFileName().toString().contains("-fragment"))
+                    .filter(p -> !isFragmentFile(fileName(p)))
                     .map(p -> "admin/" + ADMIN_DIR.relativize(p).toString()
                             .replace('\\', '/').replace(".html", ""))
                     .sorted()
                     .toList().stream();
         }
+    }
+
+    private static String fileName(Path path) {
+        Path name = path.getFileName();
+        return name == null ? "" : name.toString();
+    }
+
+    private static boolean isFragmentFile(String fileName) {
+        return fileName.equals("fragments.html") || fileName.contains("-fragment");
     }
 
     @ParameterizedTest(name = "{0}")
@@ -296,6 +304,8 @@ class AdminTemplateRenderSmokeTest {
 
         @Override public String toString() { return ""; }
         @Override public int compareTo(Object o) { return 0; }
+        @Override public boolean equals(Object o) { return o instanceof Self; }
+        @Override public int hashCode() { return 0; }
     }
 
     /** get()은 Self, getOrDefault(k, default)는 기본값을 돌려주는 조회용 맵 스텁. */
