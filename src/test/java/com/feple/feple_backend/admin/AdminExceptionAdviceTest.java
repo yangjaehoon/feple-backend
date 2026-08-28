@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -76,6 +77,15 @@ class AdminExceptionAdviceTest {
     }
 
     @Test
+    void 뷰_컨트롤러_ModelAttribute_바인딩_실패는_500이_아니라_400_일반_메시지() throws Exception {
+        mockMvc.perform(get("/admin/test/bind").param("page", "abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(view().name(AdminExceptionAdvice.ERROR_VIEW))
+                .andExpect(model().attribute("errorMessage",
+                        "요청 값이 올바르지 않습니다. 입력을 확인하고 다시 시도해주세요."));
+    }
+
+    @Test
     void ResponseBody_컨트롤러_예외는_JSON_으로_응답() throws Exception {
         mockMvc.perform(get("/admin/test/json-boom"))
                 .andExpect(status().isInternalServerError())
@@ -123,7 +133,14 @@ class AdminExceptionAdviceTest {
         String denied() {
             throw new AccessDeniedException("권한 없음");
         }
+
+        @GetMapping("/bind")
+        String bind(@ModelAttribute BindTestParams params) {
+            return "ok";
+        }
     }
+
+    record BindTestParams(Integer page) {}
 
     @Controller
     @RequestMapping("/admin/test")

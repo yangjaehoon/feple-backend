@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -89,11 +90,14 @@ public class AdminExceptionAdvice {
 
     // 순수 IllegalArgumentException(JDK·라이브러리 발) 및 파라미터 바인딩 실패 — 내부 구현이 새지 않도록
     // 일반 메시지로 응답한다. 사용자용 검증 메시지는 InvalidRequestException으로 던질 것.
+    // BindException: @ModelAttribute 파라미터 객체(record 포함) 바인딩 실패(예: ?page=abc).
+    // 그 하위 타입 MethodArgumentNotValidException(BindingResult 파라미터 없는 경우)까지 함께 잡힌다.
     @ExceptionHandler({
             MethodArgumentTypeMismatchException.class,
             MissingServletRequestParameterException.class,
             HandlerMethodValidationException.class,
             HttpMessageNotReadableException.class,
+            BindException.class,
             IllegalArgumentException.class
     })
     public Object handleBadRequest(Exception ex, HttpServletRequest request, HandlerMethod handlerMethod) {
