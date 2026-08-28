@@ -73,7 +73,9 @@
                                     <button type="submit" class="btn btn-sm"
                                             th:class="${acc.enabled} ? 'btn btn-secondary btn-sm' : 'btn btn-primary btn-sm'"
                                             th:text="${acc.enabled} ? '비활성화' : '활성화'"
-                                            th:attr="${acc.enabled} ? |data-confirm=관리자 '${acc.username}' 계정을 비활성화할까요?| : null">
+                                            th:attr="data-confirm=${acc.enabled}
+                                                ? |관리자 '${acc.username}' 계정을 비활성화할까요?|
+                                                : |관리자 '${acc.username}' 계정을 활성화할까요?|">
                                     </button>
                                 </form>
 
