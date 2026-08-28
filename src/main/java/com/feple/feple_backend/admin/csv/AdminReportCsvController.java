@@ -4,7 +4,7 @@ import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
-import com.feple.feple_backend.admin.support.AdminConstants;
+import com.feple.feple_backend.global.ReportTypes;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class AdminReportCsvController {
 
     @GetMapping("/reports.csv")
     @ResponseBody
-    public ResponseEntity<byte[]> exportReports(@RequestParam(defaultValue = AdminConstants.REPORT_TYPE_POST) String type) {
+    public ResponseEntity<byte[]> exportReports(@RequestParam(defaultValue = ReportTypes.POST) String type) {
         // type이 어느 exporter에도 등록되지 않은 값이면 getOrDefault로 post 쪽에 조용히 fallback하지
         // 않고 400을 반환한다 — 과거에 여기서 photo 타입 exporter가 누락돼 photo 요청이 post 신고
         // 데이터로 조용히 내려가던 버그가 있었다.

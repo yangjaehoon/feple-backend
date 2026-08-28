@@ -1,10 +1,10 @@
 package com.feple.feple_backend.userreport.service;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.ReportRejectionService;
+import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -79,7 +79,7 @@ public class UserReportService implements ReportAdminService<UserReport> {
     }
 
     @Override
-    public String getReportType() { return AdminConstants.REPORT_TYPE_USER; }
+    public String getReportType() { return ReportTypes.USER; }
 
     @Override
     public Page<UserReport> findPendingReports(PageRequest pageable) {

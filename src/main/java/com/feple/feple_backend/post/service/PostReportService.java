@@ -6,6 +6,7 @@ import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.ReportPolicy;
 import com.feple.feple_backend.global.ReportRejectionService;
+import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -84,7 +85,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     @Override
-    public String getReportType() { return "post"; }
+    public String getReportType() { return ReportTypes.POST; }
 
     @Override
     public Page<PostReport> findPendingReports(PageRequest pageable) {

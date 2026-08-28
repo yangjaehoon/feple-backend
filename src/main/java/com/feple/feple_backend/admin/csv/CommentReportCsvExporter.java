@@ -1,8 +1,8 @@
 package com.feple.feple_backend.admin.csv;
 
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.service.CommentReportService;
+import com.feple.feple_backend.global.ReportTypes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ class CommentReportCsvExporter implements ReportCsvExporter {
     private final CommentReportService commentReportService;
 
     @Override
-    public String getReportType() { return AdminConstants.REPORT_TYPE_COMMENT; }
+    public String getReportType() { return ReportTypes.COMMENT; }
 
     @Override
     public String buildCsv() {

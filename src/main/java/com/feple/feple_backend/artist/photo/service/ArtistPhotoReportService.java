@@ -2,7 +2,6 @@ package com.feple.feple_backend.artist.photo.service;
 
 import com.feple.feple_backend.admin.service.PhotoPresignedUrlProvider;
 import com.feple.feple_backend.admin.service.ReportAdminService;
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRepository;
@@ -13,6 +12,7 @@ import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.ReportRejectionService;
+import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -80,7 +80,7 @@ public class ArtistPhotoReportService implements ReportAdminService<ArtistGaller
     }
 
     @Override
-    public String getReportType() { return AdminConstants.REPORT_TYPE_PHOTO; }
+    public String getReportType() { return ReportTypes.PHOTO; }
 
     @Override
     public Page<ArtistGalleryPhotoReport> findPendingReports(PageRequest pageable) {

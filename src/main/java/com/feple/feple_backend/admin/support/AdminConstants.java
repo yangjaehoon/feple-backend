@@ -27,10 +27,6 @@ public final class AdminConstants {
     // 선택 id를 그대로 남겨도 컬럼 길이(2000자)에 여유가 있도록 잡은 상한이기도 하다.
     public static final int BULK_ACTION_MAX_IDS = 50;
 
-    public static final String REPORT_TYPE_POST    = "post";
-    public static final String REPORT_TYPE_COMMENT = "comment";
-    public static final String REPORT_TYPE_PHOTO   = "photo";
-    public static final String REPORT_TYPE_USER    = "user";
     public static final String STATUS_PENDING      = "PENDING";
     public static final String STATUS_ALL          = "ALL";
 

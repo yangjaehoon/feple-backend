@@ -10,6 +10,7 @@ import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.global.ReportPolicy;
 import com.feple.feple_backend.global.ReportRejectionService;
+import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -88,7 +89,7 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     }
 
     @Override
-    public String getReportType() { return "comment"; }
+    public String getReportType() { return ReportTypes.COMMENT; }
 
     @Override
     public Page<CommentReport> findPendingReports(PageRequest pageable) {

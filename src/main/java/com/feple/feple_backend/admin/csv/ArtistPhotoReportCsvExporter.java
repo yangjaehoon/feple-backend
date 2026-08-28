@@ -1,8 +1,8 @@
 package com.feple.feple_backend.admin.csv;
 
-import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
+import com.feple.feple_backend.global.ReportTypes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ class ArtistPhotoReportCsvExporter implements ReportCsvExporter {
     private final ArtistPhotoReportService artistPhotoReportService;
 
     @Override
-    public String getReportType() { return AdminConstants.REPORT_TYPE_PHOTO; }
+    public String getReportType() { return ReportTypes.PHOTO; }
 
     @Override
     public String buildCsv() {

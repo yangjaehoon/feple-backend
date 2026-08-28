@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.csv;
 
-import com.feple.feple_backend.admin.support.AdminConstants;
+import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.service.PostReportService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ class PostReportCsvExporter implements ReportCsvExporter {
     private final PostReportService postReportService;
 
     @Override
-    public String getReportType() { return AdminConstants.REPORT_TYPE_POST; }
+    public String getReportType() { return ReportTypes.POST; }
 
     @Override
     public String buildCsv() {

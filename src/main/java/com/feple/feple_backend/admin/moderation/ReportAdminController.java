@@ -9,6 +9,7 @@ import com.feple.feple_backend.admin.service.ReportAdminService;
 import com.feple.feple_backend.admin.service.ReportSearchParams;
 import com.feple.feple_backend.admin.support.AdminActionUtils;
 import com.feple.feple_backend.admin.support.AdminConstants;
+import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +173,7 @@ public class ReportAdminController {
     }
 
     private String redirectReports(ReportFilter filter) {
-        String safeType   = handlers.containsKey(filter.type()) ? filter.type() : AdminConstants.REPORT_TYPE_POST;
+        String safeType   = handlers.containsKey(filter.type()) ? filter.type() : ReportTypes.POST;
         String safeStatus = AdminConstants.STATUS_PENDING.equals(filter.status()) ? AdminConstants.STATUS_PENDING : AdminConstants.STATUS_ALL;
         // 처리 후 총 건수 기준으로 유효 페이지 범위를 재계산해 빈 페이지 착지를 방지
         // keyword 검색 시에는 전체 카운트가 필터 결과를 반영하지 않으므로 조정 생략
