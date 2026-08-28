@@ -72,11 +72,19 @@ public class FestivalArtistAdminController {
             ra.addFlashAttribute("errorMessage", "아티스트를 한 명 이상 선택해주세요.");
             return "redirect:/admin/festivals/" + festivalId + "/artists/new";
         }
-        ArtistFestivalService.LinkArtistsResult result = artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
-        applyFlashMessage(result, ra);
-        if (result.added() > 0) {
-            adminLogService.log(AdminAction.FESTIVAL_ARTIST_ADD, "FESTIVAL", festivalId, result.added() + "명 추가");
-        }
+        AdminActionUtils.tryAction(
+                () -> {
+                    ArtistFestivalService.LinkArtistsResult result =
+                            artistFestivalService.linkArtistsToFestival(festivalId, artistIds);
+                    applyFlashMessage(result, ra);
+                    if (result.added() > 0) {
+                        adminLogService.log(AdminAction.FESTIVAL_ARTIST_ADD, "FESTIVAL", festivalId, result.added() + "명 추가");
+                    }
+                },
+                null,
+                e -> log.error("아티스트 연결 실패 festivalId={}", festivalId, e),
+                "아티스트 추가 중 오류가 발생했습니다.",
+                ra);
         return AdminFestivalRedirects.detail(festivalId);
     }
 

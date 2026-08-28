@@ -1,5 +1,6 @@
 package com.feple.feple_backend.user.scheduler;
 
+import com.feple.feple_backend.global.BatchDeletion;
 import com.feple.feple_backend.user.repository.UserAccessLogRepository;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 public class UserAccessLogCleanupScheduler {
 
     private static final int RETENTION_DAYS = 90;
-    private static final int BATCH_SIZE = 1000;
 
     private final UserAccessLogRepository userAccessLogRepository;
 
@@ -23,12 +23,8 @@ public class UserAccessLogCleanupScheduler {
     @SchedulerLock(name = "userAccessLogCleanupScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     public void cleanup() {
         LocalDate cutoff = LocalDate.now().minusDays(RETENTION_DAYS);
-        int totalDeleted = 0;
-        int deleted;
-        do {
-            deleted = userAccessLogRepository.deleteByAccessDateBeforeBatch(cutoff, BATCH_SIZE);
-            totalDeleted += deleted;
-        } while (deleted == BATCH_SIZE);
+        int totalDeleted = BatchDeletion.repeatUntilExhausted(
+                () -> userAccessLogRepository.deleteByAccessDateBeforeBatch(cutoff, BatchDeletion.BATCH_SIZE));
         log.info("[UserAccessLogCleanup] {}일 이전 접속 로그 {}건 삭제 완료 (cutoff={})", RETENTION_DAYS, totalDeleted, cutoff);
     }
 }

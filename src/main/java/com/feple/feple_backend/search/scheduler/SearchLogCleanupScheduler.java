@@ -1,5 +1,6 @@
 package com.feple.feple_backend.search.scheduler;
 
+import com.feple.feple_backend.global.BatchDeletion;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 public class SearchLogCleanupScheduler {
 
     private static final int RETENTION_DAYS = 90;
-    private static final int BATCH_SIZE = 1000;
 
     private final SearchLogRepository searchLogRepository;
 
@@ -23,12 +23,8 @@ public class SearchLogCleanupScheduler {
     @SchedulerLock(name = "searchLogCleanupScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     public void cleanup() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(RETENTION_DAYS);
-        int totalDeleted = 0;
-        int deleted;
-        do {
-            deleted = searchLogRepository.deleteByCreatedAtBeforeBatch(cutoff, BATCH_SIZE);
-            totalDeleted += deleted;
-        } while (deleted == BATCH_SIZE);
+        int totalDeleted = BatchDeletion.repeatUntilExhausted(
+                () -> searchLogRepository.deleteByCreatedAtBeforeBatch(cutoff, BatchDeletion.BATCH_SIZE));
         log.info("[SearchLogCleanup] {}일 이전 검색 로그 {}건 삭제 완료 (cutoff={})", RETENTION_DAYS, totalDeleted, cutoff);
     }
 }
