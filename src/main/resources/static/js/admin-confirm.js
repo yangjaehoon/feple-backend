@@ -3,6 +3,8 @@
     var previousFocus = null;
 
     function setButtonLoading(btn) {
+        // form.submit()은 submit 이벤트를 발생시키지 않아 진행 바가 자동으로 안 뜬다 — 여기서 직접 시작
+        if (window.AdminProgress) window.AdminProgress.start();
         if (!btn) return;
         btn.disabled = true;
         btn.classList.add('btn-submitting');

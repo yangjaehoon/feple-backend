@@ -221,7 +221,10 @@ body {
 /* ============================================================
    TABLE
    ============================================================ */
-.table-wrap { overflow-x: auto; }
+/* 가로 스크롤은 유지하되 세로는 clip — clip은 스크롤 컨테이너를 만들지 않으므로
+   아래 thead의 position:sticky가 (table-wrap이 아니라) 뷰포트 기준으로 고정된다.
+   overflow-y를 visible로 두면 스펙상 overflow-x:auto가 overflow-y도 auto로 만들어 sticky가 깨진다. */
+.table-wrap { overflow-x: auto; overflow-y: clip; }
 /* min-width 없으면 컨테이너가 좁아질 때 table-layout: auto가 열을 억지로 욱여넣어 word-break
    규칙과 맞물려 텍스트가 한 글자씩 줄바꿈된다 — min-width로 더는 못 줄어들게 막아 대신
    .table-wrap의 가로 스크롤이 뜨도록 한다 */
@@ -233,6 +236,10 @@ thead th {
   padding: 11px 20px;
   border-bottom: 1.5px solid var(--border);
   text-align: left; white-space: nowrap;
+  position: sticky; top: 0; z-index: 3;
+}
+@media (max-width: 900px) {
+  thead th { top: 52px; } /* 모바일 고정 topbar(52px) 아래에 붙도록 */
 }
 tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
 tbody tr:last-child { border-bottom: none; }
@@ -1917,3 +1924,13 @@ a:focus-visible {
 .crew-member-chip input { margin: 0; cursor: pointer; }
 .timetable-form-footer  { grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 4px; }
 .timetable-crew-col     { grid-column: 1 / -1; }
+
+/* ============================================================
+   PAGE-TRANSITION PROGRESS BAR (admin-progress.js)
+   ============================================================ */
+#admin-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 0;
+  background: var(--primary); z-index: 3000;
+  box-shadow: 0 0 8px var(--primary), 0 0 4px var(--primary);
+  opacity: 0; pointer-events: none;
+}

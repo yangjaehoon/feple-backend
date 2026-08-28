@@ -138,4 +138,26 @@
         if (menuBtn) menuBtn.addEventListener('click', openSidebar);
         if (overlay) overlay.addEventListener('click', closeSidebar);
     });
+
+    // 단축키: '/' → 사이드바 전역 검색 포커스, Esc → 포커스 해제
+    // (모바일은 사이드바가 접혀 있어 제외)
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
+        var t = e.target;
+        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+        var search = document.querySelector('.sb-search-input');
+        if (!search) return;
+        e.preventDefault();
+        search.focus();
+        search.select();
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        var sbSearch = document.querySelector('.sb-search-input');
+        if (sbSearch) {
+            sbSearch.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') sbSearch.blur();
+            });
+        }
+    });
 })();
