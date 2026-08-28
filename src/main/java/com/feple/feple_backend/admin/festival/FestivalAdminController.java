@@ -204,7 +204,7 @@ public class FestivalAdminController {
             return renderEditFormWithError(bindingResult, id, currentPosterUrl, model);
         } catch (Exception e) {
             log.error("페스티벌 수정 실패. id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_UPDATE_ERROR);
             return "redirect:/admin/festivals/" + id;
         }
         return "redirect:/admin/festivals/" + id;
@@ -247,7 +247,7 @@ public class FestivalAdminController {
                 },
                 "페스티벌이 복구되었습니다.",
                 e -> log.error("페스티벌 복구 실패. id={}", id, e),
-                "복구 중 오류가 발생했습니다.",
+                AdminConstants.MSG_RESTORE_ERROR,
                 ra);
         return "redirect:/admin/festivals/deleted";
     }

@@ -50,7 +50,7 @@ public class SetlistChangeRequestAdminController {
                 },
                 "처리 완료로 표시했습니다.",
                 e -> log.error("셋리스트 요청 처리 실패: id={}", id, e),
-                "처리 중 오류가 발생했습니다.",
+                AdminConstants.MSG_PROCESS_ERROR,
                 ra);
 
         long remaining = service.countByStatus(parseStatus(params.status()));

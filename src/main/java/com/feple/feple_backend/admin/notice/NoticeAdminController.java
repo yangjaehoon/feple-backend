@@ -159,7 +159,7 @@ public class NoticeAdminController {
                 },
                 "공지사항이 수정되었습니다.",
                 e -> log.error("공지사항 수정 실패 id={}", id, e),
-                "수정 중 오류가 발생했습니다.",
+                AdminConstants.MSG_UPDATE_ERROR,
                 ra);
         return noticesRedirect(page);
     }
@@ -175,7 +175,7 @@ public class NoticeAdminController {
                 },
                 "고정 상태가 변경되었습니다.",
                 e -> log.error("공지사항 고정 토글 실패 id={}", id, e),
-                "처리 중 오류가 발생했습니다.",
+                AdminConstants.MSG_PROCESS_ERROR,
                 ra);
         return noticesRedirect(page);
     }

@@ -168,7 +168,7 @@ public class PostAdminController {
                 },
                 "게시글이 복구되었습니다.",
                 e -> log.error("게시글 복구 실패 id={}", id, e),
-                "복구 중 오류가 발생했습니다.",
+                AdminConstants.MSG_RESTORE_ERROR,
                 ra);
         return "redirect:/admin/posts/deleted";
     }

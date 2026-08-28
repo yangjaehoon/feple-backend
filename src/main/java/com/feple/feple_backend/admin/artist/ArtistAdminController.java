@@ -154,7 +154,7 @@ public class ArtistAdminController {
                 },
                 "아티스트 신청이 처리되었습니다.",
                 e -> log.error("아티스트 신청 처리 실패: {}", id, e),
-                "처리 중 오류가 발생했습니다.",
+                AdminConstants.MSG_PROCESS_ERROR,
                 ra);
         return "redirect:/admin/artists";
     }
@@ -226,7 +226,7 @@ public class ArtistAdminController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("아티스트 수정 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "수정 중 오류가 발생했습니다.");
+            ra.addFlashAttribute("errorMessage", AdminConstants.MSG_UPDATE_ERROR);
         }
         return "redirect:" + params.toRedirectUrl();
     }
@@ -278,7 +278,7 @@ public class ArtistAdminController {
                 },
                 "아티스트가 복구되었습니다.",
                 e -> log.error("아티스트 복구 실패. id={}", id, e),
-                "복구 중 오류가 발생했습니다.",
+                AdminConstants.MSG_RESTORE_ERROR,
                 ra);
         return "redirect:/admin/artists/deleted";
     }

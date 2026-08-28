@@ -67,7 +67,7 @@ public class ArtistSuggestionAdminController {
                 },
                 "아티스트 신청이 처리되었습니다.",
                 e -> log.error("아티스트 신청 처리 실패: {}", id, e),
-                "처리 중 오류가 발생했습니다.",
+                AdminConstants.MSG_PROCESS_ERROR,
                 ra);
         return "redirect:/admin/artist-suggestions";
     }

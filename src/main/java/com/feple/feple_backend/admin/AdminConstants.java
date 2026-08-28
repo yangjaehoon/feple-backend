@@ -39,4 +39,7 @@ public final class AdminConstants {
             "한 번에 최대 " + BULK_ACTION_MAX_IDS + "건까지 처리할 수 있습니다. 선택을 줄여 다시 시도해주세요.";
     public static final String MSG_BULK_DELETE_ERROR = "일괄 삭제 처리 중 오류가 발생했습니다.";
     public static final String MSG_DELETE_ERROR = "삭제 중 오류가 발생했습니다.";
+    public static final String MSG_PROCESS_ERROR = "처리 중 오류가 발생했습니다.";
+    public static final String MSG_UPDATE_ERROR = "수정 중 오류가 발생했습니다.";
+    public static final String MSG_RESTORE_ERROR = "복구 중 오류가 발생했습니다.";
 }
