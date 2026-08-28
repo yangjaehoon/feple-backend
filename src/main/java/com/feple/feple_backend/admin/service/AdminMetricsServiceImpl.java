@@ -122,12 +122,12 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
     @Override
     @Cacheable("adminContentTrend")
     public ContentTrendDto getContentTrend() {
-        LocalDateTime since7days  = LocalDate.now().minusDays(AdminConstants.STATS_RECENT_DAYS - 1).atStartOfDay();
-        LocalDateTime since30days = LocalDate.now().minusDays(AdminConstants.TREND_UPCOMING_DAYS - 1).atStartOfDay();
         LocalDate today = LocalDate.now();
+        LocalDateTime keywordLookbackStart = today.minusDays(AdminConstants.STATS_RECENT_DAYS - 1).atStartOfDay();
+        LocalDateTime postLookbackStart = today.minusDays(AdminConstants.TREND_POST_LOOKBACK_DAYS - 1).atStartOfDay();
 
         List<TopKeywordDto> topKeywords = mapTopKeywords(
-                searchLogRepository.findTopKeywordsSince(since7days, AdminConstants.TREND_TOP_LIMIT));
+                searchLogRepository.findTopKeywordsSince(keywordLookbackStart, AdminConstants.TREND_TOP_LIMIT));
 
         List<Festival> topFestivalsByLike = festivalRepository.findTop10ByDeletedAtIsNullOrderByLikeCountDesc();
 
@@ -137,7 +137,7 @@ public class AdminMetricsServiceImpl implements AdminDashboardMetrics, AdminStat
 
         List<Artist> topArtistsByFollower = artistRepository.findTop10ByDeletedAtIsNullOrderByFollowerCountDesc();
 
-        List<Post> topPostsByLike = postRepository.findPopularPosts(since30days,
+        List<Post> topPostsByLike = postRepository.findPopularPosts(postLookbackStart,
                 PageRequest.of(0, AdminConstants.TREND_TOP_LIMIT));
 
         return new ContentTrendDto(topKeywords, topFestivalsByLike, upcomingHotFestivals,

@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.notice;
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.BindingResultUtils;
+import com.feple.feple_backend.admin.CurrentAdminProvider;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -17,9 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -42,6 +40,7 @@ public class NoticeAdminController {
     private final NoticeAdminService noticeAdminService;
     private final AdminLogService adminLogService;
     private final AdminPushService adminPushService;
+    private final CurrentAdminProvider currentAdminProvider;
 
     @GetMapping
     public String list(@RequestParam(defaultValue = "0") int page, Model model) {
@@ -63,8 +62,7 @@ public class NoticeAdminController {
                                Model model,
                                RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            return "admin/notice/create";
+            return renderCreateFormWithError(bindingResult, model);
         }
         AdminActionUtils.tryActionWithResult(
                 () -> {
@@ -81,6 +79,11 @@ public class NoticeAdminController {
         return "redirect:/admin/notices";
     }
 
+    private static String renderCreateFormWithError(BindingResult bindingResult, Model model) {
+        model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+        return "admin/notice/create";
+    }
+
     // 전체 발송(AdminPushService.sendToAll)은 기존에 SUPER_ADMIN 전용 화면(/admin/push)에서만
     // 쓸 수 있던 기능이라, NOTICES 권한만 있는 관리자가 공지 등록으로 우회해 전체 푸시를 보내지
     // 못하도록 여기서도 SUPER_ADMIN 여부를 다시 검사한다(화면에서 체크박스를 숨겨도 폼 위조로
@@ -88,7 +91,7 @@ public class NoticeAdminController {
     // 처리하지 않고, 실패 여부만 성공 메시지에 반영한다.
     private boolean pushFailed(Long noticeId, NoticeRequestDto dto) {
         if (!dto.isSendNotification()) return false;
-        if (!isSuperAdmin()) {
+        if (!currentAdminProvider.isSuperAdmin()) {
             log.warn("[NoticeAdmin] SUPER_ADMIN이 아닌 관리자가 알림 발송을 요청해 무시함 noticeId={}", noticeId);
             return false;
         }
@@ -117,11 +120,6 @@ public class NoticeAdminController {
         return cut + "…";
     }
 
-    private boolean isSuperAdmin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
-    }
-
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id,
                                @RequestParam(defaultValue = "0") int page,
@@ -147,10 +145,7 @@ public class NoticeAdminController {
                                Model model,
                                RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("noticeId", id);
-            model.addAttribute("page", page);
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            return "admin/notice/edit";
+            return renderEditFormWithError(bindingResult, id, page, model);
         }
         AdminActionUtils.tryAction(
                 () -> {
@@ -162,6 +157,13 @@ public class NoticeAdminController {
                 AdminConstants.MSG_UPDATE_ERROR,
                 ra);
         return noticesRedirect(page);
+    }
+
+    private static String renderEditFormWithError(BindingResult bindingResult, Long id, int page, Model model) {
+        model.addAttribute("noticeId", id);
+        model.addAttribute("page", page);
+        model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
+        return "admin/notice/edit";
     }
 
     @PostMapping("/{id}/pin")

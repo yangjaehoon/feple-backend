@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import com.feple.feple_backend.admin.CurrentAdminProvider;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.push.AdminPushService;
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
@@ -44,12 +44,16 @@ class NoticeAdminControllerTest {
     @Mock AdminLogService adminLogService;
     @Mock AdminPushService adminPushService;
 
-    @InjectMocks NoticeAdminController controller;
+    NoticeAdminController controller;
 
     MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
+        // CurrentAdminProvider는 SecurityContextHolder만 읽는 무상태 컴포넌트라 실제 인스턴스를 쓴다
+        // (authenticateAs가 세팅한 컨텍스트로 SUPER_ADMIN 여부가 그대로 검증되도록).
+        controller = new NoticeAdminController(noticeAdminService, adminLogService, adminPushService,
+                new CurrentAdminProvider());
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 

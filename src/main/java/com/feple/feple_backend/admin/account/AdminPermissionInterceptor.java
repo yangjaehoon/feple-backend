@@ -52,7 +52,7 @@ public class AdminPermissionInterceptor implements HandlerInterceptor {
         Class<?> controllerClass = hm.getBeanType();
         String requiredAuthority;
         if (controllerClass.isAnnotationPresent(RequiresSuperAdmin.class)) {
-            requiredAuthority = "ROLE_SUPER_ADMIN";
+            requiredAuthority = AdminRole.SUPER_ADMIN.authority();
         } else if (controllerClass.isAnnotationPresent(RequiresAdminPermission.class)) {
             RequiresAdminPermission annotation = controllerClass.getAnnotation(RequiresAdminPermission.class);
             // 조회(GET/HEAD)는 READ, 그 외 변경 요청(POST/PUT/PATCH/DELETE)은 WRITE 권한을 요구한다.

@@ -11,4 +11,9 @@ public enum AdminRole {
     MANAGER("일반 관리자");
 
     private final String displayName;
+
+    /** Spring Security 권한 문자열 (예: SUPER_ADMIN → "ROLE_SUPER_ADMIN"). */
+    public String authority() {
+        return "ROLE_" + name();
+    }
 }

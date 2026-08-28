@@ -14,6 +14,9 @@ public final class AdminConstants {
     public static final int BLINDED_POSTS_LIMIT     = 200;
     public static final int TREND_TOP_LIMIT         = 10;
     public static final int TREND_UPCOMING_DAYS     = 30;
+    // 대시보드 "인기 게시글" 트렌드의 집계 대상 기간(일). TREND_UPCOMING_DAYS와 값은 같지만
+    // 의미(다가오는 축제 창 vs 게시글 lookback)가 달라 별도 상수로 둔다.
+    public static final int TREND_POST_LOOKBACK_DAYS = 30;
     public static final int BROADCAST_HISTORY_LIMIT  = 100;
     public static final int POST_DETAIL_COMMENT_LIMIT = 100;
     public static final int PUSH_TITLE_MAX_LENGTH = 100;

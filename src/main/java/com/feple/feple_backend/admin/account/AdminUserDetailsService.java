@@ -26,7 +26,7 @@ public class AdminUserDetailsService implements UserDetailsService {
         authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
         if (account.getRole() == AdminRole.SUPER_ADMIN) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+            authorities.add(new SimpleGrantedAuthority(AdminRole.SUPER_ADMIN.authority()));
             // SUPER_ADMIN 권한은 DB에 저장하지 않고 로그인 시점에 전 권한(READ+WRITE)을 동적 부여.
             // AdminPermission enum에 새 항목을 추가하면 SUPER_ADMIN은 별도 조치 없이 자동으로 접근 가능.
             for (AdminPermission permission : AdminPermission.values()) {
