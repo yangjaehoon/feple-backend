@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.user;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.AdminUrlUtils;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -64,8 +65,8 @@ public class UserAdminController {
                     addDetailModel(model, userDetailAggregationService.getDetail(id));
                     UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.fromPath("/admin/users"), listFilter)
                             .queryParam("page", listFilter.page());
-                    if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
-                    model.addAttribute("returnUrl", builder.build().encode().toUriString());
+                    AdminUrlUtils.appendIfPresent(builder, "keyword", listFilter.keyword());
+                    model.addAttribute("returnUrl", AdminUrlUtils.encoded(builder));
                     model.addAttribute("listFilter", listFilter);
                 },
                 "admin/user/detail",
@@ -207,9 +208,8 @@ public class UserAdminController {
 
     private static String buildListParams(UserListFilter listFilter) {
         UriComponentsBuilder builder = withFilterAndSort(UriComponentsBuilder.newInstance(), listFilter);
-        if (!listFilter.keyword().isBlank()) builder.queryParam("keyword", listFilter.keyword());
-        String query = builder.build().encode().toUriString();
-        return query.startsWith("?") ? query.substring(1) : query;
+        AdminUrlUtils.appendIfPresent(builder, "keyword", listFilter.keyword());
+        return AdminUrlUtils.queryStringOf(builder);
     }
 
     // filter/sort는 목록·상세·리다이렉트 URL 조립에서 공통으로 쓰이는 값 (FILTER_BANNED일 때 sort 생략)

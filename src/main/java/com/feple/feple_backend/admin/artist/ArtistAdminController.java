@@ -71,10 +71,8 @@ public class ArtistAdminController {
             bindingResult.rejectValue("profileImageKey", "profileImageFile.required", "프로필 이미지는 필수입니다.");
         }
         if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
-            addGenreOptions(model);
-            return "admin/artist/create";
+            return renderCreateForm(BindingResultUtils.extractErrorMessages(bindingResult),
+                    suggestionId, unmatchedSuggestionId, model);
         }
 
         try {
@@ -85,12 +83,17 @@ public class ArtistAdminController {
             ra.addFlashAttribute("successMessage", "'" + dto.getName() + "' 아티스트가 등록되었습니다.");
         } catch (Exception e) {
             log.error("아티스트 등록 실패 name={}", dto.getName(), e);
-            model.addAttribute("errors", List.of("등록 중 오류가 발생했습니다. 다시 시도해주세요."));
-            addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
-            addGenreOptions(model);
-            return "admin/artist/create";
+            return renderCreateForm(List.of("등록 중 오류가 발생했습니다. 다시 시도해주세요."),
+                    suggestionId, unmatchedSuggestionId, model);
         }
         return "redirect:/admin/artists";
+    }
+
+    private String renderCreateForm(List<String> errors, Long suggestionId, Long unmatchedSuggestionId, Model model) {
+        model.addAttribute("errors", errors);
+        addSuggestionRefs(model, suggestionId, unmatchedSuggestionId);
+        addGenreOptions(model);
+        return "admin/artist/create";
     }
 
     // 아티스트 신청/미매칭 제안 목록의 "아티스트 등록" 링크로 이 폼에 들어온 경우, 생성 성공 시
@@ -188,18 +191,16 @@ public class ArtistAdminController {
     public String showEditForm(@PathVariable Long id,
                                @ModelAttribute ArtistListParams params,
                                Model model, RedirectAttributes ra) {
-        try {
-            model.addAttribute("artistId", id);
-            model.addAttribute("artist", artistAdminService.getArtistForEdit(id));
-            model.addAttribute("page", params.page());
-            model.addAttribute("keyword", params.keyword());
-            model.addAttribute("sort", params.sort());
-            addGenreOptions(model);
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/artists";
-        }
-        return "admin/artist/edit";
+        return AdminActionUtils.tryRender(
+                () -> {
+                    addEditFormModel(model, id, params);
+                    model.addAttribute("artist", artistAdminService.getArtistForEdit(id));
+                },
+                "admin/artist/edit",
+                e -> log.error("아티스트 편집 폼 조회 실패 id={}", id, e),
+                "아티스트 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/artists",
+                ra);
     }
 
     @PostMapping("/{id}/edit")
@@ -211,12 +212,8 @@ public class ArtistAdminController {
                                Model model,
                                RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("artistId", id);
-            model.addAttribute("page", params.page());
-            model.addAttribute("keyword", params.keyword());
-            model.addAttribute("sort", params.sort());
+            addEditFormModel(model, id, params);
             model.addAttribute("errors", BindingResultUtils.extractErrorMessages(bindingResult));
-            addGenreOptions(model);
             return "admin/artist/edit";
         }
         try {
@@ -237,6 +234,14 @@ public class ArtistAdminController {
 
     private static void addGenreOptions(Model model) {
         model.addAttribute("allGenres", MusicGenre.values());
+    }
+
+    private static void addEditFormModel(Model model, Long id, ArtistListParams params) {
+        model.addAttribute("artistId", id);
+        model.addAttribute("page", params.page());
+        model.addAttribute("keyword", params.keyword());
+        model.addAttribute("sort", params.sort());
+        addGenreOptions(model);
     }
 
     @PostMapping("/{id}/delete")

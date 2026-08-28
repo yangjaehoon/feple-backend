@@ -1,6 +1,7 @@
 package com.feple.feple_backend.admin.certification;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
+import com.feple.feple_backend.admin.AdminUrlUtils;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -72,8 +73,8 @@ public class CertificationAdminController {
                     UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications")
                             .queryParam("status", filter.status())
                             .queryParam("page", filter.page());
-                    if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
-                    model.addAttribute("returnUrl", builder.build().encode().toUriString());
+                    AdminUrlUtils.appendIfPresent(builder, "keyword", filter.keyword());
+                    model.addAttribute("returnUrl", AdminUrlUtils.encoded(builder));
                 },
                 "admin/certification/detail",
                 e -> log.error("인증 상세 조회 실패 id={}", id, e),
@@ -170,9 +171,7 @@ public class CertificationAdminController {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/certifications/" + nextCertId)
                 .queryParam("status", filter.status())
                 .queryParam("page", filter.page());
-        if (!filter.keyword().isBlank()) builder.queryParam("keyword", filter.keyword());
-        // encode() 없이 build()만 하면 keyword의 한글이 그대로 Location 헤더에 들어가
-        // Tomcat이 "invalid header"로 판단해 리다이렉트 자체를 제거해버린다(빈 화면 원인).
-        return "redirect:" + builder.build().encode().toUriString();
+        AdminUrlUtils.appendIfPresent(builder, "keyword", filter.keyword());
+        return "redirect:" + AdminUrlUtils.encoded(builder);
     }
 }

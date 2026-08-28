@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.AdminUrlUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
@@ -302,8 +303,8 @@ public class FestivalAdminController {
                     model.addAttribute("ratingStats",                detail.ratingStats());
                     UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/festivals")
                             .queryParam("page", page);
-                    if (!keyword.isBlank()) builder.queryParam("keyword", keyword);
-                    model.addAttribute("returnUrl", builder.build().encode().toUriString());
+                    AdminUrlUtils.appendIfPresent(builder, "keyword", keyword);
+                    model.addAttribute("returnUrl", AdminUrlUtils.encoded(builder));
                 },
                 "admin/festival/detail",
                 e -> log.error("페스티벌 상세 조회 실패. id={}", id, e),

@@ -12,7 +12,6 @@ import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.service.PostAdminService;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -60,19 +59,17 @@ public class PostAdminController {
                              @ModelAttribute PostListParams params,
                              Model model,
                              RedirectAttributes ra) {
-        try {
-            model.addAttribute("post", postAdminService.getPostForAdmin(id));
-            model.addAttribute("comments", commentService.getAdminCommentsByPost(id, AdminConstants.POST_DETAIL_COMMENT_LIMIT));
-            model.addAttribute("backUrl", "/admin/posts?page=" + params.page() + "&" + params.toExtraParams());
-            return "admin/post/detail";
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/posts";
-        } catch (Exception e) {
-            log.error("게시글 상세 조회 실패 id={}", id, e);
-            ra.addFlashAttribute("errorMessage", "게시글 정보를 불러오는 중 오류가 발생했습니다.");
-            return "redirect:/admin/posts";
-        }
+        return AdminActionUtils.tryRender(
+                () -> {
+                    model.addAttribute("post", postAdminService.getPostForAdmin(id));
+                    model.addAttribute("comments", commentService.getAdminCommentsByPost(id, AdminConstants.POST_DETAIL_COMMENT_LIMIT));
+                    model.addAttribute("backUrl", "/admin/posts?page=" + params.page() + "&" + params.toExtraParams());
+                },
+                "admin/post/detail",
+                e -> log.error("게시글 상세 조회 실패 id={}", id, e),
+                "게시글 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/posts",
+                ra);
     }
 
     @PostMapping("/bulk-delete")

@@ -12,7 +12,6 @@ import com.feple.feple_backend.notice.dto.NoticeRequestDto;
 import com.feple.feple_backend.notice.dto.NoticeSummaryDto;
 import com.feple.feple_backend.notice.service.NoticeAdminService;
 import jakarta.validation.Valid;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -127,15 +126,17 @@ public class NoticeAdminController {
     public String showEditForm(@PathVariable Long id,
                                @RequestParam(defaultValue = "0") int page,
                                Model model, RedirectAttributes ra) {
-        try {
-            model.addAttribute("noticeId", id);
-            model.addAttribute("notice", noticeAdminService.getNoticeForEdit(id));
-            model.addAttribute("page", page);
-        } catch (NoSuchElementException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/notices";
-        }
-        return "admin/notice/edit";
+        return AdminActionUtils.tryRender(
+                () -> {
+                    model.addAttribute("noticeId", id);
+                    model.addAttribute("notice", noticeAdminService.getNoticeForEdit(id));
+                    model.addAttribute("page", page);
+                },
+                "admin/notice/edit",
+                e -> log.error("공지사항 편집 폼 조회 실패 id={}", id, e),
+                "공지사항 정보를 불러오는 중 오류가 발생했습니다.",
+                "redirect:/admin/notices",
+                ra);
     }
 
     @PostMapping("/{id}/edit")
