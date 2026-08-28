@@ -11,8 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @PreAuthorize("hasRole('ADMIN')")
 @RequiresAdminPermission(AdminPermission.USERS)
@@ -24,12 +24,11 @@ public class PointAdminController {
     private final PointService pointService;
 
     @GetMapping
-    public String list(@RequestParam(defaultValue = "0") int page,
-                       @RequestParam(required = false) String keyword,
-                       Model model) {
-        Page<PointLogResponseDto> logs = pointService.getAllPointLogs(page, AdminConstants.LIST_PAGE_SIZE, keyword);
+    public String list(@ModelAttribute PointListParams params, Model model) {
+        Page<PointLogResponseDto> logs =
+                pointService.getAllPointLogs(params.page(), AdminConstants.LIST_PAGE_SIZE, params.keyword());
         model.addAttribute("logs", logs);
-        model.addAttribute("keyword", keyword);
+        model.addAttribute("keyword", params.keyword());
         return "admin/point/list";
     }
 }

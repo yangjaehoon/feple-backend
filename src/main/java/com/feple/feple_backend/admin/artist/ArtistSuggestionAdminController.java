@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.artist;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
+import com.feple.feple_backend.admin.PageParams;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,8 +37,9 @@ public class ArtistSuggestionAdminController {
     private final AdminLogService adminLogService;
 
     @GetMapping
-    public String list(@RequestParam(defaultValue = "0") int page, Model model) {
-        Page<ArtistSuggestionResponseDto> suggestions = artistSuggestionAdminService.getSuggestionsPage(page, AdminConstants.LIST_PAGE_SIZE);
+    public String list(@ModelAttribute PageParams params, Model model) {
+        Page<ArtistSuggestionResponseDto> suggestions =
+                artistSuggestionAdminService.getSuggestionsPage(params.page(), AdminConstants.LIST_PAGE_SIZE);
         model.addAttribute("suggestions", suggestions);
         // "기존 아티스트와 연결" 모달에서 ID를 직접 입력하는 대신 이름으로 검색해 고를 수 있도록
         // 전체 아티스트 목록을 함께 내려준다.

@@ -2,7 +2,6 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
-import com.feple.feple_backend.admin.AdminUrlUtils;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
@@ -147,17 +146,16 @@ public class FestivalAdminController {
     }
 
     @GetMapping
-    public String listFestivals(@RequestParam(defaultValue = "") String keyword,
-                                @RequestParam(defaultValue = "0") int page,
-                                Model model) {
-        Page<FestivalResponseDto> festivalsPage = festivalService.getFestivalsAdminPage(keyword, page, AdminConstants.FESTIVAL_LIST_PAGE_SIZE);
+    public String listFestivals(@ModelAttribute FestivalListParams params, Model model) {
+        Page<FestivalResponseDto> festivalsPage =
+                festivalService.getFestivalsAdminPage(params.keyword(), params.page(), AdminConstants.FESTIVAL_LIST_PAGE_SIZE);
 
         List<FestivalResponseDto> activeFestivals = festivalService.getAllActiveFestivalsForAdmin();
         List<Long> activeFestivalIds = activeFestivals.stream().map(FestivalResponseDto::getId).toList();
 
         model.addAttribute("festivalsPage", festivalsPage);
         model.addAttribute("festivals", activeFestivals);
-        model.addAttribute("keyword", keyword);
+        model.addAttribute("keyword", params.keyword());
         model.addAttribute("checklistMap", festivalChecklistService.getChecklistMap());
         model.addAttribute("timetableAutoCompleteMap", artistFestivalService.computeTimetableCompleteMap(activeFestivalIds));
         model.addAttribute("activeFestivalCount", (long) activeFestivals.size());
@@ -286,8 +284,7 @@ public class FestivalAdminController {
 
     @GetMapping("/{id}")
     public String festivalDetail(@PathVariable Long id,
-                                 @RequestParam(defaultValue = "0") int page,
-                                 @RequestParam(defaultValue = "") String keyword,
+                                 @ModelAttribute FestivalListParams params,
                                  Model model, RedirectAttributes ra) {
         return AdminActionUtils.tryRender(
                 () -> {
@@ -305,8 +302,7 @@ public class FestivalAdminController {
                     model.addAttribute("setlistCounts",              detail.setlistCounts());
                     model.addAttribute("announcementStageName",          detail.announcementStageName());
                     model.addAttribute("ratingStats",                detail.ratingStats());
-                    model.addAttribute("returnUrl",
-                            AdminUrlUtils.listUrl("/admin/festivals", "page", page, "keyword", keyword));
+                    model.addAttribute("returnUrl", params.toListUrl());
                 },
                 "admin/festival/detail",
                 e -> log.error("페스티벌 상세 조회 실패. id={}", id, e),

@@ -151,7 +151,7 @@ class AdminLogServiceTest {
 
     @Test
     void getLogs_필터_없으면_null로_조회() {
-        AdminLogFilter filter = new AdminLogFilter(null, null, null, null);
+        AdminLogFilter filter = new AdminLogFilter(null, null, null, null, null);
         given(repository.findWithFilters(null, null, null, null, PageRequest.of(0, com.feple.feple_backend.admin.AdminConstants.LOG_PAGE_SIZE)))
                 .willReturn(new PageImpl<>(List.of()));
 
@@ -162,7 +162,7 @@ class AdminLogServiceTest {
 
     @Test
     void getLogs_필터_있으면_해당값으로_조회() {
-        AdminLogFilter filter = new AdminLogFilter("POST", "admin", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31));
+        AdminLogFilter filter = new AdminLogFilter("POST", "admin", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), null);
         given(repository.findWithFilters(
                         org.mockito.ArgumentMatchers.eq("POST"),
                         org.mockito.ArgumentMatchers.eq("admin"),

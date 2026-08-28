@@ -75,7 +75,7 @@ class AdminLogServiceTest {
 
     @Test
     void getLogs_빈_targetType이면_null_전달() {
-        AdminLogFilter filter = new AdminLogFilter("", "", null, null);
+        AdminLogFilter filter = new AdminLogFilter("", "", null, null, null);
 
         adminLogService.getLogs(0, filter);
 
@@ -90,7 +90,7 @@ class AdminLogServiceTest {
 
     @Test
     void getLogs_adminUsername_LikeEscape() {
-        AdminLogFilter filter = new AdminLogFilter("festival", "ad_min", null, null);
+        AdminLogFilter filter = new AdminLogFilter("festival", "ad_min", null, null, null);
 
         adminLogService.getLogs(0, filter);
 
@@ -107,7 +107,7 @@ class AdminLogServiceTest {
     void getLogs_날짜_fromTo_변환() {
         LocalDate from = LocalDate.of(2026, 1, 1);
         LocalDate to = LocalDate.of(2026, 1, 31);
-        AdminLogFilter filter = new AdminLogFilter("", "", from, to);
+        AdminLogFilter filter = new AdminLogFilter("", "", from, to, null);
 
         adminLogService.getLogs(0, filter);
 

@@ -130,17 +130,14 @@ public class ArtistAdminController {
     }
 
     @GetMapping
-    public String listArtists(@RequestParam(defaultValue = "") String keyword,
-                              @RequestParam(defaultValue = "") String sort,
-                              @RequestParam(required = false) MusicGenre genre,
-                              @RequestParam(defaultValue = "0") int page,
-                              Model model) {
-        Page<ArtistResponseDto> artistsPage = artistAdminService.getAdminArtistList(new ArtistAdminListQuery(sort, keyword, genre, page));
+    public String listArtists(@ModelAttribute ArtistListParams params, Model model) {
+        Page<ArtistResponseDto> artistsPage = artistAdminService.getAdminArtistList(
+                new ArtistAdminListQuery(params.sort(), params.keyword(), params.genre(), params.page()));
         model.addAttribute("artistsPage", artistsPage);
         model.addAttribute("artists", artistsPage.getContent());
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("sort", sort);
-        model.addAttribute("genre", genre);
+        model.addAttribute("keyword", params.keyword());
+        model.addAttribute("sort", params.sort());
+        model.addAttribute("genre", params.genre());
         addGenreOptions(model);
         model.addAttribute("suggestions", artistSuggestionAdminService.getPendingSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));
         model.addAttribute("processedSuggestions", artistSuggestionAdminService.getProcessedSuggestionsPreview(AdminConstants.SUGGESTION_PREVIEW_SIZE));

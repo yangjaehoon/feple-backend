@@ -4,6 +4,7 @@ import com.feple.feple_backend.admin.AdminActionUtils;
 import com.feple.feple_backend.admin.AdminConstants;
 import com.feple.feple_backend.admin.BindingResultUtils;
 import com.feple.feple_backend.admin.CurrentAdminProvider;
+import com.feple.feple_backend.admin.PageParams;
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
 import com.feple.feple_backend.admin.log.AdminAction;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
@@ -43,9 +43,9 @@ public class NoticeAdminController {
     private final CurrentAdminProvider currentAdminProvider;
 
     @GetMapping
-    public String list(@RequestParam(defaultValue = "0") int page, Model model) {
+    public String list(@ModelAttribute PageParams params, Model model) {
         Page<NoticeSummaryDto> notices = noticeAdminService.getAdminNotices(
-                PageRequest.of(page, AdminConstants.LIST_PAGE_SIZE));
+                PageRequest.of(params.page(), AdminConstants.LIST_PAGE_SIZE));
         model.addAttribute("notices", notices);
         return "admin/notice/list";
     }
@@ -122,13 +122,13 @@ public class NoticeAdminController {
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id,
-                               @RequestParam(defaultValue = "0") int page,
+                               @ModelAttribute PageParams params,
                                Model model, RedirectAttributes ra) {
         return AdminActionUtils.tryRender(
                 () -> {
                     model.addAttribute("noticeId", id);
                     model.addAttribute("notice", noticeAdminService.getNoticeForEdit(id));
-                    model.addAttribute("page", page);
+                    model.addAttribute("page", params.page());
                 },
                 "admin/notice/edit",
                 e -> log.error("공지사항 편집 폼 조회 실패 id={}", id, e),
@@ -141,11 +141,11 @@ public class NoticeAdminController {
     public String updateNotice(@PathVariable Long id,
                                @Valid @ModelAttribute("notice") NoticeRequestDto dto,
                                BindingResult bindingResult,
-                               @RequestParam(defaultValue = "0") int page,
+                               @ModelAttribute PageParams params,
                                Model model,
                                RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            return renderEditFormWithError(bindingResult, id, page, model);
+            return renderEditFormWithError(bindingResult, id, params.page(), model);
         }
         AdminActionUtils.tryAction(
                 () -> {
@@ -156,7 +156,7 @@ public class NoticeAdminController {
                 e -> log.error("공지사항 수정 실패 id={}", id, e),
                 AdminConstants.MSG_UPDATE_ERROR,
                 ra);
-        return noticesRedirect(page);
+        return noticesRedirect(params.page());
     }
 
     private static String renderEditFormWithError(BindingResult bindingResult, Long id, int page, Model model) {
@@ -168,7 +168,7 @@ public class NoticeAdminController {
 
     @PostMapping("/{id}/pin")
     public String togglePin(@PathVariable Long id,
-                            @RequestParam(defaultValue = "0") int page,
+                            @ModelAttribute PageParams params,
                             RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
@@ -179,12 +179,12 @@ public class NoticeAdminController {
                 e -> log.error("공지사항 고정 토글 실패 id={}", id, e),
                 AdminConstants.MSG_PROCESS_ERROR,
                 ra);
-        return noticesRedirect(page);
+        return noticesRedirect(params.page());
     }
 
     @PostMapping("/{id}/delete")
     public String deleteNotice(@PathVariable Long id,
-                               @RequestParam(defaultValue = "0") int page,
+                               @ModelAttribute PageParams params,
                                RedirectAttributes ra) {
         AdminActionUtils.tryAction(
                 () -> {
@@ -195,7 +195,7 @@ public class NoticeAdminController {
                 e -> log.error("공지사항 삭제 실패 id={}", id, e),
                 AdminConstants.MSG_DELETE_ERROR,
                 ra);
-        return noticesRedirect(page);
+        return noticesRedirect(params.page());
     }
 
     private static String noticesRedirect(int page) {
