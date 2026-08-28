@@ -45,6 +45,10 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
 
     private static final int ADMIN_PAGE_SIZE = 30;
 
+    // artist_aliases.alias 컬럼 길이(VARCHAR(200))와 일치 — 콤마 없는 단일 별명이 DTO 전체 길이
+    // 제한(500자)은 통과하고도 컬럼 길이를 넘어 저장 시 truncation 오류가 나는 것을 막는다
+    private static final int ALIAS_MAX_LENGTH = 200;
+
     private final ArtistRepository artistRepository;
     private final ArtistFollowRepository artistFollowRepository;
     private final ArtistFestivalRepository artistFestivalRepository;
@@ -343,10 +347,6 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     public long getTotalCount() {
         return artistRepository.countByDeletedAtIsNull();
     }
-
-    // artist_aliases.alias 컬럼 길이(VARCHAR(200))와 일치 — 콤마 없는 단일 별명이 DTO 전체 길이
-    // 제한(500자)은 통과하고도 컬럼 길이를 넘어 저장 시 truncation 오류가 나는 것을 막는다
-    private static final int ALIAS_MAX_LENGTH = 200;
 
     // 파싱과 동시에 컬럼 길이 제약을 검증한다 — 별도 검증 단계를 두지 않고 여기서 겸하는 이유는
     // 파싱 직후에만 원본 개별 항목 문자열에 접근할 수 있기 때문이다.
