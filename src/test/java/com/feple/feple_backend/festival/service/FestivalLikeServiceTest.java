@@ -36,10 +36,6 @@ class FestivalLikeServiceTest {
         return Festival.builder().id(id).title("페스티벌" + id).build();
     }
 
-    private Festival festivalWithLikeCount(Long id, int likeCount) {
-        return Festival.builder().id(id).title("페스티벌" + id).likeCount(likeCount).build();
-    }
-
     // ── isLiked ──────────────────────────────────────────────────────
 
     @Test
@@ -60,10 +56,7 @@ class FestivalLikeServiceTest {
 
     @Test
     void 찜_취소시_좋아요수_감소되고_false_반환() {
-        User user = user(1L);
-        Festival festival = festivalWithLikeCount(5L, 1);
-        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        // 취소 경로는 ID만 사용 — festival/user 엔티티를 로드하지 않는다
         given(festivalLikeRepository.existsByUserIdAndFestivalId(1L, 5L)).willReturn(true);
         given(festivalLikeRepository.deleteByUserIdAndFestivalId(1L, 5L)).willReturn(1);
 
@@ -72,14 +65,11 @@ class FestivalLikeServiceTest {
         assertThat(result).isFalse();
         verify(festivalRepository).decrementLikeCount(5L);
         verify(festivalLikeRepository, never()).saveAndFlush(any(FestivalLike.class));
+        verify(festivalRepository, never()).findById(5L);
     }
 
     @Test
     void 찜_취소_요청이지만_동시_삭제로_0건이면_좋아요수_감소_안함() {
-        User user = user(1L);
-        Festival festival = festival(5L);
-        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
-        given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(festivalLikeRepository.existsByUserIdAndFestivalId(1L, 5L)).willReturn(true);
         given(festivalLikeRepository.deleteByUserIdAndFestivalId(1L, 5L)).willReturn(0);
 
