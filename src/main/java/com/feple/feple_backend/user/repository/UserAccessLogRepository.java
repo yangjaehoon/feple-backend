@@ -30,4 +30,9 @@ public interface UserAccessLogRepository extends JpaRepository<UserAccessLog, Lo
     @Transactional
     @Query(value = "DELETE FROM user_access_log WHERE access_date < :cutoff LIMIT :batchSize", nativeQuery = true)
     int deleteByAccessDateBeforeBatch(@Param("cutoff") LocalDate cutoff, @Param("batchSize") int batchSize);
+
+    // 회원 완전 삭제(hard delete) 전용 — 소프트 삭제 캐스케이드가 다루지 않는 접속 로그를 정리한다.
+    @Modifying
+    @Query(value = "DELETE FROM user_access_log WHERE user_id = :userId", nativeQuery = true)
+    void deleteByUserId(@Param("userId") Long userId);
 }

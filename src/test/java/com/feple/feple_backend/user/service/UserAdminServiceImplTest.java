@@ -1,13 +1,18 @@
 package com.feple.feple_backend.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.CurrentAdminProvider;
+import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -33,6 +38,8 @@ class UserAdminServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
     @Mock UserCascadeDeleteService cascadeDeleteService;
+    @Mock PostRepository postRepository;
+    @Mock CommentRepository commentRepository;
     @Spy CurrentAdminProvider currentAdminProvider = new CurrentAdminProvider();
 
     @InjectMocks UserAdminServiceImpl userAdminService;
@@ -138,6 +145,42 @@ class UserAdminServiceImplTest {
 
         assertThat(nickname).isEqualTo("삭제유저");
         verify(cascadeDeleteService).delete(user, null, null);
+    }
+
+    @Test
+    void hardDeleteUser_탈퇴_상태가_아니면_거부() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "활성유저")));
+
+        assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("먼저 회원 탈퇴");
+        verify(cascadeDeleteService, never()).hardDelete(any());
+    }
+
+    @Test
+    void hardDeleteUser_게시글이나_댓글이_있으면_거부() {
+        User deleted = user(1L, "탈퇴유저");
+        deleted.softDelete(null, null);
+        given(userRepository.findById(1L)).willReturn(Optional.of(deleted));
+        given(postRepository.countByUserId(1L)).willReturn(2L);
+
+        assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("게시글 또는 댓글");
+        verify(cascadeDeleteService, never()).hardDelete(any());
+    }
+
+    @Test
+    void hardDeleteUser_탈퇴상태_이고_작성물이_없으면_hardDelete에_위임() {
+        User deleted = user(1L, "탈퇴유저");
+        deleted.softDelete(null, null);
+        given(userRepository.findById(1L)).willReturn(Optional.of(deleted));
+        given(postRepository.countByUserId(1L)).willReturn(0L);
+        given(commentRepository.countByUserId(1L)).willReturn(0L);
+
+        userAdminService.hardDeleteUser(1L);
+
+        verify(cascadeDeleteService).hardDelete(deleted);
     }
 
     @Test

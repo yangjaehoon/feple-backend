@@ -10,6 +10,7 @@ import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
+import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.diary.service.FestivalDiaryService;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
@@ -21,9 +22,11 @@ import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
+import com.feple.feple_backend.user.repository.UserAccessLogRepository;
 import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
+import com.feple.feple_backend.userreport.repository.UserReportRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -54,6 +57,9 @@ class UserCascadeDeleteServiceTest {
     @Mock FestivalSuggestionService festivalSuggestionService;
     @Mock UserBlockService userBlockService;
     @Mock FileStorageService fileStorageService;
+    @Mock UserAccessLogRepository userAccessLogRepository;
+    @Mock UserReportRepository userReportRepository;
+    @Mock CommentRepository commentRepository;
 
     @InjectMocks UserCascadeDeleteService userCascadeDeleteService;
 
@@ -138,5 +144,26 @@ class UserCascadeDeleteServiceTest {
 
         verify(fileStorageService).deleteFileAfterCommit(null);
         assertThat(user.isDeleted()).isTrue();
+    }
+
+    @Test
+    void hardDelete_활동정리_잔여참조_정리_후_users행_물리삭제() {
+        User user = userWithImage(3L);
+
+        userCascadeDeleteService.hardDelete(user);
+
+        // 소프트 삭제와 동일한 활동 정리
+        verify(refreshTokenService).revokeAll(3L);
+        verify(artistFollowService).removeAllByUser(3L);
+        verify(notificationQueryService).deleteAll(3L);
+        // 소프트 삭제가 안 건드리던 잔여 참조
+        verify(userAccessLogRepository).deleteByUserId(3L);
+        verify(userReportRepository).deleteByUserInvolved(3L);
+        verify(commentRepository).clearMentionsByUserId(3L);
+        // 물리 삭제 + S3 파일 정리
+        verify(userRepository).deleteById(3L);
+        verify(fileStorageService).deleteFileAfterCommit("profile/user-3.jpg");
+        // softDelete는 호출되지 않음(save 없음)
+        verify(userRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
     }
 }

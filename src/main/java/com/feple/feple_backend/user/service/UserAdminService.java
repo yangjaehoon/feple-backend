@@ -14,6 +14,7 @@ public interface UserAdminService {
     long getTotalCount();
     void bulkDeleteUsers(List<Long> ids);
     String adminDeleteUser(Long id);
+    void hardDeleteUser(Long id);
     void updateUserRole(Long userId, UserRole role);
     void banUser(Long id, int days, String reason);
     void unbanUser(Long id);

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 
 <!-- ── 역할 변경 + 정지 관리 ── -->
@@ -83,6 +84,30 @@
                 </form>
             </div>
             <div th:if="${user.admin}" class="empty-hint">관리자 계정은 정지할 수 없습니다.</div>
+        </div>
+    </div>
+
+    <!-- 완전 삭제 (SUPER_ADMIN 전용) -->
+    <div class="card" sec:authorize="hasRole('SUPER_ADMIN')">
+        <div class="card-header">
+            <div class="card-title">⚠️ DB 완전 삭제</div>
+        </div>
+        <div class="card-body">
+            <div th:if="${user.deletedAt == null}" class="empty-hint">
+                완전 삭제하려면 먼저 회원 목록에서 이 회원을 탈퇴 처리하세요.
+            </div>
+            <div th:if="${user.deletedAt != null}">
+                <p class="empty-hint">
+                    이미 탈퇴 처리된 계정입니다. DB에서 행을 물리적으로 제거합니다 —
+                    <strong>되돌릴 수 없습니다.</strong> 작성한 게시글·댓글이 있으면 거부됩니다.
+                </p>
+                <form th:action="@{/admin/users/{id}/hard-delete(id=${user.id})}" method="post">
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            data-confirm="이 회원을 DB에서 완전히 삭제합니다. 되돌릴 수 없습니다. 진행하시겠습니까?">
+                        DB에서 완전 삭제
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 

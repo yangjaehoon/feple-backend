@@ -72,6 +72,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("DELETE FROM Comment c WHERE c.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
+    // 회원 완전 삭제 전용 — 다른 유저의 댓글이 이 유저를 멘션하고 있으면 FK 때문에 users 행을
+    // 지울 수 없으므로 멘션 참조만 끊는다(댓글 본문은 그대로 유지).
+    @Modifying
+    @Transactional
+    @Query("UPDATE Comment c SET c.mentionedUser = null WHERE c.mentionedUser.id = :userId")
+    void clearMentionsByUserId(@Param("userId") Long userId);
+
     // ── 좋아요 카운터 (원자적 증감 — race condition 방지) ─────────────────────
     // clearAutomatically는 쓰지 않는다(영속성 컨텍스트 전체 clear의 부작용). 증감 직후 최신 값이
     // 필요하면 findLikeCountById로 스칼라 조회한다.
