@@ -115,8 +115,8 @@ public class UserAdminController {
         return userListRedirect(listFilter);
     }
 
-    // 이미 탈퇴 처리된 회원을 DB에서 물리적으로 제거한다(되돌릴 수 없음). SUPER_ADMIN 전용.
-    // 서비스단에서 "탈퇴 상태 + 작성 글·댓글 없음"을 검증하며, 위반 시 InvalidRequestException 메시지가 그대로 노출된다.
+    // 회원 행을 DB에서 물리적으로 제거한다(되돌릴 수 없음). SUPER_ADMIN 전용, 한 번에 처리.
+    // 서비스단에서 "작성 글·댓글 없음"을 검증하며, 위반 시 InvalidRequestException 메시지가 그대로 노출된다.
     @PostMapping("/{id}/hard-delete")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public String hardDeleteUser(@PathVariable Long id, RedirectAttributes ra) {

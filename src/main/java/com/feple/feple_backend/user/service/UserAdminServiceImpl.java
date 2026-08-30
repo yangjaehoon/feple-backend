@@ -108,19 +108,16 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     /**
-     * 이미 탈퇴 처리된 회원을 DB에서 완전히 제거한다(되돌릴 수 없음).
-     * SUPER_ADMIN 전용 액션이며, 실수 방지를 위해 두 가지를 강제한다:
-     * ① 이미 탈퇴(soft delete) 상태여야 한다 — 활성 회원은 바로 완전 삭제할 수 없다.
-     * ② 작성한 게시글·댓글이 없어야 한다 — 있으면 익명 처리된 상태로 유지한다(남의 댓글·좋아요 연쇄 파손 방지).
+     * 회원을 DB에서 완전히 제거한다(되돌릴 수 없음). 탈퇴 상태든 활성 상태든 한 번에 처리한다.
+     * SUPER_ADMIN 전용이며, 실수로 실사용자 데이터를 날리지 않도록 <b>작성한 게시글·댓글이 있으면
+     * 거부</b>한다 — 그런 계정은 남의 댓글·좋아요가 얽혀 있으므로 일반 삭제(익명 처리)를 써야 한다.
+     * 로그인으로 재접근 불가능해진 OAuth 테스트 계정 정리 용도.
      */
     @Override
     public void hardDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
-        if (!user.isDeleted()) {
-            throw new InvalidRequestException("먼저 회원 탈퇴(일반 삭제) 처리를 한 뒤에 완전 삭제할 수 있습니다.");
-        }
         if (postRepository.countByUserId(id) > 0 || commentRepository.countByUserId(id) > 0) {
-            throw new InvalidRequestException("작성한 게시글 또는 댓글이 있어 완전 삭제할 수 없습니다. 익명 처리된 상태로 유지하세요.");
+            throw new InvalidRequestException("작성한 게시글 또는 댓글이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
         }
         cascadeDeleteService.hardDelete(user);
     }

@@ -148,20 +148,8 @@ class UserAdminServiceImplTest {
     }
 
     @Test
-    void hardDeleteUser_탈퇴_상태가_아니면_거부() {
-        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "활성유저")));
-
-        assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
-                .isInstanceOf(InvalidRequestException.class)
-                .hasMessageContaining("먼저 회원 탈퇴");
-        verify(cascadeDeleteService, never()).hardDelete(any());
-    }
-
-    @Test
     void hardDeleteUser_게시글이나_댓글이_있으면_거부() {
-        User deleted = user(1L, "탈퇴유저");
-        deleted.softDelete(null, null);
-        given(userRepository.findById(1L)).willReturn(Optional.of(deleted));
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "글쓴유저")));
         given(postRepository.countByUserId(1L)).willReturn(2L);
 
         assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
@@ -171,16 +159,15 @@ class UserAdminServiceImplTest {
     }
 
     @Test
-    void hardDeleteUser_탈퇴상태_이고_작성물이_없으면_hardDelete에_위임() {
-        User deleted = user(1L, "탈퇴유저");
-        deleted.softDelete(null, null);
-        given(userRepository.findById(1L)).willReturn(Optional.of(deleted));
+    void hardDeleteUser_작성물이_없으면_활성_회원도_한_번에_hardDelete에_위임() {
+        User target = user(1L, "테스트계정");
+        given(userRepository.findById(1L)).willReturn(Optional.of(target));
         given(postRepository.countByUserId(1L)).willReturn(0L);
         given(commentRepository.countByUserId(1L)).willReturn(0L);
 
         userAdminService.hardDeleteUser(1L);
 
-        verify(cascadeDeleteService).hardDelete(deleted);
+        verify(cascadeDeleteService).hardDelete(target);
     }
 
     @Test
