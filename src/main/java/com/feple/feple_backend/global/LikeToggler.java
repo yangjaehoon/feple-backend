@@ -1,5 +1,6 @@
 package com.feple.feple_backend.global;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -22,6 +23,30 @@ public final class LikeToggler {
             // unique(user_id, 대상_id) 제약 위반: 동시 요청 경합으로 이미 다른 요청이 저장/카운트
             // 증가를 마쳤다는 뜻이라 정상 흐름이다. onLike는 반드시 saveAndFlush를 사용해야
             // 이 시점에 제약 위반이 즉시 드러난다(지연 flush면 여기서 못 잡고 커밋 시점에 터진다).
+        }
+        return true;
+    }
+
+    /**
+     * {@link #toggle}와 동일한 토글 결정 구조지만, "매칭 없는 DELETE"로 존재 여부를 판별하지
+     * 않고 락을 잡지 않는 존재 조회({@code exists})로 분기한다. 좋아요 <b>추가</b> 경로에서
+     * 빈 인덱스 구간에 갭 락을 잡지 않으므로, 같은 유저가 여러 대상을 동시에 좋아요할 때
+     * (예: 온보딩 페스티벌 선택) InnoDB 갭 락 + insert-intention 락 데드락을 피한다.
+     *
+     * <p>취소 시 실제 삭제/카운터 감소는 {@code onUnlike}가 수행한다 — 삭제 0건이면 감소하지
+     * 않도록 호출부에서 가드할 것. 조회~저장 사이 다른 요청이 먼저 저장하는 TOCTOU는
+     * {@code onLike}가 던지는 {@link DataIntegrityViolationException}을 삼켜 처리하므로,
+     * {@code onLike}는 반드시 saveAndFlush를 사용해야 이 시점에 제약 위반이 즉시 드러난다.
+     */
+    public static boolean toggleByExistence(BooleanSupplier exists, Runnable onUnlike, Runnable onLike) {
+        if (exists.getAsBoolean()) {
+            onUnlike.run();
+            return false;
+        }
+        try {
+            onLike.run();
+        } catch (DataIntegrityViolationException ignored) {
+            // 동시 요청이 이미 저장/카운트 증가를 마침 — 정상 흐름
         }
         return true;
     }

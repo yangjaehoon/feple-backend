@@ -31,9 +31,16 @@ public class FestivalLikeService {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
-        return LikeToggler.toggle(
-                () -> festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId),
-                () -> festivalRepository.decrementLikeCount(festivalId),
+        // 추가 경로에서 매칭 없는 DELETE의 갭 락을 잡지 않도록 존재 조회로 분기한다 —
+        // 같은 유저가 여러 페스티벌을 동시에 좋아요할 때(온보딩) 빈 인덱스 구간에
+        // 겹쳐 잡히는 갭 락 데드락을 피하기 위함.
+        return LikeToggler.toggleByExistence(
+                () -> festivalLikeRepository.existsByUserIdAndFestivalId(userId, festivalId),
+                () -> {
+                    if (festivalLikeRepository.deleteByUserIdAndFestivalId(userId, festivalId) > 0) {
+                        festivalRepository.decrementLikeCount(festivalId);
+                    }
+                },
                 () -> {
                     festivalLikeRepository.saveAndFlush(FestivalLike.of(user, festival));
                     festivalRepository.incrementLikeCount(festivalId);

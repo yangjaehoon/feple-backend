@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class FestivalLikeServiceTest {
@@ -63,6 +64,7 @@ class FestivalLikeServiceTest {
         Festival festival = festivalWithLikeCount(5L, 1);
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(festivalLikeRepository.existsByUserIdAndFestivalId(1L, 5L)).willReturn(true);
         given(festivalLikeRepository.deleteByUserIdAndFestivalId(1L, 5L)).willReturn(1);
 
         boolean result = festivalLikeService.toggleLike(5L, 1L);
@@ -73,18 +75,50 @@ class FestivalLikeServiceTest {
     }
 
     @Test
+    void 찜_취소_요청이지만_동시_삭제로_0건이면_좋아요수_감소_안함() {
+        User user = user(1L);
+        Festival festival = festival(5L);
+        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(festivalLikeRepository.existsByUserIdAndFestivalId(1L, 5L)).willReturn(true);
+        given(festivalLikeRepository.deleteByUserIdAndFestivalId(1L, 5L)).willReturn(0);
+
+        boolean result = festivalLikeService.toggleLike(5L, 1L);
+
+        assertThat(result).isFalse();
+        verify(festivalRepository, never()).decrementLikeCount(5L);
+    }
+
+    @Test
     void 찜_추가시_save_호출되고_좋아요수_증가되며_true_반환() {
         User user = user(1L);
         Festival festival = festival(5L);
         given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(festivalLikeRepository.deleteByUserIdAndFestivalId(1L, 5L)).willReturn(0);
+        given(festivalLikeRepository.existsByUserIdAndFestivalId(1L, 5L)).willReturn(false);
 
         boolean result = festivalLikeService.toggleLike(5L, 1L);
 
         assertThat(result).isTrue();
         verify(festivalLikeRepository).saveAndFlush(any(FestivalLike.class));
         verify(festivalRepository).incrementLikeCount(5L);
+        verify(festivalLikeRepository, never()).deleteByUserIdAndFestivalId(1L, 5L);
+    }
+
+    @Test
+    void 찜_추가_중_동시_저장으로_unique_위반나면_예외없이_true_반환하고_증가_안함() {
+        User user = user(1L);
+        Festival festival = festival(5L);
+        given(festivalRepository.findById(5L)).willReturn(Optional.of(festival));
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(festivalLikeRepository.existsByUserIdAndFestivalId(1L, 5L)).willReturn(false);
+        given(festivalLikeRepository.saveAndFlush(any(FestivalLike.class)))
+                .willThrow(new DataIntegrityViolationException("unique violation"));
+
+        boolean result = festivalLikeService.toggleLike(5L, 1L);
+
+        assertThat(result).isTrue();
+        verify(festivalRepository, never()).incrementLikeCount(5L);
     }
 
     @Test
