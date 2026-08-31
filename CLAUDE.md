@@ -30,6 +30,8 @@ GitHub Actions 워크플로:
   아니다. Dependabot PR은 시크릿 미접근으로 동작하지 않는다.
 - `claude.yml` — 이슈·PR에서 `@claude` 멘션 시 응답.
 
+`CLAUDE_CODE_OAUTH_TOKEN` 시크릿은 구독 계정에서 `claude setup-token`으로 발급한 토큰이어야 한다 — 비구독 계정 토큰이면 리뷰가 조용히 즉시 실패한다.
+
 ### 주요 패턴
 - CI 테스트: `./gradlew cleanTest test` — `cleanTest` 필수. runner 재사용 시 Gradle 빌드 캐시로 테스트 태스크가 UP-TO-DATE로 오판돼 stale 결과 사용됨
 - 단위 테스트: `@ExtendWith(MockitoExtension.class)` + `@InjectMocks`/`@Mock`, 한글 메서드명, BDD(`given/willReturn/verify`) 패턴 사용
