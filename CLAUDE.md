@@ -21,9 +21,14 @@
 `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `JWT_SECRET`, `EC2_HOST`, `EC2_SSH_KEY` 등은 GitHub Secrets에 등록.
 
 ### CI/CD
-GitHub Actions `deploy.yml` — push to main 시 자동 배포.
-`APPLICATION_LOCAL_YAML` Secret에 `application-local.yaml` 전체 내용(YAML 형식)을 저장.
-새 환경변수 추가 시 이 Secret에도 반영해야 prod에서 동작.
+GitHub Actions 워크플로:
+- `ci.yml` — PR → main 시 Spotless·컴파일·테스트·SpotBugs·JaCoCo 게이트.
+- `deploy.yml` — push to main 시 EC2 자동 배포. `APPLICATION_LOCAL_YAML` Secret에
+  `application-local.yaml` 전체 내용(YAML 형식)을 저장. 새 환경변수 추가 시 이 Secret에도
+  반영해야 prod에서 동작.
+- `claude-code-review.yml` — PR 생성·업데이트 시 Claude 자동 코드리뷰. 참고용이며 머지 게이트가
+  아니다. Dependabot PR은 시크릿 미접근으로 동작하지 않는다.
+- `claude.yml` — 이슈·PR에서 `@claude` 멘션 시 응답.
 
 ### 주요 패턴
 - CI 테스트: `./gradlew cleanTest test` — `cleanTest` 필수. runner 재사용 시 Gradle 빌드 캐시로 테스트 태스크가 UP-TO-DATE로 오판돼 stale 결과 사용됨
