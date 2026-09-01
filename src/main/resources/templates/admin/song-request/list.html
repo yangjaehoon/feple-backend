@@ -41,44 +41,58 @@
             </div>
 
             <div class="table-wrap">
-                <table>
+                <table class="sr-table">
                     <thead>
                     <tr>
                         <th class="col-w48 cell-tight">ID</th>
                         <th>곡명</th>
                         <th class="col-w130">아티스트</th>
-                        <th class="col-w110">요청자</th>
                         <th class="col-w80">상태</th>
-                        <th class="col-w100">요청일</th>
+                        <th class="col-w160">요청 정보</th>
                         <th>액션</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="req : ${requests.content}">
-                        <td class="td-id" th:text="${req.id}"></td>
-                        <td>
+                        <td class="td-id sr-id" th:text="${req.id}"></td>
+                        <td class="sr-song">
                             <div class="cell-primary" th:text="${req.songTitle}"></div>
                             <a th:if="${req.youtubeUrl != null and !req.youtubeUrl.isEmpty()}"
                                th:href="${req.youtubeUrl}" target="_blank"
                                class="yt-link">YouTube &nearr;</a>
                         </td>
-                        <td>
+                        <td class="sr-artist" data-label="아티스트">
                             <a th:href="@{/admin/artists/{id}/songs(id=${req.artistId})}"
                                class="td-link"
                                th:text="${req.artistName}"></a>
                         </td>
-                        <td>
-                            <a th:href="@{/admin/users/{id}(id=${req.userId})}"
-                               class="td-link-normal"
-                               th:text="${req.userNickname}"></a>
-                        </td>
-                        <td>
+                        <td class="sr-status" data-label="상태">
                             <span class="badge"
                                   th:classappend="${req.status == 'PENDING'} ? 'badge-warning' : (${req.status == 'APPROVED'} ? 'badge-success' : 'badge-danger')"
                                   th:text="${req.status == 'PENDING'} ? '대기중' : (${req.status == 'APPROVED'} ? '승인됨' : '거절됨')"></span>
                         </td>
-                        <td class="cell-secondary" th:text="${req.createdAt}"></td>
-                        <td th:if="${req.status == 'PENDING'}">
+                        <td class="sr-requester">
+                            <details class="sr-more" open>
+                                <summary>상세 정보</summary>
+                                <div class="sr-more-body">
+                                    <div class="sr-line">
+                                        <span class="sr-k">요청자</span>
+                                        <a th:href="@{/admin/users/{id}(id=${req.userId})}"
+                                           class="td-link-normal"
+                                           th:text="${req.userNickname}"></a>
+                                    </div>
+                                    <div class="sr-line">
+                                        <span class="sr-k">요청일</span>
+                                        <span class="sr-date" th:text="${req.createdAt}"></span>
+                                    </div>
+                                    <div class="sr-line sr-line-id">
+                                        <span class="sr-k">ID</span>
+                                        <span th:text="${req.id}"></span>
+                                    </div>
+                                </div>
+                            </details>
+                        </td>
+                        <td class="sr-action" th:if="${req.status == 'PENDING'}">
                             <div class="action-cell">
                                 <form th:action="@{/admin/song-requests/{id}/approve(id=${req.id})}"
                                       method="post" class="inline-form"
@@ -107,9 +121,9 @@
                                 </form>
                             </div>
                         </td>
-                        <td th:unless="${req.status == 'PENDING'}"></td>
+                        <td class="sr-action" th:unless="${req.status == 'PENDING'}"></td>
                     </tr>
-                    <tr th:if="${requests.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(7, '노래 요청이 없습니다.')}"></tr>
+                    <tr th:if="${requests.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(6, '노래 요청이 없습니다.')}"></tr>
                     </tbody>
                 </table>
             </div>
@@ -125,5 +139,22 @@
     <option value="해당 아티스트의 곡이 아닌 것 같아요."></option>
     <option value="정보가 부족해요."></option>
 </datalist>
+
+<!-- 요청 정보 <details>: 넓은 화면은 항상 펼침, 좁은 화면(카드)만 기본 접힘.
+     스크립트가 없으면 open 속성이 그대로라 모든 값이 노출된다(안전한 폴백). -->
+<script>
+    (function () {
+        var narrow = window.matchMedia('(max-width: 768px)');
+        function sync() {
+            document.querySelectorAll('.sr-more').forEach(function (el) {
+                if (narrow.matches) el.removeAttribute('open');
+                else el.setAttribute('open', '');
+            });
+        }
+        sync();
+        if (narrow.addEventListener) narrow.addEventListener('change', sync);
+        else narrow.addListener(sync);
+    })();
+</script>
 </body>
 </html>
