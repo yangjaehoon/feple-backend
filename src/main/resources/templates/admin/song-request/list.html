@@ -141,10 +141,11 @@
 </datalist>
 
 <!-- 요청 정보 <details>: 넓은 화면은 항상 펼침, 좁은 화면(카드)만 기본 접힘.
-     스크립트가 없으면 open 속성이 그대로라 모든 값이 노출된다(안전한 폴백). -->
+     스크립트가 없으면 open 속성이 그대로라 모든 값이 노출된다(안전한 폴백).
+     기준 1200px 은 admin.css 의 카드 전환 미디어쿼리와 반드시 일치시킬 것. -->
 <script>
     (function () {
-        var narrow = window.matchMedia('(max-width: 768px)');
+        var narrow = window.matchMedia('(max-width: 1200px)');
         function sync() {
             document.querySelectorAll('.sr-more').forEach(function (el) {
                 if (narrow.matches) el.removeAttribute('open');
