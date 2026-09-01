@@ -1012,6 +1012,16 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .request-message { white-space: pre-wrap; max-width: 300px; }
 .action-cell { display: flex; flex-direction: column; gap: 6px; min-width: 320px; }
 
+/* 요청자·요청일 상세 — 넓은 화면에서는 <details>를 항상 open 상태로 두고(list.html 스크립트)
+   <summary>만 감춰 두 줄로 노출한다. 좁은 화면(카드 전환)에서만 스크립트가 open을 떼어
+   네이티브 접힘 동작을 쓴다 (아래 미디어쿼리). 스크립트가 없으면 open이 유지돼 모두 노출. */
+.sr-more > summary { display: none; }
+.sr-more .sr-k { display: none; }
+.sr-more .sr-line { font-size: 13px; line-height: 1.5; color: var(--text-2); }
+.sr-more .sr-line + .sr-line { margin-top: 3px; }
+.sr-more .sr-date { color: var(--muted); font-size: 12.5px; }
+.sr-more .sr-line-id { display: none; }
+
 /* ============================================================
    FORM LABEL SMALL
    ============================================================ */
@@ -1783,6 +1793,82 @@ input[type=date]   { cursor: pointer; }
   .suggestion-list-table td.cell-primary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .suggestion-list-table .col-suggestion-actions { width: 160px; }
   .suggestion-list-table .cell-actions { flex-direction: column; align-items: stretch; }
+}
+
+/* ============================================================
+   노래 요청 목록(/admin/song-requests) — 좁은 화면에서 표 → 카드 전환.
+   요청자·요청일·ID는 카드 미리보기에서 감추고 "상세 정보" 펼치기로만 노출한다.
+   ============================================================ */
+@media (max-width: 768px) {
+  .sr-table { min-width: 0; }
+  .sr-table thead { display: none; }
+  .sr-table tbody,
+  .sr-table tr,
+  .sr-table td { display: block; width: 100%; }
+
+  .sr-table tbody tr {
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--surface);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .sr-table tbody tr:hover { background: var(--surface); }
+  .sr-table tbody tr.empty-row { padding: 0; }
+
+  .sr-table td { padding: 0; border: none; }
+  .sr-table td + td { margin-top: 10px; }
+
+  .sr-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  /* 곡명 — 카드 제목 */
+  .sr-table td.sr-song { margin-top: 0; }
+  .sr-table td.sr-song .cell-primary { font-size: 15px; }
+
+  /* ID 열은 미리보기에서 숨김 (상세 정보 안에서 다시 표시) */
+  .sr-table td.sr-id { display: none; }
+
+  /* 상세 정보 펼치기 */
+  .sr-table td.sr-requester { margin-top: 4px; }
+  .sr-table .sr-more > summary {
+    display: block;
+    list-style: none;
+    cursor: pointer;
+    font-size: 12px; font-weight: 700;
+    color: var(--primary-dk);
+    padding: 8px 0 2px;
+    border-top: 1px solid var(--border);
+  }
+  .sr-table .sr-more > summary::-webkit-details-marker { display: none; }
+  .sr-table .sr-more > summary::before { content: "\25B8  "; }
+  .sr-table .sr-more[open] > summary::before { content: "\25BE  "; }
+  .sr-table .sr-more[open] > .sr-more-body { padding: 6px 0 2px; }
+  .sr-table .sr-more .sr-k {
+    display: inline-block;
+    min-width: 52px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .sr-table .sr-more .sr-line-id { display: block; }
+
+  /* 액션 — 승인/거절 폼 세로 풀폭 */
+  .sr-table td.sr-action:empty { display: none; }
+  .sr-table td.sr-action {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .sr-table .action-cell { min-width: 0; }
+  .sr-table .inline-form { flex-wrap: wrap; gap: 6px; }
+  .sr-table .inline-form .inline-input { flex: 1 1 100%; width: auto; min-width: 0; }
+  .sr-table .inline-form .btn { flex: 1 1 100%; justify-content: center; }
 }
 
 /* ── 페스티벌 검색 콤보박스 ──────────────────────────────── */
