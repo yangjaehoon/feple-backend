@@ -63,7 +63,7 @@ dependencies {
 	implementation 'com.github.ben-manes.caffeine:caffeine'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 
-	implementation platform("software.amazon.awssdk:bom:2.54.2")
+	implementation platform("software.amazon.awssdk:bom:2.54.5")
 	// google-cloud-storage(firebase-admin의 전이 의존성)가 jackson-dataformat-xml을 끌어와
 	// Spring이 MappingJackson2XmlHttpMessageConverter를 자동 등록 → Accept 헤더 없는 요청의
 	// 기본 응답이 JSON 대신 XML로 바뀌는 회귀가 발생해 명시적으로 제외한다
