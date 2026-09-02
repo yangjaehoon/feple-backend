@@ -33,6 +33,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -132,9 +133,15 @@ public class UserController {
     public ResponseEntity<CursorPage<PostResponseDto>> getUserPosts(
             @PathVariable Long id,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(myPageService.getPublicPostsPaged(
-                id, cursor, Math.max(1, Math.min(size, PageSize.MAX_PAGE_SIZE))));
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication) {
+        Long viewerId = (authentication != null) ? (Long) authentication.getPrincipal() : null;
+        int pageSize = Math.max(1, Math.min(size, PageSize.MAX_PAGE_SIZE));
+        // 본인이 자기 프로필을 볼 때만 익명 글까지 포함한다. 타인 프로필에서는 익명 글이 노출되지 않는다.
+        CursorPage<PostResponseDto> posts = id.equals(viewerId)
+                ? myPageService.getMyPostsPaged(id, cursor, pageSize)
+                : myPageService.getPublicPostsPaged(id, cursor, pageSize);
+        return ResponseEntity.ok(posts);
     }
 
     @GetMapping("/{id}/comments")
