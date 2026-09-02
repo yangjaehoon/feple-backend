@@ -132,7 +132,8 @@
                                th:text="${post.title}"
                                class="table-title-link"></a>
                             <div class="cell-secondary cell-row">
-                                <span th:text="${post.nickname}"></span>
+                                <a th:href="@{/admin/users/{id}(id=${post.userId})}"
+                                   th:text="${post.nickname}" class="td-link"></a>
                                 <span>·</span>
                                 <span th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></span>
                             </div>

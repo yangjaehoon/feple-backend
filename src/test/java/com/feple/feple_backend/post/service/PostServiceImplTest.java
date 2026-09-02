@@ -14,12 +14,14 @@ import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.auth.ratelimit.PostCreationRateLimiter;
 import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.file.service.S3ObjectVerificationService;
+import com.feple.feple_backend.global.exception.TooManyRequestsException;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.CursorPageRequest;
 import com.feple.feple_backend.post.dto.PostRequestDto;
@@ -55,6 +57,7 @@ class PostServiceImplTest {
     @Mock PostRepository postRepository;
     @Mock PostTagRepository postTagRepository;
     @Mock PostWriter postWriter;
+    @Mock PostCreationRateLimiter postCreationRateLimiter;
     @Mock UserRepository userRepository;
     @Mock ArtistRepository artistRepository;
     @Mock FestivalRepository festivalRepository;
@@ -82,7 +85,21 @@ class PostServiceImplTest {
         Long id = postService.createPost(dto, 1L, BoardType.FREE);
 
         assertThat(id).isEqualTo(10L);
+        verify(postCreationRateLimiter).check(1L);
         verify(postWriter).save(any(), eq(author), any());
+    }
+
+    @Test
+    void 게시글_생성_한도_초과시_예외_전파하고_저장하지_않는다() {
+        User author = user(1L);
+        PostRequestDto dto = PostRequestDto.builder().title("제목").content("내용").build();
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        willThrow(new TooManyRequestsException("요청이 너무 많습니다."))
+                .given(postCreationRateLimiter).check(1L);
+
+        assertThatThrownBy(() -> postService.createPost(dto, 1L, BoardType.FREE))
+                .isInstanceOf(TooManyRequestsException.class);
+        verify(postWriter, never()).save(any(), any(), any());
     }
 
     @Test

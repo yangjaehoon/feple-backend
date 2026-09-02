@@ -16,6 +16,8 @@ public interface PostAdminService {
     java.util.Map<Long, Long> getPostCountsByUserIds(java.util.List<Long> userIds);
     List<PostResponseDto> getDeletedPosts(int limit);
     void restorePost(Long postId);
+    /** 신고 누적으로 자동 블라인드된 게시글을 관리자가 되돌린다. */
+    void unblindPost(Long postId);
     List<PostResponseDto> getRecentPostsByUser(Long userId, int limit);
     /** @return 토글 후 고정 여부 — 컨트롤러가 감사 로그 기록에 사용 */
     boolean togglePin(Long postId);

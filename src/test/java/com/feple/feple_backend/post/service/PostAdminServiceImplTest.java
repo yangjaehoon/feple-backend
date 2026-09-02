@@ -100,6 +100,17 @@ class PostAdminServiceImplTest {
     }
 
     @Test
+    void 블라인드_해제_성공() {
+        Post post = freePost(10L, user(1L));
+        post.blind();
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+
+        postAdminService.unblindPost(10L);
+
+        assertThat(post.isBlinded()).isFalse();
+    }
+
+    @Test
     void 삭제된_게시글_목록_조회() {
         User author = user(1L);
         given(postRepository.findSoftDeleted(20)).willReturn(List.of(freePost(1L, author)));

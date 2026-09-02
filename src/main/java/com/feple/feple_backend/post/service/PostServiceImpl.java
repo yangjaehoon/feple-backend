@@ -2,6 +2,7 @@ package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.auth.ratelimit.PostCreationRateLimiter;
 import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.festival.entity.Festival;
@@ -56,6 +57,7 @@ public class PostServiceImpl implements PostService {
     // DB 영속 로직은 별도 트랜잭션 경계(PostWriter)에 위임한다 — 아래 create/update 진입점은
     // 트랜잭션 밖에서 검증(S3 오브젝트 확인 등 외부 I/O 포함)을 끝내고 이 빈을 호출한다.
     private final PostWriter postWriter;
+    private final PostCreationRateLimiter postCreationRateLimiter;
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -261,6 +263,10 @@ public class PostServiceImpl implements PostService {
     private Long savePost(PostRequestDto dto, User user, PostContext ctx) {
         validatePostContent(dto);
         validateImageUrls(dto.getImageUrls(), user.getId());
+        // 검증 통과 후에만 토큰을 소비한다 — 금칙어·이미지 오류로 반려된 시도까지 한도에
+        // 포함하면, 내용을 고쳐 다시 올리려는 정상 사용자가 잠기기 때문(엔드포인트 자체의
+        // 남용은 공통 WriteOperationRateLimiter가 분당 30회로 이미 차단).
+        postCreationRateLimiter.check(user.getId());
         return postWriter.save(dto, user, ctx);
     }
 
