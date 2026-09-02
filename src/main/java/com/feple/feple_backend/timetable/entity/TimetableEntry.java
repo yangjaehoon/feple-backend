@@ -58,7 +58,10 @@ public class TimetableEntry {
     // 공지/운영 슬롯(아티스트 없는 타임테이블 항목) 판별용 sentinel
     public static final String ANNOUNCEMENT_SENTINEL = "📢";
 
-    @Column(name = "stage_name", nullable = false)
+    // stage(FK)가 연결된 항목은 stage.name을 단일 출처로 쓰고 이 필드는 null이다.
+    // stage FK가 없는(OCR 미매칭·공지 슬롯) 항목만 무대명을 이 문자열로 들고 있으며,
+    // 스테이지가 삭제될 때 StageService가 삭제 직전 이름을 여기에 스냅샷한다.
+    @Column(name = "stage_name")
     private String stageName;
 
     @Column(nullable = false)
@@ -92,8 +95,10 @@ public class TimetableEntry {
     }
 
     public String getStageName() {
-        if (stageName != null) return stageName;
-        return stage != null ? stage.getName() : null;
+        // stage FK가 연결돼 있으면 항상 최신 이름을 반환한다 (getArtistName()과 동일 패턴).
+        // FK가 없는 항목은 저장된 폴백 문자열을 그대로 쓴다 — 기존 계약대로 null도 그대로 반환한다.
+        if (stage != null) return stage.getName();
+        return stageName;
     }
 
     public Long getFestivalId() {
@@ -106,7 +111,7 @@ public class TimetableEntry {
 
     public void updateStage(Stage stage) {
         this.stage = stage;
-        this.stageName = stage.getName();
+        this.stageName = null;
     }
 
     public void updateDate(java.time.LocalDate newDate) {
@@ -122,8 +127,8 @@ public class TimetableEntry {
 
     public void update(TimetableEntryFields fields) {
         this.artistName   = fields.artistName();
-        this.stageName    = fields.stageName();
         this.stage        = fields.stage();
+        this.stageName    = fields.stage() != null ? null : fields.stageName();
         this.festivalDate = fields.festivalDate();
         this.startTime    = fields.startTime();
         this.endTime      = fields.endTime();

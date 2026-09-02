@@ -159,7 +159,8 @@ public class TimetableService {
     private StageResolution resolveStage(Long festivalId, String rawStageName) {
         String stageName = (rawStageName == null || rawStageName.isBlank()) ? "" : rawStageName.trim();
         Stage stage = stageName.isEmpty() ? null : stageService.findByFestivalIdAndName(festivalId, stageName).orElse(null);
-        return new StageResolution(stageName, stage);
+        // stage FK로 매칭되면 무대명은 stage.name이 단일 출처 — 문자열 사본을 남기지 않는다.
+        return new StageResolution(stage != null ? null : stageName, stage);
     }
 
     private void validateTimeRange(TimetableEntryRequestDto req) {

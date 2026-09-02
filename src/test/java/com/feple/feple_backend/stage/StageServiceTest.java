@@ -72,10 +72,15 @@ class StageServiceTest {
     }
 
     @Test
-    void deleteStage_nullify_후_삭제_호출() {
+    void deleteStage_삭제전_스테이지명을_타임테이블에_스냅샷_후_삭제() {
+        Festival festival = org.mockito.Mockito.mock(Festival.class);
+        given(festival.getId()).willReturn(1L);
+        Stage stage = Stage.builder().festival(festival).name("MAIN STAGE").displayOrder(1).build();
+        given(stageRepository.findById(3L)).willReturn(Optional.of(stage));
+
         stageService.deleteStage(1L, 3L);
 
-        then(timetableRepository).should().nullifyStageId(3L);
+        then(timetableRepository).should().detachStage(3L, "MAIN STAGE");
         then(stageRepository).should().deleteById(3L);
     }
 

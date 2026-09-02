@@ -24,8 +24,10 @@ public interface TimetableRepository extends JpaRepository<TimetableEntry, Long>
     @Query("DELETE FROM TimetableEntry t WHERE t.festival.id = :festivalId")
     void deleteByFestivalId(@Param("festivalId") Long festivalId);
 
+    // 스테이지 삭제 시: FK를 끊기 전에 삭제될 스테이지 이름을 stage_name에 스냅샷해
+    // 해당 항목들이 무대 라벨을 잃지 않도록 한다 (FK 없는 항목의 폴백 문자열).
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("UPDATE TimetableEntry t SET t.stage = null WHERE t.stage.id = :stageId")
-    void nullifyStageId(@Param("stageId") Long stageId);
+    @Query("UPDATE TimetableEntry t SET t.stageName = :stageName, t.stage = null WHERE t.stage.id = :stageId")
+    void detachStage(@Param("stageId") Long stageId, @Param("stageName") String stageName);
 }

@@ -36,7 +36,7 @@ class TimetableEntryBatchPersister {
         TimetableEntry entry = TimetableEntry.builder()
                 .festival(festival)
                 .stage(stage)
-                .stageName(stageName)
+                .stageName(stage != null ? null : stageName)
                 .artistName(req.getArtistName() != null ? req.getArtistName().trim() : "")
                 .festivalDate(req.getFestivalDate())
                 .startTime(req.getStartTime())
