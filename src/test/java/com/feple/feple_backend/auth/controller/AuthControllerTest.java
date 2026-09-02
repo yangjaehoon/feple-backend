@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
+import com.feple.feple_backend.auth.service.AgeVerificationService;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
@@ -42,6 +43,7 @@ class AuthControllerTest {
     @Mock JwtProvider jwtProvider;
     @Mock RefreshTokenService refreshTokenService;
     @Mock LoginRateLimiter loginRateLimiter;
+    @Mock AgeVerificationService ageVerificationService;
 
     MockMvc mockMvc;
 
@@ -49,7 +51,8 @@ class AuthControllerTest {
     void setUp() {
         AuthController controller = new AuthController(
                 kakaoAuthService, firebaseAuthService,
-                userService, jwtProvider, refreshTokenService, loginRateLimiter);
+                userService, jwtProvider, refreshTokenService, loginRateLimiter,
+                ageVerificationService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())

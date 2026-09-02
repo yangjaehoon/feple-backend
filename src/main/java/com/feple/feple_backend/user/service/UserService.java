@@ -4,6 +4,7 @@ import com.feple.feple_backend.user.dto.NicknameAvailabilityResponse;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
+import java.time.LocalDate;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
@@ -12,6 +13,7 @@ public interface UserService {
     void updateNickname(Long id, String nickname);
     void updateProfileImage(Long id, MultipartFile file);
     void updateBio(Long id, String bio);
+    void recordBirthDate(Long id, LocalDate birthDate);
     void deleteUser(Long id, WithdrawalReason reason, String detail);
     Long currentUserId();
     UserResponseDto toUserDto(User user);

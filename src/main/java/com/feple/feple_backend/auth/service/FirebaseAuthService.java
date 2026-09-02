@@ -1,6 +1,7 @@
 package com.feple.feple_backend.auth.service;
 
 import com.feple.feple_backend.auth.firebase.FirebaseTokenVerifier;
+import com.feple.feple_backend.global.exception.AgeRestrictedException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
@@ -38,7 +39,8 @@ public class FirebaseAuthService implements OAuthLoginService {
                 throw new InvalidRequestException("이메일 인증이 완료되지 않았습니다.");
             }
             return registerOrFind(decoded.getUid(), decoded.getEmail(), decoded.getName());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | AgeRestrictedException e) {
+            // 의도적으로 노출할 검증·나이 제한 메시지는 "인증 실패"로 뭉개지 않고 그대로 전파한다.
             throw e;
         } catch (Exception e) {
             log.warn("[Firebase Auth] idToken 검증 실패: {} - {}", e.getClass().getSimpleName(), e.getMessage());

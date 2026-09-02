@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -63,6 +64,12 @@ public class User {
     @Column(nullable = true)
     private String email;
 
+    // 나이 확인용 생년월일. NULL이면 아직 확인 전(로그인은 됐으나 게이트 미통과) —
+    // JwtAuthenticationFilter가 GET /users/me 외의 요청을 차단한다. 만 14세 미만으로
+    // 확인되면 계정이 즉시 소프트 삭제되므로 이 컬럼에 미달 생년월일이 저장되는 일은 없다.
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
@@ -106,6 +113,18 @@ public class User {
     public boolean isAdmin() { return UserStatusPolicy.isAdmin(role); }
     public boolean isArtist() { return UserStatusPolicy.isArtist(role); }
     public boolean isDeleted() { return deletedAt != null; }
+
+    /**
+     * 나이 확인이 필요한 활성 일반 유저인지 — 생년월일 미입력 + 미탈퇴 + 일반 회원.
+     * 관리자·아티스트 계정은 가입 흐름을 타지 않으므로 대상에서 제외한다.
+     */
+    public boolean needsAgeVerification() {
+        return birthDate == null && deletedAt == null && role == UserRole.USER;
+    }
+
+    public void recordBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
 
     public boolean isBanned() {
         return UserStatusPolicy.isBanned(bannedUntil);

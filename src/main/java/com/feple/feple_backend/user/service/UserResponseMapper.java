@@ -17,6 +17,7 @@ final class UserResponseMapper {
                 .bio(user.getBio())
                 .level(user.getLevel().name())
                 .nicknameChangedAt(user.getNicknameChangedAt())
+                .ageVerificationRequired(user.needsAgeVerification() ? Boolean.TRUE : null)
                 .build();
     }
 
