@@ -210,4 +210,26 @@ class PostAdminControllerTest {
                 .andExpect(redirectedUrl("/admin/posts/deleted"))
                 .andExpect(flash().attribute("errorMessage", "복구 중 오류가 발생했습니다."));
     }
+
+    // ── POST /admin/posts/{id}/unblind ───────────────────────────────────────
+
+    @Test
+    void 게시글_블라인드_해제_성공() throws Exception {
+        mockMvc.perform(post("/admin/posts/1/unblind"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/posts/blinded"))
+                .andExpect(flash().attribute("successMessage", "게시글 블라인드를 해제했습니다."));
+
+        then(postAdminService).should().unblindPost(1L);
+    }
+
+    @Test
+    void 게시글_블라인드_해제_실패_errorMessage_설정() throws Exception {
+        willThrow(new RuntimeException("오류")).given(postAdminService).unblindPost(1L);
+
+        mockMvc.perform(post("/admin/posts/1/unblind"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/posts/blinded"))
+                .andExpect(flash().attribute("errorMessage", "블라인드 해제 중 오류가 발생했습니다."));
+    }
 }

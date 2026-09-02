@@ -177,4 +177,18 @@ public class PostAdminController {
                 ra);
         return "redirect:/admin/posts/deleted";
     }
+
+    @PostMapping("/{id}/unblind")
+    public String unblindPost(@PathVariable Long id, RedirectAttributes ra) {
+        AdminActionUtils.tryAction(
+                () -> {
+                    postAdminService.unblindPost(id);
+                    adminLogService.log(AdminAction.POST_UNBLIND, "POST", id, null);
+                },
+                "게시글 블라인드를 해제했습니다.",
+                e -> log.error("게시글 블라인드 해제 실패 id={}", id, e),
+                "블라인드 해제 중 오류가 발생했습니다.",
+                ra);
+        return "redirect:/admin/posts/blinded";
+    }
 }

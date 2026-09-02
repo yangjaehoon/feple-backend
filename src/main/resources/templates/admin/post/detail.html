@@ -16,7 +16,11 @@
                           th:classappend="${post.boardType != null} ? 'badge-primary' : 'badge-genre'"
                           th:text="${post.boardDisplayName}"></span>
                     <span th:if="${post.pinned}" class="badge badge-primary">📌 고정됨</span>
-                    <span th:if="${post.blinded}" class="badge badge-danger">🚫 블라인드됨(신고 누적)</span>
+                    <span th:if="${post.blinded}" class="badge badge-danger">🚫 블라인드됨</span>
+                    <form th:if="${post.blinded}" th:action="@{/admin/posts/{id}/unblind(id=${post.id})}" method="post">
+                        <button type="submit" class="btn btn-secondary"
+                                data-confirm="이 게시글의 블라인드를 해제할까요? 일반 목록에 다시 노출됩니다.">블라인드 해제</button>
+                    </form>
                     <form th:action="@{/admin/posts/{id}/pin(id=${post.id})}" method="post">
                         <button type="submit"
                                 class="btn btn-secondary"
@@ -34,7 +38,10 @@
                 <div class="post-meta-row">
                     <div>
                         <div class="meta-label">작성자</div>
-                        <div class="meta-value" th:text="${post.nickname}"></div>
+                        <div class="meta-value">
+                            <a th:href="@{/admin/users/{id}(id=${post.userId})}"
+                               th:text="${post.nickname}" class="td-link"></a>
+                        </div>
                     </div>
                     <div>
                         <div class="meta-label">작성일</div>

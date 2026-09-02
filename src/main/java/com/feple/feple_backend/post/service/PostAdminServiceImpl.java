@@ -131,6 +131,12 @@ public class PostAdminServiceImpl implements PostAdminService {
     }
 
     @Override
+    @Transactional
+    public void unblindPost(Long postId) {
+        EntityLoader.getOrThrow(postRepository::findById, postId, "게시글").unblind();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getRecentPostsByUser(Long userId, int limit) {
         return postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, limit))

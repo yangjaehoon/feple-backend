@@ -34,11 +34,18 @@
                         <td>
                             <span th:text="${#strings.abbreviate(post.title, 60)}"></span>
                         </td>
-                        <td th:text="${post.nickname}"></td>
+                        <td>
+                            <a th:href="@{/admin/users/{id}(id=${post.userId})}"
+                               th:text="${post.nickname}" class="td-link"></a>
+                        </td>
                         <td th:text="${post.boardType != null ? post.boardType : '-'}"></td>
                         <td th:text="${post.updatedAt != null ? #temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
                         <td>
                             <a th:href="@{/admin/posts/{id}(id=${post.id})}" class="btn btn-secondary btn-sm">상세보기</a>
+                            <form th:action="@{/admin/posts/{id}/unblind(id=${post.id})}" method="post" class="inline-form">
+                                <button type="submit" class="btn btn-secondary btn-sm"
+                                        data-confirm="이 게시글의 블라인드를 해제할까요? 일반 목록에 다시 노출됩니다.">블라인드 해제</button>
+                            </form>
                         </td>
                     </tr>
                 </tbody>
