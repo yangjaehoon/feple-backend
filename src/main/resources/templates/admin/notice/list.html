@@ -54,7 +54,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr th:if="${notices.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(5, '등록된 공지사항이 없습니다.')}"></tr>
+                    <tr th:replace="${notices.totalElements == 0} ? ~{admin/fragments :: emptyRow(5, '등록된 공지사항이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

@@ -59,6 +59,11 @@ public class UserPostHistoryServiceImpl implements UserPostHistoryService {
     }
 
     @Override
+    public long countVisiblePosts(Long userId) {
+        return postRepository.countByUserId(userId);
+    }
+
+    @Override
     public List<PostResponseDto> getLikedPosts(Long userId) {
         return postLikeRepository.findPostsByUserId(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream()

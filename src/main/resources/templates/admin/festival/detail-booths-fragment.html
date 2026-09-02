@@ -81,7 +81,7 @@
                         </form>
                     </td>
                 </tr>
-                <tr th:if="${booths.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(5, '등록된 부스가 없습니다.')}"></tr>
+                <tr th:replace="${booths.isEmpty()} ? ~{admin/fragments :: emptyRow(5, '등록된 부스가 없습니다.')} : ~{}"></tr>
                 </tbody>
             </table>
         </div>

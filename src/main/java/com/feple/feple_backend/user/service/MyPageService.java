@@ -86,11 +86,22 @@ public class MyPageService {
     }
 
     public UserStatsDto getUserStats(@NonNull Long userId) {
+        return buildStats(userId, postActivityService.countPublicPosts(userId));
+    }
+
+    // 관리자 회원 상세용 — 같은 화면의 "최근 게시글" 목록이 익명 글도 보여주므로
+    // 게시글 카운트도 익명 포함(countVisiblePosts)으로 맞춰 목록과 숫자가 어긋나지 않게 한다.
+    // 공개 엔드포인트(GET /users/{id}/stats)는 익명 저작자 노출 방지를 위해 getUserStats를 그대로 쓴다.
+    public UserStatsDto getUserStatsForAdmin(@NonNull Long userId) {
+        return buildStats(userId, postActivityService.countVisiblePosts(userId));
+    }
+
+    private UserStatsDto buildStats(Long userId, long postCount) {
         long reportCount = reportCountSources().stream()
                 .mapToLong(source -> source.apply(List.of(userId)).getOrDefault(userId, 0L))
                 .sum();
         return new UserStatsDto(
-                postActivityService.countPublicPosts(userId),
+                postCount,
                 commentService.countMyComments(userId),
                 reportCount,
                 postActivityService.countLikedPosts(userId),

@@ -96,7 +96,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(comments)}" th:replace="~{admin/fragments :: emptyRow(5, '댓글이 없습니다.')}"></tr>
+                    <tr th:replace="${#lists.isEmpty(comments)} ? ~{admin/fragments :: emptyRow(5, '댓글이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

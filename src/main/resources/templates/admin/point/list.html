@@ -57,7 +57,7 @@
                         </td>
                         <td class="cell-secondary" th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
                     </tr>
-                    <tr th:if="${logs.totalElements == 0}" th:replace="~{admin/fragments :: emptyRowSearch(6, ${keyword}, '포인트 내역이 없습니다.')}"></tr>
+                    <tr th:replace="${logs.totalElements == 0} ? ~{admin/fragments :: emptyRowSearch(6, ${keyword}, '포인트 내역이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

@@ -158,7 +158,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr th:if="${posts.totalElements == 0}" th:replace="~{admin/fragments :: emptyRowSearch(6, ${keyword}, '게시글이 없습니다.')}"></tr>
+                    <tr th:replace="${posts.totalElements == 0} ? ~{admin/fragments :: emptyRowSearch(6, ${keyword}, '게시글이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

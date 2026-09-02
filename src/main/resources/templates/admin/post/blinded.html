@@ -28,7 +28,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:if="${posts.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(6, '블라인드된 게시글이 없습니다.')}"></tr>
+                    <tr th:replace="${posts.isEmpty()} ? ~{admin/fragments :: emptyRow(6, '블라인드된 게시글이 없습니다.')} : ~{}"></tr>
                     <tr th:each="post : ${posts}">
                         <td th:text="${post.id}"></td>
                         <td>

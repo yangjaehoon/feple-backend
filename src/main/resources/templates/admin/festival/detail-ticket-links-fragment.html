@@ -49,7 +49,7 @@
                         </form>
                     </td>
                 </tr>
-                <tr th:if="${ticketLinks.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(3, '등록된 예매 링크가 없습니다.')}"></tr>
+                <tr th:replace="${ticketLinks.isEmpty()} ? ~{admin/fragments :: emptyRow(3, '등록된 예매 링크가 없습니다.')} : ~{}"></tr>
                 </tbody>
             </table>
         </div>

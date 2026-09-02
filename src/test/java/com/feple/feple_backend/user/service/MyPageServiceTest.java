@@ -192,4 +192,21 @@ class MyPageServiceTest {
         assertThat(stats.getCommentCount()).isZero();
         assertThat(stats.getReportCount()).isZero();
     }
+
+    @Test
+    void 관리자용_통계는_익명_글까지_포함해_게시글수_집계() {
+        given(postActivityService.countVisiblePosts(1L)).willReturn(7L);
+        given(commentService.countMyComments(1L)).willReturn(2L);
+        given(postActivityService.countLikedPosts(1L)).willReturn(0L);
+        given(postScrapService.countMyScraps(1L)).willReturn(0L);
+        given(certificationService.countApprovedByUser(1L)).willReturn(0L);
+        given(postReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of());
+        given(commentReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of());
+        given(photoReportService.getAuthorReportCounts(List.of(1L))).willReturn(Map.of());
+
+        UserStatsDto stats = myPageService.getUserStatsForAdmin(1L);
+
+        assertThat(stats.getPostCount()).isEqualTo(7L);
+        assertThat(stats.getCommentCount()).isEqualTo(2L);
+    }
 }

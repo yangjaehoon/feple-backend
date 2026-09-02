@@ -41,7 +41,7 @@
                     <td class="td-date"
                         th:text="${#temporals.format(post.createdAt, 'MM-dd HH:mm')}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(recentPosts)}" th:replace="~{admin/fragments :: emptyRow(5, '게시글이 없습니다.')}"></tr>
+                <tr th:replace="${#lists.isEmpty(recentPosts)} ? ~{admin/fragments :: emptyRow(5, '게시글이 없습니다.')} : ~{}"></tr>
                 </tbody>
             </table>
         </div>
@@ -83,7 +83,7 @@
                     <td class="td-date"
                         th:text="${comment.createdAt != null ? #temporals.format(comment.createdAt, 'MM-dd HH:mm') : '-'}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(recentComments)}" th:replace="~{admin/fragments :: emptyRow(5, '댓글이 없습니다.')}"></tr>
+                <tr th:replace="${#lists.isEmpty(recentComments)} ? ~{admin/fragments :: emptyRow(5, '댓글이 없습니다.')} : ~{}"></tr>
                 </tbody>
             </table>
         </div>
@@ -138,7 +138,7 @@
                            class="btn btn-secondary btn-sm">보기</a>
                     </td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(certifications)}" th:replace="~{admin/fragments :: emptyRow(7, '인증 이력이 없습니다.')}"></tr>
+                <tr th:replace="${#lists.isEmpty(certifications)} ? ~{admin/fragments :: emptyRow(7, '인증 이력이 없습니다.')} : ~{}"></tr>
                 </tbody>
             </table>
         </div>
