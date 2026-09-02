@@ -45,6 +45,12 @@ public interface ArtistGalleryPhotoReportRepository extends BaseReportRepository
     @Query("DELETE FROM ArtistGalleryPhotoReport apr WHERE apr.photo.id = :photoId")
     void deleteAllByPhotoId(@Param("photoId") Long photoId);
 
+    // 회원 완전 삭제(hardDelete) 시 users 행 물리 삭제 전에 이 유저가 낸 신고를 비운다 (reporter_id FK RESTRICT).
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM ArtistGalleryPhotoReport apr WHERE apr.reporter.id = :reporterId")
+    void deleteByReporterId(@Param("reporterId") Long reporterId);
+
     @org.springframework.data.jpa.repository.Modifying
     @Query("DELETE FROM ArtistGalleryPhotoReport apr WHERE apr.photo.artist.id = :artistId")
     void deleteAllByPhotoArtistId(@Param("artistId") Long artistId);

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.CurrentAdminProvider;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
@@ -40,6 +41,7 @@ class UserAdminServiceImplTest {
     @Mock UserCascadeDeleteService cascadeDeleteService;
     @Mock PostRepository postRepository;
     @Mock CommentRepository commentRepository;
+    @Mock ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
     @Spy CurrentAdminProvider currentAdminProvider = new CurrentAdminProvider();
 
     @InjectMocks UserAdminServiceImpl userAdminService;
@@ -154,7 +156,20 @@ class UserAdminServiceImplTest {
 
         assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
                 .isInstanceOf(InvalidRequestException.class)
-                .hasMessageContaining("게시글 또는 댓글");
+                .hasMessageContaining("게시글·댓글");
+        verify(cascadeDeleteService, never()).hardDelete(any());
+    }
+
+    @Test
+    void hardDeleteUser_올린_갤러리_사진이_있으면_거부() {
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "사진올린유저")));
+        given(postRepository.countByUserId(1L)).willReturn(0L);
+        given(commentRepository.countByUserId(1L)).willReturn(0L);
+        given(artistGalleryPhotoRepository.countByUploaderId(1L)).willReturn(3L);
+
+        assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("갤러리 사진");
         verify(cascadeDeleteService, never()).hardDelete(any());
     }
 
@@ -164,6 +179,7 @@ class UserAdminServiceImplTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(target));
         given(postRepository.countByUserId(1L)).willReturn(0L);
         given(commentRepository.countByUserId(1L)).willReturn(0L);
+        given(artistGalleryPhotoRepository.countByUploaderId(1L)).willReturn(0L);
 
         userAdminService.hardDeleteUser(1L);
 

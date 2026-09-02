@@ -1,6 +1,7 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.admin.CurrentAdminProvider;
+import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
@@ -38,6 +39,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     private final CurrentAdminProvider currentAdminProvider;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -109,15 +111,17 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     /**
      * 회원을 DB에서 완전히 제거한다(되돌릴 수 없음). 탈퇴 상태든 활성 상태든 한 번에 처리한다.
-     * SUPER_ADMIN 전용이며, 실수로 실사용자 데이터를 날리지 않도록 <b>작성한 게시글·댓글이 있으면
-     * 거부</b>한다 — 그런 계정은 남의 댓글·좋아요가 얽혀 있으므로 일반 삭제(익명 처리)를 써야 한다.
+     * SUPER_ADMIN 전용이며, 실수로 실사용자 데이터를 날리지 않도록 <b>작성한 게시글·댓글·갤러리 사진이
+     * 있으면 거부</b>한다 — 그런 계정은 남의 댓글·좋아요가 얽혀 있으므로 일반 삭제(익명 처리)를 써야 한다.
      * 로그인으로 재접근 불가능해진 OAuth 테스트 계정 정리 용도.
      */
     @Override
     public void hardDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
-        if (postRepository.countByUserId(id) > 0 || commentRepository.countByUserId(id) > 0) {
-            throw new InvalidRequestException("작성한 게시글 또는 댓글이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
+        if (postRepository.countByUserId(id) > 0
+                || commentRepository.countByUserId(id) > 0
+                || artistGalleryPhotoRepository.countByUploaderId(id) > 0) {
+            throw new InvalidRequestException("작성한 게시글·댓글 또는 올린 갤러리 사진이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
         }
         cascadeDeleteService.hardDelete(user);
     }
