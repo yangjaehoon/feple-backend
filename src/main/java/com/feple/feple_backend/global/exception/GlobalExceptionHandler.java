@@ -109,6 +109,14 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.UNAUTHORIZED, ex.getMessage(), ErrorCode.UNAUTHORIZED);
     }
 
+    // 나이 확인에서 만 14세 미만으로 판정된 경우 — 계정은 이미 파기됐고, 클라이언트는 이 코드로
+    // 안내 화면을 띄운다. 의도적으로 작성한 메시지라 그대로 노출한다.
+    @ExceptionHandler(AgeRestrictedException.class)
+    public ResponseEntity<ErrorResponse> handleAgeRestricted(AgeRestrictedException ex) {
+        log.info("Age restricted: {}", ex.getMessage());
+        return body(HttpStatus.FORBIDDEN, ex.getMessage(), ErrorCode.AGE_RESTRICTED);
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ErrorResponse> handleTooManyRequests(TooManyRequestsException ex) {
         log.warn("Rate limit exceeded: {}", ex.getMessage());

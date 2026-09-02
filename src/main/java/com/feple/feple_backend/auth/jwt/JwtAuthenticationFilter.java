@@ -109,6 +109,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (user.isBanned()) {
             return Optional.of(new JwtFailure(HttpStatus.FORBIDDEN, "계정이 정지되었습니다.", ErrorCode.USER_BANNED));
         }
+        // 나이 확인 전(생년월일 미입력) 유저는 GET /users/me 외의 인증 요청을 모두 차단한다 —
+        // 글·댓글 작성 등 개인정보를 남기는 행위(인증 필요 엔드포인트)를 클라이언트 우회와
+        // 무관하게 서버에서 막는다(App Store 심사 5.1.1). 공개 GET 조회는 게스트와 동일하게 허용.
+        if (user.needsAgeVerification() && !isAgeGateSelfCheck(request)) {
+            return Optional.of(new JwtFailure(HttpStatus.FORBIDDEN,
+                    "생년월일 확인이 필요합니다.", ErrorCode.AGE_VERIFICATION_REQUIRED));
+        }
 
         String role = "ROLE_" + user.getRole().name();
         var authentication = new UsernamePasswordAuthenticationToken(
@@ -119,5 +126,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         userAccessTrackingService.recordAccess(userId);
         return Optional.empty();
+    }
+
+    /** 나이 확인 전 유저에게도 허용되는 유일한 경로 — 본인 정보 조회(확인 필요 여부 플래그를 읽음). */
+    private boolean isAgeGateSelfCheck(HttpServletRequest request) {
+        return "GET".equals(request.getMethod()) && "/users/me".equals(request.getRequestURI());
     }
 }

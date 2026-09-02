@@ -7,8 +7,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.global.exception.AgeRestrictedException;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Iterator;
@@ -67,6 +69,21 @@ class OAuthUserRegistrationServiceTest {
                 nickname -> { throw new AssertionError("호출되면 안 됨"); }))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("탈퇴");
+    }
+
+    @Test
+    void 나이제한으로_삭제된_계정이면_AgeRestrictedException() {
+        User ageRestricted = User.builder().id(3L).nickname("nick3").oauthId("oauth-age")
+                .provider(AuthProvider.KAKAO).deletedAt(LocalDateTime.now())
+                .withdrawalReason(WithdrawalReason.AGE_RESTRICTED).build();
+        given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-age"))
+                .willReturn(Optional.of(ageRestricted));
+
+        assertThatThrownBy(() -> registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-age",
+                () -> { throw new AssertionError("호출되면 안 됨"); },
+                nickname -> { throw new AssertionError("호출되면 안 됨"); }))
+                .isInstanceOf(AgeRestrictedException.class)
+                .hasMessageContaining("14세");
     }
 
     @Test

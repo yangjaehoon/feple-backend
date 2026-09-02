@@ -1,9 +1,12 @@
 package com.feple.feple_backend.auth.service;
 
+import com.feple.feple_backend.global.exception.AgeRestrictedException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 
+import com.feple.feple_backend.user.entity.AgePolicy;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
+import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.util.Optional;
 import java.util.function.Function;
@@ -32,6 +35,10 @@ public class OAuthUserRegistrationService {
         if (existing.isPresent()) {
             User user = existing.get();
             if (user.isDeleted()) {
+                if (user.getWithdrawalReason() == WithdrawalReason.AGE_RESTRICTED) {
+                    throw new AgeRestrictedException(
+                            "만 " + AgePolicy.MINIMUM_AGE + "세 미만은 커뮤니티 서비스를 이용할 수 없습니다.");
+                }
                 throw new InvalidRequestException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
             }
             return user;

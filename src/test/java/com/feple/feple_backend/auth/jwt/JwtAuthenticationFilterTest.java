@@ -48,7 +48,8 @@ class JwtAuthenticationFilterTest {
     }
 
     private User activeUser(Long id) {
-        return User.builder().id(id).oauthId("o" + id).nickname("user" + id).role(UserRole.USER).build();
+        return User.builder().id(id).oauthId("o" + id).nickname("user" + id).role(UserRole.USER)
+                .birthDate(java.time.LocalDate.of(2000, 1, 1)).build();
     }
 
     @Test
@@ -88,6 +89,43 @@ class JwtAuthenticationFilterTest {
                 (JwtAuthenticationFilter.JwtFailure) request.getAttribute(JwtAuthenticationFilter.JWT_FAILURE_ATTRIBUTE);
         assertThat(failure.status()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(failure.code()).isEqualTo(ErrorCode.USER_BANNED);
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void 생년월일_미입력_유저는_users_me_외_요청_차단() throws Exception {
+        String token = jwtProvider.createAccessToken(1L);
+        User pending = User.builder().id(1L).oauthId("o1").nickname("user1").role(UserRole.USER).build();
+        given(userRepository.findById(1L)).willReturn(Optional.of(pending));
+        MockHttpServletRequest request = authorizedRequest(token);
+        request.setMethod("POST");
+        request.setRequestURI("/posts");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        JwtAuthenticationFilter.JwtFailure failure =
+                (JwtAuthenticationFilter.JwtFailure) request.getAttribute(JwtAuthenticationFilter.JWT_FAILURE_ATTRIBUTE);
+        assertThat(failure.status()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(failure.code()).isEqualTo(ErrorCode.AGE_VERIFICATION_REQUIRED);
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void 생년월일_미입력_유저도_GET_users_me_는_허용() throws Exception {
+        String token = jwtProvider.createAccessToken(1L);
+        User pending = User.builder().id(1L).oauthId("o1").nickname("user1").role(UserRole.USER).build();
+        given(userRepository.findById(1L)).willReturn(Optional.of(pending));
+        MockHttpServletRequest request = authorizedRequest(token);
+        request.setMethod("GET");
+        request.setRequestURI("/users/me");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
+        assertThat(request.getAttribute(JwtAuthenticationFilter.JWT_FAILURE_ATTRIBUTE)).isNull();
         verify(filterChain).doFilter(request, response);
     }
 

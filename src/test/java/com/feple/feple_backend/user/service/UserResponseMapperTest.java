@@ -60,6 +60,24 @@ class UserResponseMapperTest {
     }
 
     @Test
+    void toUserDto_생년월일_없는_일반유저면_ageVerificationRequired_true() {
+        User user = baseUser().build();
+
+        UserResponseDto dto = UserResponseMapper.toUserDto(user, fileStorageService);
+
+        assertThat(dto.getAgeVerificationRequired()).isTrue();
+    }
+
+    @Test
+    void toUserDto_생년월일_있으면_ageVerificationRequired_null() {
+        User user = baseUser().birthDate(java.time.LocalDate.of(2000, 1, 1)).build();
+
+        UserResponseDto dto = UserResponseMapper.toUserDto(user, fileStorageService);
+
+        assertThat(dto.getAgeVerificationRequired()).isNull();
+    }
+
+    @Test
     void toAdminUserDto_관리자_전용_필드_포함() {
         LocalDateTime now = LocalDateTime.now();
         User user = baseUser()

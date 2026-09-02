@@ -15,6 +15,7 @@ import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import lombok.NonNull;
@@ -109,6 +110,12 @@ public class UserServiceImpl implements UserService {
         } catch (IOException e) {
             throw new ExternalStorageException("프로필 이미지 저장에 실패했습니다.", e);
         }
+    }
+
+    @Override
+    public void recordBirthDate(@NonNull Long id, @NonNull LocalDate birthDate) {
+        User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
+        user.recordBirthDate(birthDate);
     }
 
     @Override
