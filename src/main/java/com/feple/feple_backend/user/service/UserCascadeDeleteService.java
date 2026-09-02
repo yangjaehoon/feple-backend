@@ -1,6 +1,5 @@
 package com.feple.feple_backend.user.service;
 
-import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
@@ -8,8 +7,8 @@ import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
-import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.diary.service.FestivalDiaryService;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
@@ -18,8 +17,6 @@ import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionSer
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.service.NotificationPreferenceService;
 import com.feple.feple_backend.notification.service.NotificationQueryService;
-import com.feple.feple_backend.post.repository.PostDraftRepository;
-import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
@@ -66,10 +63,7 @@ public class UserCascadeDeleteService {
     private final UserReportRepository userReportRepository;
     private final CommentRepository commentRepository;
     private final UserPointLogRepository userPointLogRepository;
-    private final PostDraftRepository postDraftRepository;
-    private final PostReportRepository postReportRepository;
-    private final CommentReportRepository commentReportRepository;
-    private final ArtistGalleryPhotoReportRepository artistGalleryPhotoReportRepository;
+    private final CommentReportService commentReportService;
 
     public void delete(User user, WithdrawalReason reason, String detail) {
         String profileImageKey = user.getProfileImageUrl();
@@ -97,16 +91,15 @@ public class UserCascadeDeleteService {
 
         removeAllActivity(id);
 
-        // 소프트 삭제 캐스케이드가 다루지 않는 잔여 참조 — 남으면 users 행 DELETE가 FK로 실패한다.
-        // (post/comment 작성 행과 갤러리 사진 업로드가 없는 건 UserAdminServiceImpl.hardDeleteUser 선조건이 보장)
+        // 일반 탈퇴(익명화)는 안 건드리지만 users 행 물리 삭제 전엔 비워야 하는 잔여 참조 (전부 users FK RESTRICT).
+        // post/comment 작성 행과 갤러리 사진 업로드가 없는 건 UserAdminServiceImpl.hardDeleteUser 선조건이 보장한다.
         userAccessLogRepository.deleteByUserId(id);
         userReportRepository.deleteByUserInvolved(id);
         commentRepository.clearMentionsByUserId(id);
         userPointLogRepository.deleteByUserId(id);
-        postDraftRepository.deleteByUserId(id);
-        postReportRepository.deleteByReporterId(id);
-        commentReportRepository.deleteByReporterId(id);
-        artistGalleryPhotoReportRepository.deleteByReporterId(id);
+        postCascadeService.removeAuthoredArtifactsByUser(id);   // post_draft + post_report(reporter)
+        commentReportService.removeReportsByReporter(id);       // comment_report(reporter)
+        artistGalleryPhotoService.removeReportsByReporter(id);  // artist_photo_report(reporter)
 
         userRepository.deleteById(id);
 

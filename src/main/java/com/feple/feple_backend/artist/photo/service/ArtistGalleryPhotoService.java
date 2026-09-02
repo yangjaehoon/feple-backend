@@ -150,6 +150,15 @@ public class ArtistGalleryPhotoService {
         artistGalleryPhotoLikeRepository.deleteByUserId(userId);
     }
 
+    /**
+     * 회원 완전 삭제(hardDelete) 시 이 유저가 낸 갤러리 사진 신고를 비운다
+     * (artist_photo_report.reporter_id, users FK RESTRICT). 일반 탈퇴는 신고 이력을 보존한다.
+     */
+    @Transactional
+    public void removeReportsByReporter(Long reporterId) {
+        artistGalleryPhotoReportRepository.deleteByReporterId(reporterId);
+    }
+
     @Transactional
     public boolean toggleLike(Long photoId, Long userId) {
         ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");

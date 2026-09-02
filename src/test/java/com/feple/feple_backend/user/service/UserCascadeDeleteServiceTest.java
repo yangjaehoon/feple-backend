@@ -3,7 +3,6 @@ package com.feple.feple_backend.user.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
-import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
 import com.feple.feple_backend.artist.song.service.SongRequestService;
 import com.feple.feple_backend.artist.suggestion.service.ArtistSuggestionService;
@@ -11,8 +10,8 @@ import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
-import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.diary.service.FestivalDiaryService;
 import com.feple.feple_backend.festival.service.FestivalAttendanceService;
@@ -21,8 +20,6 @@ import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionSer
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.notification.service.NotificationPreferenceService;
 import com.feple.feple_backend.notification.service.NotificationQueryService;
-import com.feple.feple_backend.post.repository.PostDraftRepository;
-import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.service.PostCascadeDeleteService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
@@ -66,10 +63,7 @@ class UserCascadeDeleteServiceTest {
     @Mock UserReportRepository userReportRepository;
     @Mock CommentRepository commentRepository;
     @Mock UserPointLogRepository userPointLogRepository;
-    @Mock PostDraftRepository postDraftRepository;
-    @Mock PostReportRepository postReportRepository;
-    @Mock CommentReportRepository commentReportRepository;
-    @Mock ArtistGalleryPhotoReportRepository artistGalleryPhotoReportRepository;
+    @Mock CommentReportService commentReportService;
 
     @InjectMocks UserCascadeDeleteService userCascadeDeleteService;
 
@@ -171,10 +165,9 @@ class UserCascadeDeleteServiceTest {
         verify(userReportRepository).deleteByUserInvolved(3L);
         verify(commentRepository).clearMentionsByUserId(3L);
         verify(userPointLogRepository).deleteByUserId(3L);
-        verify(postDraftRepository).deleteByUserId(3L);
-        verify(postReportRepository).deleteByReporterId(3L);
-        verify(commentReportRepository).deleteByReporterId(3L);
-        verify(artistGalleryPhotoReportRepository).deleteByReporterId(3L);
+        verify(postCascadeService).removeAuthoredArtifactsByUser(3L);
+        verify(commentReportService).removeReportsByReporter(3L);
+        verify(artistGalleryPhotoService).removeReportsByReporter(3L);
         // 물리 삭제 + S3 파일 정리
         verify(userRepository).deleteById(3L);
         verify(fileStorageService).deleteFileAfterCommit("profile/user-3.jpg");

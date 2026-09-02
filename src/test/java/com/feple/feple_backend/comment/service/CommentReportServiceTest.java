@@ -269,4 +269,11 @@ class CommentReportServiceTest {
 
         assertThat(commentReportService.getReportCountForUser(7L)).isEqualTo(4L);
     }
+
+    @Test
+    void removeReportsByReporter_신고자_기준_삭제를_레포지토리에_위임() {
+        commentReportService.removeReportsByReporter(7L);
+
+        verify(reportRepository).deleteByReporterId(7L);
+    }
 }
