@@ -46,6 +46,12 @@ public interface CommentReportRepository extends BaseReportRepository<CommentRep
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.id = :commentId")
     void deleteByCommentId(@Param("commentId") Long commentId);
 
+    // 회원 완전 삭제(hardDelete) 시 users 행 물리 삭제 전에 이 유저가 낸 신고를 비운다 (reporter_id FK RESTRICT).
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM CommentReport cr WHERE cr.reporter.id = :reporterId")
+    void deleteByReporterId(@Param("reporterId") Long reporterId);
+
     @Query("SELECT COUNT(cr) FROM CommentReport cr WHERE cr.comment.id = :commentId AND cr.status = :status")
     long countByCommentIdAndStatus(@Param("commentId") Long commentId, @Param("status") ReportStatus status);
 

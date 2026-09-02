@@ -13,6 +13,11 @@ public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGaller
     @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.id DESC")
     List<ArtistGalleryPhoto> findByArtist_IdOrderByIdDesc(@Param("artistId") Long artistId);
 
+    // 회원 완전 삭제(hardDelete) 선조건 — 갤러리 사진을 올린 계정은 다른 유저의 좋아요·신고가 얽혀
+    // 있으므로 물리 삭제를 거부하고 일반 삭제(익명화)를 쓴다.
+    @Query("SELECT COUNT(p) FROM ArtistGalleryPhoto p WHERE p.uploader.id = :userId")
+    long countByUploaderId(@Param("userId") Long userId);
+
     @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.likeCount DESC, p.createdAt DESC")
     List<ArtistGalleryPhoto> findByArtist_IdOrderByLikeCountDescCreatedAtDesc(@Param("artistId") Long artistId);
 

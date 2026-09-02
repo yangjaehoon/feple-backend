@@ -176,4 +176,13 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
     public long getReportCountForUser(Long userId) {
         return QueryResultMapper.extractSingleCount(reportRepository.countByCommentAuthorIds(List.of(userId)));
     }
+
+    /**
+     * 회원 완전 삭제(hardDelete) 시 이 유저가 낸 댓글 신고를 비운다 (comment_report.reporter_id, users FK RESTRICT).
+     * 일반 탈퇴는 신고 이력을 보존하므로 호출하지 않는다.
+     */
+    @Transactional
+    public void removeReportsByReporter(Long reporterId) {
+        reportRepository.deleteByReporterId(reporterId);
+    }
 }

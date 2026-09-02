@@ -95,7 +95,7 @@
         <div class="card-body">
             <p class="empty-hint">
                 이 회원 행을 DB에서 물리적으로 제거합니다 — <strong>되돌릴 수 없습니다.</strong>
-                작성한 게시글·댓글이 있으면 거부되며, 그 경우 위의 일반 삭제(익명 처리)를 사용하세요.
+                작성한 게시글·댓글이나 올린 갤러리 사진이 있으면 거부되며, 그 경우 위의 일반 삭제(익명 처리)를 사용하세요.
                 로그인으로 재접근 불가능해진 테스트 계정 정리 용도입니다.
             </p>
             <form th:action="@{/admin/users/{id}/hard-delete(id=${user.id})}" method="post">

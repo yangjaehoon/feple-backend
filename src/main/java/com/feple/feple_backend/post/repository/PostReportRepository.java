@@ -9,13 +9,21 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface PostReportRepository extends BaseReportRepository<PostReport> {
 
     @Query("SELECT CASE WHEN COUNT(pr) > 0 THEN TRUE ELSE FALSE END FROM PostReport pr WHERE pr.reporter.id = :reporterId AND pr.post.id = :postId")
     boolean existsByReporterIdAndPostId(@Param("reporterId") Long reporterId, @Param("postId") Long postId);
+
+    // 회원 완전 삭제(hardDelete) 시 users 행 물리 삭제 전에 이 유저가 낸 신고를 비운다 (reporter_id FK RESTRICT).
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PostReport pr WHERE pr.reporter.id = :reporterId")
+    void deleteByReporterId(@Param("reporterId") Long reporterId);
 
     @Override
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})

@@ -389,6 +389,13 @@ class ArtistGalleryPhotoServiceTest {
         verify(artistGalleryPhotoLikeRepository).deleteByUserId(10L);
     }
 
+    @Test
+    void 회원_완전삭제시_이_유저가_낸_사진신고_삭제() {
+        service.removeReportsByReporter(10L);
+
+        verify(artistGalleryPhotoReportRepository).deleteByReporterId(10L);
+    }
+
     // ── toggleLike ───────────────────────────────────────────────────────
 
     @Test
