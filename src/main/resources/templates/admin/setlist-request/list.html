@@ -80,8 +80,7 @@
                                   class="cell-secondary">-</span>
                         </td>
                     </tr>
-                    <tr th:if="${requests.totalElements == 0}"
-                        th:replace="~{admin/fragments :: emptyRow(8, '셋리스트 수정 요청이 없습니다.')}"></tr>
+                    <tr th:replace="${requests.totalElements == 0} ? ~{admin/fragments :: emptyRow(8, '셋리스트 수정 요청이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

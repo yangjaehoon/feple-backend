@@ -64,7 +64,7 @@
                             <div class="scan-result bw-scan-result"></div>
                         </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(badWords)}" th:replace="~{admin/fragments :: emptyRow(3, '등록된 금칙어가 없습니다.')}"></tr>
+                    <tr th:replace="${#lists.isEmpty(badWords)} ? ~{admin/fragments :: emptyRow(3, '등록된 금칙어가 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

@@ -38,7 +38,7 @@ public class UserDetailAggregationService {
     public UserDetailDto getDetail(Long userId) {
         return new UserDetailDto(
                 userAdminService.getAdminUser(userId),
-                myPageService.getUserStats(userId),
+                myPageService.getUserStatsForAdmin(userId),
                 postAdminService.getRecentPostsByUser(userId, RECENT_LIMIT),
                 commentService.getRecentCommentsByUser(userId, RECENT_LIMIT),
                 myPageService.getLikedFestivals(userId),

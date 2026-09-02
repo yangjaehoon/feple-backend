@@ -27,7 +27,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:if="${#lists.isEmpty(festivals)}" th:replace="~{admin/fragments :: emptyRow(5, '삭제된 페스티벌이 없습니다.')}"></tr>
+                    <tr th:replace="${#lists.isEmpty(festivals)} ? ~{admin/fragments :: emptyRow(5, '삭제된 페스티벌이 없습니다.')} : ~{}"></tr>
                     <tr th:each="festival : ${festivals}">
                         <td th:text="${festival.id}"></td>
                         <td th:text="${festival.title}"></td>

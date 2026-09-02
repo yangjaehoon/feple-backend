@@ -64,7 +64,7 @@
                     </td>
                     <td class="td-date" th:text="${#temporals.format(log.createdAt, 'MM-dd HH:mm')}"></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(recentPointLogs)}" th:replace="~{admin/fragments :: emptyRow(4, '포인트 내역이 없습니다.')}"></tr>
+                <tr th:replace="${#lists.isEmpty(recentPointLogs)} ? ~{admin/fragments :: emptyRow(4, '포인트 내역이 없습니다.')} : ~{}"></tr>
                 </tbody>
             </table>
         </div>

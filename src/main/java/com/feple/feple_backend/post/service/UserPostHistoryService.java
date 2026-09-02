@@ -10,6 +10,7 @@ public interface UserPostHistoryService {
     CursorPage<PostResponseDto> getMyPostsPaged(Long userId, Long cursor, int size);
     CursorPage<PostResponseDto> getPublicPostsPaged(Long userId, Long cursor, int size);
     long countPublicPosts(Long userId);
+    long countVisiblePosts(Long userId);
     List<PostResponseDto> getLikedPosts(Long userId);
     long countLikedPosts(Long userId);
 }

@@ -139,6 +139,13 @@ class UserPostHistoryServiceImplTest {
     }
 
     @Test
+    void countVisiblePosts_익명_포함_카운트를_레포지토리에_위임() {
+        given(postRepository.countByUserId(1L)).willReturn(8L);
+
+        assertThat(service.countVisiblePosts(1L)).isEqualTo(8L);
+    }
+
+    @Test
     void getLikedPosts_좋아요한_게시글_조회() {
         User author = user(1L);
         given(postLikeRepository.findPostsByUserId(eq(1L), any()))

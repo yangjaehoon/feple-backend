@@ -49,7 +49,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(nicknameRestrictions)}" th:replace="~{admin/fragments :: emptyRow(3, '추가된 닉네임 제한 단어가 없습니다.')}"></tr>
+                    <tr th:replace="${#lists.isEmpty(nicknameRestrictions)} ? ~{admin/fragments :: emptyRow(3, '추가된 닉네임 제한 단어가 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

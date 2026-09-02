@@ -50,7 +50,7 @@ class UserDetailAggregationServiceTest {
         UserResponseDto user = mock(UserResponseDto.class);
         UserStatsDto stats = mock(UserStatsDto.class);
         given(userAdminService.getAdminUser(userId)).willReturn(user);
-        given(myPageService.getUserStats(userId)).willReturn(stats);
+        given(myPageService.getUserStatsForAdmin(userId)).willReturn(stats);
         given(postAdminService.getRecentPostsByUser(userId, 10)).willReturn(List.of());
         given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(List.of());
         given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
@@ -69,7 +69,7 @@ class UserDetailAggregationServiceTest {
     void getDetail_최근_게시글_댓글은_limit_10으로_조회() {
         Long userId = 2L;
         given(userAdminService.getAdminUser(userId)).willReturn(mock(UserResponseDto.class));
-        given(myPageService.getUserStats(userId)).willReturn(mock(UserStatsDto.class));
+        given(myPageService.getUserStatsForAdmin(userId)).willReturn(mock(UserStatsDto.class));
         given(postAdminService.getRecentPostsByUser(userId, 10)).willReturn(List.of());
         given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(List.of());
         given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
@@ -92,7 +92,7 @@ class UserDetailAggregationServiceTest {
         List<FestivalResponseDto> festivals = List.of(mock(FestivalResponseDto.class));
         List<ArtistResponseDto> artists = List.of(mock(ArtistResponseDto.class));
         given(userAdminService.getAdminUser(userId)).willReturn(mock(UserResponseDto.class));
-        given(myPageService.getUserStats(userId)).willReturn(mock(UserStatsDto.class));
+        given(myPageService.getUserStatsForAdmin(userId)).willReturn(mock(UserStatsDto.class));
         given(postAdminService.getRecentPostsByUser(userId, 10)).willReturn(posts);
         given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(comments);
         given(myPageService.getLikedFestivals(userId)).willReturn(festivals);

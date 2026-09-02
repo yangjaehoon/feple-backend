@@ -174,7 +174,7 @@
                                 </td>
                             </tr>
                         </th:block>
-                        <tr th:if="${activeFestivalCount == 0}" th:replace="~{admin/fragments :: emptyRow(8, '진행 중이거나 예정된 페스티벌이 없습니다.')}"></tr>
+                        <tr th:replace="${activeFestivalCount == 0} ? ~{admin/fragments :: emptyRow(8, '진행 중이거나 예정된 페스티벌이 없습니다.')} : ~{}"></tr>
                         </tbody>
                     </table>
                 </div>

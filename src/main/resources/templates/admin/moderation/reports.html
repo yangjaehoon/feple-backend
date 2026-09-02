@@ -111,7 +111,7 @@
                         <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
                         <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '글 삭제', '게시글을 삭제하고 신고를 처리할까요?')}"></td>
                     </tr>
-                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
+                    <tr th:replace="${reports.totalElements == 0} ? ~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
                 </div>
@@ -162,7 +162,7 @@
                         <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
                         <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '댓글 삭제', '댓글을 삭제하고 신고를 처리할까요?')}"></td>
                     </tr>
-                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')}"></tr>
+                    <tr th:replace="${reports.totalElements == 0} ? ~{admin/fragments :: emptyRow(8, '신고 내역이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
                 </div>
@@ -221,7 +221,7 @@
                         <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
                         <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '사진 삭제', '사진을 삭제하고 신고를 처리할까요?')}"></td>
                     </tr>
-                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '사진 신고 내역이 없습니다.')}"></tr>
+                    <tr th:replace="${reports.totalElements == 0} ? ~{admin/fragments :: emptyRow(8, '사진 신고 내역이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
                 </div>
@@ -265,7 +265,7 @@
                         <td><span th:replace="~{admin/fragments :: reportStatusBadge(${report.status})}"></span></td>
                         <td th:replace="~{admin/fragments :: reportActionsCell(${type}, ${report.id}, ${report.pending}, ${reports.number}, ${status}, ${keyword}, '회원 탈퇴 처리', '이 사용자를 탈퇴 처리하고 신고를 처리할까요?')}"></td>
                     </tr>
-                    <tr th:if="${reports.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '사용자 신고 내역이 없습니다.')}"></tr>
+                    <tr th:replace="${reports.totalElements == 0} ? ~{admin/fragments :: emptyRow(8, '사용자 신고 내역이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
                 </div>

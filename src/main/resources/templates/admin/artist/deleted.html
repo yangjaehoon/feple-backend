@@ -27,7 +27,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:if="${#lists.isEmpty(artists)}" th:replace="~{admin/fragments :: emptyRow(5, '삭제된 아티스트가 없습니다.')}"></tr>
+                    <tr th:replace="${#lists.isEmpty(artists)} ? ~{admin/fragments :: emptyRow(5, '삭제된 아티스트가 없습니다.')} : ~{}"></tr>
                     <tr th:each="artist : ${artists}">
                         <td th:text="${artist.id}"></td>
                         <td th:text="${artist.name}"></td>

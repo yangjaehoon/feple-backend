@@ -91,7 +91,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr th:if="${accounts.isEmpty()}" th:replace="~{admin/fragments :: emptyRow(8, '등록된 관리자 계정이 없습니다.')}"></tr>
+                    <tr th:replace="${accounts.isEmpty()} ? ~{admin/fragments :: emptyRow(8, '등록된 관리자 계정이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>

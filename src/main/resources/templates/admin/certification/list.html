@@ -122,7 +122,7 @@
                                class="btn btn-secondary btn-sm">상세</a>
                         </td>
                     </tr>
-                    <tr th:if="${certifications.totalElements == 0}" th:replace="~{admin/fragments :: emptyRow(8, '인증 신청이 없습니다.')}"></tr>
+                    <tr th:replace="${certifications.totalElements == 0} ? ~{admin/fragments :: emptyRow(8, '인증 신청이 없습니다.')} : ~{}"></tr>
                     </tbody>
                 </table>
             </div>
