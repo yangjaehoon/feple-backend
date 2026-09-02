@@ -22,7 +22,7 @@ public class WeatherCollectionScheduler {
     private final WeatherService weatherService;
 
     /** 매일 오전 8시 실행 — 진행 중이거나 3일 이내 시작 페스티벌의 날씨 수집 */
-    @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 8 * * *", zone = KoreaClock.ZONE_ID)
     @SchedulerLock(name = "weatherCollectionScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     public void collect() {
         LocalDate today = koreaClock.today();

@@ -3,6 +3,7 @@ package com.feple.feple_backend.artist.scheduler;
 import com.feple.feple_backend.artist.entity.Artist;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
 import com.feple.feple_backend.artistfollow.repository.ArtistFollowRepository;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.QueryResultMapper;
 import com.feple.feple_backend.post.repository.PostRepository;
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ public class ArtistRankingScheduler {
      * 매일 자정에 아티스트 주간 랭킹 점수를 갱신한다 (점수 자체는 지난 7일 트레일링 집계).
      * 점수 = 지난 7일간 아티스트 게시판에 달린 좋아요 수 + 게시글 수 + 팔로우 수
      */
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = KoreaClock.ZONE_ID)
     @SchedulerLock(name = "artistRankingScheduler", lockAtMostFor = "30m", lockAtLeastFor = "5m")
     @Transactional
     @Caching(evict = {

@@ -3,6 +3,7 @@ package com.feple.feple_backend.auth.service;
 import com.feple.feple_backend.auth.entity.RefreshToken;
 import com.feple.feple_backend.auth.jwt.JwtProperties;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -99,7 +100,7 @@ public class RefreshTokenService {
     }
 
     /** 매일 새벽 3시에 만료된 토큰 정리 */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = KoreaClock.ZONE_ID)
     @SchedulerLock(name = "refreshTokenCleanupScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     @Transactional
     public void cleanExpiredTokens() {

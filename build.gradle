@@ -194,6 +194,9 @@ tasks.named('check') {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// 운영 JVM은 Asia/Seoul로 고정돼 있으나(FepleBackendApplication static 블록), main()을 타지 않는
+	// 순수 단위 테스트 JVM은 CI 러너 기본 타임존(UTC)을 쓴다 — 운영과 동일하게 맞춰 기본 존 의존 버그를 잡는다.
+	systemProperty 'user.timezone', 'Asia/Seoul'
 	finalizedBy jacocoTestReport
 	testLogging {
 		exceptionFormat = "full"
