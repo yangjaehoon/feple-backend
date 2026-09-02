@@ -88,7 +88,10 @@
                     <tbody>
                     <tr th:each="comment : ${comments}">
                         <td class="td-id" th:text="${comment.id}"></td>
-                        <td class="cell-bold-nowrap" th:text="${comment.nickname}"></td>
+                        <td class="cell-bold-nowrap">
+                            <a th:href="@{/admin/users/{id}(id=${comment.userId})}"
+                               th:text="${comment.nickname}" class="td-link"></a>
+                        </td>
                         <td class="col-w480">
                             <span th:text="${comment.content}" class="td-ellipsis"></span>
                         </td>
