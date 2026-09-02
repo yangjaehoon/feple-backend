@@ -1,13 +1,18 @@
 package com.feple.feple_backend.post.entity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,8 +44,13 @@ public class PostDraft {
 
     private Long festivalId;
 
-    @Column(name = "image_keys", columnDefinition = "TEXT")
-    private String imageKeysCsv;
+    // Post.images(PostImage)와 동일하게 첨부 이미지 키를 순서 보존 자식 테이블로 분리한다
+    // (쉼표 구분 단일 컬럼은 1NF 위반). draft는 유저당 1행이라 List로 두고 @OrderColumn으로 순서를 관리한다.
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "post_draft_image", joinColumns = @JoinColumn(name = "user_id"))
+    @OrderColumn(name = "sort_order")
+    @Column(name = "image_key", length = 255)
+    private List<String> imageKeys = new ArrayList<>();
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
@@ -61,16 +71,16 @@ public class PostDraft {
         this.anonymous = draft.anonymous();
         this.artistId = draft.artistId();
         this.festivalId = draft.festivalId();
-        this.imageKeysCsv = draft.imageKeysCsv();
+        this.imageKeys.clear();
+        if (draft.imageKeys() != null) {
+            draft.imageKeys().stream()
+                    .filter(key -> key != null && !key.isBlank())
+                    .forEach(this.imageKeys::add);
+        }
         // updatedAt은 @UpdateTimestamp가 insert/update flush 시점에 채운다
     }
 
     public List<String> getImageKeys() {
-        if (imageKeysCsv == null || imageKeysCsv.isBlank()) return List.of();
-        return Arrays.stream(imageKeysCsv.split(",")).toList();
-    }
-
-    public static String toImageKeysCsv(List<String> imageKeys) {
-        return (imageKeys == null || imageKeys.isEmpty()) ? null : String.join(",", imageKeys);
+        return List.copyOf(imageKeys);
     }
 }

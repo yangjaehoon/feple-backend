@@ -21,7 +21,7 @@ public class PostDraftService {
     public void saveDraft(Long userId, PostDraftRequestDto dto) {
         PostDraftContent content = new PostDraftContent(
                 dto.getTitle(), dto.getContent(), dto.getBoardType(), dto.isAnonymous(),
-                dto.getArtistId(), dto.getFestivalId(), PostDraft.toImageKeysCsv(dto.getImageUrls()));
+                dto.getArtistId(), dto.getFestivalId(), dto.getImageUrls());
         postDraftRepository.findById(userId).ifPresentOrElse(
                 draft -> draft.update(content),
                 () -> postDraftRepository.save(new PostDraft(userId, content)));

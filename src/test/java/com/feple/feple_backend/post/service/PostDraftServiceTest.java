@@ -43,7 +43,7 @@ class PostDraftServiceTest {
 
     @Test
     void 기존_임시저장_있으면_덮어씀() {
-        PostDraft existing = new PostDraft(1L, new PostDraftContent("이전 제목", null, null, false, null, null, null));
+        PostDraft existing = new PostDraft(1L, new PostDraftContent("이전 제목", null, null, false, null, null, List.of()));
         given(postDraftRepository.findById(1L)).willReturn(Optional.of(existing));
         PostDraftRequestDto dto = PostDraftRequestDto.builder()
                 .title("새 제목").content("새 내용").boardType(BoardType.MATE).build();
@@ -68,7 +68,7 @@ class PostDraftServiceTest {
     @Test
     void 임시저장_있으면_이미지키_리스트로_변환() {
         PostDraft draft = new PostDraft(1L,
-                new PostDraftContent("제목", null, null, false, null, null, "posts/1/a.jpg,posts/1/b.jpg"));
+                new PostDraftContent("제목", null, null, false, null, null, List.of("posts/1/a.jpg", "posts/1/b.jpg")));
         given(postDraftRepository.findById(1L)).willReturn(Optional.of(draft));
 
         Optional<PostDraftResponseDto> result = postDraftService.getDraft(1L);

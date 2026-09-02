@@ -54,7 +54,8 @@ public class StageService {
     // 여기서도 evict해야 한다.
     @CacheEvict(value = "timetable", key = "#festivalId")
     public void deleteStage(Long festivalId, Long stageId) {
-        timetableRepository.nullifyStageId(stageId);
+        Stage stage = getStageInFestival(festivalId, stageId);
+        timetableRepository.detachStage(stageId, stage.getName());
         stageRepository.deleteById(stageId);
     }
 
