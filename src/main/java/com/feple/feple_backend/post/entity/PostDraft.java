@@ -55,9 +55,13 @@ public class PostDraft {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public PostDraft(Long userId, PostDraftContent draft) {
-        this.userId = userId;
-        applyContent(draft);
+    // 정적 팩토리 — 생성자에서 값 채우기 로직(스트림 등)을 호출하면 SpotBugs CT_CONSTRUCTOR_THROW가
+    // 잡는다(부분 초기화 객체 노출 위험). FestivalCertification.create()와 동일한 패턴.
+    public static PostDraft create(Long userId, PostDraftContent draft) {
+        PostDraft postDraft = new PostDraft();
+        postDraft.userId = userId;
+        postDraft.applyContent(draft);
+        return postDraft;
     }
 
     public void update(PostDraftContent draft) {

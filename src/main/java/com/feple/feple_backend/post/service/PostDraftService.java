@@ -24,7 +24,7 @@ public class PostDraftService {
                 dto.getArtistId(), dto.getFestivalId(), dto.getImageUrls());
         postDraftRepository.findById(userId).ifPresentOrElse(
                 draft -> draft.update(content),
-                () -> postDraftRepository.save(new PostDraft(userId, content)));
+                () -> postDraftRepository.save(PostDraft.create(userId, content)));
     }
 
     public Optional<PostDraftResponseDto> getDraft(Long userId) {
