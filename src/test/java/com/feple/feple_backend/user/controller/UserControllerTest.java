@@ -268,13 +268,31 @@ class UserControllerTest {
     }
 
     @Test
-    void 게시글_목록_조회() throws Exception {
+    void 타인_프로필_게시글_목록은_익명_제외_경로로_조회() throws Exception {
         given(myPageService.getPublicPostsPaged(org.mockito.ArgumentMatchers.eq(1L),
                         org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyInt()))
                 .willReturn(new CursorPage<>(List.of(), null, false));
 
-        mockMvc.perform(get("/users/1/posts"))
+        mockMvc.perform(get("/users/1/posts").with(AuthTestHelper.userAuth(2L)))
                 .andExpect(status().isOk());
+
+        org.mockito.BDDMockito.then(myPageService).should()
+                .getPublicPostsPaged(org.mockito.ArgumentMatchers.eq(1L),
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    void 본인_프로필_게시글_목록은_익명_포함_경로로_조회() throws Exception {
+        given(myPageService.getMyPostsPaged(org.mockito.ArgumentMatchers.eq(1L),
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyInt()))
+                .willReturn(new CursorPage<>(List.of(), null, false));
+
+        mockMvc.perform(get("/users/1/posts").with(AuthTestHelper.userAuth(1L)))
+                .andExpect(status().isOk());
+
+        org.mockito.BDDMockito.then(myPageService).should()
+                .getMyPostsPaged(org.mockito.ArgumentMatchers.eq(1L),
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyInt());
     }
 
     @Test
