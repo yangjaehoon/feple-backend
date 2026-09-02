@@ -15,7 +15,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class KoreaClock {
 
-    public static final ZoneId ZONE = ZoneId.of("Asia/Seoul");
+    // 문자열 상수를 별도로 두는 이유: @Scheduled(zone = ...)는 컴파일 타임 상수만 받으므로
+    // ZoneId 객체(ZONE)를 쓸 수 없다. 앱 전역의 "운영 타임존"을 이 한 곳에서만 정의한다.
+    public static final String ZONE_ID = "Asia/Seoul";
+
+    public static final ZoneId ZONE = ZoneId.of(ZONE_ID);
 
     private final Clock clock;
 

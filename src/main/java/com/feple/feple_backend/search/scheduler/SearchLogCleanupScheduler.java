@@ -1,6 +1,7 @@
 package com.feple.feple_backend.search.scheduler;
 
 import com.feple.feple_backend.global.BatchDeletion;
+import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.search.repository.SearchLogRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class SearchLogCleanupScheduler {
     private final SearchLogRepository searchLogRepository;
 
     /** 매일 새벽 3시에 90일 이전 검색 로그 삭제 — 커넥션을 오래 붙잡지 않도록 배치로 나눠 커밋 */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = KoreaClock.ZONE_ID)
     @SchedulerLock(name = "searchLogCleanupScheduler", lockAtMostFor = "10m", lockAtLeastFor = "1m")
     public void cleanup() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(RETENTION_DAYS);

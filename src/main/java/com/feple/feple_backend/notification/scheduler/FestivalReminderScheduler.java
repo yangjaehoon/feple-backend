@@ -32,7 +32,7 @@ public class FestivalReminderScheduler {
     private final NotificationService notificationService;
 
     /** 매일 오전 9시(KST) 실행 */
-    @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 9 * * *", zone = KoreaClock.ZONE_ID)
     @SchedulerLock(name = "festivalReminderScheduler", lockAtMostFor = "5m", lockAtLeastFor = "1m")
     public void sendReminders() {
         // D-7 처리 중 예외가 나도 D-1 리마인더는 별도로 발송돼야 함
