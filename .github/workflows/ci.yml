@@ -46,13 +46,13 @@ jobs:
           # 2) 버전 번호 중복 금지 (병렬 PR이 같은 번호 사용)
           dup=$(git ls-files $SQL $JAVA | ver | sort -n | uniq -d || true)
           if [ -n "$dup" ]; then
-            echo "::error::중복된 Flyway 버전 번호: V$(echo "$dup" | paste -sd' V' -)"
+            echo "::error::중복된 Flyway 버전 번호: $(echo "$dup" | sed 's/^/V/' | tr '\n' ' ')"
             exit 1
           fi
 
           main_max=$(git ls-tree -r --name-only origin/main -- \
             'src/main/resources/db/migration/' 'src/main/java/db/migration/' | ver | sort -n | tail -1)
-          echo "main 최신 V$main_max / 이 PR 추가 V$(echo "$added" | paste -sd' V' -)"
+          echo "main 최신 V$main_max / 이 PR 추가 $(echo "$added" | sed 's/^/V/' | tr '\n' ' ')"
 
           # 3) 새 버전은 V(main_max+1)부터 빈틈 없이 연속이어야 한다
           expected=$((main_max + 1))
