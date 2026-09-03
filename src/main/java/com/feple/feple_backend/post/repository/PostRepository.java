@@ -136,6 +136,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId" + VISIBLE)
     long countByUserId(@Param("userId") Long userId);
 
+    // 완전 삭제(hardDelete) 선조건 — 소프트 삭제·블라인드된 글도 post.user_id FK로 users 행을
+    // 잡고 있으므로, 가시성 필터 없이 "작성 이력이 하나라도 있는지"를 본다.
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Post p WHERE p.user.id = :userId")
+    boolean existsAnyByUserId(@Param("userId") Long userId);
+
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.anonymous = false" + VISIBLE)
     long countPublicByUserId(@Param("userId") Long userId);
 
