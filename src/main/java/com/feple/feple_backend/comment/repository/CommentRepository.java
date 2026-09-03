@@ -49,6 +49,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId AND c.deletedAt IS NULL AND c.blinded = false")
     long countByUserId(@Param("userId") Long userId);
 
+    // 완전 삭제(hardDelete) 선조건 — 소프트 삭제·블라인드된 댓글도 comment.user_id FK로 users 행을
+    // 잡고 있으므로, 가시성 필터 없이 "작성 이력이 하나라도 있는지"를 본다.
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END FROM Comment c WHERE c.user.id = :userId")
+    boolean existsAnyByUserId(@Param("userId") Long userId);
+
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.createdAt >= :start AND c.createdAt < :end "
             + "AND c.deletedAt IS NULL AND c.blinded = false")
     long countByCreatedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);

@@ -152,7 +152,7 @@ class UserAdminServiceImplTest {
     @Test
     void hardDeleteUser_게시글이나_댓글이_있으면_거부() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "글쓴유저")));
-        given(postRepository.countByUserId(1L)).willReturn(2L);
+        given(postRepository.existsAnyByUserId(1L)).willReturn(true);
 
         assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
                 .isInstanceOf(InvalidRequestException.class)
@@ -161,10 +161,21 @@ class UserAdminServiceImplTest {
     }
 
     @Test
+    void hardDeleteUser_소프트삭제된_게시글만_있어도_거부() {
+        // countByUserId(가시성 필터)는 0을 반환하지만 삭제된 글도 users FK를 잡고 있다.
+        given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "삭제글유저")));
+        given(postRepository.existsAnyByUserId(1L)).willReturn(true);
+
+        assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
+                .isInstanceOf(InvalidRequestException.class);
+        verify(cascadeDeleteService, never()).hardDelete(any());
+    }
+
+    @Test
     void hardDeleteUser_올린_갤러리_사진이_있으면_거부() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "사진올린유저")));
-        given(postRepository.countByUserId(1L)).willReturn(0L);
-        given(commentRepository.countByUserId(1L)).willReturn(0L);
+        given(postRepository.existsAnyByUserId(1L)).willReturn(false);
+        given(commentRepository.existsAnyByUserId(1L)).willReturn(false);
         given(artistGalleryPhotoRepository.countByUploaderId(1L)).willReturn(3L);
 
         assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
@@ -177,8 +188,8 @@ class UserAdminServiceImplTest {
     void hardDeleteUser_작성물이_없으면_활성_회원도_한_번에_hardDelete에_위임() {
         User target = user(1L, "테스트계정");
         given(userRepository.findById(1L)).willReturn(Optional.of(target));
-        given(postRepository.countByUserId(1L)).willReturn(0L);
-        given(commentRepository.countByUserId(1L)).willReturn(0L);
+        given(postRepository.existsAnyByUserId(1L)).willReturn(false);
+        given(commentRepository.existsAnyByUserId(1L)).willReturn(false);
         given(artistGalleryPhotoRepository.countByUploaderId(1L)).willReturn(0L);
 
         userAdminService.hardDeleteUser(1L);

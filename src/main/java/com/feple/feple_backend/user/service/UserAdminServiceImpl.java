@@ -118,8 +118,10 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     public void hardDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
-        if (postRepository.countByUserId(id) > 0
-                || commentRepository.countByUserId(id) > 0
+        // 소프트 삭제·블라인드된 글·댓글도 users FK를 잡고 있어 물리 삭제를 막으므로,
+        // 가시성 필터 없는 존재 여부로 검사한다(countByUserId는 보이는 것만 세어 놓친다).
+        if (postRepository.existsAnyByUserId(id)
+                || commentRepository.existsAnyByUserId(id)
                 || artistGalleryPhotoRepository.countByUploaderId(id) > 0) {
             throw new InvalidRequestException("작성한 게시글·댓글 또는 올린 갤러리 사진이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
         }
