@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.awspring.cloud.s3.S3Template;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -130,14 +130,15 @@ class FlywayMigrationValidationTest {
                   ON r.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA
                  AND r.CONSTRAINT_NAME = k.CONSTRAINT_NAME
                 WHERE k.TABLE_SCHEMA = DATABASE()
-                  AND k.REFERENCED_TABLE_NAME = '%s'
-                """
-                        .formatted(referencedTable);
+                  AND k.REFERENCED_TABLE_NAME = ?
+                """;
         try (Connection connection = dataSource.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet rs = statement.executeQuery(sql)) {
-            while (rs.next()) {
-                foreignKeys.add(new ForeignKey(rs.getString(1), rs.getString(2), rs.getString(3)));
+                PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, referencedTable);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    foreignKeys.add(new ForeignKey(rs.getString(1), rs.getString(2), rs.getString(3)));
+                }
             }
         }
         return foreignKeys;
