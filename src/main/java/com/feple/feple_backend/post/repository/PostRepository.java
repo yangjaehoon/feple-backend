@@ -139,6 +139,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.anonymous = false" + VISIBLE)
     long countPublicByUserId(@Param("userId") Long userId);
 
+    // 관리자 회원 상세 모더레이션 요약 — 블라인드는 자동(신고 누적)·수동 모두 관리자 개입으로만 발생
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.blinded = true AND p.deletedAt IS NULL")
+    long countBlindedByUserId(@Param("userId") Long userId);
+
     // ── 인기 게시글 ─────────────────────────────────────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.createdAt >= :since" + VISIBLE + " ORDER BY p.likeCount DESC")

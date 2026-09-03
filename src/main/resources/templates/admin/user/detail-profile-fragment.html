@@ -84,6 +84,21 @@
                 <div class="stat-label">누적 신고</div>
             </div>
         </div>
+
+        <!-- 모더레이션 요약 — 상습적으로 문제 글을 썼는지 한눈에 (전부 관리자 개입 기준) -->
+        <div class="mod-summary-row">
+            <span class="badge"
+                  th:classappend="${moderationSummary.blindedPostCount > 0} ? 'badge-report-high' : 'badge-ban'">
+                블라인드된 글 <span th:text="${moderationSummary.blindedPostCount}">0</span>
+            </span>
+            <span class="badge"
+                  th:classappend="${moderationSummary.priorBanCount > 0} ? 'badge-report-high' : 'badge-ban'">
+                이전 정지 <span th:text="${moderationSummary.priorBanCount}">0</span>회
+            </span>
+            <span class="badge"
+                  th:classappend="${moderationSummary.joinedDaysAgo >= 0 and moderationSummary.joinedDaysAgo < 7} ? 'badge-report-low' : 'badge-ban'"
+                  th:text="${moderationSummary.joinedDaysAgo >= 0} ? '가입 ' + ${moderationSummary.joinedDaysAgo} + '일 전' : '가입일 불명'">가입 0일 전</span>
+        </div>
     </div>
 </div>
 

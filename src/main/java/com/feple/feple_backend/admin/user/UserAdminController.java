@@ -213,6 +213,7 @@ public class UserAdminController {
     private static void addDetailModel(Model model, UserDetailDto detail) {
         model.addAttribute("user",            detail.user());
         model.addAttribute("stats",           detail.stats());
+        model.addAttribute("moderationSummary", detail.moderationSummary());
         model.addAttribute("recentPosts",     detail.recentPosts());
         model.addAttribute("recentComments",  detail.recentComments());
         model.addAttribute("likedFestivals",  detail.likedFestivals());

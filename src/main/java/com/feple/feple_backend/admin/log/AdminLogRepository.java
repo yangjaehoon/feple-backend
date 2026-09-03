@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 public interface AdminLogRepository extends JpaRepository<AdminLog, Long> {
     List<AdminLog> findTop10ByOrderByCreatedAtDesc();
 
+    long countByActionAndTargetTypeAndTargetId(AdminAction action, String targetType, Long targetId);
+
     @Query("SELECT l FROM AdminLog l WHERE " +
            "(:type IS NULL OR l.targetType = :type) AND " +
            "(:username IS NULL OR LOWER(l.adminUsername) LIKE LOWER(CONCAT('%', :username, '%')) ESCAPE '!') AND " +
