@@ -51,4 +51,14 @@ class CommentDeleterTest {
         order.verify(commentReportRepository).deleteByCommentId(10L);
         order.verify(commentRepository).deleteById(10L);
     }
+
+    @Test
+    void deleteByAuthorId_자식_좋아요_신고_먼저_그다음_댓글_삭제() {
+        commentDeleter.deleteByAuthorId(50L);
+
+        InOrder order = inOrder(commentLikeRepository, commentReportRepository, commentRepository);
+        order.verify(commentLikeRepository).deleteByCommentAuthorId(50L);
+        order.verify(commentReportRepository).deleteByCommentAuthorId(50L);
+        order.verify(commentRepository).deleteByAuthorId(50L);
+    }
 }

@@ -81,9 +81,9 @@ public class UserCascadeDeleteService {
     }
 
     /**
-     * 이미 탈퇴 처리된 회원을 DB에서 물리적으로 제거한다(되돌릴 수 없음).
-     * 호출 측(UserAdminServiceImpl)이 "탈퇴 상태 + 작성 글·댓글 없음"을 먼저 검증한다.
-     * 게시글·댓글이 없는 계정(예: 로그인으로 재접근 불가능해진 OAuth 테스트 계정) 정리 전용이다.
+     * 회원을 DB에서 물리적으로 제거한다(되돌릴 수 없음). 이 유저가 작성한 글·댓글과 거기 딸린
+     * 다른 유저의 댓글·좋아요·신고까지 함께 삭제한다. 갤러리 사진을 올린 계정은 호출 측
+     * (UserAdminServiceImpl)이 먼저 거부한다.
      */
     public void hardDelete(User user) {
         Long id = user.getId();
@@ -91,8 +91,11 @@ public class UserCascadeDeleteService {
 
         removeAllActivity(id);
 
+        // 이 유저가 작성한 글·댓글 물리 삭제 (일반 탈퇴는 익명화로 보존하지만 완전 삭제는 남길 수 없다).
+        commentService.purgeAuthoredCommentsByUser(id);
+        postCascadeService.purgeAuthoredPostsByUser(id);
+
         // 일반 탈퇴(익명화)는 안 건드리지만 users 행 물리 삭제 전엔 비워야 하는 잔여 참조 (전부 users FK RESTRICT).
-        // post/comment 작성 행과 갤러리 사진 업로드가 없는 건 UserAdminServiceImpl.hardDeleteUser 선조건이 보장한다.
         userAccessLogRepository.deleteByUserId(id);
         userReportRepository.deleteByUserInvolved(id);
         commentRepository.clearMentionsByUserId(id);

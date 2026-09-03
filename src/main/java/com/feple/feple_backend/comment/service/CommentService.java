@@ -16,6 +16,8 @@ public interface CommentService {
     void deleteComment(Long commentId);
     void deleteOwnComment(Long commentId, Long requestUserId);
     void deleteByPostIds(List<Long> postIds);
+    /** 회원 완전 삭제(hardDelete) — 이 유저가 쓴 모든 댓글을 자식(좋아요·신고)까지 물리 삭제 */
+    void purgeAuthoredCommentsByUser(Long userId);
     CommentLikeResult toggleLike(Long commentId, Long userId);
     List<MyCommentResponseDto> getMyComments(Long userId);
     List<MyCommentResponseDto> getRecentCommentsByUser(Long userId, int limit);

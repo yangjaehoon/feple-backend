@@ -119,6 +119,13 @@ public class NotificationQueryService {
         notificationRepository.deleteByUserId(userId);
     }
 
+    /** 회원 완전 삭제(hardDelete) — 주어진 게시글들을 참조하는 알림을 수신자와 무관하게 물리 삭제한다. */
+    @Transactional
+    public void deleteByPostIds(List<Long> postIds) {
+        if (postIds.isEmpty()) return;
+        notificationRepository.deleteByPostIds(postIds);
+    }
+
     private Set<NotificationType> resolveTypeFilter(String typeGroup) {
         if (typeGroup == null) return null;
         return switch (typeGroup) {

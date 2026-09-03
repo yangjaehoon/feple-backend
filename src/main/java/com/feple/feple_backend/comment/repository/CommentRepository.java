@@ -49,10 +49,17 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId AND c.deletedAt IS NULL AND c.blinded = false")
     long countByUserId(@Param("userId") Long userId);
 
-    // 완전 삭제(hardDelete) 선조건 — 소프트 삭제·블라인드된 댓글도 comment.user_id FK로 users 행을
-    // 잡고 있으므로, 가시성 필터 없이 "작성 이력이 하나라도 있는지"를 본다.
-    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END FROM Comment c WHERE c.user.id = :userId")
-    boolean existsAnyByUserId(@Param("userId") Long userId);
+    // 회원 완전 삭제(hardDelete) — 소프트 삭제·블라인드 포함 이 유저가 쓴 댓글 총수(삭제 규모 상한 검사용).
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId")
+    long countAllByUserId(@Param("userId") Long userId);
+
+    // 회원 완전 삭제(hardDelete) — 이 유저가 쓴 모든 댓글을 물리 삭제(@SQLDelete 우회).
+    // 자식 좋아요·신고는 호출부(CommentDeleter)가 먼저 정리한다. 다른 유저가 이 댓글에 단
+    // 대댓글의 parent_id는 fk_comment_parent(ON DELETE SET NULL, V12)로 자동 정리된다.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Comment c WHERE c.user.id = :userId")
+    void deleteByAuthorId(@Param("userId") Long userId);
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.createdAt >= :start AND c.createdAt < :end "
             + "AND c.deletedAt IS NULL AND c.blinded = false")

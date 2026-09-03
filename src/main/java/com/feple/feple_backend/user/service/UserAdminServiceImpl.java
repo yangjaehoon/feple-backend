@@ -33,13 +33,20 @@ public class UserAdminServiceImpl implements UserAdminService {
     /** 관리자 푸시 대상 닉네임 검색 결과 노출 상한 (자동완성용이라 넉넉하지 않아도 됨) */
     private static final int NICKNAME_SEARCH_RESULT_LIMIT = 20;
 
+    /**
+     * 완전 삭제가 한 트랜잭션에서 물리 삭제할 수 있는 작성물(글+댓글) 상한.
+     * 이보다 많으면 hot 테이블에 광범위 락을 잡을 수 있어 거부하고 일반 삭제(익명화)로 유도한다.
+     * 완전 삭제는 재접근 불가 계정·테스트 계정 정리 용도라 이 정도면 충분하다.
+     */
+    private static final long HARD_DELETE_MAX_AUTHORED = 500;
+
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final UserCascadeDeleteService cascadeDeleteService;
     private final CurrentAdminProvider currentAdminProvider;
+    private final ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private final ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -111,19 +118,20 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     /**
      * 회원을 DB에서 완전히 제거한다(되돌릴 수 없음). 탈퇴 상태든 활성 상태든 한 번에 처리한다.
-     * SUPER_ADMIN 전용이며, 실수로 실사용자 데이터를 날리지 않도록 <b>작성한 게시글·댓글·갤러리 사진이
-     * 있으면 거부</b>한다 — 그런 계정은 남의 댓글·좋아요가 얽혀 있으므로 일반 삭제(익명 처리)를 써야 한다.
-     * 로그인으로 재접근 불가능해진 OAuth 테스트 계정 정리 용도.
+     * SUPER_ADMIN 전용. 이 유저가 작성한 글·댓글과 거기 딸린 다른 유저의 댓글·좋아요·신고까지
+     * 함께 삭제되므로 신중히 사용한다. 단, 갤러리 사진을 올린 계정은 다른 유저의 좋아요·신고가
+     * 얽혀 있어 거부하며, 그 경우 일반 삭제(익명 처리)를 써야 한다.
      */
     @Override
     public void hardDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
-        // 소프트 삭제·블라인드된 글·댓글도 users FK를 잡고 있어 물리 삭제를 막으므로,
-        // 가시성 필터 없는 존재 여부로 검사한다(countByUserId는 보이는 것만 세어 놓친다).
-        if (postRepository.existsAnyByUserId(id)
-                || commentRepository.existsAnyByUserId(id)
-                || artistGalleryPhotoRepository.countByUploaderId(id) > 0) {
-            throw new InvalidRequestException("작성한 게시글·댓글 또는 올린 갤러리 사진이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
+        if (artistGalleryPhotoRepository.countByUploaderId(id) > 0) {
+            throw new InvalidRequestException("올린 갤러리 사진이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
+        }
+        long authored = postRepository.countAllByUserId(id) + commentRepository.countAllByUserId(id);
+        if (authored > HARD_DELETE_MAX_AUTHORED) {
+            throw new InvalidRequestException(
+                    "작성한 글·댓글이 너무 많아(" + authored + "개) 한 번에 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
         }
         cascadeDeleteService.hardDelete(user);
     }

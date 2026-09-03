@@ -25,6 +25,12 @@ public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> 
     @Query("DELETE FROM CommentLike cl WHERE cl.comment.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
+    // 회원 완전 삭제(hardDelete) — 이 유저가 쓴 댓글에 달린 (다른 유저 포함) 모든 좋아요 물리 삭제.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM CommentLike cl WHERE cl.comment.user.id = :userId")
+    void deleteByCommentAuthorId(@Param("userId") Long userId);
+
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "UPDATE comment SET like_count = GREATEST(like_count - 1, 0) WHERE id IN (SELECT comment_id FROM comment_like WHERE user_id = :userId)", nativeQuery = true)

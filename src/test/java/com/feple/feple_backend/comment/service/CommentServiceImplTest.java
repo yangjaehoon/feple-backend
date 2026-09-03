@@ -692,6 +692,13 @@ class CommentServiceImplTest {
         verify(commentDeleter).deleteByPostIds(List.of(10L, 20L));
     }
 
+    @Test
+    void 회원_완전삭제시_작성댓글_물리삭제를_commentDeleter에_위임() {
+        commentService.purgeAuthoredCommentsByUser(50L);
+
+        verify(commentDeleter).deleteByAuthorId(50L);
+    }
+
     // ── removeLikesByUser ─────────────────────────────────────────────
 
     @Test

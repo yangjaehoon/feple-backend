@@ -36,4 +36,10 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     @Transactional
     @Query("DELETE FROM PostScrap ps WHERE ps.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
+
+    // 회원 완전 삭제(hardDelete) — 이 유저의 글에 달린 (다른 유저 포함) 모든 스크랩 물리 삭제.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PostScrap ps WHERE ps.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
 }

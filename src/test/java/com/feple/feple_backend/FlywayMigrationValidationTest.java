@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.awspring.cloud.s3.S3Template;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -79,10 +79,10 @@ class FlywayMigrationValidationTest {
             "artist_follow",                  // artistFollowService.removeAllByUser
             "post_like",                      // postCascadeService.removePostActivityByUser
             "post_scrap",                     // postCascadeService.removePostActivityByUser
-            "post_report",                    // postCascadeService.removeAuthoredArtifactsByUser
-            "post",                           // 선조건: 작성 게시글 0
+            "post_report",                    // postCascadeService.removeAuthoredArtifactsByUser + purgeAuthoredPostsByUser
+            "post",                           // postCascadeService.purgeAuthoredPostsByUser (물리 삭제)
             "post_draft",                     // postCascadeService.removeAuthoredArtifactsByUser
-            "comment",                        // 선조건: 작성 댓글 0 / mentioned_user는 clearMentionsByUserId
+            "comment",                        // commentService.purgeAuthoredCommentsByUser / mentioned_user는 clearMentionsByUserId
             "comment_like",                   // commentService.removeLikesByUser
             "comment_report",                 // commentReportService.removeReportsByReporter
             "artist_photos",                  // 선조건: 업로드 갤러리 사진 0
@@ -101,10 +101,26 @@ class FlywayMigrationValidationTest {
             "user_report"                     // userReportRepository.deleteByUserInvolved
     );
 
+    // post/comment 물리 삭제(hardDelete)가 정리하는 RESTRICT FK 자식 테이블.
+    // 자기참조(comment.parent_id)는 ON DELETE SET NULL이라 아래 필터에서 자동 제외된다.
+    private static final Set<String> POST_FK_HANDLED_ON_HARD_DELETE = Set.of(
+            "post_image",   // PostDeleter (S3 키 정리 후)
+            "post_tag",     // PostDeleter
+            "post_like",    // PostDeleter
+            "post_scrap",   // PostDeleter
+            "post_report",  // PostDeleter
+            "comment",      // PostCascadeDeleteServiceImpl → CommentService.deleteByPostIds
+            "notifications" // PostCascadeDeleteServiceImpl → NotificationQueryService.deleteByPostIds
+    );
+
+    private static final Set<String> COMMENT_FK_HANDLED_ON_HARD_DELETE = Set.of(
+            "comment_like",   // CommentDeleter.deleteByAuthorId / deleteByPostIds
+            "comment_report"  // CommentDeleter.deleteByAuthorId / deleteByPostIds
+    );
+
     private record ForeignKey(String table, String column, String deleteRule) {}
 
-    @Test
-    void users를_참조하는_모든_FK가_hardDelete에서_처리된다() throws Exception {
+    private List<ForeignKey> foreignKeysReferencing(String referencedTable) throws Exception {
         List<ForeignKey> foreignKeys = new ArrayList<>();
         String sql =
                 """
@@ -114,44 +130,74 @@ class FlywayMigrationValidationTest {
                   ON r.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA
                  AND r.CONSTRAINT_NAME = k.CONSTRAINT_NAME
                 WHERE k.TABLE_SCHEMA = DATABASE()
-                  AND k.REFERENCED_TABLE_NAME = 'users'
+                  AND k.REFERENCED_TABLE_NAME = ?
                 """;
         try (Connection connection = dataSource.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet rs = statement.executeQuery(sql)) {
-            while (rs.next()) {
-                foreignKeys.add(new ForeignKey(rs.getString(1), rs.getString(2), rs.getString(3)));
+                PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, referencedTable);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    foreignKeys.add(new ForeignKey(rs.getString(1), rs.getString(2), rs.getString(3)));
+                }
             }
         }
+        return foreignKeys;
+    }
+
+    private void assertAllRestrictFksHandled(String referencedTable, Set<String> handled) throws Exception {
+        List<ForeignKey> foreignKeys = foreignKeysReferencing(referencedTable);
 
         assertThat(foreignKeys)
-                .as("users를 참조하는 FK가 하나도 조회되지 않음 — 쿼리 또는 스키마 확인")
+                .as(referencedTable + "을(를) 참조하는 FK가 하나도 조회되지 않음 — 쿼리 또는 스키마 확인")
                 .isNotEmpty();
 
         List<String> unhandled =
                 foreignKeys.stream()
                         .filter(fk -> !"CASCADE".equals(fk.deleteRule()) && !"SET NULL".equals(fk.deleteRule()))
                         .map(ForeignKey::table)
-                        .filter(table -> !USERS_FK_HANDLED_ON_HARD_DELETE.contains(table))
+                        .filter(table -> !handled.contains(table))
                         .distinct()
                         .sorted()
                         .toList();
 
         assertThat(unhandled)
                 .as(
-                        "users를 RESTRICT FK로 참조하지만 UserCascadeDeleteService.hardDelete 또는 "
-                                + "hardDeleteUser 선조건이 정리하지 않는 테이블. 정리 로직/선조건을 추가하고 "
-                                + "USERS_FK_HANDLED_ON_HARD_DELETE에 등록할 것.")
+                        referencedTable
+                                + "을(를) RESTRICT FK로 참조하지만 hardDelete 물리 삭제 경로가 정리하지 않는 테이블. "
+                                + "정리 로직을 추가하고 대응 HANDLED 목록에 등록할 것.")
                 .isEmpty();
 
         List<String> stale =
-                USERS_FK_HANDLED_ON_HARD_DELETE.stream()
+                handled.stream()
                         .filter(table -> foreignKeys.stream().noneMatch(fk -> fk.table().equals(table)))
                         .sorted()
                         .toList();
 
         assertThat(stale)
-                .as("목록에 있으나 실제 스키마에는 users FK가 없는 항목 — 테이블명 오타 또는 제거된 테이블")
+                .as("목록에 있으나 실제 스키마에는 " + referencedTable + " FK가 없는 항목 — 테이블명 오타 또는 제거된 테이블")
                 .isEmpty();
+    }
+
+    @Test
+    void users를_참조하는_모든_FK가_hardDelete에서_처리된다() throws Exception {
+        assertAllRestrictFksHandled("users", USERS_FK_HANDLED_ON_HARD_DELETE);
+    }
+
+    @Test
+    void post를_참조하는_모든_FK가_hardDelete_물리삭제에서_처리된다() throws Exception {
+        assertAllRestrictFksHandled("post", POST_FK_HANDLED_ON_HARD_DELETE);
+    }
+
+    @Test
+    void comment를_참조하는_모든_FK가_hardDelete_물리삭제에서_처리된다() throws Exception {
+        assertAllRestrictFksHandled("comment", COMMENT_FK_HANDLED_ON_HARD_DELETE);
+
+        // 자기참조 대댓글 FK는 반드시 ON DELETE SET NULL이어야 한다 — RESTRICT면 작성자 댓글을
+        // 물리 삭제할 때 다른 유저의 대댓글 때문에 FK 위반으로 hardDelete 전체가 롤백된다.
+        assertThat(foreignKeysReferencing("comment"))
+                .filteredOn(fk -> "comment".equals(fk.table()) && "parent_id".equals(fk.column()))
+                .as("comment.parent_id 자기참조 FK는 ON DELETE SET NULL이어야 함 (V12)")
+                .isNotEmpty()
+                .allMatch(fk -> "SET NULL".equals(fk.deleteRule()));
     }
 }
