@@ -228,6 +228,12 @@ public class CommentServiceImpl implements CommentService {
         commentDeleter.deleteByPostIds(postIds);
     }
 
+    @Override
+    @Transactional
+    public void purgeAuthoredCommentsByUser(Long userId) {
+        commentDeleter.deleteByAuthorId(userId);
+    }
+
     private Set<Long> getLikedCommentIds(Long userId, List<Long> commentIds) {
         if (userId == null || commentIds.isEmpty()) return Set.of();
         return new HashSet<>(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(userId, commentIds));

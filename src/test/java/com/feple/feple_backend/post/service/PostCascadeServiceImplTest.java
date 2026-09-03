@@ -2,9 +2,12 @@ package com.feple.feple_backend.post.service;
 
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.comment.service.CommentService;
+import com.feple.feple_backend.notification.service.NotificationQueryService;
 import com.feple.feple_backend.post.repository.PostDraftRepository;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostReportRepository;
+import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.repository.PostScrapRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +22,10 @@ class PostCascadeServiceImplTest {
     @Mock PostScrapRepository postScrapRepository;
     @Mock PostDraftRepository postDraftRepository;
     @Mock PostReportRepository postReportRepository;
+    @Mock PostRepository postRepository;
+    @Mock PostDeleter postDeleter;
+    @Mock CommentService commentService;
+    @Mock NotificationQueryService notificationQueryService;
 
     @InjectMocks PostCascadeDeleteServiceImpl postCascadeService;
 

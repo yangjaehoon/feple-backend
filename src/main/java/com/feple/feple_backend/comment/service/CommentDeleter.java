@@ -33,6 +33,17 @@ public class CommentDeleter {
         commentRepository.deleteByPostIds(postIds);
     }
 
+    /**
+     * 회원 완전 삭제(hardDelete) — 이 유저가 쓴 모든 댓글을 자식(좋아요·신고)까지 물리 삭제한다.
+     * 소프트 삭제·블라인드된 댓글도 포함. 다른 유저가 이 댓글에 단 대댓글의 parent_id는
+     * fk_comment_parent(ON DELETE SET NULL)로 DB가 자동 정리한다.
+     */
+    public void deleteByAuthorId(Long userId) {
+        commentLikeRepository.deleteByCommentAuthorId(userId);
+        commentReportRepository.deleteByCommentAuthorId(userId);
+        commentRepository.deleteByAuthorId(userId);
+    }
+
     public void deleteSingle(Long commentId) {
         commentLikeRepository.deleteByCommentId(commentId);
         commentReportRepository.deleteByCommentId(commentId);

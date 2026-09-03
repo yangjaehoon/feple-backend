@@ -17,6 +17,11 @@ public interface PostTagRepository extends JpaRepository<PostTag, Long> {
     @Query("DELETE FROM PostTag t WHERE t.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
 
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PostTag t WHERE t.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
     // 태그로 게시글 검색(최신순 커서 페이징) — post_tag.tag 인덱스를 탄다.
     // 공개 조회라 삭제·블라인드된 게시글의 태그는 제외한다.
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})

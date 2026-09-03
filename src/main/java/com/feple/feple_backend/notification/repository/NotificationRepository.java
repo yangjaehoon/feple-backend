@@ -53,6 +53,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Query("DELETE FROM Notification n WHERE n.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
+    // 회원 완전 삭제(hardDelete) — 이 유저의 글을 참조하는 알림(수신자 무관)을 물리 삭제해
+    // notifications.post_id FK가 post 물리 삭제를 막지 않도록 한다.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Notification n WHERE n.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
     // 한 번에 전체를 지우면 하나의 커넥션·트랜잭션을 오래 붙잡는다 — LIMIT으로 잘라 여러 번 커밋
     @Modifying
     @Transactional

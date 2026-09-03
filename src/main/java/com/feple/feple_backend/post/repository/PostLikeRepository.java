@@ -30,6 +30,12 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     @Query("DELETE FROM PostLike pl WHERE pl.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 
+    // 회원 완전 삭제(hardDelete) — 이 유저의 글에 달린 (다른 유저 포함) 모든 좋아요 물리 삭제.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PostLike pl WHERE pl.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
     @Query("SELECT pl.post FROM PostLike pl " +
            "JOIN FETCH pl.post.user " +
            "LEFT JOIN FETCH pl.post.artist " +

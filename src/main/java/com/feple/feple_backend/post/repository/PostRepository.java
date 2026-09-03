@@ -136,13 +136,23 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId" + VISIBLE)
     long countByUserId(@Param("userId") Long userId);
 
-    // 완전 삭제(hardDelete) 선조건 — 소프트 삭제·블라인드된 글도 post.user_id FK로 users 행을
-    // 잡고 있으므로, 가시성 필터 없이 "작성 이력이 하나라도 있는지"를 본다.
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Post p WHERE p.user.id = :userId")
-    boolean existsAnyByUserId(@Param("userId") Long userId);
-
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.anonymous = false" + VISIBLE)
     long countPublicByUserId(@Param("userId") Long userId);
+
+    // 회원 완전 삭제(hardDelete) — 소프트 삭제·블라인드 포함 이 유저가 작성한 모든 글 수/id.
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId")
+    long countAllByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT p.id FROM Post p WHERE p.user.id = :userId")
+    List<Long> findIdsByUserId(@Param("userId") Long userId);
+
+    // 회원 완전 삭제(hardDelete) 전용 물리 삭제 — 벌크 DELETE라 @SQLDelete(소프트 삭제)를 우회한다.
+    // 자식 행(post_tag/post_image/post_like/post_scrap/post_report/comment/notification)은
+    // 호출부(PostDeleter)가 먼저 정리한다.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Post p WHERE p.id IN :ids")
+    void hardDeleteByIds(@Param("ids") List<Long> ids);
 
     // 관리자 회원 상세 모더레이션 요약 — 블라인드는 자동(신고 누적)·수동 모두 관리자 개입으로만 발생
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.blinded = true AND p.deletedAt IS NULL")

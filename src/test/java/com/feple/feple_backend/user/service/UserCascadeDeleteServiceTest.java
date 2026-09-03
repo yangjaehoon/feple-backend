@@ -160,6 +160,9 @@ class UserCascadeDeleteServiceTest {
         verify(refreshTokenService).revokeAll(3L);
         verify(artistFollowService).removeAllByUser(3L);
         verify(notificationQueryService).deleteAll(3L);
+        // 이 유저가 작성한 글·댓글 물리 삭제
+        verify(commentService).purgeAuthoredCommentsByUser(3L);
+        verify(postCascadeService).purgeAuthoredPostsByUser(3L);
         // 소프트 삭제가 안 건드리던 잔여 참조 (users FK RESTRICT — 남으면 users 행 DELETE 실패)
         verify(userAccessLogRepository).deleteByUserId(3L);
         verify(userReportRepository).deleteByUserInvolved(3L);

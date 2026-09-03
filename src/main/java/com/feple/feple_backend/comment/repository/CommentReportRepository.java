@@ -65,6 +65,12 @@ public interface CommentReportRepository extends BaseReportRepository<CommentRep
     @Query("DELETE FROM CommentReport cr WHERE cr.comment.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
+    // 회원 완전 삭제(hardDelete) — 이 유저가 쓴 댓글에 대한 (다른 유저 포함) 모든 신고 물리 삭제.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM CommentReport cr WHERE cr.comment.user.id = :userId")
+    void deleteByCommentAuthorId(@Param("userId") Long userId);
+
     @Query("SELECT cr.comment.user.id, COUNT(cr) FROM CommentReport cr WHERE cr.comment.user.id IN :userIds GROUP BY cr.comment.user.id")
     List<Object[]> countByCommentAuthorIds(@Param("userIds") Collection<Long> userIds);
 }

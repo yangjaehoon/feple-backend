@@ -25,6 +25,12 @@ public interface PostReportRepository extends BaseReportRepository<PostReport> {
     @Query("DELETE FROM PostReport pr WHERE pr.reporter.id = :reporterId")
     void deleteByReporterId(@Param("reporterId") Long reporterId);
 
+    // 회원 완전 삭제(hardDelete) — 이 유저의 글에 대한 (다른 유저 포함) 모든 신고 물리 삭제.
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PostReport pr WHERE pr.post.id IN :postIds")
+    void deleteByPostIds(@Param("postIds") List<Long> postIds);
+
     @Override
     @EntityGraph(attributePaths = {"post", "post.user", "reporter"})
     Page<PostReport> findByStatusOrderByCreatedAtDesc(ReportStatus status, Pageable pageable);
