@@ -1,5 +1,7 @@
 package com.feple.feple_backend.search.controller;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,7 +41,7 @@ class SearchControllerTest {
     @Test
     void 검색_성공() throws Exception {
         SearchResultDto resultDto = mock(SearchResultDto.class);
-        given(searchService.search("봄")).willReturn(resultDto);
+        given(searchService.search(eq("봄"), anyBoolean())).willReturn(resultDto);
 
         mockMvc.perform(get("/search").param("keyword", "봄"))
                 .andExpect(status().isOk());
