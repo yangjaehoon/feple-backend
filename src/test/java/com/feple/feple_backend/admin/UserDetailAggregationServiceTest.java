@@ -5,9 +5,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.user.UserDetailAggregationService;
 import com.feple.feple_backend.admin.user.UserDetailDto;
 import com.feple.feple_backend.admin.user.UserListCountsDto;
+import com.feple.feple_backend.admin.user.UserModerationSummaryDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
 import com.feple.feple_backend.certification.service.FestivalCertificationAdminService;
 import com.feple.feple_backend.comment.dto.MyCommentResponseDto;
@@ -21,6 +23,7 @@ import com.feple.feple_backend.user.service.MyPageService;
 import com.feple.feple_backend.user.service.PointService;
 import com.feple.feple_backend.user.service.UserAdminService;
 import com.feple.feple_backend.userblock.service.UserBlockService;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,7 @@ class UserDetailAggregationServiceTest {
     @Mock UserBlockService userBlockService;
     @Mock FestivalCertificationAdminService certificationAdminService;
     @Mock PointService pointService;
+    @Mock AdminLogService adminLogService;
 
     @InjectMocks UserDetailAggregationService service;
 
@@ -107,6 +111,48 @@ class UserDetailAggregationServiceTest {
         assertThat(model.recentComments()).isSameAs(comments);
         assertThat(model.likedFestivals()).isSameAs(festivals);
         assertThat(model.followedArtists()).isSameAs(artists);
+    }
+
+    @Test
+    void getDetail_모더레이션_요약_채워짐() {
+        Long userId = 5L;
+        UserResponseDto user = mock(UserResponseDto.class);
+        given(user.getCreatedAt()).willReturn(LocalDateTime.now().minusDays(3));
+        given(userAdminService.getAdminUser(userId)).willReturn(user);
+        given(myPageService.getUserStatsForAdmin(userId)).willReturn(mock(UserStatsDto.class));
+        given(postAdminService.countBlindedPostsByUser(userId)).willReturn(2L);
+        given(adminLogService.countUserBans(userId)).willReturn(1L);
+        given(postAdminService.getRecentPostsByUser(userId, 10)).willReturn(List.of());
+        given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(List.of());
+        given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
+        given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
+        given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
+        given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
+        given(pointService.getRecentPointLogs(userId, 10)).willReturn(List.of());
+
+        UserModerationSummaryDto summary = service.getDetail(userId).moderationSummary();
+
+        assertThat(summary.blindedPostCount()).isEqualTo(2);
+        assertThat(summary.priorBanCount()).isEqualTo(1);
+        assertThat(summary.joinedDaysAgo()).isEqualTo(3);
+    }
+
+    @Test
+    void getDetail_가입일_불명이면_joinedDaysAgo_음수() {
+        Long userId = 6L;
+        UserResponseDto user = mock(UserResponseDto.class);
+        given(user.getCreatedAt()).willReturn(null);
+        given(userAdminService.getAdminUser(userId)).willReturn(user);
+        given(myPageService.getUserStatsForAdmin(userId)).willReturn(mock(UserStatsDto.class));
+        given(postAdminService.getRecentPostsByUser(userId, 10)).willReturn(List.of());
+        given(commentService.getRecentCommentsByUser(userId, 10)).willReturn(List.of());
+        given(myPageService.getLikedFestivals(userId)).willReturn(List.of());
+        given(myPageService.getFollowedArtists(userId)).willReturn(List.of());
+        given(userBlockService.getBlockedUsers(userId)).willReturn(List.of());
+        given(certificationAdminService.getByUserId(userId)).willReturn(List.of());
+        given(pointService.getRecentPointLogs(userId, 10)).willReturn(List.of());
+
+        assertThat(service.getDetail(userId).moderationSummary().joinedDaysAgo()).isNegative();
     }
 
     // ── getListCounts ─────────────────────────────────────────────────────────

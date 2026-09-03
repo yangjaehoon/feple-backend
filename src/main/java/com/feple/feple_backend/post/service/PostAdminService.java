@@ -14,6 +14,8 @@ public interface PostAdminService {
     void bulkDeletePosts(List<Long> ids);
     long countPostsContaining(String word);
     java.util.Map<Long, Long> getPostCountsByUserIds(java.util.List<Long> userIds);
+    /** 회원 상세 모더레이션 요약 — 이 유저의 현재 블라인드 상태 게시글 수(삭제 제외). */
+    long countBlindedPostsByUser(Long userId);
     List<PostResponseDto> getDeletedPosts(int limit);
     void restorePost(Long postId);
     /** 신고 누적으로 자동 블라인드된 게시글을 관리자가 되돌린다. */

@@ -120,6 +120,15 @@ class PostAdminServiceImplTest {
         assertThat(result).hasSize(1);
     }
 
+    // ── 모더레이션 요약 카운트 ──────────────────────────────────────────
+
+    @Test
+    void 유저_블라인드_게시글_수를_레포지토리에_위임() {
+        given(postRepository.countBlindedByUserId(7L)).willReturn(2L);
+
+        assertThat(postAdminService.countBlindedPostsByUser(7L)).isEqualTo(2L);
+    }
+
     // ── getBlindedPosts ──────────────────────────────────────────────
 
     @Test

@@ -200,4 +200,12 @@ class AdminLogServiceTest {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    void countUserBans_USER_BAN_로그_건수를_레포지토리에_위임() {
+        given(repository.countByActionAndTargetTypeAndTargetId(AdminAction.USER_BAN, "USER", 7L))
+                .willReturn(3L);
+
+        assertThat(adminLogService.countUserBans(7L)).isEqualTo(3L);
+    }
 }

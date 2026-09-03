@@ -81,4 +81,9 @@ public class AdminLogService {
     public List<AdminLog> getRecentLogs() {
         return repository.findTop10ByOrderByCreatedAtDesc();
     }
+
+    // 회원 상세 모더레이션 요약 — 이 유저를 대상으로 한 정지 조치 횟수(현재 정지 상태와 별개로 누적).
+    public long countUserBans(Long userId) {
+        return repository.countByActionAndTargetTypeAndTargetId(AdminAction.USER_BAN, "USER", userId);
+    }
 }

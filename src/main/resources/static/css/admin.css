@@ -1337,6 +1337,7 @@ details[open] .summary-arrow { transform: rotate(180deg); }
 .stat-num-muted     { color: var(--muted); }
 .stat-item          { text-align: center; }
 .stat-row           { display: flex; gap: 24px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.mod-summary-row    { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
 .user-profile-row  { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; }
 .user-avatar-lg    { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); flex-shrink: 0; }
 .user-avatar-ph-lg { width: 72px; height: 72px; border-radius: 50%; background: var(--primary-lt); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }

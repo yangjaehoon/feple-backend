@@ -15,6 +15,7 @@ import java.util.List;
 public record UserDetailDto(
         UserResponseDto user,
         UserStatsDto stats,
+        UserModerationSummaryDto moderationSummary,
         List<PostResponseDto> recentPosts,
         List<MyCommentResponseDto> recentComments,
         List<FestivalResponseDto> likedFestivals,

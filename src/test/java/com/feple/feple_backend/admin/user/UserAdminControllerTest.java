@@ -95,14 +95,15 @@ class UserAdminControllerTest {
     @Test
     void 상세_조회_성공() throws Exception {
         UserDetailDto detail = new UserDetailDto(
-                mock(UserResponseDto.class), null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+                mock(UserResponseDto.class), null, new UserModerationSummaryDto(0, 0, 0),
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
         given(userDetailAggregationService.getDetail(1L)).willReturn(detail);
 
         mockMvc.perform(get("/admin/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/user/detail"))
                 .andExpect(model().attributeExists(
-                        "user", "recentPosts", "recentComments", "likedFestivals", "followedArtists"));
+                        "user", "moderationSummary", "recentPosts", "recentComments", "likedFestivals", "followedArtists"));
     }
 
     @Test
