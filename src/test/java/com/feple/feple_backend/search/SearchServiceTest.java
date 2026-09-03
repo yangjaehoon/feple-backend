@@ -38,7 +38,7 @@ class SearchServiceTest {
 
     @Test
     void search_null_키워드_빈_결과() {
-        SearchResultDto result = searchService.search(null);
+        SearchResultDto result = searchService.search(null, true);
 
         assertThat(result.artists()).isEmpty();
         assertThat(result.festivals()).isEmpty();
@@ -48,7 +48,7 @@ class SearchServiceTest {
 
     @Test
     void search_공백_키워드_빈_결과() {
-        SearchResultDto result = searchService.search("   ");
+        SearchResultDto result = searchService.search("   ", true);
 
         assertThat(result.artists()).isEmpty();
         assertThat(result.festivals()).isEmpty();
@@ -63,10 +63,21 @@ class SearchServiceTest {
         given(festivalService.searchFestivals("test")).willReturn(List.of());
         given(postSearchService.searchPosts("test", null, null)).willReturn(List.of());
 
-        SearchResultDto result = searchService.search("test");
+        SearchResultDto result = searchService.search("test", true);
 
         then(searchLogRepository).should().save(any(SearchLog.class));
         assertThat(result.artists()).hasSize(1);
+    }
+
+    @Test
+    void search_비로그인_요청은_검색어_로그를_남기지_않는다() {
+        given(artistService.searchArtists("test")).willReturn(List.of());
+        given(festivalService.searchFestivals("test")).willReturn(List.of());
+        given(postSearchService.searchPosts("test", null, null)).willReturn(List.of());
+
+        searchService.search("test", false);
+
+        then(searchLogRepository).should(never()).save(any());
     }
 
     @Test
@@ -79,7 +90,7 @@ class SearchServiceTest {
         given(festivalService.searchFestivals("test")).willReturn(List.of());
         given(postSearchService.searchPosts("test", null, null)).willReturn(List.of());
 
-        SearchResultDto result = searchService.search("test");
+        SearchResultDto result = searchService.search("test", true);
 
         assertThat(result.artists()).hasSize(10);
     }

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +27,10 @@ public class SearchController {
 
     @GetMapping
     public ResponseEntity<SearchResultDto> search(
-            @RequestParam @NotBlank @Size(max = 100) String keyword) {
-        return ResponseEntity.ok(searchService.search(keyword));
+            @RequestParam @NotBlank @Size(max = 100) String keyword,
+            @AuthenticationPrincipal Long userId) {
+        // 비로그인 게스트(userId == null)의 검색어는 집계 로그에 남기지 않는다.
+        return ResponseEntity.ok(searchService.search(keyword, userId != null));
     }
 
     @GetMapping("/suggestions")

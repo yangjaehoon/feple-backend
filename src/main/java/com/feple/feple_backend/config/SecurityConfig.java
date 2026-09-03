@@ -186,9 +186,20 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/posts/my/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**", "/notices/**").permitAll()
+                // 비로그인 게스트도 접근하는 비계정 콘텐츠 (Apple 가이드라인 5.1.1(v)):
+                // 통합 검색, 페스티벌 별점 요약·리뷰, 내 인증 상태(비로그인이면 NONE 반환).
+                // 프론트의 게스트 둘러보기 화면들이 이 엔드포인트를 호출하므로 permitAll
+                // 목록에서 빠지면 401 → 프론트 강제 로그아웃 정리로 이어진다.
+                // 와일드카드가 아닌 정확한 경로만 나열한다 — SearchController에 향후
+                // 개인화 서브경로(검색 기록 등)가 추가돼도 자동으로 공개되지 않도록.
+                // (검색어 로그 저장은 SearchService가 비로그인 요청에 대해 건너뛴다.
+                //  조회수 증가 POST /posts/*/view는 write라 계속 인증 필수 —
+                //  게스트 화면에서는 호출 자체를 생략한다.)
+                .requestMatchers(HttpMethod.GET, "/search", "/search/suggestions").permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/certifications/festival/*/rating",
-                    "/certifications/festival/*/reviews").permitAll()
+                    "/certifications/festival/*/reviews",
+                    "/certifications/cert-state").permitAll()
                 .anyRequest().authenticated())
             .httpBasic(hb -> hb.disable())
             .formLogin(fl -> fl.disable())

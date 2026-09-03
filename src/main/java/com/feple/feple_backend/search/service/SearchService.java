@@ -24,12 +24,19 @@ public class SearchService {
     private static final int MAX_RESULTS = 10;
     private static final int MAX_SUGGESTIONS = 5;
 
-    public SearchResultDto search(String keyword) {
+    /**
+     * @param logSearch 검색어를 집계용 로그(search_log)에 남길지 여부. 비로그인 게스트
+     *                  요청은 false로 넘겨 관리자 대시보드의 '인기 검색어' 지표가 봇·
+     *                  심사자 트래픽으로 오염되지 않게 하고, 인증 없는 쓰기 경로를 만들지 않는다.
+     */
+    public SearchResultDto search(String keyword, boolean logSearch) {
         if (keyword == null || keyword.isBlank()) {
             return new SearchResultDto(List.of(), List.of(), List.of());
         }
         String kw = keyword.trim();
-        searchLogRepository.save(SearchLog.of(kw));
+        if (logSearch) {
+            searchLogRepository.save(SearchLog.of(kw));
+        }
         return new SearchResultDto(
                 artistService.searchArtists(kw).stream().limit(MAX_RESULTS).toList(),
                 festivalService.searchFestivals(kw).stream().limit(MAX_RESULTS).toList(),
