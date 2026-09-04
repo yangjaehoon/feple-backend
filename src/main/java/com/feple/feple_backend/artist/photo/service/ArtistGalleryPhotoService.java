@@ -143,6 +143,15 @@ public class ArtistGalleryPhotoService {
         return ArtistGalleryPhotoResponseDto.from(photo, url, isLiked, currentUserId);
     }
 
+    /**
+     * 회원 완전 삭제(hardDelete) 사전 검사용 — 이 유저가 올린 갤러리 사진 수. 0보다 크면
+     * 다른 유저의 좋아요·신고가 얽혀 있어 완전 삭제를 거부하고 일반 삭제(익명 처리)로 유도한다.
+     */
+    @Transactional(readOnly = true)
+    public long countUploadedByUser(Long userId) {
+        return artistGalleryPhotoRepository.countByUploaderId(userId);
+    }
+
     /** 회원 탈퇴 시 해당 유저의 갤러리 사진 좋아요 일괄 제거 */
     @Transactional
     public void removeByUser(Long userId) {

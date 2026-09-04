@@ -7,7 +7,6 @@ import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
-import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.diary.service.FestivalDiaryService;
@@ -25,7 +24,7 @@ import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserPointLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
-import com.feple.feple_backend.userreport.repository.UserReportRepository;
+import com.feple.feple_backend.userreport.service.UserReportCleanupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,9 +59,8 @@ public class UserCascadeDeleteService {
     private final FileStorageService fileStorageService;
 
     private final UserAccessLogRepository userAccessLogRepository;
-    private final UserReportRepository userReportRepository;
-    private final CommentRepository commentRepository;
     private final UserPointLogRepository userPointLogRepository;
+    private final UserReportCleanupService userReportCleanupService;
     private final CommentReportService commentReportService;
 
     public void delete(User user, WithdrawalReason reason, String detail) {
@@ -96,10 +94,11 @@ public class UserCascadeDeleteService {
         postCascadeService.purgeAuthoredPostsByUser(id);
 
         // 일반 탈퇴(익명화)는 안 건드리지만 users 행 물리 삭제 전엔 비워야 하는 잔여 참조 (전부 users FK RESTRICT).
+        // user 애그리거트 소유 테이블은 이 클래스가 직접, 다른 도메인은 해당 도메인 서비스로 위임한다.
         userAccessLogRepository.deleteByUserId(id);
-        userReportRepository.deleteByUserInvolved(id);
-        commentRepository.clearMentionsByUserId(id);
         userPointLogRepository.deleteByUserId(id);
+        userReportCleanupService.removeAllInvolvingUser(id);    // user_report(reporter_id·target_id)
+        commentService.clearMentionsByUser(id);                 // comment.mentioned_user_id
         postCascadeService.removeAuthoredArtifactsByUser(id);   // post_draft + post_report(reporter)
         commentReportService.removeReportsByReporter(id);       // comment_report(reporter)
         artistGalleryPhotoService.removeReportsByReporter(id);  // artist_photo_report(reporter)

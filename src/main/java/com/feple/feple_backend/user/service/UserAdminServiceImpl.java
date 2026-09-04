@@ -1,15 +1,15 @@
 package com.feple.feple_backend.user.service;
 
 import com.feple.feple_backend.admin.CurrentAdminProvider;
-import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
-import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
+import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.PageableFactory;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
-import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -44,9 +44,9 @@ public class UserAdminServiceImpl implements UserAdminService {
     private final FileStorageService fileStorageService;
     private final UserCascadeDeleteService cascadeDeleteService;
     private final CurrentAdminProvider currentAdminProvider;
-    private final ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
+    private final ArtistGalleryPhotoService artistGalleryPhotoService;
+    private final PostAdminService postAdminService;
+    private final CommentService commentService;
 
     @Override
     @Transactional(readOnly = true)
@@ -125,10 +125,10 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     public void hardDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
-        if (artistGalleryPhotoRepository.countByUploaderId(id) > 0) {
+        if (artistGalleryPhotoService.countUploadedByUser(id) > 0) {
             throw new InvalidRequestException("올린 갤러리 사진이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
         }
-        long authored = postRepository.countAllByUserId(id) + commentRepository.countAllByUserId(id);
+        long authored = postAdminService.countAllPostsByUser(id) + commentService.countAllCommentsByUser(id);
         if (authored > HARD_DELETE_MAX_AUTHORED) {
             throw new InvalidRequestException(
                     "작성한 글·댓글이 너무 많아(" + authored + "개) 한 번에 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
