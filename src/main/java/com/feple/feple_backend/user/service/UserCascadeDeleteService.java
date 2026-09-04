@@ -88,13 +88,23 @@ public class UserCascadeDeleteService {
         String profileImageKey = user.getProfileImageUrl();
 
         removeAllActivity(id);
+        purgeAuthoredContent(id);
+        removeResidualUserReferences(id);
 
-        // 이 유저가 작성한 글·댓글 물리 삭제 (일반 탈퇴는 익명화로 보존하지만 완전 삭제는 남길 수 없다).
+        userRepository.deleteById(id);
+
+        fileStorageService.deleteFileAfterCommit(profileImageKey);
+    }
+
+    // 이 유저가 작성한 글·댓글을 물리 삭제 (일반 탈퇴는 익명화로 보존하지만 완전 삭제는 남길 수 없다).
+    private void purgeAuthoredContent(Long id) {
         commentService.purgeAuthoredCommentsByUser(id);
         postCascadeService.purgeAuthoredPostsByUser(id);
+    }
 
-        // 일반 탈퇴(익명화)는 안 건드리지만 users 행 물리 삭제 전엔 비워야 하는 잔여 참조 (전부 users FK RESTRICT).
-        // user 애그리거트 소유 테이블은 이 클래스가 직접, 다른 도메인은 해당 도메인 서비스로 위임한다.
+    // 일반 탈퇴(익명화)는 안 건드리지만 users 행 물리 삭제 전엔 비워야 하는 잔여 참조 (전부 users FK RESTRICT).
+    // user 애그리거트 소유 테이블은 이 클래스가 직접, 다른 도메인은 해당 도메인 서비스로 위임한다.
+    private void removeResidualUserReferences(Long id) {
         userAccessLogRepository.deleteByUserId(id);
         userPointLogRepository.deleteByUserId(id);
         userReportCleanupService.removeAllInvolvingUser(id);    // user_report(reporter_id·target_id)
@@ -102,10 +112,6 @@ public class UserCascadeDeleteService {
         postCascadeService.removeAuthoredArtifactsByUser(id);   // post_draft + post_report(reporter)
         commentReportService.removeReportsByReporter(id);       // comment_report(reporter)
         artistGalleryPhotoService.removeReportsByReporter(id);  // artist_photo_report(reporter)
-
-        userRepository.deleteById(id);
-
-        fileStorageService.deleteFileAfterCommit(profileImageKey);
     }
 
     // 소셜 활동·인증 세션 데이터 삭제 — 각 도메인 서비스에 위임해 카운터 정합성을 보장한다.
