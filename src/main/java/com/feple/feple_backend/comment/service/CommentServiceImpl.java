@@ -234,6 +234,18 @@ public class CommentServiceImpl implements CommentService {
         commentDeleter.deleteByAuthorId(userId);
     }
 
+    @Override
+    @Transactional
+    public void clearMentionsByUser(Long userId) {
+        commentRepository.clearMentionsByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countAllCommentsByUser(Long userId) {
+        return commentRepository.countAllByUserId(userId);
+    }
+
     private Set<Long> getLikedCommentIds(Long userId, List<Long> commentIds) {
         if (userId == null || commentIds.isEmpty()) return Set.of();
         return new HashSet<>(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(userId, commentIds));

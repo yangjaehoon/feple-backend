@@ -18,6 +18,13 @@ public interface CommentService {
     void deleteByPostIds(List<Long> postIds);
     /** 회원 완전 삭제(hardDelete) — 이 유저가 쓴 모든 댓글을 자식(좋아요·신고)까지 물리 삭제 */
     void purgeAuthoredCommentsByUser(Long userId);
+    /**
+     * 회원 완전 삭제(hardDelete) — 다른 유저의 댓글이 이 유저를 멘션하고 있으면 users FK 때문에
+     * 행을 지울 수 없으므로 멘션 참조만 끊는다(댓글 본문은 유지).
+     */
+    void clearMentionsByUser(Long userId);
+    /** 회원 완전 삭제(hardDelete) 규모 검사용 — 소프트 삭제·블라인드 포함 이 유저가 쓴 댓글 총수. */
+    long countAllCommentsByUser(Long userId);
     CommentLikeResult toggleLike(Long commentId, Long userId);
     List<MyCommentResponseDto> getMyComments(Long userId);
     List<MyCommentResponseDto> getRecentCommentsByUser(Long userId, int limit);

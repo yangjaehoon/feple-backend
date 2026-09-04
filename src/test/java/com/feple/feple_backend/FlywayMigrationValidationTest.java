@@ -82,7 +82,7 @@ class FlywayMigrationValidationTest {
             "post_report",                    // postCascadeService.removeAuthoredArtifactsByUser + purgeAuthoredPostsByUser
             "post",                           // postCascadeService.purgeAuthoredPostsByUser (물리 삭제)
             "post_draft",                     // postCascadeService.removeAuthoredArtifactsByUser
-            "comment",                        // commentService.purgeAuthoredCommentsByUser / mentioned_user는 clearMentionsByUserId
+            "comment",                        // commentService.purgeAuthoredCommentsByUser / mentioned_user는 commentService.clearMentionsByUser
             "comment_like",                   // commentService.removeLikesByUser
             "comment_report",                 // commentReportService.removeReportsByReporter
             "artist_photos",                  // 선조건: 업로드 갤러리 사진 0
@@ -98,7 +98,7 @@ class FlywayMigrationValidationTest {
             "user_access_log",                // userAccessLogRepository.deleteByUserId
             "user_block",                     // userBlockService.removeAllByUser (+ ON DELETE CASCADE)
             "user_point_log",                 // userPointLogRepository.deleteByUserId
-            "user_report"                     // userReportRepository.deleteByUserInvolved
+            "user_report"                     // userReportCleanupService.removeAllInvolvingUser
     );
 
     // post/comment 물리 삭제(hardDelete)가 정리하는 RESTRICT FK 자식 테이블.

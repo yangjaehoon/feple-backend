@@ -10,7 +10,6 @@ import com.feple.feple_backend.artistfollow.service.ArtistFollowService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.certification.service.FestivalCertificationService;
 import com.feple.feple_backend.certification.service.FestivalReviewService;
-import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.diary.service.FestivalDiaryService;
@@ -28,7 +27,7 @@ import com.feple.feple_backend.user.repository.UserDeviceTokenRepository;
 import com.feple.feple_backend.user.repository.UserPointLogRepository;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.UserBlockService;
-import com.feple.feple_backend.userreport.repository.UserReportRepository;
+import com.feple.feple_backend.userreport.service.UserReportCleanupService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,9 +59,8 @@ class UserCascadeDeleteServiceTest {
     @Mock UserBlockService userBlockService;
     @Mock FileStorageService fileStorageService;
     @Mock UserAccessLogRepository userAccessLogRepository;
-    @Mock UserReportRepository userReportRepository;
-    @Mock CommentRepository commentRepository;
     @Mock UserPointLogRepository userPointLogRepository;
+    @Mock UserReportCleanupService userReportCleanupService;
     @Mock CommentReportService commentReportService;
 
     @InjectMocks UserCascadeDeleteService userCascadeDeleteService;
@@ -165,9 +163,9 @@ class UserCascadeDeleteServiceTest {
         verify(postCascadeService).purgeAuthoredPostsByUser(3L);
         // 소프트 삭제가 안 건드리던 잔여 참조 (users FK RESTRICT — 남으면 users 행 DELETE 실패)
         verify(userAccessLogRepository).deleteByUserId(3L);
-        verify(userReportRepository).deleteByUserInvolved(3L);
-        verify(commentRepository).clearMentionsByUserId(3L);
         verify(userPointLogRepository).deleteByUserId(3L);
+        verify(userReportCleanupService).removeAllInvolvingUser(3L);
+        verify(commentService).clearMentionsByUser(3L);
         verify(postCascadeService).removeAuthoredArtifactsByUser(3L);
         verify(commentReportService).removeReportsByReporter(3L);
         verify(artistGalleryPhotoService).removeReportsByReporter(3L);

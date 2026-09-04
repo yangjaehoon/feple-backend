@@ -144,6 +144,12 @@ public class PostAdminServiceImpl implements PostAdminService {
 
     @Override
     @Transactional(readOnly = true)
+    public long countAllPostsByUser(Long userId) {
+        return postRepository.countAllByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<PostResponseDto> getRecentPostsByUser(Long userId, int limit) {
         return postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, limit))
                 .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();

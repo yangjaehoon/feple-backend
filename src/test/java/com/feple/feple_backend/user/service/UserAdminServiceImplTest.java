@@ -9,11 +9,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.admin.CurrentAdminProvider;
-import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
-import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.artist.photo.service.ArtistGalleryPhotoService;
+import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
-import com.feple.feple_backend.post.repository.PostRepository;
+import com.feple.feple_backend.post.service.PostAdminService;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -39,9 +39,9 @@ class UserAdminServiceImplTest {
     @Mock UserRepository userRepository;
     @Mock FileStorageService fileStorageService;
     @Mock UserCascadeDeleteService cascadeDeleteService;
-    @Mock ArtistGalleryPhotoRepository artistGalleryPhotoRepository;
-    @Mock PostRepository postRepository;
-    @Mock CommentRepository commentRepository;
+    @Mock ArtistGalleryPhotoService artistGalleryPhotoService;
+    @Mock PostAdminService postAdminService;
+    @Mock CommentService commentService;
     @Spy CurrentAdminProvider currentAdminProvider = new CurrentAdminProvider();
 
     @InjectMocks UserAdminServiceImpl userAdminService;
@@ -152,7 +152,7 @@ class UserAdminServiceImplTest {
     @Test
     void hardDeleteUser_올린_갤러리_사진이_있으면_거부() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "사진올린유저")));
-        given(artistGalleryPhotoRepository.countByUploaderId(1L)).willReturn(3L);
+        given(artistGalleryPhotoService.countUploadedByUser(1L)).willReturn(3L);
 
         assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
                 .isInstanceOf(InvalidRequestException.class)
@@ -163,9 +163,9 @@ class UserAdminServiceImplTest {
     @Test
     void hardDeleteUser_작성물이_상한을_넘으면_거부() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L, "다작유저")));
-        given(artistGalleryPhotoRepository.countByUploaderId(1L)).willReturn(0L);
-        given(postRepository.countAllByUserId(1L)).willReturn(400L);
-        given(commentRepository.countAllByUserId(1L)).willReturn(200L); // 합계 600 > 500
+        given(artistGalleryPhotoService.countUploadedByUser(1L)).willReturn(0L);
+        given(postAdminService.countAllPostsByUser(1L)).willReturn(400L);
+        given(commentService.countAllCommentsByUser(1L)).willReturn(200L); // 합계 600 > 500
 
         assertThatThrownBy(() -> userAdminService.hardDeleteUser(1L))
                 .isInstanceOf(InvalidRequestException.class)
@@ -177,9 +177,9 @@ class UserAdminServiceImplTest {
     void hardDeleteUser_작성한_글_댓글이_있어도_상한_이내_갤러리_사진_없으면_hardDelete에_위임() {
         User target = user(1L, "글쓴유저");
         given(userRepository.findById(1L)).willReturn(Optional.of(target));
-        given(artistGalleryPhotoRepository.countByUploaderId(1L)).willReturn(0L);
-        given(postRepository.countAllByUserId(1L)).willReturn(10L);
-        given(commentRepository.countAllByUserId(1L)).willReturn(30L);
+        given(artistGalleryPhotoService.countUploadedByUser(1L)).willReturn(0L);
+        given(postAdminService.countAllPostsByUser(1L)).willReturn(10L);
+        given(commentService.countAllCommentsByUser(1L)).willReturn(30L);
 
         userAdminService.hardDeleteUser(1L);
 
