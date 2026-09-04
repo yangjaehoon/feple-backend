@@ -40,6 +40,12 @@ public class UserAdminServiceImpl implements UserAdminService {
      */
     private static final long HARD_DELETE_MAX_AUTHORED = 500;
 
+    /** 완전 삭제를 거부할 때 관리자에게 대안을 안내하는 공통 문구. */
+    private static final String USE_SOFT_DELETE_HINT = " 일반 삭제(익명 처리)를 사용하세요.";
+
+    /** 전체 사용자 내보내기 시 한 번에 조회하는 페이지 크기 — 요청당 메모리·쿼리 비용의 균형점. */
+    private static final int EXPORT_BATCH_SIZE = 1000;
+
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final UserCascadeDeleteService cascadeDeleteService;
@@ -126,12 +132,12 @@ public class UserAdminServiceImpl implements UserAdminService {
     public void hardDeleteUser(@NonNull Long id) {
         User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
         if (artistGalleryPhotoService.countUploadedByUser(id) > 0) {
-            throw new InvalidRequestException("올린 갤러리 사진이 있어 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
+            throw new InvalidRequestException("올린 갤러리 사진이 있어 완전 삭제할 수 없습니다." + USE_SOFT_DELETE_HINT);
         }
         long authored = postAdminService.countAllPostsByUser(id) + commentService.countAllCommentsByUser(id);
         if (authored > HARD_DELETE_MAX_AUTHORED) {
             throw new InvalidRequestException(
-                    "작성한 글·댓글이 너무 많아(" + authored + "개) 한 번에 완전 삭제할 수 없습니다. 일반 삭제(익명 처리)를 사용하세요.");
+                    "작성한 글·댓글이 너무 많아(" + authored + "개) 한 번에 완전 삭제할 수 없습니다." + USE_SOFT_DELETE_HINT);
         }
         cascadeDeleteService.hardDelete(user);
     }
@@ -159,11 +165,10 @@ public class UserAdminServiceImpl implements UserAdminService {
     public List<UserResponseDto> getAllUsersForExport() {
         List<UserResponseDto> result = new ArrayList<>();
         int page = 0;
-        final int batchSize = 1000;
         Page<User> batch;
         do {
             batch = userRepository.findAllByDeletedAtIsNull(
-                    PageableFactory.orderByLatestId(page++, batchSize));
+                    PageableFactory.orderByLatestId(page++, EXPORT_BATCH_SIZE));
             batch.forEach(u -> result.add(toAdminUserDto(u)));
         } while (batch.hasNext() && result.size() < PageSize.MAX_EXPORT_ROWS);
         return result;
