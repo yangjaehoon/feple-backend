@@ -22,6 +22,9 @@ ext['netty.version'] = '4.1.137.Final'
 ext['jackson-bom.version'] = '2.21.5'
 ext['commons-lang3.version'] = '3.20.0'
 ext['httpclient5.version'] = '5.6.4'
+// opentelemetry는 BOM 기본값(1.49.0)이 CVE 취약점이고, 전이 의존성이 자연 요구하는 1.57.0도
+// 여전히 취약(패치는 1.62.0부터)이라 자연 해석 버전보다 높게 명시 지정이 필요하다.
+ext['opentelemetry.version'] = '1.62.0'
 ext['httpcore5.version'] = '5.4.3'
 
 java {
