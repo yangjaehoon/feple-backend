@@ -107,7 +107,11 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**")
+            // actuator/prometheus, metrics는 관리자 세션 인증을 그대로 재사용한다 — apiFilterChain은
+            // 앱 유저(JWT, users.role) 기준이라 실제로 UserRole.ADMIN을 가진 계정이 시드/운영되지 않아
+            // hasRole("ADMIN")을 걸어도 아무도 접근할 수 없었다(2026-09-10 자체 리뷰에서 발견).
+            .securityMatcher("/admin/**", "/css/**", "/js/**", "/img/**",
+                "/actuator/prometheus", "/actuator/metrics/**")
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(buildAdminCsp()))
                 .frameOptions(frame -> frame.deny()))
