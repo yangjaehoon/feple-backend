@@ -10,6 +10,20 @@ plugins {
 group = 'com.feple'
 version = '0.0.1-SNAPSHOT'
 
+// Spring Boot 3.5.16 BOM이 관리하는 기본 버전에 알려진 취약점(OSV/GHSA)이 있어 패치 버전으로
+// 명시적으로 올린다 — 전부 동일 마이너 라인 내 패치 릴리스라 API 호환성 리스크는 낮다(2026-09-10).
+// dependency-management 플러그인은 BOM 버전을 다른 의존성이 요구하는 더 높은 버전 위에도
+// 강제 적용한다 — commons-lang3/httpclient5는 최초에 각각 패치 최소버전(3.18.0/5.6.3)으로만
+// 올렸다가, 실제로는 전이 의존성이 이미 더 높은 3.20.0/5.6.4를 요구 중인데 그보다 낮은 값을
+// 강제해 오히려 다운그레이드시키는 회귀가 있었다(자체 리뷰에서 발견) — 그 자연 해석 버전과
+// 같거나 그 이상으로 맞춘다.
+ext['tomcat.version'] = '10.1.59'
+ext['netty.version'] = '4.1.137.Final'
+ext['jackson-bom.version'] = '2.21.5'
+ext['commons-lang3.version'] = '3.20.0'
+ext['httpclient5.version'] = '5.6.4'
+ext['httpcore5.version'] = '5.4.3'
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
