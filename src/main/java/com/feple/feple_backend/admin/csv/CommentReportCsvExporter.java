@@ -1,6 +1,5 @@
 package com.feple.feple_backend.admin.csv;
 
-import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.global.ReportTypes;
 import lombok.RequiredArgsConstructor;
@@ -17,20 +16,11 @@ class CommentReportCsvExporter implements ReportCsvExporter {
 
     @Override
     public String buildCsv() {
-        StringBuilder sb = new StringBuilder("ID,신고일시,댓글ID,댓글내용,게시글제목,댓글작성자,신고자,사유,상세,상태\n");
-        for (CommentReport r : commentReportService.getAllCommentReportsForExport()) {
-            sb.append(CsvExporter.row(
-                    r.getId(),
-                    CsvExporter.formatDt(r.getCreatedAt()),
-                    r.getCommentId(),
-                    r.getCommentContent(),
-                    r.getCommentPostTitle(),
-                    r.getCommentUserNickname(),
-                    r.getReporterNickname(),
-                    r.getReason().name(),
-                    r.getDetail(),
-                    r.getStatus().name()));
-        }
-        return sb.toString();
+        return CsvExporter.buildCsv("ID,신고일시,댓글ID,댓글내용,게시글제목,댓글작성자,신고자,사유,상세,상태\n",
+                commentReportService.getAllCommentReportsForExport(),
+                r -> new Object[]{
+                        r.getId(), CsvExporter.formatDt(r.getCreatedAt()), r.getCommentId(), r.getCommentContent(),
+                        r.getCommentPostTitle(), r.getCommentUserNickname(), r.getReporterNickname(),
+                        r.getReason().name(), r.getDetail(), r.getStatus().name() });
     }
 }

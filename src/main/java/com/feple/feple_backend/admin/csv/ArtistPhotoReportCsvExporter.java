@@ -1,6 +1,5 @@
 package com.feple.feple_backend.admin.csv;
 
-import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.global.ReportTypes;
 import lombok.RequiredArgsConstructor;
@@ -17,19 +16,11 @@ class ArtistPhotoReportCsvExporter implements ReportCsvExporter {
 
     @Override
     public String buildCsv() {
-        StringBuilder sb = new StringBuilder("ID,신고일시,사진ID,아티스트,업로더,신고자,사유,상세,상태\n");
-        for (ArtistGalleryPhotoReport r : artistPhotoReportService.getAllPhotoReportsForExport()) {
-            sb.append(CsvExporter.row(
-                    r.getId(),
-                    CsvExporter.formatDt(r.getCreatedAt()),
-                    r.getPhotoId(),
-                    r.getPhotoArtistName(),
-                    r.getPhotoUploaderNickname(),
-                    r.getReporterNickname(),
-                    r.getReason().name(),
-                    r.getDetail(),
-                    r.getStatus().name()));
-        }
-        return sb.toString();
+        return CsvExporter.buildCsv("ID,신고일시,사진ID,아티스트,업로더,신고자,사유,상세,상태\n",
+                artistPhotoReportService.getAllPhotoReportsForExport(),
+                r -> new Object[]{
+                        r.getId(), CsvExporter.formatDt(r.getCreatedAt()), r.getPhotoId(), r.getPhotoArtistName(),
+                        r.getPhotoUploaderNickname(), r.getReporterNickname(),
+                        r.getReason().name(), r.getDetail(), r.getStatus().name() });
     }
 }

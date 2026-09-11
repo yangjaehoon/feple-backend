@@ -3,6 +3,7 @@ package com.feple.feple_backend.admin.csv;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -71,6 +72,22 @@ class CsvExporterTest {
     @Test
     void row_값들을_콤마로_연결하고_개행으로_끝난다() {
         assertThat(CsvExporter.row(1, "제목", null)).isEqualTo("1,제목,\n");
+    }
+
+    // ── buildCsv ─────────────────────────────────────────────────────────
+
+    @Test
+    void buildCsv_항목없으면_헤더만_반환() {
+        assertThat(CsvExporter.buildCsv("ID,이름\n", List.of(), (String s) -> new Object[]{ s }))
+                .isEqualTo("ID,이름\n");
+    }
+
+    @Test
+    void buildCsv_항목마다_row로_변환해_헤더_뒤에_이어붙인다() {
+        String result = CsvExporter.buildCsv("ID,이름\n", List.of("아이유", "IU"),
+                (String name) -> new Object[]{ name.length(), name });
+
+        assertThat(result).isEqualTo("ID,이름\n3,아이유\n2,IU\n");
     }
 
     // ── csvResponse ──────────────────────────────────────────────────────
