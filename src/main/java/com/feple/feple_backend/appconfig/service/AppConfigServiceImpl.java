@@ -5,6 +5,7 @@ import com.feple.feple_backend.appconfig.FeatureFlags;
 import com.feple.feple_backend.appconfig.dto.AppConfigFormDto;
 import com.feple.feple_backend.appconfig.dto.AppConfigResponseDto;
 import com.feple.feple_backend.appconfig.entity.AppConfig;
+import com.feple.feple_backend.appconfig.entity.AppConfigUpdateFields;
 import com.feple.feple_backend.appconfig.repository.AppConfigRepository;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.Map;
@@ -58,13 +59,13 @@ public class AppConfigServiceImpl implements AppConfigService, AppConfigAdminSer
         String normalizedFlags = FeatureFlags.normalize(objectMapper, form.getFeatureFlags());
         AppConfig config = appConfigRepository.findById(AppConfig.SINGLETON_ID)
                 .orElseGet(() -> appConfigRepository.save(AppConfig.defaults()));
-        config.update(
+        config.update(new AppConfigUpdateFields(
                 form.getMinSupportedVersion(),
                 form.getLatestVersion(),
                 form.isMaintenance(),
                 blankToNull(form.getMaintenanceMessage()),
                 blankToNull(form.getNoticeMessage()),
-                normalizedFlags);
+                normalizedFlags));
     }
 
     /** 조회 경로: 저장된 JSON이 깨져 있어도 앱이 멈추지 않도록 빈 맵으로 대체한다. */
