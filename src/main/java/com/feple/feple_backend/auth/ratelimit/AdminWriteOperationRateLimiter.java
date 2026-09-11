@@ -4,7 +4,7 @@ import java.time.Duration;
 import org.springframework.stereotype.Component;
 
 /**
- * 관리자 계정 기준 POST 요청 제한.
+ * 관리자 계정 기준 상태 변경 요청(POST/PUT/PATCH/DELETE) 제한.
  * 1분 동안 최대 120회 허용 — 정상 업무에 충분하고 자동화 공격은 차단.
  */
 @Component

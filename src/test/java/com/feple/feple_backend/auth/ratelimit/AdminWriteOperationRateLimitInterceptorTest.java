@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,13 +34,36 @@ class AdminWriteOperationRateLimitInterceptorTest {
     }
 
     @Test
-    void POST가_아니면_검사없이_통과() throws Exception {
+    void GET이면_검사없이_통과() throws Exception {
         given(request.getMethod()).willReturn("GET");
 
         boolean result = interceptor.preHandle(request, response, new Object());
 
         assertThat(result).isTrue();
         verify(adminMutationRateLimiter, never()).tryConsume(any());
+    }
+
+    @Test
+    void 메서드가_null이면_예외없이_통과() throws Exception {
+        given(request.getMethod()).willReturn(null);
+
+        boolean result = interceptor.preHandle(request, response, new Object());
+
+        assertThat(result).isTrue();
+        verify(adminMutationRateLimiter, never()).tryConsume(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PUT", "PATCH", "DELETE"})
+    void 상태변경_메서드는_POST와_동일하게_검사한다(String method) throws Exception {
+        given(request.getMethod()).willReturn(method);
+        given(request.getRemoteAddr()).willReturn("1.2.3.4");
+        given(adminMutationRateLimiter.tryConsume("1.2.3.4")).willReturn(false);
+
+        boolean result = interceptor.preHandle(request, response, new Object());
+
+        assertThat(result).isFalse();
+        verify(adminMutationRateLimiter).tryConsume("1.2.3.4");
     }
 
     @Test
