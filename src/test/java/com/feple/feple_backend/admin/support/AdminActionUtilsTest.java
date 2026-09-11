@@ -121,6 +121,67 @@ class AdminActionUtilsTest {
         assertThat(ra.getFlashAttributes()).doesNotContainKey("successMessage");
     }
 
+    // ── tryActionWithResult ──────────────────────────────────────────────────
+
+    @Test
+    void tryActionWithResult_성공시_결과값으로_계산한_successMessage_설정() {
+        RedirectAttributesModelMap ra = ra();
+
+        AdminActionUtils.tryActionWithResult(
+                () -> 3, count -> count + "건 처리되었습니다.", e -> {}, "실패", ra);
+
+        assertThat(flash(ra, "successMessage")).isEqualTo("3건 처리되었습니다.");
+    }
+
+    @Test
+    void tryActionWithResult_successMsgFn_결과가_null이면_successMessage_설정_안함() {
+        RedirectAttributesModelMap ra = ra();
+
+        AdminActionUtils.tryActionWithResult(
+                () -> 0, count -> null, e -> {}, "실패", ra);
+
+        assertThat(ra.getFlashAttributes()).doesNotContainKey("successMessage");
+    }
+
+    @Test
+    void tryActionWithResult_InvalidRequestException은_errorMessage에_메시지_노출() {
+        RedirectAttributesModelMap ra = ra();
+
+        AdminActionUtils.tryActionWithResult(
+                () -> { throw new InvalidRequestException("잘못된 입력입니다."); },
+                count -> "성공", e -> {}, "실패", ra);
+
+        assertThat(flash(ra, "errorMessage")).isEqualTo("잘못된 입력입니다.");
+        assertThat(ra.getFlashAttributes()).doesNotContainKey("successMessage");
+    }
+
+    @Test
+    void tryActionWithResult_OptimisticLockingFailureException은_고정_안내_메시지_노출() {
+        RedirectAttributesModelMap ra = ra();
+        AtomicReference<Exception> captured = new AtomicReference<>();
+
+        AdminActionUtils.tryActionWithResult(
+                () -> { throw new OptimisticLockingFailureException("Row was updated by another transaction"); },
+                count -> "성공", captured::set, "실패", ra);
+
+        assertThat(captured.get()).isNull();
+        assertThat(flash(ra, "errorMessage")).isEqualTo("다른 관리자가 방금 먼저 수정했습니다. 새로고침 후 다시 시도해주세요.");
+    }
+
+    @Test
+    void tryActionWithResult_기타_Exception은_onError_호출하고_failMsg_설정() {
+        RedirectAttributesModelMap ra = ra();
+        AtomicReference<Exception> captured = new AtomicReference<>();
+        RuntimeException cause = new RuntimeException("DB 오류");
+
+        AdminActionUtils.tryActionWithResult(
+                () -> { throw cause; },
+                count -> "성공", captured::set, "처리 중 오류가 발생했습니다.", ra);
+
+        assertThat(captured.get()).isSameAs(cause);
+        assertThat(flash(ra, "errorMessage")).isEqualTo("처리 중 오류가 발생했습니다.");
+    }
+
     // ── tryRender ─────────────────────────────────────────────────────────────
 
     @Test
