@@ -42,13 +42,8 @@ public final class AdminActionUtils {
         try {
             action.run();
             if (successMsg != null) ra.addFlashAttribute("successMessage", successMsg);
-        } catch (InvalidRequestException | BadWordException | ResourceNotFoundException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (OptimisticLockingFailureException e) {
-            ra.addFlashAttribute("errorMessage", OPTIMISTIC_LOCK_MESSAGE);
         } catch (Exception e) {
-            onError.accept(e);
-            ra.addFlashAttribute("errorMessage", failMsg);
+            applyErrorMessage(e, onError, failMsg, ra);
         }
     }
 
@@ -67,11 +62,23 @@ public final class AdminActionUtils {
             T result = action.run();
             String successMsg = successMsgFn.apply(result);
             if (successMsg != null) ra.addFlashAttribute("successMessage", successMsg);
-        } catch (InvalidRequestException | BadWordException | ResourceNotFoundException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (OptimisticLockingFailureException e) {
-            ra.addFlashAttribute("errorMessage", OPTIMISTIC_LOCK_MESSAGE);
         } catch (Exception e) {
+            applyErrorMessage(e, onError, failMsg, ra);
+        }
+    }
+
+    /**
+     * tryAction/tryActionWithResult/tryRender가 공유하는 예외→errorMessage 분류 로직:
+     * - InvalidRequestException | BadWordException | ResourceNotFoundException: e.getMessage() 노출
+     * - OptimisticLockingFailureException(@Version 충돌): 고정 안내 메시지 노출 (raw 메시지 미노출)
+     * - 그 외 Exception: onError 콜백(log.error) 호출 후 failMsg 노출
+     */
+    private static void applyErrorMessage(Exception e, Consumer<Exception> onError, String failMsg, RedirectAttributes ra) {
+        if (e instanceof InvalidRequestException || e instanceof BadWordException || e instanceof ResourceNotFoundException) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } else if (e instanceof OptimisticLockingFailureException) {
+            ra.addFlashAttribute("errorMessage", OPTIMISTIC_LOCK_MESSAGE);
+        } else {
             onError.accept(e);
             ra.addFlashAttribute("errorMessage", failMsg);
         }
@@ -120,15 +127,8 @@ public final class AdminActionUtils {
         try {
             action.run();
             return viewName;
-        } catch (InvalidRequestException | BadWordException | ResourceNotFoundException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return fallbackRedirect;
-        } catch (OptimisticLockingFailureException e) {
-            ra.addFlashAttribute("errorMessage", OPTIMISTIC_LOCK_MESSAGE);
-            return fallbackRedirect;
         } catch (Exception e) {
-            onError.accept(e);
-            ra.addFlashAttribute("errorMessage", failMsg);
+            applyErrorMessage(e, onError, failMsg, ra);
             return fallbackRedirect;
         }
     }
