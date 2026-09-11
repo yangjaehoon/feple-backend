@@ -17,12 +17,17 @@ public final class CsvExporter {
 
     private CsvExporter() {}
 
+    // 스프레드시트가 수식으로 해석할 수 있는 선행 문자(OWASP CSV Injection 기준: =, +, -, @,
+    // 탭(0x09), 캐리지리턴(0x0D)). 값이 이 중 하나로 시작하면 작은따옴표를 앞에 붙여 무력화한다 —
+    // Excel/Sheets/LibreOffice 모두 CSV 임포트 시 선행 작은따옴표를 그대로 보존하며 수식으로
+    // 평가하지 않는다(반면 탭 등 공백류 접두는 뷰어에 따라 트리밍돼 우회될 수 있어 신뢰할 수 없다).
+    private static final String FORMULA_TRIGGER_CHARS = "=+-@\t\r";
+
     public static String cell(Object value) {
         if (value == null) return "";
         String text = value.toString();
-        // =, +, @, - 로 시작하는 값은 스프레드시트 수식으로 해석될 수 있으므로 탭 문자를 앞에 붙여 차단
-        if (!text.isEmpty() && "=+-@".indexOf(text.charAt(0)) >= 0) {
-            text = "\t" + text;
+        if (!text.isEmpty() && FORMULA_TRIGGER_CHARS.indexOf(text.charAt(0)) >= 0) {
+            text = "'" + text;
         }
         if (text.contains(",") || text.contains("\"") || text.contains("\n") || text.contains("\r") || text.contains("\t")) {
             return "\"" + text.replace("\"", "\"\"") + "\"";

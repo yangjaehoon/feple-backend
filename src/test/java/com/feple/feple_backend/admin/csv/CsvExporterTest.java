@@ -23,12 +23,18 @@ class CsvExporterTest {
     }
 
     @Test
-    void cell_수식으로_해석될수있는_접두문자는_탭으로_차단후_따옴표로_감싼다() {
-        // 탭 접두 후 탭 문자 자체가 이스케이프 대상이라 다시 따옴표로 감싸진다
-        assertThat(CsvExporter.cell("=SUM(A1)")).isEqualTo("\"\t=SUM(A1)\"");
-        assertThat(CsvExporter.cell("+1234")).isEqualTo("\"\t+1234\"");
-        assertThat(CsvExporter.cell("-1234")).isEqualTo("\"\t-1234\"");
-        assertThat(CsvExporter.cell("@mention")).isEqualTo("\"\t@mention\"");
+    void cell_수식으로_해석될수있는_접두문자는_작은따옴표로_차단한다() {
+        assertThat(CsvExporter.cell("=SUM(A1)")).isEqualTo("'=SUM(A1)");
+        assertThat(CsvExporter.cell("+1234")).isEqualTo("'+1234");
+        assertThat(CsvExporter.cell("-1234")).isEqualTo("'-1234");
+        assertThat(CsvExporter.cell("@mention")).isEqualTo("'@mention");
+    }
+
+    @Test
+    void cell_탭이나_캐리지리턴으로_시작해도_작은따옴표로_차단후_특수문자때문에_따옴표로_감싼다() {
+        // 원본에 탭/캐리지리턴 문자가 여전히 남아있으므로 RFC4180 이스케이프 규칙에 따라 추가로 감싸진다
+        assertThat(CsvExporter.cell("\t=SUM(A1)")).isEqualTo("\"'\t=SUM(A1)\"");
+        assertThat(CsvExporter.cell("\r=SUM(A1)")).isEqualTo("\"'\r=SUM(A1)\"");
     }
 
     @Test
