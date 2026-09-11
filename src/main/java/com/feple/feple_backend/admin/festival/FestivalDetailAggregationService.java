@@ -55,11 +55,7 @@ public class FestivalDetailAggregationService {
         Map<String, String> stageByArtistName = buildStageByArtistName(entries);
         List<ArtistFestivalResponseDto> artists = artistFestivalService.getArtistFestivalsWithStageFallback(festivalId, datesByArtistName, stageByArtistName);
 
-        double avg = reviewService.getAverageRating(festivalId);
-        int cnt = reviewService.getRatingCount(festivalId);
-        FestivalRatingStatsDto ratingStats = cnt > 0
-                ? new FestivalRatingStatsDto(avg, cnt, reviewService.getRatingDistribution(festivalId))
-                : FestivalRatingStatsDto.EMPTY;
+        FestivalRatingStatsDto ratingStats = buildRatingStats(festivalId);
 
         return new FestivalDetailDto(
                 festival,
@@ -78,10 +74,13 @@ public class FestivalDetailAggregationService {
         );
     }
 
+    private static boolean hasArtistName(TimetableEntryResponseDto entry) {
+        return entry.getArtistName() != null && !entry.getArtistName().isBlank();
+    }
+
     private Map<String, String> buildStageByArtistName(List<TimetableEntryResponseDto> entries) {
         return entries.stream()
-                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
-                             && e.getStageName() != null && !e.getStageName().isBlank())
+                .filter(e -> hasArtistName(e) && e.getStageName() != null && !e.getStageName().isBlank())
                 .collect(Collectors.toMap(
                         TimetableEntryResponseDto::getArtistName,
                         TimetableEntryResponseDto::getStageName,
@@ -91,7 +90,7 @@ public class FestivalDetailAggregationService {
 
     private Map<String, List<String>> buildDatesByArtistName(List<TimetableEntryResponseDto> entries) {
         return entries.stream()
-                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank())
+                .filter(FestivalDetailAggregationService::hasArtistName)
                 .collect(Collectors.groupingBy(
                         TimetableEntryResponseDto::getArtistName,
                         Collectors.mapping(TimetableEntryResponseDto::getFestivalDate, Collectors.toList())
@@ -101,12 +100,19 @@ public class FestivalDetailAggregationService {
     private Map<String, List<TimetableEntryResponseDto>> buildTimetableByArtist(
             List<ArtistFestivalResponseDto> artists, List<TimetableEntryResponseDto> entries) {
         Map<String, List<TimetableEntryResponseDto>> result = entries.stream()
-                .filter(e -> e.getArtistName() != null && !e.getArtistName().isBlank()
-                             && !TimetableEntry.ANNOUNCEMENT_SENTINEL.equals(e.getStageName()))
+                .filter(e -> hasArtistName(e) && !TimetableEntry.ANNOUNCEMENT_SENTINEL.equals(e.getStageName()))
                 .collect(Collectors.groupingBy(TimetableEntryResponseDto::getArtistName,
                         HashMap::new, Collectors.toList()));
         artists.forEach(a -> result.putIfAbsent(a.getArtistName(), List.of()));
         return result;
+    }
+
+    private FestivalRatingStatsDto buildRatingStats(Long festivalId) {
+        double avg = reviewService.getAverageRating(festivalId);
+        int cnt = reviewService.getRatingCount(festivalId);
+        return cnt > 0
+                ? new FestivalRatingStatsDto(avg, cnt, reviewService.getRatingDistribution(festivalId))
+                : FestivalRatingStatsDto.EMPTY;
     }
 
     private List<ArtistFestivalResponseDto> sortArtistsByName(List<ArtistFestivalResponseDto> artists) {
