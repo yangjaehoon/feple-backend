@@ -200,6 +200,28 @@ class PointServiceTest {
     }
 
     @Test
+    void 관리자_포인트_지급_상한_초과시_예외() {
+        assertThatThrownBy(() -> pointService.grantByAdmin(1L, 10_001, "사유"))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(userRepository, never()).findById(any());
+    }
+
+    @Test
+    void 관리자_포인트_차감_하한_미만시_예외() {
+        assertThatThrownBy(() -> pointService.grantByAdmin(1L, -10_001, "사유"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 관리자_포인트_지급_INT_최솟값이어도_상한_검증을_우회하지_못한다() {
+        // Math.abs(Integer.MIN_VALUE)는 오버플로우로 다시 음수가 되므로, 절대값 비교로
+        // 구현했다면 이 값이 상한 검증을 통과해버리는 회귀가 생길 수 있다.
+        assertThatThrownBy(() -> pointService.grantByAdmin(1L, Integer.MIN_VALUE, "사유"))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(userRepository, never()).findById(any());
+    }
+
+    @Test
     void 관리자_포인트_지급_사유_공백이면_예외() {
         assertThatThrownBy(() -> pointService.grantByAdmin(1L, 100, "  "))
                 .isInstanceOf(IllegalArgumentException.class);
