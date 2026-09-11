@@ -56,13 +56,8 @@ public class GeminiOcrClient {
     }
 
     public OcrParseResult<TimetableOcrResultDto> parseTimetable(MultipartFile image, Integer year) throws IOException {
-        String base64 = Base64.getEncoder().encodeToString(image.getBytes());
-        String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
         String prompt = year != null ? buildPromptWithYear(year) : PROMPT;
-        Map<?, ?> response = callGeminiApi(buildGeminiRequest(prompt, base64, mimeType));
-        String content = geminiApiClient.extractText(response);
-        log.debug("Gemini OCR raw response: {}", content);
-        return new OcrParseResult<>(parseJsonArray(content), geminiApiClient.isTruncated(response));
+        return parse(image, prompt, new TypeReference<>() {}, "OCR");
     }
 
     private String buildPromptWithYear(int year) {
@@ -77,13 +72,21 @@ public class GeminiOcrClient {
     }
 
     public OcrParseResult<LineupRawResult> parseLineup(MultipartFile image, Integer year) throws IOException {
+        String prompt = year != null ? LINEUP_PROMPT + dateHintSuffix(year) : LINEUP_PROMPT;
+        return parse(image, prompt, new TypeReference<>() {}, "Lineup OCR");
+    }
+
+    // parseTimetable/parseLineup이 공유하는 "인코딩 → Gemini 호출 → 응답 추출 → JSON 파싱" 흐름.
+    // 프롬프트·결과 타입·로그 라벨만 다르므로 제네릭으로 묶었다.
+    private <T> OcrParseResult<T> parse(MultipartFile image, String prompt,
+                                        TypeReference<List<T>> typeRef, String logLabel) throws IOException {
         String base64 = Base64.getEncoder().encodeToString(image.getBytes());
         String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
-        String prompt = year != null ? LINEUP_PROMPT + dateHintSuffix(year) : LINEUP_PROMPT;
         Map<?, ?> response = callGeminiApi(buildGeminiRequest(prompt, base64, mimeType));
         String content = geminiApiClient.extractText(response);
-        log.debug("Gemini Lineup OCR raw response: {}", content);
-        return new OcrParseResult<>(parseLineupJsonArray(content), geminiApiClient.isTruncated(response));
+        log.debug("Gemini {} raw response: {}", logLabel, content);
+        List<T> entries = parseJsonArrayWithRecovery(content, typeRef, logLabel);
+        return new OcrParseResult<>(entries, geminiApiClient.isTruncated(response));
     }
 
     private Map<String, Object> buildGeminiRequest(String prompt, String base64, String mimeType) {
@@ -112,14 +115,6 @@ public class GeminiOcrClient {
         return geminiApiClient.call(new GeminiApiRequest(
                 GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiProperties.apiKey(), request,
                 Duration.ofSeconds(geminiProperties.ocrTimeoutSeconds())));
-    }
-
-    private List<LineupRawResult> parseLineupJsonArray(String content) {
-        return parseJsonArrayWithRecovery(content, new TypeReference<>() {}, "Lineup OCR");
-    }
-
-    private List<TimetableOcrResultDto> parseJsonArray(String content) {
-        return parseJsonArrayWithRecovery(content, new TypeReference<>() {}, "OCR");
     }
 
     // 응답이 maxOutputTokens에 걸려 중간에 잘린 경우 마지막 완성된 객체까지만 복구
