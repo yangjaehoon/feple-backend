@@ -70,4 +70,40 @@ class AdminLoginFailureHandlerTest {
 
         verify(session).setAttribute(AdminLoginFailureHandler.SESSION_KEY, "locked");
     }
+
+    @Test
+    void IP를_바꿔가며_시도해도_동일_아이디면_5회_초과시_locked_세션_설정() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            given(request.getRemoteAddr()).willReturn("10.0.0." + i);
+            handler.onAuthenticationFailure(request, response, new BadCredentialsException("잘못된 인증"));
+        }
+
+        given(request.getRemoteAddr()).willReturn("10.0.0.99");
+        handler.onAuthenticationFailure(request, response, new BadCredentialsException("잘못된 인증"));
+
+        verify(session).setAttribute(AdminLoginFailureHandler.SESSION_KEY, "locked");
+    }
+
+    @Test
+    void 아이디_미입력_요청은_서로_다른_IP끼리_잠금_버킷을_공유하지_않는다() throws Exception {
+        given(request.getParameter("username")).willReturn(null);
+        HttpSession otherSession = mock(HttpSession.class);
+        HttpServletRequest otherClient = mock(HttpServletRequest.class);
+        given(otherClient.getRemoteAddr()).willReturn("20.0.0.1");
+        given(otherClient.getSession()).willReturn(otherSession);
+        given(otherClient.getContextPath()).willReturn("");
+        given(otherClient.getParameter("username")).willReturn(null);
+
+        for (int i = 0; i < 5; i++) {
+            given(request.getRemoteAddr()).willReturn("30.0.0." + i);
+            handler.onAuthenticationFailure(request, response, new BadCredentialsException("잘못된 인증"));
+        }
+
+        HttpServletResponse otherResponse = mock(HttpServletResponse.class);
+        handler.onAuthenticationFailure(otherClient, otherResponse, new BadCredentialsException("잘못된 인증"));
+
+        // 아이디를 입력하지 않은 시도는 공유 키("")로 묶이지 않으므로, 무관한 다른 클라이언트는
+        // 자신의 IP 기준 한도가 남아있는 한 영향을 받지 않아야 한다.
+        verify(otherSession).setAttribute(AdminLoginFailureHandler.SESSION_KEY, "invalid");
+    }
 }
