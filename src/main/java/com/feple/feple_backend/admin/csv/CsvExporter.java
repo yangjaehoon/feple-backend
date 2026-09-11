@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,16 @@ public final class CsvExporter {
             sb.append(cell(values[i]));
         }
         return sb.append('\n').toString();
+    }
+
+    // 각 *CsvExporter가 반복하던 "헤더 + 항목마다 row 추가" 패턴을 한 곳에 모은다.
+    // header는 이미 개행으로 끝나야 한다(row()가 반환하는 형식과 동일).
+    public static <T> String buildCsv(String header, Iterable<T> items, Function<T, Object[]> toRow) {
+        StringBuilder sb = new StringBuilder(header);
+        for (T item : items) {
+            sb.append(row(toRow.apply(item)));
+        }
+        return sb.toString();
     }
 
     public static ResponseEntity<byte[]> csvResponse(String content, String filename) {

@@ -1,7 +1,6 @@
 package com.feple.feple_backend.admin.csv;
 
 import com.feple.feple_backend.global.ReportTypes;
-import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.service.PostReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,19 +16,11 @@ class PostReportCsvExporter implements ReportCsvExporter {
 
     @Override
     public String buildCsv() {
-        StringBuilder sb = new StringBuilder("ID,신고일시,게시글ID,게시글제목,게시자,신고자,사유,상세,상태\n");
-        for (PostReport r : postReportService.getAllPostReportsForExport()) {
-            sb.append(CsvExporter.row(
-                    r.getId(),
-                    CsvExporter.formatDt(r.getCreatedAt()),
-                    r.getPostId(),
-                    r.getPostTitle(),
-                    r.getAuthorNickname(),
-                    r.getReporterNickname(),
-                    r.getReason().name(),
-                    r.getDetail(),
-                    r.getStatus().name()));
-        }
-        return sb.toString();
+        return CsvExporter.buildCsv("ID,신고일시,게시글ID,게시글제목,게시자,신고자,사유,상세,상태\n",
+                postReportService.getAllPostReportsForExport(),
+                r -> new Object[]{
+                        r.getId(), CsvExporter.formatDt(r.getCreatedAt()), r.getPostId(), r.getPostTitle(),
+                        r.getAuthorNickname(), r.getReporterNickname(),
+                        r.getReason().name(), r.getDetail(), r.getStatus().name() });
     }
 }
