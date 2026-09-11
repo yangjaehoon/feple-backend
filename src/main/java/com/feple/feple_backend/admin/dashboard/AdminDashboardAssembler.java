@@ -14,7 +14,6 @@ import com.feple.feple_backend.post.service.PostAdminService;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +32,11 @@ public class AdminDashboardAssembler {
     private final Executor dashboardExecutor;
 
     public AdminDashboardDto assemble() {
-        AtomicBoolean hasLoadError = new AtomicBoolean(false);
-        AdminStatsSummary stats = buildStats(hasLoadError);
-        AdminPendingItemsSummary pending = buildPending(hasLoadError);
-        AdminContentSummary content = buildContent(hasLoadError);
-        return new AdminDashboardDto(stats, pending, content, hasLoadError.get());
+        SectionResult<AdminStatsSummary> stats = buildStats();
+        SectionResult<AdminPendingItemsSummary> pending = buildPending();
+        SectionResult<AdminContentSummary> content = buildContent();
+        boolean hasLoadError = stats.failed() || pending.failed() || content.failed();
+        return new AdminDashboardDto(stats.value(), pending.value(), content.value(), hasLoadError);
     }
 
     // 통계·처리대기·콘텐츠를 섹션별로 격리해 하나가 실패해도 나머지 섹션은 렌더링된다.
@@ -47,8 +46,20 @@ public class AdminDashboardAssembler {
         return CompletableFuture.supplyAsync(supplier, dashboardExecutor);
     }
 
-    private AdminStatsSummary buildStats(AtomicBoolean hasLoadError) {
+    private record SectionResult<T>(T value, boolean failed) {}
+
+    // 세 build* 메서드가 공유하는 "실패 시 로그 남기고 폴백으로 대체" 패턴.
+    private <T> SectionResult<T> loadSection(String errorLogMessage, Supplier<T> loader, T fallback) {
         try {
+            return new SectionResult<>(loader.get(), false);
+        } catch (Exception e) {
+            log.error(errorLogMessage, e);
+            return new SectionResult<>(fallback, true);
+        }
+    }
+
+    private SectionResult<AdminStatsSummary> buildStats() {
+        return loadSection("대시보드 통계 조회 실패", () -> {
             CompletableFuture<Long> totalFestivals = async(festivalService::getTotalCount);
             CompletableFuture<Long> totalArtists = async(artistService::getTotalCount);
             CompletableFuture<Long> totalPosts = async(postAdminService::getTotalPostCount);
@@ -58,15 +69,11 @@ public class AdminDashboardAssembler {
             return new AdminStatsSummary(
                     totalFestivals.join(), totalArtists.join(), totalPosts.join(),
                     totalUsers.join(), recentPosts.join());
-        } catch (Exception e) {
-            log.error("대시보드 통계 조회 실패", e);
-            hasLoadError.set(true);
-            return new AdminStatsSummary(0, 0, 0, 0, 0);
-        }
+        }, new AdminStatsSummary(0, 0, 0, 0, 0));
     }
 
-    private AdminPendingItemsSummary buildPending(AtomicBoolean hasLoadError) {
-        try {
+    private SectionResult<AdminPendingItemsSummary> buildPending() {
+        return loadSection("대시보드 처리대기 항목 조회 실패", () -> {
             CompletableFuture<List<CertificationSummaryDto>> certs = async(() -> adminPendingItemsService.getPendingCerts(AdminConstants.DASHBOARD_PREVIEW_SIZE));
             CompletableFuture<Long> certCount = async(adminPendingItemsService::getPendingCertCount);
             CompletableFuture<List<PostReportSummaryDto>> reports = async(() -> adminPendingItemsService.getPendingPostReports(AdminConstants.DASHBOARD_PREVIEW_SIZE));
@@ -81,15 +88,11 @@ public class AdminDashboardAssembler {
                     reports.join(), reportCount.join(),
                     songRequests.join(), songRequestCount.join(),
                     artistSuggestions.join(), artistSuggestionCount.join());
-        } catch (Exception e) {
-            log.error("대시보드 처리대기 항목 조회 실패", e);
-            hasLoadError.set(true);
-            return new AdminPendingItemsSummary(List.of(), 0, List.of(), 0, List.of(), 0, List.of(), 0);
-        }
+        }, new AdminPendingItemsSummary(List.of(), 0, List.of(), 0, List.of(), 0, List.of(), 0));
     }
 
-    private AdminContentSummary buildContent(AtomicBoolean hasLoadError) {
-        try {
+    private SectionResult<AdminContentSummary> buildContent() {
+        return loadSection("대시보드 콘텐츠 조회 실패", () -> {
             CompletableFuture<List<PostResponseDto>> hotPosts = async(() -> postAdminService.getAdminHotPosts(AdminConstants.DASHBOARD_PREVIEW_SIZE));
             CompletableFuture<List<ArtistResponseDto>> topArtists = async(() -> artistService.getTopArtists(AdminConstants.DASHBOARD_PREVIEW_SIZE));
             CompletableFuture<List<UserSummaryDto>> recentUsers = async(adminMetricsService::getRecentUsers);
@@ -97,10 +100,6 @@ public class AdminDashboardAssembler {
 
             return new AdminContentSummary(
                     hotPosts.join(), topArtists.join(), recentUsers.join(), dailyStats.join());
-        } catch (Exception e) {
-            log.error("대시보드 콘텐츠 조회 실패", e);
-            hasLoadError.set(true);
-            return new AdminContentSummary(List.of(), List.of(), List.of(), List.of());
-        }
+        }, new AdminContentSummary(List.of(), List.of(), List.of(), List.of()));
     }
 }
