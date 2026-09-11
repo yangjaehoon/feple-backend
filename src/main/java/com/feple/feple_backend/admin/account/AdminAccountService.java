@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -165,10 +166,13 @@ public class AdminAccountService {
             throw new InvalidRequestException("비밀번호는 영문자, 숫자, 특수문자를 각각 1자 이상 포함해야 합니다.");
     }
 
-    // IOException을 RuntimeException으로 감싸 서비스 시그니처에서 체크드 예외를 제거한다.
-    private String uploadProfileIfPresent(org.springframework.web.multipart.MultipartFile profileImage,
-                                          String username) {
+    private String uploadProfileIfPresent(MultipartFile profileImage, String username) {
         if (profileImage == null || profileImage.isEmpty()) return null;
+        return uploadProfile(profileImage, username);
+    }
+
+    // IOException을 RuntimeException으로 감싸 서비스 시그니처에서 체크드 예외를 제거한다.
+    private String uploadProfile(MultipartFile profileImage, String username) {
         try {
             return fileStorageService.storeAdminProfile(profileImage, username);
         } catch (IOException e) {
@@ -197,12 +201,7 @@ public class AdminAccountService {
             fileStorageService.deleteFileAfterCommit(oldImageUrl);
         } else if (req.profileImage() != null && !req.profileImage().isEmpty()) {
             String oldImageUrl = account.getProfileImageUrl();
-            String newImageUrl;
-            try {
-                newImageUrl = fileStorageService.storeAdminProfile(req.profileImage(), account.getUsername());
-            } catch (IOException e) {
-                throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
-            }
+            String newImageUrl = uploadProfile(req.profileImage(), account.getUsername());
             // DB 저장 실패로 트랜잭션이 롤백되면 이미 올라간 S3 파일이 orphan으로 남지 않도록 정리
             fileStorageService.deleteFileOnRollback(newImageUrl);
             account.updateProfileImage(newImageUrl);
