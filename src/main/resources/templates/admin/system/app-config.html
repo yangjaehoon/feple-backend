@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('앱 설정')}"></head>
+<body>
+<div th:insert="~{admin/fragments :: navbar('app-config')}"></div>
+<div class="main-content">
+    <div th:replace="~{admin/fragments :: pageHeader('앱 설정', '앱 설정')}"></div>
+    <div class="content-area">
+
+        <div th:insert="~{admin/fragments :: alerts}"></div>
+        <div th:replace="~{admin/fragments :: formErrors}"></div>
+
+        <div class="card card-form">
+            <div class="card-header">
+                <div class="card-title">강제 업데이트 · 점검 · 공지</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/app-config}" th:object="${config}" method="post">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>최소 지원 버전 <span class="required-star">*</span></label>
+                            <input type="text" th:field="*{minSupportedVersion}"
+                                   placeholder="1.0.0" maxlength="20" required/>
+                            <span class="field-hint">
+                                이 버전 미만 앱은 실행 시 강제 업데이트 안내를 받고 진행할 수 없습니다.
+                                숫자.숫자.숫자 형식.
+                            </span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>최신 버전 <span class="required-star">*</span></label>
+                            <input type="text" th:field="*{latestVersion}"
+                                   placeholder="1.0.1" maxlength="20" required/>
+                            <span class="field-hint">
+                                스토어에 올라간 최신 버전. 이 버전 미만이면 닫을 수 있는 권장 업데이트 안내가 뜹니다.
+                            </span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-check-label">
+                                <input type="checkbox" th:field="*{maintenance}" class="cb-input"/>
+                                점검 모드
+                            </label>
+                            <span class="field-hint">
+                                체크하면 모든 사용자에게 점검 안내 화면만 노출됩니다. 신중히 사용하세요.
+                            </span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>점검 안내 문구</label>
+                            <textarea th:field="*{maintenanceMessage}" rows="3"
+                                      placeholder="서비스 점검 중입니다. 잠시 후 다시 이용해 주세요."></textarea>
+                            <span class="field-hint">비워 두면 앱 기본 문구가 표시됩니다.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>홈 공지 배너 문구</label>
+                            <textarea th:field="*{noticeMessage}" rows="3"
+                                      placeholder="예: 3/15 02:00~04:00 서버 점검이 예정되어 있습니다."></textarea>
+                            <span class="field-hint">비워 두면 홈 상단 배너가 표시되지 않습니다.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>기능 스위치 (JSON)</label>
+                            <textarea th:field="*{featureFlags}" rows="6"
+                                      placeholder='{"chatEnabled": true}'></textarea>
+                            <span class="field-hint">
+                                문제가 생긴 기능을 재배포 없이 끄기 위한 스위치입니다.
+                                {"키": true/false} 형태의 JSON. 비워 두면 {} 로 저장됩니다.
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">저장하기</button>
+                        <a th:href="@{/admin/app-config}" class="btn btn-secondary">취소</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>AdminUtils.initDirtyGuard();</script>
+</body>
+</html>
