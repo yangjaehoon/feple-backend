@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.testsupport.TestImageBytes;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ class TimetableOcrAdminControllerTest {
     @Test
     void OCR_파싱_API키_미설정_503_반환() throws Exception {
         MockMultipartFile image = new MockMultipartFile("image", "test.jpg",
-                MediaType.IMAGE_JPEG_VALUE, new byte[]{1, 2, 3});
+                MediaType.IMAGE_JPEG_VALUE, TestImageBytes.validPng());
         given(ocrService.isConfigured()).willReturn(false);
 
         mockMvc.perform(multipart("/admin/crawl/ocr").file(image))
@@ -68,7 +69,7 @@ class TimetableOcrAdminControllerTest {
     @Test
     void OCR_파싱_성공_결과_반환() throws Exception {
         MockMultipartFile image = new MockMultipartFile("image", "test.jpg",
-                MediaType.IMAGE_JPEG_VALUE, new byte[]{1, 2, 3});
+                MediaType.IMAGE_JPEG_VALUE, TestImageBytes.validPng());
         given(ocrService.isConfigured()).willReturn(true);
         given(ocrService.parseTimetable(any(), any())).willReturn(new OcrParseResult<>(List.of(), false));
 
