@@ -38,9 +38,9 @@ public class ArtistLineupOcrAdminController {
     public ResponseEntity<?> parseLineupOcr(@RequestParam("image") MultipartFile image,
                                              @RequestParam(value = "year", required = false) Integer year) {
         if (image.isEmpty()) return AdminErrorResponses.badRequest("이미지를 업로드해주세요.");
-        if (AdminErrorResponses.isNotImage(image)) return AdminErrorResponses.badRequest("이미지 파일만 업로드할 수 있습니다.");
-        if (!ocrService.isConfigured()) return AdminErrorResponses.geminiNotConfigured();
         try {
+            if (AdminErrorResponses.isNotImage(image)) return AdminErrorResponses.badRequest("이미지 파일만 업로드할 수 있습니다.");
+            if (!ocrService.isConfigured()) return AdminErrorResponses.geminiNotConfigured();
             OcrParseResult<ArtistLineupOcrResult> results = ocrService.parseArtistLineup(image, year);
             return ResponseEntity.ok(results);
         } catch (Exception e) {
