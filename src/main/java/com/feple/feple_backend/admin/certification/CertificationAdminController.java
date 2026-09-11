@@ -99,7 +99,7 @@ public class CertificationAdminController {
                 "승인 처리 중 오류가 발생했습니다.",
                 ra);
         if (nextCertId != null) return triageRedirect(nextCertId, filter);
-        return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+        return listRedirect(filter);
     }
 
     @PostMapping("/{id}/reject")
@@ -120,7 +120,7 @@ public class CertificationAdminController {
                 "거절 처리 중 오류가 발생했습니다.",
                 ra);
         if (nextCertId != null) return triageRedirect(nextCertId, filter);
-        return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+        return listRedirect(filter);
     }
 
     @PostMapping("/bulk-approve")
@@ -128,8 +128,7 @@ public class CertificationAdminController {
                               @ModelAttribute CertificationFilter filter,
                               Authentication auth,
                               RedirectAttributes ra) {
-        String invalidSelection = AdminActionUtils.requireValidSelection(
-                ids, AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword()), ra);
+        String invalidSelection = AdminActionUtils.requireValidSelection(ids, listRedirect(filter), ra);
         if (invalidSelection != null) return invalidSelection;
         AdminActionUtils.tryAction(
                 () -> {
@@ -141,7 +140,7 @@ public class CertificationAdminController {
                 e -> log.error("인증 일괄 승인 실패 ids={}", ids, e),
                 "일괄 승인 처리 중 오류가 발생했습니다.",
                 ra);
-        return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
+        return listRedirect(filter);
     }
 
     @PostMapping("/bulk-reject")
@@ -150,8 +149,7 @@ public class CertificationAdminController {
                              @ModelAttribute CertificationFilter filter,
                              Authentication auth,
                              RedirectAttributes ra) {
-        String invalidSelection = AdminActionUtils.requireValidSelection(
-                ids, AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword()), ra);
+        String invalidSelection = AdminActionUtils.requireValidSelection(ids, listRedirect(filter), ra);
         if (invalidSelection != null) return invalidSelection;
         AdminActionUtils.tryAction(
                 () -> {
@@ -164,6 +162,10 @@ public class CertificationAdminController {
                 e -> log.error("인증 일괄 거절 실패 ids={}", ids, e),
                 "일괄 거절 처리 중 오류가 발생했습니다.",
                 ra);
+        return listRedirect(filter);
+    }
+
+    private String listRedirect(CertificationFilter filter) {
         return AdminActionUtils.listRedirect("/admin/certifications", filter.status(), filter.page(), filter.keyword());
     }
 
