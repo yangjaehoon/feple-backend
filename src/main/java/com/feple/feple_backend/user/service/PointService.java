@@ -43,6 +43,7 @@ public class PointService {
     private static final int POINT_POST_DELETED_BY_ADMIN = -5;
     private static final int POINT_CERT_APPROVED = 10;
     private static final int MAX_ADMIN_REASON_LENGTH = 100;
+    private static final int MAX_ADMIN_GRANT_AMOUNT = 10_000;
 
     private final UserRepository userRepository;
     private final UserPointLogRepository pointLogRepository;
@@ -112,6 +113,11 @@ public class PointService {
     public void grantByAdmin(Long userId, int amount, String reason) {
         if (amount == 0) {
             throw new InvalidRequestException("지급할 포인트는 0이 될 수 없습니다.");
+        }
+        // amount가 Integer.MIN_VALUE면 Math.abs()가 오버플로우로 다시 음수를 반환해 검증을
+        // 우회할 수 있으므로, 절대값을 구하지 않고 상/하한을 각각 직접 비교한다.
+        if (amount > MAX_ADMIN_GRANT_AMOUNT || amount < -MAX_ADMIN_GRANT_AMOUNT) {
+            throw new InvalidRequestException("1회 지급액은 ±" + MAX_ADMIN_GRANT_AMOUNT + "P를 초과할 수 없습니다.");
         }
         if (reason == null || reason.isBlank()) {
             throw new InvalidRequestException("지급 사유를 입력해주세요.");
