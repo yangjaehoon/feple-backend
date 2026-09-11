@@ -16,7 +16,7 @@ public class AdminWriteOperationRateLimitInterceptor implements HandlerIntercept
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (!"POST".equalsIgnoreCase(request.getMethod())) {
+        if (!HttpWriteMethods.isWriteMethod(request.getMethod())) {
             return true;
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
