@@ -95,6 +95,17 @@ class AppConfigServiceImplTest {
     }
 
     @Test
+    void 저장된_featureFlags_값이_null이면_빈_맵으로_대체한다() {
+        given(appConfigRepository.findById(AppConfig.SINGLETON_ID))
+                .willReturn(Optional.of(config("1.0.0", "1.0.0", false, null, null,
+                        "{\"chatEnabled\":null}")));
+
+        AppConfigResponseDto result = service.getAppConfig();
+
+        assertThat(result.features()).isEmpty();
+    }
+
+    @Test
     void 빈_문구는_null로_응답한다() {
         given(appConfigRepository.findById(AppConfig.SINGLETON_ID))
                 .willReturn(Optional.of(config("1.0.0", "1.0.0", false, "   ", "", "{}")));
@@ -130,6 +141,14 @@ class AppConfigServiceImplTest {
     @Test
     void updateConfig는_잘못된_featureFlags_JSON이면_저장하지_않고_예외를_던진다() {
         assertThatThrownBy(() -> service.updateConfig(form("1.0.0", "1.0.0", "oops")))
+                .isInstanceOf(InvalidRequestException.class);
+
+        then(appConfigRepository).should(never()).findById(any());
+    }
+
+    @Test
+    void updateConfig는_featureFlags_값이_null이면_저장하지_않고_예외를_던진다() {
+        assertThatThrownBy(() -> service.updateConfig(form("1.0.0", "1.0.0", "{\"chatEnabled\": null}")))
                 .isInstanceOf(InvalidRequestException.class);
 
         then(appConfigRepository).should(never()).findById(any());

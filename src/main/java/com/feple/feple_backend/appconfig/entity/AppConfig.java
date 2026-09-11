@@ -80,13 +80,12 @@ public class AppConfig {
                 .build();
     }
 
-    public void update(String minSupportedVersion, String latestVersion, boolean maintenance,
-                       String maintenanceMessage, String noticeMessage, String featureFlags) {
-        this.minSupportedVersion = minSupportedVersion;
-        this.latestVersion = latestVersion;
-        this.maintenance = maintenance;
-        this.maintenanceMessage = maintenanceMessage;
-        this.noticeMessage = noticeMessage;
-        this.featureFlags = featureFlags;
+    public void update(AppConfigUpdateFields fields) {
+        this.minSupportedVersion = fields.minSupportedVersion();
+        this.latestVersion = fields.latestVersion();
+        this.maintenance = fields.maintenance();
+        this.maintenanceMessage = fields.maintenanceMessage();
+        this.noticeMessage = fields.noticeMessage();
+        this.featureFlags = fields.featureFlags();
     }
 }

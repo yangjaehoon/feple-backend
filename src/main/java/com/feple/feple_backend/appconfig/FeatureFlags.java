@@ -30,7 +30,16 @@ public final class FeatureFlags {
         }
         try {
             Map<String, Boolean> parsed = objectMapper.readValue(json, TYPE);
-            return parsed != null ? parsed : Map.of();
+            if (parsed == null) {
+                return Map.of();
+            }
+            // Jackson은 {"chatEnabled": null}도 유효한 Map<String, Boolean>으로 파싱한다 —
+            // 이대로 저장하면 GET /app/config가 값이 null인 boolean을 내려줘 클라이언트의
+            // 논-nullable 파싱을 깨뜨리므로 검증 단계에서 거른다.
+            if (parsed.containsValue(null)) {
+                throw new InvalidRequestException(INVALID_MESSAGE);
+            }
+            return parsed;
         } catch (JsonProcessingException e) {
             throw new InvalidRequestException(INVALID_MESSAGE);
         }
