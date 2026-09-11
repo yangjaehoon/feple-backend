@@ -184,6 +184,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                // 앱 콜드스타트 시 강제 업데이트·점검 여부를 판단하는 설정 조회 — 로그인 전에 호출된다
+                .requestMatchers(HttpMethod.GET, "/app/config").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                 .requestMatchers("/favicon.ico", "/error").permitAll()
                 // /posts/my/** 전체 및 presigned URL은 인증 필수

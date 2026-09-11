@@ -148,6 +148,11 @@
 
         <div class="sb-section-label">시스템</div>
         <a sec:authorize="hasRole('SUPER_ADMIN')"
+           th:href="@{/admin/app-config}" class="sb-link"
+           th:classappend="${active == 'app-config'} ? ' active'">
+            <span class="sb-icon">⚙️</span> 앱 설정
+        </a>
+        <a sec:authorize="hasRole('SUPER_ADMIN')"
            th:href="@{/admin/push}" class="sb-link"
            th:classappend="${active == 'push'} ? ' active'">
             <span class="sb-icon">📣</span> 푸시 발송

@@ -74,4 +74,11 @@ class GuestApiAccessSecurityTest {
         mockMvc.perform(get("/notifications/unread-count"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @DisplayName("게스트: 앱 설정 조회는 로그인 전 콜드스타트 경로라 인증 없이 접근 가능")
+    void 게스트_앱설정_접근가능() throws Exception {
+        mockMvc.perform(get("/app/config"))
+                .andExpect(status().isOk());
+    }
 }

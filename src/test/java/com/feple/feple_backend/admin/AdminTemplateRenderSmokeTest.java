@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.feple.feple_backend.appconfig.dto.AppConfigFormDto;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
 import com.feple.feple_backend.notice.dto.NoticeRequestDto;
@@ -117,7 +118,8 @@ class AdminTemplateRenderSmokeTest {
     private static final Set<String> FORM_VIEWS = Set.of(
             "admin/notice/create", "admin/notice/edit",
             "admin/artist/create", "admin/artist/edit",
-            "admin/festival/create", "admin/festival/edit");
+            "admin/festival/create", "admin/festival/edit",
+            "admin/system/app-config");
 
     private static SpringTemplateEngine engine;
     private static JakartaServletWebApplication webApp;
@@ -260,11 +262,14 @@ class AdminTemplateRenderSmokeTest {
     /** th:field 뷰: 폼 DTO + BindingResult + Spring/Thymeleaf RequestContext 를 채운다. */
     private static void addFormScaffolding(Map<String, Object> m, String view,
             MockHttpServletRequest req, MockHttpServletResponse res) {
-        String name = view.split("/")[1];
+        // 대부분의 폼 뷰는 th:object 이름이 경로 두 번째 세그먼트와 같지만(admin/notice/... → notice),
+        // admin/system/app-config 는 th:object="${config}" 라 뷰 경로로 유추할 수 없어 명시한다.
+        String name = view.equals("admin/system/app-config") ? "config" : view.split("/")[1];
         Object formBean = switch (name) {
             case "notice" -> new NoticeRequestDto();
             case "festival" -> new FestivalRequestDto();
             case "artist" -> new ArtistRequestDto();
+            case "config" -> new AppConfigFormDto();
             default -> throw new IllegalStateException("no form bean for " + view);
         };
         m.put(name, formBean);
