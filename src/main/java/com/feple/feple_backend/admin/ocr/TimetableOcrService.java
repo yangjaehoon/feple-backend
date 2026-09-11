@@ -33,19 +33,34 @@ public class TimetableOcrService {
     }
 
     public TimetableOcrApplyResultDto applyEntries(TimetableOcrApplyRequestDto request) {
-        List<TimetableOcrFailure> failures = new ArrayList<>();
-
         // 엔트리마다 festival을 재조회하지 않도록 한 번만 조회해 재사용한다(60~100개 엔트리 포스터
         // 적용 시 N+1 방지). festivalId는 관리자가 선택한 단일 값으로 요청 전체에서 동일하다.
         Festival festival = timetableService.getFestivalOrThrow(request.festivalId());
-        List<TimetableOcrResultDto> entries = request.entries();
 
-        // 형식 검증을 먼저 걸러내고, 통과한 항목만 모아 한 번에 배치 생성한다(항목마다 스테이지 조회·
-        // 라인업 역동기화 쿼리를 반복하던 것을 TimetableService.createEntriesBatch로 일괄 처리).
-        // validIndices는 원래 인덱스를 그대로 보존해, 값이 같은 두 항목을 indexOf로 혼동하지 않게 한다.
+        ValidationSplit split = partitionByValidity(request.entries());
+        List<TimetableService.BatchCreateResult> results =
+                timetableService.createEntriesBatch(festival, split.requests());
+        BatchOutcome outcome = collectBatchOutcome(results, split.validEntries(), split.validIndices());
+
+        List<TimetableOcrFailure> failures = new ArrayList<>(split.failures());
+        failures.addAll(outcome.failures());
+        return new TimetableOcrApplyResultDto(outcome.savedCount(), failures.size(), failures);
+    }
+
+    private record ValidationSplit(
+            List<TimetableOcrResultDto> validEntries,
+            List<Integer> validIndices,
+            List<TimetableEntryRequestDto> requests,
+            List<TimetableOcrFailure> failures) {}
+
+    // 형식 검증을 먼저 걸러내고, 통과한 항목만 모아 한 번에 배치 생성한다(항목마다 스테이지 조회·
+    // 라인업 역동기화 쿼리를 반복하던 것을 TimetableService.createEntriesBatch로 일괄 처리).
+    // validIndices는 원래 인덱스를 그대로 보존해, 값이 같은 두 항목을 indexOf로 혼동하지 않게 한다.
+    private ValidationSplit partitionByValidity(List<TimetableOcrResultDto> entries) {
         List<TimetableOcrResultDto> validEntries = new ArrayList<>();
         List<Integer> validIndices = new ArrayList<>();
         List<TimetableEntryRequestDto> requests = new ArrayList<>();
+        List<TimetableOcrFailure> failures = new ArrayList<>();
         for (int i = 0; i < entries.size(); i++) {
             TimetableOcrResultDto entry = entries.get(i);
             Optional<String> error = validateEntry(entry);
@@ -57,8 +72,14 @@ public class TimetableOcrService {
             validIndices.add(i);
             requests.add(toTimetableRequest(entry));
         }
+        return new ValidationSplit(validEntries, validIndices, requests, failures);
+    }
 
-        List<TimetableService.BatchCreateResult> results = timetableService.createEntriesBatch(festival, requests);
+    private record BatchOutcome(int savedCount, List<TimetableOcrFailure> failures) {}
+
+    private BatchOutcome collectBatchOutcome(List<TimetableService.BatchCreateResult> results,
+                                             List<TimetableOcrResultDto> validEntries, List<Integer> validIndices) {
+        List<TimetableOcrFailure> failures = new ArrayList<>();
         int savedCount = 0;
         for (int i = 0; i < results.size(); i++) {
             TimetableService.BatchCreateResult result = results.get(i);
@@ -73,7 +94,7 @@ public class TimetableOcrService {
                     : "처리 중 오류 발생";
             failures.add(toFailure(validEntries.get(i), reason, validIndices.get(i)));
         }
-        return new TimetableOcrApplyResultDto(savedCount, failures.size(), failures);
+        return new BatchOutcome(savedCount, failures);
     }
 
     private Optional<String> validateEntry(TimetableOcrResultDto entry) {
