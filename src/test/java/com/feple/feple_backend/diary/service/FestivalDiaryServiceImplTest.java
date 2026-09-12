@@ -150,8 +150,7 @@ class FestivalDiaryServiceImplTest {
     @Test
     void 비공개_일기는_타인이_조회하면_예외() {
         FestivalDiary diary = mock(FestivalDiary.class);
-        given(diary.getUserId()).willReturn(USER_ID);
-        given(diary.isPublic()).willReturn(false);
+        given(diary.isViewableBy(OTHER_USER_ID)).willReturn(false);
         given(diaryRepository.findById(DIARY_ID)).willReturn(Optional.of(diary));
 
         assertThatThrownBy(() -> diaryService.getDiary(OTHER_USER_ID, DIARY_ID))
@@ -162,8 +161,8 @@ class FestivalDiaryServiceImplTest {
     @Test
     void 공개_일기는_타인도_조회가능() {
         FestivalDiary diary = mock(FestivalDiary.class);
-        given(diary.getUserId()).willReturn(USER_ID);
-        given(diary.isPublic()).willReturn(true);
+        given(diary.isViewableBy(OTHER_USER_ID)).willReturn(true);
+        given(diary.isOwnedBy(OTHER_USER_ID)).willReturn(false);
         given(diary.getUserNickname()).willReturn("작성자닉네임");
         given(diaryRepository.findById(DIARY_ID)).willReturn(Optional.of(diary));
         given(photoRepository.findByDiaryIdOrderBySortOrder(DIARY_ID)).willReturn(List.of());
@@ -177,8 +176,8 @@ class FestivalDiaryServiceImplTest {
     @Test
     void 본인_일기_조회시_작성자닉네임_null() {
         FestivalDiary diary = mock(FestivalDiary.class);
-        given(diary.getUserId()).willReturn(USER_ID);
-        given(diary.isPublic()).willReturn(false);
+        given(diary.isViewableBy(USER_ID)).willReturn(true);
+        given(diary.isOwnedBy(USER_ID)).willReturn(true);
         given(diaryRepository.findById(DIARY_ID)).willReturn(Optional.of(diary));
         given(photoRepository.findByDiaryIdOrderBySortOrder(DIARY_ID)).willReturn(List.of());
 
