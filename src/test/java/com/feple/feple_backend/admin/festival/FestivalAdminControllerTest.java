@@ -406,6 +406,29 @@ class FestivalAdminControllerTest {
     }
 
     @Test
+    void 수정시_포스터가_없는_페스티벌도_유효성오류면_예외없이_편집폼_렌더링() throws Exception {
+        // getPosterUrl()이 null(포스터 미등록)이어도 "페스티벌을 찾지 못함"과 혼동해 목록으로
+        // 잘못 리다이렉트되거나 예외가 발생하면 안 된다.
+        FestivalResponseDto festival = mock(FestivalResponseDto.class);
+        given(festivalService.getFestival(1L)).willReturn(festival);
+        given(artistService.getAllArtistsSortedByName()).willReturn(List.of());
+
+        mockMvc.perform(post("/admin/festivals/1/edit")
+                        .param("title", "")
+                        .param("description", "설명")
+                        .param("location", "서울")
+                        .param("startDate", "2026-08-01")
+                        .param("endDate", "2026-08-02")
+                        .param("region", "SEOUL"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/festival/edit"))
+                .andExpect(model().attributeExists("errors"))
+                .andExpect(model().attribute("currentPosterUrl", (Object) null));
+
+        then(festivalService).should(never()).updateFestival(any(), any());
+    }
+
+    @Test
     void 수정시_종료일이_시작일보다_이전이면_편집폼_에러로_렌더링() throws Exception {
         FestivalResponseDto festival = mock(FestivalResponseDto.class);
         given(festival.getPosterUrl()).willReturn("poster.jpg");
