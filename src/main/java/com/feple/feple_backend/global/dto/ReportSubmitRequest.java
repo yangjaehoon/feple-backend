@@ -1,6 +1,6 @@
-package com.feple.feple_backend.post.dto;
+package com.feple.feple_backend.global.dto;
 
-import com.feple.feple_backend.post.entity.ReportReason;
+import com.feple.feple_backend.global.entity.ReportReason;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 

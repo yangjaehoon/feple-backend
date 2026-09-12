@@ -95,10 +95,10 @@ public class FestivalDiaryServiceImpl implements FestivalDiaryService {
     @Transactional(readOnly = true)
     public FestivalDiaryResponseDto getDiary(Long viewerId, Long diaryId) {
         FestivalDiary diary = EntityLoader.getOrThrow(diaryRepository::findById, diaryId, "일기");
-        boolean isOwner = diary.getUserId().equals(viewerId);
-        if (!diary.isPublic() && !isOwner) {
+        if (!diary.isViewableBy(viewerId)) {
             throw new AccessDeniedException("비공개 일기입니다.");
         }
+        boolean isOwner = diary.isOwnedBy(viewerId);
         List<String> photoKeys = photoRepository.findByDiaryIdOrderBySortOrder(diaryId).stream()
                 .map(FestivalDiaryPhoto::getPhotoKey)
                 .toList();

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhotoReport;
 import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
+import com.feple.feple_backend.global.entity.ReportReason;
 import com.feple.feple_backend.global.entity.ReportStatus;
-import com.feple.feple_backend.post.entity.ReportReason;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;

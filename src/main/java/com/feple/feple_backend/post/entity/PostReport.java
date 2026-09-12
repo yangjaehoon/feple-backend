@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.entity;
 
 import com.feple.feple_backend.global.entity.BaseTimeEntity;
+import com.feple.feple_backend.global.entity.ReportReason;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.entity.ResolvableReport;
 import com.feple.feple_backend.user.entity.User;

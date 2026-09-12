@@ -17,4 +17,13 @@ public enum BoardType {
             return Optional.empty();
         }
     }
+
+    /** 아티스트/페스티벌 게시판이 아닌 경우의 게시판 표시명 (Post.getBoardDisplayName 참고). */
+    public String displayName() {
+        return switch (this) {
+            case FREE -> "자유 게시판";
+            case MATE -> "동행 게시판";
+            default -> "게시판";
+        };
+    }
 }

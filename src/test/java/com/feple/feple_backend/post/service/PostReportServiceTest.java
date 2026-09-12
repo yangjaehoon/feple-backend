@@ -9,12 +9,12 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.global.dto.ReportSubmitRequest;
+import com.feple.feple_backend.global.entity.ReportReason;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostReport;
-import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.repository.PostReportRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;

@@ -8,7 +8,7 @@ import com.feple.feple_backend.artist.photo.service.ArtistPhotoReportService;
 import com.feple.feple_backend.file.ImageUploadPolicy;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.global.ValidationMessages;
-import com.feple.feple_backend.post.dto.ReportSubmitRequest;
+import com.feple.feple_backend.global.dto.ReportSubmitRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

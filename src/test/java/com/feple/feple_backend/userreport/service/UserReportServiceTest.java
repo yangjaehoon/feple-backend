@@ -7,10 +7,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.global.dto.ReportSubmitRequest;
+import com.feple.feple_backend.global.entity.ReportReason;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.post.dto.ReportSubmitRequest;
-import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.user.service.UserAdminService;

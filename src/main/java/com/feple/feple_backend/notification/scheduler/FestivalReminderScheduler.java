@@ -67,11 +67,18 @@ public class FestivalReminderScheduler {
         Map<Long, List<Long>> userIdsByArtistId =
                 allArtistIds.isEmpty() ? Map.of() : buildUserIdsByArtist(allArtistIds);
         Map<Long, List<Long>> likedUserIdsByFestivalId = buildLikedUserIdsByFestival(festivalIds);
+        ReminderLookups lookups = new ReminderLookups(artistIdsByFestivalId, userIdsByArtistId, likedUserIdsByFestivalId);
 
         for (Festival festival : festivals) {
-            dispatchReminder(festival, dDay, artistIdsByFestivalId, userIdsByArtistId, likedUserIdsByFestivalId);
+            dispatchReminder(festival, dDay, lookups);
         }
     }
+
+    // dispatchReminder에서 항상 함께 전달되는 조회 결과 3종을 하나로 묶는다.
+    private record ReminderLookups(
+            Map<Long, List<Long>> artistIdsByFestivalId,
+            Map<Long, List<Long>> userIdsByArtistId,
+            Map<Long, List<Long>> likedUserIdsByFestivalId) {}
 
     private Map<Long, List<Long>> buildArtistIdsByFestival(List<Long> festivalIds) {
         return artistFestivalRepository
@@ -98,14 +105,11 @@ public class FestivalReminderScheduler {
                         Collectors.mapping(row -> (Long) row[1], Collectors.toList())));
     }
 
-    private void dispatchReminder(Festival festival, int dDay,
-                                   Map<Long, List<Long>> artistIdsByFestivalId,
-                                   Map<Long, List<Long>> userIdsByArtistId,
-                                   Map<Long, List<Long>> likedUserIdsByFestivalId) {
-        List<Long> artistIds = artistIdsByFestivalId.getOrDefault(festival.getId(), List.of());
+    private void dispatchReminder(Festival festival, int dDay, ReminderLookups lookups) {
+        List<Long> artistIds = lookups.artistIdsByFestivalId().getOrDefault(festival.getId(), List.of());
         Stream<Long> followerUserIds = artistIds.stream()
-                .flatMap(artistId -> userIdsByArtistId.getOrDefault(artistId, List.of()).stream());
-        Stream<Long> likedUserIds = likedUserIdsByFestivalId.getOrDefault(festival.getId(), List.of()).stream();
+                .flatMap(artistId -> lookups.userIdsByArtistId().getOrDefault(artistId, List.of()).stream());
+        Stream<Long> likedUserIds = lookups.likedUserIdsByFestivalId().getOrDefault(festival.getId(), List.of()).stream();
 
         List<Long> userIds = Stream.concat(followerUserIds, likedUserIds).distinct().toList();
         if (userIds.isEmpty()) return;
