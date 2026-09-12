@@ -64,8 +64,7 @@ class KakaoAuthServiceTest {
     void 정상_카카오_사용자_정보로_회원가입_요청() {
         KakaoUserResponseDto response = dto(123L, "a@b.com", "홍길동", "http://img");
         given(kakaoApiClient.getMe("token")).willReturn(Mono.just(response));
-        given(nicknameGenerator.sanitize("홍길동", "Kakao123")).willReturn("홍길동");
-        given(nicknameGenerator.uniquify("홍길동")).willReturn("홍길동1");
+        given(nicknameGenerator.generateFrom("홍길동", "Kakao123")).willReturn("홍길동1");
         User expected = User.builder().id(1L).nickname("홍길동1").build();
         given(registrationService.registerOrFind(eq(AuthProvider.KAKAO), eq("123"), any(), any()))
                 .willReturn(expected);
@@ -106,23 +105,21 @@ class KakaoAuthServiceTest {
     void 닉네임이_없으면_KakaoUser로_대체() {
         KakaoUserResponseDto response = dto(456L, "a@b.com", "", null);
         given(kakaoApiClient.getMe("token")).willReturn(Mono.just(response));
-        given(nicknameGenerator.sanitize("KakaoUser", "Kakao456")).willReturn("KakaoUser");
-        given(nicknameGenerator.uniquify("KakaoUser")).willReturn("KakaoUser");
+        given(nicknameGenerator.generateFrom("KakaoUser", "Kakao456")).willReturn("KakaoUser");
         given(registrationService.registerOrFind(any(), any(), any(), any()))
                 .willReturn(User.builder().id(2L).build());
 
         kakaoAuthService.authenticate("token").block();
-        captureBuiltUser(); // nicknameSupplier를 실제로 호출해 지연 평가된 sanitize/uniquify를 트리거
+        captureBuiltUser(); // nicknameSupplier를 실제로 호출해 지연 평가된 generateFrom을 트리거
 
-        verify(nicknameGenerator).sanitize("KakaoUser", "Kakao456");
+        verify(nicknameGenerator).generateFrom("KakaoUser", "Kakao456");
     }
 
     @Test
     void 프로필_이미지가_없으면_null() {
         KakaoUserResponseDto response = dto(789L, "a@b.com", "닉네임", "");
         given(kakaoApiClient.getMe("token")).willReturn(Mono.just(response));
-        given(nicknameGenerator.sanitize(any(), any())).willReturn("닉네임");
-        given(nicknameGenerator.uniquify(any())).willReturn("닉네임");
+        given(nicknameGenerator.generateFrom(any(), any())).willReturn("닉네임");
         given(registrationService.registerOrFind(any(), any(), any(), any()))
                 .willReturn(User.builder().id(3L).build());
 

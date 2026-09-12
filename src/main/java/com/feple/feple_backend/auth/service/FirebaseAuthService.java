@@ -52,7 +52,7 @@ public class FirebaseAuthService implements OAuthLoginService {
         String fallback = "User" + uid.substring(0, Math.min(uid.length(), 8));
         String raw = (displayName != null && !displayName.isBlank()) ? displayName : fallback;
         return registrationService.registerOrFind(AuthProvider.FIREBASE, uid,
-                () -> nicknameGenerator.uniquify(nicknameGenerator.sanitize(raw, fallback)),
+                () -> nicknameGenerator.generateFrom(raw, fallback),
                 nickname -> User.builder()
                         .email(email)
                         .nickname(nickname)

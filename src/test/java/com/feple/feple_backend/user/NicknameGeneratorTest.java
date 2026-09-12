@@ -121,4 +121,16 @@ class NicknameGeneratorTest {
         assertThat(result).isEqualTo("abcde100");
         assertThat(result).hasSizeLessThanOrEqualTo(8);
     }
+
+    // ── generateFrom ─────────────────────────────────────────────────────
+
+    @Test
+    void generateFrom_정제후_유일성까지_보장된_닉네임_반환() {
+        given(userRepository.existsByNickname("홍길동")).willReturn(true);
+        given(userRepository.existsByNickname("홍길동2")).willReturn(false);
+
+        String result = generator.generateFrom("홍길동!!", "fallback");
+
+        assertThat(result).isEqualTo("홍길동2");
+    }
 }

@@ -35,6 +35,14 @@ public class NicknameGenerator {
     }
 
     /**
+     * OAuth 신규 가입 시의 닉네임 생성 전체 흐름: {@link #sanitize}로 정제한 뒤 {@link #uniquify}로
+     * 유일성까지 보장한다. KakaoAuthService/FirebaseAuthService가 각자 조합하지 않고 이 메서드로 통일한다.
+     */
+    public String generateFrom(String raw, String fallback) {
+        return uniquify(sanitize(raw, fallback));
+    }
+
+    /**
      * 이미 사용 중인 닉네임이면 숫자 suffix를 붙여 고유하게 만든다.
      */
     public String uniquify(String base) {
