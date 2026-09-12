@@ -5,6 +5,7 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.global.DuplicateInsertGuard;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
@@ -12,9 +13,9 @@ import com.feple.feple_backend.global.ReportPolicy;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
+import com.feple.feple_backend.global.dto.ReportSubmitRequest;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.service.PostService;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -55,16 +55,12 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
 
         // existsBy 체크 후 save() 사이의 TOCTOU 레이스(동시 중복 신고)는 유니크 제약(reporter_id, comment_id)이
         // 최종 방어선이다 — 위 existsBy와 동일한 메시지의 ConflictException으로 변환해준다.
-        try {
-            reportRepository.save(CommentReport.builder()
-                    .comment(comment)
-                    .reporter(reporter)
-                    .reason(command.reason())
-                    .detail(command.detail())
-                    .build());
-        } catch (DataIntegrityViolationException e) {
-            throw new ConflictException(ALREADY_REPORTED_MESSAGE);
-        }
+        DuplicateInsertGuard.save(() -> reportRepository.save(CommentReport.builder()
+                .comment(comment)
+                .reporter(reporter)
+                .reason(command.reason())
+                .detail(command.detail())
+                .build()), ALREADY_REPORTED_MESSAGE);
 
         autoBlindIfThresholdReached(comment);
     }

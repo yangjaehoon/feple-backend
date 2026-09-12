@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+import com.feple.feple_backend.global.entity.ReportReason;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.post.entity.PostReport;
-import com.feple.feple_backend.post.entity.ReportReason;
 import com.feple.feple_backend.post.service.PostReportService;
 import java.time.LocalDateTime;
 import java.util.List;

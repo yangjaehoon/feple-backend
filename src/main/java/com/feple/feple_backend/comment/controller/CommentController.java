@@ -7,7 +7,7 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.service.CommentReportService;
 import com.feple.feple_backend.comment.service.CommentService;
 import com.feple.feple_backend.global.ValidationMessages;
-import com.feple.feple_backend.post.dto.ReportSubmitRequest;
+import com.feple.feple_backend.global.dto.ReportSubmitRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

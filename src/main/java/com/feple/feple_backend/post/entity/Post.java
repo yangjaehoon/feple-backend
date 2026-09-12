@@ -157,9 +157,7 @@ public class Post {
     public String getBoardDisplayName() {
         if (artist != null) return artist.getName() + " 게시판";
         if (festival != null) return festival.getTitle() + " 게시판";
-        if (boardType == BoardType.FREE) return "자유 게시판";
-        if (boardType == BoardType.MATE) return "동행 게시판";
-        return "게시판";
+        return boardType.displayName();
     }
 
     public Long getUserId() {

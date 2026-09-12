@@ -91,21 +91,23 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
     @Override
     @Transactional
     public SongResponseDto saveSong(Long artistId, SaveSongDto dto) {
-        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
-        if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
-            throw new InvalidRequestException("이미 등록된 곡입니다.");
-        }
-        return SongResponseDto.from(songRepository.save(buildSong(artist, dto)));
+        return trySaveSong(artistId, dto)
+                .map(SongResponseDto::from)
+                .orElseThrow(() -> new InvalidRequestException("이미 등록된 곡입니다."));
     }
 
     @Override
     @Transactional
     public Optional<SongResponseDto> saveSongIfAbsent(Long artistId, SaveSongDto dto) {
+        return trySaveSong(artistId, dto).map(SongResponseDto::from);
+    }
+
+    private Optional<Song> trySaveSong(Long artistId, SaveSongDto dto) {
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
         if (songRepository.existsByYoutubeVideoIdAndArtistId(dto.getYoutubeVideoId(), artistId)) {
             return Optional.empty();
         }
-        return Optional.of(SongResponseDto.from(songRepository.save(buildSong(artist, dto))));
+        return Optional.of(songRepository.save(buildSong(artist, dto)));
     }
 
     private Song buildSong(Artist artist, SaveSongDto dto) {

@@ -95,17 +95,22 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
         Stream<Festival> stream = statuses.stream()
             .flatMap(status -> status.filter(all, today).stream());
 
-        String sort = criteria.sort();
-        if ("date_asc".equals(sort)) {
-            stream = stream.sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())));
-        } else if ("date_desc".equals(sort)) {
-            stream = stream.sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())));
-        }
-
-        return stream
+        return applyStartDateSort(stream, criteria.sort())
             .limit(PageSize.FESTIVALS)
             .map(this::toDto)
             .toList();
+    }
+
+    // getFestivalsPage의 resolveSort와 동일한 기준(date_asc/date_desc)이지만, 여기서는
+    // DB Sort가 아니라 이미 메모리에 올라온 스트림을 정렬해야 해서 Comparator로 표현한다.
+    private Stream<Festival> applyStartDateSort(Stream<Festival> stream, String sort) {
+        if ("date_asc".equals(sort)) {
+            return stream.sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.naturalOrder())));
+        }
+        if ("date_desc".equals(sort)) {
+            return stream.sorted(Comparator.comparing(Festival::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())));
+        }
+        return stream;
     }
 
     @Override

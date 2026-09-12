@@ -1,6 +1,6 @@
 package com.feple.feple_backend.post.controller;
 
-import com.feple.feple_backend.post.dto.ReportSubmitRequest;
+import com.feple.feple_backend.global.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.service.PostReportService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

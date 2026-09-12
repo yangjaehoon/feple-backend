@@ -1,6 +1,7 @@
 package com.feple.feple_backend.userblock.service;
 
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.DuplicateInsertGuard;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
@@ -11,13 +12,14 @@ import com.feple.feple_backend.userblock.entity.UserBlock;
 import com.feple.feple_backend.userblock.repository.UserBlockRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class UserBlockServiceImpl implements UserBlockService {
+
+    private static final String ALREADY_BLOCKED_MESSAGE = "이미 차단한 사용자입니다.";
 
     private final UserBlockRepository blockRepository;
     private final UserRepository userRepository;
@@ -30,16 +32,14 @@ public class UserBlockServiceImpl implements UserBlockService {
             throw new InvalidRequestException("자기 자신을 차단할 수 없습니다.");
         }
         if (blockRepository.existsByBlockerIdAndBlockedId(blockerId, targetId)) {
-            throw new ConflictException("이미 차단한 사용자입니다.");
+            throw new ConflictException(ALREADY_BLOCKED_MESSAGE);
         }
         User blocker = EntityLoader.getOrThrow(userRepository::findById, blockerId, "사용자");
         User blocked = EntityLoader.getOrThrow(userRepository::findById, targetId, "사용자");
-        try {
+        DuplicateInsertGuard.save(() -> {
             blockRepository.save(UserBlock.of(blocker, blocked));
             blockRepository.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("이미 차단한 사용자입니다.");
-        }
+        }, ALREADY_BLOCKED_MESSAGE);
     }
 
     // ArtistFollowServiceImpl.unfollow()와 동일하게, 대상 관계가 이미 없는 상태에서의 삭제 요청은

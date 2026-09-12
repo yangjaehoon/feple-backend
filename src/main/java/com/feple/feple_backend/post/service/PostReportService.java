@@ -1,6 +1,7 @@
 package com.feple.feple_backend.post.service;
 
 import com.feple.feple_backend.admin.service.ReportAdminService;
+import com.feple.feple_backend.global.DuplicateInsertGuard;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.QueryResultMapper;
@@ -8,9 +9,9 @@ import com.feple.feple_backend.global.ReportPolicy;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
+import com.feple.feple_backend.global.dto.ReportSubmitRequest;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
-import com.feple.feple_backend.post.dto.ReportSubmitRequest;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostReport;
 import com.feple.feple_backend.post.repository.PostReportRepository;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -32,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PostReportService implements ReportAdminService<PostReport> {
+
+    private static final String ALREADY_REPORTED_MESSAGE = "이미 신고한 게시글입니다.";
 
     private final PostReportRepository reportRepository;
     private final PostRepository postRepository;
@@ -44,23 +46,19 @@ public class PostReportService implements ReportAdminService<PostReport> {
     @EvictAdminReportCaches
     public void submitReport(Long postId, Long reporterId, ReportSubmitRequest command) {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
-            throw new ConflictException("이미 신고한 게시글입니다.");
+            throw new ConflictException(ALREADY_REPORTED_MESSAGE);
         }
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         User reporter = EntityLoader.getOrThrow(userRepository::findById, reporterId, "사용자");
 
         // existsBy 체크 후 save() 사이의 TOCTOU 레이스(동시 중복 신고)는 유니크 제약(reporter_id, post_id)이
         // 최종 방어선이다 — 위 existsBy와 동일한 메시지의 ConflictException으로 변환해준다.
-        try {
-            reportRepository.save(PostReport.builder()
-                    .post(post)
-                    .reporter(reporter)
-                    .reason(command.reason())
-                    .detail(command.detail())
-                    .build());
-        } catch (DataIntegrityViolationException e) {
-            throw new ConflictException("이미 신고한 게시글입니다.");
-        }
+        DuplicateInsertGuard.save(() -> reportRepository.save(PostReport.builder()
+                .post(post)
+                .reporter(reporter)
+                .reason(command.reason())
+                .detail(command.detail())
+                .build()), ALREADY_REPORTED_MESSAGE);
 
         autoBlindIfThresholdReached(post);
     }

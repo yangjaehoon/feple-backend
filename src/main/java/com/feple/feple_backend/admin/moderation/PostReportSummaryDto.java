@@ -1,6 +1,6 @@
 package com.feple.feple_backend.admin.moderation;
 
-import com.feple.feple_backend.post.entity.ReportReason;
+import com.feple.feple_backend.global.entity.ReportReason;
 import java.time.LocalDateTime;
 
 public record PostReportSummaryDto(

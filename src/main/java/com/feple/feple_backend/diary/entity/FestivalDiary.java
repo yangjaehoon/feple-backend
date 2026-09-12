@@ -63,6 +63,10 @@ public class FestivalDiary extends BaseTimeEntity {
 
     public boolean isPublic() { return visibility == DiaryVisibility.PUBLIC; }
 
+    public boolean isOwnedBy(Long viewerId) { return getUserId().equals(viewerId); }
+
+    public boolean isViewableBy(Long viewerId) { return isPublic() || isOwnedBy(viewerId); }
+
     public static FestivalDiary create(User user, Festival festival, String content, DiaryVisibility visibility) {
         FestivalDiary diary = new FestivalDiary();
         diary.user = user;
