@@ -93,8 +93,7 @@ class FirebaseAuthServiceTest {
         given(firebaseToken.getUid()).willReturn("uid-45678900");
         given(firebaseToken.getEmail()).willReturn("a@b.com");
         given(firebaseToken.getName()).willReturn(null);
-        given(nicknameGenerator.sanitize("Useruid-4567", "Useruid-4567")).willReturn("Useruid-4567");
-        given(nicknameGenerator.uniquify("Useruid-4567")).willReturn("Useruid-4567");
+        given(nicknameGenerator.generateFrom("Useruid-4567", "Useruid-4567")).willReturn("Useruid-4567");
         given(registrationService.registerOrFind(any(), any(), any(), any())).willReturn(user());
 
         firebaseAuthService.authenticate("id-token").block();
@@ -103,6 +102,6 @@ class FirebaseAuthServiceTest {
         ArgumentCaptor<Supplier<String>> nicknameSupplierCaptor = ArgumentCaptor.forClass(Supplier.class);
         verify(registrationService).registerOrFind(any(), any(), nicknameSupplierCaptor.capture(), any());
         assertThat(nicknameSupplierCaptor.getValue().get()).isEqualTo("Useruid-4567");
-        verify(nicknameGenerator).sanitize("Useruid-4567", "Useruid-4567");
+        verify(nicknameGenerator).generateFrom("Useruid-4567", "Useruid-4567");
     }
 }

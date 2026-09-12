@@ -45,7 +45,7 @@ public class KakaoAuthService implements OAuthLoginService {
                 .orElse(null);
 
         return registrationService.registerOrFind(AuthProvider.KAKAO, oauthId,
-                () -> nicknameGenerator.uniquify(nicknameGenerator.sanitize(rawNickname, fallback)),
+                () -> nicknameGenerator.generateFrom(rawNickname, fallback),
                 nickname -> User.builder()
                         .oauthId(oauthId)
                         .email(email)
