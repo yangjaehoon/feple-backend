@@ -185,13 +185,9 @@ public class FestivalAdminController {
                                  RedirectAttributes ra
     ) {
         applyPosterFile(posterFile, dto, bindingResult);
-        String currentPosterUrl;
-        try {
-            currentPosterUrl = festivalService.getFestival(id).getPosterUrl();
-        } catch (ResourceNotFoundException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/admin/festivals";
-        }
+        PosterLookup posterLookup = loadCurrentPosterUrl(id, ra);
+        if (!posterLookup.found()) return "redirect:/admin/festivals";
+        String currentPosterUrl = posterLookup.posterUrl();
         if (bindingResult.hasErrors()) {
             return renderEditFormWithError(bindingResult, id, currentPosterUrl, model);
         }
@@ -208,6 +204,19 @@ public class FestivalAdminController {
             return "redirect:/admin/festivals/" + id;
         }
         return "redirect:/admin/festivals/" + id;
+    }
+
+    // posterUrl 자체는 포스터가 없으면 null일 수 있어(정상 상태), Optional<String>으로는
+    // "페스티벌을 찾지 못함"과 "포스터가 없음"을 구분할 수 없다 — found 플래그로 명시적으로 구분한다.
+    private record PosterLookup(String posterUrl, boolean found) {}
+
+    private PosterLookup loadCurrentPosterUrl(Long id, RedirectAttributes ra) {
+        try {
+            return new PosterLookup(festivalService.getFestival(id).getPosterUrl(), true);
+        } catch (ResourceNotFoundException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return new PosterLookup(null, false);
+        }
     }
 
     private String renderEditFormWithError(BindingResult bindingResult, Long id, String currentPosterUrl, Model model) {
