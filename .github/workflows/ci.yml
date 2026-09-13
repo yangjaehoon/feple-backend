@@ -82,7 +82,7 @@ jobs:
       # (GitHub Secret) 없이도 동작한다 — Dependabot PR은 저장소 시크릿에 접근할 수 없어
       # 이 부분이 깨지면 dependabot PR의 CI가 전부 실패한다.
       - name: Test with Gradle
-        run: ./gradlew cleanTest test
+        run: ./gradlew cleanTest test jacocoTestCoverageVerification
 
       - name: Run SpotBugs
         run: ./gradlew spotbugsMain spotbugsTest
