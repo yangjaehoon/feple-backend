@@ -13,12 +13,14 @@ import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostScrap;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.repository.PostScrapRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -160,6 +162,42 @@ class PostScrapServiceTest {
         List<PostResponseDto> result = postScrapService.getMyScraps(1L);
 
         assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
+    void 스크랩한_타인의_익명글은_userId_숨김() {
+        User me = user(1L);
+        User other = user(2L);
+        Post anon = Post.builder()
+                .id(10L).title("익명 게시글").content("내용")
+                .user(other).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        PostScrap scrap = new PostScrap(me, anon);
+        given(postScrapRepository.findByUserIdOrderByIdDesc(eq(1L), any(Pageable.class))).willReturn(List.of(scrap));
+
+        List<PostResponseDto> result = postScrapService.getMyScraps(1L);
+
+        assertThat(result.get(0).getUserId()).isNull();
+        assertThat(result.get(0).getNickname()).isEqualTo("익명");
+    }
+
+    @Test
+    void 스크랩한_본인의_익명글은_userId_노출() {
+        User me = user(1L);
+        Post anon = Post.builder()
+                .id(10L).title("익명 게시글").content("내용")
+                .user(me).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        PostScrap scrap = new PostScrap(me, anon);
+        given(postScrapRepository.findByUserIdOrderByIdDesc(eq(1L), any(Pageable.class))).willReturn(List.of(scrap));
+
+        List<PostResponseDto> result = postScrapService.getMyScraps(1L);
+
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
     }
 
     @Test

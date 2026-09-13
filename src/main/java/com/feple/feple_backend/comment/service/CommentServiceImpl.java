@@ -72,7 +72,8 @@ public class CommentServiceImpl implements CommentService {
 
         boolean certified = post.getFestivalId() != null &&
                 certificationService.existsApprovedCertification(post.getFestivalId(), userId);
-        CommentResponseDto response = CommentResponseDto.from(saved, new CommentResponseDto.ViewerContext(certified, false), fileStorageService);
+        CommentResponseDto response = CommentResponseDto.from(
+                saved, new CommentResponseDto.ViewerContext(certified, false, userId), fileStorageService);
 
         postService.incrementCommentCount(post.getId());
 
@@ -122,26 +123,30 @@ public class CommentServiceImpl implements CommentService {
         if ("best".equals(sort)) {
             comments = CommentSorter.sortByBest(comments);
         }
-        List<Long> commentIds = comments.stream().map(Comment::getId).toList();
-        List<Long> authorIds = comments.stream().map(Comment::getUserId).distinct().toList();
+        // 차단 필터링은 익명화(CommentResponseDto.from)로 userId가 가려지기 전, 엔티티의 실제
+        // 작성자 id로 먼저 해야 한다 — 그래야 차단한 사람의 익명 댓글도 여전히 걸러진다.
+        List<Comment> visible = blockedContentFilter.excludeBlocked(comments, userId, Comment::getUserId);
+
+        List<Long> commentIds = visible.stream().map(Comment::getId).toList();
+        List<Long> authorIds = visible.stream().map(Comment::getUserId).distinct().toList();
 
         Set<Long> certifiedUserIds = getCertifiedUserIds(post, authorIds);
         Set<Long> likedCommentIds = getLikedCommentIds(userId, commentIds);
 
-        List<CommentResponseDto> result = comments.stream()
+        return visible.stream()
                 .map(c -> CommentResponseDto.from(
                         c,
-                        new CommentResponseDto.ViewerContext(certifiedUserIds.contains(c.getUserId()), likedCommentIds.contains(c.getId())),
+                        new CommentResponseDto.ViewerContext(
+                                certifiedUserIds.contains(c.getUserId()), likedCommentIds.contains(c.getId()), userId),
                         fileStorageService))
                 .toList();
-        return blockedContentFilter.excludeBlocked(result, userId, CommentResponseDto::getUserId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getAdminCommentsByPost(Long postId, int limit) {
         return commentRepository.findAdminByPostIdOrderByCreatedAtAsc(postId, limit).stream()
-                .map(c -> CommentResponseDto.from(c, new CommentResponseDto.ViewerContext(false, false), fileStorageService))
+                .map(c -> CommentResponseDto.fromForAdmin(c, new CommentResponseDto.ViewerContext(false, false, null), fileStorageService))
                 .toList();
     }
 

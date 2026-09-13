@@ -6,6 +6,7 @@ import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
+import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import java.util.List;
@@ -32,28 +33,27 @@ public class PostSearchServiceImpl implements PostSearchService {
         // 개념이 없는 단발성 목록이라, 차단 필터링으로 결과가 줄어들어도 재요청으로 보충할
         // 방법이 없다.
         PageRequest pageable = PageRequest.of(0, PageSize.SEARCH_POOL);
-        List<PostResponseDto> results = FullTextSearchValidator.isTooShortForFullText(kw)
+        List<Post> results = FullTextSearchValidator.isTooShortForFullText(kw)
                 ? searchByTitleLike(type, kw, pageable)
                 : searchByTitleFullText(type, kw, pageable);
-        List<PostResponseDto> filtered = blockedContentFilter.excludeBlocked(results, viewerId, PostResponseDto::getUserId);
-        return filtered.stream().limit(PageSize.SEARCH).toList();
+        List<Post> visible = blockedContentFilter.excludeBlocked(results, viewerId, Post::getUserId);
+        return visible.stream()
+                .map(post -> PostResponseDto.from(post, false, viewerId, fileStorageService))
+                .limit(PageSize.SEARCH)
+                .toList();
     }
 
-    private List<PostResponseDto> searchByTitleFullText(Optional<BoardType> type, String kw, PageRequest pageable) {
+    private List<Post> searchByTitleFullText(Optional<BoardType> type, String kw, PageRequest pageable) {
         return type.isPresent()
-                ? postRepository.searchPostsByBoardTypeAndTitleFullText(type.get(), kw, pageable)
-                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList()
-                : postRepository.searchPostsByTitleFullText(kw, pageable)
-                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
+                ? postRepository.searchPostsByBoardTypeAndTitleFullText(type.get(), kw, pageable).getContent()
+                : postRepository.searchPostsByTitleFullText(kw, pageable).getContent();
     }
 
-    private List<PostResponseDto> searchByTitleLike(Optional<BoardType> type, String kw, PageRequest pageable) {
+    private List<Post> searchByTitleLike(Optional<BoardType> type, String kw, PageRequest pageable) {
         String escaped = JpqlLikeEscaper.escape(kw);
         return type.isPresent()
-                ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(type.get(), escaped, pageable)
-                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList()
-                : postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(escaped, pageable)
-                        .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
+                ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(type.get(), escaped, pageable).getContent()
+                : postRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(escaped, pageable).getContent();
     }
 
     private Optional<BoardType> parseBoardType(String filter) {

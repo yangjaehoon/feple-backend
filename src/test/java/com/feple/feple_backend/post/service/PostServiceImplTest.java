@@ -163,7 +163,7 @@ class PostServiceImplTest {
         Post post = freePost(10L, author);
         given(postRepository.findWithAssociationsById(10L)).willReturn(Optional.of(post));
 
-        PostResponseDto result = postService.getPost(10L);
+        PostResponseDto result = postService.getPost(10L, null);
 
         assertThat(result.getId()).isEqualTo(10L);
         assertThat(result.getNickname()).isEqualTo("user1");
@@ -176,7 +176,7 @@ class PostServiceImplTest {
         given(postRepository.findWithAssociationsById(10L)).willReturn(Optional.of(post));
         given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
 
-        PostResponseDto result = postService.getPost(10L);
+        PostResponseDto result = postService.getPost(10L, null);
 
         assertThat(result.getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
     }
@@ -193,17 +193,36 @@ class PostServiceImplTest {
                 .build();
         given(postRepository.findWithAssociationsById(10L)).willReturn(Optional.of(post));
 
-        PostResponseDto result = postService.getPost(10L);
+        PostResponseDto result = postService.getPost(10L, 99L);
 
         assertThat(result.getNickname()).isEqualTo("익명");
         assertThat(result.getProfileImageUrl()).isNull();
+        assertThat(result.getUserId()).isNull();
+    }
+
+    @Test
+    void 익명_게시글도_본인이_조회하면_userId_노출() {
+        User author = user(1L);
+        Post post = Post.builder()
+                .id(10L).title("익명 게시글").content("내용")
+                .user(author).boardType(BoardType.FREE)
+                .anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.findWithAssociationsById(10L)).willReturn(Optional.of(post));
+
+        PostResponseDto result = postService.getPost(10L, 1L);
+
+        assertThat(result.getNickname()).isEqualTo("익명");
+        assertThat(result.getUserId()).isEqualTo(1L);
     }
 
     @Test
     void 존재하지_않는_게시글_조회시_예외() {
         given(postRepository.findWithAssociationsById(99L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> postService.getPost(99L))
+        assertThatThrownBy(() -> postService.getPost(99L, null))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessageContaining("99");
     }
@@ -312,11 +331,11 @@ class PostServiceImplTest {
 
     @Test
     void 핫_게시글_최대_4개_반환() {
-        List<PostResponseDto> popularPosts = List.of(
-                PostResponseDto.builder().id(1L).userId(1L).build(),
-                PostResponseDto.builder().id(2L).userId(1L).build(),
-                PostResponseDto.builder().id(3L).userId(1L).build(),
-                PostResponseDto.builder().id(4L).userId(1L).build());
+        List<PopularPostCache.Entry> popularPosts = List.of(
+                popularPostEntry(1L, 1L),
+                popularPostEntry(2L, 1L),
+                popularPostEntry(3L, 1L),
+                popularPostEntry(4L, 1L));
         given(popularPostCache.getPopularPosts()).willReturn(popularPosts);
 
         List<PostResponseDto> result = postService.getPopularPosts(null);
@@ -333,13 +352,13 @@ class PostServiceImplTest {
 
     @Test
     void 핫_게시글_캐시풀이_4개보다_많아도_4개로_자름() {
-        List<PostResponseDto> pool = List.of(
-                PostResponseDto.builder().id(1L).userId(1L).build(),
-                PostResponseDto.builder().id(2L).userId(1L).build(),
-                PostResponseDto.builder().id(3L).userId(1L).build(),
-                PostResponseDto.builder().id(4L).userId(1L).build(),
-                PostResponseDto.builder().id(5L).userId(1L).build(),
-                PostResponseDto.builder().id(6L).userId(1L).build());
+        List<PopularPostCache.Entry> pool = List.of(
+                popularPostEntry(1L, 1L),
+                popularPostEntry(2L, 1L),
+                popularPostEntry(3L, 1L),
+                popularPostEntry(4L, 1L),
+                popularPostEntry(5L, 1L),
+                popularPostEntry(6L, 1L));
         given(popularPostCache.getPopularPosts()).willReturn(pool);
 
         List<PostResponseDto> result = postService.getPopularPosts(null);
@@ -351,12 +370,12 @@ class PostServiceImplTest {
     void 핫_게시글_차단필터링_후에도_4개까지_채움() {
         // 캐시 풀에 차단 작성자의 글이 섞여 있어도, 풀을 넉넉히 가져왔기 때문에
         // 필터링 후에도 최종 4개를 채울 수 있어야 한다 (POPULAR_POSTS_POOL 존재 이유)
-        List<PostResponseDto> pool = List.of(
-                PostResponseDto.builder().id(1L).userId(99L).build(), // 차단 작성자
-                PostResponseDto.builder().id(2L).userId(1L).build(),
-                PostResponseDto.builder().id(3L).userId(1L).build(),
-                PostResponseDto.builder().id(4L).userId(1L).build(),
-                PostResponseDto.builder().id(5L).userId(1L).build());
+        List<PopularPostCache.Entry> pool = List.of(
+                popularPostEntry(1L, 99L), // 차단 작성자
+                popularPostEntry(2L, 1L),
+                popularPostEntry(3L, 1L),
+                popularPostEntry(4L, 1L),
+                popularPostEntry(5L, 1L));
         given(popularPostCache.getPopularPosts()).willReturn(pool);
         given(userBlockService.getBlockedIds(1L)).willReturn(List.of(99L));
 
@@ -364,6 +383,22 @@ class PostServiceImplTest {
 
         assertThat(result).hasSize(4);
         assertThat(result).extracting(PostResponseDto::getId).doesNotContain(1L);
+    }
+
+    @Test
+    void 인기_게시글_캐시에서도_본인의_익명글은_userId_노출() {
+        // 캐시에는 익명글이 userId=null로 저장되지만, 조회자가 그 글의 실제 작성자와 같으면 복원돼야 한다
+        PopularPostCache.Entry anonEntry = new PopularPostCache.Entry(
+                1L, PostResponseDto.builder().id(1L).userId(null).anonymous(true).build());
+        given(popularPostCache.getPopularPosts()).willReturn(List.of(anonEntry));
+
+        List<PostResponseDto> result = postService.getPopularPosts(1L);
+
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+    }
+
+    private static PopularPostCache.Entry popularPostEntry(Long postId, Long authorUserId) {
+        return new PopularPostCache.Entry(authorUserId, PostResponseDto.builder().id(postId).userId(authorUserId).build());
     }
 
     // ── getPostsByBoardTypeLatest ───────────────────────────────────────
@@ -429,6 +464,23 @@ class PostServiceImplTest {
         assertThat(result.hasNext()).isTrue();
         // content가 비어도 nextCursor는 raw 목록(필터링 전) 기준으로 계산되어야 다음 배치를 계속 조회할 수 있다
         assertThat(result.nextCursor()).isEqualTo(2L);
+    }
+
+    @Test
+    void 게시판_목록에서도_본인의_익명글은_userId_노출() {
+        User author = user(1L);
+        Post anon = Post.builder()
+                .id(1L).title("익명 게시글").content("내용")
+                .user(author).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(eq(BoardType.FREE), any(Pageable.class)))
+                .willReturn(List.of(anon));
+
+        CursorPage<PostResponseDto> result = postService.getPostsByBoardTypeLatest(BoardType.FREE, new CursorPageRequest(null, 2, 1L));
+
+        assertThat(result.content().get(0).getUserId()).isEqualTo(1L);
     }
 
     // ── getPostsByArtistIdPaged ────────────────────────────────────────

@@ -63,7 +63,7 @@ class PostControllerTest {
     @Test
     void 게시글_단건_조회() throws Exception {
         PostResponseDto dto = mock(PostResponseDto.class);
-        given(postService.getPost(1L)).willReturn(dto);
+        given(postService.getPost(eq(1L), isNull())).willReturn(dto);
 
         mockMvc.perform(get("/posts/1"))
                 .andExpect(status().isOk());

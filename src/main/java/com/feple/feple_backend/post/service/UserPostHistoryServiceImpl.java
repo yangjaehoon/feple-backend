@@ -30,7 +30,7 @@ public class UserPostHistoryServiceImpl implements UserPostHistoryService {
     public List<PostResponseDto> getMyPosts(Long userId) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         return postRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(0, PageSize.MY_ACTIVITIES))
-                .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
+                .stream().map(post -> PostResponseDto.from(post, false, userId, fileStorageService)).toList();
     }
 
     @Override
@@ -39,7 +39,7 @@ public class UserPostHistoryServiceImpl implements UserPostHistoryService {
         return CursorPageAssembler.assemble(cursor, size,
                 limit -> postRepository.findByUserOrderByIdDesc(user, limit),
                 limit -> postRepository.findByUserAndIdLessThanOrderByIdDesc(user, cursor, limit),
-                pageItems -> pageItems.stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList(),
+                pageItems -> pageItems.stream().map(post -> PostResponseDto.from(post, false, userId, fileStorageService)).toList(),
                 Post::getId);
     }
 
@@ -67,7 +67,7 @@ public class UserPostHistoryServiceImpl implements UserPostHistoryService {
     public List<PostResponseDto> getLikedPosts(Long userId) {
         return postLikeRepository.findPostsByUserId(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream()
-                .map(post -> PostResponseDto.from(post, fileStorageService))
+                .map(post -> PostResponseDto.from(post, false, userId, fileStorageService))
                 .toList();
     }
 

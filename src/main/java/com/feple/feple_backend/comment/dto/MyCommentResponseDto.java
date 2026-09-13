@@ -21,13 +21,16 @@ public class MyCommentResponseDto {
 
     public static MyCommentResponseDto from(Comment comment) {
         Post post = comment.getPost();
+        // 게시글이 익명 글이면 댓글을 단 사람의 "내 댓글" 목록에서도 작성자 실명을
+        // 노출하면 안 된다 — 익명 글에 댓글을 달았다는 이유만으로 작성자 신원을 알 수 있게 됨.
+        String postNickname = post.isAnonymous() ? "익명" : post.getAuthorNickname();
         return new MyCommentResponseDto(
                 comment.getId(),
                 comment.getContent(),
                 comment.getPostId(),
                 comment.getPostTitle(),
                 post.getContent(),
-                post.getAuthorNickname(),
+                postNickname,
                 post.getLikeCount(),
                 post.getBoardDisplayName(),
                 comment.getCreatedAt()

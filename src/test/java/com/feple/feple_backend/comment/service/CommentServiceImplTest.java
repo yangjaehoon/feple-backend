@@ -24,6 +24,7 @@ import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.exception.BadWordException;
+import com.feple.feple_backend.post.entity.BoardType;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.post.service.PostService;
@@ -529,6 +530,66 @@ class CommentServiceImplTest {
         assertThat(result.get(0).isCertified()).isFalse();
     }
 
+    @Test
+    void 관리자용_댓글_목록은_익명이어도_작성자_userId_노출() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment anon = Comment.builder()
+                .id(100L).content("익명 댓글").post(post).user(author).anonymous(true)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+
+        given(commentRepository.findAdminByPostIdOrderByCreatedAtAsc(10L, 50))
+                .willReturn(List.of(anon));
+
+        List<CommentResponseDto> result = commentService.getAdminCommentsByPost(10L, 50);
+
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+        assertThat(result.get(0).getNickname()).isEqualTo("익명");
+    }
+
+    @Test
+    void 익명_댓글은_타인이_조회하면_작성자_userId_숨김() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment anon = Comment.builder()
+                .id(100L).content("익명 댓글").post(post).user(author).anonymous(true)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(anon)));
+        given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(2L), any()))
+                .willReturn(List.of());
+
+        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, 2L, null);
+
+        assertThat(result.get(0).getUserId()).isNull();
+        assertThat(result.get(0).getNickname()).isEqualTo("익명");
+    }
+
+    @Test
+    void 익명_댓글도_본인이_조회하면_작성자_userId_노출() {
+        User author = user(1L);
+        Post post = freePost(10L, author);
+        Comment anon = Comment.builder()
+                .id(100L).content("익명 댓글").post(post).user(author).anonymous(true)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(anon)));
+        given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))
+                .willReturn(List.of());
+
+        List<CommentResponseDto> result = commentService.getCommentsByPost(10L, 1L, null);
+
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+        assertThat(result.get(0).getNickname()).isEqualTo("익명");
+    }
+
     // ── getMyComments ─────────────────────────────────────────────────
 
     @Test
@@ -545,6 +606,27 @@ class CommentServiceImplTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCommentId()).isEqualTo(100L);
+    }
+
+    @Test
+    void 내가_댓글단_게시글이_익명글이면_작성자_닉네임_대신_익명_반환() {
+        User author = user(1L);
+        User postAuthor = user(2L);
+        Post anonPost = Post.builder()
+                .id(10L).title("익명 게시글").content("내용")
+                .user(postAuthor).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        Comment c = comment(100L, anonPost, author);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(commentRepository.findByUserOrderByCreatedAtDesc(eq(author), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(c)));
+
+        List<MyCommentResponseDto> result = commentService.getMyComments(1L);
+
+        assertThat(result.get(0).getPostNickname()).isEqualTo("익명");
     }
 
     @Test
