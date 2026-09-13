@@ -18,6 +18,7 @@ import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +73,23 @@ class PostAdminServiceImplTest {
         PostResponseDto result = postAdminService.getPostForAdmin(10L);
 
         assertThat(result.getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
+    void 관리자_게시글_조회는_익명글이어도_작성자_userId_노출() {
+        User author = user(1L);
+        Post anon = Post.builder()
+                .id(10L).title("익명 게시글").content("내용")
+                .user(author).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.findById(10L)).willReturn(Optional.of(anon));
+
+        PostResponseDto result = postAdminService.getPostForAdmin(10L);
+
+        assertThat(result.getUserId()).isEqualTo(1L);
+        assertThat(result.getNickname()).isEqualTo("익명");
     }
 
     // ── bulkDeletePosts ──────────────────────────────────────────────

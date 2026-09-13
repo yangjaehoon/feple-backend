@@ -11,10 +11,13 @@ import static org.mockito.BDDMockito.given;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.PostResponseDto;
+import com.feple.feple_backend.post.entity.BoardType;
+import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -58,6 +61,25 @@ class UserPostHistoryServiceImplTest {
         List<PostResponseDto> result = service.getMyPosts(1L);
 
         assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+    }
+
+    @Test
+    void getMyPosts_익명으로_쓴_내_글도_userId_노출() {
+        User author = user(1L);
+        Post anon = Post.builder()
+                .id(10L).title("익명 게시글").content("내용")
+                .user(author).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(userRepository.findById(1L)).willReturn(Optional.of(author));
+        given(postRepository.findByUserOrderByCreatedAtDesc(eq(author), any()))
+                .willReturn(new PageImpl<>(List.of(anon)));
+
+        List<PostResponseDto> result = service.getMyPosts(1L);
+
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+        assertThat(result.get(0).getNickname()).isEqualTo("익명");
     }
 
     @Test

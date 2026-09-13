@@ -10,7 +10,6 @@ import static org.mockito.BDDMockito.then;
 
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.PageSize;
-import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import java.time.LocalDateTime;
@@ -36,7 +35,7 @@ class PopularPostCacheTest {
         given(postRepository.findPopularPosts(any(LocalDateTime.class), any()))
                 .willReturn(List.of(freePost(1L, author), freePost(2L, author)));
 
-        List<PostResponseDto> result = cache.getPopularPosts();
+        List<PopularPostCache.Entry> result = cache.getPopularPosts();
 
         assertThat(result).hasSize(2);
     }
@@ -48,9 +47,9 @@ class PopularPostCacheTest {
                 .willReturn(List.of(freePost(1L, author)));
         given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
 
-        List<PostResponseDto> result = cache.getPopularPosts();
+        List<PopularPostCache.Entry> result = cache.getPopularPosts();
 
-        assertThat(result.get(0).getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
+        assertThat(result.get(0).dto().getProfileImageUrl()).isEqualTo("https://cdn.example.com/resolved.jpg");
     }
 
     @Test

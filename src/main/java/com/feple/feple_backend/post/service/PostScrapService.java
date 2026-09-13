@@ -56,7 +56,7 @@ public class PostScrapService {
     public List<PostResponseDto> getMyScraps(Long userId) {
         return postScrapRepository.findByUserIdOrderByIdDesc(userId, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream()
-                .map(scrap -> PostResponseDto.from(scrap.getPost(), fileStorageService))
+                .map(scrap -> PostResponseDto.from(scrap.getPost(), false, userId, fileStorageService))
                 .toList();
     }
 }

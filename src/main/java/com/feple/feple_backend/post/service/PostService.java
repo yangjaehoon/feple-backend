@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface PostService {
     Long createPost(PostRequestDto dto, Long userId, BoardType boardType);
-    PostResponseDto getPost(Long postId);
+    PostResponseDto getPost(Long postId, Long viewerId);
     List<PostResponseDto> getPopularPosts(Long viewerId);
     CursorPage<PostResponseDto> getPostsByBoardTypeLatest(BoardType boardType, CursorPageRequest pageRequest);
     CursorPage<PostResponseDto> getPostsByBoardTypePopular(BoardType boardType, CursorPageRequest pageRequest);

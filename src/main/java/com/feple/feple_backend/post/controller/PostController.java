@@ -54,8 +54,9 @@ public class PostController {
     // ── 단건 조회 / 작성 / 수정 / 삭제 ──────────────────────────────────────
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId) {
-        return ResponseEntity.ok(postService.getPost(postId));
+    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId,
+                                                    @AuthenticationPrincipal Long viewerId) {
+        return ResponseEntity.ok(postService.getPost(postId, viewerId));
     }
 
     @PostMapping("/free")

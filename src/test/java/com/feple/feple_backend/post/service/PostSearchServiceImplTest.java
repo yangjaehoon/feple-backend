@@ -15,10 +15,12 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
+import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
 import com.feple.feple_backend.userblock.service.UserBlockService;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -34,7 +36,8 @@ import org.springframework.data.domain.Pageable;
 class PostSearchServiceImplTest {
 
     @Mock PostRepository postRepository;
-    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(mock(UserBlockService.class));
+    UserBlockService userBlockService = mock(UserBlockService.class);
+    @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(userBlockService);
 
     @Mock FileStorageService fileStorageService;
     @InjectMocks PostSearchServiceImpl postSearchService;
@@ -135,9 +138,62 @@ class PostSearchServiceImplTest {
     }
 
     @Test
+    void 검색결과의_익명글은_타인에게_userId_숨김() {
+        User author = user(1L);
+        Post anon = Post.builder()
+                .id(1L).title("익명 게시글").content("내용")
+                .user(author).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(anon)));
+
+        List<PostResponseDto> result = postSearchService.searchPosts("제목검색", null, 2L);
+
+        assertThat(result.get(0).getUserId()).isNull();
+        assertThat(result.get(0).getNickname()).isEqualTo("익명");
+    }
+
+    @Test
+    void 검색결과의_익명글도_본인이_조회하면_userId_노출() {
+        User author = user(1L);
+        Post anon = Post.builder()
+                .id(1L).title("익명 게시글").content("내용")
+                .user(author).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(anon)));
+
+        List<PostResponseDto> result = postSearchService.searchPosts("제목검색", null, 1L);
+
+        assertThat(result.get(0).getUserId()).isEqualTo(1L);
+    }
+
+    @Test
+    void 검색결과의_차단된_작성자_익명글도_필터링됨() {
+        User blockedAuthor = user(9L);
+        Post anon = Post.builder()
+                .id(1L).title("익명 게시글").content("내용")
+                .user(blockedAuthor).boardType(BoardType.FREE).anonymous(true)
+                .likeCount(0).scrapCount(0)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .build();
+        given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(anon)));
+        given(userBlockService.getBlockedIds(2L)).willReturn(List.of(9L));
+
+        List<PostResponseDto> result = postSearchService.searchPosts("제목검색", null, 2L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
     void 검색결과가_노출개수보다_많으면_잘라서_반환() {
         User author = user(1L);
-        List<com.feple.feple_backend.post.entity.Post> many = new ArrayList<>();
+        List<Post> many = new ArrayList<>();
         for (long i = 1; i <= PageSize.SEARCH_POOL; i++) many.add(freePost(i, author));
         given(postRepository.searchPostsByTitleFullText(anyString(), any(Pageable.class)))
                 .willReturn(new PageImpl<>(many));

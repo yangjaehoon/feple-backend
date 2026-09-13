@@ -55,7 +55,7 @@ public class PostAdminServiceImpl implements PostAdminService {
                         ? postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(boardType, kw, pageable)
                         : postRepository.findByBoardTypeOrderByCreatedAtDesc(boardType, pageable))
                 .orElseGet(() -> resolveRelationFilter(params, kw, pageable))
-                .map(post -> PostResponseDto.from(post, fileStorageService));
+                .map(post -> PostResponseDto.fromForAdmin(post, fileStorageService));
     }
 
     private Page<Post> resolveRelationFilter(PostAdminFilterDto params, String kw, PageRequest pageable) {
@@ -84,7 +84,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Cacheable(value = "adminDashboardStats", key = "'adminHotPosts_' + #limit")
     public List<PostResponseDto> getAdminHotPosts(int limit) {
         return postRepository.findPopularPosts(LocalDateTime.now().minusWeeks(1), PageRequest.of(0, limit))
-                .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
+                .stream().map(post -> PostResponseDto.fromForAdmin(post, fileStorageService)).toList();
     }
 
     @Override
@@ -120,7 +120,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Transactional(readOnly = true)
     public List<PostResponseDto> getDeletedPosts(int limit) {
         return postRepository.findSoftDeleted(limit).stream()
-                .map(post -> PostResponseDto.from(post, fileStorageService))
+                .map(post -> PostResponseDto.fromForAdmin(post, fileStorageService))
                 .toList();
     }
 
@@ -152,7 +152,7 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Transactional(readOnly = true)
     public List<PostResponseDto> getRecentPostsByUser(Long userId, int limit) {
         return postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(0, limit))
-                .stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
+                .stream().map(post -> PostResponseDto.fromForAdmin(post, fileStorageService)).toList();
     }
 
     @Override
@@ -166,14 +166,14 @@ public class PostAdminServiceImpl implements PostAdminService {
     @Override
     @Transactional(readOnly = true)
     public PostResponseDto getPostForAdmin(Long postId) {
-        return PostResponseDto.from(EntityLoader.getOrThrow(postRepository::findById, postId, "게시글"), fileStorageService);
+        return PostResponseDto.fromForAdmin(EntityLoader.getOrThrow(postRepository::findById, postId, "게시글"), fileStorageService);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getBlindedPosts(int limit) {
         return postRepository.findBlinded(limit).stream()
-                .map(post -> PostResponseDto.from(post, fileStorageService))
+                .map(post -> PostResponseDto.fromForAdmin(post, fileStorageService))
                 .toList();
     }
 }

@@ -67,16 +67,16 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostResponseDto getPost(Long postId) {
+    public PostResponseDto getPost(Long postId, Long viewerId) {
         Post post = EntityLoader.getOrThrow(postRepository::findWithAssociationsById, postId, "게시글");
-        return PostResponseDto.from(post, fileStorageService);
+        return PostResponseDto.from(post, false, viewerId, fileStorageService);
     }
 
     @Override
     public List<PostResponseDto> getPopularPosts(Long viewerId) {
-        List<PostResponseDto> pool = blockedContentFilter.excludeBlocked(
-                popularPostCache.getPopularPosts(), viewerId, PostResponseDto::getUserId);
-        return pool.stream().limit(PageSize.POPULAR_POSTS).toList();
+        List<PopularPostCache.Entry> pool = blockedContentFilter.excludeBlocked(
+                popularPostCache.getPopularPosts(), viewerId, PopularPostCache.Entry::authorUserId);
+        return pool.stream().map(entry -> entry.dtoFor(viewerId)).limit(PageSize.POPULAR_POSTS).toList();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByBoardTypeAndPinnedFalseOrderByIdDesc(boardType, limit),
                 limit -> postRepository.findByBoardTypeAndPinnedFalseAndIdLessThanOrderByIdDesc(boardType, cursor, limit),
                 () -> postRepository.findByBoardTypeAndPinnedTrueOrderByCreatedAtDesc(boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                this::toDtos);
+                posts -> toDtos(posts, pageRequest.viewerId()));
     }
 
     @Override
@@ -96,8 +96,8 @@ public class PostServiceImpl implements PostService {
         int page = CursorPage.toPage(cursor);
         Page<Post> result = postRepository.findByBoardTypeOrderByLikeCountDescCreatedAtDescIdDesc(
                 boardType, PageRequest.of(page, pageRequest.size()));
-        List<PostResponseDto> content = blockedContentFilter.excludeBlocked(
-                result.map(post -> PostResponseDto.from(post, fileStorageService)).toList(), pageRequest.viewerId(), PostResponseDto::getUserId);
+        List<Post> visiblePosts = blockedContentFilter.excludeBlocked(result.getContent(), pageRequest.viewerId(), Post::getUserId);
+        List<PostResponseDto> content = toDtos(visiblePosts, pageRequest.viewerId());
         return CursorPage.of(result, content, cursor);
     }
 
@@ -129,7 +129,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByArtistOrderByIdDesc(artist, limit),
                 limit -> postRepository.findByArtistAndIdLessThanOrderByIdDesc(artist, cursor, limit),
                 () -> postRepository.findByArtistAndPinnedTrueOrderByCreatedAtDesc(artist, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                this::toDtos);
+                posts -> toDtos(posts, pageRequest.viewerId()));
     }
 
     @Override
@@ -143,7 +143,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postTagRepository.findByTagAndPostIdLessThanOrderByPostIdDesc(normalized, cursor, limit).stream()
                         .map(PostTag::getPost).toList(),
                 List::of,
-                this::toDtos);
+                posts -> toDtos(posts, pageRequest.viewerId()));
     }
 
     @Override
@@ -162,7 +162,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findGeneralFestivalPostsOrderByIdDesc(festival, limit),
                 limit -> postRepository.findGeneralFestivalPostsAndIdLessThanOrderByIdDesc(festival, cursor, limit),
                 () -> postRepository.findGeneralFestivalPinnedPostsOrderByCreatedAtDesc(festival, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                posts -> toFestivalDtos(festivalId, posts));
+                posts -> toFestivalDtos(festivalId, posts, pageRequest.viewerId()));
     }
 
     @Override
@@ -181,7 +181,7 @@ public class PostServiceImpl implements PostService {
                 limit -> postRepository.findByFestivalAndBoardTypeOrderByIdDesc(festival, boardType, limit),
                 limit -> postRepository.findByFestivalAndBoardTypeAndIdLessThanOrderByIdDesc(festival, boardType, cursor, limit),
                 () -> postRepository.findByFestivalAndBoardTypeAndPinnedTrueOrderByCreatedAtDesc(festival, boardType, PageRequest.of(0, PageSize.PINNED_POSTS)),
-                posts -> toFestivalDtos(festivalId, posts));
+                posts -> toFestivalDtos(festivalId, posts, pageRequest.viewerId()));
     }
 
     @Override
@@ -196,8 +196,8 @@ public class PostServiceImpl implements PostService {
     public List<PostResponseDto> getPopularFestivalPosts(Long festivalId, Long viewerId) {
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
         List<Post> posts = postRepository.findByFestivalOrderByLikeCountDesc(festival, PageRequest.of(0, PageSize.POSTS)).getContent();
-        return blockedContentFilter.excludeBlocked(
-                toFestivalDtos(festivalId, posts), viewerId, PostResponseDto::getUserId);
+        List<Post> visiblePosts = blockedContentFilter.excludeBlocked(posts, viewerId, Post::getUserId);
+        return toFestivalDtos(festivalId, visiblePosts, viewerId);
     }
 
     @Override
@@ -239,22 +239,22 @@ public class PostServiceImpl implements PostService {
                     List<Post> combined = pageRequest.cursor() == null
                             ? Stream.concat(fetchPinned.get().stream(), pageItems.stream()).toList()
                             : pageItems;
-                    return blockedContentFilter.excludeBlocked(
-                            pageMapper.apply(combined), pageRequest.viewerId(), PostResponseDto::getUserId);
+                    List<Post> visible = blockedContentFilter.excludeBlocked(combined, pageRequest.viewerId(), Post::getUserId);
+                    return pageMapper.apply(visible);
                 },
                 Post::getId);
     }
 
-    private List<PostResponseDto> toDtos(List<Post> posts) {
-        return posts.stream().map(post -> PostResponseDto.from(post, fileStorageService)).toList();
+    private List<PostResponseDto> toDtos(List<Post> posts, Long viewerId) {
+        return posts.stream().map(post -> PostResponseDto.from(post, false, viewerId, fileStorageService)).toList();
     }
 
     // 페스티벌 게시글 목록: 인증 뱃지를 "이 목록에 등장하는 작성자"에 한해 한 번에 조회한다.
-    private List<PostResponseDto> toFestivalDtos(Long festivalId, List<Post> posts) {
+    private List<PostResponseDto> toFestivalDtos(Long festivalId, List<Post> posts, Long viewerId) {
         List<Long> authorIds = posts.stream().map(Post::getUserId).distinct().toList();
         Set<Long> certified = certificationService.findApprovedUserIdsByFestivalId(festivalId, authorIds);
         return posts.stream()
-                .map(post -> PostResponseDto.from(post, certified.contains(post.getUserId()), fileStorageService))
+                .map(post -> PostResponseDto.from(post, certified.contains(post.getUserId()), viewerId, fileStorageService))
                 .toList();
     }
 
