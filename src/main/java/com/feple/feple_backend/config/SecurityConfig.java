@@ -188,9 +188,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/app/config").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-nickname").permitAll()
                 .requestMatchers("/favicon.ico", "/error").permitAll()
-                // /posts/my/** 전체, 임시저장 조회, presigned URL은 인증 필수
-                // (/posts/draft는 아래 /posts/** permitAll보다 먼저 와야 함 — 순서 바뀌면 다시 공개됨)
-                .requestMatchers(HttpMethod.GET, "/posts/my/**", "/posts/draft").authenticated()
+                // /posts/my/** 전체, 임시저장 조회, 스크랩 목록 조회는 인증 필수
+                // (아래 /posts/** permitAll보다 먼저 와야 함 — 순서 바뀌면 다시 공개됨)
+                .requestMatchers(HttpMethod.GET, "/posts/my/**", "/posts/draft", "/posts/scrapped").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**", "/notices/**").permitAll()
                 // 비로그인 게스트도 접근하는 비계정 콘텐츠 (Apple 가이드라인 5.1.1(v)):
