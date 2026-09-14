@@ -88,4 +88,11 @@ class GuestApiAccessSecurityTest {
         mockMvc.perform(get("/posts/draft"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @DisplayName("게스트: 게시글 스크랩 목록 조회는 계정 전용이라 401")
+    void 게스트_스크랩목록조회_401() throws Exception {
+        mockMvc.perform(get("/posts/scrapped"))
+                .andExpect(status().isUnauthorized());
+    }
 }
