@@ -14,8 +14,6 @@ spring:
   sql:
     init:
       mode: never
-  config:
-    import: ""
   autoconfigure:
     exclude:
       - io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration
@@ -39,9 +37,9 @@ jwt:
   refresh-token-expiration-ms: 604800000
 
 app:
-  # application.yml의 spring.config.import는 위 spring.config.import: "" 로 막히지 않아
-  # 개발자의 application-local.yaml이 테스트에도 로드된다. 로컬에서 API 문서를 열어둔 상태가
-  # 테스트로 새어들어오지 않도록 여기서 명시적으로 닫는다.
+  # 문서 공개는 로컬 전용이므로 테스트에서도 명시적으로 닫아 둔다.
+  # (application-local.yaml은 application.yml의 on-profile: "!test" 문서로 분리돼 있어
+  #  테스트에 로드되지 않는다 — LocalConfigIsolationTest가 이를 고정한다)
   swagger:
     public-access: false
   s3:
