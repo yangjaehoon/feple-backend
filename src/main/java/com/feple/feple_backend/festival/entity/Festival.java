@@ -27,12 +27,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Builder
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+// 페스티벌 수정(관리자 폼·포스터 교체)의 더티체킹 flush가 전체 컬럼을 UPDATE하면서, 동시에 다른
+// 트랜잭션이 incrementLikeCount/incrementAttendingCount로 원자적으로 갱신한 카운터를 로드 시점
+// 값으로 덮어쓰는 것을 방지한다. @Version으로는 못 막는다 — JPQL 벌크 UPDATE는 version을 올리지 않는다.
+@DynamicUpdate
 @Table(indexes = {
     @Index(name = "idx_festival_like_count", columnList = "like_count DESC"),
     @Index(name = "idx_festival_start_date", columnList = "start_date"),

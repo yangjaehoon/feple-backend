@@ -20,11 +20,15 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
     @Query("SELECT CASE WHEN COUNT(ps) > 0 THEN TRUE ELSE FALSE END FROM PostScrap ps WHERE ps.user.id = :userId AND ps.post.id = :postId")
     boolean existsByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
+    // 스크랩 행은 대상 글이 소프트 삭제·블라인드돼도 정리되지 않으므로, 공개 목록은 여기서
+    // 가시성을 걸러야 한다. 아래 countByUserId도 같은 조건을 써야 목록 길이와 숫자가 어긋나지 않는다.
+    String VISIBLE_POST = " AND ps.post.deletedAt IS NULL AND ps.post.blinded = false";
+
     @EntityGraph(attributePaths = {"post", "post.user", "post.artist", "post.festival"})
-    @Query("SELECT ps FROM PostScrap ps WHERE ps.user.id = :userId ORDER BY ps.id DESC")
+    @Query("SELECT ps FROM PostScrap ps WHERE ps.user.id = :userId" + VISIBLE_POST + " ORDER BY ps.id DESC")
     List<PostScrap> findByUserIdOrderByIdDesc(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT COUNT(ps) FROM PostScrap ps WHERE ps.user.id = :userId")
+    @Query("SELECT COUNT(ps) FROM PostScrap ps WHERE ps.user.id = :userId" + VISIBLE_POST)
     long countByUserId(@Param("userId") Long userId);
 
     @Modifying(clearAutomatically = true)

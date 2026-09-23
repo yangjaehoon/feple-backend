@@ -36,13 +36,17 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     @Query("DELETE FROM PostLike pl WHERE pl.post.id IN :postIds")
     void deleteByPostIds(@Param("postIds") List<Long> postIds);
 
+    // 좋아요 행은 대상 글이 소프트 삭제·블라인드돼도 정리되지 않으므로, 공개 목록은 여기서
+    // 가시성을 걸러야 한다. 아래 countByUserId도 같은 조건을 써야 목록 길이와 숫자가 어긋나지 않는다.
+    String VISIBLE_POST = " AND pl.post.deletedAt IS NULL AND pl.post.blinded = false";
+
     @Query("SELECT pl.post FROM PostLike pl " +
            "JOIN FETCH pl.post.user " +
            "LEFT JOIN FETCH pl.post.artist " +
            "LEFT JOIN FETCH pl.post.festival " +
-           "WHERE pl.user.id = :userId ORDER BY pl.id DESC")
+           "WHERE pl.user.id = :userId" + VISIBLE_POST + " ORDER BY pl.id DESC")
     List<Post> findPostsByUserId(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.user.id = :userId")
+    @Query("SELECT COUNT(pl) FROM PostLike pl WHERE pl.user.id = :userId" + VISIBLE_POST)
     long countByUserId(@Param("userId") Long userId);
 }

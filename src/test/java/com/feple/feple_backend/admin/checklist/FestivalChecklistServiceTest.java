@@ -7,6 +7,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,8 +22,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class FestivalChecklistServiceTest {
 
     @Mock FestivalChecklistRepository checklistRepository;
+    @Mock FestivalRepository festivalRepository;
 
     @InjectMocks FestivalChecklistService service;
+
+    // 체크리스트를 새로 만드는 경로는 festival_checklist → festival FK 때문에 페스티벌 존재를 먼저 확인한다.
+    private void givenFestivalExists(Long festivalId) {
+        given(festivalRepository.existsById(festivalId)).willReturn(true);
+    }
 
     // ── getChecklistMap ───────────────────────────────────────────────────────
 
@@ -61,6 +69,7 @@ class FestivalChecklistServiceTest {
     void toggle_체크리스트_없으면_새로_저장_후_토글() {
         FestivalChecklist newChecklist = FestivalChecklist.of(1L);
         given(checklistRepository.findByFestivalId(1L)).willReturn(Optional.empty());
+        givenFestivalExists(1L);
         given(checklistRepository.save(any())).willReturn(newChecklist);
 
         boolean newValue = service.toggle(1L, "boothMap");
@@ -70,21 +79,20 @@ class FestivalChecklistServiceTest {
         verify(checklistRepository).save(any());
     }
 
+    // 예전에는 여기서 "save()의 유니크 제약 위반을 catch해 재조회하면 토글이 유실되지 않는다"를
+    // 검증했지만, 그 복구는 실제로는 동작하지 않았다 — save()는 자체 @Transactional을 가진 프록시
+    // 호출이라 예외가 밖으로 나온 시점에 트랜잭션이 rollback-only로 마킹되고, catch해도 커밋이
+    // 통째로 실패한다. 리포지토리를 목킹하는 단위 테스트라 그 사실이 드러나지 않았다.
+    // 지금은 복구를 시도하지 않고, 도달 가능한 실패인 "존재하지 않는 페스티벌"만 명확히 처리한다.
     @Test
-    void toggle_저장중_유니크_제약_위반이면_상대가_만든_행을_재조회해_토글() {
-        // 같은 festival의 체크리스트를 처음 만드는 두 요청이 경합하는 상황을 재현 —
-        // save()가 유니크 제약(festival_id)에서 실패해도 요청자의 toggle이 유실되면 안 됨
-        FestivalChecklist raceWinnerRow = FestivalChecklist.of(1L);
-        given(checklistRepository.findByFestivalId(1L))
-                .willReturn(Optional.empty())
-                .willReturn(Optional.of(raceWinnerRow));
-        given(checklistRepository.save(any()))
-                .willThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+    void toggle_존재하지_않는_페스티벌이면_저장하지_않고_예외() {
+        given(checklistRepository.findByFestivalId(99L)).willReturn(Optional.empty());
+        given(festivalRepository.existsById(99L)).willReturn(false);
 
-        boolean newValue = service.toggle(1L, "lineup1");
-
-        assertThat(newValue).isTrue();
-        assertThat(raceWinnerRow.isChecked("lineup1")).isTrue();
+        assertThatThrownBy(() -> service.toggle(99L, "lineup1"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("페스티벌");
+        verify(checklistRepository, never()).save(any());
     }
 
     @Test
@@ -140,6 +148,7 @@ class FestivalChecklistServiceTest {
     void saveMemo_체크리스트_없으면_새로_저장_후_메모_갱신() {
         FestivalChecklist newChecklist = FestivalChecklist.of(1L);
         given(checklistRepository.findByFestivalId(1L)).willReturn(Optional.empty());
+        givenFestivalExists(1L);
         given(checklistRepository.save(any())).willReturn(newChecklist);
 
         service.saveMemo(1L, "신규 메모");

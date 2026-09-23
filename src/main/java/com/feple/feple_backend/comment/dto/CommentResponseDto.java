@@ -63,7 +63,7 @@ public class CommentResponseDto {
                 .id(comment.getId())
                 .postId(comment.getPostId())
                 .userId(visible.authorId())
-                .nickname(anon ? "익명" : comment.getUserNickname())
+                .nickname(anon ? AnonymousAuthorVisibility.ANONYMOUS_NICKNAME : comment.getUserNickname())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())

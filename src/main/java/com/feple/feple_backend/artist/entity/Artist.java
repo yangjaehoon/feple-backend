@@ -23,12 +23,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+// 프로필 수정·랭킹 스케줄러(updateWeeklyScore)의 더티체킹 flush가 전체 컬럼을 UPDATE하면서, 동시에
+// 다른 트랜잭션이 incrementFollowerCount 등으로 원자적으로 갱신한 카운터를 로드 시점 값으로
+// 덮어쓰는 것을 방지한다. @Version으로는 못 막는다 — JPQL 벌크 UPDATE는 version을 올리지 않는다.
+@DynamicUpdate
 @Table(indexes = {
     @Index(name = "idx_artist_follower_count", columnList = "follower_count DESC"),
     @Index(name = "idx_artist_weekly_score", columnList = "weekly_score DESC, id ASC")

@@ -15,6 +15,7 @@ import com.feple.feple_backend.user.service.UserAccessTrackingService;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -81,9 +82,19 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:8080}")
     private String allowedOrigins;
 
-    // ── 0. Swagger UI 전용 FilterChain (로컬 개발 환경에서만 활성화) ──
+    // ── 0. Swagger UI 전용 FilterChain ──
+    // 이 체인은 인증 없이(permitAll, JWT 필터 없음) API 문서를 열어주므로, springdoc이 실제로
+    // 켜져 있을 때만 등록한다. application.yml 기본값이 false이고 프로퍼티가 없으면 빈 자체가
+    // 만들어지지 않아, /v3/api-docs·/swagger-ui는 catch-all인 apiFilterChain(@Order(3),
+    // anyRequest().authenticated())으로 떨어져 401이 된다 — fail-closed.
+    //
+    // 주의: application-local.yaml은 프로필이 아니라 spring.config.import로 로드되므로
+    // @Profile("local")은 이 프로젝트에서 동작하지 않는다(활성 프로필이 없음). 운영에 문서를
+    // 노출하지 않으려면 배포 시크릿(APPLICATION_LOCAL_YAML)에 springdoc.*.enabled=true가
+    // 들어가지 않아야 한다.
     @Bean
     @Order(1)
+    @ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true")
     public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")

@@ -6,6 +6,9 @@ package com.feple.feple_backend.global;
  */
 public final class AnonymousAuthorVisibility {
 
+    /** 익명 작성자를 대신해 노출하는 표시 이름. 게시글·댓글·멘션·갤러리가 동일한 값을 쓴다. */
+    public static final String ANONYMOUS_NICKNAME = "익명";
+
     private AnonymousAuthorVisibility() {}
 
     public record Fields(Long authorId, boolean certified) {}

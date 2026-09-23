@@ -293,6 +293,68 @@ class CommentServiceImplTest {
     }
 
     @Test
+    void 익명_댓글에_답글을_달면_멘션_대상의_실명_닉네임과_id가_가려진다() {
+        // 익명 댓글에 아무나 답글을 다는 것만으로 원 작성자의 실명 닉네임이 응답에 실리던 결함.
+        // 알림 대상(CommentCreatedEvent.mentionedUserId)은 실제 작성자 id를 그대로 써야 하므로
+        // 가려지면 안 된다 — 응답 DTO로 나가는 값만 가린다.
+        User postAuthor = user(1L);
+        User anonymousCommenter = user(2L);
+        User replier = user(3L);
+        Post post = freePost(10L, postAuthor);
+        Comment anonymousComment = Comment.builder()
+                .id(60L).content("익명 댓글").post(post).user(anonymousCommenter).anonymous(true)
+                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).build();
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("답글");
+        given(dto.getParentId()).willReturn(60L);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(3L)).willReturn(Optional.of(replier));
+        given(commentRepository.findById(60L)).willReturn(Optional.of(anonymousComment));
+        given(commentRepository.save(any(Comment.class))).willAnswer(inv -> inv.getArgument(0));
+
+        commentService.createComment(dto, 3L);
+
+        ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
+        verify(commentRepository).save(captor.capture());
+        Comment saved = captor.getValue();
+        assertThat(saved.getMentionedNickname()).isEqualTo("익명");
+        assertThat(saved.getMentionedUserId()).isNull();
+
+        ArgumentCaptor<CommentCreatedEvent> eventCaptor = ArgumentCaptor.forClass(CommentCreatedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        assertThat(eventCaptor.getValue().mentionedUserId()).isEqualTo(2L);
+    }
+
+    @Test
+    void 실명_댓글에_답글을_달면_멘션_닉네임이_그대로_노출된다() {
+        User postAuthor = user(1L);
+        User namedCommenter = user(2L);
+        User replier = user(3L);
+        Post post = freePost(10L, postAuthor);
+        Comment namedComment = comment(60L, post, namedCommenter);
+
+        CreateCommentDto dto = mock(CreateCommentDto.class);
+        given(dto.getPostId()).willReturn(10L);
+        given(dto.getContent()).willReturn("답글");
+        given(dto.getParentId()).willReturn(60L);
+
+        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(userRepository.findById(3L)).willReturn(Optional.of(replier));
+        given(commentRepository.findById(60L)).willReturn(Optional.of(namedComment));
+        given(commentRepository.save(any(Comment.class))).willAnswer(inv -> inv.getArgument(0));
+
+        commentService.createComment(dto, 3L);
+
+        ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
+        verify(commentRepository).save(captor.capture());
+        assertThat(captor.getValue().getMentionedUserId()).isEqualTo(2L);
+        assertThat(captor.getValue().getMentionedNickname()).isEqualTo(namedCommenter.getNickname());
+    }
+
+    @Test
     void 다른_게시글의_댓글을_부모로_지정하면_예외() {
         User postAuthor = user(1L);
         User otherAuthor = user(3L);

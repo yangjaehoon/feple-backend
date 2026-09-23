@@ -94,7 +94,7 @@ public class PostResponseDto {
                 .scrapCount(post.getScrapCount())
                 .commentCount(post.getCommentCount())
                 .viewCount(post.getViewCount())
-                .nickname(anon ? "익명" : post.getAuthorNickname())
+                .nickname(anon ? AnonymousAuthorVisibility.ANONYMOUS_NICKNAME : post.getAuthorNickname())
                 .profileImageUrl(anon ? null : fileStorageService.resolveProfileImageUrl(post.getAuthorProfileImageUrl()))
                 .artistId(post.getArtistId())
                 .festivalId(post.getFestivalId())
