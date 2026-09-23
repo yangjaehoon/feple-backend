@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +47,7 @@ class FestivalChecklistAdminControllerTest {
 
     @Test
     void 체크리스트_토글_IllegalArgument_400_반환() throws Exception {
-        willThrow(new IllegalArgumentException("알 수 없는 필드"))
+        willThrow(new InvalidRequestException("알 수 없는 필드"))
                 .given(festivalChecklistService).toggle(anyLong(), anyString());
 
         mockMvc.perform(post("/admin/festivals/1/checklist")

@@ -11,6 +11,8 @@ public final class AdminConstants {
     public static final int STATS_RECENT_DAYS       = 7;
     public static final int DELETED_POSTS_LIMIT     = 200;
     public static final int BLINDED_POSTS_LIMIT     = 200;
+    /** 페스티벌·아티스트 휴지통 목록 상한 — 게시글 휴지통(DELETED_POSTS_LIMIT)과 동일한 이유로 둔다. */
+    public static final int DELETED_ENTITIES_LIMIT  = 200;
     public static final int TREND_TOP_LIMIT         = 10;
     public static final int TREND_UPCOMING_DAYS     = 30;
     // 대시보드 "인기 게시글" 트렌드의 집계 대상 기간(일). TREND_UPCOMING_DAYS와 값은 같지만

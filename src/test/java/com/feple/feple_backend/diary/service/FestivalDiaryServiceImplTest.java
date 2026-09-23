@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.lenient;
@@ -38,6 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 @ExtendWith(MockitoExtension.class)
@@ -128,19 +130,19 @@ class FestivalDiaryServiceImplTest {
     void 내_일기_목록_특정페스티벌만_조회() {
         FestivalDiary diary = mock(FestivalDiary.class);
         given(diary.getId()).willReturn(DIARY_ID);
-        given(diaryRepository.findByUserIdAndFestivalIdOrderByCreatedAtDesc(USER_ID, FESTIVAL_ID))
+        given(diaryRepository.findByUserIdAndFestivalIdOrderByCreatedAtDesc(eq(USER_ID), eq(FESTIVAL_ID), any(Pageable.class)))
                 .willReturn(List.of(diary));
         given(photoRepository.findByDiaryIdIn(List.of(DIARY_ID))).willReturn(List.of());
 
         List<FestivalDiaryResponseDto> result = diaryService.getMyDiaries(USER_ID, FESTIVAL_ID);
 
         assertThat(result).hasSize(1);
-        then(diaryRepository).should(never()).findByUserIdOrderByCreatedAtDesc(any());
+        then(diaryRepository).should(never()).findByUserIdOrderByCreatedAtDesc(any(), any());
     }
 
     @Test
     void 내_일기_목록_전체_조회() {
-        given(diaryRepository.findByUserIdOrderByCreatedAtDesc(USER_ID)).willReturn(List.of());
+        given(diaryRepository.findByUserIdOrderByCreatedAtDesc(eq(USER_ID), any(Pageable.class))).willReturn(List.of());
 
         List<FestivalDiaryResponseDto> result = diaryService.getMyDiaries(USER_ID, null);
 

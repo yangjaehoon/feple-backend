@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,7 +61,7 @@ class WebScrapeAdminControllerTest {
     @Test
     void 스크래핑_IllegalArgument_400_반환() throws Exception {
         given(webScraperService.scrape(anyString(), anyString()))
-                .willThrow(new IllegalArgumentException("허용되지 않는 URL"));
+                .willThrow(new InvalidRequestException("허용되지 않는 URL"));
 
         mockMvc.perform(post("/admin/crawl/scrape")
                         .contentType(MediaType.APPLICATION_JSON)

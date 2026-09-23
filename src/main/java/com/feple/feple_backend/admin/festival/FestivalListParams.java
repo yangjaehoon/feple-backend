@@ -6,7 +6,7 @@ import com.feple.feple_backend.admin.support.AdminUrlUtils;
 record FestivalListParams(Integer page, String keyword) {
 
     FestivalListParams {
-        page = Math.max(0, AdminParamDefaults.orZero(page));
+        page = AdminParamDefaults.pageOrFirst(page);
         keyword = AdminParamDefaults.orEmpty(keyword);
     }
 

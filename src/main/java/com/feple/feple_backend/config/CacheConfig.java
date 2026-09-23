@@ -75,7 +75,7 @@ public class CacheConfig {
 
             // 페스티벌 날씨(festivalId별): WeatherCollectionScheduler가 하루 1회만 갱신 —
             // 조회 요청마다 findById + findByFestivalId 2쿼리 방지. 30분 TTL,
-            // collectWeather(수집)·removeAllByFestival(페스티벌 삭제) 시 해당 키 evict
+            // collectWeather(수집) 시 해당 키 evict
             new CacheSpec("festivalWeather", Duration.ofMinutes(30), 500)
     );
 

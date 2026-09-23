@@ -17,6 +17,7 @@ import com.feple.feple_backend.festival.entity.Region;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
 import com.feple.feple_backend.global.MusicGenre;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -84,7 +85,7 @@ public class FestivalAdminController {
 
         try {
             return createFestivalAndLinkArtists(dto, artistIds, suggestionId, ra);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRequestException e) {
             rejectEndDateError(bindingResult, e);
             return renderCreateFormWithError(bindingResult, suggestionId, model);
         } catch (Exception e) {
@@ -195,7 +196,7 @@ public class FestivalAdminController {
             festivalService.updateFestival(id, dto);
             adminLogService.log(AdminAction.FESTIVAL_UPDATE, "FESTIVAL", id, dto.getTitle());
             ra.addFlashAttribute("successMessage", "페스티벌이 수정되었습니다.");
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRequestException e) {
             rejectEndDateError(bindingResult, e);
             return renderEditFormWithError(bindingResult, id, currentPosterUrl, model);
         } catch (Exception e) {
@@ -266,7 +267,7 @@ public class FestivalAdminController {
         if (posterFile == null || posterFile.isEmpty()) return;
         try {
             dto.setPosterKey(festivalService.uploadPosterFile(posterFile, dto.getStartDate()));
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRequestException e) {
             if (bindingResult != null)
                 bindingResult.rejectValue("posterKey", "upload.failed", e.getMessage());
         } catch (Exception e) {

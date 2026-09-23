@@ -6,6 +6,7 @@ import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
 import com.feple.feple_backend.admin.support.AdminErrorResponses;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class WebScrapeAdminController {
         try {
             ScrapedFestivalDto result = webScraperService.scrape(url.trim(), source);
             return ResponseEntity.ok(result);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRequestException e) {
             return AdminErrorResponses.badRequest(e.getMessage());
         } catch (Exception e) {
             log.error("스크래핑 실패: {}", url, e);
@@ -60,7 +61,7 @@ public class WebScrapeAdminController {
             Long festivalId = festivalAdminService.createFestival(ScrapedFestivalMapper.toFestivalRequestDto(req));
             adminLogService.log(AdminAction.FESTIVAL_SCRAPE_CREATE, "FESTIVAL", festivalId, req.title());
             return ResponseEntity.ok(Map.of("festivalId", festivalId));
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRequestException e) {
             return AdminErrorResponses.badRequest(e.getMessage());
         } catch (Exception e) {
             log.error("스크래핑 결과 페스티벌 등록 실패", e);

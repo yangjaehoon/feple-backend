@@ -13,11 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface FestivalDiaryRepository extends JpaRepository<FestivalDiary, Long> {
 
+    // 다른 "내 활동" 목록과 동일하게 상한을 둔다 — JOIN FETCH까지 붙어 무제한이면 메모리 사용이 선형으로 커진다.
     @Query("SELECT d FROM FestivalDiary d JOIN FETCH d.festival WHERE d.user.id = :userId ORDER BY d.createdAt DESC")
-    List<FestivalDiary> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
+    List<FestivalDiary> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT d FROM FestivalDiary d JOIN FETCH d.festival WHERE d.user.id = :userId AND d.festival.id = :festivalId ORDER BY d.createdAt DESC")
-    List<FestivalDiary> findByUserIdAndFestivalIdOrderByCreatedAtDesc(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
+    List<FestivalDiary> findByUserIdAndFestivalIdOrderByCreatedAtDesc(
+            @Param("userId") Long userId, @Param("festivalId") Long festivalId, Pageable pageable);
 
     @Query("SELECT d FROM FestivalDiary d JOIN FETCH d.user WHERE d.festival.id = :festivalId AND d.visibility = :visibility ORDER BY d.createdAt DESC")
     Page<FestivalDiary> findByFestivalIdAndVisibilityOrderByCreatedAtDesc(

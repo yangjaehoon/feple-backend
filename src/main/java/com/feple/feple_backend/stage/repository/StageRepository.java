@@ -4,10 +4,8 @@ import com.feple.feple_backend.stage.entity.Stage;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
 
 public interface StageRepository extends JpaRepository<Stage, Long> {
@@ -27,11 +25,6 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END FROM Stage s "
             + "WHERE s.festival.id = :festivalId AND s.name = :name")
     boolean existsByFestivalIdAndName(@Param("festivalId") Long festivalId, @Param("name") String name);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM Stage s WHERE s.festival.id = :festivalId")
-    void deleteByFestivalId(@Param("festivalId") Long festivalId);
 
     @Query("SELECT COALESCE(MAX(s.displayOrder), 0) FROM Stage s WHERE s.festival.id = :festivalId")
     int findMaxDisplayOrderByFestivalId(@Param("festivalId") Long festivalId);

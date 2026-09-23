@@ -3,6 +3,7 @@ package com.feple.feple_backend.artist.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -377,7 +378,7 @@ class ArtistServiceImplTest {
     void 삭제된_아티스트_목록_조회() {
         Artist deleted = artist(1L, "A");
         deleted.softDelete();
-        given(artistRepository.findSoftDeleted()).willReturn(List.of(deleted));
+        given(artistRepository.findSoftDeleted(anyInt())).willReturn(List.of(deleted));
 
         assertThat(service.getDeletedArtists()).extracting(ArtistResponseDto::getId).containsExactly(1L);
     }

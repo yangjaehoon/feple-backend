@@ -22,8 +22,9 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     Optional<Festival> findByIdAndDeletedAtIsNull(Long id);
     long countByDeletedAtIsNull();
 
-    @Query(value = "SELECT * FROM festival WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC", nativeQuery = true)
-    List<Festival> findSoftDeleted();
+    // 소프트 삭제 행이 누적되면 휴지통 화면 로딩이 선형으로 느려지므로 상한을 둔다(게시글 휴지통과 동일).
+    @Query(value = "SELECT * FROM festival WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC LIMIT :limit", nativeQuery = true)
+    List<Festival> findSoftDeleted(@Param("limit") int limit);
 
     @Modifying(clearAutomatically = true)
     @Transactional

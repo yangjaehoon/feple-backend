@@ -1,6 +1,8 @@
 package com.feple.feple_backend.admin.ocr;
 
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.timetable.dto.TimetableEntryRequestDto;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
@@ -10,7 +12,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -88,8 +89,10 @@ public class TimetableOcrService {
                 continue;
             }
             RuntimeException e = result.error();
-            // 사용자에게 드러낼 수 있는 검증 오류만 메시지 전달, 내부 예외는 고정 문구 사용
-            String reason = (e instanceof IllegalArgumentException || e instanceof NoSuchElementException)
+            // 사용자에게 드러낼 수 있는 검증 오류만 메시지 전달, 내부 예외는 고정 문구 사용.
+            // 상위 타입(IllegalArgumentException/NoSuchElementException)으로 넓게 잡으면
+            // Enum.valueOf·LocalDate.parse 등 JDK 발 예외의 내부 구현 문자열이 그대로 새어나간다.
+            String reason = (e instanceof InvalidRequestException || e instanceof ResourceNotFoundException)
                     ? e.getMessage()
                     : "처리 중 오류 발생";
             failures.add(toFailure(validEntries.get(i), reason, validIndices.get(i)));

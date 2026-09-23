@@ -178,13 +178,4 @@ public class FestivalCertificationServiceImpl implements FestivalCertificationSe
                 .forEach(cert -> fileStorageService.deleteFileAfterCommit(cert.getPhotoKey()));
         certificationRepository.deleteByUserId(userId);
     }
-
-    @Override
-    @Transactional
-    public void removeAllByFestival(Long festivalId) {
-        certificationRepository.findByFestivalId(festivalId)
-                .forEach(cert -> fileStorageService.deleteFileAfterCommit(cert.getPhotoKey()));
-        reviewLikeRepository.deleteByCertificationFestivalId(festivalId);
-        certificationRepository.deleteByFestivalId(festivalId);
-    }
 }

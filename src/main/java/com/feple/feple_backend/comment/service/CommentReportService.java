@@ -5,6 +5,7 @@ import com.feple.feple_backend.comment.entity.Comment;
 import com.feple.feple_backend.comment.entity.CommentReport;
 import com.feple.feple_backend.comment.repository.CommentReportRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
+import com.feple.feple_backend.global.AutoBlindReverser;
 import com.feple.feple_backend.global.DuplicateInsertGuard;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.PageSize;
@@ -136,24 +137,17 @@ public class CommentReportService implements ReportAdminService<CommentReport> {
 
     // 신고를 반려해 남은 대기 신고가 임계치 아래로 내려가면 블라인드를 해제한다.
     private void unblindIfBelowThreshold(Long commentId) {
-        long pendingCount = reportRepository.countByCommentIdAndStatus(commentId, ReportStatus.PENDING);
-        if (pendingCount < ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD) {
-            commentRepository.findById(commentId).ifPresent(Comment::unblind);
-        }
+        AutoBlindReverser.unblindIfBelowThreshold(commentId,
+                id -> reportRepository.countByCommentIdAndStatus(id, ReportStatus.PENDING),
+                commentRepository::findById,
+                Comment::unblind);
     }
 
-    // unblindIfBelowThreshold의 배치 버전 — bulkDismiss는 최대 20건(관리자 페이지 크기)이 한 번에
-    // 반려되는데, 댓글마다 대기 신고 수 조회+단건 블라인드 해제 조회를 반복하면 최대 40쿼리가 발생하므로
-    // 그룹 집계 1쿼리 + IN 조회 1쿼리로 묶는다.
     private void unblindAllBelowThreshold(List<Long> commentIds) {
-        if (commentIds.isEmpty()) return;
-        Map<Long, Long> pendingCountsByCommentId = QueryResultMapper.toLongMap(
-                reportRepository.countByCommentIdInAndStatus(commentIds, ReportStatus.PENDING));
-        List<Long> toUnblind = commentIds.stream()
-                .filter(commentId -> pendingCountsByCommentId.getOrDefault(commentId, 0L) < ReportPolicy.AUTO_BLIND_PENDING_THRESHOLD)
-                .toList();
-        if (toUnblind.isEmpty()) return;
-        commentRepository.findAllById(toUnblind).forEach(Comment::unblind);
+        AutoBlindReverser.unblindAllBelowThreshold(commentIds,
+                ids -> reportRepository.countByCommentIdInAndStatus(ids, ReportStatus.PENDING),
+                commentRepository::findAllById,
+                Comment::unblind);
     }
 
     @Override

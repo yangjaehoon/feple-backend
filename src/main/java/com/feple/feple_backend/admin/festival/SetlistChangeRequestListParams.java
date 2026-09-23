@@ -6,7 +6,7 @@ import com.feple.feple_backend.admin.support.AdminParamDefaults;
 record SetlistChangeRequestListParams(String status, Integer page, String keyword) {
     SetlistChangeRequestListParams {
         status  = AdminParamDefaults.orDefault(status, AdminConstants.STATUS_PENDING);
-        page    = AdminParamDefaults.orZero(page);
+        page    = AdminParamDefaults.pageOrFirst(page);
         keyword = AdminParamDefaults.orEmpty(keyword);
     }
 }

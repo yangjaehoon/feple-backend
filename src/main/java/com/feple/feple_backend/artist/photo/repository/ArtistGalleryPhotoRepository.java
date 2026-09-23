@@ -10,8 +10,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGalleryPhoto, Long> {
-    @Query("SELECT p FROM ArtistGalleryPhoto p JOIN FETCH p.uploader WHERE p.artist.id = :artistId ORDER BY p.id DESC")
-    List<ArtistGalleryPhoto> findByArtist_IdOrderByIdDesc(@Param("artistId") Long artistId);
 
     // 회원 완전 삭제(hardDelete) 선조건 — 갤러리 사진을 올린 계정은 다른 유저의 좋아요·신고가 얽혀
     // 있으므로 물리 삭제를 거부하고 일반 삭제(익명화)를 쓴다.
@@ -34,9 +32,4 @@ public interface ArtistGalleryPhotoRepository extends JpaRepository<ArtistGaller
     @Transactional
     @Query("UPDATE ArtistGalleryPhoto p SET p.likeCount = p.likeCount - 1 WHERE p.id = :photoId AND p.likeCount > 0")
     void decrementLikeCount(@Param("photoId") Long photoId);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM ArtistGalleryPhoto p WHERE p.artist.id = :artistId")
-    void deleteByArtistId(@Param("artistId") Long artistId);
 }

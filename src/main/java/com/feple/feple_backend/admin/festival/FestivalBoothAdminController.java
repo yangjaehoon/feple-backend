@@ -9,6 +9,7 @@ import com.feple.feple_backend.admin.support.BindingResultUtils;
 import com.feple.feple_backend.booth.dto.BoothRequestDto;
 import com.feple.feple_backend.booth.service.BoothService;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,25 +40,19 @@ public class FestivalBoothAdminController {
                               BindingResult bindingResult,
                               @RequestParam(value = "boothImageFile", required = false) MultipartFile boothImageFile,
                               RedirectAttributes ra) {
-        if (bindingResult.hasErrors()) {
-            ra.addFlashAttribute("errorMessage", BindingResultUtils.firstError(bindingResult));
+        String formError = validateBoothForm(bindingResult, dto);
+        if (formError != null) {
+            ra.addFlashAttribute("errorMessage", formError);
             return AdminFestivalRedirects.booths(festivalId);
         }
-        if (dto.getLatitude() == null || dto.getLongitude() == null) {
-            ra.addFlashAttribute("errorMessage", "지도에서 위치를 선택해주세요.");
+        String finalImageKey;
+        try {
+            finalImageKey = uploadBoothImageOrNull(boothImageFile);
+        } catch (Exception e) {
+            log.error("부스 이미지 업로드 실패 festivalId={}", festivalId, e);
+            ra.addFlashAttribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요.");
             return AdminFestivalRedirects.booths(festivalId);
         }
-        String imageKey = null;
-        if (boothImageFile != null && !boothImageFile.isEmpty()) {
-            try {
-                imageKey = boothService.uploadBoothImage(boothImageFile);
-            } catch (Exception e) {
-                log.error("부스 이미지 업로드 실패 festivalId={}", festivalId, e);
-                ra.addFlashAttribute("errorMessage", "이미지 업로드에 실패했습니다. 다시 시도해주세요.");
-                return AdminFestivalRedirects.booths(festivalId);
-            }
-        }
-        String finalImageKey = imageKey;
         AdminActionUtils.tryAction(
                 () -> {
                     boothService.createBooth(festivalId, dto, finalImageKey);
@@ -68,6 +63,19 @@ public class FestivalBoothAdminController {
                 "부스 추가에 실패했습니다.",
                 ra);
         return AdminFestivalRedirects.booths(festivalId);
+    }
+
+    /** @return 사용자에게 보여줄 오류 메시지, 문제가 없으면 null */
+    private String validateBoothForm(BindingResult bindingResult, BoothRequestDto dto) {
+        if (bindingResult.hasErrors()) return BindingResultUtils.firstError(bindingResult);
+        if (dto.getLatitude() == null || dto.getLongitude() == null) return "지도에서 위치를 선택해주세요.";
+        return null;
+    }
+
+    /** @return 업로드된 이미지 키, 파일이 없으면 null */
+    private String uploadBoothImageOrNull(MultipartFile boothImageFile) throws IOException {
+        if (boothImageFile == null || boothImageFile.isEmpty()) return null;
+        return boothService.uploadBoothImage(boothImageFile);
     }
 
     @PostMapping("/{boothId}/delete")

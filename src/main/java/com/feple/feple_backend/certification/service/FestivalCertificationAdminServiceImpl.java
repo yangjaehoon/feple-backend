@@ -53,7 +53,9 @@ public class FestivalCertificationAdminServiceImpl implements FestivalCertificat
     @Transactional(readOnly = true)
     public Page<FestivalCertification> searchByKeyword(String keyword, CertificationStatus status, int page) {
         Pageable pageable = PageableFactory.orderByLatestFirst(page, PageSize.DEFAULT_PAGE_SIZE);
-        return certificationRepository.searchByKeyword(JpqlLikeEscaper.escape(keyword.trim()), status, pageable);
+        // keyword는 컨트롤러에서 항상 채워 넘기지만, null이면 NPE가 그대로 500으로 나간다
+        String escaped = keyword == null ? "" : JpqlLikeEscaper.escape(keyword.trim());
+        return certificationRepository.searchByKeyword(escaped, status, pageable);
     }
 
     @Override

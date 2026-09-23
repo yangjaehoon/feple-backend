@@ -152,7 +152,11 @@ public class ImageResizeService {
         int newWidth = swapDimensions ? height : width;
         int newHeight = swapDimensions ? width : height;
 
-        BufferedImage rotated = new BufferedImage(newWidth, newHeight, image.getType());
+        // 디코딩 결과가 TYPE_CUSTOM(0)이면 BufferedImage 생성자가 "Unknown image type 0"으로
+        // 거절한다 — 비표준 컬러모델 이미지가 EXIF 회전 대상일 때 업로드가 400으로 실패했다.
+        int imageType = image.getType() == BufferedImage.TYPE_CUSTOM
+                ? BufferedImage.TYPE_INT_RGB : image.getType();
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, imageType);
         Graphics2D graphics = rotated.createGraphics();
         graphics.setTransform(t);
         graphics.drawImage(image, 0, 0, null);

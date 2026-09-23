@@ -7,6 +7,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.festival.entity.Festival;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.timetable.entity.TimetableEntry;
 import com.feple.feple_backend.timetable.service.TimetableService;
 import java.util.List;
@@ -116,7 +117,7 @@ class TimetableOcrServiceTest {
         TimetableOcrResultDto entry = new TimetableOcrResultDto("아이유", "Main", "2024-07-20", "18:00", "19:00", 95, null);
         TimetableOcrApplyRequestDto req = new TimetableOcrApplyRequestDto(1L, List.of(entry));
         given(timetableService.createEntriesBatch(eq(festival), any())).willReturn(
-                List.of(new TimetableService.BatchCreateResult(null, new IllegalArgumentException("스테이지 없음"))));
+                List.of(new TimetableService.BatchCreateResult(null, new InvalidRequestException("스테이지 없음"))));
 
         TimetableOcrApplyResultDto result = ocrService.applyEntries(req);
 

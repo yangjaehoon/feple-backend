@@ -7,7 +7,7 @@ import com.feple.feple_backend.global.MusicGenre;
 record ArtistListParams(Integer page, String keyword, String sort, MusicGenre genre) {
 
     ArtistListParams {
-        page = Math.max(0, AdminParamDefaults.orZero(page));
+        page = AdminParamDefaults.pageOrFirst(page);
         keyword = AdminParamDefaults.orEmpty(keyword);
         sort = AdminParamDefaults.orEmpty(sort);
     }

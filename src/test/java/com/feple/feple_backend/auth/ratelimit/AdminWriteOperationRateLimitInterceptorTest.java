@@ -1,11 +1,14 @@
 package com.feple.feple_backend.auth.ratelimit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.global.exception.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -55,14 +58,13 @@ class AdminWriteOperationRateLimitInterceptorTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"PUT", "PATCH", "DELETE"})
-    void 상태변경_메서드는_POST와_동일하게_검사한다(String method) throws Exception {
+    void 상태변경_메서드는_POST와_동일하게_검사한다(String method) {
         given(request.getMethod()).willReturn(method);
         given(request.getRemoteAddr()).willReturn("1.2.3.4");
         given(adminMutationRateLimiter.tryConsume("1.2.3.4")).willReturn(false);
 
-        boolean result = interceptor.preHandle(request, response, new Object());
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> interceptor.preHandle(request, response, new Object()))
+                .isInstanceOf(TooManyRequestsException.class);
         verify(adminMutationRateLimiter).tryConsume("1.2.3.4");
     }
 
@@ -93,14 +95,16 @@ class AdminWriteOperationRateLimitInterceptorTest {
     }
 
     @Test
-    void 한도초과시_429응답후_false반환() throws Exception {
+    void 한도초과시_TooManyRequestsException_발생() throws Exception {
+        // sendError(429)는 /error 포워딩으로 메시지가 사라지고 Whitelabel 페이지가 떴다.
+        // 이제 다른 limiter와 동일하게 예외를 던져 AdminExceptionAdvice가 렌더한다.
         given(request.getMethod()).willReturn("POST");
         given(request.getRemoteAddr()).willReturn("1.2.3.4");
         given(adminMutationRateLimiter.tryConsume("1.2.3.4")).willReturn(false);
 
-        boolean result = interceptor.preHandle(request, response, new Object());
-
-        assertThat(result).isFalse();
-        verify(response).sendError(429, "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
+        assertThatThrownBy(() -> interceptor.preHandle(request, response, new Object()))
+                .isInstanceOf(TooManyRequestsException.class)
+                .hasMessageContaining("요청이 너무 많습니다");
+        verify(response, never()).sendError(anyInt(), any());
     }
 }

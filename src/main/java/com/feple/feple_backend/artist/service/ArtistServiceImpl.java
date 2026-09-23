@@ -1,5 +1,6 @@
 package com.feple.feple_backend.artist.service;
 
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.artist.dto.ArtistAdminListQuery;
 import com.feple.feple_backend.artist.dto.ArtistRequestDto;
 import com.feple.feple_backend.artist.dto.ArtistResponseDto;
@@ -297,7 +298,7 @@ public class ArtistServiceImpl implements ArtistService, ArtistAdminService {
     @Override
     @Transactional(readOnly = true)
     public List<ArtistResponseDto> getDeletedArtists() {
-        return artistRepository.findSoftDeleted().stream().map(this::toDto).toList();
+        return artistRepository.findSoftDeleted(AdminConstants.DELETED_ENTITIES_LIMIT).stream().map(this::toDto).toList();
     }
 
     @Override

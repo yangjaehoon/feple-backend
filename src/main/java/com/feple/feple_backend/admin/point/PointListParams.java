@@ -5,7 +5,7 @@ import com.feple.feple_backend.admin.support.AdminParamDefaults;
 record PointListParams(Integer page, String keyword) {
 
     PointListParams {
-        page = Math.max(0, AdminParamDefaults.orZero(page));
+        page = AdminParamDefaults.pageOrFirst(page);
         keyword = AdminParamDefaults.orEmpty(keyword);
     }
 }

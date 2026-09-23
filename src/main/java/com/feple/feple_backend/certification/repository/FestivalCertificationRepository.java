@@ -101,11 +101,6 @@ public interface FestivalCertificationRepository extends JpaRepository<FestivalC
     @Query("SELECT fc FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")
     List<FestivalCertification> findByFestivalId(@Param("festivalId") Long festivalId);
 
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM FestivalCertification fc WHERE fc.festival.id = :festivalId")
-    void deleteByFestivalId(@Param("festivalId") Long festivalId);
-
     // ── 리뷰 좋아요 카운터 (원자적 증감 — race condition 방지) ──────────────────
     @Modifying
     @Transactional

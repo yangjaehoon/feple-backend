@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
  * 항상 작성순으로 붙인다 — 답글까지 좋아요순으로 섞으면 대화 흐름이 깨진다.
  */
 final class CommentSorter {
+
+    /** 베스트순 정렬 요청 값 — 컨트롤러가 받는 sort 파라미터의 계약이 리터럴로만 존재하지 않도록 둔다. */
+    static final String SORT_BEST = "best";
     private CommentSorter() {}
 
     private static final Comparator<Comment> BY_CREATED_AT = Comparator.comparing(Comment::getCreatedAt);

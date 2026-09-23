@@ -2,10 +2,10 @@ package com.feple.feple_backend.admin.festival;
 
 import com.feple.feple_backend.admin.account.AdminPermission;
 import com.feple.feple_backend.admin.account.RequiresAdminPermission;
-
 import com.feple.feple_backend.admin.checklist.FestivalChecklistService;
 import com.feple.feple_backend.admin.log.AdminAction;
 import com.feple.feple_backend.admin.log.AdminLogService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +35,7 @@ public class FestivalChecklistAdminController {
             boolean newValue = festivalChecklistService.toggle(id, field);
             adminLogService.log(AdminAction.FESTIVAL_CHECKLIST_TOGGLE, "FESTIVAL", id, field + "=" + newValue);
             return ResponseEntity.ok(Map.of("checked", newValue));
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

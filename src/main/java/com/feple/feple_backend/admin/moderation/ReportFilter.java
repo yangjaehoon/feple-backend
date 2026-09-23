@@ -9,6 +9,6 @@ record ReportFilter(String type, String status, Integer page, String keyword) {
         type    = AdminParamDefaults.orDefaultIfBlank(type, ReportTypes.POST);
         status  = AdminParamDefaults.orDefaultIfBlank(status, AdminConstants.STATUS_PENDING);
         keyword = AdminParamDefaults.orEmpty(keyword);
-        page    = AdminParamDefaults.orZero(page);
+        page    = AdminParamDefaults.pageOrFirst(page);
     }
 }

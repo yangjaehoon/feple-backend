@@ -2,6 +2,7 @@ package com.feple.feple_backend.admin.account;
 
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.exception.ExternalStorageException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.io.IOException;
 import java.util.EnumMap;
@@ -172,11 +173,13 @@ public class AdminAccountService {
     }
 
     // IOException을 RuntimeException으로 감싸 서비스 시그니처에서 체크드 예외를 제거한다.
+    // IllegalStateException은 "예상 불가 서버 오류"(500) 전용이므로, 스토리지 실패는
+    // ExternalStorageException(502)으로 구분한다 — FileStorageService와 동일 규칙.
     private String uploadProfile(MultipartFile profileImage, String username) {
         try {
             return fileStorageService.storeAdminProfile(profileImage, username);
         } catch (IOException e) {
-            throw new IllegalStateException("프로필 이미지 업로드에 실패했습니다.", e);
+            throw new ExternalStorageException("프로필 이미지 업로드에 실패했습니다.", e);
         }
     }
 

@@ -18,6 +18,7 @@ import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.file.service.S3PresignService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.OwnershipValidator;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.userblock.service.BlockedContentFilter;
@@ -90,9 +91,10 @@ public class FestivalDiaryServiceImpl implements FestivalDiaryService {
     @Override
     @Transactional(readOnly = true)
     public List<FestivalDiaryResponseDto> getMyDiaries(Long userId, Long festivalId) {
+        PageRequest limit = PageRequest.of(0, PageSize.MY_ACTIVITIES);
         List<FestivalDiary> diaries = (festivalId != null)
-                ? diaryRepository.findByUserIdAndFestivalIdOrderByCreatedAtDesc(userId, festivalId)
-                : diaryRepository.findByUserIdOrderByCreatedAtDesc(userId);
+                ? diaryRepository.findByUserIdAndFestivalIdOrderByCreatedAtDesc(userId, festivalId, limit)
+                : diaryRepository.findByUserIdOrderByCreatedAtDesc(userId, limit);
         return toDtos(diaries, true, false);
     }
 

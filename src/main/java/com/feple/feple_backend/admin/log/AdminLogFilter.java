@@ -1,5 +1,6 @@
 package com.feple.feple_backend.admin.log;
 
+import com.feple.feple_backend.admin.support.AdminParamDefaults;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -11,9 +12,8 @@ public record AdminLogFilter(
         Integer page
 ) {
     public AdminLogFilter {
-        targetType    = targetType == null ? "" : targetType;
-        adminUsername = adminUsername == null ? "" : adminUsername;
-        // 음수 page는 PageRequest.of()가 IllegalArgumentException을 던지므로(URL 직접 수정 방어) 0으로 정규화.
-        page = Math.max(0, page == null ? 0 : page);
+        targetType    = AdminParamDefaults.orEmpty(targetType);
+        adminUsername = AdminParamDefaults.orEmpty(adminUsername);
+        page          = AdminParamDefaults.pageOrFirst(page);
     }
 }

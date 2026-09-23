@@ -26,9 +26,4 @@ public interface FestivalAttendanceRepository extends JpaRepository<FestivalAtte
     @Transactional
     @Query("DELETE FROM FestivalAttendance fa WHERE fa.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM FestivalAttendance fa WHERE fa.festival.id = :festivalId")
-    void deleteByFestivalId(@Param("festivalId") Long festivalId);
 }

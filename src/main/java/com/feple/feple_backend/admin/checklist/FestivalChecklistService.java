@@ -66,11 +66,4 @@ public class FestivalChecklistService {
                     return checklistRepository.save(FestivalChecklist.of(festivalId));
                 });
     }
-
-    /** 페스티벌 삭제 시 연관 체크리스트를 정리한다. Repository를 직접 호출하면 이 캐시가 무효화되지 않으므로 반드시 이 메서드를 거칠 것. */
-    @Transactional
-    @CacheEvict(value = "festivalChecklistMap", allEntries = true)
-    public void removeByFestivalId(Long festivalId) {
-        checklistRepository.deleteByFestivalId(festivalId);
-    }
 }

@@ -201,7 +201,7 @@ class WeatherServiceTest {
 
     @Test
     void 존재하지_않는_페스티벌_조회시_예외() {
-        given(festivalRepository.findById(1L)).willReturn(Optional.empty());
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> weatherService.getByFestivalId(1L)).isInstanceOf(NoSuchElementException.class);
     }
@@ -209,7 +209,7 @@ class WeatherServiceTest {
     @Test
     void 캐시된_날씨가_있으면_API_호출없이_반환() {
         Festival f = festival(1L, today().minusDays(10), today().minusDays(1));
-        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(f));
         FestivalWeather cached = FestivalWeather.of(f, new WeatherDto("20260101", 1, 2, 3, SkyCode.SUNNY, PtyCode.NONE));
         given(weatherRepository.findByFestivalId(1L)).willReturn(Optional.of(cached));
 
@@ -222,7 +222,7 @@ class WeatherServiceTest {
     @Test
     void 진행중_페스티벌도_실시간_수집없이_캐시만_반환() {
         Festival f = festival(1L, today(), today().plusDays(1));
-        given(festivalRepository.findById(1L)).willReturn(Optional.of(f));
+        given(festivalRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(f));
         given(weatherRepository.findByFestivalId(1L)).willReturn(Optional.empty());
 
         Optional<WeatherDto> result = weatherService.getByFestivalId(1L);
@@ -230,14 +230,5 @@ class WeatherServiceTest {
         assertThat(result).isEmpty();
         verify(restTemplate, never()).getForObject(any(URI.class), any());
         verify(weatherRepository, never()).save(any(FestivalWeather.class));
-    }
-
-    // ── removeAllByFestival ──────────────────────────────────────────────
-
-    @Test
-    void 페스티벌_삭제시_날씨데이터_일괄삭제() {
-        weatherService.removeAllByFestival(1L);
-
-        verify(weatherRepository).deleteByFestivalId(1L);
     }
 }

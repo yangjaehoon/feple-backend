@@ -37,11 +37,6 @@ public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM FestivalLike fl WHERE fl.festival.id = :festivalId")
-    void deleteByFestivalId(@Param("festivalId") Long festivalId);
-
-    @Modifying
-    @Transactional
     @Query("DELETE FROM FestivalLike fl WHERE fl.user.id = :userId AND fl.festival.id = :festivalId")
     int deleteByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
 }

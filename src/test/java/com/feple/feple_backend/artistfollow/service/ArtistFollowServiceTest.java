@@ -42,7 +42,7 @@ class ArtistFollowServiceTest {
 
     @Test
     void followStatus_userId_null이면_followed_false_반환() {
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 7)));
+        given(artistRepository.findByIdAndDeletedAtIsNull(10L)).willReturn(Optional.of(artist(10L, 7)));
 
         FollowStatusDto result = artistFollowService.followStatus(null, 10L);
 
@@ -54,7 +54,7 @@ class ArtistFollowServiceTest {
     void followStatus_팔로우_중이면_followed_true_반환() {
         Artist artist = artist(10L, 5);
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(true);
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
+        given(artistRepository.findByIdAndDeletedAtIsNull(10L)).willReturn(Optional.of(artist));
 
         FollowStatusDto result = artistFollowService.followStatus(1L, 10L);
 
@@ -66,7 +66,7 @@ class ArtistFollowServiceTest {
     void followStatus_미팔로우이면_followed_false_반환() {
         Artist artist = artist(10L, 3);
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist));
+        given(artistRepository.findByIdAndDeletedAtIsNull(10L)).willReturn(Optional.of(artist));
 
         FollowStatusDto result = artistFollowService.followStatus(1L, 10L);
 
@@ -80,7 +80,7 @@ class ArtistFollowServiceTest {
     void 팔로우_성공시_save와_followerCount_증가하고_followed_true_반환() {
         User user = user(1L);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 0)));
+        given(artistRepository.findByIdAndDeletedAtIsNull(10L)).willReturn(Optional.of(artist(10L, 0)));
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(false);
         given(artistRepository.findFollowerCountById(10L)).willReturn(1);
 
@@ -96,7 +96,7 @@ class ArtistFollowServiceTest {
     void 이미_팔로우_중이면_save_생략하고_멱등성_보장() {
         User user = user(1L);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(artistRepository.findById(10L)).willReturn(Optional.of(artist(10L, 5)));
+        given(artistRepository.findByIdAndDeletedAtIsNull(10L)).willReturn(Optional.of(artist(10L, 5)));
         given(artistFollowRepository.existsByUserIdAndArtistId(1L, 10L)).willReturn(true);
         given(artistRepository.findFollowerCountById(10L)).willReturn(5);
 
@@ -110,7 +110,7 @@ class ArtistFollowServiceTest {
     @Test
     void 존재하지_않는_아티스트_팔로우시_예외() {
         given(userRepository.findById(1L)).willReturn(Optional.of(user(1L)));
-        given(artistRepository.findById(99L)).willReturn(Optional.empty());
+        given(artistRepository.findByIdAndDeletedAtIsNull(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> artistFollowService.follow(1L, 99L))
                 .isInstanceOf(NoSuchElementException.class);

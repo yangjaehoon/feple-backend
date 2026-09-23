@@ -145,6 +145,9 @@ public class ArtistAdminController {
         return "admin/artist/list";
     }
 
+    // ArtistSuggestionAdminController.dismiss와 동작은 같고 리다이렉트 대상만 다르다 —
+    // 아티스트 목록 화면(/admin/artists)에서 기각했을 때 신청 목록이 아니라 원래 보던 화면으로
+    // 돌아가야 하므로 분리해 둔다(SongRequestAdminController/ArtistSongAdminController와 동일 사유).
     @PostMapping("/suggestions/{id}/dismiss")
     public String dismissSuggestion(@PathVariable Long id,
                                     @RequestParam(defaultValue = "") String processNote,
