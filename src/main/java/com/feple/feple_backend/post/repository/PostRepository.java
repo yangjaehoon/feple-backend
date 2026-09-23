@@ -59,6 +59,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.id = :id" + VISIBLE)
     Optional<Post> findWithAssociationsById(@Param("id") Long id);
 
+    // 연관 엔티티가 필요 없는 쓰기 경로(좋아요·스크랩·댓글 작성)용 가시성 조회.
+    // 평범한 findById를 쓰면 관리자가 내리거나 작성자가 지운 글에도 상호작용이 계속 쌓인다.
+    @Query("SELECT p FROM Post p WHERE p.id = :id" + VISIBLE)
+    Optional<Post> findVisibleById(@Param("id") Long id);
+
     // ── 아티스트 게시글 커서 페이징 (id 기반) ───────────────────────────────
     @EntityGraph(attributePaths = {"user", "artist", "festival"})
     @Query("SELECT p FROM Post p WHERE p.artist = :artist AND p.pinned = false" + VISIBLE + " ORDER BY p.id DESC")

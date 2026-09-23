@@ -12,6 +12,7 @@ import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.springframework.data.domain.PageRequest;
 class ArtistSuggestionServiceImplTest {
 
     @Mock ArtistSuggestionRepository suggestionRepository;
+    @Mock BadWordValidator badWordValidator;
     @Mock UserNicknameLookup nicknameResolver;
     @Mock ApplicationEventPublisher eventPublisher;
 
@@ -40,7 +42,7 @@ class ArtistSuggestionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ArtistSuggestionServiceImpl(suggestionRepository, nicknameResolver, eventPublisher);
+        service = new ArtistSuggestionServiceImpl(suggestionRepository, badWordValidator, nicknameResolver, eventPublisher);
     }
 
     private ArtistSuggestion pending(Long id, Long userId, String artistName) {

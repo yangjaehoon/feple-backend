@@ -13,7 +13,12 @@ public interface SetlistChangeRequestRepository extends JpaRepository<SetlistCha
     @Query("SELECT r FROM SetlistChangeRequest r WHERE (:status IS NULL OR r.status = :status) ORDER BY r.createdAt DESC")
     Page<SetlistChangeRequest> findByStatus(@Param("status") SetlistChangeRequestStatus status, Pageable pageable);
 
-    @Query("SELECT r FROM SetlistChangeRequest r WHERE (:status IS NULL OR r.status = :status) AND (LOWER(r.artistName) LIKE LOWER(CONCAT('%',:keyword,'%')) OR LOWER(r.festivalTitle) LIKE LOWER(CONCAT('%',:keyword,'%'))) ORDER BY r.createdAt DESC")
+    // keyword는 호출부에서 JpqlLikeEscaper.escape를 거친 값 — %, _ 를 리터럴로 취급하려면
+    // ESCAPE '!' 가 함께 있어야 한다(코드베이스의 다른 검색 쿼리와 동일 조합).
+    @Query("SELECT r FROM SetlistChangeRequest r WHERE (:status IS NULL OR r.status = :status) "
+            + "AND (LOWER(r.artistName) LIKE LOWER(CONCAT('%',:keyword,'%')) ESCAPE '!' "
+            + "OR LOWER(r.festivalTitle) LIKE LOWER(CONCAT('%',:keyword,'%')) ESCAPE '!') "
+            + "ORDER BY r.createdAt DESC")
     Page<SetlistChangeRequest> findByStatusAndKeyword(@Param("status") SetlistChangeRequestStatus status, @Param("keyword") String keyword, Pageable pageable);
 
     long countByStatus(SetlistChangeRequestStatus status);

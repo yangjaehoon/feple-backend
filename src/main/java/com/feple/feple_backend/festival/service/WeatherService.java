@@ -117,6 +117,11 @@ public class WeatherService {
         weatherRepository.deleteByFestivalId(festivalId);
     }
 
+    // 여기서 던지는 IllegalStateException(전역 매핑상 500)과 restTemplate의 RestClientException은
+    // 사용자 응답으로 나가지 않는다 — 이 메서드는 collectWeather → WeatherCollectionScheduler
+    // 경로에서만 호출되고 스케줄러가 catch 후 로깅한다. 컨트롤러(getByFestivalId)는 DB만 읽는다.
+    // 이 메서드를 요청 경로에서 호출하게 되면 외부 API 장애가 500으로 나가므로, 그때는 502로
+    // 매핑되는 예외로 바꿀 것.
     private WeatherDto fetchFromApi(int[] grid, LocalDate targetDate, String[] baseDatetime) {
         var uri = UriComponentsBuilder.fromUriString(weatherProperties.baseUrl() + "/getVilageFcst")
                 .queryParam("serviceKey", weatherProperties.serviceKey())

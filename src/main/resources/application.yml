@@ -55,14 +55,20 @@ server:
   servlet:
     session:
       timeout: 2h
+      # 이 블록은 server.tomcat.threads 아래에 잘못 들여쓰기돼 있어 ServerProperties가
+      # (ignoreUnknownFields=true라 기동 에러 없이) 조용히 무시했다 — 설정 파일상으로는
+      # 적용된 것처럼 보이지만 실제로는 httpOnly(Tomcat 기본값) 외엔 아무것도 걸리지 않았다.
+      cookie:
+        http-only: true
+        same-site: strict
+        # 운영이 아직 평문 HTTP라 기본값은 false — Secure 쿠키는 HTTPS로만 전송되므로
+        # 여기서 true로 켜면 관리자 로그인 세션이 아예 유지되지 않는다.
+        # TLS 적용 시 SESSION_COOKIE_SECURE=true로 전환할 것.
+        secure: ${SESSION_COOKIE_SECURE:false}
   tomcat:
     threads:
       max: 50
       min-spare: 10
-      cookie:
-        http-only: true
-        secure: true
-        same-site: strict
     encoding:
       charset: UTF-8
       enabled: true

@@ -8,6 +8,7 @@ import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.post.event.PostCreatedEvent;
 import com.feple.feple_backend.post.event.PostDeletedByAdminEvent;
 import com.feple.feple_backend.post.event.PostLikedEvent;
+import com.feple.feple_backend.post.event.PostUnlikedEvent;
 import com.feple.feple_backend.user.dto.PointLogResponseDto;
 import com.feple.feple_backend.user.entity.PointEntry;
 import com.feple.feple_backend.user.entity.PointReason;
@@ -152,6 +153,16 @@ public class PointService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPostLiked(PostLikedEvent event) {
         addPoint(event.postAuthorId(), new PointEntry(POINT_POST_LIKED_RECEIVED, PointReason.POST_LIKED_RECEIVED, event.postId()));
+    }
+
+    // 좋아요 취소 시 onPostLiked로 지급한 포인트를 되돌린다. users.point는
+    // GREATEST(0, point + delta)라 음수로 내려가지 않는다.
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onPostUnliked(PostUnlikedEvent event) {
+        addPoint(event.postAuthorId(),
+                new PointEntry(-POINT_POST_LIKED_RECEIVED, PointReason.POST_LIKE_CANCELLED, event.postId()));
     }
 
     @Async

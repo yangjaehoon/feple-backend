@@ -6,6 +6,7 @@ import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestion;
 import com.feple.feple_backend.artist.suggestion.entity.ArtistSuggestionStatus;
 import com.feple.feple_backend.artist.suggestion.event.ArtistSuggestionProcessedEvent;
 import com.feple.feple_backend.artist.suggestion.repository.ArtistSuggestionRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
@@ -30,12 +31,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArtistSuggestionServiceImpl implements ArtistSuggestionService, ArtistSuggestionAdminService {
 
     private final ArtistSuggestionRepository suggestionRepository;
+    private final BadWordValidator badWordValidator;
     private final UserNicknameLookup nicknameResolver;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     public ArtistSuggestionResponseDto submit(Long userId, SubmitArtistSuggestionDto dto) {
+        // 신청 내용은 관리자 화면에 그대로 노출되므로 다른 사용자 입력과 동일하게 금칙어를 거른다.
+        badWordValidator.validateField("artistName", dto.getArtistName());
+        badWordValidator.validateField("note", dto.getNote());
         boolean alreadyRequested = suggestionRepository
                 .existsByUserIdAndArtistNameIgnoreCaseAndStatus(
                         userId, dto.getArtistName(), ArtistSuggestionStatus.PENDING);

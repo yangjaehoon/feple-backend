@@ -91,7 +91,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, commenter);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
 
@@ -114,7 +114,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, commenter);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
         given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
@@ -141,7 +141,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, commenter);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
 
@@ -162,7 +162,7 @@ class CommentServiceImplTest {
         given(dto.getPostId()).willReturn(10L);
         given(dto.getContent()).willReturn("댓글내용");
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userBlockService.isBlocked(1L, 2L)).willReturn(true);
 
         assertThatThrownBy(() -> commentService.createComment(dto, 2L))
@@ -195,7 +195,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, commenter);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
 
@@ -216,7 +216,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, author);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(author));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
 
@@ -244,7 +244,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, commenter);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
         given(commentRepository.findById(50L)).willReturn(Optional.of(parent));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
@@ -273,7 +273,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, grandReplier);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(3L)).willReturn(Optional.of(grandReplier));
         given(commentRepository.findById(60L)).willReturn(Optional.of(reply));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
@@ -310,7 +310,7 @@ class CommentServiceImplTest {
         given(dto.getContent()).willReturn("답글");
         given(dto.getParentId()).willReturn(60L);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(3L)).willReturn(Optional.of(replier));
         given(commentRepository.findById(60L)).willReturn(Optional.of(anonymousComment));
         given(commentRepository.save(any(Comment.class))).willAnswer(inv -> inv.getArgument(0));
@@ -341,7 +341,7 @@ class CommentServiceImplTest {
         given(dto.getContent()).willReturn("답글");
         given(dto.getParentId()).willReturn(60L);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(3L)).willReturn(Optional.of(replier));
         given(commentRepository.findById(60L)).willReturn(Optional.of(namedComment));
         given(commentRepository.save(any(Comment.class))).willAnswer(inv -> inv.getArgument(0));
@@ -368,7 +368,7 @@ class CommentServiceImplTest {
         given(dto.getContent()).willReturn("대댓글내용");
         given(dto.getParentId()).willReturn(50L);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
         given(commentRepository.findById(50L)).willReturn(Optional.of(parentOnOtherPost));
 
@@ -382,7 +382,7 @@ class CommentServiceImplTest {
     void 존재하지_않는_게시글에_댓글_생성시_예외() {
         CreateCommentDto dto = mock(CreateCommentDto.class);
         given(dto.getPostId()).willReturn(99L);
-        given(postRepository.findById(99L)).willReturn(Optional.empty());
+        given(postRepository.findVisibleById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentService.createComment(dto, 1L))
                 .isInstanceOf(NoSuchElementException.class)
@@ -404,7 +404,7 @@ class CommentServiceImplTest {
 
         Comment saved = comment(100L, post, commenter);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(2L)).willReturn(Optional.of(commenter));
         given(commentRepository.findById(50L)).willReturn(Optional.of(parent));
         given(commentRepository.save(any(Comment.class))).willReturn(saved);
@@ -423,7 +423,7 @@ class CommentServiceImplTest {
         User author = user(1L);
         Post post = freePost(10L, author);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of()));
 
@@ -438,7 +438,7 @@ class CommentServiceImplTest {
         Post post = freePost(10L, author);
         Comment c = comment(100L, post, author);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(c)));
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))
@@ -465,7 +465,7 @@ class CommentServiceImplTest {
                 .id(102L).content("답글").post(post).user(author).parent(rootLowLike)
                 .likeCount(0).createdAt(t0.plusMinutes(2)).updatedAt(t0.plusMinutes(2)).build();
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(rootLowLike, rootHighLike, replyToLowLike)));
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))
@@ -490,7 +490,7 @@ class CommentServiceImplTest {
                 .build();
         Comment c = comment(100L, post, author);
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(certificationService.findApprovedUserIdsByFestivalId(eq(5L), any())).willReturn(Set.of(1L));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(c)));
@@ -619,7 +619,7 @@ class CommentServiceImplTest {
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build();
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(anon)));
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(2L), any()))
@@ -640,7 +640,7 @@ class CommentServiceImplTest {
                 .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build();
 
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(commentRepository.findByPostIdOrderByCreatedAtAsc(eq(10L), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(anon)));
         given(commentLikeRepository.findLikedCommentIdsByUserAndCommentIds(eq(1L), any()))

@@ -9,6 +9,7 @@ public enum PointReason {
     POST_CREATED("게시글 작성"),
     COMMENT_CREATED("댓글 작성"),
     POST_LIKED_RECEIVED("좋아요 받음"),
+    POST_LIKE_CANCELLED("좋아요 취소됨"),
     CERT_APPROVED("인증 승인"),
     POST_DELETED_BY_ADMIN("게시글 관리자 삭제"),
     ADMIN_GRANTED("관리자 지급");
@@ -16,7 +17,8 @@ public enum PointReason {
     private final String displayName;
 
     public boolean linksToPost() {
-        return this == POST_CREATED || this == COMMENT_CREATED || this == POST_LIKED_RECEIVED;
+        return this == POST_CREATED || this == COMMENT_CREATED
+                || this == POST_LIKED_RECEIVED || this == POST_LIKE_CANCELLED;
     }
 
     public boolean linksToCertification() {

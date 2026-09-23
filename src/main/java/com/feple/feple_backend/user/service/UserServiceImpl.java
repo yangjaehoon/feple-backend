@@ -104,9 +104,17 @@ public class UserServiceImpl implements UserService {
         try {
             // S3 업로드는 커넥션 점유 없이 수행; 완료 후 별도 트랜잭션으로 DB 반영
             User user = EntityLoader.getOrThrow(userRepository::findById, id, "사용자");
+            String oldKey = user.getProfileImageUrl();
             String url = fileStorageService.storeUserProfile(file, user.getNickname());
             user.changeProfileImage(url);
             userRepository.save(user);
+            // storeUserProfile은 매번 새 키(UUID)를 만들므로 교체 전 이미지를 지우지 않으면
+            // S3에 고아 객체가 영구히 쌓인다 — 탈퇴 시 정리되는 건 마지막 키 하나뿐이다.
+            // 새 키 저장이 끝난 뒤에 지워야 중간에 실패해도 기존 이미지가 남는다.
+            // (ArtistServiceImpl.replaceProfileImage와 동일 패턴)
+            if (oldKey != null && !oldKey.equals(url)) {
+                fileStorageService.deleteFileAfterCommit(oldKey);
+            }
         } catch (IOException e) {
             throw new ExternalStorageException("프로필 이미지 저장에 실패했습니다.", e);
         }

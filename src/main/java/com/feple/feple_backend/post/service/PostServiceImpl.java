@@ -13,6 +13,7 @@ import com.feple.feple_backend.file.service.S3ObjectVerificationService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.OwnershipValidator;
 import com.feple.feple_backend.global.PageSize;
+import com.feple.feple_backend.global.cache.EvictPopularPostsCache;
 import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.post.dto.CursorPage;
 import com.feple.feple_backend.post.dto.CursorPageRequest;
@@ -113,6 +114,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
+    @EvictPopularPostsCache
     public void deleteOwnPost(Long postId, Long requestUserId) {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         OwnershipValidator.checkOwner(post.getUserId(), requestUserId, "게시글");

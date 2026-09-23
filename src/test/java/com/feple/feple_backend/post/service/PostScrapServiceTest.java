@@ -71,7 +71,7 @@ class PostScrapServiceTest {
     void 스크랩_취소시_delete_호출되고_scrapCount_감소하며_false_반환() {
         User user = user(1L);
         Post post = freePostWithScrapCount(10L, user, 1);
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postScrapRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(1);
 
@@ -87,7 +87,7 @@ class PostScrapServiceTest {
     void 스크랩_추가시_save_호출되고_scrapCount_증가하며_true_반환() {
         User user = user(1L);
         Post post = freePost(10L, user);
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postScrapRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
 
@@ -102,7 +102,7 @@ class PostScrapServiceTest {
     void 동시요청_경합으로_unique_제약_위반이어도_예외없이_true_반환() {
         User user = user(1L);
         Post post = freePost(10L, user);
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postScrapRepository.deleteByUserIdAndPostId(1L, 10L)).willReturn(0);
         given(postScrapRepository.saveAndFlush(any(PostScrap.class)))
@@ -116,7 +116,7 @@ class PostScrapServiceTest {
 
     @Test
     void 존재하지_않는_게시글에_스크랩시_예외() {
-        given(postRepository.findById(99L)).willReturn(Optional.empty());
+        given(postRepository.findVisibleById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> postScrapService.toggleScrap(99L, 1L))
                 .isInstanceOf(NoSuchElementException.class);
@@ -126,7 +126,7 @@ class PostScrapServiceTest {
     void 존재하지_않는_사용자가_스크랩시_예외() {
         User user = user(1L);
         Post post = freePost(10L, user);
-        given(postRepository.findById(10L)).willReturn(Optional.of(post));
+        given(postRepository.findVisibleById(10L)).willReturn(Optional.of(post));
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> postScrapService.toggleScrap(10L, 99L))

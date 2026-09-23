@@ -2,11 +2,13 @@ package com.feple.feple_backend.file.service;
 
 import com.feple.feple_backend.file.ImageUploadPolicy;
 import com.feple.feple_backend.file.S3Properties;
+import com.feple.feple_backend.global.exception.ExternalStorageException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
@@ -30,6 +32,12 @@ public class S3ObjectVerificationService {
             head = s3Client.headObject(r -> r.bucket(s3Properties.bucket()).key(objectKey));
         } catch (NoSuchKeyException e) {
             throw new InvalidRequestException("업로드된 파일을 찾을 수 없습니다.");
+        } catch (SdkException e) {
+            // 권한 회수·네트워크 오류·S3 5xx 등은 클라이언트 잘못이 아니라 외부 스토리지 장애다.
+            // 변환하지 않으면 GlobalExceptionHandler의 catch-all로 떨어져 502여야 할 응답이
+            // 500 + log.error(Sentry)로 기록돼, 의존성 장애가 내부 결함으로 위장된다.
+            // (FileStorageService.uploadResizedJpeg와 동일한 규칙)
+            throw new ExternalStorageException("파일 저장소 조회에 실패했습니다.", e);
         }
         String ct = head.contentType();
         String baseType = (ct == null) ? "" : ct.split(";")[0].trim();
