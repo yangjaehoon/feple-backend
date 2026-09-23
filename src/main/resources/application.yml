@@ -80,6 +80,14 @@ jwt:
   refresh-token-expiration-ms: 2592000000  # 30일
 
 app:
+  # API 문서(/v3/api-docs, /swagger-ui)를 인증 없이 열지 여부. SecurityConfig.swaggerFilterChain의
+  # 등록 조건이며, 기본값 false에서는 그 체인이 아예 만들어지지 않아 문서 경로가 인증을 요구한다.
+  #
+  # springdoc.*.enabled와 일부러 분리해 둔 키다 — 배포 시크릿(APPLICATION_LOCAL_YAML)에 개발자의
+  # 로컬 설정이 복사돼 들어가도 공개 접근까지 함께 켜지지 않도록. 로컬에서 Swagger를 쓰려면
+  # application-local.yaml에 springdoc.*.enabled와 이 값을 함께 true로 둔다.
+  swagger:
+    public-access: ${SWAGGER_PUBLIC_ACCESS:false}
   s3:
     presign-minutes: 10
   cdn:
@@ -135,6 +143,8 @@ kma:
   service-key: ${KMA_SERVICE_KEY:}
   base-url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
 
+# API 문서 자체의 on/off. 이 값이 true여도 문서가 "공개"되지는 않는다 —
+# 인증 없이 열어주는 건 아래 app.swagger.public-access 쪽이다.
 springdoc:
   swagger-ui:
     enabled: false

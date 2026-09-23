@@ -83,18 +83,22 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     // ── 0. Swagger UI 전용 FilterChain ──
-    // 이 체인은 인증 없이(permitAll, JWT 필터 없음) API 문서를 열어주므로, springdoc이 실제로
-    // 켜져 있을 때만 등록한다. application.yml 기본값이 false이고 프로퍼티가 없으면 빈 자체가
-    // 만들어지지 않아, /v3/api-docs·/swagger-ui는 catch-all인 apiFilterChain(@Order(3),
-    // anyRequest().authenticated())으로 떨어져 401이 된다 — fail-closed.
+    // 이 체인은 인증 없이(permitAll, JWT 필터 없음) API 문서를 열어주므로, "문서를 공개해도 되는
+    // 환경"이라고 명시적으로 선언했을 때만 등록한다. 프로퍼티가 없으면 빈 자체가 만들어지지 않아
+    // /v3/api-docs·/swagger-ui는 catch-all인 apiFilterChain(@Order(3), anyRequest().authenticated())
+    // 으로 떨어져 401이 된다 — fail-closed.
     //
-    // 주의: application-local.yaml은 프로필이 아니라 spring.config.import로 로드되므로
-    // @Profile("local")은 이 프로젝트에서 동작하지 않는다(활성 프로필이 없음). 운영에 문서를
-    // 노출하지 않으려면 배포 시크릿(APPLICATION_LOCAL_YAML)에 springdoc.*.enabled=true가
-    // 들어가지 않아야 한다.
+    // springdoc.api-docs.enabled를 게이트로 쓰지 않는 이유: 배포 시크릿(APPLICATION_LOCAL_YAML)에
+    // 개발자의 로컬 설정이 통째로 복사돼 들어가면 그 안의 springdoc.*.enabled=true가 문서 생성과
+    // 공개 접근을 한꺼번에 켜버린다(2026-09-23 운영에서 /v3/api-docs가 200으로 열려 있던 원인 —
+    // 엔드포인트 121개·DTO 80개 노출). 게이트를 별도 키로 분리하면 시크릿에 springdoc 설정이
+    // 남아 있어도 문서는 인증을 요구한다.
+    //
+    // 참고: application-local.yaml은 프로필이 아니라 spring.config.import로 로드되므로
+    // @Profile("local")은 이 프로젝트에서 동작하지 않는다(활성 프로필이 없음).
     @Bean
     @Order(1)
-    @ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true")
+    @ConditionalOnProperty(name = "app.swagger.public-access", havingValue = "true")
     public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
