@@ -4,6 +4,7 @@ import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.QueryResultMapper;
+import com.feple.feple_backend.global.cache.EvictPopularPostsCache;
 import com.feple.feple_backend.post.dto.PostAdminFilterDto;
 import com.feple.feple_backend.post.dto.PostResponseDto;
 import com.feple.feple_backend.post.entity.BoardType;
@@ -89,6 +90,7 @@ public class PostAdminServiceImpl implements PostAdminService {
 
     @Override
     @Transactional
+    @EvictPopularPostsCache
     public void deletePost(Long postId) {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         eventPublisher.publishEvent(new PostDeletedByAdminEvent(post.getUserId(), post.getTitle()));
@@ -98,6 +100,7 @@ public class PostAdminServiceImpl implements PostAdminService {
 
     @Override
     @Transactional
+    @EvictPopularPostsCache
     public void bulkDeletePosts(List<Long> ids) {
         if (ids.isEmpty()) return;
         postRepository.softDeleteByIds(ids);
@@ -126,12 +129,14 @@ public class PostAdminServiceImpl implements PostAdminService {
 
     @Override
     @Transactional
+    @EvictPopularPostsCache
     public void restorePost(Long postId) {
         postRepository.restore(postId);
     }
 
     @Override
     @Transactional
+    @EvictPopularPostsCache
     public void unblindPost(Long postId) {
         EntityLoader.getOrThrow(postRepository::findById, postId, "게시글").unblind();
     }

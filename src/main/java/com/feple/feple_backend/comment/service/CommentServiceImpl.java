@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponseDto createComment(CreateCommentDto dto, Long userId) {
         badWordValidator.validateField("content", dto.getContent());
-        Post post = EntityLoader.getOrThrow(postRepository::findById, dto.getPostId(), "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findVisibleById, dto.getPostId(), "게시글");
 
         if (userBlockService.isBlocked(post.getUserId(), userId)) {
             throw new AccessDeniedException("차단된 사용자의 게시글에는 댓글을 작성할 수 없습니다.");
@@ -118,7 +118,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPost(Long postId, Long userId, String sort) {
-        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        // 게시글 상세(PostServiceImpl.getPost → findWithAssociationsById)가 삭제·블라인드 글에
+        // 404를 내는 것과 맞춘다 — 여기만 findById면 본문은 못 보는데 댓글은 읽히는 상태가 된다.
+        Post post = EntityLoader.getOrThrow(postRepository::findVisibleById, postId, "게시글");
         List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, PageRequest.of(0, PageSize.COMMENTS)).getContent();
         if ("best".equals(sort)) {
             comments = CommentSorter.sortByBest(comments);

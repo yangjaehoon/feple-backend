@@ -12,9 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -72,6 +75,29 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException ex) {
         log.debug("Missing required parameter: {}", ex.getMessage());
         return body(HttpStatus.BAD_REQUEST, "필수 파라미터가 누락되었습니다.", ErrorCode.INVALID_REQUEST);
+    }
+
+    // 헤더·쿠키·경로변수 바인딩 실패 전반(MissingRequestHeaderException 등). 이 클래스에 catch-all
+    // @ExceptionHandler(Exception)가 있어 ExceptionHandlerExceptionResolver가 항상 먼저 이기므로,
+    // Spring이 기본으로 4xx에 매핑하는 예외도 전용 핸들러가 없으면 500 + log.error(Sentry)로 떨어진다.
+    // 예: Authorization 헤더 없이 POST /auth/kakao 호출 → 400이어야 할 요청이 500으로 집계됐다.
+    // (MissingServletRequestParameterException은 이 타입의 하위라 위 핸들러가 더 구체적이라 우선한다)
+    @ExceptionHandler(ServletRequestBindingException.class)
+    public ResponseEntity<ErrorResponse> handleRequestBinding(ServletRequestBindingException ex) {
+        log.debug("Request binding failed: {}", ex.getMessage());
+        return body(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다.", ErrorCode.INVALID_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        log.debug("Unsupported media type: {}", ex.getContentType());
+        return body(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원하지 않는 요청 형식입니다.", ErrorCode.INVALID_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ErrorResponse> handleMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex) {
+        log.debug("Not acceptable media type requested: {}", ex.getMessage());
+        return body(HttpStatus.NOT_ACCEPTABLE, "지원하지 않는 응답 형식입니다.", ErrorCode.INVALID_REQUEST);
     }
 
     // BadWordException extends IllegalArgumentException — Spring이 계층 깊이로 구체적인 핸들러를 먼저 선택

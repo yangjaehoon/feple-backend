@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.diary.dto.CreateDiaryRequestDto;
 import com.feple.feple_backend.diary.dto.FestivalDiaryResponseDto;
 import com.feple.feple_backend.diary.dto.UpdateDiaryRequestDto;
@@ -50,6 +51,7 @@ class FestivalDiaryServiceImplTest {
     @Mock S3ObjectVerificationService s3ObjectVerificationService;
     @Mock FileStorageService fileStorageService;
     @Mock BlockedContentFilter blockedContentFilter;
+    @Mock BadWordValidator badWordValidator;
 
     @InjectMocks FestivalDiaryServiceImpl diaryService;
 

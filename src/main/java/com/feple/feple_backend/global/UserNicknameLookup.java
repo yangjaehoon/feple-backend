@@ -25,6 +25,9 @@ public class UserNicknameLookup {
     private final UserRepository userRepository;
 
     public String lookup(Long userId) {
+        // findById(null)은 "The given id must not be null"(IllegalArgumentException)을 던져
+        // 인증 경계가 어긋났을 때 401/400 대신 엉뚱한 400이 나간다. 방어적으로 막는다.
+        if (userId == null) return UNKNOWN;
         return userRepository.findById(userId)
                 .map(User::getNickname)
                 .filter(n -> n != null && !n.isBlank())

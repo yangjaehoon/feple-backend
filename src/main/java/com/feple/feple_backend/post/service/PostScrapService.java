@@ -36,7 +36,7 @@ public class PostScrapService {
     /** 스크랩 토글 — 현재 스크랩 상태 반환 */
     @Transactional
     public boolean toggleScrap(Long postId, Long userId) {
-        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findVisibleById, postId, "게시글");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         return LikeToggler.toggle(

@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.festival.suggestion.dto.FestivalSuggestionResponseDto;
 import com.feple.feple_backend.festival.suggestion.dto.SubmitFestivalSuggestionDto;
 import com.feple.feple_backend.festival.suggestion.entity.FestivalSuggestion;
@@ -33,6 +34,7 @@ import org.springframework.data.domain.PageRequest;
 class FestivalSuggestionServiceImplTest {
 
     @Mock FestivalSuggestionRepository suggestionRepository;
+    @Mock BadWordValidator badWordValidator;
     @Mock UserNicknameLookup nicknameResolver;
     @Mock ApplicationEventPublisher eventPublisher;
 
@@ -40,7 +42,7 @@ class FestivalSuggestionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new FestivalSuggestionServiceImpl(suggestionRepository, nicknameResolver, eventPublisher);
+        service = new FestivalSuggestionServiceImpl(suggestionRepository, badWordValidator, nicknameResolver, eventPublisher);
     }
 
     private FestivalSuggestion pending(Long id, Long userId, String festivalName) {

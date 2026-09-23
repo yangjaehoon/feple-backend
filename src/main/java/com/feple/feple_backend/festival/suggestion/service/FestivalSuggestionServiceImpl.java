@@ -1,5 +1,6 @@
 package com.feple.feple_backend.festival.suggestion.service;
 
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.festival.suggestion.dto.FestivalSuggestionResponseDto;
 import com.feple.feple_backend.festival.suggestion.dto.SubmitFestivalSuggestionDto;
 import com.feple.feple_backend.festival.suggestion.entity.FestivalSuggestion;
@@ -30,12 +31,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class FestivalSuggestionServiceImpl implements FestivalSuggestionService, FestivalSuggestionAdminService {
 
     private final FestivalSuggestionRepository suggestionRepository;
+    private final BadWordValidator badWordValidator;
     private final UserNicknameLookup nicknameResolver;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     public FestivalSuggestionResponseDto submit(Long userId, SubmitFestivalSuggestionDto dto) {
+        // 신청 내용은 관리자 화면에 그대로 노출되므로 다른 사용자 입력과 동일하게 금칙어를 거른다.
+        badWordValidator.validateField("festivalName", dto.getFestivalName());
+        badWordValidator.validateField("note", dto.getNote());
         boolean alreadyRequested = suggestionRepository
                 .existsByUserIdAndFestivalNameIgnoreCaseAndStatus(
                         userId, dto.getFestivalName(), FestivalSuggestionStatus.PENDING);

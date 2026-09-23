@@ -14,8 +14,11 @@ public interface FestivalLikeRepository extends JpaRepository<FestivalLike, Long
     @Query("SELECT CASE WHEN COUNT(fl) > 0 THEN TRUE ELSE FALSE END FROM FestivalLike fl WHERE fl.user.id = :userId AND fl.festival.id = :festivalId")
     boolean existsByUserIdAndFestivalId(@Param("userId") Long userId, @Param("festivalId") Long festivalId);
 
-    // festival JOIN FETCH — getLikedFestivals()에서 like.getFestival() 접근 시 N+1 방지
-    @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival WHERE fl.user.id = :userId")
+    // festival JOIN FETCH — getLikedFestivals()에서 like.getFestival() 접근 시 N+1 방지.
+    // 찜 행은 페스티벌이 소프트 삭제돼도 정리되지 않으므로 여기서 걸러야 한다 — 안 그러면
+    // 목록에는 남아 있는데 탭하면 상세(findByIdAndDeletedAtIsNull)가 404를 내는 상태가 된다.
+    @Query("SELECT fl FROM FestivalLike fl JOIN FETCH fl.festival f "
+            + "WHERE fl.user.id = :userId AND f.deletedAt IS NULL")
     List<FestivalLike> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     /** 페스티벌별 찜한 유저 일괄 조회용: [festivalId, userId] — FestivalReminderScheduler에서 사용 */

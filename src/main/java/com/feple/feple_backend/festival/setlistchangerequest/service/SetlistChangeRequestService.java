@@ -9,6 +9,7 @@ import com.feple.feple_backend.festival.setlistchangerequest.entity.SetlistChang
 import com.feple.feple_backend.festival.setlistchangerequest.entity.SetlistChangeRequestStatus;
 import com.feple.feple_backend.festival.setlistchangerequest.repository.SetlistChangeRequestRepository;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.cache.EvictAdminPendingCaches;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
@@ -51,7 +52,7 @@ public class SetlistChangeRequestService {
     @Transactional(readOnly = true)
     public Page<SetlistChangeRequest> list(SetlistChangeRequestStatus status, String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
-            return repository.findByStatusAndKeyword(status, keyword, pageable);
+            return repository.findByStatusAndKeyword(status, JpqlLikeEscaper.escape(keyword), pageable);
         }
         return repository.findByStatus(status, pageable);
     }

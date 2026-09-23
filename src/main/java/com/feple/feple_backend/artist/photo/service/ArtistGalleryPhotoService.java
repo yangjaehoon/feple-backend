@@ -10,6 +10,7 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRep
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.file.S3PathConstants;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.FileStorageService;
@@ -50,6 +51,7 @@ public class ArtistGalleryPhotoService {
     private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
     private final BlockedContentFilter blockedContentFilter;
+    private final BadWordValidator badWordValidator;
 
     public S3PresignedUrlResult generateUploadUrl(Long artistId, String extension, String contentType) {
         EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
@@ -63,6 +65,11 @@ public class ArtistGalleryPhotoService {
     public ArtistGalleryPhotoResponseDto register(Long artistId, RegisterPhotoRequestDto req, Long userId) {
         String objectKey = req.objectKey();
         S3PathConstants.requireWithinPrefix(objectKey, S3PathConstants.artistPhotoPrefix(artistId));
+
+        // 제목·설명은 다른 사용자에게 그대로 노출되므로 게시글·댓글과 동일하게 금칙어를 거른다.
+        // S3 검증보다 먼저 — 거절할 요청이면 외부 호출을 낭비하지 않는다.
+        badWordValidator.validateField("title", req.title());
+        badWordValidator.validateField("description", req.description());
 
         // presign 단계에서 content-type을 서명에 포함시키지만, 실제 업로드 여부와
         // S3에 저장된 content-type이 허용된 이미지 타입인지 추가로 검증한다.
@@ -129,6 +136,8 @@ public class ArtistGalleryPhotoService {
 
     @Transactional
     public void update(Long photoId, Long userId, UpdatePhotoRequestDto command) {
+        badWordValidator.validateField("title", command.title());
+        badWordValidator.validateField("description", command.description());
         ArtistGalleryPhoto photo = EntityLoader.getOrThrow(artistGalleryPhotoRepository::findById, photoId, "사진");
         OwnershipValidator.checkOwner(photo.getUploaderId(), userId, "사진", "수정");
         photo.updateTitleAndDescription(command.title(), command.description());

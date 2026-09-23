@@ -11,6 +11,7 @@ import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.JpqlLikeEscaper;
 import com.feple.feple_backend.global.UserNicknameLookup;
@@ -38,11 +39,14 @@ public class SongRequestServiceImpl implements SongRequestService, SongRequestAd
     private final UserNicknameLookup nicknameResolver;
     private final YoutubeSearchService youtubeSearchService;
     private final SongAdminService songAdminService;
+    private final BadWordValidator badWordValidator;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     public SongRequestResponseDto submit(Long artistId, Long userId, SubmitSongRequestDto dto) {
+        // 곡 제목은 관리자 화면에 그대로 노출되므로 다른 사용자 입력과 동일하게 금칙어를 거른다.
+        badWordValidator.validateField("songTitle", dto.getSongTitle());
         Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
 
         boolean alreadyRequested = songRequestRepository

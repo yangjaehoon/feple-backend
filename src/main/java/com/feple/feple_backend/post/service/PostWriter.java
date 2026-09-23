@@ -1,5 +1,6 @@
 package com.feple.feple_backend.post.service;
 
+import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.post.dto.PostRequestDto;
 import com.feple.feple_backend.post.entity.Post;
@@ -35,6 +36,7 @@ class PostWriter {
     private final PostImageRepository postImageRepository;
     private final PostTagRepository postTagRepository;
     private final PostDraftRepository postDraftRepository;
+    private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
 
     /** 호출부(PostServiceImpl)가 내용·이미지 검증을 마쳤다는 전제로 저장만 수행한다. */
@@ -55,6 +57,7 @@ class PostWriter {
     void update(Long postId, PostRequestDto dto) {
         Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
         post.update(dto.getTitle(), dto.getContent());
+        deleteRemovedImageObjects(postId, dto.getImageUrls());
         postImageRepository.deleteByPostId(postId);
         saveImages(post, dto.getImageUrls());
         postTagRepository.deleteByPostId(postId);
@@ -72,6 +75,16 @@ class PostWriter {
                 .festival(ctx.festival())
                 .anonymous(dto.isAnonymous())
                 .build();
+    }
+
+    // 수정으로 목록에서 빠진 이미지의 S3 객체를 커밋 후 정리한다. 행만 지우고 객체를 두면
+    // 사진 3장 글을 1장으로 고칠 때마다 고아 객체가 남고, presigned GET URL을 아는 사람은
+    // 계속 접근할 수 있다. 하드 삭제 경로(PostDeleter.deleteByIds)는 이미 같은 처리를 한다.
+    private void deleteRemovedImageObjects(Long postId, List<String> newImageUrls) {
+        List<String> keptKeys = newImageUrls != null ? newImageUrls : List.of();
+        postImageRepository.findImageKeysByPostIds(List.of(postId)).stream()
+                .filter(existingKey -> !keptKeys.contains(existingKey))
+                .forEach(fileStorageService::deleteFileAfterCommit);
     }
 
     private void saveImages(Post post, List<String> imageUrls) {

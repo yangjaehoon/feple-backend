@@ -35,8 +35,11 @@ public interface ArtistFollowRepository extends JpaRepository<ArtistFollow, Long
     @Query("DELETE FROM ArtistFollow af WHERE af.artist.id = :artistId")
     void deleteByArtistId(@Param("artistId") Long artistId);
 
-    // artist JOIN FETCH — getFollowedArtists()에서 follow.getArtist() 접근 시 N+1 방지
-    @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.artist WHERE af.user.id = :userId")
+    // artist JOIN FETCH — getFollowedArtists()에서 follow.getArtist() 접근 시 N+1 방지.
+    // 팔로우 행은 아티스트가 소프트 삭제돼도 정리되지 않으므로 여기서 걸러야 한다 — 안 그러면
+    // 목록에는 남아 있는데 탭하면 상세(findByIdAndDeletedAtIsNull)가 404를 내는 상태가 된다.
+    @Query("SELECT af FROM ArtistFollow af JOIN FETCH af.artist a "
+            + "WHERE af.user.id = :userId AND a.deletedAt IS NULL")
     List<ArtistFollow> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     // user JOIN FETCH — notifyNewFestivalForArtist()에서 f.getUser() 접근 시 N+1 방지

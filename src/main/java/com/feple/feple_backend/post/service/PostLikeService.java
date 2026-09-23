@@ -5,6 +5,7 @@ import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.post.entity.PostLike;
 import com.feple.feple_backend.post.event.PostLikedEvent;
+import com.feple.feple_backend.post.event.PostUnlikedEvent;
 import com.feple.feple_backend.post.repository.PostLikeRepository;
 import com.feple.feple_backend.post.repository.PostRepository;
 import com.feple.feple_backend.user.entity.User;
@@ -31,12 +32,18 @@ public class PostLikeService {
 
     @Transactional
     public boolean toggleLike(Long postId, Long userId) {
-        Post post = EntityLoader.getOrThrow(postRepository::findById, postId, "게시글");
+        Post post = EntityLoader.getOrThrow(postRepository::findVisibleById, postId, "게시글");
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
 
         return LikeToggler.toggle(
                 () -> postLikeRepository.deleteByUserIdAndPostId(userId, postId),
-                () -> postRepository.decrementLikeCount(postId),
+                () -> {
+                    postRepository.decrementLikeCount(postId);
+                    // 지급과 대칭으로 회수한다 — 없으면 좋아요/취소 반복으로 포인트를 무한 적립할 수 있다.
+                    if (!post.getUserId().equals(userId)) {
+                        eventPublisher.publishEvent(new PostUnlikedEvent(post.getUserId(), postId, userId));
+                    }
+                },
                 () -> {
                     postLikeRepository.saveAndFlush(new PostLike(user, post));
                     postRepository.incrementLikeCount(postId);

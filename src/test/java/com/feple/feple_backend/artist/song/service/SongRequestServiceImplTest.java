@@ -21,6 +21,7 @@ import com.feple.feple_backend.artist.song.entity.SongRequestStatus;
 import com.feple.feple_backend.artist.song.event.SongRequestApprovedEvent;
 import com.feple.feple_backend.artist.song.event.SongRequestRejectedEvent;
 import com.feple.feple_backend.artist.song.repository.SongRequestRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.global.UserNicknameLookup;
 import com.feple.feple_backend.global.exception.ConflictException;
 import java.util.List;
@@ -48,6 +49,7 @@ class SongRequestServiceImplTest {
     @Mock UserNicknameLookup nicknameResolver;
     @Mock YoutubeSearchService youtubeSearchService;
     @Mock SongAdminService songAdminService;
+    @Mock BadWordValidator badWordValidator;
     @Mock ApplicationEventPublisher eventPublisher;
 
     private SongRequestServiceImpl service;
@@ -55,7 +57,8 @@ class SongRequestServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new SongRequestServiceImpl(
-                songRequestRepository, artistRepository, nicknameResolver, youtubeSearchService, songAdminService, eventPublisher);
+                songRequestRepository, artistRepository, nicknameResolver, youtubeSearchService, songAdminService,
+                badWordValidator, eventPublisher);
     }
 
     private Artist artist(Long id, String name) {

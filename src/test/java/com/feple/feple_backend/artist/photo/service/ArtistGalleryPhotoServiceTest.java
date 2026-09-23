@@ -20,6 +20,7 @@ import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoLikeRep
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoReportRepository;
 import com.feple.feple_backend.artist.photo.repository.ArtistGalleryPhotoRepository;
 import com.feple.feple_backend.artist.repository.ArtistRepository;
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.file.dto.S3PresignedUrlResult;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.file.service.S3ObjectVerificationService;
@@ -53,6 +54,7 @@ class ArtistGalleryPhotoServiceTest {
     @Mock ArtistGalleryPhotoReportRepository artistGalleryPhotoReportRepository;
     @Mock ArtistRepository artistRepository;
     @Mock UserRepository userRepository;
+    @Mock BadWordValidator badWordValidator;
     UserBlockService userBlockService = mock(UserBlockService.class);
     @Spy BlockedContentFilter blockedContentFilter = new BlockedContentFilter(userBlockService);
 

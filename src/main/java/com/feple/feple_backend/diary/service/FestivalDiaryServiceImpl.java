@@ -1,5 +1,6 @@
 package com.feple.feple_backend.diary.service;
 
+import com.feple.feple_backend.badword.BadWordValidator;
 import com.feple.feple_backend.diary.dto.CreateDiaryRequestDto;
 import com.feple.feple_backend.diary.dto.FestivalDiaryResponseDto;
 import com.feple.feple_backend.diary.dto.UpdateDiaryRequestDto;
@@ -47,6 +48,7 @@ public class FestivalDiaryServiceImpl implements FestivalDiaryService {
     private final S3ObjectVerificationService s3ObjectVerificationService;
     private final FileStorageService fileStorageService;
     private final BlockedContentFilter blockedContentFilter;
+    private final BadWordValidator badWordValidator;
 
     @Override
     public S3PresignedUrlResult generateUploadUrl(Long userId, String extension, String contentType) {
@@ -59,6 +61,9 @@ public class FestivalDiaryServiceImpl implements FestivalDiaryService {
     @Override
     @Transactional
     public FestivalDiaryResponseDto create(Long userId, Long festivalId, CreateDiaryRequestDto req) {
+        // visibility=PUBLIC 일기는 /diaries/festival/{id}/public 등으로 공개 노출되므로
+        // 게시글·댓글과 동일하게 금칙어를 거른다.
+        badWordValidator.validateField("content", req.content());
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         Festival festival = EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
 
@@ -109,6 +114,7 @@ public class FestivalDiaryServiceImpl implements FestivalDiaryService {
     @Override
     @Transactional
     public FestivalDiaryResponseDto update(Long userId, Long diaryId, UpdateDiaryRequestDto req) {
+        badWordValidator.validateField("content", req.content());
         FestivalDiary diary = EntityLoader.getOrThrow(diaryRepository::findById, diaryId, "일기");
         OwnershipValidator.checkOwner(diary.getUserId(), userId, "일기", "수정");
         diary.update(req.content(), req.visibility());

@@ -9,6 +9,7 @@ import com.feple.feple_backend.global.ReportPolicy;
 import com.feple.feple_backend.global.ReportRejectionService;
 import com.feple.feple_backend.global.ReportTypes;
 import com.feple.feple_backend.global.cache.EvictAdminReportCaches;
+import com.feple.feple_backend.global.cache.EvictPopularPostsCache;
 import com.feple.feple_backend.global.dto.ReportSubmitRequest;
 import com.feple.feple_backend.global.entity.ReportStatus;
 import com.feple.feple_backend.global.exception.ConflictException;
@@ -44,6 +45,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     // 빌더 타입이 전부 달라 제네릭으로 묶으면 콜백만 많아지고 오히려 읽기 어려워져 통합하지 않는다.
     @Transactional
     @EvictAdminReportCaches
+    @EvictPopularPostsCache
     public void submitReport(Long postId, Long reporterId, ReportSubmitRequest command) {
         if (reportRepository.existsByReporterIdAndPostId(reporterId, postId)) {
             throw new ConflictException(ALREADY_REPORTED_MESSAGE);
@@ -115,6 +117,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
     }
 
     @EvictAdminReportCaches
+    @EvictPopularPostsCache
     @Transactional
     public void dismissReport(Long reportId) {
         PostReport report = ReportRejectionService.reject(reportRepository, reportId);
@@ -123,6 +126,7 @@ public class PostReportService implements ReportAdminService<PostReport> {
 
     @Override
     @EvictAdminReportCaches
+    @EvictPopularPostsCache
     @Transactional
     public void bulkDismiss(List<Long> ids) {
         if (ids.isEmpty()) return;

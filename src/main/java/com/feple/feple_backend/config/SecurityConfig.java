@@ -202,6 +202,10 @@ public class SecurityConfig {
                 // /posts/my/** 전체, 임시저장 조회, 스크랩 목록 조회는 인증 필수
                 // (아래 /posts/** permitAll보다 먼저 와야 함 — 순서 바뀌면 다시 공개됨)
                 .requestMatchers(HttpMethod.GET, "/posts/my/**", "/posts/draft", "/posts/scrapped").authenticated()
+                // "내 노래 요청 목록"은 계정 전용인데 아래 /artists/** 와일드카드에 딸려 공개돼 있었다.
+                // 비로그인으로 호출하면 userId=null이 그대로 리포지토리까지 내려가 401이 아닌 400이 났다.
+                // (아래 permitAll보다 먼저 와야 함 — 순서가 바뀌면 다시 공개된다)
+                .requestMatchers(HttpMethod.GET, "/artists/*/song-requests").authenticated()
                 .requestMatchers(HttpMethod.GET, "/festivals/**", "/artists/**",
                     "/posts/**", "/comments/**", "/notices/**").permitAll()
                 // 비로그인 게스트도 접근하는 비계정 콘텐츠 (Apple 가이드라인 5.1.1(v)):
