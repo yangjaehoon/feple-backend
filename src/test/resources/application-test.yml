@@ -39,6 +39,11 @@ jwt:
   refresh-token-expiration-ms: 604800000
 
 app:
+  # application.yml의 spring.config.import는 위 spring.config.import: "" 로 막히지 않아
+  # 개발자의 application-local.yaml이 테스트에도 로드된다. 로컬에서 API 문서를 열어둔 상태가
+  # 테스트로 새어들어오지 않도록 여기서 명시적으로 닫는다.
+  swagger:
+    public-access: false
   s3:
     bucket: test-bucket
     presign-minutes: 10
