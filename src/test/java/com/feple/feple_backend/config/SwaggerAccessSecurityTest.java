@@ -30,7 +30,7 @@ class SwaggerAccessSecurityTest {
     @SpringBootTest(properties = {
             "springdoc.api-docs.enabled=true",
             "springdoc.swagger-ui.enabled=true",
-            // 개발자의 application-local.yaml이 테스트에도 로드되므로 명시적으로 고정한다
+            // application-test.yml이 이미 false로 두지만, 이 테스트의 전제를 한눈에 보이게 명시한다
             "app.swagger.public-access=false"
     })
     @AutoConfigureMockMvc

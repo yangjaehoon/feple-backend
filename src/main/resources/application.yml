@@ -40,8 +40,6 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
-  config:
-    import: "optional:classpath:application-local.yaml"
   servlet:
     multipart:
       max-file-size: 10MB
@@ -166,3 +164,17 @@ logging:
     org.hibernate: WARN
     com.zaxxer.hikari: WARN
     org.flywaydb: WARN
+---
+# application-local.yaml(git 미추적, 배포 시에는 APPLICATION_LOCAL_YAML 시크릿 내용) 로드.
+#
+# 별도 문서로 분리해 test 프로필에서는 import 자체가 실행되지 않게 한다.
+# spring.config.import는 일반 설정값처럼 "나중 값이 이긴다"가 아니라 파일을 읽는 도중
+# 그 자리에서 즉시 실행되는 지시문이라, application-test.yml에서 import: "" 로 덮어써도
+# 이미 로드된 값은 남는다. 그 결과 테스트가 개발자의 로컬 설정을 읽었고
+# (application-test.yml에 같은 키가 없으면 그대로 통과), CI는 deploy.yml이 시크릿을
+# 이 파일에 쓴 뒤 테스트를 돌리므로 운영 값을 올린 채 실행됐다.
+spring:
+  config:
+    activate:
+      on-profile: "!test"
+    import: "optional:classpath:application-local.yaml"
