@@ -7,7 +7,7 @@ record PostListParams(Integer page, String filter, String keyword, Long artistId
 
     PostListParams {
         // filter 파라미터 없이 접근 시 "filter=null" 방지
-        page = AdminParamDefaults.orZero(page);
+        page = AdminParamDefaults.pageOrFirst(page);
         filter = AdminParamDefaults.orEmpty(filter);
         keyword = AdminParamDefaults.orEmpty(keyword);
     }

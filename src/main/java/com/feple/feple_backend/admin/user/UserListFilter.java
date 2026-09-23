@@ -7,6 +7,6 @@ record UserListFilter(String filter, String sort, Integer page, String keyword) 
         filter  = AdminParamDefaults.orEmpty(filter);
         sort    = AdminParamDefaults.orDefault(sort, "latest");
         keyword = AdminParamDefaults.orEmpty(keyword);
-        page    = AdminParamDefaults.orZero(page);
+        page    = AdminParamDefaults.pageOrFirst(page);
     }
 }

@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, Long> {
 
@@ -52,14 +50,4 @@ public interface ArtistFestivalRepository extends JpaRepository<ArtistFestival, 
 
     @Query("SELECT CASE WHEN COUNT(af) > 0 THEN TRUE ELSE FALSE END FROM ArtistFestival af WHERE af.id = :id AND af.artist.id = :artistId")
     boolean existsByIdAndArtistId(@Param("id") Long id, @Param("artistId") Long artistId);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM ArtistFestival af WHERE af.festival.id = :festivalId")
-    void deleteByFestivalId(@Param("festivalId") Long festivalId);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM ArtistFestival af WHERE af.artist.id = :artistId")
-    void deleteByArtistId(@Param("artistId") Long artistId);
 }

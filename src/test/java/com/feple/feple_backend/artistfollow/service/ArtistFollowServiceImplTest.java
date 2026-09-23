@@ -65,7 +65,7 @@ class ArtistFollowServiceImplTest {
     @Test
     void 팔로우상태_로그인유저_팔로우중() {
         Artist artist = artist(1L, 5);
-        given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(artist));
         given(artistFollowRepository.existsByUserIdAndArtistId(10L, 1L)).willReturn(true);
 
         FollowStatusDto result = service.followStatus(10L, 1L);
@@ -77,7 +77,7 @@ class ArtistFollowServiceImplTest {
     @Test
     void 팔로우상태_비로그인이면_미팔로우_고정() {
         Artist artist = artist(1L, 5);
-        given(artistRepository.findById(1L)).willReturn(Optional.of(artist));
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(artist));
 
         FollowStatusDto result = service.followStatus(null, 1L);
 
@@ -90,7 +90,7 @@ class ArtistFollowServiceImplTest {
     void 팔로우_최초_팔로우시_카운트_증가() {
         User user = user(10L);
         given(userRepository.findById(10L)).willReturn(Optional.of(user));
-        given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L, 5)));
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(artist(1L, 5)));
         given(artistFollowRepository.existsByUserIdAndArtistId(10L, 1L)).willReturn(false);
         given(artistRepository.findFollowerCountById(1L)).willReturn(6);
 
@@ -106,7 +106,7 @@ class ArtistFollowServiceImplTest {
     void 팔로우_이미_팔로우중이면_중복저장_안함() {
         User user = user(10L);
         given(userRepository.findById(10L)).willReturn(Optional.of(user));
-        given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L, 5)));
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(artist(1L, 5)));
         given(artistFollowRepository.existsByUserIdAndArtistId(10L, 1L)).willReturn(true);
         given(artistRepository.findFollowerCountById(1L)).willReturn(5);
 
@@ -122,7 +122,7 @@ class ArtistFollowServiceImplTest {
     void 팔로우_동시요청으로_이미팔로우된경우_예외무시하고_카운트유지() {
         User user = user(10L);
         given(userRepository.findById(10L)).willReturn(Optional.of(user));
-        given(artistRepository.findById(1L)).willReturn(Optional.of(artist(1L, 5)));
+        given(artistRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(artist(1L, 5)));
         given(artistFollowRepository.existsByUserIdAndArtistId(10L, 1L)).willReturn(false);
         given(artistFollowRepository.saveAndFlush(any())).willThrow(new DataIntegrityViolationException("dup"));
         given(artistRepository.findFollowerCountById(1L)).willReturn(5);
@@ -159,7 +159,7 @@ class ArtistFollowServiceImplTest {
         verify(artistRepository, never()).decrementFollowerCount(1L);
     }
 
-    // ── removeAllByUser / removeAllByArtist ────────────────────────────
+    // ── removeAllByUser ────────────────────────────────────────────────
 
     @Test
     void 회원탈퇴시_팔로우_카운트_감소후_삭제() {
@@ -167,12 +167,5 @@ class ArtistFollowServiceImplTest {
 
         verify(artistFollowRepository).decrementFollowerCountByUserId(10L);
         verify(artistFollowRepository).deleteByUserId(10L);
-    }
-
-    @Test
-    void 아티스트삭제시_팔로우_전체삭제() {
-        service.removeAllByArtist(1L);
-
-        verify(artistFollowRepository).deleteByArtistId(1L);
     }
 }

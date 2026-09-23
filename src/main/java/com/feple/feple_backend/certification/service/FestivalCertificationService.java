@@ -22,5 +22,4 @@ public interface FestivalCertificationService {
     Set<Long> findApprovedUserIdsByFestivalId(Long festivalId, Collection<Long> candidateUserIds);
     boolean existsApprovedCertification(Long festivalId, Long userId);
     void removeAllByUser(Long userId);
-    void removeAllByFestival(Long festivalId);
 }

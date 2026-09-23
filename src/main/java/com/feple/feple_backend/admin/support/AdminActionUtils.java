@@ -160,4 +160,18 @@ public final class AdminActionUtils {
     public static String listRedirect(String basePath, Object status, int page, String keyword) {
         return "redirect:" + listUrl(basePath, status, page, keyword);
     }
+
+    /**
+     * 목록에서 항목을 처리한 뒤 돌아갈 페이지를 남은 건수 기준으로 보정한다.
+     * 마지막 페이지의 마지막 항목을 처리하면 그 페이지가 사라져 빈 화면에 착지하기 때문이다.
+     *
+     * @param totalAfterAction 처리 후 남은 전체 건수
+     * @param requestedPage    사용자가 보고 있던 페이지(0-base)
+     */
+    public static int clampToLastPage(long totalAfterAction, int requestedPage) {
+        int lastPage = totalAfterAction > 0
+                ? (int) ((totalAfterAction - 1) / AdminConstants.LIST_PAGE_SIZE)
+                : 0;
+        return Math.max(0, Math.min(requestedPage, lastPage));
+    }
 }

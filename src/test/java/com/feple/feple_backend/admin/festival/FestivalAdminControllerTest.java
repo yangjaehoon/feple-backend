@@ -14,6 +14,7 @@ import com.feple.feple_backend.booth.entity.BoothType;
 import com.feple.feple_backend.festival.dto.FestivalResponseDto;
 import com.feple.feple_backend.festival.service.FestivalAdminService;
 import com.feple.feple_backend.festival.suggestion.service.FestivalSuggestionAdminService;
+import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.Map;
@@ -254,7 +255,7 @@ class FestivalAdminControllerTest {
     @Test
     void 페스티벌_생성시_신청_자동_승인_실패해도_등록_자체는_성공() throws Exception {
         given(festivalService.createFestival(any())).willReturn(10L);
-        willThrow(new IllegalArgumentException("이미 처리된 페스티벌 신청입니다."))
+        willThrow(new InvalidRequestException("이미 처리된 페스티벌 신청입니다."))
                 .given(festivalSuggestionAdminService).approve(anyLong(), anyLong());
 
         mockMvc.perform(post("/admin/festivals/new")
@@ -291,7 +292,7 @@ class FestivalAdminControllerTest {
     @Test
     void 페스티벌_생성시_종료일이_시작일보다_이전이면_생성폼_에러로_렌더링() throws Exception {
         given(artistService.getAllArtistsSortedByName()).willReturn(List.of());
-        willThrow(new IllegalArgumentException("종료일은 시작일보다 이전일 수 없습니다."))
+        willThrow(new InvalidRequestException("종료일은 시작일보다 이전일 수 없습니다."))
                 .given(festivalService).createFestival(any());
 
         mockMvc.perform(post("/admin/festivals/new")
@@ -310,7 +311,7 @@ class FestivalAdminControllerTest {
     void 페스티벌_생성시_포스터_업로드_유효성오류면_생성폼_에러로_렌더링() throws Exception {
         given(artistService.getAllArtistsSortedByName()).willReturn(List.of());
         given(festivalService.uploadPosterFile(any(), any()))
-                .willThrow(new IllegalArgumentException("이미지 형식이 아닙니다."));
+                .willThrow(new InvalidRequestException("이미지 형식이 아닙니다."));
 
         mockMvc.perform(multipart("/admin/festivals/new")
                         .file("posterFile", new byte[]{1, 2, 3})
@@ -434,7 +435,7 @@ class FestivalAdminControllerTest {
         given(festival.getPosterUrl()).willReturn("poster.jpg");
         given(festivalService.getFestival(1L)).willReturn(festival);
         given(artistService.getAllArtistsSortedByName()).willReturn(List.of());
-        willThrow(new IllegalArgumentException("종료일은 시작일보다 이전일 수 없습니다."))
+        willThrow(new InvalidRequestException("종료일은 시작일보다 이전일 수 없습니다."))
                 .given(festivalService).updateFestival(eq(1L), any());
 
         mockMvc.perform(post("/admin/festivals/1/edit")

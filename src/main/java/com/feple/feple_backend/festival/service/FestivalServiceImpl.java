@@ -1,5 +1,6 @@
 package com.feple.feple_backend.festival.service;
 
+import com.feple.feple_backend.admin.support.AdminConstants;
 import com.feple.feple_backend.festival.dto.FestivalDetailResponseDto;
 import com.feple.feple_backend.festival.dto.FestivalFilterCriteria;
 import com.feple.feple_backend.festival.dto.FestivalRequestDto;
@@ -230,7 +231,7 @@ public class FestivalServiceImpl implements FestivalService, FestivalAdminServic
     @Override
     @Transactional(readOnly = true)
     public List<FestivalResponseDto> getDeletedFestivals() {
-        return festivalRepository.findSoftDeleted().stream().map(this::toDto).toList();
+        return festivalRepository.findSoftDeleted(AdminConstants.DELETED_ENTITIES_LIMIT).stream().map(this::toDto).toList();
     }
 
     @Override

@@ -183,8 +183,7 @@ public class ReportAdminController {
             long newTotal = AdminConstants.STATUS_PENDING.equals(safeStatus)
                     ? handler.getPendingCount()
                     : handler.getTotalCount();
-            int maxPage = newTotal > 0 ? (int) ((newTotal - 1) / AdminConstants.LIST_PAGE_SIZE) : 0;
-            safePage = Math.min(filter.page(), maxPage);
+            safePage = AdminActionUtils.clampToLastPage(newTotal, filter.page());
         }
         return AdminActionUtils.toRedirect(
                 UriComponentsBuilder.fromPath("/admin/reports")

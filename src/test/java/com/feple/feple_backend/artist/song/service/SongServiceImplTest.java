@@ -346,6 +346,7 @@ class SongServiceImplTest {
         ArtistFestival af = mock(ArtistFestival.class);
         given(af.getFestivalId()).willReturn(1L);
         given(af.getId()).willReturn(5L);
+        given(af.getArtistId()).willReturn(1L);
         given(artistFestivalRepository.findById(5L)).willReturn(Optional.of(af));
         given(songRepository.findAllById(Set.of(1L, 2L))).willReturn(List.of(song(1L, "곡1", artist(1L))));
 

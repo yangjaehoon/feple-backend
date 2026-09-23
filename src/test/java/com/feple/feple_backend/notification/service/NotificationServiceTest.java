@@ -26,6 +26,7 @@ import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.KoreaClock;
+import com.feple.feple_backend.global.exception.ResourceNotFoundException;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
 import com.feple.feple_backend.notification.entity.NotificationType;
 import com.feple.feple_backend.notification.entity.PendingPush;
@@ -412,7 +413,7 @@ class NotificationServiceTest {
 
     @Test
     void 페스티벌리마인더_유저없으면_무시() {
-        service.sendFestivalReminders(10L, "펜타포트", "Pentaport", List.of(), 7);
+        service.sendFestivalReminders(new NotificationService.FestivalReminderTarget(10L, "펜타포트", "Pentaport"), List.of(), 7);
 
         then(notificationRepository).shouldHaveNoInteractions();
     }
@@ -422,7 +423,7 @@ class NotificationServiceTest {
         given(userRepository.findAllById(List.of(100L))).willReturn(List.of(user(100L)));
         given(preferenceService.getOrCreateBatch(List.of(100L))).willReturn(Map.of(100L, enabledPreference()));
 
-        service.sendFestivalReminders(10L, "펜타포트", "Pentaport", List.of(100L), 7);
+        service.sendFestivalReminders(new NotificationService.FestivalReminderTarget(10L, "펜타포트", "Pentaport"), List.of(100L), 7);
 
         then(notificationRepository).should().saveAll(anyList());
     }
@@ -576,8 +577,8 @@ class NotificationServiceTest {
 
         org.assertj.core.api.Assertions.assertThatThrownBy(
                         () -> service.saveAdminBroadcastNotification(99L, "제목", "내용"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("99");
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("사용자");
     }
 
     @Test

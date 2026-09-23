@@ -4,6 +4,7 @@ import com.feple.feple_backend.global.exception.ErrorCode;
 import com.feple.feple_backend.global.exception.ErrorResponse;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.global.exception.ResourceNotFoundException;
+import com.feple.feple_backend.global.exception.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
@@ -111,6 +112,14 @@ public class AdminExceptionAdvice {
                                        HttpServletRequest request, HandlerMethod handlerMethod) {
         return respond(request, handlerMethod, HttpStatus.PAYLOAD_TOO_LARGE,
                 "업로드한 파일이 허용 용량을 초과했습니다.", ErrorCode.FILE_TOO_LARGE);
+    }
+
+    // 관리자 쓰기 한도 초과 — 이 핸들러가 없으면 catch-all로 떨어져 500이 된다.
+    @ExceptionHandler(TooManyRequestsException.class)
+    public Object handleTooManyRequests(TooManyRequestsException ex,
+                                        HttpServletRequest request, HandlerMethod handlerMethod) {
+        log.warn("관리자 쓰기 한도 초과: {} {}", request.getMethod(), request.getRequestURI());
+        return respond(request, handlerMethod, HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), ErrorCode.RATE_LIMITED);
     }
 
     @ExceptionHandler(Exception.class)

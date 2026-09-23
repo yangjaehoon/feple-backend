@@ -15,8 +15,8 @@ import com.feple.feple_backend.festival.entity.Festival;
 import com.feple.feple_backend.festival.repository.FestivalRepository;
 import com.feple.feple_backend.festival.suggestion.event.FestivalSuggestionProcessedEvent;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.KoreaClock;
-import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.notification.entity.Notification;
 import com.feple.feple_backend.notification.entity.NotificationContent;
 import com.feple.feple_backend.notification.entity.NotificationPreference;
@@ -237,12 +237,16 @@ public class NotificationService {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCommentCreated(CommentCreatedEvent event) {
-        if (event.postAuthorId() != null && !userBlockService.isBlocked(event.postAuthorId(), event.commenterId())) {
-            notifyNewComment(event.postAuthorId(), event);
-        }
-        if (event.mentionedUserId() != null && !userBlockService.isBlocked(event.mentionedUserId(), event.commenterId())) {
-            notifyNewReply(event.mentionedUserId(), event);
-        }
+        boolean notifyAuthor = event.postAuthorId() != null
+                && !userBlockService.isBlocked(event.postAuthorId(), event.commenterId());
+        boolean notifyMentioned = event.mentionedUserId() != null
+                && !userBlockService.isBlocked(event.mentionedUserId(), event.commenterId());
+        if (!notifyAuthor && !notifyMentioned) return;
+
+        // 대댓글이면 두 알림이 같은 게시글을 가리키므로 한 번만 조회해 공유한다.
+        Post post = postRepository.findById(event.postId()).orElse(null);
+        if (notifyAuthor) notifyNewComment(event.postAuthorId(), event, post);
+        if (notifyMentioned) notifyNewReply(event.mentionedUserId(), event, post);
     }
 
     @Async
@@ -288,10 +292,9 @@ public class NotificationService {
     }
 
     /** 내 게시글에 댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
-    private void notifyNewComment(Long postAuthorId, CommentCreatedEvent event) {
+    private void notifyNewComment(Long postAuthorId, CommentCreatedEvent event, Post post) {
         String commenterNickname = event.commenterNickname();
         String postTitle = event.postTitle();
-        Post post = postRepository.findById(event.postId()).orElse(null);
         notifyUser(postAuthorId, new NotificationMessage(NotificationType.NEW_COMMENT,
                         NotificationMessages.newCommentTitle(commenterNickname),
                         NotificationMessages.newCommentBody(postTitle),
@@ -302,10 +305,9 @@ public class NotificationService {
     }
 
     /** 내 댓글에 대댓글 알림 — onCommentCreated에서만 호출 (자체 호출이라 별도 @Async/@Transactional 불필요) */
-    private void notifyNewReply(Long mentionedUserId, CommentCreatedEvent event) {
+    private void notifyNewReply(Long mentionedUserId, CommentCreatedEvent event, Post post) {
         String replierNickname = event.commenterNickname();
         String postTitle = event.postTitle();
-        Post post = postRepository.findById(event.postId()).orElse(null);
         notifyUser(mentionedUserId, new NotificationMessage(NotificationType.NEW_REPLY,
                         NotificationMessages.newReplyTitle(replierNickname),
                         NotificationMessages.newReplyBody(postTitle),
@@ -330,8 +332,7 @@ public class NotificationService {
 
     /** 관리자 테스트 발송용 개별 알림 저장 (AdminPushService에서 호출) */
     public void saveAdminBroadcastNotification(Long userId, String title, String body) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new InvalidRequestException("사용자를 찾을 수 없습니다. (userId=" + userId + ")"));
+        User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
         notificationRepository.save(Notification.of(
                 user, new NotificationContent(NotificationType.ADMIN_BROADCAST, title, body, null, null)));
     }
@@ -344,21 +345,23 @@ public class NotificationService {
                 .toList());
     }
 
+    /** 리마인더 대상 페스티벌의 식별자와 표시명 — sendFestivalReminders의 업무 파라미터를 3개 이하로 유지한다. */
+    public record FestivalReminderTarget(Long festivalId, String title, String titleEn) {}
+
     /** 페스티벌 D-day 리마인더 (스케줄러에서 호출) */
-    public void sendFestivalReminders(Long festivalId, String festivalTitle, String festivalTitleEn,
-                                       List<Long> userIds, int dDay) {
+    public void sendFestivalReminders(FestivalReminderTarget target, List<Long> userIds, int dDay) {
         if (userIds.isEmpty()) return;
 
         String title = NotificationMessages.festivalReminderTitle(dDay);
-        String body = NotificationMessages.festivalReminderBody(festivalTitle, dDay);
+        String body = NotificationMessages.festivalReminderBody(target.title(), dDay);
         String titleEn = NotificationMessages.festivalReminderTitleEn(dDay);
-        String bodyEn = NotificationMessages.festivalReminderBodyEn(festivalTitleEn, dDay);
+        String bodyEn = NotificationMessages.festivalReminderBodyEn(target.titleEn(), dDay);
 
-        Festival festival = festivalRepository.findById(festivalId).orElse(null);
-        NotificationMessage message = new NotificationMessage(
-                NotificationType.FESTIVAL_REMINDER, title, body, titleEn, bodyEn, String.valueOf(festivalId));
+        Festival festival = festivalRepository.findById(target.festivalId()).orElse(null);
+        NotificationMessage message = new NotificationMessage(NotificationType.FESTIVAL_REMINDER,
+                title, body, titleEn, bodyEn, String.valueOf(target.festivalId()));
         fanOut(userIds, message, festival);
-        log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, userIds.size(), festivalId);
+        log.info("[Notification] D-{} 리마인더 {}건 발송 (festivalId={})", dDay, userIds.size(), target.festivalId());
     }
 
     // 팔로워/참석자 대량 알림은 청크로 나눠 저장·발송한다 — findAllById·saveAll·IN 쿼리가

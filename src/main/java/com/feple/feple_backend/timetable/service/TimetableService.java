@@ -195,10 +195,4 @@ public class TimetableService {
         EntityLoader.requireBelongsToFestival(festivalId, entry.getFestivalId(), "항목이");
         timetableRepository.delete(entry);
     }
-
-    @Transactional
-    @CacheEvict(value = "timetable", key = "#festivalId")
-    public void removeAllByFestival(Long festivalId) {
-        timetableRepository.deleteByFestivalId(festivalId);
-    }
 }

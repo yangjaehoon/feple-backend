@@ -369,13 +369,4 @@ class TimetableServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
         verify(timetableRepository, never()).delete(any());
     }
-
-    // ── removeAllByFestival ───────────────────────────────────────────
-
-    @Test
-    void 페스티벌_전체_타임테이블_삭제() {
-        timetableService.removeAllByFestival(1L);
-
-        verify(timetableRepository).deleteByFestivalId(1L);
-    }
 }

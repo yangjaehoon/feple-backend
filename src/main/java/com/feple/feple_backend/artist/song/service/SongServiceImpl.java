@@ -239,6 +239,12 @@ public class SongServiceImpl implements SongService, SongAdminService, SetlistAd
         artistFestivalSongRepository.deleteByArtistFestivalId(artistFestival.getId());
         if (songIds == null || songIds.isEmpty()) return;
         List<Song> songs = songRepository.findAllById(songIds);
+        // 폼 파라미터 조작으로 다른 아티스트의 곡이 이 라인업의 셋리스트로 저장되지 않게 한다
+        // (deleteSong과 동일한 소유 검증).
+        Long artistId = artistFestival.getArtistId();
+        if (songs.stream().anyMatch(song -> !song.getArtistId().equals(artistId))) {
+            throw new InvalidRequestException("해당 아티스트의 곡이 아닙니다.");
+        }
         List<ArtistFestivalSong> setlist = songs.stream()
                 .map(song -> ArtistFestivalSong.builder()
                         .song(song)

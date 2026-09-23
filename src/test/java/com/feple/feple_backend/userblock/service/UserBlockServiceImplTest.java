@@ -3,6 +3,7 @@ package com.feple.feple_backend.userblock.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
@@ -24,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class UserBlockServiceImplTest {
@@ -128,7 +130,7 @@ class UserBlockServiceImplTest {
         User blocker = user(1L, "차단자");
         User blocked = user(2L, "피차단자");
         UserBlock block = UserBlock.of(blocker, blocked);
-        given(blockRepository.findByBlockerIdOrderByCreatedAtDesc(1L)).willReturn(List.of(block));
+        given(blockRepository.findByBlockerIdOrderByCreatedAtDesc(eq(1L), any(Pageable.class))).willReturn(List.of(block));
 
         List<BlockedUserDto> result = service.getBlockedUsers(1L);
 
@@ -142,7 +144,7 @@ class UserBlockServiceImplTest {
         User blocker = user(1L, "차단자");
         User blocked = user(2L, "피차단자");
         UserBlock block = UserBlock.of(blocker, blocked);
-        given(blockRepository.findByBlockerIdOrderByCreatedAtDesc(1L)).willReturn(List.of(block));
+        given(blockRepository.findByBlockerIdOrderByCreatedAtDesc(eq(1L), any(Pageable.class))).willReturn(List.of(block));
         given(fileStorageService.resolveProfileImageUrl(any())).willReturn("https://cdn.example.com/resolved.jpg");
 
         List<BlockedUserDto> result = service.getBlockedUsers(1L);

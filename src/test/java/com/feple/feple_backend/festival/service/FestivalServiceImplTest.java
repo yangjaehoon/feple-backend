@@ -3,6 +3,7 @@ package com.feple.feple_backend.festival.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -159,7 +160,7 @@ class FestivalServiceImplTest {
     void 삭제된_페스티벌_목록_조회() {
         Festival deleted = festival(1L, "락페", null);
         deleted.softDelete();
-        given(festivalRepository.findSoftDeleted()).willReturn(List.of(deleted));
+        given(festivalRepository.findSoftDeleted(anyInt())).willReturn(List.of(deleted));
 
         assertThat(festivalService.getDeletedFestivals()).extracting(FestivalResponseDto::getId).containsExactly(1L);
     }

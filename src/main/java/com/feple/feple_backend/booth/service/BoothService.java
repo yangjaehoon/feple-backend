@@ -64,12 +64,4 @@ public class BoothService {
     public String uploadBoothImage(MultipartFile file) throws IOException {
         return fileStorageService.storeBoothImage(file);
     }
-
-    @Transactional
-    public void removeAllByFestival(Long festivalId) {
-        // 벌크 DELETE 쿼리라 삭제될 row의 imageKey를 미리 읽어둬야 S3 정리가 가능하다
-        boothRepository.findByFestivalId(festivalId)
-                .forEach(booth -> fileStorageService.deleteFileAfterCommit(booth.getImageKey()));
-        boothRepository.deleteByFestivalId(festivalId);
-    }
 }

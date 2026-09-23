@@ -7,13 +7,19 @@ import org.junit.jupiter.api.Test;
 class AdminParamDefaultsTest {
 
     @Test
-    void orZero_null이면_0() {
-        assertThat(AdminParamDefaults.orZero(null)).isZero();
+    void pageOrFirst_null이면_0() {
+        assertThat(AdminParamDefaults.pageOrFirst(null)).isZero();
     }
 
     @Test
-    void orZero_값있으면_그대로() {
-        assertThat(AdminParamDefaults.orZero(5)).isEqualTo(5);
+    void pageOrFirst_값있으면_그대로() {
+        assertThat(AdminParamDefaults.pageOrFirst(5)).isEqualTo(5);
+    }
+
+    @Test
+    void pageOrFirst_음수면_첫페이지로_보정() {
+        // 음수를 그대로 넘기면 PageRequest.of가 예외를 던져 목록 대신 400 페이지가 렌더된다
+        assertThat(AdminParamDefaults.pageOrFirst(-1)).isZero();
     }
 
     @Test

@@ -34,7 +34,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
 
     @Override
     public FollowStatusDto followStatus(Long userId, Long artistId) {
-        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findByIdAndDeletedAtIsNull, artistId, "아티스트");
         boolean followed = userId != null && artistFollowRepository.existsByUserIdAndArtistId(userId, artistId);
         return new FollowStatusDto(followed, artist.getFollowerCount());
     }
@@ -46,7 +46,7 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     @CacheEvict(value = "artistDetail", key = "#artistId")
     public FollowResponseDto follow(Long userId, Long artistId) {
         User user = EntityLoader.getOrThrow(userRepository::findById, userId, "사용자");
-        Artist artist = EntityLoader.getOrThrow(artistRepository::findById, artistId, "아티스트");
+        Artist artist = EntityLoader.getOrThrow(artistRepository::findByIdAndDeletedAtIsNull, artistId, "아티스트");
 
         if (!artistFollowRepository.existsByUserIdAndArtistId(userId, artistId)) {
             try {
@@ -86,11 +86,5 @@ public class ArtistFollowServiceImpl implements ArtistFollowService {
     public void removeAllByUser(Long userId) {
         artistFollowRepository.decrementFollowerCountByUserId(userId);
         artistFollowRepository.deleteByUserId(userId);
-    }
-
-    @Override
-    @Transactional
-    public void removeAllByArtist(Long artistId) {
-        artistFollowRepository.deleteByArtistId(artistId);
     }
 }

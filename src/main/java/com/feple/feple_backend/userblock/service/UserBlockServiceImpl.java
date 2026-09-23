@@ -3,6 +3,7 @@ package com.feple.feple_backend.userblock.service;
 import com.feple.feple_backend.file.service.FileStorageService;
 import com.feple.feple_backend.global.DuplicateInsertGuard;
 import com.feple.feple_backend.global.EntityLoader;
+import com.feple.feple_backend.global.PageSize;
 import com.feple.feple_backend.global.exception.ConflictException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.entity.User;
@@ -12,6 +13,7 @@ import com.feple.feple_backend.userblock.entity.UserBlock;
 import com.feple.feple_backend.userblock.repository.UserBlockRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +55,7 @@ public class UserBlockServiceImpl implements UserBlockService {
     @Override
     @Transactional(readOnly = true)
     public List<BlockedUserDto> getBlockedUsers(Long blockerId) {
-        return blockRepository.findByBlockerIdOrderByCreatedAtDesc(blockerId)
+        return blockRepository.findByBlockerIdOrderByCreatedAtDesc(blockerId, PageRequest.of(0, PageSize.MY_ACTIVITIES))
                 .stream()
                 .map(b -> BlockedUserDto.from(b, fileStorageService))
                 .toList();

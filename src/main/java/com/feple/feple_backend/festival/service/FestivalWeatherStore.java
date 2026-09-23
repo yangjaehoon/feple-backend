@@ -20,7 +20,8 @@ class FestivalWeatherStore {
     @Transactional
     public void saveOrUpdate(Festival festival, WeatherDto dto) {
         FestivalWeather weather = weatherRepository.findByFestivalId(festival.getId())
-                .orElse(FestivalWeather.of(festival, dto));
+                // orElse는 인자를 항상 평가하므로 기존 레코드가 있어도 매번 새 객체를 만든다
+                .orElseGet(() -> FestivalWeather.of(festival, dto));
         weather.apply(dto);
         weatherRepository.save(weather);
     }

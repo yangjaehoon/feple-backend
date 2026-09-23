@@ -100,8 +100,8 @@ class FestivalReminderSchedulerTest {
 
         scheduler.sendReminders();
 
-        then(notificationService).should().sendFestivalReminders(1L, "펜타포트", "Pentaport", List.of(100L, 200L), 7);
-        then(notificationService).should().sendFestivalReminders(1L, "펜타포트", "Pentaport", List.of(100L, 200L), 1);
+        then(notificationService).should().sendFestivalReminders(new NotificationService.FestivalReminderTarget(1L, "펜타포트", "Pentaport"), List.of(100L, 200L), 7);
+        then(notificationService).should().sendFestivalReminders(new NotificationService.FestivalReminderTarget(1L, "펜타포트", "Pentaport"), List.of(100L, 200L), 1);
     }
 
     @Test
@@ -124,7 +124,7 @@ class FestivalReminderSchedulerTest {
 
         scheduler.sendReminders();
 
-        then(notificationService).should().sendFestivalReminders(1L, "펜타포트", "Pentaport", List.of(300L), 7);
+        then(notificationService).should().sendFestivalReminders(new NotificationService.FestivalReminderTarget(1L, "펜타포트", "Pentaport"), List.of(300L), 7);
     }
 
     @Test
@@ -140,7 +140,7 @@ class FestivalReminderSchedulerTest {
 
         scheduler.sendReminders();
 
-        then(notificationService).should().sendFestivalReminders(1L, "펜타포트", "Pentaport", List.of(300L), 7);
+        then(notificationService).should().sendFestivalReminders(new NotificationService.FestivalReminderTarget(1L, "펜타포트", "Pentaport"), List.of(300L), 7);
     }
 
     @Test
@@ -163,6 +163,6 @@ class FestivalReminderSchedulerTest {
 
         scheduler.sendReminders();
 
-        then(notificationService).should().sendFestivalReminders(1L, "펜타포트", "Pentaport", List.of(100L), 7);
+        then(notificationService).should().sendFestivalReminders(new NotificationService.FestivalReminderTarget(1L, "펜타포트", "Pentaport"), List.of(100L), 7);
     }
 }

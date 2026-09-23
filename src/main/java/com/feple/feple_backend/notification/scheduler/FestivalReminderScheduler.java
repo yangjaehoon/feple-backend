@@ -117,7 +117,9 @@ public class FestivalReminderScheduler {
         // 한 페스티벌에서 예외가 나도 나머지 페스티벌의 리마인더는 계속 발송돼야 함
         try {
             notificationService.sendFestivalReminders(
-                    festival.getId(), festival.getTitle(), festival.getTitleEn(), userIds, dDay);
+                    new NotificationService.FestivalReminderTarget(
+                            festival.getId(), festival.getTitle(), festival.getTitleEn()),
+                    userIds, dDay);
         } catch (Exception e) {
             log.error("[ReminderScheduler] D-{} 리마인더 발송 실패: festivalId={}", dDay, festival.getId(), e);
         }

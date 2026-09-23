@@ -52,9 +52,4 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
     @Transactional
     @Query("DELETE FROM SongRequest sr WHERE sr.userId = :userId")
     void deleteByUserId(@Param("userId") Long userId);
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM SongRequest sr WHERE sr.artist.id = :artistId")
-    void deleteByArtistId(@Param("artistId") Long artistId);
 }

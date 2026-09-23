@@ -156,13 +156,4 @@ class FestivalChecklistServiceTest {
         assertThat(newChecklist.getMemo()).isEqualTo("신규 메모");
         verify(checklistRepository).save(any());
     }
-
-    // ── removeByFestivalId ───────────────────────────────────────────────────
-
-    @Test
-    void removeByFestivalId_리포지토리_삭제_위임() {
-        service.removeByFestivalId(1L);
-
-        verify(checklistRepository).deleteByFestivalId(1L);
-    }
 }

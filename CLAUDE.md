@@ -48,7 +48,7 @@ GitHub Actions 워크플로:
 - 사용자에게 보여줄 검증·비즈니스 규칙 위반은 `InvalidRequestException`(=`global.exception`, `IllegalArgumentException` 하위), "찾을 수 없음"은 `ResourceNotFoundException`(=`global.exception`, `NoSuchElementException` 하위, `EntityLoader.getOrThrow`가 던짐)을 던진다. 전역 핸들러는 이 두 타입의 메시지만 응답에 노출하고, 순수 `IllegalArgumentException`/`NoSuchElementException`(JDK·라이브러리 발)은 일반 메시지로 대체한다 → `new IllegalArgumentException("한국어 메시지")` / `new NoSuchElementException("한국어 메시지")` 금지
 - Admin 컨트롤러 예외 처리: `AdminActionUtils.tryAction/tryRender`는 `InvalidRequestException | BadWordException | ResourceNotFoundException`의 메시지만 사용자에게 노출, 그 외 `Exception`은 `onError`(log.error) + failMsg 일반 메시지. 컨트롤러에서 직접 `catch` 시에도 이 원칙을 따를 것 (내부 예외 절대 노출 금지)
 - Admin 컨트롤러의 파일 업로드도 서비스 경유: `FestivalService.uploadPosterFile()`, `ArtistService.uploadProfile()`, `BoothService.uploadBoothImage()` — FileStorageService 직접 주입 금지
-- S3 presigned URL 결과 타입: `file/dto/PresignResult` (독립 레코드, S3PresignService 중첩 타입 아님)
+- S3 presigned URL 결과 타입: `file/dto/S3PresignedUrlResult` (독립 레코드, S3PresignService 중첩 타입 아님)
 - 신고 타입 확장: `ReportAdminController`의 `list()` GET은 `Map<String, ReportAdminService>` 디스패치 — 신규 신고 유형 추가 시 ① `ReportAdminService` 구현체 추가, ② 컨트롤러에 명시적 필드 + POST 액션 엔드포인트 추가 필요
 - 도메인 간 이벤트: 댓글 생성 시 알림은 `ApplicationEventPublisher` + `CommentCreatedEvent` 레코드 사용 (comment → notification 직접 의존 없음)
 - LoD 준수: 엔티티 연관 ID 접근 시 `getUser().getId()` 체인 금지 → 엔티티에 `getUserId()` 등 헬퍼 직접 추가 (Post, Comment, ArtistFollow, ArtistFestival, Notification, PostReport, CommentReport, FestivalCertification, SongRequest, ArtistFestivalSong에 이미 적용됨)

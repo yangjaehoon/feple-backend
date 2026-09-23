@@ -21,8 +21,9 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     Optional<Artist> findByIdAndDeletedAtIsNull(Long id);
     long countByDeletedAtIsNull();
 
-    @Query(value = "SELECT * FROM artist WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC", nativeQuery = true)
-    java.util.List<Artist> findSoftDeleted();
+    // 소프트 삭제 행이 누적되면 휴지통 화면 로딩이 선형으로 느려지므로 상한을 둔다(게시글 휴지통과 동일).
+    @Query(value = "SELECT * FROM artist WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC LIMIT :limit", nativeQuery = true)
+    java.util.List<Artist> findSoftDeleted(@Param("limit") int limit);
 
     @Modifying(clearAutomatically = true)
     @Transactional

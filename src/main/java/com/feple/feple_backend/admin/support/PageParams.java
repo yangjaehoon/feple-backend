@@ -6,6 +6,6 @@ package com.feple.feple_backend.admin.support;
  */
 public record PageParams(Integer page) {
     public PageParams {
-        page = Math.max(0, AdminParamDefaults.orZero(page));
+        page = AdminParamDefaults.pageOrFirst(page);
     }
 }

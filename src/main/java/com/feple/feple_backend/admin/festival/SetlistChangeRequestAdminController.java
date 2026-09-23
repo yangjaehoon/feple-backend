@@ -58,8 +58,7 @@ public class SetlistChangeRequestAdminController {
                 ra);
 
         long remaining = service.countByStatus(parseStatus(params.status()));
-        int maxPage = remaining > 0 ? (int) ((remaining - 1) / AdminConstants.LIST_PAGE_SIZE) : 0;
-        int safePage = Math.min(params.page(), maxPage);
+        int safePage = AdminActionUtils.clampToLastPage(remaining, params.page());
         return AdminActionUtils.listRedirect("/admin/setlist-requests", params.status(), safePage, params.keyword());
     }
 

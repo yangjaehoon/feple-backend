@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -107,14 +106,8 @@ public class WeatherService {
      */
     @Cacheable(value = "festivalWeather", key = "#festivalId")
     public Optional<WeatherDto> getByFestivalId(Long festivalId) {
-        EntityLoader.getOrThrow(festivalRepository::findById, festivalId, "페스티벌");
+        EntityLoader.getOrThrow(festivalRepository::findByIdAndDeletedAtIsNull, festivalId, "페스티벌");
         return weatherRepository.findByFestivalId(festivalId).map(FestivalWeather::toDto);
-    }
-
-    @Transactional
-    @CacheEvict(value = "festivalWeather", key = "#festivalId")
-    public void removeAllByFestival(Long festivalId) {
-        weatherRepository.deleteByFestivalId(festivalId);
     }
 
     // 여기서 던지는 IllegalStateException(전역 매핑상 500)과 restTemplate의 RestClientException은

@@ -2,6 +2,7 @@ package com.feple.feple_backend.userblock.repository;
 
 import com.feple.feple_backend.userblock.entity.UserBlock;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,8 +19,9 @@ public interface UserBlockRepository extends JpaRepository<UserBlock, Long> {
     @Query("DELETE FROM UserBlock b WHERE b.blocker.id = :blockerId AND b.blocked.id = :blockedId")
     int deleteByBlockerIdAndBlockedId(@Param("blockerId") Long blockerId, @Param("blockedId") Long blockedId);
 
+    // 다른 "내 활동" 목록과 동일하게 상한을 둔다 — 차단 수가 많은 계정에서 응답 크기가 선형으로 커진다.
     @Query("SELECT b FROM UserBlock b JOIN FETCH b.blocked WHERE b.blocker.id = :blockerId ORDER BY b.createdAt DESC")
-    List<UserBlock> findByBlockerIdOrderByCreatedAtDesc(@Param("blockerId") Long blockerId);
+    List<UserBlock> findByBlockerIdOrderByCreatedAtDesc(@Param("blockerId") Long blockerId, Pageable pageable);
 
     @Modifying
     @Transactional
