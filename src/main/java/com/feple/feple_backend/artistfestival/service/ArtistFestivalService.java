@@ -217,17 +217,23 @@ public class ArtistFestivalService {
         int success = 0, errors = 0;
         for (Map.Entry<Long, LineupUpdate> entry : updates.entrySet()) {
             ArtistFestival af = byId.get(entry.getKey());
+            LineupUpdate lineup = entry.getValue();
             if (af == null || !belongsToFestival(af, festivalId)) {
                 errors++;
                 continue;
             }
-            try {
-                applyLineupUpdate(festivalId, af, entry.getValue());
-                success++;
-            } catch (Exception e) {
-                log.warn("batchUpdateLineup 실패: festivalId={}, afId={}", festivalId, entry.getKey(), e);
+            // 건너뛸 행은 아무것도 건드리기 전에 걸러낸다. applyLineupUpdate까지 들어가면
+            // syncStage(별도 빈의 @Transactional)가 미등록 스테이지명에 예외를 던지고, 그 시점에
+            // 트랜잭션이 rollback-only로 마킹돼 catch로 삼켜도 성공한 행까지 전부 롤백된다.
+            // (OCR 타임테이블은 Stage 행 없이 자유문자열 무대명을 남기므로 실제로 도달하는 경로다)
+            if (!timetableSyncService.canSyncStage(festivalId, resolveStage(lineup.stageName()), af.getStageName())) {
+                log.warn("batchUpdateLineup 건너뜀 — 등록되지 않은 스테이지: festivalId={}, afId={}, stage={}",
+                        festivalId, entry.getKey(), lineup.stageName());
                 errors++;
+                continue;
             }
+            applyLineupUpdate(festivalId, af, lineup);
+            success++;
         }
         return new BatchUpdateResult(success, errors);
     }

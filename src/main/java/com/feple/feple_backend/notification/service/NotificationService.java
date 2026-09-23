@@ -297,7 +297,7 @@ public class NotificationService {
                         NotificationMessages.newCommentBody(postTitle),
                         NotificationMessages.newCommentTitleEn(commenterNickname),
                         NotificationMessages.newCommentBodyEn(postTitle),
-                        null),
+                        String.valueOf(event.postId())),
                 (author, content) -> Notification.of(author, content, post));
     }
 
@@ -311,7 +311,7 @@ public class NotificationService {
                         NotificationMessages.newReplyBody(postTitle),
                         NotificationMessages.newReplyTitleEn(replierNickname),
                         NotificationMessages.newReplyBodyEn(postTitle),
-                        null),
+                        String.valueOf(event.postId())),
                 (author, content) -> Notification.of(author, content, post));
     }
 

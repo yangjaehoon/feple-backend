@@ -3,6 +3,7 @@ package com.feple.feple_backend.artistfestival.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.lenient;
@@ -452,6 +453,7 @@ class ArtistFestivalServiceTest {
         ReflectionTestUtils.setField(af2, "id", 11L);
         // updateArtistFestivalsBatch는 Map.keySet()(Set)을 그대로 넘기므로 List가 아닌 Set으로 매칭해야 함
         given(artistFestivalRepository.findAllById(Set.of(10L, 11L))).willReturn(List.of(af1, af2));
+        given(timetableSyncService.canSyncStage(eq(100L), any(), any())).willReturn(true);
 
         ArtistFestivalService.BatchUpdateResult result = service.updateArtistFestivalsBatch(100L, Map.of(
                 10L, new LineupUpdate("메인스테이지", null),
@@ -461,6 +463,30 @@ class ArtistFestivalServiceTest {
         assertThat(result.errors()).isEqualTo(0);
         then(artistFestivalRepository).should().findAllById(Set.of(10L, 11L));
         then(artistFestivalRepository).should(never()).findById(any());
+    }
+
+    @Test
+    void 라인업_일괄수정_미등록_스테이지_행은_건드리지_않고_에러로_집계() {
+        // syncStage는 별도 빈의 @Transactional이라 미등록 스테이지명에 예외를 던지면 그 순간
+        // 트랜잭션이 rollback-only가 되어 성공한 행까지 전부 롤백된다. 그래서 예외를 catch하는
+        // 대신 canSyncStage로 미리 걸러, 실패 행은 엔티티를 수정조차 하지 않아야 한다.
+        Festival festival = festival(100L, null);
+        ArtistFestival ok = ArtistFestival.builder().artist(artist(1L, "아이유")).festival(festival).build();
+        ArtistFestival unregistered = ArtistFestival.builder().artist(artist(2L, "뉴진스")).festival(festival).build();
+        ReflectionTestUtils.setField(ok, "id", 10L);
+        ReflectionTestUtils.setField(unregistered, "id", 11L);
+        given(artistFestivalRepository.findAllById(Set.of(10L, 11L))).willReturn(List.of(ok, unregistered));
+        given(timetableSyncService.canSyncStage(100L, "메인스테이지", null)).willReturn(true);
+        given(timetableSyncService.canSyncStage(100L, "OCR자유문자열무대", null)).willReturn(false);
+
+        ArtistFestivalService.BatchUpdateResult result = service.updateArtistFestivalsBatch(100L, Map.of(
+                10L, new LineupUpdate("메인스테이지", null),
+                11L, new LineupUpdate("OCR자유문자열무대", null)));
+
+        assertThat(result.success()).isEqualTo(1);
+        assertThat(result.errors()).isEqualTo(1);
+        assertThat(unregistered.getStageName()).isNull();
+        then(timetableSyncService).should(never()).syncStage(100L, "뉴진스", "OCR자유문자열무대", null);
     }
 
     @Test

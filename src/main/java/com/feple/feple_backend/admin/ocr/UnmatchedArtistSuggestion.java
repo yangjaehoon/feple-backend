@@ -10,6 +10,12 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 행 생성·mentionCount 갱신은 {@link UnmatchedArtistSuggestionRepository#upsertMentionCount}의
+ * 원자적 업서트가 전담한다(조회·삭제는 일반 리포지토리 메서드 사용). 자바에서 새 인스턴스를 만들어
+ * save()하면 동시 언급 시 유니크 제약과 경합해 트랜잭션이 통째로 롤백되므로, 생성용 정적 팩터리를
+ * 두지 않는다.
+ */
 @Entity
 @Table(name = "unmatched_artist_suggestion")
 @Getter
@@ -31,13 +37,4 @@ public class UnmatchedArtistSuggestion {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-
-    public static UnmatchedArtistSuggestion of(String name) {
-        UnmatchedArtistSuggestion s = new UnmatchedArtistSuggestion();
-        s.name = name;
-        s.mentionCount = 1;
-        s.createdAt = LocalDateTime.now();
-        s.updatedAt = LocalDateTime.now();
-        return s;
-    }
 }

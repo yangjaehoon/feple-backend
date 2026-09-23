@@ -1,11 +1,12 @@
 package com.feple.feple_backend.admin.checklist;
 
+import com.feple.feple_backend.festival.repository.FestivalRepository;
+import com.feple.feple_backend.global.EntityLoader;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FestivalChecklistService {
 
     private final FestivalChecklistRepository checklistRepository;
+    private final FestivalRepository festivalRepository;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "festivalChecklistMap", key = "'all'")
@@ -50,16 +52,18 @@ public class FestivalChecklistService {
         checklist.updateMemo(memo);
     }
 
-    // festival_id unique 제약 위반(같은 festival의 체크리스트를 처음 만드는 두 요청이 경합)이 나면
-    // 상대가 이미 만든 행을 재조회해 이번 요청의 toggle/updateMemo가 유실되지 않게 한다.
+    // 존재하지 않는 festivalId면 INSERT가 FK(fk_fc_festival)에서 터져 500이 되므로 먼저 확인한다.
+    //
+    // 같은 festival의 체크리스트를 처음 만드는 두 요청이 경합하면 unique(uq_fc_festival_id) 위반이
+    // 날 수 있는데, 이때 예외를 catch해 재조회해도 소용이 없다 — save()는 자체 @Transactional을 가진
+    // 프록시 호출이라 예외가 프록시 밖으로 나온 시점에 이미 트랜잭션이 rollback-only로 마킹되고,
+    // 이어지는 작업은 커밋 시점에 UnexpectedRollbackException으로 통째로 롤백된다. 복구되는 척하지
+    // 않고 그대로 실패시킨다(관리자 단건 액션이라 재시도하면 상대가 만든 행을 찾아 정상 처리된다).
     private FestivalChecklist getOrCreate(Long festivalId) {
         return checklistRepository.findByFestivalId(festivalId)
                 .orElseGet(() -> {
-                    try {
-                        return checklistRepository.save(FestivalChecklist.of(festivalId));
-                    } catch (DataIntegrityViolationException e) {
-                        return checklistRepository.findByFestivalId(festivalId).orElseThrow(() -> e);
-                    }
+                    EntityLoader.requireExists(festivalRepository::existsById, festivalId, "페스티벌");
+                    return checklistRepository.save(FestivalChecklist.of(festivalId));
                 });
     }
 

@@ -26,6 +26,21 @@ public class TimetableSyncService {
     private final TimetableRepository timetableRepository;
     private final StageRepository stageRepository;
 
+    /**
+     * syncStage가 스테이지를 찾지 못해 예외를 던질 상황인지 미리 확인한다. 일괄 수정처럼 행 단위로
+     * 실패를 건너뛰어야 하는 호출부는, syncStage를 호출한 뒤 예외를 catch하는 대신 이 메서드로
+     * 먼저 걸러야 한다 — syncStage는 별도 빈의 @Transactional이라 예외가 프록시 밖으로 나오는
+     * 순간 호출부 트랜잭션이 rollback-only로 마킹되고, catch로 삼켜도 되돌릴 수 없다.
+     *
+     * <p>분기 조건은 syncStage의 조기 반환과 동일하게 유지해야 한다 — 어긋나면 syncStage가
+     * 조회하지 않을 스테이지를 여기서 요구하거나 그 반대가 된다.
+     */
+    @Transactional(readOnly = true)
+    public boolean canSyncStage(Long festivalId, String newStage, String oldStage) {
+        if (newStage == null || newStage.equals(oldStage)) return true;
+        return stageRepository.existsByFestivalIdAndName(festivalId, newStage);
+    }
+
     // TimetableService의 다른 변경 메서드와 동일하게 "timetable" 캐시(30분 TTL, key=festivalId)를
     // 비운다 — 여기서 빠뜨리면 라인업 그리드에서 바꾼 스테이지/날짜가 캐시 만료 전까지 반영 안 된다.
     @Transactional

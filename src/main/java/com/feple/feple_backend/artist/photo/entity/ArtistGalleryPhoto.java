@@ -15,10 +15,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @NoArgsConstructor
 @Entity
+// 사진 수정(제목·설명)의 더티체킹 flush가 전체 컬럼을 UPDATE하면서, 동시에 다른 트랜잭션이
+// 원자적으로 갱신한 likeCount를 로드 시점 값으로 덮어쓰는 것을 방지한다.
+@DynamicUpdate
 @Table(name = "artist_photos", indexes = {
         @Index(name = "idx_gallery_photo_artist_id", columnList = "artist_id"),
         @Index(name = "idx_gallery_photo_uploader_id", columnList = "uploader_user_id")

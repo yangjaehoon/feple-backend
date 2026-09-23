@@ -12,6 +12,7 @@ import com.feple.feple_backend.comment.event.CommentCreatedEvent;
 import com.feple.feple_backend.comment.repository.CommentLikeRepository;
 import com.feple.feple_backend.comment.repository.CommentRepository;
 import com.feple.feple_backend.file.service.FileStorageService;
+import com.feple.feple_backend.global.AnonymousAuthorVisibility;
 import com.feple.feple_backend.global.EntityLoader;
 import com.feple.feple_backend.global.LikeToggler;
 import com.feple.feple_backend.global.OwnershipValidator;
@@ -97,16 +98,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Comment saveComment(CreateCommentDto dto, Post post, User user, ParentResolution parentResolution) {
-        User mentionedUser = parentResolution.mentionTarget() != null ? parentResolution.mentionTarget().getUser() : null;
         Comment comment = new Comment(dto.getContent(), post, user,
-                parentResolution.storageParent(), mentionedUser, dto.isAnonymous());
+                parentResolution.storageParent(), parentResolution.mentionTarget(), dto.isAnonymous());
         return commentRepository.save(comment);
     }
 
     private void publishCommentCreatedEvent(CreateCommentDto dto, Post post, User user,
                                              ParentResolution parentResolution, Long userId) {
         Long postAuthorId = post.getUserId();
-        String commenterName = dto.isAnonymous() ? "익명" : user.getNickname();
+        String commenterName = dto.isAnonymous() ? AnonymousAuthorVisibility.ANONYMOUS_NICKNAME : user.getNickname();
         Long mentionedUserId = resolveMentionedUserId(parentResolution.mentionTarget(), userId, postAuthorId);
         // 게시글 작성자 본인이 자기 글에 댓글을 달면 게시글 알림은 생략 (원댓글 알림은 그대로 유지)
         Long notifyPostAuthorId = postAuthorId.equals(userId) ? null : postAuthorId;

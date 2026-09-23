@@ -1,6 +1,7 @@
 package com.feple.feple_backend.artist.photo.dto;
 
 import com.feple.feple_backend.artist.photo.entity.ArtistGalleryPhoto;
+import com.feple.feple_backend.global.AnonymousAuthorVisibility;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ public record ArtistGalleryPhotoResponseDto(
         boolean isLiked,
         boolean isAnonymous
 ) {
-    private static final String ANONYMOUS_LABEL = "익명";
+    private static final String ANONYMOUS_LABEL = AnonymousAuthorVisibility.ANONYMOUS_NICKNAME;
 
     /**
      * @param currentUserId 현재 요청자 ID — 본인 글은 익명이어도 uploaderUserId를 그대로 반환해 수정/삭제 가능하게 함

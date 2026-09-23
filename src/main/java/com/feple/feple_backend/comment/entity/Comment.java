@@ -1,5 +1,6 @@
 package com.feple.feple_backend.comment.entity;
 
+import com.feple.feple_backend.global.AnonymousAuthorVisibility;
 import com.feple.feple_backend.post.entity.Post;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
@@ -78,6 +79,12 @@ public class Comment {
     @JoinColumn(name = "mentioned_user_id")
     private User mentionedUser;
 
+    // 멘션 대상 "댓글"이 익명이었는지. mentionedUser(=User)만으로는 알 수 없어 별도로 기록한다 —
+    // 이 값이 없으면 익명 댓글에 답글을 다는 것만으로 원 작성자의 실명 닉네임이 노출된다.
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    private boolean mentionedAnonymous = false;
+
     @Builder.Default
     @Column(nullable = false)
     private int likeCount = 0;
@@ -96,12 +103,15 @@ public class Comment {
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private boolean edited = false;
 
-    public Comment(String content, Post post, User user, Comment parent, User mentionedUser, boolean anonymous) {
+    // mentionTarget은 멘션 대상 "댓글"을 그대로 받는다 — 작성자(User)만 받으면 호출부가 대상의
+    // 익명 여부를 함께 넘기는 걸 잊을 수 있어, 유출 방지 책임을 엔티티 안으로 옮긴다.
+    public Comment(String content, Post post, User user, Comment parent, Comment mentionTarget, boolean anonymous) {
         this.content = content;
         this.post = post;
         this.user = user;
         this.parent = parent;
-        this.mentionedUser = mentionedUser;
+        this.mentionedUser = mentionTarget != null ? mentionTarget.getUser() : null;
+        this.mentionedAnonymous = mentionTarget != null && mentionTarget.isAnonymous();
         this.anonymous = anonymous;
         // createdAt/updatedAt은 @CreationTimestamp/@UpdateTimestamp가 flush 시점에 채운다
     }
@@ -120,8 +130,15 @@ public class Comment {
     }
 
     public Long getParentId() { return parent != null ? parent.getId() : null; }
-    public Long getMentionedUserId() { return mentionedUser != null ? mentionedUser.getId() : null; }
-    public String getMentionedNickname() { return mentionedUser != null ? mentionedUser.getNickname() : null; }
+    // 멘션 대상이 익명 댓글이었으면 작성자 id·닉네임을 가린다 — 본문 작성자(anonymous)와 동일한 규칙.
+    public Long getMentionedUserId() {
+        return mentionedUser == null || mentionedAnonymous ? null : mentionedUser.getId();
+    }
+
+    public String getMentionedNickname() {
+        if (mentionedUser == null) return null;
+        return mentionedAnonymous ? AnonymousAuthorVisibility.ANONYMOUS_NICKNAME : mentionedUser.getNickname();
+    }
     public Long getPostId() { return post.getId(); }
     public String getPostTitle() { return post.getTitle(); }
     public Long getUserId() { return user.getId(); }
