@@ -80,10 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String resolveBearerToken(HttpServletRequest request) {
         String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (auth != null && auth.startsWith(JwtConstants.BEARER_PREFIX)) {
-            return auth.substring(JwtConstants.BEARER_LENGTH);
-        }
-        return null;
+        return JwtConstants.hasBearerPrefix(auth) ? auth.substring(JwtConstants.BEARER_LENGTH) : null;
     }
 
     /** 토큰 파싱 + 사용자 검증. 성공 시 SecurityContext를 설정하고 빈 Optional을 반환하며,

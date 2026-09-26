@@ -7,6 +7,7 @@ import com.feple.feple_backend.auth.dto.RefreshRequestDto;
 import com.feple.feple_backend.auth.jwt.JwtConstants;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
+import com.feple.feple_backend.auth.ratelimit.TokenRefreshRateLimiter;
 import com.feple.feple_backend.auth.service.AgeVerificationService;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
 import com.feple.feple_backend.auth.service.RefreshTokenService;
@@ -41,6 +42,7 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final LoginRateLimiter loginRateLimiter;
+    private final TokenRefreshRateLimiter tokenRefreshRateLimiter;
     private final AgeVerificationService ageVerificationService;
 
     @PostMapping("/kakao")
@@ -73,7 +75,7 @@ public class AuthController {
     }
 
     private String bearerToken(String authorization) {
-        return authorization.startsWith(JwtConstants.BEARER_PREFIX)
+        return JwtConstants.hasBearerPrefix(authorization)
                 ? authorization.substring(JwtConstants.BEARER_LENGTH)
                 : authorization;
     }
@@ -108,7 +110,7 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponseDto> refresh(@Valid @RequestBody RefreshRequestDto req,
                                                    HttpServletRequest httpRequest) {
-        loginRateLimiter.check(getClientIp(httpRequest));
+        tokenRefreshRateLimiter.check(getClientIp(httpRequest));
         if (!jwtProvider.isRefreshToken(req.getRefreshToken())) {
             throw new InvalidRequestException("유효하지 않은 리프레시 토큰입니다.");
         }
@@ -124,7 +126,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequestDto req,
                                        HttpServletRequest httpRequest) {
-        loginRateLimiter.check(getClientIp(httpRequest));
+        tokenRefreshRateLimiter.check(getClientIp(httpRequest));
         if (req != null && req.getRefreshToken() != null) {
             refreshTokenService.revoke(req.getRefreshToken());
         }
