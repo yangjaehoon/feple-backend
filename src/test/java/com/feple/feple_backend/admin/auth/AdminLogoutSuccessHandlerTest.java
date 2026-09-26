@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -25,14 +24,11 @@ class AdminLogoutSuccessHandlerTest {
     private HttpServletResponse response;
     private AdminLogService adminLogService;
 
-    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
         adminLogService = mock(AdminLogService.class);
-        ObjectProvider<AdminLogService> adminLogServiceProvider = mock(ObjectProvider.class);
-        given(adminLogServiceProvider.getObject()).willReturn(adminLogService);
 
-        handler = new AdminLogoutSuccessHandler(adminLogServiceProvider);
+        handler = new AdminLogoutSuccessHandler(adminLogService);
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         given(request.getContextPath()).willReturn("");
