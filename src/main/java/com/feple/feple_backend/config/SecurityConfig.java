@@ -14,6 +14,7 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import com.feple.feple_backend.user.service.UserAccessTrackingService;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -42,6 +43,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 public class SecurityConfig {
+
+    /** 호스트가 통째로 와일드카드인 출처 — "*", "https://*", "http://*:8080" 등. */
+    private static final Pattern ANY_HOST_ORIGIN =
+            Pattern.compile("^(?:\\*|[A-Za-z][A-Za-z0-9+.\\-]*://\\*(?::\\d+)?)$");
 
     private final JwtProvider jwtProvider;
     private final AdminLoginFailureHandler adminLoginFailureHandler;
@@ -256,13 +261,27 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        // 빈 항목을 먼저 걸러낸다 — "".split(",")는 [""]를 돌려주므로, 설정이 비어 있어도
+        // 이전에는 origins가 비지 않아 아래 가드를 통과하고 "아무 출처도 매칭되지 않는"
+        // 패턴으로 조용히 부팅됐다(모든 브라우저 클라이언트가 CORS 차단).
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
-                .filter(o -> !o.equals("*"))
+                .filter(o -> !o.isBlank())
                 .toList();
         if (origins.isEmpty()) {
             throw new IllegalStateException(
-                    "CORS 허용 출처가 없습니다. CORS_ALLOWED_ORIGINS 환경변수를 확인하세요. 와일드카드 '*'는 허용되지 않습니다.");
+                    "CORS 허용 출처가 없습니다. CORS_ALLOWED_ORIGINS 환경변수를 확인하세요.");
+        }
+        // setAllowedOriginPatterns는 '*'를 와일드카드로 해석하므로 "*" 문자열만 막는 것으로는
+        // 부족하다 — "https://*"처럼 호스트가 통째로 와일드카드면 모든 출처가 허용된다.
+        // "https://*.feple.com" 같은 서브도메인 패턴은 그대로 허용한다.
+        List<String> anyHostPatterns = origins.stream()
+                .filter(o -> ANY_HOST_ORIGIN.matcher(o).matches())
+                .toList();
+        if (!anyHostPatterns.isEmpty()) {
+            throw new IllegalStateException(
+                    "모든 출처를 허용하는 CORS 패턴은 사용할 수 없습니다: " + anyHostPatterns
+                            + " — CORS_ALLOWED_ORIGINS에 구체적인 출처를 지정하세요.");
         }
         config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
