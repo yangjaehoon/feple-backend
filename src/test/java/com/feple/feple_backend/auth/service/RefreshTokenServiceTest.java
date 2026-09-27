@@ -124,8 +124,11 @@ class RefreshTokenServiceTest {
                 .hasMessageContaining("유효하지 않은");
     }
 
+    // 만료 행 삭제를 여기서 하지 않는 이유: 곧바로 던지는 예외가 같은 트랜잭션을
+    // 롤백시켜 삭제가 무효화된다(rotate()의 자기 호출이라 전파 설정으로도 분리 불가).
+    // 정리는 cleanExpiredTokens() 스케줄러가 담당한다.
     @Test
-    void 만료된_토큰_소비시_deleteByTokenHash_호출_후_예외() {
+    void 만료된_토큰_소비시_삭제하지_않고_예외() {
         User user = user(1L);
         String raw = "expired-token";
         RefreshToken token = expiredToken(user, raw);
@@ -136,7 +139,7 @@ class RefreshTokenServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("만료");
 
-        verify(refreshTokenRepository).deleteByTokenHash(refreshTokenService.hash(raw));
+        verify(refreshTokenRepository, never()).deleteByTokenHash(refreshTokenService.hash(raw));
     }
 
     @Test

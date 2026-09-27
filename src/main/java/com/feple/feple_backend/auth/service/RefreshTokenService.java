@@ -60,7 +60,11 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new InvalidRequestException("유효하지 않은 리프레시 토큰입니다."));
 
         if (stored.isExpired()) {
-            refreshTokenRepository.deleteByTokenHash(tokenHash);
+            // 여기서 만료 행을 삭제하지 않는다 — 바로 아래 예외가 같은 트랜잭션을
+            // 롤백시켜 삭제가 무효화되기 때문이다. 별도 빈으로 빼 REQUIRES_NEW를 걸어도
+            // 그 트랜잭션 안에서 예외를 던지면 마찬가지라, 삭제만 수행하고 커밋한 뒤
+            // 돌아오는 별도 메서드가 필요하다. 만료 토큰은 이미 사용할 수 없고 행 정리는
+            // cleanExpiredTokens() 스케줄러가 맡으므로 그만한 값어치가 없다.
             throw new InvalidRequestException("만료된 리프레시 토큰입니다. 다시 로그인해주세요.");
         }
 

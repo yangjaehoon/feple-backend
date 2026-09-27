@@ -59,7 +59,9 @@ public class OAuthUserRegistrationService {
             if (attemptsLeft > 1) {
                 return registerNew(provider, oauthId, nicknameSupplier, userBuilder, attemptsLeft - 1);
             }
-            throw new IllegalStateException("동시 가입 처리 중 예상치 못한 오류");
+            // cause를 붙인다 — 닉네임·oauthId 외의 제약 위반(예: 컬럼 길이 초과)도 여기로
+            // 떨어지는데, 원인 없이 올라가면 재시도 3회 후 로그에 단서가 남지 않는다.
+            throw new IllegalStateException("동시 가입 처리 중 예상치 못한 오류", e);
         }
     }
 }
