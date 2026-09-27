@@ -100,7 +100,7 @@ dependencies {
 	// 났다 — usefulness 포크는 패키지·SPI가 동일하면서 mac-aarch64/linux-aarch64 네이티브까지 포함한다.
 	implementation 'com.github.usefulness:webp-imageio:0.11.0'
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.1'
 
 	// sentry.dsn 미설정 시 경고만 남기고 비활성 상태로 정상 기동 — SENTRY_DSN 없어도 안전
 	implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.53.0'
