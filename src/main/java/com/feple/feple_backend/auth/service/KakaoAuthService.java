@@ -10,6 +10,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,14 @@ public class KakaoAuthService implements OAuthLoginService {
 
     @Override
     public Mono<User> authenticate(String accessToken) {
-        return kakaoApiClient.getMe(accessToken).map(this::registerOrFind);
+        // registerOrFind는 블로킹 JDBC(조회 + 닉네임 유일성 확인 + 저장)다. map으로 두면
+        // WebClient 응답이 도착한 reactor-netty 이벤트 루프 스레드에서 그대로 실행돼,
+        // 동시 로그인이나 커넥션 풀 대기 한 번으로 루프가 점유되고 같은 루프를 쓰는 다른
+        // WebClient 호출까지 멈춘다 — FirebaseAuthService와 동일하게 boundedElastic으로
+        // 오프로드한다.
+        return kakaoApiClient.getMe(accessToken)
+                .flatMap(kakaoUser -> Mono.fromCallable(() -> registerOrFind(kakaoUser))
+                        .subscribeOn(Schedulers.boundedElastic()));
     }
 
     private User registerOrFind(KakaoUserResponseDto kakaoUser) {

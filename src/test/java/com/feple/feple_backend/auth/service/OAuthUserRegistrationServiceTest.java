@@ -123,7 +123,9 @@ class OAuthUserRegistrationServiceTest {
 
         assertThatThrownBy(() -> registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-5",
                 () -> "race2", nickname -> newUser))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class)
+                // 닉네임·oauthId 외의 제약 위반도 여기로 떨어지므로 원인을 잃으면 안 된다
+                .hasCauseInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
