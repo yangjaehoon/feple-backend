@@ -87,9 +87,13 @@ jobs:
       - name: Run SpotBugs
         run: ./gradlew spotbugsMain spotbugsTest
 
+      # 리포트 업로드는 진단용이라 게이트가 아니다 — 업로드 자체가 실패해도 잡을
+      # 떨구지 않는다. 일회성 `CreateArtifact ETIMEDOUT` 하나로 Dependabot PR이
+      # 4주간 머지 불가 상태로 방치된 이력이 있다(검증·테스트는 이미 통과한 상태).
       - name: Upload SpotBugs report
         uses: actions/upload-artifact@v7
         if: always()
+        continue-on-error: true
         with:
           name: spotbugs-report
           path: build/reports/spotbugs/
@@ -98,6 +102,7 @@ jobs:
       - name: Upload coverage report
         uses: actions/upload-artifact@v7
         if: always()
+        continue-on-error: true
         with:
           name: jacoco-report
           path: build/reports/jacoco/test/html/
