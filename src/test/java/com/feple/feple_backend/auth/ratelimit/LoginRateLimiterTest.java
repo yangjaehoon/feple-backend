@@ -12,7 +12,7 @@ class LoginRateLimiterTest {
     void 한도_초과전까지는_통과() {
         LoginRateLimiter limiter = new LoginRateLimiter();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < LoginRateLimiter.MAX_ATTEMPTS_PER_WINDOW; i++) {
             assertThatCode(() -> limiter.check("1.2.3.4")).doesNotThrowAnyException();
         }
     }
@@ -20,7 +20,7 @@ class LoginRateLimiterTest {
     @Test
     void 한도_초과시_예외() {
         LoginRateLimiter limiter = new LoginRateLimiter();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < LoginRateLimiter.MAX_ATTEMPTS_PER_WINDOW; i++) {
             limiter.check("1.2.3.4");
         }
 
@@ -32,7 +32,7 @@ class LoginRateLimiterTest {
     @Test
     void IP가_다르면_독립적으로_카운트() {
         LoginRateLimiter limiter = new LoginRateLimiter();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < LoginRateLimiter.MAX_ATTEMPTS_PER_WINDOW; i++) {
             limiter.check("1.1.1.1");
         }
 

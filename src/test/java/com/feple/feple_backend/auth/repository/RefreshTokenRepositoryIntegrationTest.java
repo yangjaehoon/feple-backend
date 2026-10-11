@@ -55,24 +55,56 @@ class RefreshTokenRepositoryIntegrationTest {
         assertThat(refreshTokenRepository.findByTokenHash("nonexistent")).isEmpty();
     }
 
-    // ── deleteByTokenHash (@Modifying) ───────────────────────────────
+    // ── markRotated (@Modifying) ─────────────────────────────────────
 
     @Test
-    void 토큰_해시로_삭제() {
-        refreshTokenRepository.save(token("del-hash", LocalDateTime.now().plusDays(7)));
+    void 교체_표시는_아직_교체되지_않은_토큰에만_한번_기록된다() {
+        refreshTokenRepository.save(token("rot-hash", LocalDateTime.now().plusDays(7)));
         em.flush();
+        LocalDateTime first = LocalDateTime.now().minusSeconds(10);
 
-        int deleted = refreshTokenRepository.deleteByTokenHash("del-hash");
+        refreshTokenRepository.markRotated("rot-hash", first);
+        refreshTokenRepository.markRotated("rot-hash", LocalDateTime.now());
         em.clear();
 
-        assertThat(deleted).isEqualTo(1);
-        assertThat(refreshTokenRepository.findByTokenHash("del-hash")).isEmpty();
+        RefreshToken found = refreshTokenRepository.findByTokenHash("rot-hash").orElseThrow();
+        assertThat(found.isRotated()).isTrue();
+        assertThat(found.getRotatedAt()).isEqualToIgnoringNanos(first);
+    }
+
+    // ── deleteSupersededByUserId / deleteRotatedBefore ───────────────
+
+    @Test
+    void 교체시_유예중인_직전_토큰만_남기고_나머지_삭제() {
+        LocalDateTime now = LocalDateTime.now();
+        refreshTokenRepository.save(token("active", now.plusDays(7)));
+        refreshTokenRepository.save(token("in-grace", now.plusDays(7)));
+        refreshTokenRepository.save(token("stale", now.plusDays(7)));
+        em.flush();
+        refreshTokenRepository.markRotated("in-grace", now.minusMinutes(1));
+        refreshTokenRepository.markRotated("stale", now.minusMinutes(10));
+
+        refreshTokenRepository.deleteSupersededByUserId(user.getId(), now.minusMinutes(5));
+        em.clear();
+
+        assertThat(refreshTokenRepository.findByTokenHash("active")).isEmpty();
+        assertThat(refreshTokenRepository.findByTokenHash("in-grace")).isPresent();
+        assertThat(refreshTokenRepository.findByTokenHash("stale")).isEmpty();
     }
 
     @Test
-    void 없는_해시_삭제_시_0_반환() {
-        int deleted = refreshTokenRepository.deleteByTokenHash("no-such-hash");
-        assertThat(deleted).isEqualTo(0);
+    void 유예가_지난_교체된_토큰만_정리하고_유효한_토큰은_유지() {
+        LocalDateTime now = LocalDateTime.now();
+        refreshTokenRepository.save(token("live", now.plusDays(7)));
+        refreshTokenRepository.save(token("old-rotated", now.plusDays(7)));
+        em.flush();
+        refreshTokenRepository.markRotated("old-rotated", now.minusMinutes(10));
+
+        refreshTokenRepository.deleteRotatedBefore(now.minusMinutes(5));
+        em.clear();
+
+        assertThat(refreshTokenRepository.findByTokenHash("live")).isPresent();
+        assertThat(refreshTokenRepository.findByTokenHash("old-rotated")).isEmpty();
     }
 
     // ── deleteByUserId (@Modifying) ──────────────────────────────────

@@ -3,6 +3,7 @@ package com.feple.feple_backend.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,7 @@ import com.feple.feple_backend.global.exception.UserBannedException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {
@@ -47,6 +50,13 @@ class RefreshTokenServiceTest {
     private RefreshToken validToken(User user, String rawToken) {
         String hash = refreshTokenService.hash(rawToken);
         return RefreshToken.of(user, hash, LocalDateTime.now().plusDays(1));
+    }
+
+    /** {@code rotatedAgo} 전에 교체 표시된 토큰. */
+    private RefreshToken rotatedToken(User user, String rawToken, Duration rotatedAgo) {
+        RefreshToken token = validToken(user, rawToken);
+        ReflectionTestUtils.setField(token, "rotatedAt", LocalDateTime.now().minus(rotatedAgo));
+        return token;
     }
 
     private RefreshToken expiredToken(User user, String rawToken) {
@@ -109,11 +119,37 @@ class RefreshTokenServiceTest {
         RefreshToken token = validToken(user, raw);
         given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
                 .willReturn(Optional.of(token));
-        given(refreshTokenRepository.deleteByTokenHash(refreshTokenService.hash(raw))).willReturn(1);
 
         Long result = refreshTokenService.validateAndConsume(raw);
 
         assertThat(result).isEqualTo(1L);
+        verify(refreshTokenRepository).markRotated(eq(refreshTokenService.hash(raw)), any());
+    }
+
+    @Test
+    void 유예시간_안에_교체된_토큰이면_다시_받아준다() {
+        User user = user(1L);
+        String raw = "just-rotated-token";
+        RefreshToken token = rotatedToken(user, raw, Duration.ofSeconds(30));
+        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
+                .willReturn(Optional.of(token));
+
+        assertThat(refreshTokenService.validateAndConsume(raw)).isEqualTo(1L);
+    }
+
+    @Test
+    void 유예시간이_지난_교체된_토큰이면_예외() {
+        User user = user(1L);
+        String raw = "old-rotated-token";
+        RefreshToken token = rotatedToken(user, raw,
+                RefreshTokenService.ROTATION_GRACE.plusSeconds(1));
+        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
+                .willReturn(Optional.of(token));
+
+        assertThatThrownBy(() -> refreshTokenService.validateAndConsume(raw))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("유효하지 않은");
+        verify(refreshTokenRepository, never()).markRotated(any(), any());
     }
 
     @Test
@@ -137,7 +173,7 @@ class RefreshTokenServiceTest {
         assertThatThrownBy(() -> refreshTokenService.validateAndConsume(raw))
                 .isInstanceOf(UserBannedException.class);
 
-        verify(refreshTokenRepository, never()).deleteByTokenHash(refreshTokenService.hash(raw));
+        verify(refreshTokenRepository, never()).markRotated(any(), any());
     }
 
     // 만료 행 삭제를 여기서 하지 않는 이유: 곧바로 던지는 예외가 같은 트랜잭션을
@@ -155,21 +191,7 @@ class RefreshTokenServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("만료");
 
-        verify(refreshTokenRepository, never()).deleteByTokenHash(refreshTokenService.hash(raw));
-    }
-
-    @Test
-    void 동시_요청으로_이미_삭제된_토큰이면_예외() {
-        User user = user(1L);
-        String raw = "race-token";
-        RefreshToken token = validToken(user, raw);
-        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
-                .willReturn(Optional.of(token));
-        given(refreshTokenRepository.deleteByTokenHash(refreshTokenService.hash(raw))).willReturn(0);
-
-        assertThatThrownBy(() -> refreshTokenService.validateAndConsume(raw))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("유효하지 않은");
+        verify(refreshTokenRepository, never()).markRotated(any(), any());
     }
 
     // ── rotate ───────────────────────────────────────────────────────
@@ -181,7 +203,6 @@ class RefreshTokenServiceTest {
         RefreshToken token = validToken(user, rawOld);
         given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(rawOld)))
                 .willReturn(Optional.of(token));
-        given(refreshTokenRepository.deleteByTokenHash(refreshTokenService.hash(rawOld))).willReturn(1);
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
 
         RefreshTokenService.RotationResult result =
@@ -189,7 +210,10 @@ class RefreshTokenServiceTest {
 
         assertThat(result.userId()).isEqualTo(1L);
         assertThat(result.newRefreshToken()).isEqualTo("new-token-for-1");
-        verify(refreshTokenRepository).deleteByTokenHash(refreshTokenService.hash(rawOld));
+        verify(refreshTokenRepository).markRotated(eq(refreshTokenService.hash(rawOld)), any());
+        // 유예 중인 직전 토큰은 남기고 나머지만 정리한다 — 로그인 경로의 전체 삭제와 다르다.
+        verify(refreshTokenRepository).deleteSupersededByUserId(eq(1L), any());
+        verify(refreshTokenRepository, never()).deleteByUserId(any());
         verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 
@@ -206,20 +230,39 @@ class RefreshTokenServiceTest {
     // ── revoke ───────────────────────────────────────────────────────
 
     @Test
-    void 토큰_revoke시_deleteByTokenHash_호출() {
+    void 토큰_revoke시_유예중인_직전_토큰까지_사용자_토큰_전부_삭제() {
+        User user = user(1L);
         String raw = "revoke-token";
+        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
+                .willReturn(Optional.of(validToken(user, raw)));
 
         refreshTokenService.revoke(raw);
 
-        verify(refreshTokenRepository).deleteByTokenHash(refreshTokenService.hash(raw));
+        verify(refreshTokenRepository).deleteByUserId(1L);
+    }
+
+    @Test
+    void 이미_쓸수없는_토큰으로_revoke하면_그_행만_삭제하고_현재_세션은_유지() {
+        User user = user(1L);
+        String raw = "stale-rotated-token";
+        RefreshToken stale = rotatedToken(user, raw,
+                RefreshTokenService.ROTATION_GRACE.plusMinutes(1));
+        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
+                .willReturn(Optional.of(stale));
+
+        refreshTokenService.revoke(raw);
+
+        verify(refreshTokenRepository).delete(stale);
+        verify(refreshTokenRepository, never()).deleteByUserId(any());
     }
 
     @Test
     void 존재하지_않는_토큰_revoke시_예외_없이_무시() {
-        // deleteByTokenHash는 존재 여부와 관계없이 항상 호출됨 (0 반환 시 무시)
+        given(refreshTokenRepository.findByTokenHash(any())).willReturn(Optional.empty());
+
         refreshTokenService.revoke("unknown-token");
 
-        verify(refreshTokenRepository).deleteByTokenHash(any());
+        verify(refreshTokenRepository, never()).deleteByUserId(any());
     }
 
     // ── revokeAll / cleanExpiredTokens ───────────────────────────────
@@ -236,5 +279,6 @@ class RefreshTokenServiceTest {
         refreshTokenService.cleanExpiredTokens();
 
         verify(refreshTokenRepository).deleteExpiredTokens(any(LocalDateTime.class));
+        verify(refreshTokenRepository).deleteRotatedBefore(any(LocalDateTime.class));
     }
 }

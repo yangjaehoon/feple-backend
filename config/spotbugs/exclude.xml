@@ -23,6 +23,15 @@
         <Bug pattern="UWF_UNWRITTEN_FIELD"/>
     </Match>
 
+    <!-- RefreshToken.rotatedAt: 교체 표시는 동시 요청 경합을 피하려고 조건부 벌크 UPDATE
+         (RefreshTokenRepository.markRotated, "WHERE rotated_at IS NULL")로만 기록한다 —
+         JPA가 DB 값을 리플렉션으로 채우므로 바이트코드 분석으로는 대입이 안 보여 오탐 발생. -->
+    <Match>
+        <Class name="com.feple.feple_backend.auth.entity.RefreshToken"/>
+        <Field name="rotatedAt"/>
+        <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+    </Match>
+
     <!-- V16 마이그레이션: 이미 프로덕션에 적용된 Flyway 마이그레이션이라 절대 수정 불가 —
          수정하면 체크섬이 바뀌어 다음 배포에서 Flyway 검증이 깨진다. addIndexIfNotExists는
          이 파일 안에서 항상 하드코딩된 리터럴로만 호출되어 실질적 인젝션 위험은 없음. -->

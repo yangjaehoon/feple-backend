@@ -11,6 +11,7 @@ import com.feple.feple_backend.user.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.function.Function;
@@ -23,6 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
+
+    /**
+     * 교체된 리프레시 토큰을 다시 받아주는 시간. 클라이언트는 갱신이 일시적으로 실패하면
+     * 세션을 유지하고 다음 401에서 다시 갱신하므로, 사용자의 다음 조작까지 기다릴 수 있게
+     * 분 단위로 둔다.
+     */
+    static final Duration ROTATION_GRACE = Duration.ofMinutes(5);
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProperties jwtProperties;
@@ -39,20 +47,32 @@ public class RefreshTokenService {
         }
     }
 
+    /**
+     * 새 로그인 — 사용자의 기존 토큰을 유예 중인 것까지 모두 끊고 새 토큰을 저장한다
+     * (단일 기기 세션 정책).
+     */
     @Transactional
     public void save(Long userId, String rawToken) {
+        refreshTokenRepository.deleteByUserId(userId);
+        insert(userId, rawToken);
+    }
+
+    private void insert(Long userId, String rawToken) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("토큰 저장 중 사용자를 찾을 수 없습니다."));
-        String tokenHash = hash(rawToken);
         LocalDateTime expiresAt = LocalDateTime.now()
                 .plusSeconds(jwtProperties.refreshTokenExpirationMs() / 1000);
-        refreshTokenRepository.deleteByUserId(userId); // 기존 토큰 교체
-        refreshTokenRepository.save(RefreshToken.of(user, tokenHash, expiresAt));
+        refreshTokenRepository.save(RefreshToken.of(user, hash(rawToken), expiresAt));
     }
 
     /**
-     * 기존 리프레시 토큰을 검증하고 삭제한 뒤 userId를 반환한다.
-     * 새 토큰 저장은 호출자가 save()를 통해 처리한다.
+     * 리프레시 토큰을 검증하고 교체 표시한 뒤 userId를 반환한다.
+     *
+     * <p>교체된 토큰도 {@link #ROTATION_GRACE} 동안은 다시 받아준다. 서버가 교체를 커밋한 뒤
+     * 응답이 유실되면(현장 저신호의 수신 타임아웃 등) 클라이언트는 옛 토큰만 들고 있는데,
+     * 즉시 무효화하면 다음 갱신이 400이 돼 강제 로그아웃된다. 유예 중 재요청에는 새 토큰을
+     * 다시 발급하고, 그 사이 발급됐던(클라이언트가 못 받은) 토큰은 {@link #rotate}가 지운다.
+     * 대가로 탈취된 토큰도 이 창 안에서는 재사용될 수 있다 — 창을 짧게 둔다.
      */
     @Transactional
     public Long validateAndConsume(String rawToken) {
@@ -74,34 +94,48 @@ public class RefreshTokenService {
             throw new UserBannedException();
         }
 
-        Long userId = stored.getUserId();
-        // 직접 DELETE 쿼리로 삭제: 동시 요청이 같은 토큰을 소비하려 할 때 0이 반환됨
-        int deleted = refreshTokenRepository.deleteByTokenHash(tokenHash);
-        if (deleted == 0) {
+        if (stored.isRotated() && !stored.isWithinRotationGrace(ROTATION_GRACE)) {
             throw new InvalidRequestException("유효하지 않은 리프레시 토큰입니다.");
         }
-        return userId;
+        refreshTokenRepository.markRotated(tokenHash, LocalDateTime.now());
+        return stored.getUserId();
     }
 
     public record RotationResult(Long userId, String newRefreshToken) {}
 
     /**
-     * 기존 리프레시 토큰을 검증·소비하고 새 토큰을 발급·저장하는 과정을 하나의 트랜잭션으로 묶는다.
-     * validateAndConsume()과 save()를 컨트롤러에서 별도 호출하면, 그 사이(혹은 save() 자체)에서
-     * 실패할 경우 기존 토큰은 이미 삭제됐는데 새 토큰은 발급되지 않아 사용자가 재로그인 외에는
-     * 복구할 수 없는 상태가 될 수 있다 — 실패 시 전체 롤백되어 기존 토큰이 보존되도록 한다.
+     * 기존 리프레시 토큰을 검증·교체 표시하고 새 토큰을 발급·저장하는 과정을 하나의 트랜잭션으로
+     * 묶는다 — 중간에 실패하면 전체 롤백되어 기존 토큰이 그대로 보존된다.
      */
     @Transactional
     public RotationResult rotate(String oldRawToken, Function<Long, String> newTokenFactory) {
         Long userId = validateAndConsume(oldRawToken);
         String newRawToken = newTokenFactory.apply(userId);
-        save(userId, newRawToken);
+        refreshTokenRepository.deleteSupersededByUserId(userId, graceCutoff());
+        insert(userId, newRawToken);
         return new RotationResult(userId, newRawToken);
     }
 
+    /**
+     * 로그아웃. 아직 쓸 수 있는 토큰이면 유예 중인 직전 토큰까지 사용자의 토큰을 모두 끊는다
+     * (남기면 로그아웃 후에도 갱신 가능). 이미 쓸 수 없는 토큰(만료·유예 경과)이면 그 행만
+     * 지운다 — {@code /auth/logout}은 인증 없이 열려 있어, 오래된 토큰을 쥔 누군가가 현재
+     * 세션을 끊을 수 있으면 안 된다.
+     */
     @Transactional
     public void revoke(String rawToken) {
-        refreshTokenRepository.deleteByTokenHash(hash(rawToken));
+        refreshTokenRepository.findByTokenHash(hash(rawToken)).ifPresent(token -> {
+            if (isUsable(token)) {
+                refreshTokenRepository.deleteByUserId(token.getUserId());
+            } else {
+                refreshTokenRepository.delete(token);
+            }
+        });
+    }
+
+    private static boolean isUsable(RefreshToken token) {
+        return !token.isExpired()
+                && (!token.isRotated() || token.isWithinRotationGrace(ROTATION_GRACE));
     }
 
     @Transactional
@@ -115,5 +149,10 @@ public class RefreshTokenService {
     @Transactional
     public void cleanExpiredTokens() {
         refreshTokenRepository.deleteExpiredTokens(LocalDateTime.now());
+        refreshTokenRepository.deleteRotatedBefore(graceCutoff());
+    }
+
+    private static LocalDateTime graceCutoff() {
+        return LocalDateTime.now().minus(ROTATION_GRACE);
     }
 }
