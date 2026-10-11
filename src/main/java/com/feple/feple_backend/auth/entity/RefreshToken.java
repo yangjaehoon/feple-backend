@@ -11,6 +11,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,8 @@ import org.hibernate.annotations.CreationTimestamp;
 @Getter
 @NoArgsConstructor
 @Table(name = "refresh_tokens", indexes = {
-        @Index(name = "idx_refresh_user_id", columnList = "user_id")
+        @Index(name = "idx_refresh_user_id", columnList = "user_id"),
+        @Index(name = "idx_refresh_tokens_rotated_at", columnList = "rotated_at")
 })
 public class RefreshToken {
 
@@ -47,6 +49,9 @@ public class RefreshToken {
     @Column(nullable = false)
     private LocalDateTime expiresAt;
 
+    /** 새 토큰으로 교체된 시각. null이면 현재 유효한 토큰이다(유예 시간 판정용). */
+    private LocalDateTime rotatedAt;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -61,5 +66,14 @@ public class RefreshToken {
 
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
+    }
+
+    public boolean isRotated() {
+        return rotatedAt != null;
+    }
+
+    /** 교체된 지 {@code grace} 이내인지 — 교체 응답을 못 받은 클라이언트의 재요청을 받아줄 창. */
+    public boolean isWithinRotationGrace(Duration grace) {
+        return rotatedAt != null && rotatedAt.isAfter(LocalDateTime.now().minus(grace));
     }
 }
