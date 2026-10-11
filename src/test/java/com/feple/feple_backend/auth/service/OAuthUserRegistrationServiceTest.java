@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.global.exception.AgeRestrictedException;
+import com.feple.feple_backend.global.exception.UserBannedException;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
@@ -84,6 +85,19 @@ class OAuthUserRegistrationServiceTest {
                 nickname -> { throw new AssertionError("호출되면 안 됨"); }))
                 .isInstanceOf(AgeRestrictedException.class)
                 .hasMessageContaining("14세");
+    }
+
+    @Test
+    void 정지된_유저면_UserBannedException() {
+        User banned = User.builder().id(4L).nickname("nick4").oauthId("oauth-banned")
+                .provider(AuthProvider.KAKAO).bannedUntil(LocalDateTime.now().plusDays(3)).build();
+        given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-banned"))
+                .willReturn(Optional.of(banned));
+
+        assertThatThrownBy(() -> registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-banned",
+                () -> { throw new AssertionError("호출되면 안 됨"); },
+                nickname -> { throw new AssertionError("호출되면 안 됨"); }))
+                .isInstanceOf(UserBannedException.class);
     }
 
     @Test

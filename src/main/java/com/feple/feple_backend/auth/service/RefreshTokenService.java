@@ -5,6 +5,7 @@ import com.feple.feple_backend.auth.jwt.JwtProperties;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
 import com.feple.feple_backend.global.KoreaClock;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.UserBannedException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
@@ -66,6 +67,11 @@ public class RefreshTokenService {
             // 돌아오는 별도 메서드가 필요하다. 만료 토큰은 이미 사용할 수 없고 행 정리는
             // cleanExpiredTokens() 스케줄러가 맡으므로 그만한 값어치가 없다.
             throw new InvalidRequestException("만료된 리프레시 토큰입니다. 다시 로그인해주세요.");
+        }
+
+        // 정지 계정은 갱신을 거부한다 — 예외로 트랜잭션이 롤백돼 토큰은 소비되지 않는다.
+        if (stored.isOwnerBanned()) {
+            throw new UserBannedException();
         }
 
         Long userId = stored.getUserId();

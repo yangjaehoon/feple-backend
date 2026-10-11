@@ -3,6 +3,7 @@ package com.feple.feple_backend.auth.service;
 import com.feple.feple_backend.auth.firebase.FirebaseTokenVerifier;
 import com.feple.feple_backend.global.exception.AgeRestrictedException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.UserBannedException;
 import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
@@ -49,8 +50,9 @@ public class FirebaseAuthService implements OAuthLoginService {
                 throw new InvalidRequestException("이메일 인증이 완료되지 않았습니다.");
             }
             return registerOrFind(decoded.getUid(), decoded.getEmail(), decoded.getName());
-        } catch (IllegalArgumentException | IllegalStateException | AgeRestrictedException e) {
-            // 의도적으로 노출할 검증·나이 제한 메시지는 "인증 실패"로 뭉개지 않고 그대로 전파한다.
+        } catch (IllegalArgumentException | IllegalStateException | AgeRestrictedException
+                 | UserBannedException e) {
+            // 의도적으로 노출할 검증·나이 제한·계정 정지 메시지는 "인증 실패"로 뭉개지 않고 그대로 전파한다.
             // IllegalStateException(가입 재시도 소진 등 예상 불가 서버 오류)도 여기로 —
             // 400으로 뭉개면 5xx 모니터링에 안 잡히고 handleIllegalState의 log.error도 안 돈다.
             throw e;

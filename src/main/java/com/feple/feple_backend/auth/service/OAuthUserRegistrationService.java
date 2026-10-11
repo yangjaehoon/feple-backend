@@ -2,6 +2,7 @@ package com.feple.feple_backend.auth.service;
 
 import com.feple.feple_backend.global.exception.AgeRestrictedException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
+import com.feple.feple_backend.global.exception.UserBannedException;
 
 import com.feple.feple_backend.user.entity.AgePolicy;
 import com.feple.feple_backend.user.entity.AuthProvider;
@@ -33,17 +34,25 @@ public class OAuthUserRegistrationService {
                                 Supplier<String> nicknameSupplier, Function<String, User> userBuilder) {
         Optional<User> existing = userRepository.findByProviderAndOauthId(provider, oauthId);
         if (existing.isPresent()) {
-            User user = existing.get();
-            if (user.isDeleted()) {
-                if (user.getWithdrawalReason() == WithdrawalReason.AGE_RESTRICTED) {
-                    throw new AgeRestrictedException(
-                            "만 " + AgePolicy.MINIMUM_AGE + "세 미만은 커뮤니티 서비스를 이용할 수 없습니다.");
-                }
-                throw new InvalidRequestException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
-            }
-            return user;
+            return requireLoginAllowed(existing.get());
         }
         return registerNew(provider, oauthId, nicknameSupplier, userBuilder, MAX_NICKNAME_COLLISION_RETRIES);
+    }
+
+    /** 탈퇴·나이 제한·정지 계정이면 로그인을 거부하고, 아니면 그대로 반환한다. */
+    private User requireLoginAllowed(User user) {
+        if (user.isDeleted()) {
+            if (user.getWithdrawalReason() == WithdrawalReason.AGE_RESTRICTED) {
+                throw new AgeRestrictedException(
+                        "만 " + AgePolicy.MINIMUM_AGE + "세 미만은 커뮤니티 서비스를 이용할 수 없습니다.");
+            }
+            throw new InvalidRequestException("탈퇴 처리된 계정입니다. 동일한 계정으로 재가입할 수 없습니다.");
+        }
+        // 토큰을 내준 뒤 모든 인증 요청에서 403을 받게 하느니 로그인 단계에서 거부한다.
+        if (user.isBanned()) {
+            throw new UserBannedException();
+        }
+        return user;
     }
 
     private User registerNew(AuthProvider provider, String oauthId,
@@ -54,7 +63,7 @@ public class OAuthUserRegistrationService {
         } catch (DataIntegrityViolationException e) {
             // 동일 유저의 동시 가입 경합(provider+oauthId unique)이면 이미 저장된 행을 반환
             Optional<User> existing = userRepository.findByProviderAndOauthId(provider, oauthId);
-            if (existing.isPresent()) return existing.get();
+            if (existing.isPresent()) return requireLoginAllowed(existing.get());
             // 그 외(서로 다른 신규 유저의 닉네임 후보 충돌 등)는 새 닉네임 후보로 재시도
             if (attemptsLeft > 1) {
                 return registerNew(provider, oauthId, nicknameSupplier, userBuilder, attemptsLeft - 1);

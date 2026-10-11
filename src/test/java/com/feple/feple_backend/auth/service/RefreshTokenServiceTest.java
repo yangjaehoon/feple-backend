@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import com.feple.feple_backend.auth.entity.RefreshToken;
 import com.feple.feple_backend.auth.jwt.JwtProperties;
 import com.feple.feple_backend.auth.repository.RefreshTokenRepository;
+import com.feple.feple_backend.global.exception.UserBannedException;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.UserRole;
 import com.feple.feple_backend.user.repository.UserRepository;
@@ -122,6 +123,21 @@ class RefreshTokenServiceTest {
         assertThatThrownBy(() -> refreshTokenService.validateAndConsume("unknown-token"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("유효하지 않은");
+    }
+
+    @Test
+    void 정지된_유저의_토큰이면_소비하지_않고_UserBannedException() {
+        User banned = User.builder().id(5L).nickname("user5").oauthId("o5").role(UserRole.USER)
+                .bannedUntil(LocalDateTime.now().plusDays(3)).build();
+        String raw = "banned-token";
+        RefreshToken token = validToken(banned, raw);
+        given(refreshTokenRepository.findByTokenHash(refreshTokenService.hash(raw)))
+                .willReturn(Optional.of(token));
+
+        assertThatThrownBy(() -> refreshTokenService.validateAndConsume(raw))
+                .isInstanceOf(UserBannedException.class);
+
+        verify(refreshTokenRepository, never()).deleteByTokenHash(refreshTokenService.hash(raw));
     }
 
     // 만료 행 삭제를 여기서 하지 않는 이유: 곧바로 던지는 예외가 같은 트랜잭션을
