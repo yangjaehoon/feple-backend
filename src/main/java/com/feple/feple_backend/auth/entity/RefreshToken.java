@@ -36,6 +36,10 @@ public class RefreshToken {
         return user.getId();
     }
 
+    public boolean isOwnerBanned() {
+        return user.isBanned();
+    }
+
     /** 실제 토큰의 SHA-256 해시 값 (평문 저장 방지) */
     @Column(nullable = false, unique = true, length = 64)
     private String tokenHash;

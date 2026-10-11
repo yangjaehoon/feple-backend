@@ -143,6 +143,14 @@ public class GlobalExceptionHandler {
         return body(HttpStatus.FORBIDDEN, ex.getMessage(), ErrorCode.AGE_RESTRICTED);
     }
 
+    // 정지 계정의 로그인·토큰 갱신 — JwtAuthenticationFilter의 정지 응답과 같은 코드로 내려
+    // 클라이언트가 한 가지 판정(code == USER_BANNED)으로 안내한다.
+    @ExceptionHandler(UserBannedException.class)
+    public ResponseEntity<ErrorResponse> handleUserBanned(UserBannedException ex) {
+        log.info("Banned user rejected: {}", ex.getMessage());
+        return body(HttpStatus.FORBIDDEN, ex.getMessage(), ErrorCode.USER_BANNED);
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ErrorResponse> handleTooManyRequests(TooManyRequestsException ex) {
         log.warn("Rate limit exceeded: {}", ex.getMessage());
