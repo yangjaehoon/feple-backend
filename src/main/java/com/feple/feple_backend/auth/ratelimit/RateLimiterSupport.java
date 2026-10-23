@@ -16,6 +16,9 @@ public final class RateLimiterSupport {
 
     static final String TOO_MANY_REQUESTS_MESSAGE = "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.";
 
+    private static final Duration CLIENT_IP_CACHE_EXPIRE_AFTER_ACCESS = Duration.ofMinutes(15);
+    private static final long CLIENT_IP_CACHE_MAX_SIZE = 10_000;
+
     private final Cache<String, Bucket> cache;
     private final int capacity;
     private final Duration refillPeriod;
@@ -28,6 +31,12 @@ public final class RateLimiterSupport {
                 .build();
         this.capacity = capacity;
         this.refillPeriod = refillPeriod;
+    }
+
+    /** 클라이언트 IP별 제한(로그인·토큰 갱신) — 15분 미접근 시 만료, 최대 10,000개 IP 저장. */
+    static RateLimiterSupport perClientIp(int capacity, Duration refillPeriod) {
+        return new RateLimiterSupport(CLIENT_IP_CACHE_EXPIRE_AFTER_ACCESS, CLIENT_IP_CACHE_MAX_SIZE,
+                capacity, refillPeriod);
     }
 
     public boolean tryConsume(String key) {

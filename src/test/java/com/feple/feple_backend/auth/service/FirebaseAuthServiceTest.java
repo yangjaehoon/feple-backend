@@ -3,19 +3,16 @@ package com.feple.feple_backend.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.auth.firebase.FirebaseTokenVerifier;
-import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.google.firebase.ErrorCode;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +25,6 @@ import org.springframework.dao.DataAccessResourceFailureException;
 @ExtendWith(MockitoExtension.class)
 class FirebaseAuthServiceTest {
 
-    @Mock NicknameGenerator nicknameGenerator;
     @Mock OAuthUserRegistrationService registrationService;
     @Mock FirebaseTokenVerifier firebaseTokenVerifier;
     @Mock FirebaseToken firebaseToken;
@@ -37,7 +33,7 @@ class FirebaseAuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        firebaseAuthService = new FirebaseAuthService(nicknameGenerator, registrationService, firebaseTokenVerifier);
+        firebaseAuthService = new FirebaseAuthService(registrationService, firebaseTokenVerifier);
     }
 
     private User user() {
@@ -52,7 +48,8 @@ class FirebaseAuthServiceTest {
         given(firebaseToken.getEmail()).willReturn("a@b.com");
         given(firebaseToken.getName()).willReturn("홍길동");
         User expected = user();
-        given(registrationService.registerOrFind(eq(AuthProvider.FIREBASE), eq("uid-123"), any(), any()))
+        given(registrationService.registerOrFind(new OAuthProfile(
+                AuthProvider.FIREBASE, "uid-123", "a@b.com", "홍길동", "Useruid-123", null)))
                 .willReturn(expected);
 
         User result = firebaseAuthService.authenticate("id-token").block();
@@ -93,7 +90,7 @@ class FirebaseAuthServiceTest {
     @Test
     void DB_장애는_인증실패로_뭉개지_않고_그대로_전파() throws FirebaseAuthException {
         givenVerifiedToken("id-token");
-        given(registrationService.registerOrFind(any(), any(), any(), any()))
+        given(registrationService.registerOrFind(any()))
                 .willThrow(new DataAccessResourceFailureException("connection pool exhausted"));
 
         assertThatThrownBy(() -> firebaseAuthService.authenticate("id-token").block())
@@ -126,7 +123,7 @@ class FirebaseAuthServiceTest {
     @Test
     void 가입_재시도_소진_IllegalStateException은_그대로_전파() throws FirebaseAuthException {
         givenVerifiedToken("id-token");
-        given(registrationService.registerOrFind(any(), any(), any(), any()))
+        given(registrationService.registerOrFind(any()))
                 .willThrow(new IllegalStateException("동시 가입 처리 중 예상치 못한 오류"));
 
         assertThatThrownBy(() -> firebaseAuthService.authenticate("id-token").block())
@@ -134,23 +131,20 @@ class FirebaseAuthServiceTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void displayName_없으면_fallback_닉네임_사용() throws FirebaseAuthException {
         given(firebaseTokenVerifier.verify("id-token")).willReturn(firebaseToken);
         given(firebaseToken.getClaims()).willReturn(Map.of("email_verified", true));
         given(firebaseToken.getUid()).willReturn("uid-45678900");
         given(firebaseToken.getEmail()).willReturn("a@b.com");
         given(firebaseToken.getName()).willReturn(null);
-        given(nicknameGenerator.generateFrom("Useruid-4567", "Useruid-4567")).willReturn("Useruid-4567");
-        given(registrationService.registerOrFind(any(), any(), any(), any())).willReturn(user());
+        given(registrationService.registerOrFind(any())).willReturn(user());
 
         firebaseAuthService.authenticate("id-token").block();
 
-        // 닉네임 생성은 registrationService에 넘긴 Supplier 안으로 지연 평가되므로, 캡처해서 직접 호출해 검증한다
-        ArgumentCaptor<Supplier<String>> nicknameSupplierCaptor = ArgumentCaptor.forClass(Supplier.class);
-        verify(registrationService).registerOrFind(any(), any(), nicknameSupplierCaptor.capture(), any());
-        assertThat(nicknameSupplierCaptor.getValue().get()).isEqualTo("Useruid-4567");
-        verify(nicknameGenerator).generateFrom("Useruid-4567", "Useruid-4567");
+        ArgumentCaptor<OAuthProfile> captor = ArgumentCaptor.forClass(OAuthProfile.class);
+        verify(registrationService).registerOrFind(captor.capture());
+        assertThat(captor.getValue().rawNickname()).isEqualTo("Useruid-4567");
+        assertThat(captor.getValue().fallbackNickname()).isEqualTo("Useruid-4567");
     }
 
     private void givenVerifiedToken(String idToken) throws FirebaseAuthException {

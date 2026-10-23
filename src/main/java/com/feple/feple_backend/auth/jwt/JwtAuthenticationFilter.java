@@ -32,6 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public record JwtFailure(HttpStatus status, String message, ErrorCode code) {}
 
+    private static final JwtFailure EXPIRED_TOKEN =
+            new JwtFailure(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다.", ErrorCode.TOKEN_EXPIRED);
+    private static final JwtFailure INVALID_TOKEN =
+            new JwtFailure(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID);
+    private static final JwtFailure USER_BANNED =
+            new JwtFailure(HttpStatus.FORBIDDEN, "계정이 정지되었습니다.", ErrorCode.USER_BANNED);
+    private static final JwtFailure AGE_VERIFICATION_REQUIRED = new JwtFailure(
+            HttpStatus.FORBIDDEN, "생년월일 확인이 필요합니다.", ErrorCode.AGE_VERIFICATION_REQUIRED);
+
     private final JwtProvider jwtProvider;
     // SecurityConfig에서 @Lazy 프록시로 주입돼 넘어온다 — 필터 빈이 (FilterRegistrationBean 처리 중)
     // 일찍 생성돼도 실제 해석은 첫 요청 처리 시점으로 미뤄져 JPA 기동 순서 문제를 피한다.
@@ -90,28 +99,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             userId = jwtProvider.parseUserId(token);
         } catch (ExpiredJwtException e) {
-            return Optional.of(new JwtFailure(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다.", ErrorCode.TOKEN_EXPIRED));
+            return Optional.of(EXPIRED_TOKEN);
         } catch (JwtException e) {
             log.warn("[JWT] 변조된 토큰 감지 - URI: {}, reason: {}", request.getRequestURI(), e.getMessage());
-            return Optional.of(new JwtFailure(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID));
+            return Optional.of(INVALID_TOKEN);
         } catch (Exception e) {
             log.error("[JWT] 예상하지 못한 토큰 파싱 오류", e);
-            return Optional.of(new JwtFailure(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID));
+            return Optional.of(INVALID_TOKEN);
         }
 
         User user = userRepository.findById(userId).orElse(null);
         if (user == null || user.isDeleted()) {
-            return Optional.of(new JwtFailure(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.", ErrorCode.TOKEN_INVALID));
+            return Optional.of(INVALID_TOKEN);
         }
         if (user.isBanned()) {
-            return Optional.of(new JwtFailure(HttpStatus.FORBIDDEN, "계정이 정지되었습니다.", ErrorCode.USER_BANNED));
+            return Optional.of(USER_BANNED);
         }
         // 나이 확인 전(생년월일 미입력) 유저는 GET /users/me 외의 인증 요청을 모두 차단한다 —
         // 글·댓글 작성 등 개인정보를 남기는 행위(인증 필요 엔드포인트)를 클라이언트 우회와
         // 무관하게 서버에서 막는다(App Store 심사 5.1.1). 공개 GET 조회는 게스트와 동일하게 허용.
         if (user.needsAgeVerification() && !isAgeGateSelfCheck(request)) {
-            return Optional.of(new JwtFailure(HttpStatus.FORBIDDEN,
-                    "생년월일 확인이 필요합니다.", ErrorCode.AGE_VERIFICATION_REQUIRED));
+            return Optional.of(AGE_VERIFICATION_REQUIRED);
         }
 
         String role = "ROLE_" + user.getRole().name();

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * OAuth 신규 가입 시 닉네임 생성 공통 로직.
- * KakaoAuthService, FirebaseAuthService 양쪽에서 사용.
+ * 가입 처리를 맡은 OAuthUserRegistrationService가 사용한다(공급자별 서비스는 닉네임 후보만 넘긴다).
  */
 @Component
 @RequiredArgsConstructor
@@ -36,7 +36,7 @@ public class NicknameGenerator {
 
     /**
      * OAuth 신규 가입 시의 닉네임 생성 전체 흐름: {@link #sanitize}로 정제한 뒤 {@link #uniquify}로
-     * 유일성까지 보장한다. KakaoAuthService/FirebaseAuthService가 각자 조합하지 않고 이 메서드로 통일한다.
+     * 유일성까지 보장한다. 정제·유일화를 호출부가 각자 조합하지 않고 이 메서드로 통일한다.
      */
     public String generateFrom(String raw, String fallback) {
         return uniquify(sanitize(raw, fallback));

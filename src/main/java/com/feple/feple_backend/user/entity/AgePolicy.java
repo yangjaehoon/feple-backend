@@ -13,6 +13,10 @@ public final class AgePolicy {
     /** 이용 가능 최소 만 나이. */
     public static final int MINIMUM_AGE = 14;
 
+    /** 최소 연령 미달로 이용이 차단될 때 사용자에게 보여주는 안내 문구. */
+    public static final String UNDER_MINIMUM_AGE_MESSAGE =
+            "만 " + MINIMUM_AGE + "세 미만은 커뮤니티 서비스를 이용할 수 없습니다.";
+
     private AgePolicy() {}
 
     public static int ageOn(LocalDate birthDate, LocalDate today) {

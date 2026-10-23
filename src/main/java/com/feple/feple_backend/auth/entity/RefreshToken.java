@@ -72,8 +72,16 @@ public class RefreshToken {
         return rotatedAt != null;
     }
 
-    /** 교체된 지 {@code grace} 이내인지 — 교체 응답을 못 받은 클라이언트의 재요청을 받아줄 창. */
-    public boolean isWithinRotationGrace(Duration grace) {
-        return rotatedAt != null && rotatedAt.isAfter(LocalDateTime.now().minus(grace));
+    /** 아직 갱신에 쓸 수 있는 토큰인지 — 만료 전이고, 교체됐다면 {@code grace} 이내여야 한다. */
+    public boolean isUsable(Duration grace) {
+        return !isExpired() && !isRotationGraceOver(grace);
+    }
+
+    /**
+     * 교체된 뒤 {@code grace}가 지났는지. 교체되지 않은 토큰은 false — {@code grace}는 교체 응답을
+     * 못 받은 클라이언트의 재요청을 받아줄 창이다.
+     */
+    public boolean isRotationGraceOver(Duration grace) {
+        return rotatedAt != null && !rotatedAt.isAfter(LocalDateTime.now().minus(grace));
     }
 }

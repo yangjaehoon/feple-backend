@@ -75,7 +75,6 @@ public class AgeVerificationService {
 
         // 소프트 삭제(deleteUser)가 리프레시 토큰 폐기까지 포함한다.
         userService.deleteUser(userId, WithdrawalReason.AGE_RESTRICTED, null);
-        throw new AgeRestrictedException(
-                "만 " + AgePolicy.MINIMUM_AGE + "세 미만은 커뮤니티 서비스를 이용할 수 없습니다.");
+        throw new AgeRestrictedException(AgePolicy.UNDER_MINIMUM_AGE_MESSAGE);
     }
 }

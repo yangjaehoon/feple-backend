@@ -3,19 +3,19 @@ package com.feple.feple_backend.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.feple.feple_backend.global.exception.AgeRestrictedException;
 import com.feple.feple_backend.global.exception.UserBannedException;
+import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.feple.feple_backend.user.entity.WithdrawalReason;
 import com.feple.feple_backend.user.repository.UserRepository;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,12 +28,17 @@ import org.springframework.dao.DataIntegrityViolationException;
 class OAuthUserRegistrationServiceTest {
 
     @Mock UserRepository userRepository;
+    @Mock NicknameGenerator nicknameGenerator;
 
     private OAuthUserRegistrationService registrationService;
 
     @BeforeEach
     void setUp() {
-        registrationService = new OAuthUserRegistrationService(userRepository);
+        registrationService = new OAuthUserRegistrationService(userRepository, nicknameGenerator);
+    }
+
+    private static OAuthProfile profile(String oauthId) {
+        return new OAuthProfile(AuthProvider.KAKAO, oauthId, "a@b.com", "raw", "fallback", "http://img");
     }
 
     private User activeUser() {
@@ -51,12 +56,11 @@ class OAuthUserRegistrationServiceTest {
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-1"))
                 .willReturn(Optional.of(existing));
 
-        User result = registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-1",
-                () -> { throw new AssertionError("신규 유저가 있을 때는 nicknameSupplier가 호출되면 안 됨"); },
-                nickname -> { throw new AssertionError("신규 유저가 있을 때는 builder가 호출되면 안 됨"); });
+        User result = registrationService.registerOrFind(profile("oauth-1"));
 
         assertThat(result).isEqualTo(existing);
         verify(userRepository, never()).save(any());
+        verify(nicknameGenerator, never()).generateFrom(any(), any());
     }
 
     @Test
@@ -65,9 +69,7 @@ class OAuthUserRegistrationServiceTest {
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-2"))
                 .willReturn(Optional.of(deleted));
 
-        assertThatThrownBy(() -> registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-2",
-                () -> { throw new AssertionError("호출되면 안 됨"); },
-                nickname -> { throw new AssertionError("호출되면 안 됨"); }))
+        assertThatThrownBy(() -> registrationService.registerOrFind(profile("oauth-2")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("탈퇴");
     }
@@ -80,9 +82,7 @@ class OAuthUserRegistrationServiceTest {
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-age"))
                 .willReturn(Optional.of(ageRestricted));
 
-        assertThatThrownBy(() -> registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-age",
-                () -> { throw new AssertionError("호출되면 안 됨"); },
-                nickname -> { throw new AssertionError("호출되면 안 됨"); }))
+        assertThatThrownBy(() -> registrationService.registerOrFind(profile("oauth-age")))
                 .isInstanceOf(AgeRestrictedException.class)
                 .hasMessageContaining("14세");
     }
@@ -94,23 +94,24 @@ class OAuthUserRegistrationServiceTest {
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-banned"))
                 .willReturn(Optional.of(banned));
 
-        assertThatThrownBy(() -> registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-banned",
-                () -> { throw new AssertionError("호출되면 안 됨"); },
-                nickname -> { throw new AssertionError("호출되면 안 됨"); }))
+        assertThatThrownBy(() -> registrationService.registerOrFind(profile("oauth-banned")))
                 .isInstanceOf(UserBannedException.class);
     }
 
     @Test
-    void 신규_유저면_저장후_반환() {
+    void 신규_유저면_프로필과_생성된_닉네임으로_저장후_반환() {
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-3"))
                 .willReturn(Optional.empty());
-        User newUser = User.builder().nickname("new").oauthId("oauth-3").provider(AuthProvider.KAKAO).build();
-        given(userRepository.save(newUser)).willReturn(newUser);
+        given(nicknameGenerator.generateFrom("raw", "fallback")).willReturn("new");
+        given(userRepository.save(any(User.class))).willAnswer(inv -> inv.getArgument(0));
 
-        User result = registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-3",
-                () -> "new", nickname -> newUser);
+        User result = registrationService.registerOrFind(profile("oauth-3"));
 
-        assertThat(result).isEqualTo(newUser);
+        assertThat(result.getProvider()).isEqualTo(AuthProvider.KAKAO);
+        assertThat(result.getOauthId()).isEqualTo("oauth-3");
+        assertThat(result.getEmail()).isEqualTo("a@b.com");
+        assertThat(result.getNickname()).isEqualTo("new");
+        assertThat(result.getProfileImageUrl()).isEqualTo("http://img");
     }
 
     @Test
@@ -119,11 +120,10 @@ class OAuthUserRegistrationServiceTest {
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-4"))
                 .willReturn(Optional.empty())
                 .willReturn(Optional.of(existing));
-        User newUser = User.builder().nickname("race").oauthId("oauth-4").provider(AuthProvider.KAKAO).build();
-        given(userRepository.save(newUser)).willThrow(new DataIntegrityViolationException("dup"));
+        given(nicknameGenerator.generateFrom(any(), any())).willReturn("race");
+        given(userRepository.save(any(User.class))).willThrow(new DataIntegrityViolationException("dup"));
 
-        User result = registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-4",
-                () -> "race", nickname -> newUser);
+        User result = registrationService.registerOrFind(profile("oauth-4"));
 
         assertThat(result).isEqualTo(existing);
     }
@@ -132,11 +132,10 @@ class OAuthUserRegistrationServiceTest {
     void 동시_가입_경합후_재조회도_실패하면_예외() {
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-5"))
                 .willReturn(Optional.empty());
-        User newUser = User.builder().nickname("race2").oauthId("oauth-5").provider(AuthProvider.KAKAO).build();
-        given(userRepository.save(newUser)).willThrow(new DataIntegrityViolationException("dup"));
+        given(nicknameGenerator.generateFrom(any(), any())).willReturn("race2");
+        given(userRepository.save(any(User.class))).willThrow(new DataIntegrityViolationException("dup"));
 
-        assertThatThrownBy(() -> registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-5",
-                () -> "race2", nickname -> newUser))
+        assertThatThrownBy(() -> registrationService.registerOrFind(profile("oauth-5")))
                 .isInstanceOf(IllegalStateException.class)
                 // 닉네임·oauthId 외의 제약 위반도 여기로 떨어지므로 원인을 잃으면 안 된다
                 .hasCauseInstanceOf(DataIntegrityViolationException.class);
@@ -146,21 +145,17 @@ class OAuthUserRegistrationServiceTest {
     void 서로_다른_신규유저의_닉네임_충돌시_새_닉네임으로_재시도후_성공() {
         // 서로 다른 두 사용자가 동시에 가입하며 자동 생성된 닉네임 후보가 우연히 같아 첫 저장은
         // 실패하지만, 동일 provider+oauthId 경합이 아니므로 재조회는 계속 비어있고,
-        // nicknameSupplier를 다시 호출해 새 후보로 재시도한다.
+        // 닉네임을 다시 생성해 새 후보로 재시도한다.
         given(userRepository.findByProviderAndOauthId(AuthProvider.KAKAO, "oauth-6"))
                 .willReturn(Optional.empty());
-        User firstAttempt = User.builder().nickname("dup").oauthId("oauth-6").provider(AuthProvider.KAKAO).build();
-        User secondAttempt = User.builder().nickname("dup2").oauthId("oauth-6").provider(AuthProvider.KAKAO).build();
-        given(userRepository.save(firstAttempt)).willThrow(new DataIntegrityViolationException("dup nickname"));
-        given(userRepository.save(secondAttempt)).willReturn(secondAttempt);
+        given(nicknameGenerator.generateFrom("raw", "fallback")).willReturn("dup", "dup2");
+        given(userRepository.save(argThat(u -> u != null && "dup".equals(u.getNickname()))))
+                .willThrow(new DataIntegrityViolationException("dup nickname"));
+        given(userRepository.save(argThat(u -> u != null && "dup2".equals(u.getNickname()))))
+                .willAnswer(inv -> inv.getArgument(0));
 
-        Iterator<String> nicknames = List.of("dup", "dup2").iterator();
-        User result = registrationService.registerOrFind(AuthProvider.KAKAO, "oauth-6",
-                nicknames::next,
-                nickname -> "dup".equals(nickname) ? firstAttempt : secondAttempt);
+        User result = registrationService.registerOrFind(profile("oauth-6"));
 
-        assertThat(result).isEqualTo(secondAttempt);
-        verify(userRepository).save(firstAttempt);
-        verify(userRepository).save(secondAttempt);
+        assertThat(result.getNickname()).isEqualTo("dup2");
     }
 }

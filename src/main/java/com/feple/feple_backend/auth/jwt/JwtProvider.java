@@ -2,6 +2,7 @@ package com.feple.feple_backend.auth.jwt;
 
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -30,13 +31,7 @@ public final class JwtProvider {
 
     public boolean isRefreshToken(String token) {
         try {
-            String type = Jwts.parser()
-                    .verifyWith(key)
-                    .clock(jwtClock())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload()
-                    .get(JwtConstants.CLAIM_TYPE, String.class);
+            String type = parseClaims(token).get(JwtConstants.CLAIM_TYPE, String.class);
             return JwtConstants.TOKEN_TYPE_REFRESH.equals(type);
         } catch (Exception e) {
             return false;
@@ -63,12 +58,7 @@ public final class JwtProvider {
 
     /** access 토큰인 경우에만 userId 반환, 아니면 예외 */
     public Long parseUserId(String token) {
-        var payload = Jwts.parser()
-                .verifyWith(key)
-                .clock(jwtClock())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        Claims payload = parseClaims(token);
 
         String type = payload.get(JwtConstants.CLAIM_TYPE, String.class);
         if (!JwtConstants.TOKEN_TYPE_ACCESS.equals(type)) {
@@ -76,6 +66,16 @@ public final class JwtProvider {
         }
 
         return Long.valueOf(payload.getSubject());
+    }
+
+    /** 서명·만료를 검증하고 클레임을 꺼낸다. 실패하면 jjwt 예외를 그대로 던진다. */
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .clock(jwtClock())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     // jjwt는 만료 검증에 자체 시계(기본 System)를 쓴다 — 주입된 Clock을 넘겨 검증 시각도 제어 가능하게 한다.

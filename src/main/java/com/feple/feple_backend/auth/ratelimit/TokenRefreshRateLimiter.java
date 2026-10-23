@@ -14,8 +14,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class TokenRefreshRateLimiter {
 
-    private final RateLimiterSupport limiter =
-            new RateLimiterSupport(Duration.ofMinutes(15), 10_000, 30, Duration.ofMinutes(10));
+    static final int MAX_ATTEMPTS_PER_WINDOW = 30;
+    private static final Duration WINDOW = Duration.ofMinutes(10);
+
+    private final RateLimiterSupport limiter = RateLimiterSupport.perClientIp(MAX_ATTEMPTS_PER_WINDOW, WINDOW);
 
     public void check(String ip) {
         limiter.checkOrThrow(ip);
