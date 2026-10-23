@@ -3,7 +3,6 @@ package com.feple.feple_backend.auth.service;
 import com.feple.feple_backend.auth.dto.KakaoUserResponseDto;
 import com.feple.feple_backend.auth.kakao.KakaoApiClient;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
-import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import java.util.Optional;
@@ -16,8 +15,11 @@ import reactor.core.scheduler.Schedulers;
 @RequiredArgsConstructor
 public class KakaoAuthService implements OAuthLoginService {
 
+    private static final String DEFAULT_NICKNAME = "KakaoUser";
+    private static final String FALLBACK_NICKNAME_PREFIX = "Kakao";
+    private static final int FALLBACK_NICKNAME_ID_LENGTH = 4;
+
     private final KakaoApiClient kakaoApiClient;
-    private final NicknameGenerator nicknameGenerator;
     private final OAuthUserRegistrationService registrationService;
 
     @Override
@@ -39,27 +41,21 @@ public class KakaoAuthService implements OAuthLoginService {
         Long kakaoId = kakaoUser.getId();
         if (kakaoId == null) throw new InvalidRequestException("카카오 사용자 ID를 받을 수 없습니다.");
         String oauthId = kakaoId.toString();
-        String email = account.getEmail();
 
-        String rawNickname = Optional.ofNullable(account.getProfile())
-                .map(KakaoUserResponseDto.Profile::getNickname)
+        Optional<KakaoUserResponseDto.Profile> profile = Optional.ofNullable(account.getProfile());
+        String rawNickname = profile.map(KakaoUserResponseDto.Profile::getNickname)
                 .filter(n -> !n.isBlank())
-                .orElse("KakaoUser");
-        String fallback = "Kakao" + oauthId.substring(0, Math.min(oauthId.length(), 4));
-
-        String kakaoImageUrl = Optional.ofNullable(account.getProfile())
-                .map(KakaoUserResponseDto.Profile::getProfile_image_url)
+                .orElse(DEFAULT_NICKNAME);
+        String profileImageUrl = profile.map(KakaoUserResponseDto.Profile::getProfile_image_url)
                 .filter(url -> !url.isBlank())
                 .orElse(null);
 
-        return registrationService.registerOrFind(AuthProvider.KAKAO, oauthId,
-                () -> nicknameGenerator.generateFrom(rawNickname, fallback),
-                nickname -> User.builder()
-                        .oauthId(oauthId)
-                        .email(email)
-                        .nickname(nickname)
-                        .provider(AuthProvider.KAKAO)
-                        .profileImageUrl(kakaoImageUrl)
-                        .build());
+        return registrationService.registerOrFind(new OAuthProfile(
+                AuthProvider.KAKAO,
+                oauthId,
+                account.getEmail(),
+                rawNickname,
+                OAuthProfile.fallbackNickname(FALLBACK_NICKNAME_PREFIX, oauthId, FALLBACK_NICKNAME_ID_LENGTH),
+                profileImageUrl));
     }
 }

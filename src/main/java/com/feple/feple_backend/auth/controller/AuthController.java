@@ -9,13 +9,9 @@ import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
 import com.feple.feple_backend.auth.ratelimit.TokenRefreshRateLimiter;
 import com.feple.feple_backend.auth.service.AgeVerificationService;
+import com.feple.feple_backend.auth.service.AuthTokenService;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
-import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.global.exception.AuthenticationRequiredException;
-import com.feple.feple_backend.global.exception.InvalidRequestException;
-import com.feple.feple_backend.user.dto.UserResponseDto;
-import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.service.UserService;
 import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,9 +34,8 @@ public class AuthController {
 
     private final OAuthLoginService kakaoAuthService;
     private final OAuthLoginService firebaseAuthService;
-    private final UserService userService;
+    private final AuthTokenService authTokenService;
     private final JwtProvider jwtProvider;
-    private final RefreshTokenService refreshTokenService;
     private final LoginRateLimiter loginRateLimiter;
     private final TokenRefreshRateLimiter tokenRefreshRateLimiter;
     private final AgeVerificationService ageVerificationService;
@@ -52,7 +47,7 @@ public class AuthController {
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
         return kakaoAuthService.authenticate(bearerToken(authorization))
-                .map(user -> ResponseEntity.ok(issueTokens(user)));
+                .map(user -> ResponseEntity.ok(authTokenService.issue(user)));
     }
 
     /**
@@ -97,39 +92,21 @@ public class AuthController {
     ) {
         loginRateLimiter.check(getClientIp(httpRequest));
         return firebaseAuthService.authenticate(req.getIdToken())
-                .map(user -> ResponseEntity.ok(issueTokens(user)));
-    }
-
-    private AuthResponseDto issueTokens(User user) {
-        String accessToken = jwtProvider.createAccessToken(user.getId());
-        String refreshToken = jwtProvider.createRefreshToken(user.getId());
-        refreshTokenService.save(user.getId(), refreshToken);
-        return new AuthResponseDto(userService.toUserDto(user), accessToken, refreshToken);
+                .map(user -> ResponseEntity.ok(authTokenService.issue(user)));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponseDto> refresh(@Valid @RequestBody RefreshRequestDto req,
                                                    HttpServletRequest httpRequest) {
         tokenRefreshRateLimiter.check(getClientIp(httpRequest));
-        if (!jwtProvider.isRefreshToken(req.getRefreshToken())) {
-            throw new InvalidRequestException("유효하지 않은 리프레시 토큰입니다.");
-        }
-
-        RefreshTokenService.RotationResult rotation = refreshTokenService.rotate(
-                req.getRefreshToken(), jwtProvider::createRefreshToken);
-
-        String newAccessToken = jwtProvider.createAccessToken(rotation.userId());
-        UserResponseDto userDto = userService.getUser(rotation.userId());
-        return ResponseEntity.ok(new AuthResponseDto(userDto, newAccessToken, rotation.newRefreshToken()));
+        return ResponseEntity.ok(authTokenService.refresh(req.getRefreshToken()));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequestDto req,
                                        HttpServletRequest httpRequest) {
         tokenRefreshRateLimiter.check(getClientIp(httpRequest));
-        if (req != null && req.getRefreshToken() != null) {
-            refreshTokenService.revoke(req.getRefreshToken());
-        }
+        authTokenService.logout(req.getRefreshToken());
         return ResponseEntity.noContent().build();
     }
 

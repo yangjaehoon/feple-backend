@@ -4,7 +4,6 @@ import com.feple.feple_backend.auth.firebase.FirebaseTokenVerifier;
 import com.feple.feple_backend.global.exception.AgeRestrictedException;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.global.exception.UserBannedException;
-import com.feple.feple_backend.user.NicknameGenerator;
 import com.feple.feple_backend.user.entity.AuthProvider;
 import com.feple.feple_backend.user.entity.User;
 import com.google.firebase.ErrorCode;
@@ -31,7 +30,10 @@ public class FirebaseAuthService implements OAuthLoginService {
             ErrorCode.UNAVAILABLE, ErrorCode.DEADLINE_EXCEEDED,
             ErrorCode.INTERNAL, ErrorCode.RESOURCE_EXHAUSTED);
 
-    private final NicknameGenerator nicknameGenerator;
+    private static final String EMAIL_VERIFIED_CLAIM = "email_verified";
+    private static final String FALLBACK_NICKNAME_PREFIX = "User";
+    private static final int FALLBACK_NICKNAME_ID_LENGTH = 8;
+
     private final OAuthUserRegistrationService registrationService;
     private final FirebaseTokenVerifier firebaseTokenVerifier;
 
@@ -45,7 +47,7 @@ public class FirebaseAuthService implements OAuthLoginService {
     private User authenticateSync(String idToken) throws FirebaseAuthException {
         try {
             FirebaseToken decoded = firebaseTokenVerifier.verify(idToken);
-            Boolean emailVerified = (Boolean) decoded.getClaims().get("email_verified");
+            Boolean emailVerified = (Boolean) decoded.getClaims().get(EMAIL_VERIFIED_CLAIM);
             if (emailVerified == null || !emailVerified) {
                 throw new InvalidRequestException("이메일 인증이 완료되지 않았습니다.");
             }
@@ -79,15 +81,9 @@ public class FirebaseAuthService implements OAuthLoginService {
     }
 
     private User registerOrFind(String uid, String email, String displayName) {
-        String fallback = "User" + uid.substring(0, Math.min(uid.length(), 8));
-        String raw = (displayName != null && !displayName.isBlank()) ? displayName : fallback;
-        return registrationService.registerOrFind(AuthProvider.FIREBASE, uid,
-                () -> nicknameGenerator.generateFrom(raw, fallback),
-                nickname -> User.builder()
-                        .email(email)
-                        .nickname(nickname)
-                        .oauthId(uid)
-                        .provider(AuthProvider.FIREBASE)
-                        .build());
+        String fallback = OAuthProfile.fallbackNickname(FALLBACK_NICKNAME_PREFIX, uid, FALLBACK_NICKNAME_ID_LENGTH);
+        String rawNickname = (displayName != null && !displayName.isBlank()) ? displayName : fallback;
+        return registrationService.registerOrFind(
+                new OAuthProfile(AuthProvider.FIREBASE, uid, email, rawNickname, fallback, null));
     }
 }

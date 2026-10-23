@@ -1,8 +1,6 @@
 package com.feple.feple_backend.auth.controller;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -11,17 +9,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.feple.feple_backend.auth.dto.AuthResponseDto;
 import com.feple.feple_backend.auth.jwt.JwtProvider;
 import com.feple.feple_backend.auth.ratelimit.LoginRateLimiter;
 import com.feple.feple_backend.auth.ratelimit.TokenRefreshRateLimiter;
 import com.feple.feple_backend.auth.service.AgeVerificationService;
+import com.feple.feple_backend.auth.service.AuthTokenService;
 import com.feple.feple_backend.auth.service.OAuthLoginService;
-import com.feple.feple_backend.auth.service.RefreshTokenService;
 import com.feple.feple_backend.global.exception.GlobalExceptionHandler;
 import com.feple.feple_backend.global.exception.InvalidRequestException;
 import com.feple.feple_backend.user.dto.UserResponseDto;
 import com.feple.feple_backend.user.entity.User;
-import com.feple.feple_backend.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,9 +38,8 @@ class AuthControllerTest {
 
     @Mock OAuthLoginService kakaoAuthService;
     @Mock OAuthLoginService firebaseAuthService;
-    @Mock UserService userService;
+    @Mock AuthTokenService authTokenService;
     @Mock JwtProvider jwtProvider;
-    @Mock RefreshTokenService refreshTokenService;
     @Mock LoginRateLimiter loginRateLimiter;
     @Mock TokenRefreshRateLimiter tokenRefreshRateLimiter;
     @Mock AgeVerificationService ageVerificationService;
@@ -53,7 +50,7 @@ class AuthControllerTest {
     void setUp() {
         AuthController controller = new AuthController(
                 kakaoAuthService, firebaseAuthService,
-                userService, jwtProvider, refreshTokenService, loginRateLimiter,
+                authTokenService, jwtProvider, loginRateLimiter,
                 tokenRefreshRateLimiter, ageVerificationService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -63,7 +60,8 @@ class AuthControllerTest {
 
     @Test
     void 리프레시_유효하지않은_토큰_400() throws Exception {
-        given(jwtProvider.isRefreshToken("bad-token")).willReturn(false);
+        given(authTokenService.refresh("bad-token"))
+                .willThrow(new InvalidRequestException("유효하지 않은 리프레시 토큰입니다."));
 
         mockMvc.perform(post("/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -73,12 +71,7 @@ class AuthControllerTest {
 
     @Test
     void 리프레시_성공() throws Exception {
-        given(jwtProvider.isRefreshToken("valid-token")).willReturn(true);
-        given(refreshTokenService.rotate(eq("valid-token"), any()))
-                .willReturn(new RefreshTokenService.RotationResult(1L, "new-refresh-token"));
-        given(jwtProvider.createAccessToken(1L)).willReturn("new-access-token");
-        UserResponseDto userDto = mock(UserResponseDto.class);
-        given(userService.getUser(1L)).willReturn(userDto);
+        given(authTokenService.refresh("valid-token")).willReturn(tokens());
 
         mockMvc.perform(post("/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -92,17 +85,15 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\"some-token\"}"))
                 .andExpect(status().isNoContent());
+
+        verify(authTokenService).logout("some-token");
     }
 
     @Test
     void 카카오_로그인_Bearer_접두어_제거후_인증() throws Exception {
         User user = mock(User.class);
-        given(user.getId()).willReturn(1L);
         given(kakaoAuthService.authenticate("raw-kakao-token")).willReturn(Mono.just(user));
-        given(jwtProvider.createAccessToken(1L)).willReturn("access-token");
-        given(jwtProvider.createRefreshToken(1L)).willReturn("refresh-token");
-        UserResponseDto userDto = mock(UserResponseDto.class);
-        given(userService.toUserDto(user)).willReturn(userDto);
+        given(authTokenService.issue(user)).willReturn(tokens());
 
         mockMvc.perform(post("/auth/kakao")
                         .header("Authorization", "Bearer raw-kakao-token"))
@@ -114,12 +105,8 @@ class AuthControllerTest {
     @Test
     void 카카오_로그인_Bearer_접두어_없으면_그대로_사용() throws Exception {
         User user = mock(User.class);
-        given(user.getId()).willReturn(1L);
         given(kakaoAuthService.authenticate("raw-kakao-token")).willReturn(Mono.just(user));
-        given(jwtProvider.createAccessToken(1L)).willReturn("access-token");
-        given(jwtProvider.createRefreshToken(1L)).willReturn("refresh-token");
-        UserResponseDto userDto = mock(UserResponseDto.class);
-        given(userService.toUserDto(user)).willReturn(userDto);
+        given(authTokenService.issue(user)).willReturn(tokens());
 
         mockMvc.perform(post("/auth/kakao")
                         .header("Authorization", "raw-kakao-token"))
@@ -131,12 +118,8 @@ class AuthControllerTest {
     @Test
     void 파이어베이스_로그인_성공() throws Exception {
         User user = mock(User.class);
-        given(user.getId()).willReturn(1L);
         given(firebaseAuthService.authenticate(anyString())).willReturn(Mono.just(user));
-        given(jwtProvider.createAccessToken(1L)).willReturn("access-token");
-        given(jwtProvider.createRefreshToken(1L)).willReturn("refresh-token");
-        UserResponseDto userDto = mock(UserResponseDto.class);
-        given(userService.toUserDto(user)).willReturn(userDto);
+        given(authTokenService.issue(user)).willReturn(tokens());
 
         mockMvc.perform(post("/auth/firebase")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -167,5 +150,9 @@ class AuthControllerTest {
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isBadGateway());
+    }
+
+    private static AuthResponseDto tokens() {
+        return new AuthResponseDto(mock(UserResponseDto.class), "access-token", "refresh-token");
     }
 }

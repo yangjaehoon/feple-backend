@@ -32,6 +32,8 @@ public class RefreshTokenService {
      */
     static final Duration ROTATION_GRACE = Duration.ofMinutes(5);
 
+    public static final String INVALID_REFRESH_TOKEN_MESSAGE = "유효하지 않은 리프레시 토큰입니다.";
+
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProperties jwtProperties;
     private final UserRepository userRepository;
@@ -78,7 +80,7 @@ public class RefreshTokenService {
     public Long validateAndConsume(String rawToken) {
         String tokenHash = hash(rawToken);
         RefreshToken stored = refreshTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new InvalidRequestException("유효하지 않은 리프레시 토큰입니다."));
+                .orElseThrow(() -> new InvalidRequestException(INVALID_REFRESH_TOKEN_MESSAGE));
 
         if (stored.isExpired()) {
             // 여기서 만료 행을 삭제하지 않는다 — 바로 아래 예외가 같은 트랜잭션을
@@ -94,8 +96,8 @@ public class RefreshTokenService {
             throw new UserBannedException();
         }
 
-        if (stored.isRotated() && !stored.isWithinRotationGrace(ROTATION_GRACE)) {
-            throw new InvalidRequestException("유효하지 않은 리프레시 토큰입니다.");
+        if (stored.isRotationGraceOver(ROTATION_GRACE)) {
+            throw new InvalidRequestException(INVALID_REFRESH_TOKEN_MESSAGE);
         }
         refreshTokenRepository.markRotated(tokenHash, LocalDateTime.now());
         return stored.getUserId();
@@ -125,17 +127,12 @@ public class RefreshTokenService {
     @Transactional
     public void revoke(String rawToken) {
         refreshTokenRepository.findByTokenHash(hash(rawToken)).ifPresent(token -> {
-            if (isUsable(token)) {
+            if (token.isUsable(ROTATION_GRACE)) {
                 refreshTokenRepository.deleteByUserId(token.getUserId());
             } else {
                 refreshTokenRepository.delete(token);
             }
         });
-    }
-
-    private static boolean isUsable(RefreshToken token) {
-        return !token.isExpired()
-                && (!token.isRotated() || token.isWithinRotationGrace(ROTATION_GRACE));
     }
 
     @Transactional
