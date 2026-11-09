@@ -305,10 +305,11 @@ public class SecurityConfig {
                 : "https://" + s3Bucket + ".s3.ap-northeast-2.amazonaws.com";
         String cdnOrigin = (cdnBaseUrl == null || cdnBaseUrl.isBlank()) ? "" : " " + cdnBaseUrl;
         return "default-src 'self'; " +
-               "script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.daumcdn.net http://t1.daumcdn.net https://s1.daumcdn.net http://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
+               // 카카오맵 SDK는 본체 스크립트를 t1.kakaocdn.net, 지도 타일을 mts.kakaocdn.net에서 페이지 프로토콜에 맞춰 받는다
+               "script-src 'self' 'unsafe-inline' https://dapi.kakao.com https://t1.kakaocdn.net http://t1.kakaocdn.net https://t1.daumcdn.net http://t1.daumcdn.net https://s1.daumcdn.net http://s1.daumcdn.net https://maps.googleapis.com https://maps.gstatic.com https://cdn.jsdelivr.net; " +
                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                "font-src 'self' data: https://fonts.gstatic.com; " +
-               "img-src 'self' data: " + s3Origin + cdnOrigin + " http://t1.daumcdn.net https://t1.daumcdn.net http://s1.daumcdn.net https://s1.daumcdn.net http://mts.daumcdn.net https://mts.daumcdn.net http://img1.kakaocdn.net http://t1.kakaocdn.net http://k.kakaocdn.net https://i.ytimg.com https://maps.gstatic.com https://maps.googleapis.com; " +
+               "img-src 'self' data: " + s3Origin + cdnOrigin + " http://t1.daumcdn.net https://t1.daumcdn.net http://s1.daumcdn.net https://s1.daumcdn.net http://mts.daumcdn.net https://mts.daumcdn.net http://mts.kakaocdn.net https://mts.kakaocdn.net http://img1.kakaocdn.net http://t1.kakaocdn.net https://t1.kakaocdn.net http://k.kakaocdn.net https://i.ytimg.com https://maps.gstatic.com https://maps.googleapis.com; " +
                "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://dapi.kakao.com http://dapi.kakao.com https://apis.map.kakao.com http://apis.map.kakao.com https://cdn.jsdelivr.net; " +
                // base-uri: <base> 태그 인젝션으로 상대 경로를 외부로 납치하는 공격 차단
                "base-uri 'self'; " +
