@@ -1,19 +1,28 @@
 package com.feple.feple_backend.admin.ocr;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willReturn;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.times;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @ExtendWith(MockitoExtension.class)
 class GeminiOcrClientTest {
@@ -28,11 +37,82 @@ class GeminiOcrClientTest {
     @BeforeEach
     void setUp() {
         client = new GeminiOcrClient(new ObjectMapper(), usageTracker, geminiApiClient,
-                new GeminiProperties("", 500, 16384, 90, 60, 512));
+                new GeminiProperties("", 500, 16384, 90, 60, 60, 512));
     }
 
     private MockMultipartFile image() {
         return new MockMultipartFile("image", "poster.jpg", "image/jpeg", new byte[]{1, 2, 3});
+    }
+
+    // ── 재시도 / 예비 모델 전환 ───────────────────────────────────────────────
+
+    private static final String PRIMARY = GeminiApiClient.GEMINI_GENERATE_CONTENT_URL;
+    private static final String FALLBACK = GeminiApiClient.GEMINI_FALLBACK_GENERATE_CONTENT_URL;
+
+    private static WebClientResponseException googleError(HttpStatus status) {
+        return WebClientResponseException.create(status.value(), status.getReasonPhrase(), HttpHeaders.EMPTY, new byte[0], null);
+    }
+
+    private static IllegalStateException blockTimeout() {
+        return new IllegalStateException("Timeout on blocking read", new TimeoutException());
+    }
+
+    private List<String> calledUrls(int callCount) {
+        ArgumentCaptor<GeminiApiRequest> captor = ArgumentCaptor.forClass(GeminiApiRequest.class);
+        then(geminiApiClient).should(times(callCount)).call(captor.capture());
+        return captor.getAllValues().stream().map(GeminiApiRequest::url).toList();
+    }
+
+    @Test
+    void parseLineup_503이면_기본_모델로_한_번_재시도한다() throws Exception {
+        willThrow(googleError(HttpStatus.SERVICE_UNAVAILABLE)).willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
+        given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("[]");
+
+        client.parseLineup(image(), null);
+
+        assertThat(calledUrls(2)).containsExactly(PRIMARY, PRIMARY);
+    }
+
+    @Test
+    void parseLineup_503이_반복되면_예비_모델로_전환한다() throws Exception {
+        WebClientResponseException overloaded = googleError(HttpStatus.SERVICE_UNAVAILABLE);
+        willThrow(overloaded).willThrow(overloaded).willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
+        given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("[]");
+
+        client.parseLineup(image(), null);
+
+        assertThat(calledUrls(3)).containsExactly(PRIMARY, PRIMARY, FALLBACK);
+    }
+
+    @Test
+    void parseLineup_타임아웃이면_재시도_없이_예비_모델로_전환하고_호출마다_사용량을_센다() throws Exception {
+        willThrow(blockTimeout()).willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
+        given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("[]");
+
+        client.parseLineup(image(), null);
+
+        assertThat(calledUrls(2)).containsExactly(PRIMARY, FALLBACK);
+        then(usageTracker).should(times(2)).increment();
+    }
+
+    @Test
+    void parseTimetable_429면_재시도_없이_예비_모델로_전환한다() throws Exception {
+        willThrow(googleError(HttpStatus.TOO_MANY_REQUESTS)).willReturn(DUMMY_RESPONSE).given(geminiApiClient).call(any());
+        given(geminiApiClient.extractText(DUMMY_RESPONSE)).willReturn("[]");
+
+        client.parseTimetable(image(), null);
+
+        assertThat(calledUrls(2)).containsExactly(PRIMARY, FALLBACK);
+    }
+
+    @Test
+    void parseLineup_403이면_재시도와_예비_모델_없이_실패한다() {
+        willThrow(googleError(HttpStatus.FORBIDDEN)).given(geminiApiClient).call(any());
+
+        assertThatThrownBy(() -> client.parseLineup(image(), null))
+                .isInstanceOf(WebClientResponseException.Forbidden.class);
+
+        assertThat(calledUrls(1)).containsExactly(PRIMARY);
     }
 
     @Test

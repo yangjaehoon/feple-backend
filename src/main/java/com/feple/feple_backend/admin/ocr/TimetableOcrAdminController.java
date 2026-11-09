@@ -41,7 +41,7 @@ public class TimetableOcrAdminController {
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             log.error("OCR 파싱 실패", e);
-            return AdminErrorResponses.serverError("이미지 파싱에 실패했습니다. 다시 시도해주세요.");
+            return GeminiFailure.of(e).toResponse();
         }
     }
 
