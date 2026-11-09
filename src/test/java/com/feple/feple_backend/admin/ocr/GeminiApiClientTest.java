@@ -1,7 +1,12 @@
 package com.feple.feple_backend.admin.ocr;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -9,7 +14,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 class GeminiApiClientTest {
@@ -17,6 +29,34 @@ class GeminiApiClientTest {
     @Mock(answer = org.mockito.Answers.RETURNS_DEEP_STUBS) WebClient webClient;
 
     @InjectMocks GeminiApiClient geminiApiClient;
+
+    // ── call ──────────────────────────────────────────────────────────────────
+
+    @Test
+    void call_구글이_오류를_반환하면_응답_본문을_로그에_남기고_예외를_전파() {
+        String errorBody = "{\"error\":{\"status\":\"UNAVAILABLE\",\"message\":\"The model is overloaded.\"}}";
+        WebClient failingClient = WebClient.builder()
+                .exchangeFunction(request -> Mono.just(ClientResponse.create(HttpStatus.SERVICE_UNAVAILABLE)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body(errorBody)
+                        .build()))
+                .build();
+        GeminiApiRequest request = new GeminiApiRequest("https://gemini.test", "key", Map.of(), Duration.ofSeconds(5));
+        Logger logger = (Logger) LoggerFactory.getLogger(GeminiApiClient.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+
+        try {
+            assertThatThrownBy(() -> new GeminiApiClient(failingClient).call(request))
+                    .isInstanceOf(WebClientResponseException.ServiceUnavailable.class);
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        assertThat(appender.list).singleElement()
+                .satisfies(event -> assertThat(event.getFormattedMessage()).contains("status=503", errorBody));
+    }
 
     // ── getNestedValue ────────────────────────────────────────────────────────
 
