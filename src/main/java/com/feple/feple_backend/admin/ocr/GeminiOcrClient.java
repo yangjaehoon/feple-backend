@@ -45,6 +45,8 @@ public class GeminiOcrClient {
             - JSON 배열만 반환하고 설명 텍스트나 마크다운 코드블록을 절대 포함하지 마세요.
             """;
 
+    private static final Duration OVERLOAD_RETRY_DELAY = Duration.ofSeconds(1);
+
     private final ObjectMapper objectMapper;
     private final GeminiUsageTracker usageTracker;
     private final GeminiApiClient geminiApiClient;
@@ -110,11 +112,46 @@ public class GeminiOcrClient {
     }
 
     private Map<?, ?> callGeminiApi(Map<String, Object> request) {
+        try {
+            return callPrimaryModel(request);
+        } catch (RuntimeException e) {
+            GeminiFailure failure = GeminiFailure.of(e);
+            if (!failure.allowsFallback()) throw e;
+            log.warn("Gemini primary model failed ({}), falling back to lite model", failure);
+            return callModel(GeminiApiClient.GEMINI_FALLBACK_GENERATE_CONTENT_URL, request,
+                    geminiProperties.ocrFallbackTimeoutSeconds());
+        }
+    }
+
+    // 503은 바로 돌아오므로 한 번 더 시도해볼 만하지만, 타임아웃은 재시도하면 관리자가 그만큼 더 기다리게 된다
+    private Map<?, ?> callPrimaryModel(Map<String, Object> request) {
+        try {
+            return callPrimaryModelOnce(request);
+        } catch (RuntimeException e) {
+            if (GeminiFailure.of(e) != GeminiFailure.OVERLOADED) throw e;
+            waitBeforeRetry();
+            return callPrimaryModelOnce(request);
+        }
+    }
+
+    private Map<?, ?> callPrimaryModelOnce(Map<String, Object> request) {
+        // app.gemini.ocr-timeout-seconds로 조정 가능
+        return callModel(GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, request, geminiProperties.ocrTimeoutSeconds());
+    }
+
+    private Map<?, ?> callModel(String url, Map<String, Object> request, int timeoutSeconds) {
         usageTracker.increment();
-        // 대형 포스터 이미지 처리 시간을 고려해 넉넉히 설정 (app.gemini.ocr-timeout-seconds로 조정 가능)
         return geminiApiClient.call(new GeminiApiRequest(
-                GeminiApiClient.GEMINI_GENERATE_CONTENT_URL, geminiProperties.apiKey(), request,
-                Duration.ofSeconds(geminiProperties.ocrTimeoutSeconds())));
+                url, geminiProperties.apiKey(), request, Duration.ofSeconds(timeoutSeconds)));
+    }
+
+    private static void waitBeforeRetry() {
+        try {
+            Thread.sleep(OVERLOAD_RETRY_DELAY.toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting to retry Gemini call", e);
+        }
     }
 
     // 응답이 maxOutputTokens에 걸려 중간에 잘린 경우 마지막 완성된 객체까지만 복구

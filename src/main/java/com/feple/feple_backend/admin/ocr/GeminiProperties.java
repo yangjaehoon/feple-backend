@@ -12,7 +12,8 @@ public record GeminiProperties(
         @DefaultValue("") String apiKey,
         @DefaultValue("500") int dailyLimit,
         @DefaultValue("16384") int ocrMaxOutputTokens,
-        @DefaultValue("90") int ocrTimeoutSeconds,
+        @DefaultValue("45") int ocrTimeoutSeconds,
+        @DefaultValue("60") int ocrFallbackTimeoutSeconds,
         @DefaultValue("60") int urlContextTimeoutSeconds,
         @DefaultValue("512") int urlContextMaxOutputTokens) {
 }

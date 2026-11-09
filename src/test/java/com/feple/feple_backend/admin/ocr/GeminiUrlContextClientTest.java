@@ -35,7 +35,7 @@ class GeminiUrlContextClientTest {
 
     private GeminiUrlContextClient clientWithApiKey(String apiKey) {
         return new GeminiUrlContextClient(new ObjectMapper(), geminiApiClient, usageTracker,
-                new GeminiProperties(apiKey, 500, 16384, 90, 60, 512));
+                new GeminiProperties(apiKey, 500, 16384, 90, 60, 60, 512));
     }
 
     private void stubCall() {

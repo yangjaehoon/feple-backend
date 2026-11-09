@@ -26,6 +26,11 @@ class GeminiApiClient {
     static final String GEMINI_GENERATE_CONTENT_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
+    // 기본 모델이 혼잡·지연·한도 초과일 때만 쓰는 경량 모델. 경량 모델의 latest 별칭은 공식 문서에서
+    // 확인되지 않아 문서화된 ID를 쓴다 — 폐기되어도 예비 경로만 실패하고 기본 모델 호출에는 영향이 없다.
+    static final String GEMINI_FALLBACK_GENERATE_CONTENT_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
+
     private static final int MAX_LOGGED_ERROR_BODY_LENGTH = 2000;
 
     private final WebClient geminiWebClient;

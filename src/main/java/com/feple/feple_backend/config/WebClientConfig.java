@@ -20,7 +20,7 @@ public class WebClientConfig {
         return WebClient.builder().clientConnector(connector(5, 10)).build();
     }
 
-    // Gemini OCR/URL 컨텍스트 — 호출부에서 최대 90초까지 block()하므로
+    // Gemini OCR/URL 컨텍스트 — 호출부에서 제한 시간(기본 최대 60초)을 두고 block()하므로
     // WebClient 자체 타임아웃은 그보다 넉넉하게 잡아야 block()이 먼저 작동한다.
     @Bean
     public WebClient geminiWebClient() {

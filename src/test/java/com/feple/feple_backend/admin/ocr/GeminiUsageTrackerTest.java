@@ -24,7 +24,7 @@ class GeminiUsageTrackerTest {
 
     @BeforeEach
     void setUp() {
-        tracker = new GeminiUsageTracker(repository, new GeminiProperties("", 500, 16384, 90, 60, 512));
+        tracker = new GeminiUsageTracker(repository, new GeminiProperties("", 500, 16384, 90, 60, 60, 512));
     }
 
     @Test
