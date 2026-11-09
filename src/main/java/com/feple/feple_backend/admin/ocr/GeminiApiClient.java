@@ -5,7 +5,9 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * Gemini generateContent API 호출 + 응답 파싱 공통 로직.
@@ -24,6 +26,8 @@ class GeminiApiClient {
     static final String GEMINI_GENERATE_CONTENT_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
+    private static final int MAX_LOGGED_ERROR_BODY_LENGTH = 2000;
+
     private final WebClient geminiWebClient;
 
     @SuppressWarnings("unchecked")
@@ -35,7 +39,14 @@ class GeminiApiClient {
                 .bodyValue(request.body())
                 .retrieve()
                 .bodyToMono(Map.class)
+                .doOnError(WebClientResponseException.class, this::logErrorResponse)
                 .block(request.timeout());
+    }
+
+    // 예외 메시지에는 상태 코드와 URL만 담겨, Google이 응답 본문으로 보낸 실패 사유는 따로 남겨야 볼 수 있다
+    private void logErrorResponse(WebClientResponseException e) {
+        log.warn("Gemini API error response: status={}, body={}", e.getStatusCode().value(),
+                StringUtils.truncate(e.getResponseBodyAsString(), MAX_LOGGED_ERROR_BODY_LENGTH));
     }
 
     Object getNestedValue(Object current, Object... path) {
