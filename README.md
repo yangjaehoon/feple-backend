@@ -6,7 +6,11 @@
 
 **앱 코드** [feple-frontend](https://github.com/yangjaehoon/feple-frontend)
 
-<!-- 스크린샷: 관리자 페이지 이미지를 docs/screenshots/에 넣고 여기에 추가 -->
+| 관리자 대시보드 | 페스티벌 등록 체크리스트 |
+|:---:|:---:|
+| <img src="docs/screenshots/admin-dashboard.png" alt="관리자 대시보드 화면" width="420"> | <img src="docs/screenshots/admin-festival-checklist.png" alt="페스티벌 등록 체크리스트 화면" width="420"> |
+
+관리자 화면 이미지는 로컬 환경의 샘플 데이터로 촬영했습니다.
 
 ## 핵심 문제 해결
 
